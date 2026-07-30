@@ -7,7 +7,6 @@ import {
 } from "type-route";
 import type {
   AbsoluteUrl,
-  AllowedLoginSource,
   AlreadyAuthenticatedUserQueryParams,
   ConnectedUserQueryParams,
 } from "..";
@@ -25,56 +24,6 @@ import {
   nafCodeSerializer,
   remoteWorkModeSerializer,
 } from "./valueSerializer";
-
-const allowedLoginSourcesRoutes: Record<AllowedLoginSource, string> = {
-  admin: "admin",
-  formEstablishment: "establishment",
-  establishmentDashboard: "tableau-de-bord-etablissement",
-  establishmentDashboardDiscussions:
-    "tableau-de-bord-etablissement/discussions",
-  agencyDashboard: "tableau-de-bord-agence",
-  addAgency: "ajouter-prescripteur",
-  manageConventionConnectedUser: "pilotage-convention-inclusion-connect",
-  conventionTemplate: "modele-convention",
-  myAccount: "mon-compte",
-  beneficiaryDashboard: "tableau-de-bord-beneficiaire",
-  beneficiaryDashboardDiscussions: "tableau-de-bord-beneficiaire/discussions",
-  beneficiaryDashboardConventions: "tableau-de-bord-beneficiaire/conventions",
-  archivedConventionRequest: "demande-convention-archivee",
-};
-
-export const legacyFrontRoutes = {
-  ...allowedLoginSourcesRoutes,
-  assessmentDocument: "bilan-document",
-  beneficiaryDashboard: "tableau-de-bord-beneficiaire",
-  initiateConvention: "initier-convention",
-  conventionImmersion: "demande-immersion",
-  conventionDocument: "convention-immersion",
-  conventionMiniStageRoute: "demande-mini-stage",
-  conventionStatusDashboard: "statut-convention",
-  conventionToSign: "verifier-et-signer",
-  error: "error",
-  group: "groupe",
-  homeAgencies: "accueil-prescripteurs",
-  homeCandidates: "accueil-beneficiaires",
-  homeEstablishments: "accueil-entreprises",
-  assessment: "bilan-immersion",
-  searchResult: "offre",
-  searchResultForStudent: "offre-scolaire",
-  searchResultExternal: "tentez-votre-chance",
-  landingEstablishment: "accueil-etablissement",
-  magicLinkInterstitial: "connexion-interstitiel",
-  manageConvention: "pilotage-convention",
-  manageEstablishmentAdmin: "pilotage-etablissement-admin",
-  myProfileEstablishmentRegistration: "rattachement-entreprise",
-  myAccount: "mon-compte",
-  search: "recherche",
-  externalSearch: "recherche-partenaires",
-  searchForStudent: "recherche-scolaire",
-  searchDiagoriente: "recherche-diagoriente",
-  standard: "pages",
-  unsubscribeEstablishmentLead: "desinscription-prospect",
-};
 
 export const ftConnect = "pe-connect";
 
@@ -164,32 +113,27 @@ export type ConventionTemplateFromRoute = Extract<
   "agencyDashboard" | "establishmentDashboard"
 >;
 
-const admin = defineRoute(
-  connectedUserParams,
-  () => `/${legacyFrontRoutes.admin}`,
-);
+const admin = defineRoute(connectedUserParams, () => "/admin");
 
 const myAccount = defineRoute(
   {
     ...connectedUserParams,
     ...acquisitionParams,
   },
-  () => `/${legacyFrontRoutes.myAccount}`,
+  () => "/mon-compte",
 );
 
-const beneficiaryDashboard = myAccount.extend(
-  `/${legacyFrontRoutes.beneficiaryDashboard}`,
-);
+const beneficiaryDashboard = myAccount.extend("/tableau-de-bord-beneficiaire");
 
 const agencyDashboard = myAccount.extend(
   {
     isAgencyRegistration: param.query.optional.boolean,
   },
-  () => `/${legacyFrontRoutes.agencyDashboard}`,
+  () => "/tableau-de-bord-agence",
 );
 
 const establishmentDashboard = myAccount.extend(
-  `/${legacyFrontRoutes.establishmentDashboard}`,
+  "/tableau-de-bord-etablissement",
 );
 
 const agencyDashboardAgencies = agencyDashboard.extend("/agences");
@@ -238,11 +182,11 @@ export const {
 } = createRouter({
   addAgency: defineRoute(
     { ...connectedUserParams, siret: param.query.optional.string },
-    () => `/${legacyFrontRoutes.addAgency}`,
+    () => "/ajouter-prescripteur",
   ),
   archivedConventionRequest: defineRoute(
     connectedUserParams,
-    () => `/${legacyFrontRoutes.archivedConventionRequest}`,
+    () => "/demande-convention-archivee",
   ),
   admin,
   ...restOfAdminRoutes,
@@ -289,11 +233,11 @@ export const {
   myAccountAgencyRegistration: myAccount.extend("/agency-registration"),
   myAccountEstablishmentRegistration: myAccount.extend(
     { siret: param.query.optional.string },
-    () => `/${legacyFrontRoutes.myProfileEstablishmentRegistration}`,
+    () => "/rattachement-entreprise",
   ),
   agencyDashboardAgencies: agencyDashboardAgencies,
   agencyDashboardAgencyDetails: agencyDashboardAgencies.extend(
-    { agencyId: param.path.string },
+    { agencyId: param.path.optional.string },
     ({ agencyId }) => `/${agencyId}`,
   ),
   beneficiaryDashboard,
@@ -313,8 +257,7 @@ export const {
     {
       conventionId: param.path.string,
     },
-    ({ conventionId }) =>
-      `/${legacyFrontRoutes.conventionImmersion}/confirmation/${conventionId}`,
+    ({ conventionId }) => `/demande-immersion/confirmation/${conventionId}`,
   ),
   assessmentDocument: defineRoute(
     {
@@ -322,21 +265,21 @@ export const {
       conventionId: param.query.optional.string,
       ...acquisitionParams,
     },
-    () => `/${legacyFrontRoutes.assessmentDocument}`,
+    () => "/bilan-document",
   ),
   conventionDocument: defineRoute(
     {
       jwt: param.query.optional.string,
       conventionId: param.query.optional.string,
     },
-    () => `/${legacyFrontRoutes.conventionDocument}`,
+    () => "/convention-immersion",
   ),
   initiateConvention: defineRoute(
     {
       ...acquisitionParams,
       skipFirstStep: param.query.optional.boolean,
     },
-    () => `/${legacyFrontRoutes.initiateConvention}`,
+    () => "/initier-convention",
   ),
   conventionImmersion: defineRoute(
     {
@@ -350,7 +293,7 @@ export const {
       ...establishmentParamsForConventionForm,
       ...acquisitionParams,
     },
-    () => `/${legacyFrontRoutes.conventionImmersion}`,
+    () => "/demande-immersion",
   ),
   conventionImmersionForExternals: defineRoute(
     {
@@ -360,7 +303,7 @@ export const {
       ...acquisitionParams,
       ...conventionForExternalParams,
     },
-    (params) => `/${legacyFrontRoutes.conventionImmersion}/${params.consumer}`,
+    (params) => `/demande-immersion/${params.consumer}`,
   ),
   conventionMiniStage: defineRoute(
     {
@@ -371,16 +314,18 @@ export const {
       ...agencyParamsForConventionForm,
       ...establishmentParamsForConventionForm,
     },
-    () => `/${legacyFrontRoutes.conventionMiniStageRoute}`,
+    () => "/demande-mini-stage",
   ),
   conventionStatusDashboard: defineRoute(
     { jwt: param.query.string },
-    () => `/${legacyFrontRoutes.conventionStatusDashboard}`,
+    () => "/statut-convention",
   ),
   conventionTemplate: defineRoute(
     {
       ...connectedUserParams,
-      fromRoute: param.query.ofType(conventionTemplateFromRouteSerializer),
+      fromRoute: param.query.optional.ofType(
+        conventionTemplateFromRouteSerializer,
+      ),
       conventionTemplateId: param.query.optional.string,
     },
     () => "/modele-convention",
@@ -390,7 +335,7 @@ export const {
       jwt: param.query.string,
       ...acquisitionParams,
     },
-    () => `/${legacyFrontRoutes.conventionToSign}`,
+    () => "/verifier-et-signer",
   ),
   establishmentDashboard,
   establishmentDashboardConventions:
@@ -413,24 +358,24 @@ export const {
       ...connectedUserParams,
       ...establishmentParams,
     },
-    () => `/${legacyFrontRoutes.formEstablishment}`,
+    () => "/establishment",
   ),
   unregisterEstablishmentLead: defineRoute(
     {
       jwt: param.query.string,
     },
-    () => `/${legacyFrontRoutes.unsubscribeEstablishmentLead}`,
+    () => "/desinscription-prospect",
   ),
   group: defineRoute(
     { groupSlug: param.path.string },
-    (params) => `/${legacyFrontRoutes.group}/${params.groupSlug}`,
+    (params) => `/groupe/${params.groupSlug}`,
   ),
   home: defineRoute("/"),
-  homeAgencies: defineRoute(`/${legacyFrontRoutes.homeAgencies}`),
-  homeCandidates: defineRoute(`/${legacyFrontRoutes.homeCandidates}`),
+  homeAgencies: defineRoute("/accueil-prescripteurs"),
+  homeCandidates: defineRoute("/accueil-beneficiaires"),
   homeEstablishments: defineRoute([
-    `/${legacyFrontRoutes.homeEstablishments}`,
-    `/${legacyFrontRoutes.landingEstablishment}`,
+    "/accueil-entreprises",
+    "/accueil-etablissement",
   ]),
   assessment: defineRoute(
     {
@@ -438,7 +383,7 @@ export const {
       conventionId: param.query.optional.string,
       ...acquisitionParams,
     },
-    () => `/${legacyFrontRoutes.assessment}`,
+    () => "/bilan-immersion",
   ),
   searchResult: defineRoute(
     {
@@ -451,7 +396,7 @@ export const {
       contactPhone: param.query.optional.string,
       contactMessage: param.query.optional.string,
     },
-    () => `/${legacyFrontRoutes.searchResult}`,
+    () => "/offre",
   ),
   searchResultForStudent: defineRoute(
     {
@@ -464,14 +409,14 @@ export const {
       contactPhone: param.query.optional.string,
       contactMessage: param.query.optional.string,
     },
-    () => `/${legacyFrontRoutes.searchResultForStudent}`,
+    () => "/offre-scolaire",
   ),
   searchResultExternal: defineRoute(
     {
       siret: param.query.string,
       appellationCode: param.query.ofType(appellationStringSerializer),
     },
-    () => `/${legacyFrontRoutes.searchResultExternal}`,
+    () => "/tentez-votre-chance",
   ),
   magicLinkInterstitial: defineRoute(
     {
@@ -479,41 +424,32 @@ export const {
       state: param.query.string,
       email: param.query.string,
     },
-    () => `/${legacyFrontRoutes.magicLinkInterstitial}`,
+    () => "/connexion-interstitiel",
   ),
   manageConvention: defineRoute(
     { jwt: param.query.string },
-    () => `/${legacyFrontRoutes.manageConvention}`,
+    () => "/pilotage-convention",
   ),
   manageConventionConnectedUser: defineRoute(
-    { ...connectedUserParams, conventionId: param.query.string },
-    () => `/${legacyFrontRoutes.manageConventionConnectedUser}`,
+    { ...connectedUserParams, conventionId: param.query.optional.string },
+    () => "/pilotage-convention-inclusion-connect",
   ),
   openApiDoc: defineRoute(
     { version: param.query.optional.string },
     () => "/doc-api",
   ),
-  search: defineRoute(searchParams, () => `/${legacyFrontRoutes.search}`),
-  externalSearch: defineRoute(
-    searchParams,
-    () => `/${legacyFrontRoutes.externalSearch}`,
-  ),
-  searchForStudent: defineRoute(
-    searchParams,
-    () => `/${legacyFrontRoutes.searchForStudent}`,
-  ),
+  search: defineRoute(searchParams, () => "/recherche"),
+  externalSearch: defineRoute(searchParams, () => "/recherche-partenaires"),
+  searchForStudent: defineRoute(searchParams, () => "/recherche-scolaire"),
   standard: defineRoute(
     {
       pagePath: param.path.ofType(standardPagesSerializer),
       version: param.query.optional.string,
     },
-    (params) => `/${legacyFrontRoutes.standard}/${params.pagePath}`,
+    (params) => `/pages/${params.pagePath}`,
   ),
   stats: defineRoute("/stats"),
-  temporaryError: defineRoute(
-    temporaryErrorParams,
-    () => `/${legacyFrontRoutes.error}`,
-  ),
+  temporaryError: defineRoute(temporaryErrorParams, () => "/error"),
 });
 
 export const makeRouteAbsoluteUrl = ({

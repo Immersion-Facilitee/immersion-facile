@@ -1,4 +1,5 @@
 import { subDays } from "date-fns";
+import { keys } from "ramda";
 import {
   AgencyDtoBuilder,
   allowedLoginSources,
@@ -386,12 +387,11 @@ describe("AfterOAuthSuccessRedirection use case", () => {
 
       describe("handle dynamic login pages", () => {
         it.each(
-          allowedLoginSources,
-        )("generates an app token and returns a redirection url which includes token and user data for %s", async (page) => {
-          const { initialOngoingOAuth, fromUri, userId } =
-            makeSuccessfulAuthenticationConditions(
-              `/${page}?discussionId=discussion0`,
-            );
+          keys(allowedLoginSources),
+        )("generates an app token and returns a redirection url which includes token and user data for %s", async (source) => {
+          const allowedRoute = allowedLoginSources[source];
+          const { initialOngoingOAuth, idToken, userId } =
+            makeSuccessfulAuthenticationConditions(allowedRoute({}).href);
 
           const response = await afterOAuthSuccessRedirection.execute({
             code: "my-code",
@@ -400,7 +400,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
 
           expectToEqual(response, {
             provider: "proConnect",
-            redirectUri: `http://fake-connected-user${fromUri}&token=jwt-${userId}&idToken=id-token&provider=proConnect`,
+            redirectUri: `http://fake-connected-user${allowedRoute({ token: `jwt-${userId}`, idToken, provider: "proConnect" }).href}`,
           });
         });
       });
@@ -502,7 +502,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
       ftExternalId: "456",
     };
     const defaultFtOngoingOAuth: OngoingOAuth = {
-      fromUri: "/demande-immersion",
+      fromUri: frontRoutes.conventionImmersion().href,
       provider: "ftConnect",
       state,
       nonce: "nounce",
@@ -589,7 +589,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
         );
         expectToEqual(response, {
           provider: "ftConnect",
-          redirectUri: `http://baseUrl/demande-immersion?conventionDraftId=${conventionDraftId}&skipIntro=true`,
+          redirectUri: `http://baseUrl${frontRoutes.conventionImmersion({ conventionDraftId, skipIntro: true }).href}`,
         });
       });
 
@@ -651,7 +651,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
         ]);
         expectToEqual(response, {
           provider: "ftConnect",
-          redirectUri: `http://baseUrl/demande-immersion?conventionDraftId=${conventionDraftId}&skipIntro=true`,
+          redirectUri: `http://baseUrl${frontRoutes.conventionImmersion({ conventionDraftId, skipIntro: true }).href}`,
         });
       });
 
@@ -717,7 +717,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
         ]);
         expectToEqual(response, {
           provider: "ftConnect",
-          redirectUri: `http://baseUrl/demande-immersion?conventionDraftId=${conventionDraftId}&skipIntro=true`,
+          redirectUri: `http://baseUrl${frontRoutes.conventionImmersion({ conventionDraftId, skipIntro: true }).href}`,
         });
       });
     });
@@ -875,12 +875,14 @@ describe("AfterOAuthSuccessRedirection use case", () => {
 
     describe("handle dynamic login pages", () => {
       it.each(
-        allowedLoginSources,
-      )("generates an app token and returns a redirection url which includes token and user data for %s, create user and update onGoingOAuth", async (page) => {
+        keys(allowedLoginSources),
+      )("generates an app token and returns a redirection url which includes token and user data for %s, create user and update onGoingOAuth", async (source) => {
         const email = "my-email@mail.com";
 
+        const allowedRoute = allowedLoginSources[source];
+
         const initialOngoingOAuth: OngoingOAuth = {
-          fromUri: `/${page}?discussionId=discussion0`,
+          fromUri: allowedRoute().href,
           provider: "email",
           state: "my-state",
           nonce: "nounce", // matches the one in the payload of the token
@@ -920,7 +922,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
 
         expectToEqual(redirectedUrl, {
           provider: "email",
-          redirectUri: `http://fake-connected-user/${page}?discussionId=discussion0&token=jwt-${userId}&idToken=&provider=email`,
+          redirectUri: `http://fake-connected-user${allowedRoute({ token: "jwt-new-user-id", idToken: "", provider: "email" }).href}`,
         });
       });
     });

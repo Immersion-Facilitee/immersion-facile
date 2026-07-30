@@ -14,6 +14,7 @@ import { conventionTemplateSelectors } from "src/core-logic/domain/convention-te
 import { conventionTemplateSlice } from "src/core-logic/domain/convention-template/conventionTemplate.slice";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import type { Route } from "type-route";
+import { frontErrors } from "../error/front-errors";
 
 export type ConventionTemplateFormRoute = Route<
   typeof frontRoutes.conventionTemplate
@@ -35,16 +36,6 @@ export const ConventionTemplateForm = ({
   );
   const conventionTemplateFeedback = useFeedbackTopic("convention-template");
 
-  const backButtonProps: ButtonProps = {
-    priority: "tertiary",
-    iconId: "fr-icon-arrow-left-line",
-    linkProps: frontRoutes[fromRoute]().link,
-    className: fr.cx("fr-mb-4w"),
-    children: conventionTemplateFeedback
-      ? "Aller à mon espace"
-      : "Annuler et revenir en arrière",
-  };
-
   useEffect(() => {
     if (!connectedUserJwt) {
       throw errors.user.unauthorized();
@@ -63,6 +54,18 @@ export const ConventionTemplateForm = ({
       dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
     };
   }, [dispatch]);
+
+  if (!fromRoute) throw frontErrors.generic.pageNotFound();
+
+  const backButtonProps: ButtonProps = {
+    priority: "tertiary",
+    iconId: "fr-icon-arrow-left-line",
+    linkProps: frontRoutes[fromRoute]().link,
+    className: fr.cx("fr-mb-4w"),
+    children: conventionTemplateFeedback
+      ? "Aller à mon espace"
+      : "Annuler et revenir en arrière",
+  };
 
   if (
     !isConventionTemplateLoading &&

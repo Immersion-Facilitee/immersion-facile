@@ -1,5 +1,6 @@
+import { keys } from "ramda";
 import {
-  allowedLoginUris,
+  allowedLoginSources,
   expectToEqual,
   type InitiateLoginByOAuthParams,
   type OAuthProviderForLogin,
@@ -20,8 +21,8 @@ describe("InitiateLoginByOAuth usecase", () => {
     oAuthProvidersForLogin,
   )("With OAuthGateway mode '%s'", (provider: OAuthProviderForLogin) => {
     it.each(
-      allowedLoginUris,
-    )("construct redirect url for %s with expected query params, and stores nounce and state in ongoingOAuth", async (uri) => {
+      keys(allowedLoginSources),
+    )("construct redirect url for %s with expected query params, and stores nounce and state in ongoingOAuth", async (source) => {
       const state = "my-state";
       const nonce = "my-nonce";
       const uow = createInMemoryUow();
@@ -40,7 +41,7 @@ describe("InitiateLoginByOAuth usecase", () => {
       uuidGenerator.setNextUuids([nonce, state]);
 
       const sourcePage: InitiateLoginByOAuthParams = {
-        redirectUri: `/${uri}?discussionId=discussion0`,
+        redirectUri: allowedLoginSources[source]().href,
         provider,
       };
       const redirectUrl = await useCase.execute(sourcePage);

@@ -1,11 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
-import {
-  authRoutes,
-  type InitiateLoginByOAuthParams,
-  legacyFrontRoutes,
-  makeUrlWithQueryParams,
-} from "shared";
+import { authRoutes, frontRoutes, makeUrlWithQueryParams } from "shared";
 
 export const ConventionEmailWarning = ({
   shouldShowFtSpecificMessage,
@@ -29,8 +24,8 @@ export const ConventionEmailWarning = ({
                 `/api${authRoutes.initiateLoginByOAuth.url}`,
                 {
                   provider: "ftConnect",
-                  redirectUri: `/${legacyFrontRoutes.conventionImmersion}`,
-                } satisfies InitiateLoginByOAuthParams,
+                  redirectUri: `/${frontRoutes.conventionImmersion().href}`,
+                },
               )}
             >
               se connecter

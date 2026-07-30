@@ -1,9 +1,5 @@
 import type { Response } from "express";
-import {
-  type AbsoluteUrl,
-  type FTConnectError,
-  queryParamsAsString,
-} from "shared";
+import type { AbsoluteUrl, FTConnectError } from "shared";
 
 type RawRedirectErrorParams = {
   title: string;
@@ -17,17 +13,19 @@ const toRawRedirectErrorParams = (
   message: error.message,
 });
 
+export type RedirectErrorUrlParams = {
+  title?: string;
+  kind?: string;
+};
+
 export const makeHandleManagedRedirectResponseError =
-  (redirectErrorUrl: AbsoluteUrl) =>
+  (redirectErrorUrl: (params: RedirectErrorUrlParams) => AbsoluteUrl) =>
   (res: Response): void => {
-    res.redirect(redirectErrorUrl);
+    res.redirect(redirectErrorUrl({}));
   };
 
 export const makeHandleRawRedirectResponseError =
-  (redirectErrorUrl: AbsoluteUrl) => (error: FTConnectError, res: Response) => {
-    res.redirect(
-      `${redirectErrorUrl}?${queryParamsAsString<RawRedirectErrorParams>(
-        toRawRedirectErrorParams(error),
-      )}`,
-    );
+  (redirectErrorUrl: (params: RawRedirectErrorParams) => AbsoluteUrl) =>
+  (error: FTConnectError, res: Response) => {
+    res.redirect(redirectErrorUrl(toRawRedirectErrorParams(error)));
   };

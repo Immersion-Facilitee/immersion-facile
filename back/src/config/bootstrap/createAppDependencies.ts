@@ -21,6 +21,7 @@ import { UuidV4Generator } from "../../domains/core/uuid-generator/adapters/Uuid
 import {
   makeHandleManagedRedirectResponseError,
   makeHandleRawRedirectResponseError,
+  type RedirectErrorUrlParams,
 } from "../helpers/handleRedirectResponseError";
 import { createMakeProductionPgPool } from "../pg/pgPool";
 import type { AppConfig } from "./appConfig";
@@ -77,10 +78,11 @@ export const createAppDependencies = async (config: AppConfig) => {
   const verifyEmailAuthCodeJwt: VerifyJwtFn<"emailAuthCode"> =
     makeVerifyJwtES256<"emailAuthCode">(config.jwtPrivateKey);
 
-  const redirectErrorUrl: AbsoluteUrl = makeRouteAbsoluteUrl({
-    route: frontRoutes.temporaryError(),
-    baseUrl: config.immersionFacileBaseUrl,
-  });
+  const redirectErrorUrl = (params: RedirectErrorUrlParams): AbsoluteUrl =>
+    makeRouteAbsoluteUrl({
+      route: frontRoutes.temporaryError(params),
+      baseUrl: config.immersionFacileBaseUrl,
+    });
 
   const errorHandlers = {
     handleManagedRedirectResponseError:

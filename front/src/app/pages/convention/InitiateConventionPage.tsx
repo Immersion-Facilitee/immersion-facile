@@ -5,8 +5,6 @@ import {
   authRoutes,
   domElementIds,
   frontRoutes,
-  type InitiateLoginByOAuthParams,
-  legacyFrontRoutes,
   makeUrlWithQueryParams,
 } from "shared";
 import { Breadcrumbs } from "src/app/components/Breadcrumbs";
@@ -133,8 +131,8 @@ export const InitiateConventionPage = () => {
                       `/api${authRoutes.initiateLoginByOAuth.url}`,
                       {
                         provider: "ftConnect",
-                        redirectUri: `/${legacyFrontRoutes.conventionImmersion}`,
-                      } satisfies InitiateLoginByOAuthParams,
+                        redirectUri: `/${frontRoutes.conventionImmersion().href}`,
+                      },
                     ),
                   }}
                   alternateTitle="Je suis accompagné(e) par mon conseiller France Travail et je peux me connecter via FranceConnect"
