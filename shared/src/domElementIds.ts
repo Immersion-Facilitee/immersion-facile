@@ -1345,7 +1345,16 @@ export const domElementIds = {
   myAccountEstablishments: {},
   myAccountAgencyRegistration: {},
   agencyDashboardAgencies: {},
-  agencyDashboardAgencyDetails: {},
+  agencyDashboardAgencyDetails: {
+    login: {
+      proConnectButton:
+        "im-login-form__inclusion-connect-button--agency-detail",
+      byEmailButton: "im-login-form__connect-button--agency-detail-email",
+      navigateToHome: "im-login-form__navigate-to-home-button--agency-detail",
+      retryButton: "im-login-form__retry-login-button--agency-detail",
+      contactSupport: "im-login-form__contact-support-link--agency-detail",
+    },
+  },
   conventionConfirmation: {},
   conventionImmersionForExternals: {},
   establishmentDashboardConventions: {},

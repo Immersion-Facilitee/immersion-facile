@@ -4,6 +4,10 @@ import { useDispatch } from "react-redux";
 import type { frontRoutes } from "shared";
 import { AgencyOverview } from "src/app/components/forms/agency/AgencyOverview";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import {
+  FrontSpecificError,
+  HomeButton,
+} from "src/app/pages/error/front-errors";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import type { Route } from "type-route";
@@ -20,24 +24,35 @@ export const AgencyDetailForAgencyDashboard = ({
   const isFetchingAgency = useAppSelector(fetchAgencySelectors.isLoading);
 
   const dispatch = useDispatch();
+  const agencyId = route.params.agencyId;
 
   useEffect(() => {
-    dispatch(
-      fetchAgencySlice.actions.fetchAgencyRequested({
-        agencyId: route.params.agencyId,
-        feedbackTopic: "agency-for-dashboard",
-      }),
-    );
-    dispatch(
-      fetchAgencySlice.actions.fetchAgencyUsersRequested({
-        agencyId: route.params.agencyId,
-        feedbackTopic: "agency-user-for-dashboard",
-      }),
-    );
+    if (agencyId) {
+      dispatch(
+        fetchAgencySlice.actions.fetchAgencyRequested({
+          agencyId,
+          feedbackTopic: "agency-for-dashboard",
+        }),
+      );
+      dispatch(
+        fetchAgencySlice.actions.fetchAgencyUsersRequested({
+          agencyId,
+          feedbackTopic: "agency-user-for-dashboard",
+        }),
+      );
+    }
     return () => {
       dispatch(fetchAgencySlice.actions.clearAgencyAndUsers());
     };
-  }, [dispatch, route.params.agencyId]);
+  }, [dispatch, agencyId]);
+
+  if (!agencyId)
+    throw new FrontSpecificError({
+      title: "Identifiant agence manquant",
+      description:
+        "Cette page est accessible uniquement avec un identifiant d'organisme prescripteur/accompagnateur.",
+      buttons: [HomeButton],
+    });
 
   if (!agency || isFetchingAgency) return <Loader />;
 

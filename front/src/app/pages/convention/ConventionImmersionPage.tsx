@@ -6,9 +6,7 @@ import { Loader, MainWrapper, PageHeader } from "react-design-system";
 import {
   authRoutes,
   domElementIds,
-  type frontRoutes,
-  type InitiateLoginByOAuthParams,
-  legacyFrontRoutes,
+  frontRoutes,
   makeUrlWithQueryParams,
 } from "shared";
 import { Breadcrumbs } from "src/app/components/Breadcrumbs";
@@ -192,8 +190,8 @@ const SharedConventionMessage = ({
             `/api${authRoutes.initiateLoginByOAuth.url}`,
             {
               provider: "ftConnect",
-              redirectUri: `/${legacyFrontRoutes.conventionImmersion}`,
-            } satisfies InitiateLoginByOAuthParams,
+              redirectUri: `/${frontRoutes.conventionImmersion().href}`,
+            },
           )}
           onClick={() => {
             storeConventionRouteParamsOnDevice(route.params);

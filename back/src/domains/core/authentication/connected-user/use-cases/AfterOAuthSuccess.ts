@@ -265,7 +265,7 @@ const saveFTConnectAuthenticationDataAndReturnRedirectURI = async ({
   return {
     provider: updatedOngoingOAuth.provider,
     redirectUri:
-      `${deps.immersionFacileBaseUrl}${updatedOngoingOAuth.fromUri}?conventionDraftId=${conventionDraft.id}&skipIntro=true` satisfies AbsoluteUrl,
+      `${deps.immersionFacileBaseUrl}${updatedOngoingOAuth.fromUri}?skipIntro=true&conventionDraftId=${conventionDraft.id}` satisfies AbsoluteUrl,
   };
 };
 

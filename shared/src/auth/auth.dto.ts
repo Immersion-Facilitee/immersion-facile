@@ -1,28 +1,58 @@
-import type { legacyFrontRoutes } from "..";
 import type { AbsoluteUrl } from "../AbsoluteUrl";
 import type { Email } from "../email/email.dto";
 import type { FederatedIdentityProvider } from "../federatedIdentities/federatedIdentity.dto";
+import { frontRoutes } from "../routes/routes";
 import type { EmailAuthCodeJwt } from "../tokens/jwt.dto";
 import type { Flavor } from "../typeFlavors";
+import type { ExtractFromExisting } from "../utils";
 
-export type AllowedLoginSource = (typeof allowedLoginSources)[number];
-export type AllowedRedirectUri = (typeof legacyFrontRoutes)[AllowedLoginSource];
+export type AllowedLoginSource = ExtractFromExisting<
+  keyof typeof frontRoutes,
+  | "admin"
+  | "addAgency"
+  | "agencyDashboard"
+  | "agencyDashboardAgencyDetails"
+  | "archivedConventionRequest"
+  | "beneficiaryDashboard"
+  | "beneficiaryDashboardDiscussions"
+  | "beneficiaryDashboardConventions"
+  | "conventionTemplate"
+  | "establishmentDashboard"
+  | "establishmentDashboardDiscussions"
+  | "formEstablishment"
+  | "manageConventionConnectedUser"
+  | "myAccount"
+>;
 
-export const allowedLoginSources = [
-  "admin",
-  "formEstablishment",
-  "establishmentDashboard",
-  "establishmentDashboardDiscussions",
-  "agencyDashboard",
-  "addAgency",
-  "manageConventionConnectedUser",
-  "conventionTemplate",
-  "myAccount",
-  "beneficiaryDashboard",
-  "beneficiaryDashboardDiscussions",
-  "beneficiaryDashboardConventions",
-  "archivedConventionRequest",
-] as const;
+export type AllowedFtRedirectRoute = ExtractFromExisting<
+  keyof typeof frontRoutes,
+  "conventionImmersion"
+>;
+
+export type AllowedRedirectUri = ReturnType<
+  (typeof frontRoutes)[AllowedLoginSource]
+>["href"];
+
+export const allowedLoginSources: Record<
+  AllowedLoginSource,
+  (typeof frontRoutes)[AllowedLoginSource]
+> = {
+  admin: frontRoutes.admin,
+  addAgency: frontRoutes.addAgency,
+  agencyDashboard: frontRoutes.agencyDashboard,
+  agencyDashboardAgencyDetails: frontRoutes.agencyDashboardAgencyDetails,
+  archivedConventionRequest: frontRoutes.archivedConventionRequest,
+  beneficiaryDashboard: frontRoutes.beneficiaryDashboard,
+  beneficiaryDashboardConventions: frontRoutes.beneficiaryDashboardConventions,
+  beneficiaryDashboardDiscussions: frontRoutes.beneficiaryDashboardDiscussions,
+  conventionTemplate: frontRoutes.conventionTemplate,
+  establishmentDashboard: frontRoutes.establishmentDashboard,
+  establishmentDashboardDiscussions:
+    frontRoutes.establishmentDashboardDiscussions,
+  formEstablishment: frontRoutes.formEstablishment,
+  manageConventionConnectedUser: frontRoutes.manageConventionConnectedUser,
+  myAccount: frontRoutes.myAccount,
+};
 
 export type ExternalId = Flavor<string, "ExternalId">;
 

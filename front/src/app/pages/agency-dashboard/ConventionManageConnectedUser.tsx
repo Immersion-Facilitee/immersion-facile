@@ -27,6 +27,15 @@ export const ConventionManageConnectedUser = ({
     );
   }
 
+  if (!conventionId)
+    return (
+      <Alert
+        severity="error"
+        title="Identifiant de convention manquant"
+        description="Cette page n'est accessible que si vous fournissez un identifiant de convention."
+      />
+    );
+
   return (
     <WithFeedbackReplacer topic="transfer-convention-to-agency">
       <ConventionManageContent
