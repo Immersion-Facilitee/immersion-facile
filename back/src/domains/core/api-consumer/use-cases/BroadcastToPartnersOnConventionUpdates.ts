@@ -9,7 +9,7 @@ import {
   isApiConsumerAllowed,
   pipeWithValue,
 } from "shared";
-import { conventionDtoToConventionReadDto } from "../../../../utils/convention";
+import { conventionDtosToConventionReadDtos } from "../../../../utils/convention";
 import { createLogger } from "../../../../utils/logger";
 import { withConventionIdAndPreviousAgencySchema } from "../../../convention/use-cases/broadcast/broadcastConventionParams";
 import { broadcastToPartnersServiceName } from "../../saved-errors/ports/BroadcastFeedbacksRepository";
@@ -45,11 +45,10 @@ export const makeBroadcastToPartnersOnConventionUpdates = useCaseBuilder(
       ...conventionWithoutAcquisitionParams
     } = convention;
 
-    const conventionRead: ConventionReadDto =
-      await conventionDtoToConventionReadDto(
-        conventionWithoutAcquisitionParams,
-        uow,
-      );
+    const [conventionRead] = await conventionDtosToConventionReadDtos(
+      [conventionWithoutAcquisitionParams],
+      uow,
+    );
 
     const previousAgencyWithRights = inputParams.previousAgencyId
       ? await uow.agencyRepository.getById(inputParams.previousAgencyId)

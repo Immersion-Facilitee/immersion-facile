@@ -11,7 +11,7 @@ import {
   withConventionIdSchema,
 } from "shared";
 import { agencyWithRightToAgencyDto } from "../../../utils/agency";
-import { conventionDtoToConventionReadDto } from "../../../utils/convention";
+import { conventionDtosToConventionReadDtos } from "../../../utils/convention";
 import {
   isHashMatchConventionEmails,
   isHashMatchNotNotifiedCounsellorOrValidator,
@@ -37,8 +37,8 @@ export const makeGetConvention = useCaseBuilder("GetConvention")
         await uow.conventionRepository.getById(conventionId);
       if (!conventionDto) throw errors.convention.notFound({ conventionId });
 
-      const convention = await conventionDtoToConventionReadDto(
-        conventionDto,
+      const [convention] = await conventionDtosToConventionReadDtos(
+        [conventionDto],
         uow,
       );
 

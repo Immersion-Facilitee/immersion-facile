@@ -229,7 +229,7 @@ export const agencyDtoToConventionAgencyFields = (
       : "validator-only",
   agencyName: agency.name,
   agencyContactEmail: agency.contactEmail,
-  agencyDepartment: agency.coveredDepartments.at(0) ?? "",
+  agencyDepartment: agency.address.departmentCode,
   agencySiret: agency.agencySiret,
   agencyKind: agency.kind,
   ...(agencyRefersTo
