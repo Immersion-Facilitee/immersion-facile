@@ -1,6 +1,6 @@
 import { type ConventionId, errors, executeInSequence } from "shared";
 import { match } from "ts-pattern";
-import { conventionDtoToConventionReadDto } from "../../../utils/convention";
+import { conventionDtosToConventionReadDtos } from "../../../utils/convention";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
@@ -133,7 +133,10 @@ const resync = async ({
   const assessment = assessmentEntity
     ? getOnlyAssessmentDto(assessmentEntity)
     : undefined;
-  const convention = await conventionDtoToConventionReadDto(conventionDto, uow);
+  const [convention] = await conventionDtosToConventionReadDtos(
+    [conventionDto],
+    uow,
+  );
 
   return assessment
     ? standardBroadcastToFTUsecase.execute({

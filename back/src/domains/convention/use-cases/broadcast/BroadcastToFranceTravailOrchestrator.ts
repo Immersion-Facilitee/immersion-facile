@@ -1,6 +1,6 @@
 import { errors } from "shared";
 import type { InstantiatedUseCase } from "../../../../config/bootstrap/createUseCases";
-import { conventionDtoToConventionReadDto } from "../../../../utils/convention";
+import { conventionDtosToConventionReadDtos } from "../../../../utils/convention";
 import type { UnitOfWorkPerformer } from "../../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { getOnlyAssessmentDto } from "../../entities/AssessmentEntity";
 import type { BroadcastToFranceTravailOnConventionUpdates } from "./BroadcastToFranceTravailOnConventionUpdates";
@@ -31,15 +31,18 @@ export const makeBroadcastToFranceTravailOrchestrator = ({
         throw errors.convention.notFound({ conventionId: params.conventionId });
 
       const { assessment, conventionRead } = await uowPerformer.perform(
-        async (uow) => ({
-          assessment: await uow.assessmentRepository.getByConventionId(
-            convention.id,
-          ),
-          conventionRead: await conventionDtoToConventionReadDto(
-            convention,
+        async (uow) => {
+          const [conventionReadDto] = await conventionDtosToConventionReadDtos(
+            [convention],
             uow,
-          ),
-        }),
+          );
+          return {
+            assessment: await uow.assessmentRepository.getByConventionId(
+              convention.id,
+            ),
+            conventionRead: conventionReadDto,
+          };
+        },
       );
 
       const assessmentDto = assessment

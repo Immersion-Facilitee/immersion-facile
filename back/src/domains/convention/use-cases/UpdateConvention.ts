@@ -11,10 +11,7 @@ import {
   updateConventionRequestSchema,
   type WithConventionIdLegacy,
 } from "shared";
-import {
-  conventionDtoToConventionReadDto,
-  throwErrorIfConventionStatusNotAllowed,
-} from "../../../utils/convention";
+import { throwErrorIfConventionStatusNotAllowed } from "../../../utils/convention";
 import { throwIfNotAuthorizedForRole } from "../../connected-users/helpers/authorization.helper";
 import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
@@ -112,10 +109,7 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
       if (hasSignatoryRole) {
         const { signedConvention } = await signConvention({
           uow,
-          convention: await conventionDtoToConventionReadDto(
-            conventionWithSignatoriesSignedAtAndDateApprovalCleared,
-            uow,
-          ),
+          convention: conventionWithSignatoriesSignedAtAndDateApprovalCleared,
           jwtPayload,
           now: deps.timeGateway.now().toISOString(),
         });

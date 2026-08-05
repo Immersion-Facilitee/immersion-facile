@@ -589,15 +589,19 @@ describe("ResyncOldConventionsToFt use case", () => {
           id: conventionToSync1.id,
           status: "ERROR",
           processDate: timeGateway.now(),
-          reason: errors.agency.notFound({ agencyId: agencyFT.id }).message,
+          reason: errors.agencies.notFound({
+            missingAgencyIds: [agencyFT.id],
+            presentAgencyIds: [],
+          }).message,
         },
       ]);
       expectToEqual(report, {
         success: 0,
         skips: {},
         errors: {
-          [conventionToSync1.id]: errors.agency.notFound({
-            agencyId: agencyFT.id,
+          [conventionToSync1.id]: errors.agencies.notFound({
+            missingAgencyIds: [agencyFT.id],
+            presentAgencyIds: [],
           }),
         },
       });
