@@ -6,7 +6,6 @@ import {
   type ConventionDto,
   type ConventionId,
   type ConventionReadDto,
-  type ConventionScope,
   type ConventionsWithErroredBroadcastFeedbackFilters,
   type ConventionsWithUnfinalizedAssessmentFilters,
   type ConventionWithBroadcastFeedback,
@@ -22,7 +21,6 @@ import {
   isFunctionalBroadcastFeedbackError,
   isUnvalidatedConventionStatus,
   makeEmptyLastReminders,
-  NotFoundError,
   type PaginationQueryParams,
   type SiretDto,
   type UserId,
@@ -206,33 +204,6 @@ export class InMemoryConventionQueries implements ConventionQueries {
         totalRecords: sortedConventions.length,
       }),
     };
-  }
-
-  public async getConventionsByScope(params: {
-    scope: ConventionScope;
-    limit: number;
-    filters: GetConventionsFilters;
-  }): Promise<ConventionReadDto[]> {
-    return await Promise.all(
-      this.conventionRepository.conventions
-        .filter((convention) => {
-          //TODO : dépendance agency repo dans convention repo à gérer plutot dans le usecase pour garder le repo convention indépendant
-          const agency = this.agencyRepository.agencies.find(
-            (agency) => agency.id === convention.agencyId,
-          );
-
-          if (!agency) throw new NotFoundError("agency not found");
-
-          return (
-            params.scope.agencyKinds?.includes(agency.kind) ||
-            params.scope.agencyIds?.includes(agency.id)
-          );
-        })
-        .filter(makeApplyFiltersToConventions(params.filters))
-        .map((convention) =>
-          this.#addAgencyAndAssessmentDataToConvention(convention),
-        ),
-    );
   }
 
   public async getLatestConventionBySirets(
