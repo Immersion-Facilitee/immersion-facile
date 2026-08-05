@@ -8,6 +8,7 @@ import {
   expectHttpResponseToEqual,
   expectToEqual,
   makeEmptyLastReminders,
+  type Notification,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -46,6 +47,33 @@ describe("Convention routes", () => {
     beneficiaryFeedback: "Mon commentaire",
     signedAt: new Date("2025-01-01").toISOString(),
     createdAt: new Date("2025-01-01").toISOString(),
+  };
+
+  const signatureReminderSentAt = "2025-01-02T10:00:00.000Z";
+  const signatureEmailReminder: Notification = {
+    id: "signature-email-reminder",
+    createdAt: signatureReminderSentAt,
+    kind: "email",
+    followedIds: {
+      conventionId: convention.id,
+      agencyId: convention.agencyId,
+      establishmentSiret: convention.siret,
+    },
+    templatedContent: {
+      kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
+      recipients: [convention.signatories.beneficiary.email],
+      params: {
+        agencyLogoUrl: undefined,
+        beneficiaryName: "Beneficiary",
+        businessName: convention.businessName,
+        conventionId: convention.id,
+        establishmentRepresentativeName: "Establishment Rep",
+        establishmentTutorName: "Tutor",
+        internshipKind: convention.internshipKind,
+        conventionSignShortlink: "https://short.link",
+        signatoryName: "Signatory",
+      },
+    },
   };
 
   const conventionReadConsumerWithNoScope = new ApiConsumerBuilder()
@@ -254,6 +282,9 @@ describe("Convention routes", () => {
           numberOfHoursActuallyMade: 35,
         },
       ];
+      inMemoryUow.notificationRepository.notifications = [
+        signatureEmailReminder,
+      ];
 
       expect(displayRouteName(publicApiV2ConventionRoutes.getConventions)).toBe(
         "GET /v2/conventions -",
@@ -267,6 +298,8 @@ describe("Convention routes", () => {
           withStatuses: ["READY_TO_SIGN"],
         },
       });
+
+      const emptyLastReminders = makeEmptyLastReminders();
 
       expectHttpResponseToEqual(response, {
         body: [
@@ -284,7 +317,16 @@ describe("Convention routes", () => {
               signedAt: assessment.signedAt,
               createdAt: assessment.createdAt,
             },
-            lastReminders: makeEmptyLastReminders(),
+            lastReminders: {
+              ...emptyLastReminders,
+              conventionSignatures: {
+                ...emptyLastReminders.conventionSignatures,
+                beneficiary: {
+                  email: signatureReminderSentAt,
+                  sms: null,
+                },
+              },
+            },
             isEstablishmentBanned: false,
           },
         ],
