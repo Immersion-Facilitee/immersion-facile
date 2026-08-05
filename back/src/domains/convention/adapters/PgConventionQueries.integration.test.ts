@@ -742,6 +742,15 @@ describe("Pg implementation of ConventionQueries", () => {
           firstValidatedConvention,
         ],
       },
+      {
+        testName: "with limit 1 returns only the most recent by dateStart",
+        params: {
+          filters: {},
+          sortBy: "dateStart",
+          limit: 1,
+        },
+        expectedConventions: [secondValidatedConvention],
+      },
     ] satisfies {
       testName: string;
       params: GetConventionsParams;

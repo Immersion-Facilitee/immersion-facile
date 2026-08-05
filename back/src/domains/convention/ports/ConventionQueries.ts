@@ -47,6 +47,7 @@ export type GetConventionsSortBy = keyof Pick<
 export type GetConventionsParams = {
   filters: GetConventionsFilters;
   sortBy: GetConventionsSortBy;
+  limit?: number;
 };
 
 export type GetPaginatedConventionsFilters = {
