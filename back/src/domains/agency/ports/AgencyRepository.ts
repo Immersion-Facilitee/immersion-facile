@@ -34,6 +34,11 @@ export type GetAgenciesFilters = {
   delegationConventionEndDate?: DateString;
 };
 
+export type GetAgencyIdsFilters = {
+  kinds?: AgencyKind[];
+  status?: AgencyStatus[];
+};
+
 export type AgencyWithoutRights = Omit<
   AgencyDto,
   "counsellorEmails" | "validatorEmails"
@@ -77,6 +82,7 @@ export interface AgencyRepository {
     filters?: GetAgenciesFilters;
     pagination?: PaginationQueryParams;
   }): Promise<DataWithPagination<AgencyWithUsersRights>>;
+  getAgencyIdsByFilters(filters?: GetAgencyIdsFilters): Promise<AgencyId[]>;
 
   getAgenciesRelatedToAgency(id: AgencyId): Promise<AgencyWithUsersRights[]>;
   getAllAgenciesWithUsersToReview(): Promise<AgencyWithNumberOfUsersToReview[]>;
