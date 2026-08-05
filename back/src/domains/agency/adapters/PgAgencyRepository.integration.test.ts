@@ -1619,6 +1619,83 @@ describe.each(
     });
   });
 
+  describe("getAgencyIdsByFilters", () => {
+    const agencyPeActive = toAgencyWithRights(
+      agency1builder
+        .withId("00000000-0000-0000-0000-000000000001")
+        .withAgencySiret("00000000000001")
+        .withKind("pole-emploi")
+        .withStatus("active")
+        .build(),
+      {
+        [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+      },
+    );
+    const agencyPeClosed = toAgencyWithRights(
+      agency1builder
+        .withId("00000000-0000-0000-0000-000000000002")
+        .withAgencySiret("00000000000002")
+        .withKind("pole-emploi")
+        .withStatus("closed")
+        .withStatusJustification(null)
+        .build(),
+      {
+        [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+      },
+    );
+    const agencyMissionLocale = toAgencyWithRights(
+      agency2builder.withKind("mission-locale").withStatus("active").build(),
+      {
+        [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+      },
+    );
+
+    beforeEach(async () => {
+      await Promise.all([
+        agencyRepository.insert(agencyPeActive),
+        agencyRepository.insert(agencyPeClosed),
+        agencyRepository.insert(agencyMissionLocale),
+      ]);
+    });
+
+    it("returns empty array when no agencies match", async () => {
+      expectToEqual(
+        await agencyRepository.getAgencyIdsByFilters({
+          kinds: ["cci"],
+        }),
+        [],
+      );
+    });
+
+    it("filters by kinds", async () => {
+      expectToEqual(
+        await agencyRepository.getAgencyIdsByFilters({
+          kinds: ["pole-emploi"],
+        }),
+        [agencyPeActive.id, agencyPeClosed.id],
+      );
+    });
+
+    it("filters by status", async () => {
+      expectToEqual(
+        await agencyRepository.getAgencyIdsByFilters({
+          status: ["active"],
+        }),
+        [agencyPeActive.id, agencyMissionLocale.id],
+      );
+    });
+
+    it("filters by kinds and status", async () => {
+      expectToEqual(
+        await agencyRepository.getAgencyIdsByFilters({
+          kinds: ["pole-emploi"],
+          status: ["active"],
+        }),
+        [agencyPeActive.id],
+      );
+    });
+  });
+
   describe("getAgenciesRelatedToAgency()", () => {
     const agency1 = toAgencyWithRights(agency1builder.build(), {
       [validator1.id]: { isNotifiedByEmail: true, roles: ["validator"] },

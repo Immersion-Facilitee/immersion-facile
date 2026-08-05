@@ -42,6 +42,7 @@ import {
   type AgencyRightOfUser,
   type AgencyWithNumberOfUsersToReview,
   type GetAgenciesFilters,
+  type GetAgencyIdsFilters,
   type PartialAgencyWithUsersRights,
   throwIfAgencyHasNoUsersWhileNotClosedOrRejected,
 } from "../ports/AgencyRepository";
@@ -392,6 +393,23 @@ export class PgAgencyRepository implements AgencyRepository {
         totalRecords,
       }),
     };
+  }
+
+  public async getAgencyIdsByFilters(
+    filters: GetAgencyIdsFilters = {},
+  ): Promise<AgencyId[]> {
+    const { kinds, status, ...rest } = filters;
+    rest satisfies Record<string, never>;
+
+    const results = await pipeWithValue(
+      this.transaction.selectFrom("agencies").select("agencies.id"),
+      (b) => (kinds ? b.where("agencies.kind", "in", kinds) : b),
+      (b) => (status ? b.where("agencies.status", "in", status) : b),
+    )
+      .orderBy("agencies.id", "asc")
+      .execute();
+
+    return results.map(({ id }) => id);
   }
 
   public async getAgenciesRelatedToAgency(
