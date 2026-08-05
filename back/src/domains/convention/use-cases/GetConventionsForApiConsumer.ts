@@ -7,6 +7,7 @@ import {
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import { z } from "zod";
+import { conventionDtosToConventionReadDtos } from "../../../utils/convention";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { GetConventionsFilters } from "../ports/ConventionQueries";
 
@@ -38,9 +39,23 @@ export const makeGetConventionsForApiConsumer = useCaseBuilder(
   .build(async ({ inputParams: filters, uow, currentUser: apiConsumer }) => {
     if (!apiConsumer) throw new ForbiddenError("No api consumer provided");
 
-    return uow.conventionQueries.getConventionsByScope({
-      scope: apiConsumer.rights.convention.scope,
+    const { scope } = apiConsumer.rights.convention;
+
+    const agencyIds =
+      scope.agencyIds ??
+      (scope.agencyKinds?.length
+        ? await uow.agencyRepository.getAgencyIdsByFilters({
+            kinds: scope.agencyKinds,
+          })
+        : []);
+
+    if (!agencyIds.length) return [];
+
+    const conventions = await uow.conventionQueries.getConventions({
+      filters: { ...filters, agencyIds },
+      sortBy: "dateStart",
       limit: MAX_CONVENTIONS_RETURNED,
-      filters,
     });
+
+    return conventionDtosToConventionReadDtos(conventions, uow);
   });
