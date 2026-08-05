@@ -132,10 +132,11 @@ export class InMemoryConventionQueries implements ConventionQueries {
   public async getConventions({
     filters,
     sortBy,
+    limit,
   }: GetConventionsParams): Promise<ConventionDto[]> {
     this.getConventionsByFiltersCalled++;
 
-    return this.conventionRepository.conventions
+    const conventions = this.conventionRepository.conventions
       .filter(makeApplyFiltersToConventions(filters))
       .sort((previous, current) => {
         const previousDate = previous[sortBy];
@@ -157,6 +158,8 @@ export class InMemoryConventionQueries implements ConventionQueries {
           logger,
         }),
       );
+
+    return limit ? conventions.slice(0, limit) : conventions;
   }
 
   public async getPaginatedConventions({

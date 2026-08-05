@@ -253,6 +253,7 @@ export class PgConventionQueries implements ConventionQueries {
   public async getConventions({
     filters,
     sortBy,
+    limit,
   }: GetConventionsParams): Promise<ConventionDto[]> {
     const conventionsSortByDateToDatabaseConventionsOrderBy: Record<
       GetConventionsSortBy,
@@ -266,12 +267,12 @@ export class PgConventionQueries implements ConventionQueries {
       createConventionQueryBuilder(this.transaction, false),
       addFiltersToBuilder(filters),
       (builder) =>
-        builder
-          .orderBy(
-            `conventions.${conventionsSortByDateToDatabaseConventionsOrderBy[sortBy]}`,
-            "desc",
-          )
-          .execute(),
+        builder.orderBy(
+          `conventions.${conventionsSortByDateToDatabaseConventionsOrderBy[sortBy]}`,
+          "desc",
+        ),
+      (builder) => (limit ? builder.limit(limit) : builder),
+      (builder) => builder.execute(),
       andThen(validateConventionResults),
     );
   }
