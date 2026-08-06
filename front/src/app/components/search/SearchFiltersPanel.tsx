@@ -151,12 +151,12 @@ export const SearchFiltersPanel = ({
           className={fr.cx("fr-mb-2w")}
           label={appellationInputLabel}
           hintText={appellationHintText}
-          onAppellationSelected={(appellationMatch) => {
+          onAppellationSelected={(appellation) => {
             clearErrors("appellations");
             onSearchFormSubmit({
               ...formValues,
-              appellations: [appellationMatch.appellation],
-              appellationCodes: [appellationMatch.appellation.appellationCode],
+              appellations: [appellation],
+              appellationCodes: [appellation.appellationCode],
             });
           }}
           onAppellationClear={clearAppellations}
@@ -168,10 +168,7 @@ export const SearchFiltersPanel = ({
             defaultValue: formValues.appellations?.[0]
               ? {
                   label: formValues.appellations[0].appellationLabel,
-                  value: {
-                    appellation: formValues.appellations[0],
-                    matchRanges: [],
-                  },
+                  value: formValues.appellations[0],
                 }
               : undefined,
           }}

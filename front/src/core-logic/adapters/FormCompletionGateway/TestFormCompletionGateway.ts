@@ -1,6 +1,6 @@
 import { BehaviorSubject, delay, type Observable, of, Subject } from "rxjs";
 import type {
-  AppellationMatchDto,
+  AppellationAndRomeDto,
   AppellationSearchInputParams,
   GetSiretInfo,
   RomeDto,
@@ -16,7 +16,7 @@ export class TestFormCompletionGateway implements FormCompletionGateway {
 
   public siretInfo$ = new Subject<GetSiretInfo>();
 
-  public appellationDtoMatching$ = new Subject<AppellationMatchDto[]>();
+  public appellationDtoMatching$ = new Subject<AppellationAndRomeDto[]>();
 
   readonly #romeDtos$: Subject<RomeDto[]>;
 
@@ -31,7 +31,7 @@ export class TestFormCompletionGateway implements FormCompletionGateway {
 
   public getAppellationDtoMatching$(
     _params: AppellationSearchInputParams,
-  ): Observable<AppellationMatchDto[]> {
+  ): Observable<AppellationAndRomeDto[]> {
     return this.appellationDtoMatching$;
   }
 

@@ -33,13 +33,10 @@ describe("AppellationSearch", () => {
       }),
       [
         {
-          appellation: {
-            appellationCode: "14704",
-            appellationLabel: "Éleveur / Éleveuse de lapins angoras",
-            romeCode: "A1409",
-            romeLabel: "Élevage",
-          },
-          matchRanges: [{ startIndexInclusive: 22, endIndexExclusive: 28 }],
+          appellationCode: "14704",
+          appellationLabel: "Éleveur / Éleveuse de lapins angoras",
+          romeCode: "A1409",
+          romeLabel: "Élevage",
         },
       ],
     );
@@ -52,13 +49,10 @@ describe("AppellationSearch", () => {
       }),
       [
         {
-          appellation: {
-            appellationCode: "14704",
-            appellationLabel: "Éleveur / Éleveuse de lapins angoras",
-            romeCode: "A1409",
-            romeLabel: "Élevage",
-          },
-          matchRanges: [{ startIndexInclusive: 22, endIndexExclusive: 25 }],
+          appellationCode: "14704",
+          appellationLabel: "Éleveur / Éleveuse de lapins angoras",
+          romeCode: "A1409",
+          romeLabel: "Élevage",
         },
       ],
     );
@@ -113,23 +107,16 @@ describe("AppellationSearch", () => {
         }),
         [
           {
-            appellation: {
-              romeCode: "M1607",
-              appellationCode: "19364",
-              appellationLabel: "Secrétaire",
-              romeLabel: "Secrétariat",
-            },
-            matchRanges: [{ startIndexInclusive: 0, endIndexExclusive: 6 }],
+            romeCode: "M1607",
+            appellationCode: "19364",
+            appellationLabel: "Secrétaire",
+            romeLabel: "Secrétariat",
           },
           {
-            appellation: {
-              romeCode: "M1607",
-              appellationCode: "19367",
-              appellationLabel:
-                "Secrétaire bureautique spécialisé / spécialisée",
-              romeLabel: "Secrétariat",
-            },
-            matchRanges: [{ startIndexInclusive: 0, endIndexExclusive: 6 }],
+            romeCode: "M1607",
+            appellationCode: "19367",
+            appellationLabel: "Secrétaire bureautique spécialisé / spécialisée",
+            romeLabel: "Secrétariat",
           },
         ],
       );
@@ -160,13 +147,10 @@ describe("AppellationSearch", () => {
         }),
         [
           {
-            appellation: {
-              romeCode: "M1607",
-              appellationCode: "19364",
-              appellationLabel: "Secrétaire",
-              romeLabel: "Secrétariat",
-            },
-            matchRanges: [{ startIndexInclusive: 0, endIndexExclusive: 6 }],
+            romeCode: "M1607",
+            appellationCode: "19364",
+            appellationLabel: "Secrétaire",
+            romeLabel: "Secrétariat",
           },
         ],
       );
@@ -190,13 +174,10 @@ describe("AppellationSearch", () => {
         }),
         [
           {
-            appellation: {
-              appellationCode: "14704",
-              appellationLabel: "Éleveur / Éleveuse de lapins angoras",
-              romeCode: "A1409",
-              romeLabel: "Élevage",
-            },
-            matchRanges: [{ startIndexInclusive: 22, endIndexExclusive: 28 }],
+            appellationCode: "14704",
+            appellationLabel: "Éleveur / Éleveuse de lapins angoras",
+            romeCode: "A1409",
+            romeLabel: "Élevage",
           },
         ],
       );

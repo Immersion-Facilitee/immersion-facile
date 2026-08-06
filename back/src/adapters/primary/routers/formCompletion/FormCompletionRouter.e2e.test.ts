@@ -34,18 +34,10 @@ describe("formCompletion Routes", () => {
       expectHttpResponseToEqual(response, {
         body: [
           {
-            appellation: {
-              appellationCode: "20714",
-              appellationLabel: "Vitrailliste",
-              romeCode: "B1602",
-              romeLabel: "Vitraillerie",
-            },
-            matchRanges: [
-              {
-                startIndexInclusive: 2,
-                endIndexExclusive: 7,
-              },
-            ],
+            appellationCode: "20714",
+            appellationLabel: "Vitrailliste",
+            romeCode: "B1602",
+            romeLabel: "Vitraillerie",
           },
         ],
         status: 200,
@@ -62,18 +54,10 @@ describe("formCompletion Routes", () => {
       expectHttpResponseToEqual(response, {
         body: [
           {
-            appellation: {
-              appellationCode: "20714",
-              appellationLabel: "Vitrailliste",
-              romeCode: "B1602",
-              romeLabel: "Vitraillerie",
-            },
-            matchRanges: [
-              {
-                startIndexInclusive: 2,
-                endIndexExclusive: 7,
-              },
-            ],
+            appellationCode: "20714",
+            appellationLabel: "Vitrailliste",
+            romeCode: "B1602",
+            romeLabel: "Vitraillerie",
           },
         ],
         status: 200,

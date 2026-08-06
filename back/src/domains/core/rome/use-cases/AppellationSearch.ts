@@ -1,10 +1,8 @@
 import {
   type AppellationAndRomeDto,
-  type AppellationMatchDto,
   appellationSearchInputParamsSchema,
   ROME_AND_APPELLATION_MIN_SEARCH_TEXT_LENGTH,
 } from "shared";
-import { findMatchRanges } from "../../../../utils/textSearch";
 import type { UnitOfWork } from "../../unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../useCaseBuilder";
 import type { AppellationsGateway } from "../ports/AppellationsGateway";
@@ -13,7 +11,7 @@ export type AppellationSearch = ReturnType<typeof makeAppellationSearch>;
 
 export const makeAppellationSearch = useCaseBuilder("AppellationSearch")
   .withInput(appellationSearchInputParamsSchema)
-  .withOutput<AppellationMatchDto[]>()
+  .withOutput<AppellationAndRomeDto[]>()
   .withDeps<{ appellationsGateway: AppellationsGateway }>()
   .build(
     async ({
@@ -28,21 +26,11 @@ export const makeAppellationSearch = useCaseBuilder("AppellationSearch")
             searchText,
             appellationsGateway,
             fetchAppellationsFromNaturalLanguage,
-          )
-            .then((diagorienteAppellations) =>
-              diagorienteAppellations.length > 0
-                ? diagorienteAppellations
-                : uow.romeRepository.searchAppellation(searchText),
-            )
-            .then((appellations) =>
-              appellations.map((appellation) => ({
-                appellation,
-                matchRanges: findMatchRanges(
-                  searchText,
-                  appellation.appellationLabel,
-                ),
-              })),
-            ),
+          ).then((diagorienteAppellations) =>
+            diagorienteAppellations.length > 0
+              ? diagorienteAppellations
+              : uow.romeRepository.searchAppellation(searchText),
+          ),
   );
 
 const naturalLanguageSearchAppellations = async (

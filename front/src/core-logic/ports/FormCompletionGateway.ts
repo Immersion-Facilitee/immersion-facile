@@ -1,6 +1,6 @@
 import type { Observable } from "rxjs";
 import type {
-  AppellationMatchDto,
+  AppellationAndRomeDto,
   AppellationSearchInputParams,
   GetSiretInfo,
   SiretDto,
@@ -12,5 +12,5 @@ export interface FormCompletionGateway {
   getSiretInfoIfNotAlreadySaved$(siret: SiretDto): Observable<GetSiretInfo>;
   getAppellationDtoMatching$(
     params: AppellationSearchInputParams,
-  ): Observable<AppellationMatchDto[]>;
+  ): Observable<AppellationAndRomeDto[]>;
 }

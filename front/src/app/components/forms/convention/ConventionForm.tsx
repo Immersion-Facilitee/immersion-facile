@@ -663,15 +663,11 @@ const ConventionFormContent = ({
       dispatch(
         appellationSlice.actions.selectSuggestionRequested({
           item: {
-            appellation: {
-              appellationCode:
-                defaultValues.immersionAppellation.appellationCode,
-              appellationLabel:
-                defaultValues.immersionAppellation.appellationLabel,
-              romeCode: defaultValues.immersionAppellation.romeCode,
-              romeLabel: defaultValues.immersionAppellation.romeLabel,
-            },
-            matchRanges: [],
+            appellationCode: defaultValues.immersionAppellation.appellationCode,
+            appellationLabel:
+              defaultValues.immersionAppellation.appellationLabel,
+            romeCode: defaultValues.immersionAppellation.romeCode,
+            romeLabel: defaultValues.immersionAppellation.romeLabel,
           },
           locator: "convention-profession",
         }),

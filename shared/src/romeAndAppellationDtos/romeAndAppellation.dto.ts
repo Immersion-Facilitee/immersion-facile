@@ -24,17 +24,7 @@ export type AppellationDto = {
 
 export type AppellationAndRomeDto = RomeDto & AppellationDto;
 
-export type MatchRangeDto = {
-  startIndexInclusive: number;
-  endIndexExclusive: number;
-};
-
-export type AppellationMatchDto = {
-  appellation: AppellationAndRomeDto;
-  matchRanges: MatchRangeDto[];
-};
-
-export type AppellationSearchResponse = AppellationMatchDto[];
+export type AppellationSearchResponse = AppellationAndRomeDto[];
 export type AppellationSearchInputParams = {
   searchText: SearchTextAlpha;
   fetchAppellationsFromNaturalLanguage?: true;

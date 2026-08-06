@@ -96,13 +96,10 @@ export const OffersSection = ({
                   dispatch(
                     appellationSlice.actions.selectSuggestionRequested({
                       item: {
-                        appellation: {
-                          appellationCode: offer.appellationCode,
-                          appellationLabel: offer.appellationLabel,
-                          romeCode: offer.romeCode,
-                          romeLabel: offer.romeLabel,
-                        },
-                        matchRanges: [],
+                        appellationCode: offer.appellationCode,
+                        appellationLabel: offer.appellationLabel,
+                        romeCode: offer.romeCode,
+                        romeLabel: offer.romeLabel,
                       },
                       locator: "form-establishment-offer-modal",
                     }),
