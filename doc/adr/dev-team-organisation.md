@@ -47,9 +47,10 @@
 
 - 2023-06-02 - Ce document ne peut être modifié qu'avec l'accord de l'équipe entière.
 - 2023-06-02 - Ajouter un membre de l'équipe se fait sous reserve d'un accord unanime.
-- 2023-06-02 - Conditions de départs
-  - le membre de l'équipe qui souhaite partir peut partir
-  - tout le monde sauf celui/celle qui doit partir décide de son départ
+- 2026-08-04 - Conditions de départs d'un développeur
+  - le développeur peut le décider lui-même
+  - l'ensemble des autres développeurs peuvent le décider
+  - le Product Manager d'Immersion Facilitée peut le décider
 
 ## Processus de décisions techniques de l'équipe (ADR)
 
