@@ -1,6 +1,6 @@
 import { from, type Observable } from "rxjs";
 import {
-  type AppellationMatchDto,
+  type AppellationAndRomeDto,
   type AppellationSearchInputParams,
   type FormCompletionRoutes,
   type GetSiretInfo,
@@ -24,7 +24,7 @@ export class HttpFormCompletionGateway implements FormCompletionGateway {
 
   public getAppellationDtoMatching$(
     params: AppellationSearchInputParams,
-  ): Observable<AppellationMatchDto[]> {
+  ): Observable<AppellationAndRomeDto[]> {
     return from(
       this.httpClient
         .appellation({

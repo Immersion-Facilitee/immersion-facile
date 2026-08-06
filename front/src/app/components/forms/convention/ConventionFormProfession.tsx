@@ -53,22 +53,16 @@ export const ConventionFormProfession = ({
             domElementIds.conventionImmersion.conventionSection
               .immersionAppellation,
         }}
-        onAppellationSelected={(appellationMatch) => {
-          setValue(
-            "immersionAppellation.romeCode",
-            appellationMatch.appellation.romeCode,
-          );
-          setValue(
-            "immersionAppellation.romeLabel",
-            appellationMatch.appellation.romeLabel,
-          );
+        onAppellationSelected={(appellation) => {
+          setValue("immersionAppellation.romeCode", appellation.romeCode);
+          setValue("immersionAppellation.romeLabel", appellation.romeLabel);
           setValue(
             "immersionAppellation.appellationCode",
-            appellationMatch.appellation.appellationCode,
+            appellation.appellationCode,
           );
           setValue(
             "immersionAppellation.appellationLabel",
-            appellationMatch.appellation.appellationLabel,
+            appellation.appellationLabel,
           );
         }}
         hintText={hintText}

@@ -7,7 +7,7 @@ import {
   Subject,
 } from "rxjs";
 import {
-  type AppellationMatchDto,
+  type AppellationAndRomeDto,
   type AppellationSearchInputParams,
   apiSirenNotAvailableSiret,
   apiSirenUnexpectedError,
@@ -43,66 +43,48 @@ export class SimulatedFormCompletionGateway implements FormCompletionGateway {
 
   public getAppellationDtoMatching$(
     params: AppellationSearchInputParams,
-  ): Observable<AppellationMatchDto[]> {
+  ): Observable<AppellationAndRomeDto[]> {
     return from(this.#getAppellationDtoMatching(params));
   }
 
   async #getAppellationDtoMatching(
     params: AppellationSearchInputParams,
-  ): Promise<AppellationMatchDto[]> {
+  ): Promise<AppellationAndRomeDto[]> {
     await sleep(700);
     if (params.searchText === "givemeanemptylistplease") return [];
     if (params.searchText === "givemeanerrorplease")
       throw new Error("418 I'm a teapot");
     return [
       {
-        appellation: {
-          appellationLabel:
-            "Agent(e) chargé(e) protection, sauvegarde patrimoine naturel",
-          romeCode: "A1204",
-          romeLabel: "Agent",
-          appellationCode: "11204",
-        },
-        matchRanges: [{ startIndexInclusive: 9, endIndexExclusive: 13 }],
+        appellationLabel:
+          "Agent(e) chargé(e) protection, sauvegarde patrimoine naturel",
+        romeCode: "A1204",
+        romeLabel: "Agent",
+        appellationCode: "11204",
       },
       {
-        appellation: {
-          romeCode: "A1111",
-          appellationCode: "11111",
-          romeLabel: "Boulangerie",
-          appellationLabel: "Boulanger - boulangère",
-        },
-        matchRanges: [
-          { startIndexInclusive: 0, endIndexExclusive: 3 },
-          { startIndexInclusive: 5, endIndexExclusive: 8 },
-        ],
+        romeCode: "A1111",
+        appellationCode: "11111",
+        romeLabel: "Boulangerie",
+        appellationLabel: "Boulanger - boulangère",
       },
       {
-        appellation: {
-          romeCode: "B2222",
-          appellationCode: "22222",
-          romeLabel: "Boucherie",
-          appellationLabel: "Boucher - Bouchère",
-        },
-        matchRanges: [{ startIndexInclusive: 0, endIndexExclusive: 3 }],
+        romeCode: "B2222",
+        appellationCode: "22222",
+        romeLabel: "Boucherie",
+        appellationLabel: "Boucher - Bouchère",
       },
       {
-        appellation: {
-          romeCode: "C3333",
-          appellationCode: "33333",
-          romeLabel: "Menuiserie",
-          appellationLabel: "Menuisier - Menuisière",
-        },
-        matchRanges: [],
+        romeCode: "C3333",
+        appellationCode: "33333",
+        romeLabel: "Menuiserie",
+        appellationLabel: "Menuisier - Menuisière",
       },
       {
-        appellation: {
-          romeCode: "D4444",
-          appellationCode: "44444",
-          romeLabel: "Vente",
-          appellationLabel: "Veudeuse - Veudeur",
-        },
-        matchRanges: [{ startIndexInclusive: 0, endIndexExclusive: 7 }],
+        romeCode: "D4444",
+        appellationCode: "44444",
+        romeLabel: "Vente",
+        appellationLabel: "Veudeuse - Veudeur",
       },
     ];
   }

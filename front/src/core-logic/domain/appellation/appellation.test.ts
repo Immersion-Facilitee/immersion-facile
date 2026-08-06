@@ -1,6 +1,6 @@
 import {
+  type AppellationAndRomeDto,
   type AppellationDto,
-  type AppellationMatchDto,
   expectArraysToEqual,
   expectObjectsToMatch,
   expectToEqual,
@@ -36,18 +36,10 @@ describe("Appellation epic", () => {
       appellationSlice.actions.selectSuggestionRequested({
         locator,
         item: {
-          appellation: {
-            appellationCode: "12345",
-            appellationLabel: "Test Appellation",
-            romeCode: "A1234",
-            romeLabel: "Test Rome",
-          },
-          matchRanges: [
-            {
-              endIndexExclusive: 10,
-              startIndexInclusive: 0,
-            },
-          ],
+          appellationCode: "12345",
+          appellationLabel: "Test Appellation",
+          romeCode: "A1234",
+          romeLabel: "Test Rome",
         },
       }),
     );
@@ -60,80 +52,48 @@ describe("Appellation epic", () => {
 
   const multipleAppellationData: Record<
     MultipleAppellationAutocompleteLocator,
-    AutocompleteItem<AppellationMatchDto>
+    AutocompleteItem<AppellationAndRomeDto>
   > = {
     "multiple-appellation-0": {
       ...initialAutocompleteItem,
       value: {
-        appellation: {
-          appellationCode: "12345",
-          appellationLabel: "Test Appellation 1",
-          romeCode: "A1111",
-          romeLabel: "Test Rome 1",
-        },
-        matchRanges: [
-          {
-            endIndexExclusive: 10,
-            startIndexInclusive: 0,
-          },
-        ],
+        appellationCode: "12345",
+        appellationLabel: "Test Appellation 1",
+        romeCode: "A1111",
+        romeLabel: "Test Rome 1",
       },
     },
     "multiple-appellation-1": {
       ...initialAutocompleteItem,
       value: {
-        appellation: {
-          appellationCode: "12345",
-          appellationLabel: "Test Appellation 2",
-          romeCode: "A2222",
-          romeLabel: "Test Rome 2",
-        },
-        matchRanges: [
-          {
-            endIndexExclusive: 10,
-            startIndexInclusive: 0,
-          },
-        ],
+        appellationCode: "12345",
+        appellationLabel: "Test Appellation 2",
+        romeCode: "A2222",
+        romeLabel: "Test Rome 2",
       },
     },
     "multiple-appellation-2": {
       ...initialAutocompleteItem,
       value: {
-        appellation: {
-          appellationCode: "12345",
-          appellationLabel: "Test Appellation 3",
-          romeCode: "A3333",
-          romeLabel: "Test Rome 3",
-        },
-        matchRanges: [
-          {
-            endIndexExclusive: 10,
-            startIndexInclusive: 0,
-          },
-        ],
+        appellationCode: "12345",
+        appellationLabel: "Test Appellation 3",
+        romeCode: "A3333",
+        romeLabel: "Test Rome 3",
       },
     },
     "multiple-appellation-3": {
       ...initialAutocompleteItem,
       value: {
-        appellation: {
-          appellationCode: "12345",
-          appellationLabel: "Test Appellation 4",
-          romeCode: "A4444",
-          romeLabel: "Test Rome 4",
-        },
-        matchRanges: [
-          {
-            endIndexExclusive: 10,
-            startIndexInclusive: 0,
-          },
-        ],
+        appellationCode: "12345",
+        appellationLabel: "Test Appellation 4",
+        romeCode: "A4444",
+        romeLabel: "Test Rome 4",
       },
     },
   };
   const expectedData1: Record<
     MultipleAppellationAutocompleteLocator,
-    AutocompleteItem<AppellationMatchDto>
+    AutocompleteItem<AppellationAndRomeDto>
   > = {
     "multiple-appellation-0": multipleAppellationData["multiple-appellation-0"],
     "multiple-appellation-1": multipleAppellationData["multiple-appellation-2"],
@@ -141,7 +101,7 @@ describe("Appellation epic", () => {
   };
   const expectedData2: Record<
     MultipleAppellationAutocompleteLocator,
-    AutocompleteItem<AppellationMatchDto>
+    AutocompleteItem<AppellationAndRomeDto>
   > = {
     "multiple-appellation-0": multipleAppellationData["multiple-appellation-1"],
     "multiple-appellation-1": multipleAppellationData["multiple-appellation-2"],
@@ -149,7 +109,7 @@ describe("Appellation epic", () => {
   };
   const expectedData3: Record<
     MultipleAppellationAutocompleteLocator,
-    AutocompleteItem<AppellationMatchDto>
+    AutocompleteItem<AppellationAndRomeDto>
   > = {
     "multiple-appellation-0": multipleAppellationData["multiple-appellation-0"],
     "multiple-appellation-1": multipleAppellationData["multiple-appellation-1"],
@@ -217,20 +177,12 @@ describe("Appellation epic", () => {
 
   it("should trigger a new request to the gateway when query > threshold", () => {
     const query = "Test";
-    const expectedSuggestions: AppellationMatchDto[] = [
+    const expectedSuggestions: AppellationAndRomeDto[] = [
       {
-        appellation: {
-          appellationCode: "12345",
-          appellationLabel: "Test Appellation",
-          romeCode: "A1234",
-          romeLabel: "Test Rome",
-        },
-        matchRanges: [
-          {
-            endIndexExclusive: 10,
-            startIndexInclusive: 0,
-          },
-        ],
+        appellationCode: "12345",
+        appellationLabel: "Test Appellation",
+        romeCode: "A1234",
+        romeLabel: "Test Rome",
       },
     ];
     store.dispatch(
@@ -251,39 +203,24 @@ describe("Appellation epic", () => {
   });
 
   it("should keep selected suggestion in store when selecting another suggestion", () => {
-    const previouslySelectedSuggestion: AppellationMatchDto = {
-      appellation: {
-        appellationCode: "12345",
-        appellationLabel: "Test Appellation",
-        romeCode: "A1234",
-        romeLabel: "Test Rome",
-      },
-      matchRanges: [
-        {
-          endIndexExclusive: 10,
-          startIndexInclusive: 0,
-        },
-      ],
+    const previouslySelectedSuggestion: AppellationAndRomeDto = {
+      appellationCode: "12345",
+      appellationLabel: "Test Appellation",
+      romeCode: "A1234",
+      romeLabel: "Test Rome",
     };
+
     store.dispatch(
       appellationSlice.actions.selectSuggestionRequested({
         item: previouslySelectedSuggestion,
         locator,
       }),
     );
-    const newSelectedSuggestion: AppellationMatchDto = {
-      appellation: {
-        appellationCode: "12345",
-        appellationLabel: "Test Appellation",
-        romeCode: "A1234",
-        romeLabel: "Test Rome",
-      },
-      matchRanges: [
-        {
-          endIndexExclusive: 10,
-          startIndexInclusive: 0,
-        },
-      ],
+    const newSelectedSuggestion: AppellationAndRomeDto = {
+      appellationCode: "12345",
+      appellationLabel: "Test Appellation",
+      romeCode: "A1234",
+      romeLabel: "Test Rome",
     };
     store.dispatch(
       appellationSlice.actions.selectSuggestionRequested({
@@ -303,18 +240,10 @@ describe("Appellation epic", () => {
       appellationCode: "12345",
       appellationLabel: "Test Appellation",
     };
-    const expected: AppellationMatchDto = {
-      appellation: {
-        ...appellation,
-        romeCode: "A1234",
-        romeLabel: "Test Rome",
-      },
-      matchRanges: [
-        {
-          endIndexExclusive: 10,
-          startIndexInclusive: 0,
-        },
-      ],
+    const expected: AppellationAndRomeDto = {
+      ...appellation,
+      romeCode: "A1234",
+      romeLabel: "Test Rome",
     };
     store.dispatch(
       appellationSlice.actions.selectSuggestionRequested({
@@ -357,14 +286,14 @@ describe("Appellation epic", () => {
       expected,
     );
   };
-  const expectSuggestionsToBe = (expected: AppellationMatchDto[]) => {
+  const expectSuggestionsToBe = (expected: AppellationAndRomeDto[]) => {
     expectArraysToEqual(
       makeAppellationLocatorSelector(locator)(store.getState())?.suggestions ??
         [],
       expected,
     );
   };
-  const expectSelectedSuggestionToBe = (expected: AppellationMatchDto) => {
+  const expectSelectedSuggestionToBe = (expected: AppellationAndRomeDto) => {
     expectObjectsToMatch(
       makeAppellationLocatorSelector(locator)(store.getState())?.value,
       expected,

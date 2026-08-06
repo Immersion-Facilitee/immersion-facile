@@ -135,13 +135,13 @@ export const OfferModal = ({
               ? formValues.offers[selectedOfferIndex].appellationLabel
               : undefined
           }
-          onAppellationSelected={(appellationMatch) => {
+          onAppellationSelected={(appellation) => {
             setCurrentOffer({
               ...currentOffer,
-              appellationCode: appellationMatch.appellation.appellationCode,
-              appellationLabel: appellationMatch.appellation.appellationLabel,
-              romeCode: appellationMatch.appellation.romeCode,
-              romeLabel: appellationMatch.appellation.romeLabel,
+              appellationCode: appellation.appellationCode,
+              appellationLabel: appellation.appellationLabel,
+              romeCode: appellation.romeCode,
+              romeLabel: appellation.romeLabel,
             });
             setErrors([]);
           }}

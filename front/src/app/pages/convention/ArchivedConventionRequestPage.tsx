@@ -248,12 +248,10 @@ export const ArchivedConventionRequestPage = ({
                   <AppellationAutocomplete
                     locator="archived-convention-request"
                     label="Métier *"
-                    onAppellationSelected={(appellationMatch) => {
-                      setValue(
-                        "immersionAppellation",
-                        appellationMatch.appellation,
-                        { shouldValidate: true },
-                      );
+                    onAppellationSelected={(appellation) => {
+                      setValue("immersionAppellation", appellation, {
+                        shouldValidate: true,
+                      });
                     }}
                     onAppellationClear={() => {
                       setValue("immersionAppellation", undefined, {

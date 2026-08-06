@@ -303,10 +303,10 @@ export const SearchPage = ({
                     hintText={appellationHintText(
                       useNaturalLanguageForAppellations,
                     )}
-                    onAppellationSelected={(appellationMatch) => {
-                      setValue("appellations", [appellationMatch.appellation]);
+                    onAppellationSelected={(appellation) => {
+                      setValue("appellations", [appellation]);
                       setValue("appellationCodes", [
-                        appellationMatch.appellation.appellationCode,
+                        appellation.appellationCode,
                       ]);
                     }}
                     onAppellationClear={() => {

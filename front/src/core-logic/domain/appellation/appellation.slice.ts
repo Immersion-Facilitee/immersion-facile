@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { keys } from "ramda";
-import type { AppellationMatchDto } from "shared";
+import type { AppellationAndRomeDto } from "shared";
 import {
   type AutocompleteItem,
   type AutocompleteState,
@@ -20,7 +20,7 @@ export type AppellationAutocompleteLocator =
 
 const initialState: AutocompleteState<
   AppellationAutocompleteLocator,
-  AppellationMatchDto
+  AppellationAndRomeDto
 > = {
   data: {},
 };
@@ -71,7 +71,7 @@ export const appellationSlice = createSlice({
           },
           {} as Record<
             MultipleAppellationAutocompleteLocator,
-            AutocompleteItem<AppellationMatchDto>
+            AutocompleteItem<AppellationAndRomeDto>
           >,
         );
         const nonMultipleData = keys(state.data).reduce(
@@ -82,7 +82,7 @@ export const appellationSlice = createSlice({
             }
             return acc;
           },
-          {} as Record<string, AutocompleteItem<AppellationMatchDto>>,
+          {} as Record<string, AutocompleteItem<AppellationAndRomeDto>>,
         );
 
         return {
@@ -151,7 +151,7 @@ export const appellationSlice = createSlice({
       action: PayloadActionWithLocator<
         AppellationAutocompleteLocator,
         {
-          suggestions: AppellationMatchDto[];
+          suggestions: AppellationAndRomeDto[];
         }
       >,
     ) => {
@@ -190,7 +190,7 @@ export const appellationSlice = createSlice({
       action: PayloadActionWithLocator<
         AppellationAutocompleteLocator,
         {
-          item: AppellationMatchDto;
+          item: AppellationAndRomeDto;
         }
       >,
     ) => {

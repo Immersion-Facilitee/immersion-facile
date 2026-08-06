@@ -11,10 +11,8 @@ import type {
   AppellationAndRomeDto,
   AppellationCode,
   AppellationLabel,
-  AppellationMatchDto,
   AppellationSearchInputParams,
   AppellationSearchResponse,
-  MatchRangeDto,
   RomeCode,
   RomeLabel,
 } from "./romeAndAppellation.dto";
@@ -57,33 +55,8 @@ export const appellationAndRomeDtoSchema: ZodSchemaWithInputMatchingOutput<Appel
     { error: "Ce champ est obligatoire. Veuillez choisir un métier." },
   );
 
-const matchRangeSchema: ZodSchemaWithInputMatchingOutput<MatchRangeDto> =
-  z.object({
-    startIndexInclusive: z
-      .number({
-        error: "Début d'intervalle obligatoire",
-      })
-      .min(0)
-      .int(),
-    endIndexExclusive: z
-      .number({
-        error: "Fin d'intervalle obligatoire",
-      })
-      .min(0)
-      .int(),
-  });
-
-export const appellationMatchSchema: ZodSchemaWithInputMatchingOutput<AppellationMatchDto> =
-  z.object(
-    {
-      appellation: appellationAndRomeDtoSchema,
-      matchRanges: z.array(matchRangeSchema),
-    },
-    { error: "Veuillez saisir un métier" },
-  );
-
 export const appellationSearchResponseSchema: ZodSchemaWithInputMatchingOutput<AppellationSearchResponse> =
-  z.array(appellationMatchSchema, {
+  z.array(appellationAndRomeDtoSchema, {
     error: "Veuillez saisir un métier",
   });
 

@@ -4,7 +4,7 @@ import {
   type RSAutocompleteComponentProps,
 } from "react-design-system";
 import { useDispatch } from "react-redux";
-import type { AppellationMatchDto } from "shared";
+import type { AppellationAndRomeDto } from "shared";
 import { getAutocompleteValue } from "src/app/components/forms/autocomplete/autocomplete.utils";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { makeAppellationLocatorSelector } from "src/core-logic/domain/appellation/appellation.selectors";
@@ -15,7 +15,7 @@ import {
 
 export type AppellationAutocompleteProps = RSAutocompleteComponentProps<
   "appellation",
-  AppellationMatchDto,
+  AppellationAndRomeDto,
   AppellationAutocompleteLocator
 >;
 
@@ -28,7 +28,7 @@ const useAppellationAutocomplete = (
   const options = (appellationLocatorSelector?.suggestions ?? []).map(
     (suggestion) => ({
       value: suggestion,
-      label: suggestion.appellation.appellationLabel,
+      label: suggestion.appellationLabel,
     }),
   );
   const value = appellationLocatorSelector?.value;
@@ -66,7 +66,7 @@ export const AppellationAutocomplete = ({
         placeholder:
           props.selectProps?.placeholder ?? "Ex : Boulanger, styliste, etc.",
         value: getAutocompleteValue(
-          (v) => v.appellation.appellationLabel,
+          (value) => value.appellationLabel,
           value,
           defaultValue,
           searchTerm,
