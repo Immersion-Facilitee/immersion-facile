@@ -35,8 +35,8 @@ export const AgencyTasks = ({
   const isLoadingConventionsToManage = useAppSelector(
     connectedUserConventionsToManageSelectors.isLoading,
   );
-  const isLoadingConventionsWithAssessmentIssue = useAppSelector(
-    connectedUserConventionsToManageSelectors.isLoadingConventionsWithAssessmentIssue,
+  const isLoadingConventionsWithUnfinalizedAssessment = useAppSelector(
+    connectedUserConventionsToManageSelectors.isLoadingConventionsWithUnfinalizedAssessment,
   );
   const isLoadingConventionsWithBroadcastError = useAppSelector(
     conventionsWithBroadcastFeedbackSelectors.isLoading,
@@ -44,8 +44,8 @@ export const AgencyTasks = ({
   const conventionsToManagePagination = useAppSelector(
     connectedUserConventionsToManageSelectors.pagination,
   );
-  const conventionsWithAssessmentIssuePagination = useAppSelector(
-    connectedUserConventionsToManageSelectors.conventionsWithAssessmentIssuePagination,
+  const conventionsWithUnfinalizedAssessmentPagination = useAppSelector(
+    connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentPagination,
   );
   const conventionsWithErroredBroadcastFeedbackPagination = useAppSelector(
     conventionsWithBroadcastFeedbackSelectors.erroredBroadcastConventionsWithPagination,
@@ -82,14 +82,14 @@ export const AgencyTasks = ({
         ),
       );
       dispatch(
-        connectedUserConventionsToManageSlice.actions.getConventionsWithAssessmentIssueRequested(
+        connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
           {
-            pagination: {
+            filters: {
               page: 1,
               perPage: NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
             },
             jwt: connectedUserJwt,
-            feedbackTopic: "conventions-with-assessment-issue",
+            feedbackTopic: "conventions-with-unfinalized-assessment",
           },
         ),
       );
@@ -116,10 +116,10 @@ export const AgencyTasks = ({
       className={fr.cx("fr-mt-2w", "fr-mb-4w")}
     >
       {(isLoadingConventionsToManage ||
-        isLoadingConventionsWithAssessmentIssue ||
+        isLoadingConventionsWithUnfinalizedAssessment ||
         isLoadingConventionsWithBroadcastError) && <Loader />}
       {conventionsToManagePagination?.totalRecords === 0 &&
-        conventionsWithAssessmentIssuePagination?.totalRecords === 0 &&
+        conventionsWithUnfinalizedAssessmentPagination?.totalRecords === 0 &&
         conventionsWithErroredBroadcastFeedbackPagination.pagination
           .totalRecords === 0 && (
           <p>
@@ -150,11 +150,11 @@ export const AgencyTasks = ({
               />
             </div>
           )}
-        {conventionsWithAssessmentIssuePagination?.totalRecords !== undefined &&
-          conventionsWithAssessmentIssuePagination.totalRecords > 0 && (
+        {conventionsWithUnfinalizedAssessmentPagination?.totalRecords !== undefined &&
+          conventionsWithUnfinalizedAssessmentPagination.totalRecords > 0 && (
             <div className={fr.cx("fr-col-12", "fr-col-md-4")}>
               <TaskSummary
-                count={conventionsWithAssessmentIssuePagination.totalRecords}
+                count={conventionsWithUnfinalizedAssessmentPagination.totalRecords}
                 countLabel="Relances bilans"
                 icon="fr-icon-file-text-line"
                 buttonProps={{

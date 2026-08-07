@@ -71,7 +71,7 @@ const topics = [
   "convention-form",
   "convention-template",
   "convention-status-dashboard",
-  "conventions-with-assessment-issue",
+  "conventions-with-unfinalized-assessment",
   "conventions-with-broadcast-feedback",
   "dashboard-agency-register-user",
   "dashboard-discussion-status-updated",
@@ -1022,11 +1022,11 @@ export const feedbacks: Record<
         "Une erreur est survenue lors de la récupération des conventions",
     },
   },
-  "conventions-with-assessment-issue": {
+  "conventions-with-unfinalized-assessment": {
     "fetch.error": {
       action:
         connectedUserConventionsToManageSlice.actions
-          .getConventionsWithAssessmentIssueFailed,
+          .getConventionsWithUnfinalizedAssessmentFailed,
       title:
         "Problème lors de la récupération des bilans à compléter ou à signer",
       message:

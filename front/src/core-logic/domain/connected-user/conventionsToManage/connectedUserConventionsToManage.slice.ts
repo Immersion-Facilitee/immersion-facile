@@ -1,34 +1,49 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type {
-  AgencyUserConventionListDto,
-  ConventionWithUnfinalizedAssessment,
-  DataWithPagination,
-  FlatGetConventionsForAgencyUserParams,
-  Pagination,
-  PaginationQueryParams,
+import {
+  type AgencyUserConventionListDto,
+  type ConventionWithUnfinalizedAssessment,
+  type DataWithPagination,
+  type FlatGetConventionsForAgencyUserParams,
+  type FlatGetConventionsWithUnfinalizedAssessmentParams,
+  NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
+  type Pagination,
 } from "shared";
 import type {
   PayloadActionWithFeedbackTopic,
   PayloadActionWithFeedbackTopicError,
 } from "src/core-logic/domain/feedback/feedback.slice";
 
+export type FetchConventionsWithUnfinalizedAssessmentRequestedPayload = {
+  jwt: string;
+  filters: FlatGetConventionsWithUnfinalizedAssessmentParams;
+};
+
 type ConnectedUserConventionsToManageState = {
   conventions: AgencyUserConventionListDto[];
   isLoading: boolean;
   pagination: Pagination | undefined;
-  conventionsWithAssessmentIssue: ConventionWithUnfinalizedAssessment[];
-  conventionsWithAssessmentIssuePagination: Pagination | undefined;
-  isLoadingConventionsWithAssessmentIssue: boolean;
+  conventionsWithUnfinalizedAssessment: ConventionWithUnfinalizedAssessment[];
+  conventionsWithUnfinalizedAssessmentPagination: Pagination | undefined;
+  conventionsWithUnfinalizedAssessmentFilters: FlatGetConventionsWithUnfinalizedAssessmentParams;
+  isLoadingConventionsWithUnfinalizedAssessment: boolean;
 };
+
+export const initialConventionsWithUnfinalizedAssessmentFilters: FlatGetConventionsWithUnfinalizedAssessmentParams =
+  {
+    page: 1,
+    perPage: NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
+  };
 
 export const connectedUserConventionsToManageInitialState: ConnectedUserConventionsToManageState =
   {
     conventions: [],
     isLoading: false,
     pagination: undefined,
-    conventionsWithAssessmentIssue: [],
-    conventionsWithAssessmentIssuePagination: undefined,
-    isLoadingConventionsWithAssessmentIssue: false,
+    conventionsWithUnfinalizedAssessment: [],
+    conventionsWithUnfinalizedAssessmentPagination: undefined,
+    conventionsWithUnfinalizedAssessmentFilters:
+      initialConventionsWithUnfinalizedAssessmentFilters,
+    isLoadingConventionsWithUnfinalizedAssessment: false,
   };
 
 export const connectedUserConventionsToManageSlice = createSlice({
@@ -60,31 +75,35 @@ export const connectedUserConventionsToManageSlice = createSlice({
     ) => {
       state.isLoading = false;
     },
-    getConventionsWithAssessmentIssueRequested: (
+    getConventionsWithUnfinalizedAssessmentRequested: (
       state,
-      _action: PayloadActionWithFeedbackTopic<{
-        pagination: Required<PaginationQueryParams>;
-        jwt: string;
-      }>,
+      action: PayloadActionWithFeedbackTopic<FetchConventionsWithUnfinalizedAssessmentRequestedPayload>,
     ) => {
-      state.isLoadingConventionsWithAssessmentIssue = true;
+      state.isLoadingConventionsWithUnfinalizedAssessment = true;
+      state.conventionsWithUnfinalizedAssessmentFilters = action.payload.filters;
     },
-    getConventionsWithAssessmentIssueSucceeded: (
+    getConventionsWithUnfinalizedAssessmentSucceeded: (
       state,
       action: PayloadActionWithFeedbackTopic<
         DataWithPagination<ConventionWithUnfinalizedAssessment>
       >,
     ) => {
-      state.isLoadingConventionsWithAssessmentIssue = false;
-      state.conventionsWithAssessmentIssue = action.payload.data;
-      state.conventionsWithAssessmentIssuePagination =
+      state.isLoadingConventionsWithUnfinalizedAssessment = false;
+      state.conventionsWithUnfinalizedAssessment = action.payload.data;
+      state.conventionsWithUnfinalizedAssessmentPagination =
         action.payload.pagination;
     },
-    getConventionsWithAssessmentIssueFailed: (
+    getConventionsWithUnfinalizedAssessmentFailed: (
       state,
       _action: PayloadActionWithFeedbackTopicError,
     ) => {
-      state.isLoadingConventionsWithAssessmentIssue = false;
+      state.isLoadingConventionsWithUnfinalizedAssessment = false;
+    },
+    clearConventionsWithUnfinalizedAssessment: (state) => {
+      state.conventionsWithUnfinalizedAssessment = [];
+      state.conventionsWithUnfinalizedAssessmentPagination = undefined;
+      state.conventionsWithUnfinalizedAssessmentFilters =
+        initialConventionsWithUnfinalizedAssessmentFilters;
     },
   },
 });
