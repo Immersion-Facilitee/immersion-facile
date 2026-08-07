@@ -4,8 +4,9 @@ import {
   type ConventionWithUnfinalizedAssessment,
   type DataWithPagination,
   errors,
+  type GetConventionsWithUnfinalizedAssessmentParams,
+  getConventionsWithUnfinalizedAssessmentParamsSchema,
   getPaginationParamsForWeb,
-  paginationRequiredQueryParamsSchema,
 } from "shared";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
@@ -17,7 +18,9 @@ export type GetConventionsWithUnfinalizedAssessment = ReturnType<
 export const makeGetConventionsWithUnfinalizedAssessment = useCaseBuilder(
   "GetConventionsWithUnfinalizedAssessment",
 )
-  .withInput(paginationRequiredQueryParamsSchema)
+  .withInput<GetConventionsWithUnfinalizedAssessmentParams>(
+    getConventionsWithUnfinalizedAssessmentParamsSchema,
+  )
   .withOutput<DataWithPagination<ConventionWithUnfinalizedAssessment>>()
   .withCurrentUser<ConnectedUser>()
   .withDeps<{ timeGateway: TimeGateway }>()
@@ -43,8 +46,9 @@ export const makeGetConventionsWithUnfinalizedAssessment = useCaseBuilder(
     return uow.conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser(
       {
         userAgencyIds,
-        pagination: getPaginationParamsForWeb(inputParams),
+        pagination: getPaginationParamsForWeb(inputParams.pagination),
         now: deps.timeGateway.now(),
+        filters: inputParams.filters,
       },
     );
   });
