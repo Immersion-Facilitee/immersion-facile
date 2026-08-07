@@ -12,6 +12,7 @@ import {
   conventionLastRemindersSchema,
   type Email,
   errors,
+  executeInSequence,
   isTruthy,
   makeEmptyLastReminders,
   type WithBannedEstablishmentInformations,
@@ -78,22 +79,23 @@ export const conventionDtosToConventionReadDtos = async (
   );
 
   const refersToAgenciesWithRights = (
-    await Promise.all(
-      refersToAgencyIds.map((id) => uow.agencyRepository.getById(id)),
+    await executeInSequence(refersToAgencyIds, (id) =>
+      uow.agencyRepository.getById(id),
     )
   ).filter(isTruthy);
 
+  const refersToAgenciesWithRightsById = Object.fromEntries(
+    refersToAgenciesWithRights.map((agency) => [agency.id, agency]),
+  );
+
   const allAgenciesWithRightsById = {
     ...agencyWithRightsById,
-    ...Object.fromEntries(
-      refersToAgenciesWithRights.map((agency) => [agency.id, agency]),
-    ),
+    ...refersToAgenciesWithRightsById,
   };
 
-  const agencyDtos = await Promise.all(
-    Object.values(allAgenciesWithRightsById).map((agency) =>
-      agencyWithRightToAgencyDto(uow, agency),
-    ),
+  const agencyDtos = await executeInSequence(
+    Object.values(allAgenciesWithRightsById),
+    (agency) => agencyWithRightToAgencyDto(uow, agency),
   );
   const agencyDtoById = Object.fromEntries(
     agencyDtos.map((agency) => [agency.id, agency]),
@@ -101,29 +103,22 @@ export const conventionDtosToConventionReadDtos = async (
 
   const uniqueSirets = uniq(conventions.map(({ siret }) => siret));
 
-  const [assessments, bannedBySiretEntries, lastRemindersList] =
-    await Promise.all([
-      uow.assessmentRepository.getByConventionIds(
-        conventions.map(({ id }) => id),
-      ),
-      Promise.all(
-        uniqueSirets.map(async (siret) => {
-          const banned =
-            await uow.bannedEstablishmentRepository.getBannedEstablishmentBySiret(
-              siret,
-            );
-          return [siret, banned] as const;
-        }),
-      ),
-      Promise.all(
-        conventions.map((convention) =>
-          getConventionLastRemindersFields(
-            convention,
-            uow.notificationRepository,
-          ),
-        ),
-      ),
-    ]);
+  const assessments = await uow.assessmentRepository.getByConventionIds(
+    conventions.map(({ id }) => id),
+  );
+  const bannedBySiretEntries = await executeInSequence(
+    uniqueSirets,
+    async (siret) => {
+      const banned =
+        await uow.bannedEstablishmentRepository.getBannedEstablishmentBySiret(
+          siret,
+        );
+      return [siret, banned] as const;
+    },
+  );
+  const lastRemindersList = await executeInSequence(conventions, (convention) =>
+    getConventionLastRemindersFields(convention, uow.notificationRepository),
+  );
 
   const bannedBySiret = bannedBySiretEntries.reduce<
     Record<string, BannedEstablishment | undefined>

@@ -396,7 +396,7 @@ export class PgAgencyRepository implements AgencyRepository {
   }
 
   public async getAgencyIdsByFilters(
-    filters: GetAgencyIdsFilters = {},
+    filters: GetAgencyIdsFilters,
   ): Promise<AgencyId[]> {
     const { kinds, status, ...rest } = filters;
     rest satisfies Record<string, never>;

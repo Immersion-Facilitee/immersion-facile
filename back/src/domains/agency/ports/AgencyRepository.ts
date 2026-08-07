@@ -82,7 +82,7 @@ export interface AgencyRepository {
     filters?: GetAgenciesFilters;
     pagination?: PaginationQueryParams;
   }): Promise<DataWithPagination<AgencyWithUsersRights>>;
-  getAgencyIdsByFilters(filters?: GetAgencyIdsFilters): Promise<AgencyId[]>;
+  getAgencyIdsByFilters(filters: GetAgencyIdsFilters): Promise<AgencyId[]>;
 
   getAgenciesRelatedToAgency(id: AgencyId): Promise<AgencyWithUsersRights[]>;
   getAllAgenciesWithUsersToReview(): Promise<AgencyWithNumberOfUsersToReview[]>;
