@@ -25,6 +25,7 @@ import {
   type EditConventionWithFinalStatusRequestDto,
   type FindSimilarConventionsParams,
   type FlatGetConventionsForAgencyUserParams,
+  type FlatGetConventionsWithUnfinalizedAssessmentParams,
   type MarkPartnersErroredConventionAsHandledRequest,
   makeEmptyLastReminders,
   type PaginationQueryParams,
@@ -314,7 +315,7 @@ export class InMemoryConventionGateway implements ConventionGateway {
   }
 
   public getConventionsWithUnfinalizedAssessment$(
-    _params: Required<PaginationQueryParams>,
+    _params: FlatGetConventionsWithUnfinalizedAssessmentParams,
     _jwt: string,
   ): Observable<DataWithPagination<ConventionWithUnfinalizedAssessment>> {
     return this.getConventionsWithUnfinalizedAssessmentResult$;

@@ -26,8 +26,8 @@ import type {
   FindSimilarConventionsParams,
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
+  FlatGetConventionsWithUnfinalizedAssessmentParams,
   MarkPartnersErroredConventionAsHandledRequest,
-  PaginationQueryParams,
   RenewConventionParams,
   SaveConventionDraftDto,
   SendSignatureLinkRequestDto,
@@ -553,7 +553,7 @@ export class HttpConventionGateway implements ConventionGateway {
   }
 
   public getConventionsWithUnfinalizedAssessment$(
-    params: Required<PaginationQueryParams>,
+    params: FlatGetConventionsWithUnfinalizedAssessmentParams,
     jwt: string,
   ): Observable<DataWithPagination<ConventionWithUnfinalizedAssessment>> {
     return from(
