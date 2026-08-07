@@ -707,6 +707,123 @@ describe("authenticatedConventionRoutes", () => {
         },
       });
     });
+
+    it("200 - filters by assessmentCompletionStatus to-complete", async () => {
+      const response = await httpClient.getConventionsWithUnfinalizedAssessment(
+        {
+          headers: {
+            authorization: generateConnectedUserJwt({
+              userId: validator.id,
+              version: currentJwtVersions.connectedUser,
+            }),
+          },
+          queryParams: {
+            page: 1,
+            perPage: 10,
+            assessmentCompletionStatus: "to-complete",
+          },
+        },
+      );
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          data: [
+            {
+              id: convention1.id,
+              dateEnd: convention1.dateEnd,
+              beneficiary: {
+                firstname: convention1.signatories.beneficiary.firstName,
+                lastname: convention1.signatories.beneficiary.lastName,
+              },
+              assessment: null,
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 1,
+          },
+        },
+      });
+    });
+
+    it("200 - filters by assessmentCompletionStatus to-sign", async () => {
+      const response = await httpClient.getConventionsWithUnfinalizedAssessment(
+        {
+          headers: {
+            authorization: generateConnectedUserJwt({
+              userId: validator.id,
+              version: currentJwtVersions.connectedUser,
+            }),
+          },
+          queryParams: {
+            page: 1,
+            perPage: 10,
+            assessmentCompletionStatus: "to-sign",
+          },
+        },
+      );
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          data: [
+            {
+              id: convention2.id,
+              dateEnd: convention2.dateEnd,
+              beneficiary: {
+                firstname: convention2.signatories.beneficiary.firstName,
+                lastname: convention2.signatories.beneficiary.lastName,
+              },
+              assessment: {
+                status: "COMPLETED",
+                endedWithAJob: false,
+                signedAt: null,
+                createdAt: toSignAssessmentCreatedAt,
+              },
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 1,
+          },
+        },
+      });
+    });
+
+    it("400 - rejects invalid assessmentCompletionStatus", async () => {
+      const response = await httpClient.getConventionsWithUnfinalizedAssessment(
+        {
+          headers: {
+            authorization: generateConnectedUserJwt({
+              userId: validator.id,
+              version: currentJwtVersions.connectedUser,
+            }),
+          },
+          queryParams: {
+            page: 1,
+            perPage: 10,
+            assessmentCompletionStatus: "finalized",
+          } as any,
+        },
+      );
+
+      expectHttpResponseToEqual(response, {
+        status: 400,
+        body: {
+          issues: [
+            'assessmentCompletionStatus : Invalid option: expected one of "to-complete"|"to-sign"',
+          ],
+          message:
+            "Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: GET /conventions-with-unfinalized-assessment",
+          status: 400,
+        },
+      });
+    });
   });
 
   describe("getConventionsWithErroredBroadcastFeedbackForAgencyUser", () => {

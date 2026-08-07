@@ -3,6 +3,7 @@ import {
   authenticatedConventionRoutes,
   flatParamsToGetConventionsForAgencyUserParams,
   flatParamsToGetConventionsWithErroredBroadcastFeedbackParams,
+  flatParamsToGetConventionsWithUnfinalizedAssessmentParams,
   unauthenticatedConventionRoutes,
 } from "shared";
 import { createExpressSharedRouter } from "shared-routes/express";
@@ -100,7 +101,7 @@ export const createConventionRouter = (deps: AppDependencies) => {
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.getConventionsWithUnfinalizedAssessment.execute(
-          req.query,
+          flatParamsToGetConventionsWithUnfinalizedAssessmentParams(req.query),
           getGenericAuthOrThrow(req.payloads?.currentUser),
         ),
       ),
