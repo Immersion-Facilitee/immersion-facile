@@ -6,7 +6,11 @@ import {
   expectToEqual,
 } from "shared";
 import { connectedUserConventionsToManageSelectors } from "src/core-logic/domain/connected-user/conventionsToManage/connectedUserConventionsToManage.selectors";
-import { connectedUserConventionsToManageSlice } from "src/core-logic/domain/connected-user/conventionsToManage/connectedUserConventionsToManage.slice";
+import {
+  connectedUserConventionsToManageInitialState,
+  connectedUserConventionsToManageSlice,
+  initialConventionsWithUnfinalizedAssessmentFilters,
+} from "src/core-logic/domain/connected-user/conventionsToManage/connectedUserConventionsToManage.slice";
 import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
 import {
   createTestStore,
@@ -67,12 +71,10 @@ describe("ConnectedUserConventionsToManage", () => {
     };
     dependencies.conventionGateway.getConventionsForUserResult$.next(result);
     expectToEqual(store.getState().connectedUserConventionsToManage, {
+      ...connectedUserConventionsToManageInitialState,
       isLoading: false,
       conventions: result.data,
       pagination: result.pagination,
-      conventionsWithAssessmentIssue: [],
-      conventionsWithAssessmentIssuePagination: undefined,
-      isLoadingConventionsWithAssessmentIssue: false,
     });
   });
 
@@ -111,30 +113,48 @@ describe("ConnectedUserConventionsToManage", () => {
     });
   });
 
-  describe("getConventionsWithAssessmentIssueRequested", () => {
-    it("get the conventions with assessment issue", () => {
+  describe("getConventionsWithUnfinalizedAssessmentRequested", () => {
+    it("get the conventions with unfinalized assessment without assessmentCompletionStatus filter", () => {
       expectToEqual(
-        connectedUserConventionsToManageSelectors.isLoadingConventionsWithAssessmentIssue(
+        connectedUserConventionsToManageSelectors.isLoadingConventionsWithUnfinalizedAssessment(
           store.getState(),
         ),
         false,
       );
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        initialConventionsWithUnfinalizedAssessmentFilters,
+      );
 
       store.dispatch(
-        connectedUserConventionsToManageSlice.actions.getConventionsWithAssessmentIssueRequested(
+        connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
           {
-            pagination: { page: 1, perPage: 10 },
+            filters: {
+              page: 1,
+              perPage: 10,
+            },
             jwt: "my-jwt",
-            feedbackTopic: "conventions-with-assessment-issue",
+            feedbackTopic: "conventions-with-unfinalized-assessment",
           },
         ),
       );
 
       expectToEqual(
-        connectedUserConventionsToManageSelectors.isLoadingConventionsWithAssessmentIssue(
+        connectedUserConventionsToManageSelectors.isLoadingConventionsWithUnfinalizedAssessment(
           store.getState(),
         ),
         true,
+      );
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        {
+          page: 1,
+          perPage: 10,
+        },
       );
 
       const convention = new ConventionDtoBuilder().build();
@@ -164,65 +184,210 @@ describe("ConnectedUserConventionsToManage", () => {
       );
 
       expectToEqual(
-        connectedUserConventionsToManageSelectors.conventionsWithAssessmentIssue(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessment(
           store.getState(),
         ),
         result.data,
       );
       expectToEqual(
-        connectedUserConventionsToManageSelectors.conventionsWithAssessmentIssuePagination(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentPagination(
           store.getState(),
         ),
         result.pagination,
       );
       expectToEqual(
-        connectedUserConventionsToManageSelectors.isLoadingConventionsWithAssessmentIssue(
+        connectedUserConventionsToManageSelectors.isLoadingConventionsWithUnfinalizedAssessment(
           store.getState(),
         ),
         false,
       );
     });
 
-    it("failed to get the conventions with assessment issue", () => {
+    it("stores assessmentCompletionStatus filter on request and keeps it after success", () => {
+      store.dispatch(
+        connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
+          {
+            filters: {
+              page: 1,
+              perPage: 10,
+              assessmentCompletionStatus: "to-sign",
+            },
+            jwt: "my-jwt",
+            feedbackTopic: "conventions-with-unfinalized-assessment",
+          },
+        ),
+      );
+
       expectToEqual(
-        connectedUserConventionsToManageSelectors.isLoadingConventionsWithAssessmentIssue(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        {
+          page: 1,
+          perPage: 10,
+          assessmentCompletionStatus: "to-sign",
+        },
+      );
+
+      const convention = new ConventionDtoBuilder().build();
+      const result: DataWithPagination<ConventionWithUnfinalizedAssessment> = {
+        data: [
+          {
+            id: convention.id,
+            dateEnd: convention.dateEnd,
+            beneficiary: {
+              firstname: convention.signatories.beneficiary.firstName,
+              lastname: convention.signatories.beneficiary.lastName,
+            },
+            assessment: null,
+          },
+        ],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+        },
+      };
+      dependencies.conventionGateway.getConventionsWithUnfinalizedAssessmentResult$.next(
+        result,
+      );
+
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        {
+          page: 1,
+          perPage: 10,
+          assessmentCompletionStatus: "to-sign",
+        },
+      );
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessment(
+          store.getState(),
+        ),
+        result.data,
+      );
+    });
+
+    it("failed to get the conventions with unfinalized assessment", () => {
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.isLoadingConventionsWithUnfinalizedAssessment(
           store.getState(),
         ),
         false,
       );
       store.dispatch(
-        connectedUserConventionsToManageSlice.actions.getConventionsWithAssessmentIssueRequested(
+        connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
           {
-            pagination: { page: 1, perPage: 10 },
+            filters: {
+              page: 1,
+              perPage: 10,
+            },
             jwt: "my-jwt",
-            feedbackTopic: "conventions-with-assessment-issue",
+            feedbackTopic: "conventions-with-unfinalized-assessment",
           },
         ),
       );
       expectToEqual(
-        connectedUserConventionsToManageSelectors.isLoadingConventionsWithAssessmentIssue(
+        connectedUserConventionsToManageSelectors.isLoadingConventionsWithUnfinalizedAssessment(
           store.getState(),
         ),
         true,
       );
       dependencies.conventionGateway.getConventionsWithUnfinalizedAssessmentResult$.error(
-        new Error("assessment-issue-error"),
+        new Error("unfinalized-assessment-error"),
       );
       expectToEqual(
-        connectedUserConventionsToManageSelectors.isLoadingConventionsWithAssessmentIssue(
+        connectedUserConventionsToManageSelectors.isLoadingConventionsWithUnfinalizedAssessment(
           store.getState(),
         ),
         false,
       );
       expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
-        "conventions-with-assessment-issue": {
+        "conventions-with-unfinalized-assessment": {
           on: "fetch",
           level: "error",
           title:
             "Problème lors de la récupération des bilans à compléter ou à signer",
-          message: "assessment-issue-error",
+          message: "unfinalized-assessment-error",
         },
       });
+    });
+
+    it("should clear state when clearConventionsWithUnfinalizedAssessment is dispatched", () => {
+      const convention = new ConventionDtoBuilder().build();
+      const result: DataWithPagination<ConventionWithUnfinalizedAssessment> = {
+        data: [
+          {
+            id: convention.id,
+            dateEnd: convention.dateEnd,
+            beneficiary: {
+              firstname: convention.signatories.beneficiary.firstName,
+              lastname: convention.signatories.beneficiary.lastName,
+            },
+            assessment: null,
+          },
+        ],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 2,
+          totalPages: 1,
+          numberPerPage: 10,
+        },
+      };
+
+      store.dispatch(
+        connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
+          {
+            filters: {
+              page: 2,
+              perPage: 10,
+              assessmentCompletionStatus: "to-complete",
+            },
+            jwt: "my-jwt",
+            feedbackTopic: "conventions-with-unfinalized-assessment",
+          },
+        ),
+      );
+      dependencies.conventionGateway.getConventionsWithUnfinalizedAssessmentResult$.next(
+        result,
+      );
+
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        {
+          page: 2,
+          perPage: 10,
+          assessmentCompletionStatus: "to-complete",
+        },
+      );
+
+      store.dispatch(
+        connectedUserConventionsToManageSlice.actions.clearConventionsWithUnfinalizedAssessment(),
+      );
+
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        initialConventionsWithUnfinalizedAssessmentFilters,
+      );
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessment(
+          store.getState(),
+        ),
+        [],
+      );
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentPagination(
+          store.getState(),
+        ),
+        undefined,
+      );
     });
   });
 });

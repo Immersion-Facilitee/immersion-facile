@@ -20,26 +20,32 @@ const isLoading = createSelector(
   (state) => state.isLoading,
 );
 
-const conventionsWithAssessmentIssue = createSelector(
+const conventionsWithUnfinalizedAssessment = createSelector(
   connectedUserConventionsToManageState,
-  (state) => state.conventionsWithAssessmentIssue,
+  (state) => state.conventionsWithUnfinalizedAssessment,
 );
 
-const conventionsWithAssessmentIssuePagination = createSelector(
+const conventionsWithUnfinalizedAssessmentPagination = createSelector(
   connectedUserConventionsToManageState,
-  (state) => state.conventionsWithAssessmentIssuePagination,
+  (state) => state.conventionsWithUnfinalizedAssessmentPagination,
 );
 
-const isLoadingConventionsWithAssessmentIssue = createSelector(
+const conventionsWithUnfinalizedAssessmentFilters = createSelector(
   connectedUserConventionsToManageState,
-  (state) => state.isLoadingConventionsWithAssessmentIssue,
+  (state) => state.conventionsWithUnfinalizedAssessmentFilters,
+);
+
+const isLoadingConventionsWithUnfinalizedAssessment = createSelector(
+  connectedUserConventionsToManageState,
+  (state) => state.isLoadingConventionsWithUnfinalizedAssessment,
 );
 
 export const connectedUserConventionsToManageSelectors = {
   conventions,
   isLoading,
   pagination,
-  conventionsWithAssessmentIssue,
-  conventionsWithAssessmentIssuePagination,
-  isLoadingConventionsWithAssessmentIssue,
+  conventionsWithUnfinalizedAssessment,
+  conventionsWithUnfinalizedAssessmentPagination,
+  conventionsWithUnfinalizedAssessmentFilters,
+  isLoadingConventionsWithUnfinalizedAssessment,
 };

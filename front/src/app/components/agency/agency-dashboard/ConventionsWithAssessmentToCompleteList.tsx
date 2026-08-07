@@ -25,24 +25,24 @@ export const ConventionsWithAssessmentToCompleteList = () => {
   const dispatch = useDispatch();
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const conventions = useAppSelector(
-    connectedUserConventionsToManageSelectors.conventionsWithAssessmentIssue,
+    connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessment,
   );
   const pagination = useAppSelector(
-    connectedUserConventionsToManageSelectors.conventionsWithAssessmentIssuePagination,
+    connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentPagination,
   );
 
   const fetchConventions = useCallback(
     ({ page }: { page: number }) => {
       if (connectedUserJwt) {
         dispatch(
-          connectedUserConventionsToManageSlice.actions.getConventionsWithAssessmentIssueRequested(
+          connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
             {
-              pagination: {
+              filters: {
                 page,
                 perPage: NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
               },
               jwt: connectedUserJwt,
-              feedbackTopic: "conventions-with-assessment-issue",
+              feedbackTopic: "conventions-with-unfinalized-assessment",
             },
           ),
         );
@@ -139,7 +139,7 @@ const AssessmentToCompleteTaskItem = ({
       buttonsRows={[
         {
           id: domElementIds.manageConventionConnectedUser
-            .pilotConventionWithAssessmentIssueButton,
+            .pilotConventionWithUnfinalizedAssessmentButton,
           content: (
             <Button
               priority="secondary"

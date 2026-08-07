@@ -44,22 +44,22 @@ const getConventionsForConnectedUserEpic: ConnectedUserConventionsToManageEpic =
       ),
     );
 
-const getConventionsWithAssessmentIssueEpic: ConnectedUserConventionsToManageEpic =
+const getConventionsWithUnfinalizedAssessmentEpic: ConnectedUserConventionsToManageEpic =
   (actions$, _, { conventionGateway }) =>
     actions$.pipe(
       filter(
         connectedUserConventionsToManageSlice.actions
-          .getConventionsWithAssessmentIssueRequested.match,
+          .getConventionsWithUnfinalizedAssessmentRequested.match,
       ),
       switchMap((action) =>
         conventionGateway
           .getConventionsWithUnfinalizedAssessment$(
-            action.payload.pagination,
+            action.payload.filters,
             action.payload.jwt,
           )
           .pipe(
             map((response) =>
-              connectedUserConventionsToManageSlice.actions.getConventionsWithAssessmentIssueSucceeded(
+              connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentSucceeded(
                 {
                   feedbackTopic: action.payload.feedbackTopic,
                   data: response.data,
@@ -68,7 +68,7 @@ const getConventionsWithAssessmentIssueEpic: ConnectedUserConventionsToManageEpi
               ),
             ),
             catchEpicError((error) =>
-              connectedUserConventionsToManageSlice.actions.getConventionsWithAssessmentIssueFailed(
+              connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentFailed(
                 {
                   feedbackTopic: action.payload.feedbackTopic,
                   errorMessage: error.message,
@@ -81,5 +81,5 @@ const getConventionsWithAssessmentIssueEpic: ConnectedUserConventionsToManageEpi
 
 export const connectedUserConventionsEpics = [
   getConventionsForConnectedUserEpic,
-  getConventionsWithAssessmentIssueEpic,
+  getConventionsWithUnfinalizedAssessmentEpic,
 ];
