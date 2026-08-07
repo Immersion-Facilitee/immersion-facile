@@ -57,9 +57,32 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
     .withCreatedAt(subDays(now, 10).toISOString())
     .build();
 
+  const validatedConvention3 = new ConventionDtoBuilder()
+    .withId("convention3")
+    .withAgencyId(agency.id)
+    .withStatus("ACCEPTED_BY_VALIDATOR")
+    .withDateStart(subDays(now, 30).toISOString())
+    .withDateEnd(subDays(now, 5).toISOString())
+    .build();
+
   let uow: InMemoryUnitOfWork;
   let getConventionsWithUnfinalizedAssessment: GetConventionsWithUnfinalizedAssessment;
   let timeGateway: CustomTimeGateway;
+
+  const currentUserWithValidAgencyRight = new ConnectedUserBuilder()
+    .withAgencyRights([
+      {
+        agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+        roles: ["validator"],
+        isNotifiedByEmail: true,
+      },
+      {
+        agency: toAgencyDtoForAgencyUsersAndAdmins(agency2, []),
+        roles: ["validator"],
+        isNotifiedByEmail: true,
+      },
+    ])
+    .build();
 
   beforeEach(() => {
     uow = createInMemoryUow();
@@ -73,6 +96,7 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
     uow.conventionRepository.setConventions([
       validatedConvention,
       validatedConvention2,
+      validatedConvention3,
     ]);
     uow.assessmentRepository.assessments = [
       createAssessmentEntity(assessment, validatedConvention),
@@ -81,24 +105,99 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
   });
 
   it("return paginated conventions with unfinalized assessment related to user agency rights", async () => {
-    const currentUserWithValidAgencyRight = new ConnectedUserBuilder()
-      .withAgencyRights([
-        {
-          agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
-          roles: ["validator"],
-          isNotifiedByEmail: true,
-        },
-        {
-          agency: toAgencyDtoForAgencyUsersAndAdmins(agency2, []),
-          roles: ["validator"],
-          isNotifiedByEmail: true,
-        },
-      ])
-      .build();
-
     expectToEqual(
       await getConventionsWithUnfinalizedAssessment.execute(
-        { page: 1, perPage: 10 },
+        { pagination: { page: 1, perPage: 10 } },
+        currentUserWithValidAgencyRight,
+      ),
+      {
+        data: [
+          {
+            assessment: {
+              createdAt: assessment.createdAt,
+              endedWithAJob: assessment.endedWithAJob,
+              signedAt: assessment.signedAt,
+              status: assessment.status,
+            },
+            beneficiary: {
+              firstname: validatedConvention.signatories.beneficiary.firstName,
+              lastname: validatedConvention.signatories.beneficiary.lastName,
+            },
+            dateEnd: validatedConvention.dateEnd,
+            id: validatedConvention.id,
+          },
+          {
+            assessment: {
+              createdAt: assessment2.createdAt,
+              endedWithAJob: assessment2.endedWithAJob,
+              signedAt: assessment2.signedAt,
+              status: assessment2.status,
+            },
+            beneficiary: {
+              firstname: validatedConvention2.signatories.beneficiary.firstName,
+              lastname: validatedConvention2.signatories.beneficiary.lastName,
+            },
+            dateEnd: validatedConvention2.dateEnd,
+            id: validatedConvention2.id,
+          },
+          {
+            assessment: null,
+            beneficiary: {
+              firstname: validatedConvention3.signatories.beneficiary.firstName,
+              lastname: validatedConvention3.signatories.beneficiary.lastName,
+            },
+            dateEnd: validatedConvention3.dateEnd,
+            id: validatedConvention3.id,
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          numberPerPage: 10,
+          totalPages: 1,
+          totalRecords: 3,
+        },
+      },
+    );
+  });
+
+  it("filters conventions with assessment to complete", async () => {
+    expectToEqual(
+      await getConventionsWithUnfinalizedAssessment.execute(
+        {
+          pagination: { page: 1, perPage: 10 },
+          filters: { assessmentCompletionStatus: "to-complete" },
+        },
+        currentUserWithValidAgencyRight,
+      ),
+      {
+        data: [
+          {
+            assessment: null,
+            beneficiary: {
+              firstname: validatedConvention3.signatories.beneficiary.firstName,
+              lastname: validatedConvention3.signatories.beneficiary.lastName,
+            },
+            dateEnd: validatedConvention3.dateEnd,
+            id: validatedConvention3.id,
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          numberPerPage: 10,
+          totalPages: 1,
+          totalRecords: 1,
+        },
+      },
+    );
+  });
+
+  it("filters conventions with assessment to sign", async () => {
+    expectToEqual(
+      await getConventionsWithUnfinalizedAssessment.execute(
+        {
+          pagination: { page: 1, perPage: 10 },
+          filters: { assessmentCompletionStatus: "to-sign" },
+        },
         currentUserWithValidAgencyRight,
       ),
       {
@@ -155,7 +254,7 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
 
     await expectPromiseToFailWithError(
       getConventionsWithUnfinalizedAssessment.execute(
-        { page: 1, perPage: 10 },
+        { pagination: { page: 1, perPage: 10 } },
         currentUserWithToReviewAgencyRight,
       ),
       errors.agencies.noAgencyRights(currentUserWithToReviewAgencyRight.id),
@@ -169,7 +268,7 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
 
     await expectPromiseToFailWithError(
       getConventionsWithUnfinalizedAssessment.execute(
-        { page: 1, perPage: 10 },
+        { pagination: { page: 1, perPage: 10 } },
         currentUserWithToReviewAgencyRight,
       ),
       errors.agencies.noAgencyRights(currentUserWithToReviewAgencyRight.id),
