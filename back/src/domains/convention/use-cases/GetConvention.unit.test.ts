@@ -441,7 +441,10 @@ describe("Get Convention", () => {
             { conventionId: convention.id },
             { userId: establishmentRep.id },
           ),
-          errors.agency.notFound({ agencyId: agency.id }),
+          errors.agencies.notFound({
+            missingAgencyIds: [agency.id],
+            presentAgencyIds: [],
+          }),
         );
       });
     });
