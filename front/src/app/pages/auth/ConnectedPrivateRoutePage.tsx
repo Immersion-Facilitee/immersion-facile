@@ -5,7 +5,7 @@ import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
 import Tile from "@codegouvfr/react-dsfr/Tile";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { type ReactElement, type ReactNode, useEffect } from "react";
+import { type ReactElement, type ReactNode, useEffect, useState } from "react";
 import {
   Loader,
   MainWrapper,
@@ -39,6 +39,7 @@ import {
   commonIllustrations,
   loginIllustration,
 } from "src/assets/img/illustrations";
+import { outOfReduxDependencies } from "src/config/dependencies";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { authSlice } from "src/core-logic/domain/auth/auth.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
@@ -47,7 +48,10 @@ import { match, P } from "ts-pattern";
 import type { Route } from "type-route";
 import { z } from "zod";
 import { WithFeedbackReplacer } from "../../components/feedback/WithFeedbackReplacer";
-import { EmailValidationInput } from "../../components/forms/commons/EmailValidationInput";
+import {
+  EmailValidationInput,
+  makeStateRelated,
+} from "../../components/forms/commons/EmailValidationInput";
 import { makeFieldError } from "../../hooks/formContents.hooks";
 import { LoginByEmailFeedbackPage } from "./LoginByEmailFeedbackPage";
 
@@ -657,6 +661,30 @@ const LoginWithEmail = ({ page }: { page: AllowedLoginSource }) => {
   const isRequestingLoginByEmail = useAppSelector(
     authSelectors.isRequestingLoginByEmail,
   );
+  const [emailValidationFeedback, setEmailValidationFeedback] =
+    useState<ReturnType<typeof makeStateRelated> | null>(null);
+
+  const requestLoginByEmailIfValidEmail = async ({
+    email,
+  }: {
+    email: Email;
+  }) => {
+    const feedback = makeStateRelated(
+      await outOfReduxDependencies.technicalGateway.getEmailStatus(email),
+    );
+    setEmailValidationFeedback(feedback);
+
+    if (feedback.state === "error") return;
+
+    dispatch(
+      authSlice.actions.loginByEmailRequested({
+        email,
+        redirectUri: route.href,
+        feedbackTopic: loginByEmailFeedbackTopic,
+      }),
+    );
+  };
+
   return (
     <>
       {isRequestingLoginByEmail && <Loader />}
@@ -667,21 +695,14 @@ const LoginWithEmail = ({ page }: { page: AllowedLoginSource }) => {
       <div className={fr.cx("fr-my-2w")}>
         <FormProvider {...methods}>
           <form
-            onSubmit={methods.handleSubmit(({ email }) => {
-              dispatch(
-                authSlice.actions.loginByEmailRequested({
-                  email,
-                  redirectUri: route.href,
-                  feedbackTopic: loginByEmailFeedbackTopic,
-                }),
-              );
-            })}
+            onSubmit={methods.handleSubmit(requestLoginByEmailIfValidEmail)}
           >
             <EmailValidationInput
               label={"Email"}
               nativeInputProps={{
                 ...methods.register("email", {
                   setValueAs: (value) => toLowerCaseWithoutDiacritics(value),
+                  onChange: () => setEmailValidationFeedback(null),
                 }),
                 onBlur: (event) => {
                   methods.setValue(
@@ -690,9 +711,17 @@ const LoginWithEmail = ({ page }: { page: AllowedLoginSource }) => {
                   );
                 },
               }}
-              {...getFieldError("email")}
+              {...(getFieldError("email") ?? emailValidationFeedback)}
+              onEmailValidationFeedback={setEmailValidationFeedback}
             />
-            <Button id={domElementIds[page].login.byEmailButton}>
+            <Button
+              id={domElementIds[page].login.byEmailButton}
+              nativeButtonProps={{
+                onMouseDown: (event) => {
+                  event.preventDefault();
+                },
+              }}
+            >
               Recevoir le lien de connexion
             </Button>
           </form>
