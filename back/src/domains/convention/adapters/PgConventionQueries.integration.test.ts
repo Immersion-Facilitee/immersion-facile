@@ -3912,6 +3912,253 @@ describe("Pg implementation of ConventionQueries", () => {
         },
       });
     });
+
+    it("filters by assessmentCompletionStatus to-complete", async () => {
+      await conventionRepository.save(validatedConventionEnded5DaysAgo);
+      await conventionRepository.save(
+        validatedConventionEndedMoreThanThreeMonthsAgo,
+      );
+      const assessment = new AssessmentDtoBuilder()
+        .withConventionId(validatedConventionEndedMoreThanThreeMonthsAgo.id)
+        .withCreatedAt(lessThanThreeMonthsAgo.toISOString())
+        .build();
+      await assessmentRepo.save(
+        createAssessmentEntity(
+          assessment,
+          validatedConventionEndedMoreThanThreeMonthsAgo,
+        ),
+      );
+
+      const result =
+        await conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser(
+          {
+            userAgencyIds: [agencyIdA],
+            pagination: { page: 1, perPage: 10 },
+            now,
+            filters: { assessmentCompletionStatus: "to-complete" },
+          },
+        );
+
+      expectToEqual(result, {
+        data: [
+          {
+            id: validatedConventionEnded5DaysAgo.id,
+            dateEnd: validatedConventionEnded5DaysAgo.dateEnd,
+            beneficiary: {
+              firstname:
+                validatedConventionEnded5DaysAgo.signatories.beneficiary
+                  .firstName,
+              lastname:
+                validatedConventionEnded5DaysAgo.signatories.beneficiary
+                  .lastName,
+            },
+            assessment: null,
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        },
+      });
+    });
+
+    it("filters by assessmentCompletionStatus to-sign", async () => {
+      await conventionRepository.save(validatedConventionEnded5DaysAgo);
+      await conventionRepository.save(
+        validatedConventionEndedMoreThanThreeMonthsAgo,
+      );
+      const assessment = new AssessmentDtoBuilder()
+        .withConventionId(validatedConventionEndedMoreThanThreeMonthsAgo.id)
+        .withCreatedAt(lessThanThreeMonthsAgo.toISOString())
+        .build();
+      await assessmentRepo.save(
+        createAssessmentEntity(
+          assessment,
+          validatedConventionEndedMoreThanThreeMonthsAgo,
+        ),
+      );
+
+      const result =
+        await conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser(
+          {
+            userAgencyIds: [agencyIdA],
+            pagination: { page: 1, perPage: 10 },
+            now,
+            filters: { assessmentCompletionStatus: "to-sign" },
+          },
+        );
+
+      expectToEqual(result, {
+        data: [
+          {
+            id: validatedConventionEndedMoreThanThreeMonthsAgo.id,
+            dateEnd: validatedConventionEndedMoreThanThreeMonthsAgo.dateEnd,
+            beneficiary: {
+              firstname:
+                validatedConventionEndedMoreThanThreeMonthsAgo.signatories
+                  .beneficiary.firstName,
+              lastname:
+                validatedConventionEndedMoreThanThreeMonthsAgo.signatories
+                  .beneficiary.lastName,
+            },
+            assessment: {
+              status: "COMPLETED",
+              endedWithAJob: false,
+              signedAt: null,
+              createdAt: assessment.createdAt,
+            },
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        },
+      });
+    });
+
+    it("paginates filtered to-sign results", async () => {
+      const assessmentOldest = new AssessmentDtoBuilder()
+        .withConventionId(validatedConventionEndedMoreThanThreeMonthsAgo.id)
+        .withCreatedAt(lessThanThreeMonthsAgo.toISOString())
+        .build();
+      const assessmentMiddle = new AssessmentDtoBuilder()
+        .withConventionId(validatedConventionEnded5DaysAgo.id)
+        .withCreatedAt(lessThanThreeMonthsAgo.toISOString())
+        .build();
+      const assessmentLatest = new AssessmentDtoBuilder()
+        .withConventionId(validatedConventionEndedInTheFuture.id)
+        .withCreatedAt(lessThanThreeMonthsAgo.toISOString())
+        .build();
+
+      await Promise.all([
+        conventionRepository.save(
+          validatedConventionEndedMoreThanThreeMonthsAgo,
+        ),
+        conventionRepository.save(validatedConventionEnded5DaysAgo),
+        conventionRepository.save(validatedConventionEndedInTheFuture),
+      ]);
+
+      await Promise.all([
+        assessmentRepo.save(
+          createAssessmentEntity(
+            assessmentOldest,
+            validatedConventionEndedMoreThanThreeMonthsAgo,
+          ),
+        ),
+        assessmentRepo.save(
+          createAssessmentEntity(
+            assessmentMiddle,
+            validatedConventionEnded5DaysAgo,
+          ),
+        ),
+        assessmentRepo.save(
+          createAssessmentEntity(
+            assessmentLatest,
+            validatedConventionEndedInTheFuture,
+          ),
+        ),
+      ]);
+
+      expectToEqual(
+        await conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser(
+          {
+            userAgencyIds: [agencyIdA],
+            pagination: { page: 1, perPage: 2 },
+            now,
+            filters: { assessmentCompletionStatus: "to-sign" },
+          },
+        ),
+        {
+          data: [
+            {
+              id: validatedConventionEndedMoreThanThreeMonthsAgo.id,
+              dateEnd: validatedConventionEndedMoreThanThreeMonthsAgo.dateEnd,
+              beneficiary: {
+                firstname:
+                  validatedConventionEndedMoreThanThreeMonthsAgo.signatories
+                    .beneficiary.firstName,
+                lastname:
+                  validatedConventionEndedMoreThanThreeMonthsAgo.signatories
+                    .beneficiary.lastName,
+              },
+              assessment: {
+                status: "COMPLETED",
+                endedWithAJob: false,
+                signedAt: null,
+                createdAt: assessmentOldest.createdAt,
+              },
+            },
+            {
+              id: validatedConventionEnded5DaysAgo.id,
+              dateEnd: validatedConventionEnded5DaysAgo.dateEnd,
+              beneficiary: {
+                firstname:
+                  validatedConventionEnded5DaysAgo.signatories.beneficiary
+                    .firstName,
+                lastname:
+                  validatedConventionEnded5DaysAgo.signatories.beneficiary
+                    .lastName,
+              },
+              assessment: {
+                status: "COMPLETED",
+                endedWithAJob: false,
+                signedAt: null,
+                createdAt: assessmentMiddle.createdAt,
+              },
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            totalPages: 2,
+            numberPerPage: 2,
+            totalRecords: 3,
+          },
+        },
+      );
+
+      expectToEqual(
+        await conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser(
+          {
+            userAgencyIds: [agencyIdA],
+            pagination: { page: 2, perPage: 2 },
+            now,
+            filters: { assessmentCompletionStatus: "to-sign" },
+          },
+        ),
+        {
+          data: [
+            {
+              id: validatedConventionEndedInTheFuture.id,
+              dateEnd: validatedConventionEndedInTheFuture.dateEnd,
+              beneficiary: {
+                firstname:
+                  validatedConventionEndedInTheFuture.signatories.beneficiary
+                    .firstName,
+                lastname:
+                  validatedConventionEndedInTheFuture.signatories.beneficiary
+                    .lastName,
+              },
+              assessment: {
+                status: "COMPLETED",
+                endedWithAJob: false,
+                signedAt: null,
+                createdAt: assessmentLatest.createdAt,
+              },
+            },
+          ],
+          pagination: {
+            currentPage: 2,
+            totalPages: 2,
+            numberPerPage: 2,
+            totalRecords: 3,
+          },
+        },
+      );
+    });
   });
 
   describe("getUserIdsWithNoActiveConvention", () => {

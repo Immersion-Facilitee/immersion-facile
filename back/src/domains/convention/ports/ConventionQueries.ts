@@ -8,6 +8,7 @@ import type {
   ConventionScope,
   ConventionStatus,
   ConventionsWithErroredBroadcastFeedbackFilters,
+  ConventionsWithUnfinalizedAssessmentFilters,
   ConventionWithBroadcastFeedback,
   ConventionWithUnfinalizedAssessment,
   DataWithPagination,
@@ -123,5 +124,6 @@ export interface ConventionQueries {
     userAgencyIds: AgencyId[];
     pagination: Required<PaginationQueryParams>;
     now: Date;
+    filters?: ConventionsWithUnfinalizedAssessmentFilters;
   }): Promise<DataWithPagination<ConventionWithUnfinalizedAssessment>>;
 }
