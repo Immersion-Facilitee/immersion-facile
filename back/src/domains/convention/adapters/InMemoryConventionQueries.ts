@@ -8,6 +8,7 @@ import {
   type ConventionReadDto,
   type ConventionScope,
   type ConventionsWithErroredBroadcastFeedbackFilters,
+  type ConventionsWithUnfinalizedAssessmentFilters,
   type ConventionWithBroadcastFeedback,
   type ConventionWithUnfinalizedAssessment,
   calculatePaginationResult,
@@ -28,6 +29,7 @@ import {
   type WithBannedEstablishmentInformations,
   type WithSort,
 } from "shared";
+import { match } from "ts-pattern";
 import { validateAndParseZodSchema } from "../../../config/helpers/validateAndParseZodSchema";
 import { assesmentEntityToConventionAssessmentFields } from "../../../utils/convention";
 import { createLogger } from "../../../utils/logger";
@@ -344,10 +346,12 @@ export class InMemoryConventionQueries implements ConventionQueries {
     userAgencyIds,
     pagination,
     now,
+    filters = {},
   }: {
     userAgencyIds: AgencyId[];
     pagination: Required<PaginationQueryParams>;
     now: Date;
+    filters?: ConventionsWithUnfinalizedAssessmentFilters;
   }): Promise<DataWithPagination<ConventionWithUnfinalizedAssessment>> {
     if (userAgencyIds.length === 0)
       return {
@@ -359,6 +363,8 @@ export class InMemoryConventionQueries implements ConventionQueries {
           numberPerPage: 0,
         },
       };
+
+    const { assessmentCompletionStatus} = filters;
 
     const threeMonthsAgo = subMonths(now, 3);
     const twoDaysAgo = subDays(now, 2);
@@ -440,7 +446,17 @@ export class InMemoryConventionQueries implements ConventionQueries {
         },
       );
 
-    const sorted = matched.sort((a, b) => {
+    const filtered = match(assessmentCompletionStatus)
+      .with("to-complete", () =>
+        matched.filter((convention) => convention.assessment === null),
+      )
+      .with("to-sign", () =>
+        matched.filter((convention) => convention.assessment !== null),
+      )
+      .with(undefined, () => matched)
+      .exhaustive();
+
+    const sorted = filtered.sort((a, b) => {
       const dateCompare =
         new Date(a.dateEnd).getTime() - new Date(b.dateEnd).getTime();
       if (dateCompare !== 0) return dateCompare;

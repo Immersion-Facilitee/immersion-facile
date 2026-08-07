@@ -14,6 +14,7 @@ import {
   type ConventionScope,
   type ConventionStatus,
   type ConventionsWithErroredBroadcastFeedbackFilters,
+  type ConventionsWithUnfinalizedAssessmentFilters,
   type ConventionWithBroadcastFeedback,
   type ConventionWithUnfinalizedAssessment,
   calculatePaginationResult,
@@ -35,6 +36,7 @@ import {
   unvalidatedConventionStatuses,
   type WithSort,
 } from "shared";
+import { match } from "ts-pattern";
 import { validateAndParseZodSchema } from "../../../config/helpers/validateAndParseZodSchema";
 import {
   isInArray,
@@ -420,10 +422,12 @@ export class PgConventionQueries implements ConventionQueries {
     userAgencyIds,
     pagination,
     now,
+    filters = {},
   }: {
     userAgencyIds: AgencyId[];
     pagination: Required<PaginationQueryParams>;
     now: Date;
+    filters?: ConventionsWithUnfinalizedAssessmentFilters;
   }): Promise<DataWithPagination<ConventionWithUnfinalizedAssessment>> {
     if (userAgencyIds.length === 0)
       return {
@@ -435,6 +439,8 @@ export class PgConventionQueries implements ConventionQueries {
           numberPerPage: 0,
         },
       };
+
+    const { assessmentCompletionStatus } = filters;
 
     const threeMonthsAgo = subMonths(now, 3);
     const twoDaysAgo = subDays(now, 2);
@@ -481,71 +487,87 @@ export class PgConventionQueries implements ConventionQueries {
       .where("ia.created_at", ">=", threeMonthsAgo)
       .where("ia.created_at", "<", twoDaysAgo);
 
-    const paginatedUnfinalizedAssessmentQuery = conventionsWithoutAssessmentRows
-      .select((eb) => [
-        eb.ref("conventions.id").as("id"),
-        sql<DateString>`date_to_iso(conventions.date_end)`.as("dateEnd"),
-        eb.ref("conventions.date_end").as("dateEndRaw"),
-        eb.ref("beneficiary.first_name").as("firstname"),
-        eb.ref("beneficiary.last_name").as("lastname"),
-        eb
-          .ref("ia.status")
-          .$castTo<AssessmentStatus | null>()
-          .as("assessmentStatus"),
-        eb.ref("ia.ended_with_a_job").as("assessmentEndedWithAJob"),
-        sql<DateString | null>`date_to_iso(ia.signed_at)`.as(
-          "assessmentSignedAt",
-        ),
-        sql<DateTimeIsoString | null>`date_to_iso(ia.created_at)`.as(
-          "assessmentCreatedAt",
-        ),
-      ])
-      .unionAll(
-        conventionsWithAssessmentToSignRows.select((eb) => [
-          eb.ref("conventions.id").as("id"),
-          sql<DateString>`date_to_iso(conventions.date_end)`.as("dateEnd"),
-          eb.ref("conventions.date_end").as("dateEndRaw"),
-          eb.ref("beneficiary.first_name").as("firstname"),
-          eb.ref("beneficiary.last_name").as("lastname"),
-          eb
-            .ref("ia.status")
-            .$castTo<AssessmentStatus | null>()
-            .as("assessmentStatus"),
-          eb.ref("ia.ended_with_a_job").as("assessmentEndedWithAJob"),
-          sql<DateString | null>`date_to_iso(ia.signed_at)`.as(
-            "assessmentSignedAt",
-          ),
-          sql<DateTimeIsoString | null>`date_to_iso(ia.created_at)`.as(
-            "assessmentCreatedAt",
-          ),
-        ]),
-      )
+    const toCompleteSelect = conventionsWithoutAssessmentRows.select((eb) => [
+      eb.ref("conventions.id").as("id"),
+      sql<DateString>`date_to_iso(conventions.date_end)`.as("dateEnd"),
+      eb.ref("conventions.date_end").as("dateEndRaw"),
+      eb.ref("beneficiary.first_name").as("firstname"),
+      eb.ref("beneficiary.last_name").as("lastname"),
+      eb
+        .ref("ia.status")
+        .$castTo<AssessmentStatus | null>()
+        .as("assessmentStatus"),
+      eb.ref("ia.ended_with_a_job").as("assessmentEndedWithAJob"),
+      sql<DateString | null>`date_to_iso(ia.signed_at)`.as(
+        "assessmentSignedAt",
+      ),
+      sql<DateTimeIsoString | null>`date_to_iso(ia.created_at)`.as(
+        "assessmentCreatedAt",
+      ),
+    ]);
+    const toSignSelect = conventionsWithAssessmentToSignRows.select((eb) => [
+      eb.ref("conventions.id").as("id"),
+      sql<DateString>`date_to_iso(conventions.date_end)`.as("dateEnd"),
+      eb.ref("conventions.date_end").as("dateEndRaw"),
+      eb.ref("beneficiary.first_name").as("firstname"),
+      eb.ref("beneficiary.last_name").as("lastname"),
+      eb
+        .ref("ia.status")
+        .$castTo<AssessmentStatus | null>()
+        .as("assessmentStatus"),
+      eb.ref("ia.ended_with_a_job").as("assessmentEndedWithAJob"),
+      sql<DateString | null>`date_to_iso(ia.signed_at)`.as(
+        "assessmentSignedAt",
+      ),
+      sql<DateTimeIsoString | null>`date_to_iso(ia.created_at)`.as(
+        "assessmentCreatedAt",
+      ),
+    ]);
+
+    const unfinalizedAssessmentRows = match(assessmentCompletionStatus)
+      .with("to-complete", () => toCompleteSelect)
+      .with("to-sign", () => toSignSelect)
+      .with(undefined, () => toCompleteSelect.unionAll(toSignSelect))
+      .exhaustive();
+
+    const paginatedUnfinalizedAssessmentQuery = unfinalizedAssessmentRows
       .orderBy("dateEndRaw", "asc")
       .orderBy("id", "asc")
       .limit(pagination.perPage)
       .offset((pagination.page - 1) * pagination.perPage);
 
-    const countWithoutAssessmentQuery = conventionsWithoutAssessmentRows.select(
-      (eb) => sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
-    );
-    const countWithAssessmentToSignQuery =
-      conventionsWithAssessmentToSignRows.select((eb) =>
-        sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
-      );
+    const countWithoutAssessment = () =>
+      conventionsWithoutAssessmentRows
+        .select((eb) =>
+          sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
+        )
+        .executeTakeFirstOrThrow();
 
-    const [
-      rows,
-      countWithoutAssessmentResult,
-      countWithAssessmentToSignResult,
-    ] = await Promise.all([
+    const countWithAssessmentToSign = () =>
+      conventionsWithAssessmentToSignRows
+        .select((eb) =>
+          sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
+        )
+        .executeTakeFirstOrThrow();
+
+    const countQueries = match(assessmentCompletionStatus)
+      .with("to-complete", () => [countWithoutAssessment()])
+      .with("to-sign", () => [countWithAssessmentToSign()])
+      .with(undefined, () => [
+        countWithoutAssessment(),
+        countWithAssessmentToSign(),
+      ])
+      .exhaustive();
+
+    const [rows, ...countResults] = await Promise.all([
       paginatedUnfinalizedAssessmentQuery.execute(),
-      countWithoutAssessmentQuery.executeTakeFirstOrThrow(),
-      countWithAssessmentToSignQuery.executeTakeFirstOrThrow(),
+      ...countQueries,
     ]);
 
-    const totalRecords =
-      countWithoutAssessmentResult.count +
-      countWithAssessmentToSignResult.count;
+    const totalRecords = countResults.reduce(
+      (sum, countResult) => sum + countResult.count,
+      0,
+    );
 
     const data = rows.map((row) =>
       validateAndParseZodSchema({
