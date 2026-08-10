@@ -220,13 +220,14 @@ export const throwErrorIfAttemptToAddCounsellorRoleToFTAgency = ({
 };
 
 export const agencyDtoToConventionAgencyFields = (
-  agency: AgencyDto,
+  agency: AgencyWithUsersRights,
   agencyRefersTo: AgencyWithUsersRights | null,
 ): ConventionAgencyPublicFields => ({
-  agencyValidationSteps:
-    agency.counsellorEmails.length > 0
-      ? "counsellor-and-validator"
-      : "validator-only",
+  agencyValidationSteps: Object.values(agency.usersRights).some(
+    (right) => right?.roles.includes("counsellor") && right.isNotifiedByEmail,
+  )
+    ? "counsellor-and-validator"
+    : "validator-only",
   agencyName: agency.name,
   agencyContactEmail: agency.contactEmail,
   agencyDepartment: agency.address.departmentCode,
