@@ -150,11 +150,14 @@ export const AgencyTasks = ({
               />
             </div>
           )}
-        {conventionsWithUnfinalizedAssessmentPagination?.totalRecords !== undefined &&
+        {conventionsWithUnfinalizedAssessmentPagination?.totalRecords !==
+          undefined &&
           conventionsWithUnfinalizedAssessmentPagination.totalRecords > 0 && (
             <div className={fr.cx("fr-col-12", "fr-col-md-4")}>
               <TaskSummary
-                count={conventionsWithUnfinalizedAssessmentPagination.totalRecords}
+                count={
+                  conventionsWithUnfinalizedAssessmentPagination.totalRecords
+                }
                 countLabel="Relances bilans"
                 icon="fr-icon-file-text-line"
                 buttonProps={{

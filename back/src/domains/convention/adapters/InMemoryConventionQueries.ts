@@ -364,7 +364,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
         },
       };
 
-    const { assessmentCompletionStatus} = filters;
+    const { assessmentCompletionStatus } = filters;
 
     const threeMonthsAgo = subMonths(now, 3);
     const twoDaysAgo = subDays(now, 2);
