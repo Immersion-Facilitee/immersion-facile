@@ -131,7 +131,7 @@ export const InitiateConventionPage = () => {
                       `/api${authRoutes.initiateLoginByOAuth.url}`,
                       {
                         provider: "ftConnect",
-                        redirectUri: `/${frontRoutes.conventionImmersion().href}`,
+                        redirectUri: frontRoutes.conventionImmersion().href,
                       },
                     ),
                   }}

@@ -434,7 +434,7 @@ describe("auth router", () => {
             await authRoutesClient.initiateLoginByOAuth({
               queryParams: {
                 provider: "ftConnect",
-                redirectUri: redirectUri,
+                redirectUri,
               },
             }),
             {
@@ -474,7 +474,7 @@ describe("auth router", () => {
               state,
               usedAt: null,
               idToken: null,
-              fromUri: `/${frontRoutes.conventionImmersion().href}`,
+              fromUri: frontRoutes.conventionImmersion().href,
             },
           ];
           gateways.ftConnectGateway.setAccessTokenResult({
@@ -511,7 +511,7 @@ describe("auth router", () => {
             body: {},
             status: 302,
             headers: {
-              location: `${appConfig.immersionFacileBaseUrl}/${frontRoutes.conventionImmersion({ conventionDraftId, skipIntro: true }).href}`,
+              location: `${appConfig.immersionFacileBaseUrl}${frontRoutes.conventionImmersion({ conventionDraftId, skipIntro: true }).href}`,
             },
           });
 
@@ -523,7 +523,7 @@ describe("auth router", () => {
               usedAt: now,
               accessToken: ftConnectAccessToken,
               idToken: ftConnectIdToken,
-              fromUri: `/${frontRoutes.conventionImmersion().href}`,
+              fromUri: frontRoutes.conventionImmersion().href,
             },
           ]);
           expectToEqual(
