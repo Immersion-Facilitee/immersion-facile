@@ -928,23 +928,30 @@ export const sidebarStepContent = (
 };
 
 export const makeFormUiSections = ({
+  internshipKind,
   isConventionTemplate,
 }: {
+  internshipKind: InternshipKind;
   isConventionTemplate: boolean;
 }): Partial<FormFieldKeys>[][] => [
   ["agencyId"],
-  keys(
-    beneficiarySection({
-      internshipKind: "immersion",
+  keys({
+    ...beneficiarySection({
+      internshipKind,
       isConventionTemplate,
     }),
-  ),
+    ...beneficiaryRepresentativeSection({
+      internshipKind,
+      isConventionTemplate,
+    }),
+    ...beneficiaryCurrentEmployerSection({ isConventionTemplate }),
+  }),
   [
     ...keys(
       mergeRight(
         establishmentRepresentativeSection({ isConventionTemplate }),
         establishmentTutorSection({
-          internshipKind: "immersion",
+          internshipKind,
           isConventionTemplate,
         }),
       ),
