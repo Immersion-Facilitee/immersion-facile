@@ -49,41 +49,37 @@ export const appellationSlice = createSlice({
           });
 
         const maxIndex = multipleLocators.length - 2; // 1 because 0 based index + 1 for the locator we're removing
-        const newMultipleData = multipleLocators.reduce(
-          (acc, key) => {
-            if (key === locator) return acc;
 
+        const newMultipleData = multipleLocators.reduce<
+          Record<
+            MultipleAppellationAutocompleteLocator,
+            AutocompleteItem<AppellationAndRomeDto>
+          >
+        >((acc, key) => {
+          if (key !== locator) {
             const currentIndex = getMultipleAppellationLocatorIndex(key);
             const newIndex =
-              currentIndex >
-              getMultipleAppellationLocatorIndex(
-                locator as MultipleAppellationAutocompleteLocator,
-              )
+              currentIndex > getMultipleAppellationLocatorIndex(locator)
                 ? currentIndex - 1
                 : currentIndex;
             if (newIndex <= maxIndex) {
-              const nextKey =
-                `multiple-appellation-${newIndex}` as MultipleAppellationAutocompleteLocator;
+              const nextKey: MultipleAppellationAutocompleteLocator = `multiple-appellation-${newIndex}`;
               const value = state.data[key];
               if (value) acc[nextKey] = value;
             }
-            return acc;
-          },
-          {} as Record<
-            MultipleAppellationAutocompleteLocator,
-            AutocompleteItem<AppellationAndRomeDto>
-          >,
-        );
-        const nonMultipleData = keys(state.data).reduce(
-          (acc, key) => {
-            if (!key.startsWith("multiple-appellation-")) {
-              const value = state.data[key];
-              if (value) acc[key] = value;
-            }
-            return acc;
-          },
-          {} as Record<string, AutocompleteItem<AppellationAndRomeDto>>,
-        );
+          }
+          return acc;
+        }, {});
+
+        const nonMultipleData = keys(state.data).reduce<
+          Record<string, AutocompleteItem<AppellationAndRomeDto>>
+        >((acc, key) => {
+          if (!key.startsWith("multiple-appellation-")) {
+            const value = state.data[key];
+            if (value) acc[key] = value;
+          }
+          return acc;
+        }, {});
 
         return {
           ...state,
@@ -210,7 +206,9 @@ export const appellationSlice = createSlice({
 });
 
 const getMultipleAppellationLocatorIndex = (
-  locator: MultipleAppellationAutocompleteLocator,
+  locator:
+    | MultipleAppellationAutocompleteLocator
+    | AppellationAutocompleteLocator,
 ): number => {
   return Number.parseInt(locator.substring(locator.lastIndexOf("-") + 1), 10);
 };
