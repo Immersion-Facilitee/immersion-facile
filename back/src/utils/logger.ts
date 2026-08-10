@@ -1,3 +1,4 @@
+import os from "node:os";
 import path from "node:path";
 import type { AxiosResponse } from "axios";
 import type { Request } from "express";
@@ -39,10 +40,13 @@ const devTransport: LoggerOptions["transport"] = {
 
 const rootLogger = pino({
   level,
+  base: {
+    pid: process.pid,
+    hostname: process.env.CONTAINER ?? os.hostname(),
+  },
   ...(process.env.NODE_ENV !== "production" ? { transport: devTransport } : {}),
 });
 
-// Example use: const logger = createLogger(__filename);
 export const legacyCreateLogger = (filename: string): Logger =>
   rootLogger.child({ name: path.basename(filename) });
 
