@@ -1684,20 +1684,20 @@ describe.each(
       );
     });
 
-    it("filters by status", async () => {
+    it("filters by statuses", async () => {
       expectToEqual(
         await agencyRepository.getAgencyIdsByFilters({
-          status: ["active"],
+          statuses: ["active"],
         }),
         [agencyPeActive.id, agencyMissionLocale.id],
       );
     });
 
-    it("filters by kinds and status", async () => {
+    it("filters by kinds and statuses", async () => {
       expectToEqual(
         await agencyRepository.getAgencyIdsByFilters({
           kinds: ["pole-emploi"],
-          status: ["active"],
+          statuses: ["active"],
         }),
         [agencyPeActive.id],
       );

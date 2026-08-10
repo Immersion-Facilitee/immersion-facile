@@ -398,13 +398,13 @@ export class PgAgencyRepository implements AgencyRepository {
   public async getAgencyIdsByFilters(
     filters: GetAgencyIdsFilters,
   ): Promise<AgencyId[]> {
-    const { kinds, status, ...rest } = filters;
+    const { kinds, statuses, ...rest } = filters;
     rest satisfies Record<string, never>;
 
     const results = await pipeWithValue(
       this.transaction.selectFrom("agencies").select("agencies.id"),
       (b) => (kinds ? b.where("agencies.kind", "in", kinds) : b),
-      (b) => (status ? b.where("agencies.status", "in", status) : b),
+      (b) => (statuses ? b.where("agencies.status", "in", statuses) : b),
     )
       .orderBy("agencies.id", "asc")
       .execute();

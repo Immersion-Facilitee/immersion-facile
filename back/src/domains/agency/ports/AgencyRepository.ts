@@ -36,7 +36,7 @@ export type GetAgenciesFilters = {
 
 export type GetAgencyIdsFilters = {
   kinds?: AgencyKind[];
-  status?: AgencyStatus[];
+  statuses?: AgencyStatus[];
 };
 
 export type AgencyWithoutRights = Omit<
