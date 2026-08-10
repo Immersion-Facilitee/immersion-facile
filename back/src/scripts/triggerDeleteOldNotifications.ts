@@ -12,7 +12,7 @@ const config = AppConfig.createFromEnv();
 
 const deleteOldNotifications = async () => {
   const totalLimit = Number(process.argv.at(2) ?? 100_000);
-  const batchSize = 5_000;
+  const batchSize = 1_000;
 
   const { uowPerformer } = createDbRelatedSystems(
     config,
