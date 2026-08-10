@@ -576,6 +576,7 @@ const ConventionFormContent = ({
 
   const conventionIsLoading = isLoading || !reduxFormUiReady;
   const formUiSections = makeFormUiSections({
+    internshipKind: conventionValues.internshipKind,
     isConventionTemplate: isTemplateForm,
   });
 
