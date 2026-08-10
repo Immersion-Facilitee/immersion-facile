@@ -193,9 +193,10 @@ export class InMemoryAgencyRepository implements AgencyRepository {
       .filter(
         (agency) =>
           agencyIsOfKind(agency, filters.kinds) &&
-          agencyIsOfStatus(agency, filters.status),
+          agencyIsOfStatus(agency, filters.statuses),
       )
-      .map(({ id }) => id);
+      .map(({ id }) => id)
+      .sort((a, b) => a.localeCompare(b));
   }
 
   public async getAgenciesRelatedToAgency(
