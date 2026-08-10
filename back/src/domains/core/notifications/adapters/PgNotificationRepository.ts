@@ -64,7 +64,7 @@ export class PgNotificationRepository implements NotificationRepository {
     limit,
   }: DeleteNotificationsParams): Promise<number> {
     return this.transaction
-      .with("to_delete", (qb) =>
+      .with("email_candidates", (qb) =>
         qb
           .selectFrom("notifications_email")
           .select(({ eb }) => [
@@ -73,16 +73,26 @@ export class PgNotificationRepository implements NotificationRepository {
             eb.val("email").as("type"),
           ])
           .where("notifications_email.created_at", "<=", createdAt.to)
-          .unionAll(
-            qb
-              .selectFrom("notifications_sms")
-              .select(({ eb }) => [
-                "notifications_sms.id",
-                "notifications_sms.created_at",
-                eb.val("sms").as("type"),
-              ])
-              .where("notifications_sms.created_at", "<=", createdAt.to),
-          )
+          .orderBy("created_at", "asc")
+          .limit(limit),
+      )
+      .with("sms_candidates", (qb) =>
+        qb
+          .selectFrom("notifications_sms")
+          .select(({ eb }) => [
+            "notifications_sms.id",
+            "notifications_sms.created_at",
+            eb.val("sms").as("type"),
+          ])
+          .where("notifications_sms.created_at", "<=", createdAt.to)
+          .orderBy("created_at", "asc")
+          .limit(limit),
+      )
+      .with("to_delete", (qb) =>
+        qb
+          .selectFrom("email_candidates")
+          .selectAll()
+          .unionAll(qb.selectFrom("sms_candidates").selectAll())
           .orderBy("created_at", "asc")
           .orderBy("type", "desc") // type desc for delete sms by priority if some date email === date sms
           .limit(limit),
