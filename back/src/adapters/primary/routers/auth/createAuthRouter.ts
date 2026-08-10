@@ -3,6 +3,7 @@ import { Router } from "express";
 import { authRoutes, FTConnectError, ManagedFTConnectError } from "shared";
 import { createExpressSharedRouter } from "shared-routes/express";
 import type { AppDependencies } from "../../../../config/bootstrap/createAppDependencies";
+import { makeRedirectErrorUrl } from "../../../../config/helpers/makeRedirectErrorUrl";
 import { sendHttpResponse } from "../../../../config/helpers/sendHttpResponse";
 import { sendRedirectResponse } from "../../../../config/helpers/sendRedirectResponse";
 import { getGenericAuthOrThrow } from "../../../../domains/core/authentication/connected-user/entities/user.helper";
@@ -38,12 +39,15 @@ export const createAuthRouter = (deps: AppDependencies) => {
         })
         .catch((error) => {
           if (error instanceof ManagedFTConnectError)
-            return deps.errorHandlers.handleManagedRedirectResponseError(res);
+            return res.redirect(makeRedirectErrorUrl({}, deps.config));
           if (error instanceof FTConnectError)
-            return deps.errorHandlers.handleRawRedirectResponseError(
-              error,
-              res,
+            return res.redirect(
+              makeRedirectErrorUrl(
+                { title: error.title, message: error.message },
+                deps.config,
+              ),
             );
+
           throw error;
         });
     });

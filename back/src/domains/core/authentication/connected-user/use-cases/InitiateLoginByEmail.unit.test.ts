@@ -39,7 +39,6 @@ describe("InitiateLoginByEmail usecase", () => {
   let uuidGenerator: TestUuidGenerator;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
 
-  // must be allowed by the schema
   const redirectUri = allowedLoginSources.establishmentDashboardDiscussions({
     discussionId: "any-discussion-id",
   }).href;

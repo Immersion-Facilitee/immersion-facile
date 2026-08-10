@@ -1,11 +1,4 @@
-import {
-  type AbsoluteUrl,
-  frontRoutes,
-  makeRouteAbsoluteUrl,
-  oneDayInSecond,
-  oneHourInSeconds,
-  oneMinuteInSeconds,
-} from "shared";
+import { oneDayInSecond, oneHourInSeconds, oneMinuteInSeconds } from "shared";
 import { InMemoryEventBus } from "../../domains/core/events/adapters/InMemoryEventBus";
 import {
   type GenerateApiConsumerJwt,
@@ -18,11 +11,6 @@ import {
 } from "../../domains/core/jwt";
 import { createDbRelatedSystems } from "../../domains/core/unit-of-work/adapters/createDbRelatedSystems";
 import { UuidV4Generator } from "../../domains/core/uuid-generator/adapters/UuidGeneratorImplementations";
-import {
-  makeHandleManagedRedirectResponseError,
-  makeHandleRawRedirectResponseError,
-  type RedirectErrorUrlParams,
-} from "../helpers/handleRedirectResponseError";
 import { createMakeProductionPgPool } from "../pg/pgPool";
 import type { AppConfig } from "./appConfig";
 import {
@@ -78,19 +66,6 @@ export const createAppDependencies = async (config: AppConfig) => {
   const verifyEmailAuthCodeJwt: VerifyJwtFn<"emailAuthCode"> =
     makeVerifyJwtES256<"emailAuthCode">(config.jwtPrivateKey);
 
-  const redirectErrorUrl = (params: RedirectErrorUrlParams): AbsoluteUrl =>
-    makeRouteAbsoluteUrl({
-      route: frontRoutes.temporaryError(params),
-      baseUrl: config.immersionFacileBaseUrl,
-    });
-
-  const errorHandlers = {
-    handleManagedRedirectResponseError:
-      makeHandleManagedRedirectResponseError(redirectErrorUrl),
-    handleRawRedirectResponseError:
-      makeHandleRawRedirectResponseError(redirectErrorUrl),
-  };
-
   const useCases = createUseCases({
     config,
     gateways,
@@ -112,7 +87,6 @@ export const createAppDependencies = async (config: AppConfig) => {
       config,
       "convention",
     ),
-    errorHandlers,
     apiConsumerMiddleware: makeConsumerMiddleware(
       useCases.getApiConsumerById.execute,
       gateways.timeGateway,
