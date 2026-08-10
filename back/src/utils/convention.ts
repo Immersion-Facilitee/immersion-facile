@@ -24,10 +24,7 @@ import type { AssessmentEntity } from "../domains/convention/entities/Assessment
 import type { NotificationRepository } from "../domains/core/notifications/ports/NotificationRepository";
 import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
 import type { BannedEstablishment } from "../domains/establishment/ports/BannedEstablishmentRepository";
-import {
-  agencyDtoToConventionAgencyFields,
-  agencyWithRightToAgencyDto,
-} from "./agency";
+import { agencyDtoToConventionAgencyFields } from "./agency";
 
 export const conventionEmailsByRole =
   (convention: ConventionDto, agency: AgencyDto) =>
@@ -68,8 +65,10 @@ export const conventionDtosToConventionReadDtos = async (
 ): Promise<ConventionReadDto[]> => {
   if (conventions.length === 0) return [];
 
-  const { agencyDtoById, allAgenciesWithRightsById } =
-    await getAgencyInfosForConventionRead(conventions, uow);
+  const allAgenciesWithRightsById = await getAgencyInfosForConventionRead(
+    conventions,
+    uow,
+  );
   const bannedBySiret = await getBannedEstablishmentsBySiret(conventions, uow);
   const assessmentByConventionId = await getAssessmentsByConventionId(
     conventions,
@@ -80,7 +79,7 @@ export const conventionDtosToConventionReadDtos = async (
   );
 
   return conventions.map((convention, index) => {
-    const agencyDto = agencyDtoById[convention.agencyId];
+    const agency = allAgenciesWithRightsById[convention.agencyId];
 
     const bannedEstablishment = bannedBySiret[convention.siret];
     const withBannedEstablishmentInformations: WithBannedEstablishmentInformations =
@@ -95,9 +94,9 @@ export const conventionDtosToConventionReadDtos = async (
     return {
       ...convention,
       ...agencyDtoToConventionAgencyFields(
-        agencyDto,
-        agencyDto.refersToAgencyId
-          ? (allAgenciesWithRightsById[agencyDto.refersToAgencyId] ?? null)
+        agency,
+        agency.refersToAgencyId
+          ? (allAgenciesWithRightsById[agency.refersToAgencyId] ?? null)
           : null,
       ),
       ...assesmentEntityToConventionAssessmentFields(
@@ -112,10 +111,7 @@ export const conventionDtosToConventionReadDtos = async (
 const getAgencyInfosForConventionRead = async (
   conventions: ConventionDto[],
   uow: UnitOfWork,
-): Promise<{
-  agencyDtoById: Record<AgencyId, AgencyDto>;
-  allAgenciesWithRightsById: Record<AgencyId, AgencyWithUsersRights>;
-}> => {
+): Promise<Record<AgencyId, AgencyWithUsersRights>> => {
   const agencyIds = uniq(conventions.map(({ agencyId }) => agencyId));
   const agenciesWithRights = await uow.agencyRepository.getByIds(agencyIds);
   const agencyWithRightsById = Object.fromEntries(
@@ -139,22 +135,9 @@ const getAgencyInfosForConventionRead = async (
     refersToAgenciesWithRights.map((agency) => [agency.id, agency]),
   );
 
-  const allAgenciesWithRightsById = {
+  return {
     ...agencyWithRightsById,
     ...refersToAgenciesWithRightsById,
-  };
-
-  const agencyDtos = await executeInSequence(
-    Object.values(allAgenciesWithRightsById),
-    (agency) => agencyWithRightToAgencyDto(uow, agency),
-  );
-  const agencyDtoById = Object.fromEntries(
-    agencyDtos.map((agency) => [agency.id, agency]),
-  );
-
-  return {
-    agencyDtoById,
-    allAgenciesWithRightsById,
   };
 };
 

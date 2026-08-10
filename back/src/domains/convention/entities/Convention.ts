@@ -27,10 +27,7 @@ import {
   statusTransitionConfigs,
   type UserWithRights,
 } from "shared";
-import {
-  agencyDtoToConventionAgencyFields,
-  agencyWithRightToAgencyDto,
-} from "../../../utils/agency";
+import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { DomainTopic } from "../../core/events/events";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
@@ -363,11 +360,13 @@ export const signConvention = async ({
   if (!agencyWithRights)
     throw errors.agency.notFound({ agencyId: convention.agencyId });
 
-  const agency = await agencyWithRightToAgencyDto(uow, agencyWithRights);
-  const { agencyValidationSteps } = agencyDtoToConventionAgencyFields(
-    agency,
-    null,
-  );
+  const agencyValidationSteps = Object.values(
+    agencyWithRights.usersRights,
+  ).some(
+    (right) => right?.roles.includes("counsellor") && right.isNotifiedByEmail,
+  )
+    ? "counsellor-and-validator"
+    : "validator-only";
 
   const signedConvention = conventionSchema.parse(
     signConventionDtoWithRole(convention, role, now),

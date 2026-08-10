@@ -13,10 +13,6 @@ import {
   validatedConventionStatuses,
   type WithConventionIdLegacy,
 } from "shared";
-import {
-  agencyDtoToConventionAgencyFields,
-  agencyWithRightToAgencyDto,
-} from "../../../utils/agency";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { DomainTopic, TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
@@ -94,11 +90,13 @@ export const makeUpdateConventionStatus = useCaseBuilder(
       convention.id,
     );
 
-    const agency = await agencyWithRightToAgencyDto(uow, agencyWithRights);
-    const { agencyValidationSteps } = agencyDtoToConventionAgencyFields(
-      agency,
-      null,
-    );
+    const agencyValidationSteps = Object.values(
+      agencyWithRights.usersRights,
+    ).some(
+      (right) => right?.roles.includes("counsellor") && right.isNotifiedByEmail,
+    )
+      ? "counsellor-and-validator"
+      : "validator-only";
 
     throwIfTransitionNotAllowed({
       roles,
