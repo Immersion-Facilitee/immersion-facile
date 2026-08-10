@@ -16,7 +16,12 @@ export type ConventionWithUnfinalizedAssessment = {
   assessment: ConventionAssessmentFields["assessment"];
 };
 
-export type UnfinalizedAssessmentCompletionStatus = "to-complete" | "to-sign";
+export const unfinalizedAssessmentCompletionStatuses = [
+  "to-complete",
+  "to-sign",
+] as const;
+export type UnfinalizedAssessmentCompletionStatus =
+  (typeof unfinalizedAssessmentCompletionStatuses)[number];
 
 export type ConventionsWithUnfinalizedAssessmentFilters = {
   assessmentCompletionStatus?: UnfinalizedAssessmentCompletionStatus;

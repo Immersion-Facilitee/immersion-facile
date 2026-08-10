@@ -11,12 +11,13 @@ import {
   conventionIdSchema,
   withFirstnameAndLastnameSchema,
 } from "./convention.schema";
-import type {
-  ConventionsWithUnfinalizedAssessmentFilters,
-  ConventionWithUnfinalizedAssessment,
-  FlatGetConventionsWithUnfinalizedAssessmentParams,
-  GetConventionsWithUnfinalizedAssessmentParams,
-  UnfinalizedAssessmentCompletionStatus,
+import {
+  type ConventionsWithUnfinalizedAssessmentFilters,
+  type ConventionWithUnfinalizedAssessment,
+  type FlatGetConventionsWithUnfinalizedAssessmentParams,
+  type GetConventionsWithUnfinalizedAssessmentParams,
+  type UnfinalizedAssessmentCompletionStatus,
+  unfinalizedAssessmentCompletionStatuses,
 } from "./conventionWithUnfinalizedAssessment.dto";
 
 export const conventionWithUnfinalizedAssessmentSchema: ZodSchemaWithInputMatchingOutput<ConventionWithUnfinalizedAssessment> =
@@ -31,7 +32,7 @@ export const paginatedConventionWithUnfinalizedAssessmentSchema =
   createPaginatedSchema(conventionWithUnfinalizedAssessmentSchema);
 
 export const unfinalizedAssessmentCompletionStatusSchema: ZodSchemaWithInputMatchingOutput<UnfinalizedAssessmentCompletionStatus> =
-  z.enum(["to-complete", "to-sign"]);
+  z.enum(unfinalizedAssessmentCompletionStatuses);
 
 export const getConventionsWithUnfinalizedAssessmentFilterSchema: ZodSchemaWithInputMatchingOutput<ConventionsWithUnfinalizedAssessmentFilters> =
   z.object({

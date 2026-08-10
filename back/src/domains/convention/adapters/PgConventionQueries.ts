@@ -1,4 +1,5 @@
 import { addDays, subDays, subMonths } from "date-fns";
+import type { SelectQueryBuilder } from "kysely";
 import { sql } from "kysely";
 import { andThen } from "ramda";
 import {
@@ -487,42 +488,12 @@ export class PgConventionQueries implements ConventionQueries {
       .where("ia.created_at", ">=", threeMonthsAgo)
       .where("ia.created_at", "<", twoDaysAgo);
 
-    const toCompleteSelect = conventionsWithoutAssessmentRows.select((eb) => [
-      eb.ref("conventions.id").as("id"),
-      sql<DateString>`date_to_iso(conventions.date_end)`.as("dateEnd"),
-      eb.ref("conventions.date_end").as("dateEndRaw"),
-      eb.ref("beneficiary.first_name").as("firstname"),
-      eb.ref("beneficiary.last_name").as("lastname"),
-      eb
-        .ref("ia.status")
-        .$castTo<AssessmentStatus | null>()
-        .as("assessmentStatus"),
-      eb.ref("ia.ended_with_a_job").as("assessmentEndedWithAJob"),
-      sql<DateString | null>`date_to_iso(ia.signed_at)`.as(
-        "assessmentSignedAt",
-      ),
-      sql<DateTimeIsoString | null>`date_to_iso(ia.created_at)`.as(
-        "assessmentCreatedAt",
-      ),
-    ]);
-    const toSignSelect = conventionsWithAssessmentToSignRows.select((eb) => [
-      eb.ref("conventions.id").as("id"),
-      sql<DateString>`date_to_iso(conventions.date_end)`.as("dateEnd"),
-      eb.ref("conventions.date_end").as("dateEndRaw"),
-      eb.ref("beneficiary.first_name").as("firstname"),
-      eb.ref("beneficiary.last_name").as("lastname"),
-      eb
-        .ref("ia.status")
-        .$castTo<AssessmentStatus | null>()
-        .as("assessmentStatus"),
-      eb.ref("ia.ended_with_a_job").as("assessmentEndedWithAJob"),
-      sql<DateString | null>`date_to_iso(ia.signed_at)`.as(
-        "assessmentSignedAt",
-      ),
-      sql<DateTimeIsoString | null>`date_to_iso(ia.created_at)`.as(
-        "assessmentCreatedAt",
-      ),
-    ]);
+    const toCompleteSelect = selectUnfinalizedAssessmentFields(
+      conventionsWithoutAssessmentRows,
+    );
+    const toSignSelect = selectUnfinalizedAssessmentFields(
+      conventionsWithAssessmentToSignRows,
+    );
 
     const unfinalizedAssessmentRows = match(assessmentCompletionStatus)
       .with("to-complete", () => toCompleteSelect)
@@ -1127,3 +1098,32 @@ export const validateConventionResults = (
       logger,
     }),
   );
+
+type UnfinalizedAssessmentQueryDb = Database & {
+  beneficiary: Database["actors"];
+  ia: Database["immersion_assessments"];
+};
+
+const selectUnfinalizedAssessmentFields = (
+  builder: SelectQueryBuilder<
+    UnfinalizedAssessmentQueryDb,
+    keyof UnfinalizedAssessmentQueryDb,
+    any
+  >,
+) =>
+  builder.select((eb) => [
+    eb.ref("conventions.id").as("id"),
+    sql<DateString>`date_to_iso(conventions.date_end)`.as("dateEnd"),
+    eb.ref("conventions.date_end").as("dateEndRaw"),
+    eb.ref("beneficiary.first_name").as("firstname"),
+    eb.ref("beneficiary.last_name").as("lastname"),
+    eb
+      .ref("ia.status")
+      .$castTo<AssessmentStatus | null>()
+      .as("assessmentStatus"),
+    eb.ref("ia.ended_with_a_job").as("assessmentEndedWithAJob"),
+    sql<DateString | null>`date_to_iso(ia.signed_at)`.as("assessmentSignedAt"),
+    sql<DateTimeIsoString | null>`date_to_iso(ia.created_at)`.as(
+      "assessmentCreatedAt",
+    ),
+  ]);
