@@ -182,7 +182,10 @@ describe("Query: List agencies by filter", () => {
 
       const result = await listAgencyOptionsByFilter.execute({}, undefined);
 
-      expectToEqual(result, agencies.map(toAgencyOption));
+      expectToEqual(
+        result,
+        agencies.sort((a, b) => a.id.localeCompare(b.id)).map(toAgencyOption),
+      );
     });
 
     it("uses requested limit when provided", async () => {
@@ -398,7 +401,9 @@ describe("Query: List agencies by filter", () => {
           },
           undefined,
         ),
-        allAgencies.map(toAgencyOption),
+        allAgencies
+          .sort((a, b) => a.id.localeCompare(b.id))
+          .map(toAgencyOption),
       );
     });
   });

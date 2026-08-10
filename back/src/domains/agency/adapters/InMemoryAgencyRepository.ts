@@ -26,6 +26,7 @@ import {
 } from "shared";
 import { z } from "zod";
 import { distanceBetweenCoordinatesInMeters } from "../../../utils/distanceBetweenCoordinatesInMeters";
+import { normalize } from "../../../utils/textSearch";
 import {
   type AgencyRepository,
   type AgencyRightOfUser,
@@ -44,6 +45,12 @@ const guidSchema = z.guid();
 const isUuid = (value: string) => guidSchema.safeParse(value.trim()).success;
 
 export class InMemoryAgencyRepository implements AgencyRepository {
+  constructor(agencyList: AgencyWithUsersRights[] = testAgencies) {
+    agencyList.forEach((agency) => {
+      this.#agencies[agency.id] = agency;
+    });
+  }
+
   #agencies: AgencyById = {};
 
   // test purpose only
@@ -59,12 +66,6 @@ export class InMemoryAgencyRepository implements AgencyRepository {
       }),
       {},
     );
-  }
-
-  constructor(agencyList: AgencyWithUsersRights[] = testAgencies) {
-    agencyList.forEach((agency) => {
-      this.#agencies[agency.id] = agency;
-    });
   }
 
   public async insert(
@@ -143,7 +144,7 @@ export class InMemoryAgencyRepository implements AgencyRepository {
       .filter(
         (agency) =>
           ![
-            agencyHasDepartmentCode(agency, filters?.departmentCode),
+            agencyHasCoveredDepartmentCode(agency, filters?.departmentCode),
             agencyHasName(agency, filters?.nameIncludes),
             agencyIsOfKind(agency, filters?.kinds),
             agencyIsOfPosition(agency, filters?.position),
@@ -164,7 +165,7 @@ export class InMemoryAgencyRepository implements AgencyRepository {
 
     const sorted = filters?.position
       ? allFiltered.sort(sortByNearestFrom(filters.position.position))
-      : allFiltered;
+      : allFiltered.sort((a, b) => a.id.localeCompare(b.id));
 
     const totalRecords = sorted.length;
     const resolvedPagination = {
@@ -209,8 +210,10 @@ export class InMemoryAgencyRepository implements AgencyRepository {
       .filter((result) => result.numberOfUsersToReview > 0);
   }
 
-  public async getImmersionFacileAgencyId(): Promise<AgencyId> {
-    return "immersion-facile-agency";
+  public async getImmersionFacileAgencyId(): Promise<AgencyId | undefined> {
+    return values(this.#agencies)
+      .filter(isTruthy)
+      .find((agency) => agency.kind === "immersion-facile")?.id;
   }
 
   public async getUserIdWithAgencyRightsByFilters(
@@ -219,7 +222,7 @@ export class InMemoryAgencyRepository implements AgencyRepository {
     if (!isWithAgencyRole(filters)) {
       const agency = this.#agencies[filters.agencyId];
       if (!agency) throw errors.agency.notFound(filters);
-      return keys(agency.usersRights);
+      return keys(agency.usersRights).sort();
     }
 
     return uniq(
@@ -229,7 +232,7 @@ export class InMemoryAgencyRepository implements AgencyRepository {
           const userIds = toPairs(agency.usersRights)
             .filter(([_, right]) => right?.roles.includes(filters.agencyRole))
             .map(([userId]) => userId);
-          return [...acc, ...userIds];
+          return [...acc, ...userIds].sort();
         }, []),
     );
   }
@@ -268,7 +271,7 @@ export class InMemoryAgencyRepository implements AgencyRepository {
         agency.address.streetNumberAndAddress ===
           address.streetNumberAndAddress &&
         agency.address.city === address.city &&
-        agency.status !== "rejected" &&
+        [...activeAgencyStatuses, "needsReview"].includes(agency.status) &&
         agency.id !== idToIgnore,
     );
   }
@@ -314,25 +317,30 @@ const agencyIsOfStatus = (
   return statuses.includes(agency.status);
 };
 
-const agencyHasDepartmentCode = (
+const agencyHasCoveredDepartmentCode = (
   agency: AgencyWithUsersRights,
   departmentCode?: DepartmentCode,
-): boolean => {
-  if (!departmentCode) return true;
-  return departmentCode === agency.address.departmentCode;
-};
+): boolean =>
+  departmentCode ? agency.coveredDepartments.includes(departmentCode) : true;
 
 const agencyHasName = (
   agency: AgencyWithUsersRights,
-  name?: string,
+  nameIncludes?: string,
 ): boolean => {
-  if (!name) return true;
+  if (!nameIncludes) return true;
 
-  const trimmedName = name.trim();
+  const trimmedName = nameIncludes.trim();
   if (isUuid(trimmedName))
     return agency.id.toLowerCase() === trimmedName.toLowerCase();
 
-  return agency.name.toLowerCase().includes(name.toLowerCase());
+  const nameIncludesWords = nameIncludes
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(isTruthy);
+  const normalizedAgencyName = normalize(agency.name);
+
+  return nameIncludesWords.every((nameIncludesWord) =>
+    normalizedAgencyName.includes(normalize(nameIncludesWord)),
+  );
 };
 
 const agencyHasUserIds = (
@@ -467,6 +475,7 @@ const agency1: AgencyWithUsersRights = {
   createdAt: defaultCreatedAt,
   delegationAgencyInfo: null,
 };
+
 const testAgencies: AgencyWithUsersRights[] = [
   {
     id: "immersion-facile-agency",

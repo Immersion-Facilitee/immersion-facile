@@ -128,6 +128,21 @@ export class PgPhoneRepository implements PhoneRepository {
       .executeTakeFirst();
   }
 
+  async getPhoneByNumberForTesting(
+    phoneNumber: PhoneNumber,
+  ): Promise<Phone | undefined> {
+    return this.transaction
+      .selectFrom("phone_numbers")
+      .where("phone_number", "=", phoneNumber)
+      .select([
+        "id",
+        "phone_number as phoneNumber",
+        "verified_at as verifiedAt",
+        "status",
+      ])
+      .executeTakeFirst();
+  }
+
   async markAsVerified(params: {
     phoneIds: PhoneId[];
     verifiedDate: Date;
