@@ -60,6 +60,12 @@ export class InMemoryPhoneRepository implements PhoneRepository {
     return this.phones.find((phone) => phone.id === id);
   }
 
+  async getPhoneByNumberForTesting(
+    phoneNumber: PhoneNumber,
+  ): Promise<Phone | undefined> {
+    return this.phones.find((phone) => phone.phoneNumber === phoneNumber);
+  }
+
   async markAsVerified(params: {
     phoneIds: PhoneId[];
     verifiedDate: Date;

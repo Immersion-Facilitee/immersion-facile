@@ -376,7 +376,7 @@ export class PgAgencyRepository implements AgencyRepository {
 
     const results = await filteredBuilder
       .select(sql<number>`CAST(COUNT(*) OVER() AS INT)`.as("total_count"))
-      .orderBy("agencies.id asc")
+      .orderBy("agencies.id", "asc")
       .limit(limit)
       .offset(offset)
       .execute();
@@ -427,7 +427,7 @@ export class PgAgencyRepository implements AgencyRepository {
           ? b.where("agency_id", "=", filters.agencyId)
           : b.where("roles", "@>", `["${filters.agencyRole}"]`),
     )
-      .orderBy("user_id asc")
+      .orderBy("user_id", "asc")
       .execute();
     return results.map((result) => result.user_id);
   }
@@ -445,7 +445,7 @@ export class PgAgencyRepository implements AgencyRepository {
         }).as("rights"),
       ])
       .where("user_id", "=", id)
-      .orderBy("agency_id asc")
+      .orderBy("agency_id", "asc")
       .execute();
 
     return results.map(({ rights }) => ({
