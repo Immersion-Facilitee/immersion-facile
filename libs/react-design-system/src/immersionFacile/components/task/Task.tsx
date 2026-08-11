@@ -49,7 +49,7 @@ export const Task = ({
         <div className={fr.cx("fr-col-12", "fr-col-md-7")}>
           <Title
             className={cx(
-              fr.cx("fr-grid-row", "fr-mb-1w"),
+              fr.cx("fr-grid-row", "fr-mb-1w", "fr-grid-row--middle"),
               dashboardTitleToClassName[titleAs],
             )}
           >
