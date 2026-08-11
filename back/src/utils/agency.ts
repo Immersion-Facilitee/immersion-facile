@@ -6,6 +6,7 @@ import {
   type AgencyRight,
   type AgencyRole,
   type AgencyUsersRights,
+  type AgencyValidationStep,
   type AgencyWithUsersRights,
   type ConventionAgencyPublicFields,
   type Email,
@@ -219,15 +220,20 @@ export const throwErrorIfAttemptToAddCounsellorRoleToFTAgency = ({
   }
 };
 
+export const getAgencyValidationSteps = (
+  agency: AgencyWithUsersRights,
+): AgencyValidationStep =>
+  Object.values(agency.usersRights).some(
+    (right) => right?.roles.includes("counsellor") && right.isNotifiedByEmail,
+  )
+    ? "counsellor-and-validator"
+    : "validator-only";
+
 export const agencyDtoToConventionAgencyFields = (
   agency: AgencyWithUsersRights,
   agencyRefersTo: AgencyWithUsersRights | null,
 ): ConventionAgencyPublicFields => ({
-  agencyValidationSteps: Object.values(agency.usersRights).some(
-    (right) => right?.roles.includes("counsellor") && right.isNotifiedByEmail,
-  )
-    ? "counsellor-and-validator"
-    : "validator-only",
+  agencyValidationSteps: getAgencyValidationSteps(agency),
   agencyName: agency.name,
   agencyContactEmail: agency.contactEmail,
   agencyDepartment: agency.address.departmentCode,
