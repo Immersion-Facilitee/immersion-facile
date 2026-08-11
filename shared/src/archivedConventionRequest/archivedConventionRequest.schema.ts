@@ -1,15 +1,20 @@
 import { z } from "zod";
 import { conventionIdSchema } from "../convention/convention.schema";
+import { emailSchema } from "../email/email.schema";
 import { appellationAndRomeDtoSchema } from "../romeAndAppellationDtos/romeAndAppellation.schema";
 import { siretSchema } from "../siret/siret.schema";
 import {
   firstnameMandatorySchema,
+  firstnameSchema,
   lastnameMandatorySchema,
+  lastnameSchema,
 } from "../user/user.schema";
+import { makeDateStringSchema } from "../utils/date";
 import {
   makeHardenedStringSchema,
   zStringMinLength1Max255,
 } from "../utils/string.schema";
+import { zUuidLike } from "../utils/uuid";
 import {
   localization,
   type ZodSchemaWithInputMatchingOutput,
@@ -17,7 +22,9 @@ import {
 import {
   type ArchivedConventionRequestDto,
   type ArchivedConventionRequestId,
+  type ArchivedConventionRequestReason,
   type ArchivedConventionRequestReasonFields,
+  type ArchivedConventionRequestToReviewListDto,
   archivedConventionRequestReasons,
 } from "./archivedConventionRequest.dto";
 
@@ -33,7 +40,7 @@ const otherReasonSchema = makeHardenedStringSchema({
   minMessage: localization.minCharacters(10),
 });
 
-const archivedConventionRequestReasonSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestReasonFields> =
+const archivedConventionRequestReasonFieldsSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestReasonFields> =
   z.discriminatedUnion(
     "reason",
     [
@@ -72,4 +79,21 @@ export const archivedConventionRequestSchema: ZodSchemaWithInputMatchingOutput<A
       archivedConventionRequestWithConventionIdSchema,
       archivedConventionRequestWithConventionDetailsSchema,
     ])
-    .and(archivedConventionRequestReasonSchema);
+    .and(archivedConventionRequestReasonFieldsSchema);
+
+export const archivedConventionRequestReasonSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestReason> =
+  z.enum(archivedConventionRequestReasons);
+
+export const archivedConventionRequestToReviewListDtoSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestToReviewListDto> =
+  z.array(
+    z.object({
+      id: zUuidLike,
+      reason: archivedConventionRequestReasonSchema,
+      createdAt: makeDateStringSchema(),
+      requester: z.object({
+        firstname: firstnameSchema,
+        lastname: lastnameSchema,
+        email: emailSchema,
+      }),
+    }),
+  );
