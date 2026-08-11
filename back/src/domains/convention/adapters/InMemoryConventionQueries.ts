@@ -1,5 +1,5 @@
 import { addDays, isAfter, isBefore, subDays, subMonths } from "date-fns";
-import { propEq, toPairs } from "ramda";
+import { propEq } from "ramda";
 import {
   type AgencyId,
   ASSESSEMENT_SIGNATURE_RELEASE_DATE,
@@ -29,6 +29,7 @@ import {
 } from "shared";
 import { match } from "ts-pattern";
 import { validateAndParseZodSchema } from "../../../config/helpers/validateAndParseZodSchema";
+import { getAgencyValidationSteps } from "../../../utils/agency";
 import { assesmentEntityToConventionAssessmentFields } from "../../../utils/convention";
 import { createLogger } from "../../../utils/logger";
 import type { InMemoryAgencyRepository } from "../../agency/adapters/InMemoryAgencyRepository";
@@ -279,14 +280,6 @@ export class InMemoryConventionQueries implements ConventionQueries {
         (agency) => agency.id === agency.refersToAgencyId,
       );
 
-    const counsellorIds = toPairs(agency.usersRights).reduce<UserId[]>(
-      (acc, [userId, userRights]) => [
-        ...acc,
-        ...(userRights?.roles.includes("counsellor") ? [userId] : []),
-      ],
-      [],
-    );
-
     const assessment = this.assessmentRepository.assessments.find(
       (assessment) => assessment.conventionId === convention.id,
     );
@@ -298,9 +291,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
       agencyContactEmail: agency.contactEmail,
       agencyKind: agency.kind,
       agencySiret: agency.agencySiret,
-      agencyValidationSteps: counsellorIds.length
-        ? "counsellor-and-validator"
-        : "validator-only",
+      agencyValidationSteps: getAgencyValidationSteps(agency),
       agencyRefersTo: referedAgency
         ? {
             id: referedAgency.id,
