@@ -974,6 +974,80 @@ describe("convention e2e", () => {
       expectToEqual(sentSms.length, 1);
     });
 
+    it("200 - connected beneficiary can send assessment link", async () => {
+      const conventionWithValidStatus = new ConventionDtoBuilder(convention)
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .build();
+      const beneficiary = new ConnectedUserBuilder()
+        .withId("beneficiary")
+        .withEmail(conventionWithValidStatus.signatories.beneficiary.email)
+        .buildUser();
+
+      inMemoryUow.conventionRepository.setConventions([
+        conventionWithValidStatus,
+      ]);
+      inMemoryUow.userRepository.users = [beneficiary];
+      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
+
+      const response = await magicLinkRequest.sendAssessmentLink({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: beneficiary.id,
+            version: 1,
+          }),
+        },
+        body: {
+          conventionId: conventionWithValidStatus.id,
+          notificationKind: "sms",
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: "",
+      });
+
+      await processEventsForEmailToBeSent(eventCrawler);
+
+      expectToEqual(gateways.notification.getSentSms().length, 1);
+    });
+
+    it("403 - connected user whose email is not linked to the convention cannot send assessment link", async () => {
+      const conventionWithValidStatus = new ConventionDtoBuilder(convention)
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .build();
+      const unrelatedUser = new ConnectedUserBuilder()
+        .withId("unrelated-user")
+        .withEmail("unrelated@mail.com")
+        .buildUser();
+
+      inMemoryUow.conventionRepository.setConventions([
+        conventionWithValidStatus,
+      ]);
+      inMemoryUow.userRepository.users = [unrelatedUser];
+
+      const response = await magicLinkRequest.sendAssessmentLink({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: unrelatedUser.id,
+            version: 1,
+          }),
+        },
+        body: {
+          conventionId: conventionWithValidStatus.id,
+          notificationKind: "sms",
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.assessment.sendAssessmentLinkForbidden().message,
+        },
+      });
+    });
+
     it("400 - Cannot send assessment link when convention is READY_TO_SIGN", async () => {
       const conventionReadyToSign = new ConventionDtoBuilder(convention)
         .withStatus("READY_TO_SIGN")
