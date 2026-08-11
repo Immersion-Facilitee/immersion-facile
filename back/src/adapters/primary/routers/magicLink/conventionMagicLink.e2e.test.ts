@@ -562,7 +562,7 @@ describe("Magic link router", () => {
       });
     });
 
-    it("403 - cannot sign with connected user (icUser email != convention establishment representative email)", async () => {
+    it("403 - cannot sign with connected user who is not a signatory", async () => {
       const agency = new AgencyDtoBuilder().build();
       const validator = new ConnectedUserBuilder()
         .withId("validator")
@@ -607,7 +607,10 @@ describe("Magic link router", () => {
         status: 403,
         body: {
           status: 403,
-          message: `User '${notEstablishmentRepresentative.id}' is not the establishment representative for convention '${convention.id}'`,
+          message: errors.convention.connectedUserNotSignatory({
+            userId: notEstablishmentRepresentative.id,
+            conventionId: convention.id,
+          }).message,
         },
       });
     });

@@ -520,6 +520,16 @@ export const errors = {
       new ForbiddenError(
         `Seules les roles bénéficaires, employeur du bénéficaire, représentant légal ou le réprésentant de l'établissement d'accueil ont la possibilitée de signer. Le role fourni était : ${role}`,
       ),
+    connectedUserNotSignatory: ({
+      userId,
+      conventionId,
+    }: {
+      userId: UserId;
+      conventionId: ConventionId;
+    }) =>
+      new ForbiddenError(
+        `L'utilisateur '${userId}' n'est pas autorisé à signer la convention '${conventionId}'.`,
+      ),
     sendSignatureLinkNotAllowedForStatus: ({
       status,
     }: {
