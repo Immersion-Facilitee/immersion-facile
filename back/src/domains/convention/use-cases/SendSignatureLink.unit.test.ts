@@ -100,6 +100,14 @@ const backofficeAdminBuilder = new ConnectedUserBuilder().withId(
 );
 const backofficeAdmin = backofficeAdminBuilder.withIsAdmin(true).build();
 
+const connectedBeneficiaryPayload: ConnectedUserDomainJwtPayload = {
+  userId: "bcc5c20e-6dd2-45cf-affe-927358005264",
+};
+const connectedBeneficiaryUser = new ConnectedUserBuilder()
+  .withId(connectedBeneficiaryPayload.userId)
+  .withEmail(convention.signatories.beneficiary.email)
+  .build();
+
 describe("Send signature link", () => {
   const config = new AppConfigBuilder().build();
   let shortLinkIdGeneratorGateway: DeterministShortLinkIdGeneratorGateway;
@@ -268,6 +276,29 @@ describe("Send signature link", () => {
               notificationKind: "sms",
             },
             connectedUserPayload,
+          ),
+          errors.convention.sendSignatureLinkNotAuthorizedForRole(),
+        );
+      });
+
+      it("throws unauthorized if connected user email is not linked to the convention", async () => {
+        const unrelatedUser = new ConnectedUserBuilder()
+          .withId("bcc5c20e-6dd2-45cf-affe-927358005265")
+          .withEmail("unrelated@mail.com")
+          .build();
+
+        uow.conventionRepository.setConventions([convention]);
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+        uow.userRepository.users = [unrelatedUser];
+
+        await expectPromiseToFailWithError(
+          usecase.execute(
+            {
+              conventionId,
+              signatoryRole: "beneficiary",
+              notificationKind: "sms",
+            },
+            { userId: unrelatedUser.id },
           ),
           errors.convention.sendSignatureLinkNotAuthorizedForRole(),
         );
@@ -645,6 +676,66 @@ describe("Send signature link", () => {
           templatedContent: {
             recipientPhone:
               convention.signatories.establishmentRepresentative.phone,
+            kind: "ReminderForSignatories",
+            params: {
+              shortLink: makeShortLinkUrl(config, shortLinkId),
+            },
+          },
+        },
+      ]);
+    });
+
+    it.each([
+      "beneficiary",
+      "establishment-representative",
+    ] as const)("When connected beneficiary triggers it for %s", async (signatoryRole) => {
+      const shortLinkId = "link1";
+      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+
+      uow.conventionRepository.setConventions([convention]);
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+      uow.userRepository.users = [connectedBeneficiaryUser];
+
+      await usecase.execute(
+        {
+          conventionId,
+          signatoryRole,
+          notificationKind: "sms",
+        },
+        connectedBeneficiaryPayload,
+      );
+
+      const recipient =
+        signatoryRole === "beneficiary"
+          ? convention.signatories.beneficiary
+          : convention.signatories.establishmentRepresentative;
+
+      expectObjectInArrayToMatch(uow.outboxRepository.events, [
+        { topic: "NotificationAdded" },
+        {
+          topic: "ConventionSignatureLinkManuallySent",
+          payload: {
+            convention,
+            recipientRole: signatoryRole,
+            transport: "sms",
+            triggeredBy: {
+              kind: "connected-user",
+              userId: connectedBeneficiaryUser.id,
+            },
+          },
+        },
+      ]);
+      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+        {
+          kind: "sms",
+          followedIds: {
+            conventionId: convention.id,
+            agencyId: convention.agencyId,
+            establishmentSiret: convention.siret,
+            userId: connectedBeneficiaryUser.id,
+          },
+          templatedContent: {
+            recipientPhone: recipient.phone,
             kind: "ReminderForSignatories",
             params: {
               shortLink: makeShortLinkUrl(config, shortLinkId),

@@ -948,5 +948,154 @@ describe("Magic link router", () => {
       expectToEqual(response.status, 200);
       expectToEqual(response.body, "");
     });
+
+    it("200 - connected beneficiary can send signature link to themselves", async () => {
+      const agency = new AgencyDtoBuilder().build();
+      const convention = new ConventionDtoBuilder()
+        .withStatus("READY_TO_SIGN")
+        .withBeneficiaryPhone("+33611111111")
+        .notSigned()
+        .build();
+      const beneficiary = new ConnectedUserBuilder()
+        .withId("beneficiary")
+        .withEmail(convention.signatories.beneficiary.email)
+        .buildUser();
+      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
+
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      inMemoryUow.userRepository.users = [beneficiary];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+
+      const response = await httpClient.sendSignatureLink({
+        body: {
+          conventionId: convention.id,
+          signatoryRole: "beneficiary",
+          notificationKind: "sms",
+        },
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: beneficiary.id,
+            version: 1,
+          }),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: "",
+      });
+    });
+
+    it("200 - connected beneficiary can send signature link to another signatory", async () => {
+      const agency = new AgencyDtoBuilder().build();
+      const convention = new ConventionDtoBuilder()
+        .withStatus("READY_TO_SIGN")
+        .notSigned()
+        .build();
+      const beneficiary = new ConnectedUserBuilder()
+        .withId("beneficiary")
+        .withEmail(convention.signatories.beneficiary.email)
+        .buildUser();
+      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
+
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      inMemoryUow.userRepository.users = [beneficiary];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+
+      const response = await httpClient.sendSignatureLink({
+        body: {
+          conventionId: convention.id,
+          signatoryRole: "establishment-representative",
+          notificationKind: "sms",
+        },
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: beneficiary.id,
+            version: 1,
+          }),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: "",
+      });
+    });
+
+    it("200 - connected establishment representative can send signature link to a signatory", async () => {
+      const agency = new AgencyDtoBuilder().build();
+      const convention = new ConventionDtoBuilder()
+        .withStatus("READY_TO_SIGN")
+        .withBeneficiaryPhone("+33611111111")
+        .notSigned()
+        .build();
+      const establishmentRepresentative = new ConnectedUserBuilder()
+        .withId("establishment-representative")
+        .withEmail(convention.signatories.establishmentRepresentative.email)
+        .buildUser();
+      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
+
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      inMemoryUow.userRepository.users = [establishmentRepresentative];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+
+      const response = await httpClient.sendSignatureLink({
+        body: {
+          conventionId: convention.id,
+          signatoryRole: "beneficiary",
+          notificationKind: "sms",
+        },
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: establishmentRepresentative.id,
+            version: 1,
+          }),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: "",
+      });
+    });
+
+    it("403 - connected user whose email is not linked to the convention cannot send signature link", async () => {
+      const agency = new AgencyDtoBuilder().build();
+      const convention = new ConventionDtoBuilder()
+        .withStatus("READY_TO_SIGN")
+        .notSigned()
+        .build();
+      const unrelatedUser = new ConnectedUserBuilder()
+        .withId("unrelated-user")
+        .withEmail("unrelated@mail.com")
+        .buildUser();
+
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      inMemoryUow.userRepository.users = [unrelatedUser];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+
+      const response = await httpClient.sendSignatureLink({
+        body: {
+          conventionId: convention.id,
+          signatoryRole: "beneficiary",
+          notificationKind: "sms",
+        },
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: unrelatedUser.id,
+            version: 1,
+          }),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message:
+            errors.convention.sendSignatureLinkNotAuthorizedForRole().message,
+        },
+      });
+    });
   });
 });
