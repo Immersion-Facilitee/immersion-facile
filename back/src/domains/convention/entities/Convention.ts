@@ -6,7 +6,6 @@ import {
   type AgencyValidationStep,
   type AgencyWithUsersRights,
   type ApiConsumer,
-  allSignatoryRoles,
   type ConnectedUserDomainJwtPayload,
   type ConventionDomainJwtPayload,
   type ConventionDto,
@@ -310,7 +309,7 @@ export const shouldBroadcastToFranceTravail = ({
   return false;
 };
 
-const getSignatoryRoleAndUserFromJwtPayload = async (
+export const getSignatoryRoleAndUserFromJwtPayload = async (
   jwtPayload: ConventionDomainJwtPayload | ConnectedUserDomainJwtPayload,
   uow: UnitOfWork,
   convention: ConventionDto,
@@ -341,29 +340,17 @@ const getSignatoryRoleAndUserFromJwtPayload = async (
   });
 };
 
-const isAllowedToSign = (role: Role): role is SignatoryRole =>
-  allSignatoryRoles.includes(role as SignatoryRole);
-
 export const signConvention = async ({
   uow,
   convention,
-  jwtPayload,
   now,
+  role,
 }: {
   uow: UnitOfWork;
   convention: ConventionDto;
-  jwtPayload: ConventionDomainJwtPayload | ConnectedUserDomainJwtPayload;
   now: DateTimeIsoString;
+  role: SignatoryRole;
 }) => {
-  const { role, userWithRights } = await getSignatoryRoleAndUserFromJwtPayload(
-    jwtPayload,
-    uow,
-    convention,
-  );
-
-  if (!isAllowedToSign(role))
-    throw errors.convention.roleNotAllowedToSign({ role });
-
   const agencyWithRights = await uow.agencyRepository.getById(
     convention.agencyId,
   );
@@ -386,11 +373,7 @@ export const signConvention = async ({
   if (!signedId)
     throw errors.convention.notFound({ conventionId: signedConvention.id });
 
-  return {
-    role,
-    userWithRights,
-    signedConvention,
-  };
+  return signedConvention;
 };
 
 export const domainTopicByTargetStatusMap: Partial<
