@@ -2361,7 +2361,7 @@ Tél : ${beneficiaryPhone}`,
 
       Vous pouvez prendre connaissance de la demande en <a href="${manageConventionLink}" target="_blank">cliquant ici</a>.
       <ul>
-        <li><strong>ATTENTION !</strong> Vous pouvez renvoyer un lien de signature par SMS en un clic aux signataires qui ont renseigné un numéro de mobile. Il vous suffit de cliquer sur le bouton 'Faire signer par SMS' dans l'encadré correspondant au signataire auquel vous souhaitez adresser le SMS.</li>
+        <li>Vous pouvez renvoyer un lien de signature par mail ou par SMS si son numéro de mobile est renseigné. Il vous suffit de cliquer sur le bouton "Relancer" dans l'encadré correspondant au signataire auquel vous souhaitez adresser le mail ou le SMS.</li>
         <li>Vous pouvez dès maintenant demander des modifications ou la refuser si nécessaire.</li>   
         <li>Vous ne pouvez pas la valider tant que le bénéficiaire et l'entreprise n'ont pas confirmé chacun leur accord pour cette demande.</li>
       </ul> 
