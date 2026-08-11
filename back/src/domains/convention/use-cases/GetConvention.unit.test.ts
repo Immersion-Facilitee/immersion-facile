@@ -65,6 +65,22 @@ describe("Get Convention", () => {
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
   };
+  const beneficiary: User = {
+    id: "beneficiary",
+    email: "beneficiary@email.fr",
+    firstName: "Jean",
+    lastName: "Benef",
+    proConnect: defaultProConnectInfos,
+    createdAt: new Date().toISOString(),
+  };
+  const userWithNoRight: User = {
+    id: "user-with-no-right",
+    email: "user-with-no-right@mail.com",
+    firstName: "User",
+    lastName: "With No Right",
+    proConnect: defaultProConnectInfos,
+    createdAt: new Date().toISOString(),
+  };
   const tutor: User = {
     id: "my-tutor-user-id",
     email: "tutor@email.com",
@@ -222,6 +238,8 @@ describe("Get Convention", () => {
       validator,
       johnDoe,
       establishmentRep,
+      beneficiary,
+      userWithNoRight,
       tutor,
       backofficeAdminUser,
     ];
@@ -233,6 +251,19 @@ describe("Get Convention", () => {
   describe("Wrong paths", () => {
     describe("Forbidden error", () => {
       describe("with ConnectedUser", () => {
+        it("when the connected user has no rights on the convention", async () => {
+          await expectPromiseToFailWithError(
+            getConvention.execute(
+              { conventionId: convention.id },
+              { userId: userWithNoRight.id },
+            ),
+            errors.convention.forbiddenMissingRightsUserId({
+              conventionId: convention.id,
+              userId: userWithNoRight.id,
+            }),
+          );
+        });
+
         it("When the user don't have correct role on connected users neither has right on existing establishment with same siret in convention", async () => {
           uow.establishmentAggregateRepository.establishmentAggregates = [
             establishmentWithSiret,
@@ -650,6 +681,34 @@ describe("Get Convention", () => {
     });
 
     describe("with connected user", () => {
+      it("that beneficiary email is also the connected user email", async () => {
+        expectToEqual(
+          await getConvention.execute(
+            { conventionId: convention.id },
+            {
+              userId: beneficiary.id,
+            },
+          ),
+          {
+            ...convention,
+            agencyName: agency.name,
+            agencyDepartment: agency.address.departmentCode,
+            agencyKind: agency.kind,
+            agencyContactEmail: agency.contactEmail,
+            agencySiret: agency.agencySiret,
+            agencyValidationSteps: "validator-only",
+            assessment: {
+              status: assessment.status,
+              endedWithAJob: assessment.endedWithAJob,
+              signedAt: assessment.signedAt,
+              createdAt: assessment.createdAt,
+            },
+            lastReminders: makeEmptyLastReminders(),
+            isEstablishmentBanned: false,
+          },
+        );
+      });
+
       it("that have agency rights", async () => {
         uow.agencyRepository.agencies = [
           toAgencyWithRights(agency, {
