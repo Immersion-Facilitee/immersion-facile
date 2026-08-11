@@ -4,6 +4,7 @@ import type {
   AgencyUserConventionListDto,
   ApiConsumerName,
   ArchivedConventionRequestDto,
+  ArchivedConventionRequestToReviewListDto,
   AuthenticatedConventionRoutes,
   BeneficiaryConventionListDto,
   ConnectedUserJwt,
@@ -159,6 +160,22 @@ export class HttpConventionGateway implements ConventionGateway {
             .with({ status: 201 }, () => undefined)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: 401 }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  fetchArchivedConventionRequestToReviewList$(
+    jwt: string,
+  ): Observable<ArchivedConventionRequestToReviewListDto> {
+    return from(
+      this.authenticatedHttpClient
+        .fetchArchivedConventionRequestToReviewList({
+          headers: { authorization: jwt },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, (response) => response.body)
             .otherwise(otherwiseThrow),
         ),
     );

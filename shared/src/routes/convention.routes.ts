@@ -1,7 +1,10 @@
 import { defineRoute, defineRoutes } from "shared-routes";
 import z from "zod";
 import { apiConsumerReadSchema } from "../apiConsumer/apiConsumer.schema";
-import { archivedConventionRequestSchema } from "../archivedConventionRequest/archivedConventionRequest.schema";
+import {
+  archivedConventionRequestSchema,
+  archivedConventionRequestToReviewListDtoSchema,
+} from "../archivedConventionRequest/archivedConventionRequest.schema";
 import {
   assessmentDtoSchema,
   deleteAssessmentRequestDtoSchema,
@@ -328,6 +331,14 @@ export type AuthenticatedConventionRoutes =
   typeof authenticatedConventionRoutes;
 
 export const authenticatedConventionRoutes = defineRoutes({
+  fetchArchivedConventionRequestToReviewList: defineRoute({
+    method: "get",
+    url: "/archived-convention",
+    ...withAuthorizationHeaders,
+    responses: {
+      200: archivedConventionRequestToReviewListDtoSchema,
+    },
+  }),
   getApiConsumersByConvention: defineRoute({
     method: "get",
     url: "/conventions/:conventionId/api-consumers",
