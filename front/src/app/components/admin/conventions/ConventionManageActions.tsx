@@ -4,7 +4,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { mapObjIndexed } from "ramda";
 import { type ReactNode, useState } from "react";
-import { useLayout } from "react-design-system";
+import { useBreakpoint } from "react-design-system/src/helpers/layout";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -328,7 +328,7 @@ export const ConventionManageActions = ({
     isAssessmentSignPrimary,
   });
 
-  const { isLayoutDesktop } = useLayout();
+  const isLayoutDesktop = useBreakpoint("md");
 
   return (
     <div
