@@ -56,6 +56,10 @@ describe("GetAssessmentByConventionId", () => {
     .withEmail("agencyViewer@email.com")
     .buildUser();
   const convention = new ConventionDtoBuilder().withAgencyId(agency.id).build();
+  const beneficiary = new ConnectedUserBuilder()
+    .withId("beneficiary")
+    .withEmail(convention.signatories.beneficiary.email)
+    .buildUser();
   const establishmentTutorPayload: ConventionDomainJwtPayload = {
     applicationId: convention.id,
     role: "establishment-tutor",
@@ -108,6 +112,7 @@ describe("GetAssessmentByConventionId", () => {
       validator,
       agencyAdmin,
       agencyViewer,
+      beneficiary,
       userWithoutRoleOnConvention,
       backOfficeAdmin,
     ];
@@ -158,9 +163,7 @@ describe("GetAssessmentByConventionId", () => {
       );
     });
 
-    it("throws forbidden if user doesnt have allowed assessment role on convention", async () => {
-      uow.conventionRepository.setConventions([convention]);
-
+    it("throws forbidden if connected user email is not linked to the convention", async () => {
       await expectPromiseToFailWithError(
         getAssessment.execute(
           { conventionId: convention.id },
@@ -222,96 +225,112 @@ describe("GetAssessmentByConventionId", () => {
   });
 
   describe("Right paths", () => {
-    it.each(
-      passingRoles,
-    )("get existing assessment with magic link role '%s'", async (role) => {
-      expectToEqual(
-        await getAssessment.execute(
-          {
-            conventionId: convention.id,
-          },
-          {
-            ...establishmentTutorPayload,
-            role,
-            emailHash: makeHashByRolesForTest(
-              convention,
-              counsellor,
-              validator,
-            )[role],
-          },
-        ),
-        assessment,
-      );
+    describe("with magic link", () => {
+      it.each(
+        passingRoles,
+      )("get existing assessment with role '%s'", async (role) => {
+        expectToEqual(
+          await getAssessment.execute(
+            {
+              conventionId: convention.id,
+            },
+            {
+              ...establishmentTutorPayload,
+              role,
+              emailHash: makeHashByRolesForTest(
+                convention,
+                counsellor,
+                validator,
+              )[role],
+            },
+          ),
+          assessment,
+        );
+      });
     });
 
-    it("get existing assessment if user is validator", async () => {
-      uow.conventionRepository.setConventions([convention]);
+    describe("with connected user", () => {
+      it("get existing assessment if user is beneficiary", async () => {
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            {
+              userId: beneficiary.id,
+            },
+          ),
+          assessment,
+        );
+      });
 
-      expectToEqual(
-        await getAssessment.execute(
-          { conventionId: convention.id },
-          {
-            userId: validator.id,
-          },
-        ),
-        assessment,
-      );
-    });
+      it("get existing assessment if user is validator", async () => {
+        uow.conventionRepository.setConventions([convention]);
 
-    it("get existing assessment if user is counsellor", async () => {
-      uow.conventionRepository.setConventions([convention]);
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            {
+              userId: validator.id,
+            },
+          ),
+          assessment,
+        );
+      });
 
-      expectToEqual(
-        await getAssessment.execute(
-          { conventionId: convention.id },
-          {
-            userId: counsellor.id,
-          },
-        ),
-        assessment,
-      );
-    });
+      it("get existing assessment if user is counsellor", async () => {
+        uow.conventionRepository.setConventions([convention]);
 
-    it("get existing assessment if user is back-office admin", async () => {
-      uow.conventionRepository.setConventions([convention]);
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            {
+              userId: counsellor.id,
+            },
+          ),
+          assessment,
+        );
+      });
 
-      expectToEqual(
-        await getAssessment.execute(
-          { conventionId: convention.id },
-          {
-            userId: backOfficeAdmin.id,
-          },
-        ),
-        assessment,
-      );
-    });
+      it("get existing assessment if user is back-office admin", async () => {
+        uow.conventionRepository.setConventions([convention]);
 
-    it("get existing assessment if user is agency-admin", async () => {
-      uow.conventionRepository.setConventions([convention]);
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            {
+              userId: backOfficeAdmin.id,
+            },
+          ),
+          assessment,
+        );
+      });
 
-      expectToEqual(
-        await getAssessment.execute(
-          { conventionId: convention.id },
-          {
-            userId: agencyAdmin.id,
-          },
-        ),
-        assessment,
-      );
-    });
+      it("get existing assessment if user is agency-admin", async () => {
+        uow.conventionRepository.setConventions([convention]);
 
-    it("get existing assessment if user is agency-viewer", async () => {
-      uow.conventionRepository.setConventions([convention]);
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            {
+              userId: agencyAdmin.id,
+            },
+          ),
+          assessment,
+        );
+      });
 
-      expectToEqual(
-        await getAssessment.execute(
-          { conventionId: convention.id },
-          {
-            userId: agencyViewer.id,
-          },
-        ),
-        assessment,
-      );
+      it("get existing assessment if user is agency-viewer", async () => {
+        uow.conventionRepository.setConventions([convention]);
+
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            {
+              userId: agencyViewer.id,
+            },
+          ),
+          assessment,
+        );
+      });
     });
 
     it("can also get an assessment with legacy format", async () => {

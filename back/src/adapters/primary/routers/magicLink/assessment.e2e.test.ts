@@ -254,6 +254,99 @@ describe("Assessment routes", () => {
       });
     });
 
+    it("returns 200 if connected beneficiary jwt is valid", async () => {
+      const assessment: AssessmentDto = {
+        conventionId: convention.id,
+        status: "COMPLETED",
+        establishmentFeedback: "The guy left after one day",
+        endedWithAJob: false,
+        establishmentAdvices: "mon conseil",
+        beneficiaryAgreement: true,
+        beneficiaryFeedback: "Mon commentaire",
+        signedAt: new Date("2025-01-01").toISOString(),
+        createdAt: new Date("2025-01-01").toISOString(),
+      };
+      const beneficiary = new ConnectedUserBuilder()
+        .withId("beneficiary")
+        .withEmail(convention.signatories.beneficiary.email)
+        .buildUser();
+
+      inMemoryUow.userRepository.users = [
+        ...inMemoryUow.userRepository.users,
+        beneficiary,
+      ];
+      inMemoryUow.assessmentRepository.assessments = [
+        {
+          _entityName: "Assessment",
+          numberOfHoursActuallyMade: convention.schedule.totalHours,
+          ...assessment,
+        },
+      ];
+
+      const response = await httpClient.getAssessmentByConventionId({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: beneficiary.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        urlParams: { conventionId: convention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: assessment,
+      });
+    });
+
+    it("fails with 403 if connected user email is not linked to the convention", async () => {
+      const assessment: AssessmentDto = {
+        conventionId: convention.id,
+        status: "COMPLETED",
+        establishmentFeedback: "The guy left after one day",
+        endedWithAJob: false,
+        establishmentAdvices: "mon conseil",
+        beneficiaryAgreement: true,
+        beneficiaryFeedback: "Mon commentaire",
+        signedAt: new Date("2025-01-01").toISOString(),
+        createdAt: new Date("2025-01-01").toISOString(),
+      };
+      const unrelatedUser = new ConnectedUserBuilder()
+        .withId("unrelated-user")
+        .withEmail("unrelated@mail.com")
+        .buildUser();
+
+      inMemoryUow.userRepository.users = [
+        ...inMemoryUow.userRepository.users,
+        unrelatedUser,
+      ];
+      inMemoryUow.assessmentRepository.assessments = [
+        {
+          _entityName: "Assessment",
+          numberOfHoursActuallyMade: convention.schedule.totalHours,
+          ...assessment,
+        },
+      ];
+
+      const response = await httpClient.getAssessmentByConventionId({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: unrelatedUser.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        urlParams: { conventionId: convention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.assessment.forbidden("GetAssessment").message,
+        },
+      });
+    });
+
     it("returns 200 if the jwt is valid and assessment is legacyAssessmentDto", async () => {
       const legacyAssessment: LegacyAssessmentDto = {
         conventionId: convention.id,
