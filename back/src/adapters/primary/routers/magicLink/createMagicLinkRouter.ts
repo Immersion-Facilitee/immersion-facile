@@ -45,7 +45,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
       sendHttpResponse(req, res, () =>
         deps.useCases.getAssessmentByConventionId.execute(
           req.params,
-          req.payloads?.convention, // Pas de récupération du bilan possible en mode user connecté?
+          getConventionRelatedJwtPayload(req.payloads),
         ),
       ),
   );
