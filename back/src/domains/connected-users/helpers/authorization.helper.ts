@@ -192,6 +192,13 @@ const onConnectedUser = async ({
   }
 
   if (
+    userWithRights.email === convention.signatories.beneficiary.email &&
+    authorizedRoles.includes("beneficiary")
+  ) {
+    return;
+  }
+
+  if (
     userWithRights.email ===
       convention.signatories.establishmentRepresentative.email &&
     authorizedRoles.includes("establishment-representative")

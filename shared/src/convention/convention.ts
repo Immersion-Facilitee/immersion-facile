@@ -293,7 +293,7 @@ export const flatParamsToGetConventionsForAgencyUserParams = (
 type ConnectedUserConventionManageAllowedRole =
   | EstablishmentRole
   | ConventionEstablishmentRole
-  | ExtractFromExisting<Role, "back-office">
+  | ExtractFromExisting<Role, "back-office" | "beneficiary">
   | ExcludeFromExisting<AgencyRole, "to-review">;
 
 export const getConventionManageAllowedRoles = (
@@ -302,6 +302,8 @@ export const getConventionManageAllowedRoles = (
 ): ConnectedUserConventionManageAllowedRole[] => {
   const roles: ConnectedUserConventionManageAllowedRole[] = [];
   if (user.isBackofficeAdmin) roles.push("back-office");
+  if (convention.signatories.beneficiary.email === user.email)
+    roles.push("beneficiary");
   if (convention.signatories.establishmentRepresentative.email === user.email)
     roles.push("establishment-representative");
   if (convention.establishmentTutor.email === user.email)

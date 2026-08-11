@@ -415,6 +415,11 @@ export const extractUserRolesOnConventionFromJwtPayload = async (
     if (userWithRights.isBackofficeAdmin) roles.push("back-office");
 
     if (
+      userWithRights.email === initialConvention.signatories.beneficiary.email
+    )
+      roles.push(initialConvention.signatories.beneficiary.role);
+
+    if (
       userWithRights.email ===
       initialConvention.signatories.establishmentRepresentative.email
     )
