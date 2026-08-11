@@ -15,7 +15,6 @@ import {
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
-  ForbiddenError,
   type Signatories,
   splitCasesBetweenPassingAndFailing,
 } from "shared";
@@ -137,7 +136,7 @@ describe("Sign convention", () => {
     });
 
     describe("with convention connected user jwt", () => {
-      it("wh IC user is not establishment rep", async () => {
+      it("when connected user is not a signatory", async () => {
         const { convention, agency } =
           prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
         uow.conventionRepository.setConventions([convention]);
@@ -161,9 +160,10 @@ describe("Sign convention", () => {
               userId: user.id,
             },
           ),
-          new ForbiddenError(
-            `User '${user.id}' is not the establishment representative for convention '${conventionId}'`,
-          ),
+          errors.convention.connectedUserNotSignatory({
+            userId: user.id,
+            conventionId,
+          }),
         );
       });
     });

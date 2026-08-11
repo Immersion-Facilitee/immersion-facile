@@ -310,10 +310,10 @@ export const shouldBroadcastToFranceTravail = ({
   return false;
 };
 
-const getRoleAndIcUser = async (
+const getSignatoryRoleAndUserFromJwtPayload = async (
   jwtPayload: ConventionDomainJwtPayload | ConnectedUserDomainJwtPayload,
   uow: UnitOfWork,
-  initialConvention: ConventionDto,
+  convention: ConventionDto,
 ): Promise<{ role: Role; userWithRights: UserWithRights | undefined }> => {
   if ("role" in jwtPayload)
     return { role: jwtPayload.role, userWithRights: undefined };
@@ -321,17 +321,24 @@ const getRoleAndIcUser = async (
   const userWithRights = await getUserWithRights(uow, jwtPayload.userId);
 
   if (
-    userWithRights.email !==
-    initialConvention.signatories.establishmentRepresentative.email
+    userWithRights.email ===
+    convention.signatories.establishmentRepresentative.email
   )
-    throw new ForbiddenError(
-      `User '${userWithRights.id}' is not the establishment representative for convention '${initialConvention.id}'`,
-    );
+    return {
+      role: convention.signatories.establishmentRepresentative.role,
+      userWithRights,
+    };
 
-  return {
-    role: initialConvention.signatories.establishmentRepresentative.role,
-    userWithRights,
-  };
+  if (userWithRights.email === convention.signatories.beneficiary.email)
+    return {
+      role: convention.signatories.beneficiary.role,
+      userWithRights,
+    };
+
+  throw errors.convention.connectedUserNotSignatory({
+    userId: userWithRights.id,
+    conventionId: convention.id,
+  });
 };
 
 const isAllowedToSign = (role: Role): role is SignatoryRole =>
@@ -348,7 +355,7 @@ export const signConvention = async ({
   jwtPayload: ConventionDomainJwtPayload | ConnectedUserDomainJwtPayload;
   now: DateTimeIsoString;
 }) => {
-  const { role, userWithRights } = await getRoleAndIcUser(
+  const { role, userWithRights } = await getSignatoryRoleAndUserFromJwtPayload(
     jwtPayload,
     uow,
     convention,
