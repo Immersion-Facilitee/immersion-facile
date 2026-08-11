@@ -333,10 +333,13 @@ export type AuthenticatedConventionRoutes =
 export const authenticatedConventionRoutes = defineRoutes({
   fetchArchivedConventionRequestToReviewList: defineRoute({
     method: "get",
-    url: "/archived-convention",
+    url: "/archived-convention-requests",
     ...withAuthorizationHeaders,
     responses: {
       200: archivedConventionRequestToReviewListDtoSchema,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      404: httpErrorSchema,
     },
   }),
   getApiConsumersByConvention: defineRoute({

@@ -47,6 +47,38 @@ const saveArchivedConventionRequestEpic: ArchivedConventionRequestEpic = (
     ),
   );
 
+const fetchArchivedConventionRequestToReviewListEpic: ArchivedConventionRequestEpic =
+  (action$, _state$, { conventionGateway }) =>
+    action$.pipe(
+      filter(
+        archivedConventionRequestSlice.actions
+          .fetchArchivedConventionRequestToReviewListRequested.match,
+      ),
+      switchMap((action) =>
+        conventionGateway
+          .fetchArchivedConventionRequestToReviewList$(action.payload.jwt)
+          .pipe(
+            map((archivedConventionListToReview) =>
+              archivedConventionRequestSlice.actions.fetchArchivedConventionRequestToReviewListSuccedeed(
+                {
+                  archivedConventionListToReview,
+                  feedbackTopic: action.payload.feedbackTopic,
+                },
+              ),
+            ),
+            catchEpicError((error: Error) =>
+              archivedConventionRequestSlice.actions.fetchArchivedConventionRequestToReviewListFailed(
+                {
+                  errorMessage: error.message,
+                  feedbackTopic: action.payload.feedbackTopic,
+                },
+              ),
+            ),
+          ),
+      ),
+    );
+
 export const archivedConventionRequestEpics = [
   saveArchivedConventionRequestEpic,
+  fetchArchivedConventionRequestToReviewListEpic,
 ];

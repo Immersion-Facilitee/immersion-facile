@@ -1,17 +1,23 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { ArchivedConventionRequestDto, ConnectedUserJwt } from "shared";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type {
+  ArchivedConventionRequestDto,
+  ArchivedConventionRequestToReviewListDto,
+  ConnectedUserJwt,
+} from "shared";
 import type {
   PayloadActionWithFeedbackTopic,
   PayloadActionWithFeedbackTopicError,
-} from "src/core-logic/domain/feedback/feedback.slice";
+} from "../feedback/feedback.slice";
 
 export interface ArchivedConventionRequestState {
   isLoading: boolean;
+  archivedConventionListToReview: ArchivedConventionRequestToReviewListDto | null;
 }
 
 export const initialArchivedConventionRequestState: ArchivedConventionRequestState =
   {
     isLoading: false,
+    archivedConventionListToReview: null,
   };
 
 export const archivedConventionRequestSlice = createSlice({
@@ -38,6 +44,36 @@ export const archivedConventionRequestSlice = createSlice({
       _action: PayloadActionWithFeedbackTopicError,
     ) => {
       state.isLoading = false;
+    },
+    fetchArchivedConventionRequestToReviewListRequested: (
+      state,
+      _action: PayloadActionWithFeedbackTopic<{ jwt: ConnectedUserJwt }>,
+    ) => {
+      state.isLoading = true;
+    },
+    fetchArchivedConventionRequestToReviewListSuccedeed: (
+      state,
+      action: PayloadActionWithFeedbackTopic<{
+        archivedConventionListToReview: ArchivedConventionRequestToReviewListDto;
+      }>,
+    ) => {
+      state.isLoading = false;
+      state.archivedConventionListToReview =
+        action.payload.archivedConventionListToReview;
+    },
+    fetchArchivedConventionRequestToReviewListFailed: (
+      state,
+      _action: PayloadActionWithFeedbackTopicError,
+    ) => {
+      state.isLoading = false;
+      state.archivedConventionListToReview = [];
+    },
+    fetchArchivedConventionListToReviewCleared: (
+      state,
+      _action: PayloadAction,
+    ) => {
+      state.isLoading = false;
+      state.archivedConventionListToReview = null;
     },
   },
 });

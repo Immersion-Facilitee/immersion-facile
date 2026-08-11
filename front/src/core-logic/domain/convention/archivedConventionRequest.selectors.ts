@@ -10,6 +10,12 @@ const isLoading = createSelector(
   ({ isLoading }) => isLoading,
 );
 
+const archivedConventionListToReview = createSelector(
+  archivedConventionRequestState,
+  ({ archivedConventionListToReview }) => archivedConventionListToReview,
+);
+
 export const archivedConventionRequestSelectors = {
   isLoading,
+  archivedConventionListToReview,
 };

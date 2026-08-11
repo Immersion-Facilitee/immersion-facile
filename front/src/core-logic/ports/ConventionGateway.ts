@@ -3,6 +3,7 @@ import type {
   AgencyUserConventionListDto,
   ApiConsumerName,
   ArchivedConventionRequestDto,
+  ArchivedConventionRequestToReviewListDto,
   BeneficiaryConventionListDto,
   ConnectedUserJwt,
   ConventionDraftDto,
@@ -139,4 +140,7 @@ export interface ConventionGateway {
     archivedConventionRequest: ArchivedConventionRequestDto,
     jwt: ConnectedUserJwt,
   ): Observable<void>;
+  fetchArchivedConventionRequestToReviewList$(
+    jwt: string,
+  ): Observable<ArchivedConventionRequestToReviewListDto>;
 }

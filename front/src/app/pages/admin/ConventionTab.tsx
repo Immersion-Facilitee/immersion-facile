@@ -4,6 +4,7 @@ import { BackofficeDashboardTabContent } from "src/app/components/layout/Backoff
 import { MetabaseView } from "src/app/components/MetabaseView";
 import { SelectConventionFromIdForm } from "src/app/components/SelectConventionFromIdForm";
 import { useAdminDashboard } from "src/app/pages/admin/useAdminDashboard";
+import { ArchivedConventionListSection } from "../../components/admin/archived-conventions/ArchivedConventionListSection";
 
 export const ConventionTab = () => {
   const { url, error } = useAdminDashboard({ name: "adminConventions" });
@@ -17,6 +18,7 @@ export const ConventionTab = () => {
         subtitle="Cliquer sur l'identifiant de la convention pour y accéder."
         url={url}
       />
+      <ArchivedConventionListSection />
     </BackofficeDashboardTabContent>
   );
 };
