@@ -111,7 +111,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
       sendHttpResponse(req, res, () =>
         deps.useCases.signAssessment.execute(
           req.body,
-          getGenericAuthOrThrow(req.payloads?.convention),
+          getConventionRelatedJwtPayload(req.payloads),
         ),
       ),
   );
