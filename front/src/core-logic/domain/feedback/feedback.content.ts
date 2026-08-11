@@ -51,6 +51,7 @@ const topics = [
   "api-consumer-revoke",
   "assessment",
   "archived-convention-request",
+  "archived-convention-request-list",
   "delete-assessment",
   "auth-global",
   "broadcast-convention-again",
@@ -881,6 +882,16 @@ export const feedbacks: Record<
       title: "Suppression du modèle de convention du modèle de convention",
       message:
         "Une erreur est survenue lors de la suppression du modèle de convention.",
+    },
+  },
+  "archived-convention-request-list": {
+    "fetch.error": {
+      action:
+        archivedConventionRequestSlice.actions
+          .fetchArchivedConventionRequestToReviewListFailed,
+      title:
+        "Une erreur s'est produite lors de la récupération des demandes de désarchivage.",
+      message: "Veuillez réessayer ultérieurement ou contacter le support.",
     },
   },
   "archived-convention-request": {

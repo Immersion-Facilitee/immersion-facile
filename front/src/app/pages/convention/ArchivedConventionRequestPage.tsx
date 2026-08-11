@@ -17,6 +17,7 @@ import { Feedback } from "src/app/components/feedback/Feedback";
 import { FullPageFeedback } from "src/app/components/feedback/FullpageFeedback";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { AppellationAutocomplete } from "src/app/components/forms/autocomplete/AppellationAutocomplete";
+import { archiveReasonOptions } from "src/app/contents/convention-archive/conventionArchive.helpers";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { ConnectedPrivateRoutePage } from "src/app/pages/auth/ConnectedPrivateRoutePage";
@@ -272,7 +273,7 @@ export const ArchivedConventionRequestPage = ({
             <Select
               label="Raison de la demande *"
               placeholder="Sélectionner un motif"
-              options={reasonOptions}
+              options={archiveReasonOptions}
               nativeSelectProps={{
                 id: domElementIds.archivedConventionRequest.reasonSelect,
                 ...register("reason"),
@@ -306,26 +307,3 @@ export const ArchivedConventionRequestPage = ({
     </ConnectedPrivateRoutePage>
   );
 };
-
-const reasonOptions: {
-  label: string;
-  value: ArchivedConventionRequestDto["reason"];
-}[] = [
-  {
-    label: "Contentieux juridique",
-    value: "legalDispute",
-  },
-  {
-    label: "Contrôle URSSAF ou inspection du travail",
-    value: "urssafOrInspectionControl",
-  },
-  {
-    label:
-      "Demande d'accès d'un conseiller du Réseau pour l'emploi (RPE) sur l'historique d'une personne",
-    value: "rpeAdvisorAccessToBeneficiaryHistory",
-  },
-  {
-    label: "Autre",
-    value: "other",
-  },
-];

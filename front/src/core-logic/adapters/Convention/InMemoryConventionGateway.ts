@@ -5,6 +5,7 @@ import {
   type AgencyUserConventionListDto,
   type ApiConsumerName,
   type ArchivedConventionRequestDto,
+  type ArchivedConventionRequestToReviewListDto,
   type BeneficiaryConventionListDto,
   type ConnectedUserJwt,
   type ConventionDraftDto,
@@ -111,6 +112,9 @@ export class InMemoryConventionGateway implements ConventionGateway {
     DataWithPagination<ConventionWithUnfinalizedAssessment>
   >();
 
+  public fetchArchivedConventionRequestToReviewListResult$ =
+    new Subject<ArchivedConventionRequestToReviewListDto>();
+
   #agencies: { [id: string]: AgencyOption } = {};
 
   #conventions: { [id: string]: ConventionDto } = {
@@ -118,6 +122,13 @@ export class InMemoryConventionGateway implements ConventionGateway {
   };
 
   constructor(private simulatedLatency?: number) {}
+
+  fetchArchivedConventionRequestToReviewList$(
+    _jwt: string,
+  ): Observable<ArchivedConventionRequestToReviewListDto> {
+    return this.fetchArchivedConventionRequestToReviewListResult$;
+  }
+
   getBeneficiaryConventionList$(
     _jwt: string,
   ): Observable<BeneficiaryConventionListDto> {
