@@ -512,6 +512,93 @@ describe("convention e2e", () => {
         },
       });
     });
+
+    it("200 - connected beneficiary can get convention", async () => {
+      const beneficiary = new ConnectedUserBuilder()
+        .withId("beneficiary")
+        .withEmail(convention.signatories.beneficiary.email)
+        .buildUser();
+
+      inMemoryUow.userRepository.users = [beneficiary];
+      inMemoryUow.assessmentRepository.assessments = [
+        {
+          conventionId: convention.id,
+          status: "COMPLETED",
+          endedWithAJob: false,
+          establishmentFeedback: "Ca c'est bien passé",
+          establishmentAdvices: "mon conseil",
+          numberOfHoursActuallyMade: 35,
+          beneficiaryAgreement: null,
+          beneficiaryFeedback: null,
+          signedAt: null,
+          createdAt: new Date("2025-01-01").toISOString(),
+          _entityName: "Assessment",
+        },
+      ];
+
+      const response = await magicLinkRequest.getConvention({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: beneficiary.id,
+            version: currentJwtVersions.connectedUser,
+            iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+          }),
+        },
+        urlParams: { conventionId: convention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          ...convention,
+          agencyName: peAgency.name,
+          agencyDepartment: peAgency.address.departmentCode,
+          agencyContactEmail: peAgency.contactEmail,
+          agencyKind: peAgency.kind,
+          agencySiret: peAgency.agencySiret,
+          agencyValidationSteps: "validator-only",
+          assessment: {
+            status: "COMPLETED",
+            endedWithAJob: false,
+            signedAt: null,
+            createdAt: new Date("2025-01-01").toISOString(),
+          },
+          lastReminders: makeEmptyLastReminders(),
+          isEstablishmentBanned: false,
+        },
+      });
+    });
+
+    it("403 - connected user whose email is not linked to the convention cannot get convention", async () => {
+      const userWithNoRightOnConvention = new ConnectedUserBuilder()
+        .withId("user-with-no-right-on-convention")
+        .withEmail("user-with-no-right-on-convention@mail.com")
+        .buildUser();
+
+      inMemoryUow.userRepository.users = [userWithNoRightOnConvention];
+
+      const response = await magicLinkRequest.getConvention({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: userWithNoRightOnConvention.id,
+            version: currentJwtVersions.connectedUser,
+            iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+          }),
+        },
+        urlParams: { conventionId: convention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.convention.forbiddenMissingRightsUserId({
+            conventionId: convention.id,
+            userId: userWithNoRightOnConvention.id,
+          }).message,
+        },
+      });
+    });
   });
 
   describe(`${displayRouteName(
@@ -886,6 +973,40 @@ describe("convention e2e", () => {
             roles: ["establishment-representative"],
             status: "ACCEPTED_BY_VALIDATOR",
             conventionId: convention.id,
+          }).message,
+        },
+      });
+    });
+
+    it("403 - connected beneficiary cannot update convention status", async () => {
+      const beneficiary = new ConnectedUserBuilder()
+        .withId("beneficiary")
+        .withEmail(convention.signatories.beneficiary.email)
+        .buildUser();
+      inMemoryUow.userRepository.users = [beneficiary];
+
+      const response = await magicLinkRequest.updateConventionStatus({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: beneficiary.id,
+            version: currentJwtVersions.connectedUser,
+            iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+          }),
+        },
+        body: {
+          status: "REJECTED",
+          statusJustification: "test-justification",
+          conventionId: convention.id,
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.user.noRightsOnAgency({
+            agencyId: peAgency.id,
+            userId: beneficiary.id,
           }).message,
         },
       });
