@@ -1,5 +1,5 @@
 import {
-  type ConventionDomainJwtPayload,
+  type ConventionRelatedJwtPayload,
   errors,
   signAssessmentRequestDtoSchema,
 } from "shared";
@@ -15,7 +15,7 @@ export type SignAssessment = ReturnType<typeof makeSignAssessment>;
 export const makeSignAssessment = useCaseBuilder("SignAssessment")
   .withInput(signAssessmentRequestDtoSchema)
   .withOutput<void>()
-  .withCurrentUser<ConventionDomainJwtPayload>()
+  .withCurrentUser<ConventionRelatedJwtPayload>()
   .withDeps<{
     createNewEvent: CreateNewEvent;
     timeGateway: TimeGateway;
@@ -68,7 +68,16 @@ export const makeSignAssessment = useCaseBuilder("SignAssessment")
         payload: {
           conventionId: inputParams.conventionId,
           assessment: signedAssessmentDto,
-          triggeredBy: { kind: "convention-magic-link", role: jwtPayload.role },
+          triggeredBy:
+            "userId" in jwtPayload
+              ? {
+                  kind: "connected-user",
+                  userId: jwtPayload.userId,
+                }
+              : {
+                  kind: "convention-magic-link",
+                  role: jwtPayload.role,
+                },
         },
       }),
     );

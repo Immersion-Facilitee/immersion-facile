@@ -1,6 +1,7 @@
 import {
   AgencyDtoBuilder,
   AssessmentDtoBuilder,
+  ConnectedUserBuilder,
   type ConventionDomainJwtPayload,
   ConventionDtoBuilder,
   errors,
@@ -273,6 +274,74 @@ describe("SignAssessment", () => {
       errors.assessment.signNotAvailableForLegacyAssessment(),
     );
     expectObjectInArrayToMatch(uow.outboxRepository.events, []);
+  });
+
+  describe("with connected user", () => {
+    const beneficiary = new ConnectedUserBuilder()
+      .withId("beneficiary")
+      .withEmail(convention.signatories.beneficiary.email)
+      .buildUser();
+    const userWithNoRightOnConvention = new ConnectedUserBuilder()
+      .withId("user-with-no-right-on-convention")
+      .withEmail("user-with-no-right-on-convention@mail.com")
+      .buildUser();
+
+    beforeEach(() => {
+      uow.userRepository.users = [beneficiary, userWithNoRightOnConvention];
+    });
+
+    it("succeeds when connected beneficiary signs", async () => {
+      timeGateway.setNextDate(expectedSignedAt);
+
+      await signAssessment.execute(
+        {
+          conventionId: convention.id,
+          beneficiaryAgreement: true,
+          beneficiaryFeedback: "Mon commentaire",
+        },
+        { userId: beneficiary.id },
+      );
+
+      const signedAssessmentEntity =
+        await uow.assessmentRepository.getByConventionId(convention.id);
+
+      expectToEqual(signedAssessmentEntity, {
+        ...assessmentEntity,
+        beneficiaryAgreement: true,
+        beneficiaryFeedback: "Mon commentaire",
+        signedAt: expectedSignedAt.toISOString(),
+      });
+      expectObjectInArrayToMatch(uow.outboxRepository.events, [
+        {
+          topic: "AssessmentSignedByBeneficiary",
+          payload: {
+            conventionId: convention.id,
+            assessment: expect.objectContaining({
+              conventionId: convention.id,
+              beneficiaryAgreement: true,
+              beneficiaryFeedback: "Mon commentaire",
+              signedAt: expectedSignedAt.toISOString(),
+            }),
+            triggeredBy: { kind: "connected-user", userId: beneficiary.id },
+          },
+        },
+      ]);
+    });
+
+    it("throws when connected user email is not linked to the convention", async () => {
+      await expectPromiseToFailWithError(
+        signAssessment.execute(
+          {
+            conventionId: convention.id,
+            beneficiaryAgreement: true,
+            beneficiaryFeedback: null,
+          },
+          { userId: userWithNoRightOnConvention.id },
+        ),
+        errors.assessment.signForbidden(),
+      );
+      expectObjectInArrayToMatch(uow.outboxRepository.events, []);
+    });
   });
 
   it("throws when assessment already signed", async () => {

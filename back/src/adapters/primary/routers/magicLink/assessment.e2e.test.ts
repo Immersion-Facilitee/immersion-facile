@@ -14,6 +14,7 @@ import {
   errors,
   expectArraysToMatch,
   expectHttpResponseToEqual,
+  expectToEqual,
   type LegacyAssessmentDto,
 } from "shared";
 import type { HttpClient } from "shared-routes";
@@ -501,6 +502,102 @@ describe("Assessment routes", () => {
     const assessment = new AssessmentDtoBuilder()
       .withConventionId(convention.id)
       .build();
+
+    it("200 - connected beneficiary can sign assessment", async () => {
+      const beneficiary = new ConnectedUserBuilder()
+        .withId("beneficiary")
+        .withEmail(convention.signatories.beneficiary.email)
+        .buildUser();
+
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(AgencyDtoBuilder.create(agency.id).build()),
+      ];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+      inMemoryUow.userRepository.users = [
+        ...inMemoryUow.userRepository.users,
+        beneficiary,
+      ];
+      inMemoryUow.assessmentRepository.assessments = [
+        {
+          _entityName: "Assessment",
+          ...assessment,
+          numberOfHoursActuallyMade: 40,
+        },
+      ];
+
+      const response = await httpClient.signAssessment({
+        body: {
+          conventionId: convention.id,
+          beneficiaryAgreement: true,
+          beneficiaryFeedback: "my feedback",
+        },
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: beneficiary.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: "",
+      });
+      const signedEvent = inMemoryUow.outboxRepository.events.find(
+        (event) => event.topic === "AssessmentSignedByBeneficiary",
+      );
+      if (signedEvent?.topic !== "AssessmentSignedByBeneficiary")
+        throw new Error("Expected AssessmentSignedByBeneficiary event");
+      expectToEqual(signedEvent.payload.triggeredBy, {
+        kind: "connected-user",
+        userId: beneficiary.id,
+      });
+    });
+
+    it("403 - connected user email is not linked to the convention", async () => {
+      const UserWithNoRightOnConvention = new ConnectedUserBuilder()
+        .withId("user-with-no-right-on-convention")
+        .withEmail("user-with-no-right-on-convention@mail.com")
+        .buildUser();
+
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(AgencyDtoBuilder.create(agency.id).build()),
+      ];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+      inMemoryUow.userRepository.users = [
+        ...inMemoryUow.userRepository.users,
+        UserWithNoRightOnConvention,
+      ];
+      inMemoryUow.assessmentRepository.assessments = [
+        {
+          _entityName: "Assessment",
+          ...assessment,
+          numberOfHoursActuallyMade: 40,
+        },
+      ];
+
+      const response = await httpClient.signAssessment({
+        body: {
+          conventionId: convention.id,
+          beneficiaryAgreement: true,
+          beneficiaryFeedback: "my feedback",
+        },
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: UserWithNoRightOnConvention.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.assessment.signForbidden().message,
+        },
+      });
+    });
 
     it("200 - beneficiary with valid JWT can sign assessment", async () => {
       inMemoryUow.agencyRepository.agencies = [
