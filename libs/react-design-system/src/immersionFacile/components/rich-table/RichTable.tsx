@@ -6,9 +6,9 @@ import {
   type PaginationProps,
 } from "@codegouvfr/react-dsfr/Pagination";
 import { Table, type TableProps } from "@codegouvfr/react-dsfr/Table";
-import { useBreakpointsValuesPx } from "@codegouvfr/react-dsfr/useBreakpointsValuesPx";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStyles } from "tss-react/dsfr";
+import { useBreakpoint } from "../../../helpers/layout";
 import { useDebounce, useScrollTo } from "../../hooks";
 import { Loader } from "../loader";
 import { RichDropdown, type RichDropdownProps } from "../rich-dropdown";
@@ -42,30 +42,13 @@ export const RichTable = ({
   className,
 }: RichTableProps) => {
   const { cx } = useStyles();
-  const {
-    breakpointsValues: { lg: lgBreakpoint },
-  } = useBreakpointsValuesPx();
-  const [isFixedOnDesktop, setIsFixedOnDesktop] = useState(
-    window.matchMedia(`(min-width: ${lgBreakpoint}px)`).matches,
-  );
+  const isFixedOnDesktop = useBreakpoint("lg");
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearchValue = useDebounce(searchValue, 500);
   const searchBarRefOnSubmitRef = useRef(searchBar?.onSubmit).current;
   const tableRef = useRef<HTMLTableElement>(null);
 
   useScrollTo(pagination.defaultPage ?? 1);
-
-  useLayoutEffect(() => {
-    const mediaQuery = window.matchMedia(`(min-width: ${lgBreakpoint}px)`);
-    mediaQuery.addEventListener("change", () =>
-      setIsFixedOnDesktop(mediaQuery.matches),
-    );
-    return () => {
-      mediaQuery.removeEventListener("change", () =>
-        setIsFixedOnDesktop(mediaQuery.matches),
-      );
-    };
-  }, [lgBreakpoint]);
 
   useLayoutEffect(() => {
     tableRef.current?.querySelectorAll("th").forEach((th) => {

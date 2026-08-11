@@ -13,6 +13,7 @@ import {
   ExchangeMessage,
   Loader,
   SectionHighlight,
+  useBreakpoint,
 } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
@@ -329,6 +330,8 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
   const relatedOffer = useAppSelector(searchSelectors.currentSearchResult);
   const [shouldShowContactInfo, setShouldShowContactInfo] =
     useState<boolean>(false);
+  const isDesktopScreen = useBreakpoint("lg");
+
   const saveConventionDraftThenRedirectRequested = ({
     conventionDraft,
     redirectUrl,
@@ -507,7 +510,10 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           "fr-my-2w",
         )}
       >
-        <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
+        <div
+          className={fr.cx("fr-col-12", "fr-col-lg-8")}
+          style={{ order: isDesktopScreen ? 1 : 2 }}
+        >
           {match(discussion.contactMode)
             .with("EMAIL", () => (
               <>
@@ -555,7 +561,10 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
             )
             .exhaustive()}
         </div>
-        <div className={fr.cx("fr-col-12", "fr-col-lg-4")}>
+        <div
+          className={fr.cx("fr-col-12", "fr-col-lg-4")}
+          style={{ order: isDesktopScreen ? 2 : 1 }}
+        >
           {discussion.kind === "IF" &&
             (viewer === "potentialBeneficiary" ||
               discussion.potentialBeneficiary.resumeLink) && (

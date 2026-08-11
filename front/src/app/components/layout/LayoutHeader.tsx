@@ -4,7 +4,7 @@ import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation"
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import { useIsDark } from "@codegouvfr/react-dsfr/useIsDark";
-import { MaintenanceCallout, useLayout } from "react-design-system";
+import { MaintenanceCallout, useBreakpoint } from "react-design-system";
 import { useDispatch } from "react-redux";
 import { domElementIds, frontRoutes, useRoute } from "shared";
 import { ressourcesAndWebinarsUrl } from "src/app/contents/home/content";
@@ -279,7 +279,7 @@ export const LayoutHeader = () => {
     });
   }
 
-  const { isLayoutDesktop } = useLayout();
+  const isLayoutDesktop = useBreakpoint("md");
 
   const { classes } = makeStyles({ name: LayoutHeader.displayName })(() => ({
     operator: {
