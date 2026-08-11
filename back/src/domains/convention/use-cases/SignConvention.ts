@@ -2,6 +2,7 @@ import {
   type ConnectedUserDomainJwtPayload,
   type ConventionDomainJwtPayload,
   errors,
+  isSignatoryRole,
   withConventionIdSchema,
 } from "shared";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
@@ -9,6 +10,7 @@ import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   domainTopicByTargetStatusMap,
+  getSignatoryRoleAndUserFromJwtPayload,
   signConvention,
   throwErrorOnConventionIdMismatch,
 } from "../entities/Convention";
@@ -37,11 +39,21 @@ export const makeSignConvention = useCaseBuilder("SignConvention")
       const convention = await uow.conventionRepository.getById(conventionId);
       if (!convention) throw errors.convention.notFound({ conventionId });
 
-      const { role, userWithRights, signedConvention } = await signConvention({
+      const { role, userWithRights } =
+        await getSignatoryRoleAndUserFromJwtPayload(
+          jwtPayload,
+          uow,
+          convention,
+        );
+
+      if (!isSignatoryRole(role))
+        throw errors.convention.roleNotAllowedToSign({ role });
+
+      const signedConvention = await signConvention({
         uow,
         convention,
-        jwtPayload,
         now: deps.timeGateway.now().toISOString(),
+        role,
       });
 
       const domainTopic = domainTopicByTargetStatusMap[signedConvention.status];

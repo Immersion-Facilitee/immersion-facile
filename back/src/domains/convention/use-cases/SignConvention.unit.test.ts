@@ -252,12 +252,29 @@ describe("Sign convention", () => {
     });
 
     describe("with connected user jwt", () => {
-      it("updates the convention with new signature for IC user when user is establisment representative", async () => {
+      it.each([
+        {
+          signatory: "establishment-representative",
+          getEmail: (convention: ConventionDto) =>
+            convention.signatories.establishmentRepresentative.email,
+        },
+        {
+          signatory: "beneficiary",
+          getEmail: (convention: ConventionDto) =>
+            convention.signatories.beneficiary.email,
+        },
+      ] satisfies {
+        signatory: "establishment-representative" | "beneficiary";
+        getEmail: (convention: ConventionDto) => string;
+      }[])("updates the convention with new signature when connected user is $signatory", async ({
+        signatory,
+        getEmail,
+      }) => {
         const { convention, agency } =
           prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
         uow.conventionRepository.setConventions([convention]);
         const user = new ConnectedUserBuilder()
-          .withEmail(convention.signatories.establishmentRepresentative.email)
+          .withEmail(getEmail(convention))
           .withProConnectInfos({
             externalId: "billy-external-id",
             siret: "11111222224444",
@@ -275,13 +292,32 @@ describe("Sign convention", () => {
           },
         );
 
+        const expectedConvention: ConventionDto = {
+          ...convention,
+          status: "PARTIALLY_SIGNED",
+          signatories: makeSignatories(convention, {
+            establishmentRepresentativeSignedAt:
+              signatory === "establishment-representative"
+                ? signedAt.toISOString()
+                : undefined,
+            beneficiarySignedAt:
+              signatory === "beneficiary" ? signedAt.toISOString() : undefined,
+          }),
+        };
+
         expectToEqual(uow.conventionRepository.conventions, [
+          expectedConvention,
+        ]);
+        expectEventsInOutbox([
           {
-            ...convention,
-            status: "PARTIALLY_SIGNED",
-            signatories: makeSignatories(convention, {
-              establishmentRepresentativeSignedAt: signedAt.toISOString(),
-            }),
+            topic: "ConventionPartiallySigned",
+            payload: {
+              convention: expectedConvention,
+              triggeredBy: {
+                kind: "connected-user",
+                userId: user.id,
+              },
+            },
           },
         ]);
       });

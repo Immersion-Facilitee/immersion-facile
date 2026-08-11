@@ -179,6 +179,27 @@ describe("Update Convention", () => {
           );
         });
 
+        it("throws forbidden if connected user email is not linked to the convention", async () => {
+          const userWithNoRightOnConvention = new ConnectedUserBuilder()
+            .withId("unrelated-user-id")
+            .withEmail("unrelated@mail.com")
+            .buildUser();
+
+          uow.conventionRepository.setConventions([convention]);
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+          uow.userRepository.users = [userWithNoRightOnConvention];
+
+          await expectPromiseToFailWithError(
+            updateConvention.execute(
+              {
+                convention,
+              },
+              { userId: userWithNoRightOnConvention.id },
+            ),
+            errors.convention.updateForbidden({ id: convention.id }),
+          );
+        });
+
         it.each([
           "agency-viewer",
           "agency-admin",
@@ -513,6 +534,196 @@ describe("Update Convention", () => {
           },
         }),
       ]);
+    });
+
+    describe("when connected user is a signatory", () => {
+      describe("beneficiary", () => {
+        const beneficiaryUser = new ConnectedUserBuilder()
+          .withId("beneficiary-user-id")
+          .withEmail(convention.signatories.beneficiary.email)
+          .buildUser();
+        const storedConvention = new ConventionDtoBuilder(convention)
+          .withStatus("PARTIALLY_SIGNED")
+          .signedByEstablishmentRepresentative(signedAt)
+          .build();
+
+        it("updates, clears signatures and re-signs without changing email", async () => {
+          uow.userRepository.users = [beneficiaryUser];
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+          uow.conventionRepository.setConventions([storedConvention]);
+
+          const updatedConvention = new ConventionDtoBuilder(storedConvention)
+            .withStatus("READY_TO_SIGN")
+            .withStatusJustification("justif")
+            .notSigned()
+            .build();
+
+          await updateConvention.execute(
+            { convention: updatedConvention },
+            { userId: beneficiaryUser.id },
+          );
+
+          const expectedSignedAt = timeGateway.now().toISOString();
+          const expectedUpdatedConvention = new ConventionDtoBuilder(
+            updatedConvention,
+          )
+            .withStatus("PARTIALLY_SIGNED")
+            .signedByBeneficiary(expectedSignedAt)
+            .build();
+
+          expectToEqual(uow.conventionRepository.conventions, [
+            expectedUpdatedConvention,
+          ]);
+          expectArraysToMatch(uow.outboxRepository.events, [
+            createNewEvent({
+              topic: "ConventionModifiedAndSigned",
+              payload: {
+                convention: expectedUpdatedConvention,
+                triggeredBy: {
+                  kind: "connected-user",
+                  userId: beneficiaryUser.id,
+                },
+              },
+            }),
+          ]);
+        });
+
+        it("updates, clears signatures and re-signs when email changes", async () => {
+          uow.userRepository.users = [beneficiaryUser];
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+          uow.conventionRepository.setConventions([storedConvention]);
+
+          const updatedConvention = new ConventionDtoBuilder(storedConvention)
+            .withStatus("READY_TO_SIGN")
+            .withBeneficiaryEmail("new@email.fr")
+            .withStatusJustification("justif")
+            .notSigned()
+            .build();
+
+          await updateConvention.execute(
+            { convention: updatedConvention },
+            { userId: beneficiaryUser.id },
+          );
+
+          const expectedSignedAt = timeGateway.now().toISOString();
+          const expectedUpdatedConvention = new ConventionDtoBuilder(
+            updatedConvention,
+          )
+            .withStatus("PARTIALLY_SIGNED")
+            .signedByBeneficiary(expectedSignedAt)
+            .build();
+
+          expectToEqual(uow.conventionRepository.conventions, [
+            expectedUpdatedConvention,
+          ]);
+          expectArraysToMatch(uow.outboxRepository.events, [
+            createNewEvent({
+              topic: "ConventionModifiedAndSigned",
+              payload: {
+                convention: expectedUpdatedConvention,
+                triggeredBy: {
+                  kind: "connected-user",
+                  userId: beneficiaryUser.id,
+                },
+              },
+            }),
+          ]);
+        });
+      });
+
+      describe("establishment representative", () => {
+        const establishmentRepresentativeUser = new ConnectedUserBuilder()
+          .withId("establishment-representative-user-id")
+          .withEmail(convention.signatories.establishmentRepresentative.email)
+          .buildUser();
+        const storedConvention = new ConventionDtoBuilder(convention)
+          .withStatus("PARTIALLY_SIGNED")
+          .signedByBeneficiary(signedAt)
+          .build();
+
+        it("updates, clears signatures and re-signs without changing email", async () => {
+          uow.userRepository.users = [establishmentRepresentativeUser];
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+          uow.conventionRepository.setConventions([storedConvention]);
+
+          const updatedConvention = new ConventionDtoBuilder(storedConvention)
+            .withStatus("READY_TO_SIGN")
+            .withStatusJustification("justif")
+            .notSigned()
+            .build();
+
+          await updateConvention.execute(
+            { convention: updatedConvention },
+            { userId: establishmentRepresentativeUser.id },
+          );
+
+          const expectedSignedAt = timeGateway.now().toISOString();
+          const expectedUpdatedConvention = new ConventionDtoBuilder(
+            updatedConvention,
+          )
+            .withStatus("PARTIALLY_SIGNED")
+            .signedByEstablishmentRepresentative(expectedSignedAt)
+            .build();
+
+          expectToEqual(uow.conventionRepository.conventions, [
+            expectedUpdatedConvention,
+          ]);
+          expectArraysToMatch(uow.outboxRepository.events, [
+            createNewEvent({
+              topic: "ConventionModifiedAndSigned",
+              payload: {
+                convention: expectedUpdatedConvention,
+                triggeredBy: {
+                  kind: "connected-user",
+                  userId: establishmentRepresentativeUser.id,
+                },
+              },
+            }),
+          ]);
+        });
+
+        it("updates, clears signatures and re-signs when email changes", async () => {
+          uow.userRepository.users = [establishmentRepresentativeUser];
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+          uow.conventionRepository.setConventions([storedConvention]);
+
+          const updatedConvention = new ConventionDtoBuilder(storedConvention)
+            .withStatus("READY_TO_SIGN")
+            .withEstablishmentRepresentativeEmail("new-rep@email.fr")
+            .withStatusJustification("justif")
+            .notSigned()
+            .build();
+
+          await updateConvention.execute(
+            { convention: updatedConvention },
+            { userId: establishmentRepresentativeUser.id },
+          );
+
+          const expectedSignedAt = timeGateway.now().toISOString();
+          const expectedUpdatedConvention = new ConventionDtoBuilder(
+            updatedConvention,
+          )
+            .withStatus("PARTIALLY_SIGNED")
+            .signedByEstablishmentRepresentative(expectedSignedAt)
+            .build();
+
+          expectToEqual(uow.conventionRepository.conventions, [
+            expectedUpdatedConvention,
+          ]);
+          expectArraysToMatch(uow.outboxRepository.events, [
+            createNewEvent({
+              topic: "ConventionModifiedAndSigned",
+              payload: {
+                convention: expectedUpdatedConvention,
+                triggeredBy: {
+                  kind: "connected-user",
+                  userId: establishmentRepresentativeUser.id,
+                },
+              },
+            }),
+          ]);
+        });
+      });
     });
 
     it.each([

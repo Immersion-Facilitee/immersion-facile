@@ -85,9 +85,7 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
           conventionFromRepo,
         );
 
-      const hasSignatoryRole = userRolesOnConvention.some((role) =>
-        isSignatoryRole(role),
-      );
+      const signatoryRole = userRolesOnConvention.find(isSignatoryRole);
       const conventionWithSignatoriesSignedAtAndDateApprovalCleared: ConventionDto =
         {
           ...convention,
@@ -106,12 +104,12 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
               role: jwtPayload.role,
             };
 
-      if (hasSignatoryRole) {
-        const { signedConvention } = await signConvention({
+      if (signatoryRole) {
+        const signedConvention = await signConvention({
           uow,
           convention: conventionWithSignatoriesSignedAtAndDateApprovalCleared,
-          jwtPayload,
           now: deps.timeGateway.now().toISOString(),
+          role: signatoryRole,
         });
 
         await uow.conventionRepository.update(signedConvention);
