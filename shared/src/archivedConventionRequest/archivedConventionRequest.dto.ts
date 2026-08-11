@@ -1,8 +1,10 @@
 import type { ConventionId } from "../convention/convention.dto";
+import type { Email } from "../email/email.dto";
 import type { AppellationAndRomeDto } from "../romeAndAppellationDtos/romeAndAppellation.dto";
 import type { SiretDto } from "../siret/siret";
 import type { Flavor } from "../typeFlavors";
 import type { Firstname, Lastname } from "../user/user.dto";
+import type { DateString } from "../utils/date";
 
 export type ArchivedConventionRequestId = Flavor<
   string,
@@ -60,3 +62,14 @@ export type ArchivedConventionRequestWithConventionDetailsDto =
 export type ArchivedConventionRequestDto =
   | ArchivedConventionRequestWithConventionIdDto
   | ArchivedConventionRequestWithConventionDetailsDto;
+
+export type ArchivedConventionRequestToReviewDto = Pick<
+  ArchivedConventionRequestDto,
+  "reason" | "id"
+> & {
+  createdAt: DateString;
+  requester: { firstname: Firstname; lastname: Lastname; email: Email };
+};
+
+export type ArchivedConventionRequestToReviewListDto =
+  ArchivedConventionRequestToReviewDto[];
