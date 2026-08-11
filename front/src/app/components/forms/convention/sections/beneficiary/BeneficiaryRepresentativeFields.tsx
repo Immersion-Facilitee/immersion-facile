@@ -82,6 +82,11 @@ export const BeneficiaryRepresentativeFields = ({
   const formContents = getFormFields();
   return (
     <>
+      <input
+        type="hidden"
+        defaultValue="beneficiary-representative"
+        {...register("signatories.beneficiaryRepresentative.role")}
+      />
       <Input
         label={
           formContents["signatories.beneficiaryRepresentative.firstName"].label
