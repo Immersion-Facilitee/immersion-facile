@@ -100,7 +100,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
       sendHttpResponse(req, res, () =>
         deps.useCases.signConvention.execute(
           req.params,
-          getGenericAuthOrThrow(req.payloads?.convention), // Pas de signature possible en mode ConnectedUser (pour les entreprises qui ont un compte qui match l'email) ?
+          getConventionRelatedJwtPayload(req.payloads),
         ),
       ),
   );
