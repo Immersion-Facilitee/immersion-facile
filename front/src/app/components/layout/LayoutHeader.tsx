@@ -1,13 +1,10 @@
+import Button from "@codegouvfr/react-dsfr/Button";
 import { Header, type HeaderProps } from "@codegouvfr/react-dsfr/Header";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import { useIsDark } from "@codegouvfr/react-dsfr/useIsDark";
-import {
-  ButtonWithSubMenu,
-  MaintenanceCallout,
-  useLayout,
-} from "react-design-system";
+import { MaintenanceCallout, useLayout } from "react-design-system";
 import { useDispatch } from "react-redux";
 import { domElementIds, frontRoutes, useRoute } from "shared";
 import { ressourcesAndWebinarsUrl } from "src/app/contents/home/content";
@@ -67,43 +64,19 @@ export const LayoutHeader = () => {
         id: quickAccessIds.initiateConvention,
       },
     },
-    <ButtonWithSubMenu
-      key={`${quickAccessIds.initiateConvention}-button-with-sub-menu`}
-      buttonIconId="fr-icon-account-line"
-      navItems={[
-        {
-          children: "Je suis un candidat",
-          id: quickAccessIds.beneficiary,
-          linkProps: frontRoutes.beneficiaryDashboard().link,
-        },
-        {
-          children: "Je suis une entreprise",
-          id: quickAccessIds.establishment,
-          linkProps: frontRoutes.establishmentDashboard().link,
-        },
-        {
-          children: "Je suis un prescripteur",
-          id: quickAccessIds.agency,
-          linkProps: frontRoutes.agencyDashboardMain().link,
-        },
-        ...(isConnectedUser
-          ? [
-              {
-                children: "Mon profil",
-                id: quickAccessIds.myAccount,
-                linkProps: frontRoutes.myAccount().link,
-              },
-            ]
-          : []),
-      ]}
-      buttonLabel={
-        currentUser
-          ? currentUser.firstName && currentUser.lastName
-            ? `${currentUser.firstName} ${currentUser.lastName}`
-            : currentUser.email
-          : "Mon espace"
-      }
-    />,
+    <Button
+      key={currentUser ? quickAccessIds.myAccount : quickAccessIds.login}
+      id={currentUser ? quickAccessIds.myAccount : quickAccessIds.login}
+      priority="secondary"
+      iconId="fr-icon-account-line"
+      linkProps={frontRoutes.myAccount().link}
+    >
+      {currentUser
+        ? currentUser.firstName && currentUser.lastName
+          ? `${currentUser.firstName} ${currentUser.lastName}`
+          : currentUser.email
+        : "Mon compte"}
+    </Button>,
   ];
 
   if (isConnectedUser) {

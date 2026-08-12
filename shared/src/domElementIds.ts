@@ -72,6 +72,7 @@ export const domElementIds = {
         establishment: buildHeaderNavLinkId("quick-access-establishment"),
         agency: buildHeaderNavLinkId("quick-access-agency"),
         myAccount: buildHeaderNavLinkId("quick-access-my-account"),
+        login: buildHeaderNavLinkId("quick-access-login"),
         initiateConvention: buildHeaderNavLinkId(
           "quick-access-initiate-convention",
         ),
