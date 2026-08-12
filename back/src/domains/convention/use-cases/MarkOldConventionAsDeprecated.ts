@@ -1,7 +1,7 @@
 import type { ZodSchemaWithInputMatchingOutput } from "shared";
 import { z } from "zod";
-import type { CreateNewEvent } from "../core/events/ports/EventBus";
-import { useCaseBuilder } from "../core/useCaseBuilder";
+import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import { useCaseBuilder } from "../../core/useCaseBuilder";
 
 const markOldConventionAsDeprecatedSchema: ZodSchemaWithInputMatchingOutput<{
   deprecateSince: Date;

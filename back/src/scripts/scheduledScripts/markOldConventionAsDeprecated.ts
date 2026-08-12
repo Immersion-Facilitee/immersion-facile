@@ -1,7 +1,7 @@
 import { subMonths } from "date-fns";
 import { AppConfig } from "../../config/bootstrap/appConfig";
 import { createMakeProductionPgPool } from "../../config/pg/pgPool";
-import { makeMarkOldConventionAsDeprecated } from "../../domains/convention/MarkOldConventionAsDeprecated";
+import { makeMarkOldConventionAsDeprecated } from "../../domains/convention/use-cases/MarkOldConventionAsDeprecated";
 import { makeCreateNewEvent } from "../../domains/core/events/ports/EventBus";
 import { RealTimeGateway } from "../../domains/core/time-gateway/adapters/RealTimeGateway";
 import { createDbRelatedSystems } from "../../domains/core/unit-of-work/adapters/createDbRelatedSystems";
