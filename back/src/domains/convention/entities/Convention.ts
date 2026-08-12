@@ -18,6 +18,8 @@ import {
   errors,
   type FeatureFlags,
   ForbiddenError,
+  getConventionManageAllowedRoles,
+  isSignatoryRole,
   isValidMobilePhone,
   type Role,
   type Signatories,
@@ -318,26 +320,16 @@ export const getSignatoryRoleAndUserFromJwtPayload = async (
     return { role: jwtPayload.role, userWithRights: undefined };
 
   const userWithRights = await getUserWithRights(uow, jwtPayload.userId);
+  const roles = getConventionManageAllowedRoles(convention, userWithRights);
+  const role = roles.find(isSignatoryRole);
 
-  if (
-    userWithRights.email ===
-    convention.signatories.establishmentRepresentative.email
-  )
-    return {
-      role: convention.signatories.establishmentRepresentative.role,
-      userWithRights,
-    };
+  if (!role)
+    throw errors.convention.connectedUserNotSignatory({
+      userId: userWithRights.id,
+      conventionId: convention.id,
+    });
 
-  if (userWithRights.email === convention.signatories.beneficiary.email)
-    return {
-      role: convention.signatories.beneficiary.role,
-      userWithRights,
-    };
-
-  throw errors.convention.connectedUserNotSignatory({
-    userId: userWithRights.id,
-    conventionId: convention.id,
-  });
+  return { role, userWithRights };
 };
 
 export const signConvention = async ({
@@ -388,7 +380,6 @@ export const extractUserRolesOnConventionFromJwtPayload = async (
   uow: UnitOfWork,
   initialConvention: ConventionDto,
 ): Promise<Role[]> => {
-  const roles: Role[] = [];
   if ("role" in jwtPayload) {
     if (jwtPayload.applicationId !== initialConvention.id)
       throw errors.convention.forbiddenConventionIdMismatch({
@@ -396,33 +387,9 @@ export const extractUserRolesOnConventionFromJwtPayload = async (
         jwtConventionId: jwtPayload.applicationId,
         jwtRole: jwtPayload.role,
       });
-    roles.push(jwtPayload.role);
+    return [jwtPayload.role];
   }
 
-  if ("userId" in jwtPayload) {
-    const userWithRights = await getUserWithRights(uow, jwtPayload.userId);
-
-    if (userWithRights.isBackofficeAdmin) roles.push("back-office");
-
-    if (
-      userWithRights.email === initialConvention.signatories.beneficiary.email
-    )
-      roles.push(initialConvention.signatories.beneficiary.role);
-
-    if (
-      userWithRights.email ===
-      initialConvention.signatories.establishmentRepresentative.email
-    )
-      roles.push(
-        initialConvention.signatories.establishmentRepresentative.role,
-      );
-
-    const userRightOnAgency = userWithRights.agencyRights.find(
-      (agencyRight) => agencyRight.agency.id === initialConvention.agencyId,
-    );
-
-    if (userRightOnAgency) roles.push(...userRightOnAgency.roles);
-  }
-
-  return roles;
+  const userWithRights = await getUserWithRights(uow, jwtPayload.userId);
+  return getConventionManageAllowedRoles(initialConvention, userWithRights);
 };
