@@ -1,4 +1,5 @@
 import annuaireDesEntreprises from "./annuaire-des-entreprises.webp";
+import candidate from "./candidate-illustration.webp";
 import contact from "./contact.webp";
 import discussions from "./discussions.webp";
 import documentsAdministratifs from "./documents-administratifs.webp";
@@ -9,6 +10,7 @@ import infosImportantes from "./infos-importantes.webp";
 import inscription from "./inscription.webp";
 import job from "./job-illustration.webp";
 import login from "./login-illustration.webp";
+import miseEnRelation from "./mise-en-relation-illustration.webp";
 import monCompte from "./mon-compte.webp";
 import objective from "./objective-illustration.webp";
 import reachData from "./reach-data.webp";
@@ -35,6 +37,8 @@ export const commonIllustrations = {
   fillForm,
   structureAccueil,
   discussions,
+  candidate,
+  miseEnRelation,
 };
 export const searchIllustrations = [search1, search2, search3, search4];
 export const loginIllustration = login;
