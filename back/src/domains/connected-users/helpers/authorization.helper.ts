@@ -8,6 +8,7 @@ import {
   type ConventionDto,
   type ConventionRelatedJwtPayload,
   errors,
+  getConventionManageAllowedRoles,
   type Role,
   type UserWithAdminRights,
 } from "shared";
@@ -184,54 +185,7 @@ const onConnectedUser = async ({
     }
   }
 
-  if (
-    userWithRights.isBackofficeAdmin &&
-    authorizedRoles.includes("back-office")
-  ) {
-    return;
-  }
-
-  if (
-    userWithRights.email === convention.signatories.beneficiary.email &&
-    authorizedRoles.includes("beneficiary")
-  ) {
-    return;
-  }
-
-  if (
-    userWithRights.email ===
-      convention.signatories.establishmentRepresentative.email &&
-    authorizedRoles.includes("establishment-representative")
-  ) {
-    return;
-  }
-
-  if (
-    userWithRights.email === convention.establishmentTutor.email &&
-    authorizedRoles.includes("establishment-tutor")
-  ) {
-    return;
-  }
-
-  const hasAuthorizedAgencyRole = userWithRights.agencyRights.some(
-    (agencyRight) =>
-      agencyRight.agency.id === convention.agencyId &&
-      agencyRight.roles.some((role) => authorizedRoles.includes(role)),
-  );
-
-  if (hasAuthorizedAgencyRole) {
-    return;
-  }
-
-  const hasAuthorizedEstablishmentRole = userWithRights.establishments?.some(
-    (establishmentRight) =>
-      authorizedRoles.includes(establishmentRight.role) &&
-      establishmentRight.siret === convention.siret,
-  );
-
-  if (hasAuthorizedEstablishmentRole) {
-    return;
-  }
-
+  const roles = getConventionManageAllowedRoles(convention, userWithRights);
+  if (roles.some((role) => authorizedRoles.includes(role))) return;
   throw errorToThrow;
 };
