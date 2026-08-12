@@ -2,6 +2,7 @@ import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
 import { PgAgencyGroupRepository } from "../../../agency/adapters/PgAgencyGroupRepository";
 import { PgAgencyRepository } from "../../../agency/adapters/PgAgencyRepository";
 import { PgDelegationContactRepository } from "../../../agency/adapters/PgDelegationContactRepository";
+import { PgArchivedConventionRequestQueries } from "../../../convention/adapters/archived-convention-request/PgArchivedConventionRequestQueries";
 import { PgArchivedConventionRequestRepository } from "../../../convention/adapters/archived-convention-request/PgArchivedConventionRequestRepository";
 import { PgAssessmentRepository } from "../../../convention/adapters/PgAssessmentRepository";
 import { PgConventionDraftRepository } from "../../../convention/adapters/PgConventionDraftRepository";
@@ -100,4 +101,5 @@ export const createPgQueries = (kysely: KyselyDb): OutOfTransactionQueries => ({
   shortLink: new PgShortLinkRepository(kysely),
   statistic: new PgStatisticQueries(kysely),
   featureFlag: new PgFeatureFlagQueries(kysely),
+  archivedConventionRequest: new PgArchivedConventionRequestQueries(kysely),
 });
