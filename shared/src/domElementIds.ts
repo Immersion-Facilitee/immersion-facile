@@ -1,6 +1,11 @@
 import type { frontRoutes } from "./routes/routes";
 
-type FrontRoutesKeys = keyof typeof frontRoutes | "home" | "header" | "footer";
+type FrontRoutesKeys =
+  | keyof typeof frontRoutes
+  | "home"
+  | "header"
+  | "footer"
+  | "loginPersona";
 
 type FrontRouteParametrizedKeys =
   | "mode"
@@ -121,6 +126,10 @@ export const domElementIds = {
       apiDocumentation: buildFooterNavLinkId("api-documentation"),
       resourcesAndWebinars: buildFooterNavLinkId("resources-and-webinars"),
     },
+  },
+
+  loginPersona: {
+    radioButtons: "im-login-form__persona-radio-buttons",
   },
 
   home: {

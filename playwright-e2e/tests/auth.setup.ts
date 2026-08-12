@@ -67,6 +67,10 @@ const loginWithIdentityProvider = async (
 
   const currentPage = await page.url();
 
+  await expect(
+    page.locator(`#${domElementIds.loginPersona.radioButtons}-1`),
+  ).toBeChecked();
+
   const authButton = await page.locator(`#${proConnectLoginButtonId} .fr-btn`);
   await expect(authButton).toBeVisible();
 

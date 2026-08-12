@@ -239,6 +239,7 @@ export const ConnectedPrivateRoutePage = ({
                   <h3 className={fr.cx("fr-h4", "fr-mb-2w")}>Vous êtes...</h3>
 
                   <RadioButtons
+                    id={domElementIds.loginPersona.radioButtons}
                     className={fr.cx("fr-mb-2w")}
                     classes={{ inputGroup: fr.cx("fr-col-4") }}
                     name="loginPersona"
