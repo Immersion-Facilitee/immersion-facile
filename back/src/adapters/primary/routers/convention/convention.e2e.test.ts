@@ -1163,9 +1163,10 @@ describe("convention e2e", () => {
         status: 403,
         body: {
           status: 403,
-          message: errors.user.noRightsOnAgency({
-            agencyId: peAgency.id,
-            userId: beneficiary.id,
+          message: errors.convention.badRoleStatusChange({
+            roles: ["beneficiary"],
+            status: "REJECTED",
+            conventionId: convention.id,
           }).message,
         },
       });

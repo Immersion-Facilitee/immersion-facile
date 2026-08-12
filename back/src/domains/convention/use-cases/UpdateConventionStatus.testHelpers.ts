@@ -14,11 +14,13 @@ import {
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
-  type Role,
+  getConventionManageAllowedRoles,
   splitCasesBetweenPassingAndFailing,
+  toAgencyDtoForAgencyUsersAndAdmins,
   type UnauthorizedError,
   type UpdateConventionStatusRequestDto,
   type UserWithAdminRights,
+  type UserWithRights,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
@@ -46,6 +48,7 @@ const allConnectedTestUsers = [
   "userWithRoleValidator",
   "userWithRoleAgencyAdmin",
   "userWithRoleEstablishmentRepresentative",
+  "userWithRoleBeneficiary",
   "userWithRoleBackofficeAdmin",
   "userWithRoleBackofficeAdminAndValidator",
 ] as const;
@@ -53,6 +56,7 @@ const allConnectedTestUsers = [
 type ConnectedTestUser = (typeof allConnectedTestUsers)[number];
 
 const establishmentRepEmail: Email = "establishmentrep@email.com";
+const beneficiaryEmail: Email = "beneficiary@email.fr";
 
 const userWithRoleBackofficeAdmin: UserWithAdminRights = {
   email: "userWithRoleBackofficeAdmin@mail.com",
@@ -135,6 +139,17 @@ const userWithRoleEstablishmentRepresentative: UserWithAdminRights = {
   },
   createdAt: new Date().toISOString(),
 };
+const userWithRoleBeneficiary: UserWithAdminRights = {
+  email: beneficiaryEmail,
+  firstName: "userWithRoleBeneficiaryFirstName",
+  id: "userWithRoleBeneficiary",
+  lastName: "Beneficiary",
+  proConnect: {
+    externalId: "userWithRoleBeneficiary-external-id",
+    siret: "000001111122222",
+  },
+  createdAt: new Date().toISOString(),
+};
 const makeUserIdMapConnectedUser: Record<
   ConnectedTestUser,
   UserWithAdminRights
@@ -146,6 +161,7 @@ const makeUserIdMapConnectedUser: Record<
   userWithRoleBackofficeAdminAndValidator,
   userWithRoleAgencyAdmin,
   userWithRoleEstablishmentRepresentative,
+  userWithRoleBeneficiary,
 };
 
 const agencyWithoutCounsellorEmail = toAgencyWithRights(
@@ -196,6 +212,25 @@ const agencyWithCounsellorEmails = toAgencyWithRights(
   },
 );
 
+const makeUserWithRights = (userId: ConnectedTestUser): UserWithRights => {
+  const user = makeUserIdMapConnectedUser[userId];
+  const agencyRights = [
+    agencyWithoutCounsellorEmail,
+    agencyWithCounsellorEmails,
+  ].flatMap((agency) => {
+    const rights = agency.usersRights[userId];
+    if (!rights) return [];
+    return [
+      {
+        agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+        roles: rights.roles,
+        isNotifiedByEmail: rights.isNotifiedByEmail,
+      },
+    ];
+  });
+  return { ...user, agencyRights };
+};
+
 type ExtractFromDomainTopics<T extends DomainTopic> = Extract<DomainTopic, T>;
 
 type ConventionDomainTopic = ExtractFromDomainTopics<
@@ -230,6 +265,7 @@ export const setupInitialState = ({
     .withId(conventionWithAgencyOneStepValidationId)
     .withStatus(initialStatus)
     .withEstablishmentRepresentativeEmail(establishmentRepEmail)
+    .withBeneficiaryEmail(beneficiaryEmail)
     .withAgencyId(agencyWithoutCounsellorEmail.id);
 
   const originalConvention = alreadySigned
@@ -241,6 +277,7 @@ export const setupInitialState = ({
       .withId(conventionWithAgencyTwoStepsValidationId)
       .withStatus(initialStatus)
       .withEstablishmentRepresentativeEmail(establishmentRepEmail)
+      .withBeneficiaryEmail(beneficiaryEmail)
       .withAgencyId(agencyWithCounsellorEmails.id);
 
   const conventionWithAgencyTwoStepsValidation: ConventionDto = {
@@ -553,6 +590,19 @@ export const rejectStatusTransitionTests = ({
   const someValidInitialStatus = authorizedInitialStatuses[0];
   const someValidRole = allowedRolesToUpdate[0];
 
+  const conventionAgencyId =
+    updateStatusParams.conventionId === conventionWithAgencyTwoStepsValidationId
+      ? agencyWithCounsellorEmails.id
+      : agencyWithoutCounsellorEmail.id;
+
+  const conventionForRoles = new ConventionDtoBuilder()
+    .withId(updateStatusParams.conventionId)
+    .withStatus(someValidInitialStatus)
+    .withEstablishmentRepresentativeEmail(establishmentRepEmail)
+    .withBeneficiaryEmail(beneficiaryEmail)
+    .withAgencyId(conventionAgencyId)
+    .build();
+
   describe("Rejected", () => {
     const testRejectsStatusUpdate = makeTestRejectsStatusUpdate({
       updateStatusParams,
@@ -580,30 +630,18 @@ export const rejectStatusTransitionTests = ({
       it.each(
         notAllowedConnectedUsersToUpdate.map((userId) => ({ userId })),
       )("Rejected from userId '$userId'", ({ userId }) => {
-        const user = makeUserIdMapConnectedUser[userId];
-        const getRoles = (): Role[] => {
-          if (user.email === establishmentRepEmail)
-            return ["establishment-representative"];
-
-          if (user.isBackofficeAdmin) return ["back-office"];
-
-          return agencyWithoutCounsellorEmail.usersRights[userId]?.roles ?? [];
-        };
-
-        const roles = getRoles();
+        const roles = getConventionManageAllowedRoles(
+          conventionForRoles,
+          makeUserWithRights(userId),
+        );
         return testRejectsStatusUpdate({
           userId,
           initialStatus: someValidInitialStatus,
-          expectedError: roles.length
-            ? errors.convention.badRoleStatusChange({
-                roles,
-                status: updateStatusParams.status,
-                conventionId: updateStatusParams.conventionId,
-              })
-            : errors.user.noRightsOnAgency({
-                agencyId: agencyWithoutCounsellorEmail.id,
-                userId: user.id,
-              }),
+          expectedError: errors.convention.badRoleStatusChange({
+            roles,
+            status: updateStatusParams.status,
+            conventionId: updateStatusParams.conventionId,
+          }),
         });
       });
     }

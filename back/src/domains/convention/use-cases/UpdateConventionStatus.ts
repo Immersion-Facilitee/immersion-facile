@@ -6,6 +6,7 @@ import {
   type ConventionStatus,
   type DateString,
   errors,
+  getConventionManageAllowedRoles,
   type Role,
   reviewedConventionStatuses,
   type UserWithRights,
@@ -85,7 +86,10 @@ export const makeUpdateConventionStatus = useCaseBuilder(
     const roles =
       "roleInPayload" in roleOrUser
         ? [roleOrUser.roleInPayload]
-        : await rolesFromUser(roleOrUser.userWithRights, convention);
+        : getConventionManageAllowedRoles(
+            convention,
+            roleOrUser.userWithRights,
+          );
 
     const assessment = await uow.assessmentRepository.getByConventionId(
       convention.id,
@@ -219,30 +223,4 @@ const getRoleInPayloadOrUser = async (
   return {
     userWithRights: userWithRights,
   };
-};
-
-const rolesFromUser = async (
-  user: UserWithRights,
-  convention: ConventionDto,
-): Promise<Role[]> => {
-  const roles: Role[] = [];
-  if (user.isBackofficeAdmin) roles.push("back-office");
-
-  if (user.email === convention.signatories.establishmentRepresentative.email)
-    roles.push("establishment-representative");
-
-  const userAgencyRight = user.agencyRights.find(
-    (agencyRight) => agencyRight.agency.id === convention.agencyId,
-  );
-
-  if (!userAgencyRight && roles.length === 0) {
-    throw errors.user.noRightsOnAgency({
-      agencyId: convention.agencyId,
-      userId: user.id,
-    });
-  }
-
-  if (userAgencyRight) roles.push(...userAgencyRight.roles);
-
-  return roles;
 };
