@@ -3,6 +3,7 @@ import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
   type ConnectedUserJwtPayload,
+  type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
   type ConventionMagicLinkRoutes,
@@ -517,88 +518,105 @@ describe("Magic link router", () => {
   });
 
   describe("POST /auth/sign-application/:conventionId", () => {
-    it("200 - can sign with connected user (same email as establishement representative in convention)", async () => {
-      const agency = new AgencyDtoBuilder().build();
-      const validator = new ConnectedUserBuilder()
-        .withId("validator")
-        .withEmail("validator@mail.com")
-        .buildUser();
-      const convention = new ConventionDtoBuilder()
-        .withStatus("READY_TO_SIGN")
-        .notSigned()
-        .build();
-      const establishmentRepresentative: User = {
-        email: convention.signatories.establishmentRepresentative.email,
-        firstName: "",
-        lastName: "",
-        id: "1",
-        proConnect: defaultProConnectInfos,
-        createdAt: new Date().toISOString(),
-      };
+    it.each([
+      {
+        signatory: "establishment-representative",
+        getEmail: (convention: ConventionDto) =>
+          convention.signatories.establishmentRepresentative.email,
+      },
+      {
+        signatory: "beneficiary",
+        getEmail: (convention: ConventionDto) =>
+          convention.signatories.beneficiary.email,
+      },
+    ] satisfies {
+      signatory: "establishment-representative" | "beneficiary";
+      getEmail: (convention: ConventionDto) => string;
+    }[])(
+      "200 - connected $signatory can sign convention",
+      async ({ signatory, getEmail }) => {
+        const signedAt = new Date("2025-01-15T10:00:00.000Z");
+        gateways.timeGateway.setNextDate(signedAt);
+        const agency = new AgencyDtoBuilder().build();
+        const convention = new ConventionDtoBuilder()
+          .withAgencyId(agency.id)
+          .withStatus("READY_TO_SIGN")
+          .notSigned()
+          .build();
+        const signatoryUser = new ConnectedUserBuilder()
+          .withId(`${getEmail(convention)}-user-id`)
+          .withEmail(getEmail(convention))
+          .buildUser();
 
-      inMemoryUow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        }),
-      ];
-      inMemoryUow.userRepository.users = [
-        establishmentRepresentative,
-        validator,
-      ];
-      inMemoryUow.conventionRepository.setConventions([convention]);
+        inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+        inMemoryUow.userRepository.users = [signatoryUser];
+        inMemoryUow.conventionRepository.setConventions([convention]);
 
-      const response = await request
-        .post(`/auth/sign-application/${convention.id}`)
-        .send()
-        .set({
-          authorization: generateConnectedUserJwt({
-            userId: establishmentRepresentative.id,
-            version: 1,
-          }),
+        const response = await httpClient.signConvention({
+          urlParams: { conventionId: convention.id },
+          headers: {
+            authorization: generateConnectedUserJwt({
+              userId: signatoryUser.id,
+              version: currentJwtVersions.connectedUser,
+            }),
+          },
         });
-      expectToEqual(response.status, 200);
-      expectToEqual(response.body, {
-        id: "a99eaca1-ee70-4c90-b3f4-668d492f7392",
-      });
-    });
+
+        expectHttpResponseToEqual(response, {
+          status: 200,
+          body: { id: convention.id },
+        });
+
+        const signedAtIso = signedAt.toISOString();
+
+        expectToEqual(inMemoryUow.conventionRepository.conventions, [
+          {
+            ...convention,
+            status: "PARTIALLY_SIGNED",
+            signatories: {
+              ...convention.signatories,
+              beneficiary:
+                signatory === "beneficiary"
+                  ? {
+                      ...convention.signatories.beneficiary,
+                      signedAt: signedAtIso,
+                    }
+                  : convention.signatories.beneficiary,
+              establishmentRepresentative:
+                signatory === "establishment-representative"
+                  ? {
+                      ...convention.signatories.establishmentRepresentative,
+                      signedAt: signedAtIso,
+                    }
+                  : convention.signatories.establishmentRepresentative,
+            },
+          },
+        ]);
+      },
+    );
 
     it("403 - cannot sign with connected user who is not a signatory", async () => {
       const agency = new AgencyDtoBuilder().build();
-      const validator = new ConnectedUserBuilder()
-        .withId("validator")
-        .withEmail("validator@mail.com")
-        .buildUser();
       const convention = new ConventionDtoBuilder()
         .withAgencyId(agency.id)
         .withStatus("READY_TO_SIGN")
         .notSigned()
         .build();
-      const notEstablishmentRepresentative: User = {
-        email: "email@mail.com",
-        firstName: "",
-        lastName: "",
-        id: "1",
-        proConnect: defaultProConnectInfos,
-        createdAt: new Date().toISOString(),
-      };
+      const userWithNoRightOnConvention = new ConnectedUserBuilder()
+        .withId("user-with-no-right-on-convention")
+        .withEmail("user-with-no-right-on-convention@mail.com")
+        .buildUser();
 
-      inMemoryUow.userRepository.users = [
-        notEstablishmentRepresentative,
-        validator,
-      ];
+      inMemoryUow.userRepository.users = [userWithNoRightOnConvention];
       inMemoryUow.conventionRepository.setConventions([convention]);
-      inMemoryUow.agencyRepository.insert(
-        toAgencyWithRights(agency, {
-          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        }),
-      );
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
 
       const response = await request
         .post(`/auth/sign-application/${convention.id}`)
         .set({
           authorization: generateConnectedUserJwt({
-            userId: notEstablishmentRepresentative.id,
-            version: 1,
+            userId: userWithNoRightOnConvention.id,
+            version: currentJwtVersions.connectedUser,
           }),
         })
         .send();
@@ -608,7 +626,7 @@ describe("Magic link router", () => {
         body: {
           status: 403,
           message: errors.convention.connectedUserNotSignatory({
-            userId: notEstablishmentRepresentative.id,
+            userId: userWithNoRightOnConvention.id,
             conventionId: convention.id,
           }).message,
         },
