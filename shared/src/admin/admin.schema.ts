@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { agencyIdSchema, agencyRoleSchema } from "../agency/agency.schema";
+import {
+  agencyIdSchema,
+  agencyIdsSchema,
+  agencyRoleSchema,
+} from "../agency/agency.schema";
 import { conventionIdSchema } from "../convention/convention.schema";
 import { emailSchema } from "../email/email.schema";
 import { withEstablishmentBannishmentJustificationSchema } from "../establishment/bannedEstablishmentInformations.schema";
@@ -46,15 +50,10 @@ export const rejectIcUserRoleForAgencyParamsSchema: ZodSchemaWithInputMatchingOu
   });
 
 export const withUserFiltersSchema: ZodSchemaWithInputMatchingOutput<WithUserFilters> =
-  z
-    .object({
-      agencyRole: agencyRoleSchema,
-    })
-    .or(
-      z.object({
-        agencyId: agencyIdSchema,
-      }),
-    );
+  z.object({
+    agencyIds: agencyIdsSchema.optional(),
+    agencyRole: agencyRoleSchema.optional(),
+  });
 
 export const manageConventionAdminFormSchema: ZodSchemaWithInputMatchingOutput<ManageConventionAdminForm> =
   z.object({

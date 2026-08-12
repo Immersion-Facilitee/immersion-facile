@@ -39,7 +39,7 @@ export const useAgencyAdminAutocomplete = () => {
       );
       dispatch(
         connectedUsersAdminSlice.actions.fetchAgencyUsersRequested({
-          agencyId,
+          agencyIds: [agencyId],
         }),
       );
     },

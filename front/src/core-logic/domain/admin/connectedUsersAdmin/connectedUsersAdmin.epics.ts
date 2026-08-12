@@ -208,7 +208,7 @@ const fetchAgencyUsersOnUserRemovedEpic: AppEpic<
     filter((action) => action.payload.feedbackTopic === "agency-user"),
     map((action) =>
       connectedUsersAdminSlice.actions.fetchAgencyUsersRequested({
-        agencyId: action.payload.agencyId,
+        agencyIds: [action.payload.agencyId],
       }),
     ),
   );

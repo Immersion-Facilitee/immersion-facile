@@ -1800,9 +1800,18 @@ describe.each(
       it("return all userIds that have rights on agency by agencyId", async () => {
         expectToEqual(
           await agencyRepository.getUserIdWithAgencyRightsByFilters({
-            agencyId: agency1WithValidatorAndCounsellorRights.id,
+            agencyIds: [agency1WithValidatorAndCounsellorRights.id],
           }),
           [counsellor1.id, validator1.id],
+        );
+      });
+    });
+
+    describe("without filters", () => {
+      it("returns empty array when agencyRole and agencyIds are omitted", async () => {
+        expectToEqual(
+          await agencyRepository.getUserIdWithAgencyRightsByFilters({}),
+          [],
         );
       });
     });
@@ -1821,6 +1830,41 @@ describe.each(
         expectToEqual(
           await agencyRepository.getUserIdWithAgencyRightsByFilters({
             agencyRole: "agency-viewer",
+          }),
+          [],
+        );
+      });
+    });
+
+    describe("by agencyRole and agencyIds", () => {
+      it("returns userIds with the role only on the given agencies", async () => {
+        expectToEqual(
+          await agencyRepository.getUserIdWithAgencyRightsByFilters({
+            agencyRole: "validator",
+            agencyIds: [agency1WithValidatorAndCounsellorRights.id],
+          }),
+          [validator1.id],
+        );
+      });
+
+      it("returns userIds with the role across multiple given agencies", async () => {
+        expectToEqual(
+          await agencyRepository.getUserIdWithAgencyRightsByFilters({
+            agencyRole: "validator",
+            agencyIds: [
+              agency1WithValidatorAndCounsellorRights.id,
+              agency2WithValidator2Rights.id,
+            ],
+          }),
+          [validator1.id, validator2.id],
+        );
+      });
+
+      it("returns nothing when the role does not exist on the given agencies", async () => {
+        expectToEqual(
+          await agencyRepository.getUserIdWithAgencyRightsByFilters({
+            agencyRole: "counsellor",
+            agencyIds: [agency2WithValidator2Rights.id],
           }),
           [],
         );

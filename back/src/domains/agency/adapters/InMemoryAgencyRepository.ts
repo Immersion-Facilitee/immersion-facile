@@ -17,7 +17,6 @@ import {
   errors,
   type GeoPositionDto,
   isTruthy,
-  isWithAgencyRole,
   type PaginationQueryParams,
   type SiretDto,
   type UserId,
@@ -234,21 +233,25 @@ export class InMemoryAgencyRepository implements AgencyRepository {
   public async getUserIdWithAgencyRightsByFilters(
     filters: WithUserFilters,
   ): Promise<UserId[]> {
-    if (!isWithAgencyRole(filters)) {
-      const agency = this.#agencies[filters.agencyId];
-      if (!agency) throw errors.agency.notFound(filters);
-      return keys(agency.usersRights).sort();
-    }
+    if (!filters.agencyRole && !filters.agencyIds) return [];
 
     return uniq(
       values(this.#agencies)
         .filter(isTruthy)
-        .reduce<UserId[]>((acc, agency) => {
-          const userIds = toPairs(agency.usersRights)
-            .filter(([_, right]) => right?.roles.includes(filters.agencyRole))
-            .map(([userId]) => userId);
-          return [...acc, ...userIds].sort();
-        }, []),
+        .filter(
+          (agency) =>
+            !filters.agencyIds || filters.agencyIds.includes(agency.id),
+        )
+        .flatMap((agency) =>
+          toPairs(agency.usersRights)
+            .filter(
+              ([_, right]) =>
+                !filters.agencyRole ||
+                right?.roles.includes(filters.agencyRole),
+            )
+            .map(([userId]) => userId),
+        )
+        .sort(),
     );
   }
 

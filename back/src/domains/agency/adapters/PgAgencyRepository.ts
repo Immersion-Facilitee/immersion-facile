@@ -20,7 +20,6 @@ import {
   type DepartmentCode,
   errors,
   isTruthy,
-  isWithAgencyRole,
   type OmitFromExistingKeys,
   type PaginationQueryParams,
   pipeWithValue,
@@ -438,12 +437,19 @@ export class PgAgencyRepository implements AgencyRepository {
   public async getUserIdWithAgencyRightsByFilters(
     filters: WithUserFilters,
   ): Promise<UserId[]> {
+    if (!filters.agencyRole && !filters.agencyIds) return [];
+
     const results = await pipeWithValue(
       this.transaction.selectFrom("users__agencies").select("user_id"),
-      (b) =>
-        !isWithAgencyRole(filters)
-          ? b.where("agency_id", "=", filters.agencyId)
-          : b.where("roles", "@>", `["${filters.agencyRole}"]`),
+      (b) => {
+        const withAgencyIds = filters.agencyIds
+          ? b.where("agency_id", "in", filters.agencyIds)
+          : b;
+
+        if (!filters.agencyRole) return withAgencyIds;
+
+        return withAgencyIds.where("roles", "@>", `["${filters.agencyRole}"]`);
+      },
     )
       .orderBy("user_id", "asc")
       .execute();

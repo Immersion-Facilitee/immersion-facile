@@ -1,4 +1,4 @@
-import type { AgencyId, WithAgencyId } from "../agency/agency.dto";
+import type { AgencyId } from "../agency/agency.dto";
 import type { ConventionId } from "../convention/convention.dto";
 import type { Email } from "../email/email.dto";
 import type { AgencyRole } from "../role/role.dto";
@@ -20,18 +20,10 @@ export type RejectConnectedUserRoleForAgencyParams = WithAgencyIdAndUserId & {
   justification: string;
 };
 
-export type WithAgencyRole = {
-  agencyRole: AgencyRole;
+export type WithUserFilters = {
+  agencyIds?: AgencyId[];
+  agencyRole?: AgencyRole;
 };
-
-export type WithUserFilters = WithAgencyId | WithAgencyRole;
-export const isWithAgencyRole = (
-  filter: WithUserFilters,
-): filter is WithAgencyRole => "agencyRole" in filter;
-
-export const isWithAgencyId = (
-  filter: WithUserFilters,
-): filter is WithAgencyId => "agencyId" in filter;
 
 export type ManageConventionAdminForm = {
   conventionId: ConventionId;

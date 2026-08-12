@@ -45,7 +45,7 @@ export const getConnectedUserByUserId = async ({
 export const getConnectedUsersByUserIds = async (
   uow: UnitOfWork,
   userIds: UserId[],
-  agencyId?: AgencyId,
+  agencyIds: AgencyId[],
 ): Promise<ConnectedUser[]> => {
   const users = await uow.userRepository.getByIds(userIds);
 
@@ -65,9 +65,10 @@ export const getConnectedUsersByUserIds = async (
     await uow.agencyRepository.getByIds(
       uniq(
         values(userRightsByUser)
-          .flatMap((rights) => rights.map((right) => right.agencyId))
-          .filter((userAgencyId) =>
-            agencyId ? agencyId === userAgencyId : true,
+          .flatMap((rights) => rights.map(({ agencyId }) => agencyId))
+          .filter(
+            (userAgencyId) =>
+              agencyIds.length === 0 || agencyIds.includes(userAgencyId),
           ),
       ),
     )
