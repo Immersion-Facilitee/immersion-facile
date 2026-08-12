@@ -25,22 +25,25 @@ export const throwIfNotAdmin = (user: UserWithAdminRights | undefined) => {
   if (!user.isBackofficeAdmin) throw errors.user.forbidden({ userId: user.id });
 };
 
-export const throwIfNotAgencyAdminOrBackofficeAdmin = (
-  agencyId: AgencyId,
-  currentUser?: ConnectedUser,
-): void => {
+export const throwIfNotAgencyAdminOrBackofficeAdmin = ({
+  agencyIds,
+  currentUser,
+}: {
+  agencyIds: AgencyId[];
+  currentUser?: ConnectedUser;
+}): void => {
   if (!currentUser) throw errors.user.unauthorized();
   if (currentUser.isBackofficeAdmin) return;
 
-  const hasPermission = currentUser.agencyRights.some(
-    (agencyRight) =>
-      agencyRight.agency.id === agencyId &&
-      agencyRight.roles.includes("agency-admin"),
+  const hasPermission = agencyIds.every((agencyId) =>
+    currentUser.agencyRights.some(
+      (agencyRight) =>
+        agencyRight.agency.id === agencyId &&
+        agencyRight.roles.includes("agency-admin"),
+    ),
   );
 
-  if (!hasPermission) {
-    throw errors.user.forbidden({ userId: currentUser.id });
-  }
+  if (!hasPermission) throw errors.user.forbidden({ userId: currentUser.id });
 };
 
 export const throwIfNotAuthorizedForRole = async ({

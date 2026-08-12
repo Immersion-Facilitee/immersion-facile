@@ -68,7 +68,11 @@ export const makeUpdateAgency = useCaseBuilder("UpdateAgency")
     );
 
     if (statusChanged) throwIfNotAdmin(currentUser);
-    else throwIfNotAgencyAdminOrBackofficeAdmin(agency.id, currentUser);
+    else
+      throwIfNotAgencyAdminOrBackofficeAdmin({
+        agencyIds: [agency.id],
+        currentUser,
+      });
 
     if (
       statusChanged &&
