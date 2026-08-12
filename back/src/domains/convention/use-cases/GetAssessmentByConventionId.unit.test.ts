@@ -8,6 +8,7 @@ import {
   type ConventionJwtPayload,
   type ConventionRole,
   errors,
+  establishmentsRoles,
   expectPromiseToFailWithError,
   expectToEqual,
   type LegacyAssessmentDto,
@@ -22,6 +23,7 @@ import {
   type InMemoryUnitOfWork,
 } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
+import { EstablishmentAggregateBuilder } from "../../establishment/helpers/EstablishmentBuilders";
 import type { AssessmentEntity } from "../entities/AssessmentEntity";
 import {
   type GetAssessmentByConventionId,
@@ -59,6 +61,14 @@ describe("GetAssessmentByConventionId", () => {
   const beneficiary = new ConnectedUserBuilder()
     .withId("beneficiary")
     .withEmail(convention.signatories.beneficiary.email)
+    .buildUser();
+  const establishmentRepresentative = new ConnectedUserBuilder()
+    .withId("establishment-representative")
+    .withEmail(convention.signatories.establishmentRepresentative.email)
+    .buildUser();
+  const establishmentTutorUser = new ConnectedUserBuilder()
+    .withId("establishment-tutor")
+    .withEmail(convention.establishmentTutor.email)
     .buildUser();
   const establishmentTutorPayload: ConventionDomainJwtPayload = {
     applicationId: convention.id,
@@ -113,6 +123,8 @@ describe("GetAssessmentByConventionId", () => {
       agencyAdmin,
       agencyViewer,
       beneficiary,
+      establishmentRepresentative,
+      establishmentTutorUser,
       userWithoutRoleOnConvention,
       backOfficeAdmin,
     ];
@@ -250,87 +262,66 @@ describe("GetAssessmentByConventionId", () => {
     });
 
     describe("with connected user", () => {
-      it("get existing assessment if user is beneficiary", async () => {
-        expectToEqual(
-          await getAssessment.execute(
-            { conventionId: convention.id },
-            {
-              userId: beneficiary.id,
-            },
-          ),
-          assessment,
-        );
-      });
+      it.each([
+        ["beneficiary", beneficiary.id],
+        ["validator", validator.id],
+        ["counsellor", counsellor.id],
+        ["back-office admin", backOfficeAdmin.id],
+        ["agency-admin", agencyAdmin.id],
+        ["agency-viewer", agencyViewer.id],
+        ["establishment-representative", establishmentRepresentative.id],
+        ["establishment-tutor", establishmentTutorUser.id],
+      ] as const)(
+        "get existing assessment if connected user is %s",
+        async (_label, userId) => {
+          expectToEqual(
+            await getAssessment.execute(
+              { conventionId: convention.id },
+              { userId },
+            ),
+            assessment,
+          );
+        },
+      );
 
-      it("get existing assessment if user is validator", async () => {
-        uow.conventionRepository.setConventions([convention]);
+      it.each(establishmentsRoles)(
+        "get existing assessment if connected user is %s on establishment with same siret",
+        async (role) => {
+          const establishmentUser = new ConnectedUserBuilder()
+            .withId(`establishment-${role}-user-id`)
+            .withEmail(`${role}@mail.com`)
+            .buildUser();
 
-        expectToEqual(
-          await getAssessment.execute(
-            { conventionId: convention.id },
-            {
-              userId: validator.id,
-            },
-          ),
-          assessment,
-        );
-      });
+          uow.userRepository.users = [
+            ...uow.userRepository.users,
+            establishmentUser,
+          ];
+          uow.establishmentAggregateRepository.establishmentAggregates = [
+            new EstablishmentAggregateBuilder()
+              .withEstablishmentSiret(convention.siret)
+              .withUserRights([
+                {
+                  userId: establishmentUser.id,
+                  role,
+                  status: "ACCEPTED",
+                  job: "",
+                  phone: "",
+                  shouldReceiveDiscussionNotifications: true,
+                  isMainContactByPhone: false,
+                },
+              ])
+              .build(),
+          ];
 
-      it("get existing assessment if user is counsellor", async () => {
-        uow.conventionRepository.setConventions([convention]);
-
-        expectToEqual(
-          await getAssessment.execute(
-            { conventionId: convention.id },
-            {
-              userId: counsellor.id,
-            },
-          ),
-          assessment,
-        );
-      });
-
-      it("get existing assessment if user is back-office admin", async () => {
-        uow.conventionRepository.setConventions([convention]);
-
-        expectToEqual(
-          await getAssessment.execute(
-            { conventionId: convention.id },
-            {
-              userId: backOfficeAdmin.id,
-            },
-          ),
-          assessment,
-        );
-      });
-
-      it("get existing assessment if user is agency-admin", async () => {
-        uow.conventionRepository.setConventions([convention]);
-
-        expectToEqual(
-          await getAssessment.execute(
-            { conventionId: convention.id },
-            {
-              userId: agencyAdmin.id,
-            },
-          ),
-          assessment,
-        );
-      });
-
-      it("get existing assessment if user is agency-viewer", async () => {
-        uow.conventionRepository.setConventions([convention]);
-
-        expectToEqual(
-          await getAssessment.execute(
-            { conventionId: convention.id },
-            {
-              userId: agencyViewer.id,
-            },
-          ),
-          assessment,
-        );
-      });
+          expectToEqual(
+            await getAssessment.execute(
+              { conventionId: convention.id },
+              { userId: establishmentUser.id },
+            ),
+            assessment,
+          );
+        },
+      );
     });
 
     it("can also get an assessment with legacy format", async () => {

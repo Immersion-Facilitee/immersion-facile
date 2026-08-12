@@ -136,7 +136,12 @@ export const conventionMagicLinkRoutes = defineRoutes({
     url: "/auth/sign-application/:conventionId",
     method: "post",
     ...withAuthorizationHeaders,
-    responses: { 200: withConventionIdLegacySchema },
+    responses: {
+      200: withConventionIdLegacySchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
+    },
   }),
   updateConvention: defineRoute({
     url: "/auth/demandes-immersion/:conventionId",
@@ -182,6 +187,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
     responses: {
       200: expressEmptyResponseBody,
       400: httpErrorSchema,
+      401: httpErrorSchema,
       403: httpErrorSchema,
       404: httpErrorSchema,
       429: httpErrorSchema,

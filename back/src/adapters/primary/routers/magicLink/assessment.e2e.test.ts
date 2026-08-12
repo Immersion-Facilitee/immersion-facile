@@ -375,6 +375,60 @@ describe("Assessment routes", () => {
         body: legacyAssessment,
       });
     });
+
+    it("fails with 401 if jwt is not valid", async () => {
+      const response = await httpClient.getAssessmentByConventionId({
+        headers: { authorization: "invalid-jwt" },
+        urlParams: { conventionId: convention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
+      });
+    });
+
+    it("fails with 403 if convention id does not match the one in token", async () => {
+      const anotherConvention = new ConventionDtoBuilder()
+        .withId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
+        .withAgencyId(agency.id)
+        .build();
+
+      inMemoryUow.conventionRepository.setConventions([
+        convention,
+        anotherConvention,
+      ]);
+
+      const response = await httpClient.getAssessmentByConventionId({
+        headers: { authorization: jwt },
+        urlParams: { conventionId: anotherConvention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.assessment.conventionIdMismatch().message,
+        },
+      });
+    });
+
+    it("fails with 404 when assessment does not exist", async () => {
+      inMemoryUow.assessmentRepository.assessments = [];
+
+      const response = await httpClient.getAssessmentByConventionId({
+        headers: { authorization: jwt },
+        urlParams: { conventionId: convention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 404,
+        body: {
+          status: 404,
+          message: errors.assessment.notFound(convention.id).message,
+        },
+      });
+    });
   });
 
   describe(`${displayRouteName(
@@ -555,7 +609,7 @@ describe("Assessment routes", () => {
     });
 
     it("403 - connected user email is not linked to the convention", async () => {
-      const UserWithNoRightOnConvention = new ConnectedUserBuilder()
+      const userWithNoRightOnConvention = new ConnectedUserBuilder()
         .withId("user-with-no-right-on-convention")
         .withEmail("user-with-no-right-on-convention@mail.com")
         .buildUser();
@@ -563,10 +617,9 @@ describe("Assessment routes", () => {
       inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(AgencyDtoBuilder.create(agency.id).build()),
       ];
-      inMemoryUow.conventionRepository.setConventions([convention]);
       inMemoryUow.userRepository.users = [
         ...inMemoryUow.userRepository.users,
-        UserWithNoRightOnConvention,
+        userWithNoRightOnConvention,
       ];
       inMemoryUow.assessmentRepository.assessments = [
         {
@@ -584,7 +637,7 @@ describe("Assessment routes", () => {
         },
         headers: {
           authorization: generateConnectedUserJwt({
-            userId: UserWithNoRightOnConvention.id,
+            userId: userWithNoRightOnConvention.id,
             version: currentJwtVersions.connectedUser,
           }),
         },
@@ -831,6 +884,34 @@ describe("Assessment routes", () => {
           status: 409,
           message: errors.assessment.alreadySigned(convention.id).message,
         },
+      });
+    });
+
+    it("401 - invalid JWT", async () => {
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(AgencyDtoBuilder.create(agency.id).build()),
+      ];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+      inMemoryUow.assessmentRepository.assessments = [
+        {
+          _entityName: "Assessment",
+          ...assessment,
+          numberOfHoursActuallyMade: 40,
+        },
+      ];
+
+      const response = await httpClient.signAssessment({
+        body: {
+          conventionId: convention.id,
+          beneficiaryAgreement: true,
+          beneficiaryFeedback: "my feedback",
+        },
+        headers: { authorization: "invalid-jwt" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
       });
     });
   });
