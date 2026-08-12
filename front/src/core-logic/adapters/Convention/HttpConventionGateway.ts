@@ -150,7 +150,7 @@ export class HttpConventionGateway implements ConventionGateway {
     jwt: ConnectedUserJwt,
   ): Observable<void> {
     return from(
-      this.magicLinkHttpClient
+      this.authenticatedHttpClient
         .createArchivedConventionRequest({
           body: archivedConventionRequest,
           headers: { authorization: jwt },
@@ -176,6 +176,8 @@ export class HttpConventionGateway implements ConventionGateway {
         .then((response) =>
           match(response)
             .with({ status: 200 }, (response) => response.body)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 404) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

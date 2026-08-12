@@ -267,18 +267,6 @@ export const conventionMagicLinkRoutes = defineRoutes({
       404: httpErrorSchema,
     },
   }),
-
-  createArchivedConventionRequest: defineRoute({
-    url: "/auth/archived-convention",
-    method: "post",
-    requestBodySchema: archivedConventionRequestSchema,
-    ...withAuthorizationHeaders,
-    responses: {
-      201: expressEmptyResponseBody,
-      400: httpErrorSchema,
-      401: httpErrorSchema,
-    },
-  }),
 });
 
 export type UnauthenticatedConventionRoutes =
@@ -340,6 +328,17 @@ export const authenticatedConventionRoutes = defineRoutes({
       400: httpErrorSchema,
       401: httpErrorSchema,
       404: httpErrorSchema,
+    },
+  }),
+  createArchivedConventionRequest: defineRoute({
+    url: "/archived-convention-requests",
+    method: "post",
+    requestBodySchema: archivedConventionRequestSchema,
+    ...withAuthorizationHeaders,
+    responses: {
+      201: expressEmptyResponseBody,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
     },
   }),
   getApiConsumersByConvention: defineRoute({

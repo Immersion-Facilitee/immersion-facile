@@ -2,12 +2,14 @@ import { addDays } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AgencyUserConventionListDto,
+  type ArchivedConventionRequestDto,
   ASSESSEMENT_SIGNATURE_RELEASE_DATE,
   type AuthenticatedConventionRoutes,
   authExpiredMessage,
   authenticatedConventionRoutes,
   ConnectedUserBuilder,
   type ConnectedUserJwt,
+  type ConnectedUserJwtPayload,
   ConventionDtoBuilder,
   type ConventionTemplate,
   currentJwtVersions,
@@ -1174,6 +1176,104 @@ describe("authenticatedConventionRoutes", () => {
         }),
         [],
       );
+    });
+  });
+
+  describe(`${displayRouteName(
+    authenticatedConventionRoutes.createArchivedConventionRequest,
+  )} submits an archived convention access request`, () => {
+    const convention = new ConventionDtoBuilder().build();
+    it("201 - succeeds with a valid request", async () => {
+      const basicUser = new ConnectedUserBuilder()
+        .withId("basic-user")
+        .buildUser();
+      const basicUserJwtPayload: ConnectedUserJwtPayload = {
+        version: currentJwtVersions.connectedUser,
+        iat: Date.now(),
+        exp: addDays(new Date(), 30).getTime(),
+        userId: basicUser.id,
+      };
+
+      inMemoryUow.userRepository.users = [basicUser];
+
+      const archivedConventionRequestDto: ArchivedConventionRequestDto = {
+        id: "11111111-1111-4111-8111-111111111111",
+        conventionSearchMethod: "withConventionId",
+        conventionId: convention.id,
+        reason: "legalDispute",
+      };
+
+      const response = await httpClient.createArchivedConventionRequest({
+        headers: {
+          authorization: generateConnectedUserJwt(basicUserJwtPayload),
+        },
+        body: archivedConventionRequestDto,
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 201,
+        body: "",
+      });
+
+      expectToEqual(
+        inMemoryUow.archivedConventionRequestRepository
+          .archivedConventionRequests,
+        {
+          [archivedConventionRequestDto.id]: {
+            ...archivedConventionRequestDto,
+            userId: basicUser.id,
+            createdAt: gateways.timeGateway.now().toISOString(),
+          },
+        },
+      );
+    });
+
+    it("401 - Invalid JWT", async () => {
+      const response = await httpClient.createArchivedConventionRequest({
+        headers: { authorization: "invalid-token" },
+        body: {
+          id: "11111111-1111-4111-8111-111111111111",
+          conventionSearchMethod: "withConventionId",
+          conventionId: convention.id,
+          reason: "legalDispute",
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: invalidTokenMessage,
+        },
+      });
+    });
+
+    it("401 - Expired JWT", async () => {
+      const response = await httpClient.createArchivedConventionRequest({
+        headers: {
+          authorization: generateConnectedUserJwt(
+            {
+              userId: "basic-user",
+              version: currentJwtVersions.connectedUser,
+            },
+            0,
+          ),
+        },
+        body: {
+          id: "11111111-1111-4111-8111-111111111111",
+          conventionSearchMethod: "withConventionId",
+          conventionId: convention.id,
+          reason: "legalDispute",
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: authExpiredMessage(),
+        },
+      });
     });
   });
 });
