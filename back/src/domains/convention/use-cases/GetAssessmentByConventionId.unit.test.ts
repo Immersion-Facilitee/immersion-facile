@@ -271,57 +271,53 @@ describe("GetAssessmentByConventionId", () => {
         ["agency-viewer", agencyViewer.id],
         ["establishment-representative", establishmentRepresentative.id],
         ["establishment-tutor", establishmentTutorUser.id],
-      ] as const)(
-        "get existing assessment if connected user is %s",
-        async (_label, userId) => {
-          expectToEqual(
-            await getAssessment.execute(
-              { conventionId: convention.id },
-              { userId },
-            ),
-            assessment,
-          );
-        },
-      );
+      ] as const)("get existing assessment if connected user is %s", async (_label, userId) => {
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            { userId },
+          ),
+          assessment,
+        );
+      });
 
-      it.each(establishmentsRoles)(
-        "get existing assessment if connected user is %s on establishment with same siret",
-        async (role) => {
-          const establishmentUser = new ConnectedUserBuilder()
-            .withId(`establishment-${role}-user-id`)
-            .withEmail(`${role}@mail.com`)
-            .buildUser();
+      it.each(
+        establishmentsRoles,
+      )("get existing assessment if connected user is %s on establishment with same siret", async (role) => {
+        const establishmentUser = new ConnectedUserBuilder()
+          .withId(`establishment-${role}-user-id`)
+          .withEmail(`${role}@mail.com`)
+          .buildUser();
 
-          uow.userRepository.users = [
-            ...uow.userRepository.users,
-            establishmentUser,
-          ];
-          uow.establishmentAggregateRepository.establishmentAggregates = [
-            new EstablishmentAggregateBuilder()
-              .withEstablishmentSiret(convention.siret)
-              .withUserRights([
-                {
-                  userId: establishmentUser.id,
-                  role,
-                  status: "ACCEPTED",
-                  job: "",
-                  phone: "",
-                  shouldReceiveDiscussionNotifications: true,
-                  isMainContactByPhone: false,
-                },
-              ])
-              .build(),
-          ];
+        uow.userRepository.users = [
+          ...uow.userRepository.users,
+          establishmentUser,
+        ];
+        uow.establishmentAggregateRepository.establishmentAggregates = [
+          new EstablishmentAggregateBuilder()
+            .withEstablishmentSiret(convention.siret)
+            .withUserRights([
+              {
+                userId: establishmentUser.id,
+                role,
+                status: "ACCEPTED",
+                job: "",
+                phone: "",
+                shouldReceiveDiscussionNotifications: true,
+                isMainContactByPhone: false,
+              },
+            ])
+            .build(),
+        ];
 
-          expectToEqual(
-            await getAssessment.execute(
-              { conventionId: convention.id },
-              { userId: establishmentUser.id },
-            ),
-            assessment,
-          );
-        },
-      );
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            { userId: establishmentUser.id },
+          ),
+          assessment,
+        );
+      });
     });
 
     it("can also get an assessment with legacy format", async () => {

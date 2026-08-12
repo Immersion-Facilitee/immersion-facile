@@ -10,7 +10,6 @@ import {
   ConnectedUserBuilder,
   type ConnectedUserJwtPayload,
   type ConventionDraftId,
-  type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
   type ConventionMagicLinkRoutes,

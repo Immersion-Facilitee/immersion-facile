@@ -606,452 +606,193 @@ describe("Send signature link", () => {
   });
 
   describe("Right paths: send signature link sms", () => {
-    it.each([
-      "validator",
-      "counsellor",
-    ] as const)("When pro connected %s triggers it", async (role) => {
-      const shortLinkId = "link1";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+    describe("from connected user", () => {
+      it.each([
+        "validator",
+        "counsellor",
+      ] as const)("When pro connected %s triggers it", async (role) => {
+        const shortLinkId = "link1";
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
 
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [connectedUser.id]: {
-            roles: [role],
-            isNotifiedByEmail: false,
-          },
-        }),
-      ];
-      uow.userRepository.users = [connectedUser];
-
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole: "establishment-representative",
-          notificationKind: "sms",
-        },
-        connectedUserPayload,
-      );
-
-      expectToEqual(uow.shortLinkQuery.getShortLinks(), [
-        {
-          id: shortLinkId,
-          url: fakeGenerateMagicLinkUrlFn({
-            id: convention.id,
-            role: convention.signatories.establishmentRepresentative.role,
-            email: convention.signatories.establishmentRepresentative.email,
-            now: timeGateway.now(),
-            targetRoute: "conventionToSign",
-            lifetime: "2Days",
-            extraQueryParams: { mtm_campaign: "sms-signature-link" },
+        uow.conventionRepository.setConventions([convention]);
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [connectedUser.id]: {
+              roles: [role],
+              isNotifiedByEmail: false,
+            },
           }),
-          lastUsedAt: null,
-        },
-      ]);
+        ];
+        uow.userRepository.users = [connectedUser];
 
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        {
-          topic: "ConventionSignatureLinkManuallySent",
-          payload: {
-            convention,
-            recipientRole: "establishment-representative",
-            transport: "sms",
-            triggeredBy: {
-              kind: "connected-user",
+        await usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "establishment-representative",
+            notificationKind: "sms",
+          },
+          connectedUserPayload,
+        );
+
+        expectToEqual(uow.shortLinkQuery.getShortLinks(), [
+          {
+            id: shortLinkId,
+            url: fakeGenerateMagicLinkUrlFn({
+              id: convention.id,
+              role: convention.signatories.establishmentRepresentative.role,
+              email: convention.signatories.establishmentRepresentative.email,
+              now: timeGateway.now(),
+              targetRoute: "conventionToSign",
+              lifetime: "2Days",
+              extraQueryParams: { mtm_campaign: "sms-signature-link" },
+            }),
+            lastUsedAt: null,
+          },
+        ]);
+
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          {
+            topic: "ConventionSignatureLinkManuallySent",
+            payload: {
+              convention,
+              recipientRole: "establishment-representative",
+              transport: "sms",
+              triggeredBy: {
+                kind: "connected-user",
+                userId: connectedUser.id,
+              },
+            },
+          },
+        ]);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          {
+            kind: "sms",
+            followedIds: {
+              conventionId: convention.id,
+              agencyId: convention.agencyId,
+              establishmentSiret: convention.siret,
               userId: connectedUser.id,
             },
-          },
-        },
-      ]);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        {
-          kind: "sms",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-            userId: connectedUser.id,
-          },
-          templatedContent: {
-            recipientPhone:
-              convention.signatories.establishmentRepresentative.phone,
-            kind: "ReminderForSignatories",
-            params: {
-              shortLink: makeShortLinkUrl(config, shortLinkId),
+            templatedContent: {
+              recipientPhone:
+                convention.signatories.establishmentRepresentative.phone,
+              kind: "ReminderForSignatories",
+              params: {
+                shortLink: makeShortLinkUrl(config, shortLinkId),
+              },
             },
           },
-        },
-      ]);
-    });
+        ]);
+      });
 
-    it.each([
-      "beneficiary",
-      "establishment-representative",
-    ] as const)("When connected beneficiary triggers it for %s", async (signatoryRole) => {
-      const shortLinkId = "link1";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+      it.each([
+        "beneficiary",
+        "establishment-representative",
+      ] as const)("When connected beneficiary triggers it for %s", async (signatoryRole) => {
+        const shortLinkId = "link1";
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
 
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
-      uow.userRepository.users = [connectedBeneficiaryUser];
+        uow.conventionRepository.setConventions([convention]);
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+        uow.userRepository.users = [connectedBeneficiaryUser];
 
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole,
-          notificationKind: "sms",
-        },
-        connectedBeneficiaryPayload,
-      );
+        await usecase.execute(
+          {
+            conventionId,
+            signatoryRole,
+            notificationKind: "sms",
+          },
+          connectedBeneficiaryPayload,
+        );
 
-      const recipient =
-        signatoryRole === "beneficiary"
-          ? convention.signatories.beneficiary
-          : convention.signatories.establishmentRepresentative;
+        const recipient =
+          signatoryRole === "beneficiary"
+            ? convention.signatories.beneficiary
+            : convention.signatories.establishmentRepresentative;
 
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        {
-          topic: "ConventionSignatureLinkManuallySent",
-          payload: {
-            convention,
-            recipientRole: signatoryRole,
-            transport: "sms",
-            triggeredBy: {
-              kind: "connected-user",
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          {
+            topic: "ConventionSignatureLinkManuallySent",
+            payload: {
+              convention,
+              recipientRole: signatoryRole,
+              transport: "sms",
+              triggeredBy: {
+                kind: "connected-user",
+                userId: connectedBeneficiaryUser.id,
+              },
+            },
+          },
+        ]);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          {
+            kind: "sms",
+            followedIds: {
+              conventionId: convention.id,
+              agencyId: convention.agencyId,
+              establishmentSiret: convention.siret,
               userId: connectedBeneficiaryUser.id,
             },
-          },
-        },
-      ]);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        {
-          kind: "sms",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-            userId: connectedBeneficiaryUser.id,
-          },
-          templatedContent: {
-            recipientPhone: recipient.phone,
-            kind: "ReminderForSignatories",
-            params: {
-              shortLink: makeShortLinkUrl(config, shortLinkId),
+            templatedContent: {
+              recipientPhone: recipient.phone,
+              kind: "ReminderForSignatories",
+              params: {
+                shortLink: makeShortLinkUrl(config, shortLinkId),
+              },
             },
           },
-        },
-      ]);
-    });
-
-    it("When backoffice admin triggers it", async () => {
-      const shortLinkId = "link1";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
-      uow.userRepository.users = [backofficeAdmin];
-
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole: "establishment-representative",
-          notificationKind: "sms",
-        },
-        backofficeAdminPayload,
-      );
-
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        { topic: "ConventionSignatureLinkManuallySent" },
-      ]);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        {
-          kind: "sms",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-            userId: backofficeAdmin.id,
-          },
-          templatedContent: {
-            recipientPhone:
-              convention.signatories.establishmentRepresentative.phone,
-            kind: "ReminderForSignatories",
-            params: {
-              shortLink: makeShortLinkUrl(config, shortLinkId),
-            },
-          },
-        },
-      ]);
-    });
-
-    it.each([
-      "validator",
-      "counsellor",
-    ] as const)("When not connected agency user %s triggers it", async (role) => {
-      const shortLinkId = "link1";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: [role],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
-      uow.userRepository.users = [notConnectedUser];
-
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole: "establishment-representative",
-          notificationKind: "sms",
-        },
-        role === "validator" ? validatorJwtPayload : counsellorJwtPayload,
-      );
-
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        {
-          topic: "ConventionSignatureLinkManuallySent",
-          payload: {
-            convention,
-            recipientRole: "establishment-representative",
-            transport: "sms",
-            triggeredBy: {
-              kind: "convention-magic-link",
-              role,
-            },
-          },
-        },
-      ]);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        {
-          kind: "sms",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-            userId: undefined,
-          },
-          templatedContent: {
-            recipientPhone:
-              convention.signatories.establishmentRepresentative.phone,
-            kind: "ReminderForSignatories",
-            params: {
-              shortLink: makeShortLinkUrl(config, shortLinkId),
-            },
-          },
-        },
-      ]);
-    });
-
-    it.each([
-      "beneficiary",
-      "beneficiary-representative",
-      "beneficiary-current-employer",
-      "establishment-representative",
-    ] as SignatoryRole[])("When not connected signatory %s triggers it", async (role) => {
-      const signatoryJwtPayload = createConventionMagicLinkPayload({
-        id: conventionId,
-        role: role,
-        email: `${role}@mail.com`,
-        now: new Date(),
+        ]);
       });
-      const shortLinkId = "link1";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
 
-      const conventionWithAllSignatories = new ConventionDtoBuilder(convention)
-        .withBeneficiaryRepresentative({
-          role: "beneficiary-representative",
-          email: "beneficiary-representative@mail.com",
-          phone: "+33622222222",
-          firstName: "Marie",
-          lastName: "Dupont",
-        })
-        .withBeneficiaryCurrentEmployer({
-          role: "beneficiary-current-employer",
-          email: "beneficiary-current-employer@mail.com",
-          phone: "+33633333333",
-          firstName: "Jean",
-          lastName: "Martin",
-          job: "Manager",
-          businessSiret: "98765432109876",
-          businessName: "Entreprise Actuelle",
-          businessAddress: "123 rue de l'emploi, 75001 Paris",
-        })
-        .build();
+      it("When backoffice admin triggers it", async () => {
+        const shortLinkId = "link1";
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
 
-      uow.conventionRepository.setConventions([conventionWithAllSignatories]);
-      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
-      uow.userRepository.users = [notConnectedUser];
+        uow.conventionRepository.setConventions([convention]);
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+        uow.userRepository.users = [backofficeAdmin];
 
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole: "establishment-representative",
-          notificationKind: "sms",
-        },
-        signatoryJwtPayload,
-      );
+        await usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "establishment-representative",
+            notificationKind: "sms",
+          },
+          backofficeAdminPayload,
+        );
 
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        {
-          topic: "ConventionSignatureLinkManuallySent",
-          payload: {
-            convention,
-            recipientRole: "establishment-representative",
-            transport: "sms",
-            triggeredBy: {
-              kind: "convention-magic-link",
-              role,
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          { topic: "ConventionSignatureLinkManuallySent" },
+        ]);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          {
+            kind: "sms",
+            followedIds: {
+              conventionId: convention.id,
+              agencyId: convention.agencyId,
+              establishmentSiret: convention.siret,
+              userId: backofficeAdmin.id,
+            },
+            templatedContent: {
+              recipientPhone:
+                convention.signatories.establishmentRepresentative.phone,
+              kind: "ReminderForSignatories",
+              params: {
+                shortLink: makeShortLinkUrl(config, shortLinkId),
+              },
             },
           },
-        },
-      ]);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        {
-          kind: "sms",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-            userId: undefined,
-          },
-          templatedContent: {
-            recipientPhone:
-              convention.signatories.establishmentRepresentative.phone,
-            kind: "ReminderForSignatories",
-            params: {
-              shortLink: makeShortLinkUrl(config, shortLinkId),
-            },
-          },
-        },
-      ]);
-    });
+        ]);
+      });
 
-    it.each([
-      "+33785689727", // metropole
-      "+262639000001", // Mayotte
-      "+590690000001", // Guadeloupe
-      "+590691282545", // Guadeloupe
-      "+594694000001", // Guyane
-      "+596696000001", // Martinique
-      "+262692000001", // Réunion
-      "+262693000001", // Réunion
-      "+68987770076", // polynesie française
-      "+687751234", // nouvelle calédonie
-      "+681821234", // wallis et futuna
-      "+508551234", // saint pierre et miquelon
-    ])("for phone number %s", async (phoneNumber) => {
-      const shortLinkId = "link1";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-      const conventionWithCustomPhoneNumer = new ConventionDtoBuilder(
-        convention,
-      )
-        .withBeneficiaryPhone(phoneNumber)
-        .build();
-
-      uow.conventionRepository.setConventions([conventionWithCustomPhoneNumer]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
-      uow.userRepository.users = [notConnectedUser];
-
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole: "beneficiary",
-          notificationKind: "sms",
-        },
-        validatorJwtPayload,
-      );
-
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        { topic: "ConventionSignatureLinkManuallySent" },
-      ]);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        {
-          kind: "sms",
-          followedIds: {
-            conventionId: conventionWithCustomPhoneNumer.id,
-            agencyId: conventionWithCustomPhoneNumer.agencyId,
-            establishmentSiret: conventionWithCustomPhoneNumer.siret,
-            userId: undefined,
-          },
-          templatedContent: {
-            recipientPhone:
-              conventionWithCustomPhoneNumer.signatories.beneficiary.phone,
-            kind: "ReminderForSignatories",
-            params: {
-              shortLink: makeShortLinkUrl(config, shortLinkId),
-            },
-          },
-        },
-      ]);
-    });
-
-    it(`send signature link if last signature link was sent more than ${CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS} hours ago`, async () => {
-      const shortLinkId = "link2";
-      const pastSmsNotification: Notification = {
-        id: "past-notification-id",
-        createdAt: subDays(timeGateway.now(), 2).toISOString(),
-        kind: "sms",
-        followedIds: {
-          conventionId: convention.id,
-          agencyId: convention.agencyId,
-          establishmentSiret: convention.siret,
-          userId: connectedUser.id,
-        },
-        templatedContent: {
-          recipientPhone:
-            convention.signatories.establishmentRepresentative.phone,
-          kind: "ReminderForSignatories",
-          params: {
-            shortLink: makeShortLinkUrl(config, shortLinkId),
-          },
-        },
-      };
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [connectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: false,
-          },
-        }),
-      ];
-      uow.userRepository.users = [connectedUser];
-      uow.notificationRepository.notifications = [pastSmsNotification];
-
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole: "establishment-representative",
-          notificationKind: "sms",
-        },
-        connectedUserPayload,
-      );
-
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        { topic: "ConventionSignatureLinkManuallySent" },
-      ]);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        pastSmsNotification,
-        {
+      it(`send signature link if last signature link was sent more than ${CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS} hours ago`, async () => {
+        const shortLinkId = "link2";
+        const pastSmsNotification: Notification = {
+          id: "past-notification-id",
+          createdAt: subDays(timeGateway.now(), 2).toISOString(),
           kind: "sms",
           followedIds: {
             conventionId: convention.id,
@@ -1067,213 +808,486 @@ describe("Send signature link", () => {
               shortLink: makeShortLinkUrl(config, shortLinkId),
             },
           },
-        },
-      ]);
+        };
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+        uow.conventionRepository.setConventions([convention]);
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [connectedUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+          }),
+        ];
+        uow.userRepository.users = [connectedUser];
+        uow.notificationRepository.notifications = [pastSmsNotification];
+
+        await usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "establishment-representative",
+            notificationKind: "sms",
+          },
+          connectedUserPayload,
+        );
+
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          { topic: "ConventionSignatureLinkManuallySent" },
+        ]);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          pastSmsNotification,
+          {
+            kind: "sms",
+            followedIds: {
+              conventionId: convention.id,
+              agencyId: convention.agencyId,
+              establishmentSiret: convention.siret,
+              userId: connectedUser.id,
+            },
+            templatedContent: {
+              recipientPhone:
+                convention.signatories.establishmentRepresentative.phone,
+              kind: "ReminderForSignatories",
+              params: {
+                shortLink: makeShortLinkUrl(config, shortLinkId),
+              },
+            },
+          },
+        ]);
+      });
+
+      it("send signature link if requested for another signatory", async () => {
+        const shortLinkId = "link2";
+        const otherSmsNotification: Notification = {
+          id: "other-notification-id",
+          createdAt: timeGateway.now().toISOString(),
+          kind: "sms",
+          followedIds: {
+            conventionId: convention.id,
+            agencyId: convention.agencyId,
+            establishmentSiret: convention.siret,
+            userId: connectedUser.id,
+          },
+          templatedContent: {
+            recipientPhone:
+              convention.signatories.establishmentRepresentative.phone,
+            kind: "ReminderForSignatories",
+            params: {
+              shortLink: makeShortLinkUrl(config, shortLinkId),
+            },
+          },
+        };
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+        uow.conventionRepository.setConventions([convention]);
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [connectedUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+          }),
+        ];
+        uow.userRepository.users = [connectedUser];
+        uow.notificationRepository.notifications = [otherSmsNotification];
+
+        await usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "beneficiary",
+            notificationKind: "sms",
+          },
+          connectedUserPayload,
+        );
+
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          { topic: "ConventionSignatureLinkManuallySent" },
+        ]);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          otherSmsNotification,
+          {
+            kind: "sms",
+            followedIds: {
+              conventionId: convention.id,
+              agencyId: convention.agencyId,
+              establishmentSiret: convention.siret,
+              userId: connectedUser.id,
+            },
+            templatedContent: {
+              recipientPhone: convention.signatories.beneficiary.phone,
+              kind: "ReminderForSignatories",
+              params: {
+                shortLink: makeShortLinkUrl(config, shortLinkId),
+              },
+            },
+          },
+        ]);
+      });
     });
 
-    it("throws bad request when signatory phone is default phone number", async () => {
-      const conventionWithDefaultPhone = new ConventionDtoBuilder(convention)
-        .withBeneficiaryPhone(defaultPhoneNumber)
-        .build();
+    describe("from magiclink", () => {
+      it.each([
+        "validator",
+        "counsellor",
+      ] as const)("When not connected agency user %s triggers it", async (role) => {
+        const shortLinkId = "link1";
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
 
-      uow.conventionRepository.setConventions([conventionWithDefaultPhone]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
+        uow.conventionRepository.setConventions([convention]);
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [notConnectedUser.id]: {
+              roles: [role],
+              isNotifiedByEmail: true,
+            },
+          }),
+        ];
+        uow.userRepository.users = [notConnectedUser];
+
+        await usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "establishment-representative",
+            notificationKind: "sms",
           },
-        }),
-      ];
-      uow.userRepository.users = [notConnectedUser];
+          role === "validator" ? validatorJwtPayload : counsellorJwtPayload,
+        );
 
-      await expectPromiseToFailWithError(
-        usecase.execute(
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          {
+            topic: "ConventionSignatureLinkManuallySent",
+            payload: {
+              convention,
+              recipientRole: "establishment-representative",
+              transport: "sms",
+              triggeredBy: {
+                kind: "convention-magic-link",
+                role,
+              },
+            },
+          },
+        ]);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          {
+            kind: "sms",
+            followedIds: {
+              conventionId: convention.id,
+              agencyId: convention.agencyId,
+              establishmentSiret: convention.siret,
+              userId: undefined,
+            },
+            templatedContent: {
+              recipientPhone:
+                convention.signatories.establishmentRepresentative.phone,
+              kind: "ReminderForSignatories",
+              params: {
+                shortLink: makeShortLinkUrl(config, shortLinkId),
+              },
+            },
+          },
+        ]);
+      });
+
+      it.each([
+        "beneficiary",
+        "beneficiary-representative",
+        "beneficiary-current-employer",
+        "establishment-representative",
+      ] as SignatoryRole[])("When not connected signatory %s triggers it", async (role) => {
+        const signatoryJwtPayload = createConventionMagicLinkPayload({
+          id: conventionId,
+          role: role,
+          email: `${role}@mail.com`,
+          now: new Date(),
+        });
+        const shortLinkId = "link1";
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+
+        const conventionWithAllSignatories = new ConventionDtoBuilder(
+          convention,
+        )
+          .withBeneficiaryRepresentative({
+            role: "beneficiary-representative",
+            email: "beneficiary-representative@mail.com",
+            phone: "+33622222222",
+            firstName: "Marie",
+            lastName: "Dupont",
+          })
+          .withBeneficiaryCurrentEmployer({
+            role: "beneficiary-current-employer",
+            email: "beneficiary-current-employer@mail.com",
+            phone: "+33633333333",
+            firstName: "Jean",
+            lastName: "Martin",
+            job: "Manager",
+            businessSiret: "98765432109876",
+            businessName: "Entreprise Actuelle",
+            businessAddress: "123 rue de l'emploi, 75001 Paris",
+          })
+          .build();
+
+        uow.conventionRepository.setConventions([conventionWithAllSignatories]);
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+        uow.userRepository.users = [notConnectedUser];
+
+        await usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "establishment-representative",
+            notificationKind: "sms",
+          },
+          signatoryJwtPayload,
+        );
+
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          {
+            topic: "ConventionSignatureLinkManuallySent",
+            payload: {
+              convention,
+              recipientRole: "establishment-representative",
+              transport: "sms",
+              triggeredBy: {
+                kind: "convention-magic-link",
+                role,
+              },
+            },
+          },
+        ]);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          {
+            kind: "sms",
+            followedIds: {
+              conventionId: convention.id,
+              agencyId: convention.agencyId,
+              establishmentSiret: convention.siret,
+              userId: undefined,
+            },
+            templatedContent: {
+              recipientPhone:
+                convention.signatories.establishmentRepresentative.phone,
+              kind: "ReminderForSignatories",
+              params: {
+                shortLink: makeShortLinkUrl(config, shortLinkId),
+              },
+            },
+          },
+        ]);
+      });
+
+      it.each([
+        "+33785689727", // metropole
+        "+262639000001", // Mayotte
+        "+590690000001", // Guadeloupe
+        "+590691282545", // Guadeloupe
+        "+594694000001", // Guyane
+        "+596696000001", // Martinique
+        "+262692000001", // Réunion
+        "+262693000001", // Réunion
+        "+68987770076", // polynesie française
+        "+687751234", // nouvelle calédonie
+        "+681821234", // wallis et futuna
+        "+508551234", // saint pierre et miquelon
+      ])("for phone number %s", async (phoneNumber) => {
+        const shortLinkId = "link1";
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+        const conventionWithCustomPhoneNumer = new ConventionDtoBuilder(
+          convention,
+        )
+          .withBeneficiaryPhone(phoneNumber)
+          .build();
+
+        uow.conventionRepository.setConventions([
+          conventionWithCustomPhoneNumer,
+        ]);
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [notConnectedUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: true,
+            },
+          }),
+        ];
+        uow.userRepository.users = [notConnectedUser];
+
+        await usecase.execute(
           {
             conventionId,
             signatoryRole: "beneficiary",
             notificationKind: "sms",
           },
           validatorJwtPayload,
-        ),
-        errors.convention.invalidMobilePhoneNumber({
-          conventionId: conventionWithDefaultPhone.id,
-          role: "beneficiary",
-        }),
-      );
-    });
+        );
 
-    it("send signature link if requested for another signatory", async () => {
-      const shortLinkId = "link2";
-      const otherSmsNotification: Notification = {
-        id: "other-notification-id",
-        createdAt: timeGateway.now().toISOString(),
-        kind: "sms",
-        followedIds: {
-          conventionId: convention.id,
-          agencyId: convention.agencyId,
-          establishmentSiret: convention.siret,
-          userId: connectedUser.id,
-        },
-        templatedContent: {
-          recipientPhone:
-            convention.signatories.establishmentRepresentative.phone,
-          kind: "ReminderForSignatories",
-          params: {
-            shortLink: makeShortLinkUrl(config, shortLinkId),
-          },
-        },
-      };
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [connectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: false,
-          },
-        }),
-      ];
-      uow.userRepository.users = [connectedUser];
-      uow.notificationRepository.notifications = [otherSmsNotification];
-
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole: "beneficiary",
-          notificationKind: "sms",
-        },
-        connectedUserPayload,
-      );
-
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        { topic: "ConventionSignatureLinkManuallySent" },
-      ]);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        otherSmsNotification,
-        {
-          kind: "sms",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-            userId: connectedUser.id,
-          },
-          templatedContent: {
-            recipientPhone: convention.signatories.beneficiary.phone,
-            kind: "ReminderForSignatories",
-            params: {
-              shortLink: makeShortLinkUrl(config, shortLinkId),
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          { topic: "ConventionSignatureLinkManuallySent" },
+        ]);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          {
+            kind: "sms",
+            followedIds: {
+              conventionId: conventionWithCustomPhoneNumer.id,
+              agencyId: conventionWithCustomPhoneNumer.agencyId,
+              establishmentSiret: conventionWithCustomPhoneNumer.siret,
+              userId: undefined,
+            },
+            templatedContent: {
+              recipientPhone:
+                conventionWithCustomPhoneNumer.signatories.beneficiary.phone,
+              kind: "ReminderForSignatories",
+              params: {
+                shortLink: makeShortLinkUrl(config, shortLinkId),
+              },
             },
           },
-        },
-      ]);
+        ]);
+      });
+
+      it("throws bad request when signatory phone is default phone number", async () => {
+        const conventionWithDefaultPhone = new ConventionDtoBuilder(convention)
+          .withBeneficiaryPhone(defaultPhoneNumber)
+          .build();
+
+        uow.conventionRepository.setConventions([conventionWithDefaultPhone]);
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [notConnectedUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: true,
+            },
+          }),
+        ];
+        uow.userRepository.users = [notConnectedUser];
+
+        await expectPromiseToFailWithError(
+          usecase.execute(
+            {
+              conventionId,
+              signatoryRole: "beneficiary",
+              notificationKind: "sms",
+            },
+            validatorJwtPayload,
+          ),
+          errors.convention.invalidMobilePhoneNumber({
+            conventionId: conventionWithDefaultPhone.id,
+            role: "beneficiary",
+          }),
+        );
+      });
     });
   });
 
   describe("Right paths: send signature link email", () => {
-    it("sends signature link by email", async () => {
-      const shortLinkId = "link1";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [connectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: false,
+    describe("from connected user", () => {
+      it("sends signature link by email", async () => {
+        const shortLinkId = "link1";
+        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+        uow.conventionRepository.setConventions([convention]);
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [connectedUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+          }),
+        ];
+        uow.userRepository.users = [connectedUser];
+
+        await usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "establishment-representative",
+            notificationKind: "email",
           },
-        }),
-      ];
-      uow.userRepository.users = [connectedUser];
+          connectedUserPayload,
+        );
 
-      await usecase.execute(
-        {
-          conventionId,
-          signatoryRole: "establishment-representative",
-          notificationKind: "email",
-        },
-        connectedUserPayload,
-      );
-
-      expectObjectInArrayToMatch(uow.outboxRepository.events, [
-        { topic: "NotificationAdded" },
-        {
-          topic: "ConventionSignatureLinkManuallySent",
-          payload: {
-            convention,
-            recipientRole: "establishment-representative",
-            transport: "email",
-            triggeredBy: {
-              kind: "connected-user",
-              userId: connectedUser.id,
+        expectObjectInArrayToMatch(uow.outboxRepository.events, [
+          { topic: "NotificationAdded" },
+          {
+            topic: "ConventionSignatureLinkManuallySent",
+            payload: {
+              convention,
+              recipientRole: "establishment-representative",
+              transport: "email",
+              triggeredBy: {
+                kind: "connected-user",
+                userId: connectedUser.id,
+              },
             },
           },
-        },
-      ]);
-      expectToEqual(uow.shortLinkQuery.getShortLinks().length, 1);
-      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-        {
-          kind: "email",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-          },
-          templatedContent: {
-            kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
-            recipients: [
-              convention.signatories.establishmentRepresentative.email,
-            ],
-            params: {
+        ]);
+        expectToEqual(uow.shortLinkQuery.getShortLinks().length, 1);
+        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+          {
+            kind: "email",
+            followedIds: {
               conventionId: convention.id,
-              internshipKind: convention.internshipKind,
-              signatoryName: getFormattedFirstnameAndLastname({
-                firstname:
-                  convention.signatories.establishmentRepresentative.firstName,
-                lastname:
-                  convention.signatories.establishmentRepresentative.lastName,
-              }),
-              beneficiaryName: getFormattedFirstnameAndLastname({
-                firstname: convention.signatories.beneficiary.firstName,
-                lastname: convention.signatories.beneficiary.lastName,
-              }),
-              establishmentTutorName: getFormattedFirstnameAndLastname({
-                firstname: convention.establishmentTutor.firstName,
-                lastname: convention.establishmentTutor.lastName,
-              }),
-              establishmentRepresentativeName: getFormattedFirstnameAndLastname(
-                {
+              agencyId: convention.agencyId,
+              establishmentSiret: convention.siret,
+            },
+            templatedContent: {
+              kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
+              recipients: [
+                convention.signatories.establishmentRepresentative.email,
+              ],
+              params: {
+                conventionId: convention.id,
+                internshipKind: convention.internshipKind,
+                signatoryName: getFormattedFirstnameAndLastname({
                   firstname:
                     convention.signatories.establishmentRepresentative
                       .firstName,
                   lastname:
                     convention.signatories.establishmentRepresentative.lastName,
-                },
-              ),
-              beneficiaryRepresentativeName:
-                convention.signatories.beneficiaryRepresentative &&
-                getFormattedFirstnameAndLastname({
-                  firstname:
-                    convention.signatories.beneficiaryRepresentative.firstName,
-                  lastname:
-                    convention.signatories.beneficiaryRepresentative.lastName,
                 }),
-              beneficiaryCurrentEmployerName:
-                convention.signatories.beneficiaryCurrentEmployer &&
-                getFormattedFirstnameAndLastname({
-                  firstname:
-                    convention.signatories.beneficiaryCurrentEmployer.firstName,
-                  lastname:
-                    convention.signatories.beneficiaryCurrentEmployer.lastName,
+                beneficiaryName: getFormattedFirstnameAndLastname({
+                  firstname: convention.signatories.beneficiary.firstName,
+                  lastname: convention.signatories.beneficiary.lastName,
                 }),
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinkId),
-              businessName: convention.businessName,
-              agencyLogoUrl: undefined,
+                establishmentTutorName: getFormattedFirstnameAndLastname({
+                  firstname: convention.establishmentTutor.firstName,
+                  lastname: convention.establishmentTutor.lastName,
+                }),
+                establishmentRepresentativeName:
+                  getFormattedFirstnameAndLastname({
+                    firstname:
+                      convention.signatories.establishmentRepresentative
+                        .firstName,
+                    lastname:
+                      convention.signatories.establishmentRepresentative
+                        .lastName,
+                  }),
+                beneficiaryRepresentativeName:
+                  convention.signatories.beneficiaryRepresentative &&
+                  getFormattedFirstnameAndLastname({
+                    firstname:
+                      convention.signatories.beneficiaryRepresentative
+                        .firstName,
+                    lastname:
+                      convention.signatories.beneficiaryRepresentative.lastName,
+                  }),
+                beneficiaryCurrentEmployerName:
+                  convention.signatories.beneficiaryCurrentEmployer &&
+                  getFormattedFirstnameAndLastname({
+                    firstname:
+                      convention.signatories.beneficiaryCurrentEmployer
+                        .firstName,
+                    lastname:
+                      convention.signatories.beneficiaryCurrentEmployer
+                        .lastName,
+                  }),
+                conventionSignShortlink: makeShortLinkUrl(config, shortLinkId),
+                businessName: convention.businessName,
+                agencyLogoUrl: undefined,
+              },
             },
           },
-        },
-      ]);
+        ]);
+      });
     });
   });
 });
