@@ -25,6 +25,7 @@ import type {
   GenerateConventionJwt,
 } from "../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../domains/core/unit-of-work/adapters/createInMemoryUow";
+import type { OutOfTransactionQueries } from "../../domains/core/unit-of-work/ports/UnitOfWork";
 import type { UuidGenerator } from "../../domains/core/uuid-generator/ports/UuidGenerator";
 import { legacyCreateLogger } from "../../utils/logger";
 import type { AppConfig } from "./appConfig";
@@ -45,6 +46,7 @@ type CreateAppProperties = {
   generateConnectedUserJwt: GenerateConnectedUserJwt;
   uuidGenerator: UuidGenerator;
   inMemoryUow?: InMemoryUnitOfWork;
+  queries: OutOfTransactionQueries;
 };
 
 export const createApp = async (
@@ -118,5 +120,6 @@ export const createApp = async (
     generateConventionJwt: deps.generateConventionJwt,
     generateConnectedUserJwt: deps.generateConnectedUserJwt,
     uuidGenerator: deps.uuidGenerator,
+    queries: deps.queries,
   };
 };

@@ -112,5 +112,6 @@ export const createAppDependencies = async (config: AppConfig) => {
     inMemoryUow,
     uowPerformer,
     getPgPoolFn,
+    queries,
   };
 };

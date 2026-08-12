@@ -24,7 +24,10 @@ import type { DeterministShortLinkIdGeneratorGateway } from "../domains/core/sho
 import type { InMemorySiretGateway } from "../domains/core/sirene/adapters/InMemorySiretGateway";
 import type { InMemoryCrispApi } from "../domains/core/support/adapters/InMemoryCrispApi";
 import type { CustomTimeGateway } from "../domains/core/time-gateway/adapters/CustomTimeGateway";
-import type { InMemoryUnitOfWork } from "../domains/core/unit-of-work/adapters/createInMemoryUow";
+import type {
+  InMemoryOutOfTransactionQueries,
+  InMemoryUnitOfWork,
+} from "../domains/core/unit-of-work/adapters/createInMemoryUow";
 import type { UuidGenerator } from "../domains/core/uuid-generator/ports/UuidGenerator";
 import type { InMemoryLaBonneBoiteGateway } from "../domains/establishment/adapters/la-bonne-boite/InMemoryLaBonneBoiteGateway";
 import type { InMemoryPassEmploiGateway } from "../domains/establishment/adapters/pass-emploi/InMemoryPassEmploiGateway";
@@ -69,6 +72,7 @@ export type TestAppAndDeps = {
   generateConnectedUserJwt: GenerateConnectedUserJwt;
   uuidGenerator: UuidGenerator;
   inMemoryUow: InMemoryUnitOfWork;
+  queries: InMemoryOutOfTransactionQueries;
 };
 
 export const buildTestApp = async (
@@ -114,6 +118,7 @@ export const buildTestApp = async (
     generateConnectedUserJwt,
     uuidGenerator,
     inMemoryUow: uow,
+    queries,
   } = await createApp(appConfig);
 
   const request = supertest(app);
@@ -132,6 +137,7 @@ export const buildTestApp = async (
     generateConnectedUserJwt,
     uuidGenerator,
     inMemoryUow,
+    queries: queries as InMemoryOutOfTransactionQueries,
   };
 };
 
