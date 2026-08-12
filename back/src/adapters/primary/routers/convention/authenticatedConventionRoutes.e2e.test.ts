@@ -1229,6 +1229,7 @@ describe("authenticatedConventionRoutes", () => {
             ...archivedConventionRequestDto,
             userId: basicUser.id,
             createdAt: gateways.timeGateway.now().toISOString(),
+            handledAt: null,
           },
         },
       );
@@ -1301,6 +1302,7 @@ describe("authenticatedConventionRoutes", () => {
       conventionId: convention.id,
       reason: "legalDispute",
       createdAt: new Date().toISOString(),
+      handledAt: null,
       userId: requesterUser.id,
     };
 

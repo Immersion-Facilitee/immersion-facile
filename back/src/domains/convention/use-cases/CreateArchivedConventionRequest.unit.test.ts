@@ -60,6 +60,7 @@ describe("CreateArchivedConventionRequest", () => {
           ...input,
           userId: connectedUser.id,
           createdAt: now.toISOString(),
+          handledAt: null,
         },
       },
     );
@@ -107,6 +108,7 @@ describe("CreateArchivedConventionRequest", () => {
         immersionAppellationCode: input.immersionAppellation.appellationCode,
         userId: connectedUser.id,
         createdAt: now.toISOString(),
+        handledAt: null,
       },
     );
   });

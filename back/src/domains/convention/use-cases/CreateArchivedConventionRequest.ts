@@ -24,6 +24,7 @@ export const makeCreateArchivedConventionRequest = useCaseBuilder(
             ...inputParams,
             userId: currentUser.id,
             createdAt: deps.timeGateway.now().toISOString(),
+            handledAt: null,
           }
         : {
             ...inputParams,
@@ -31,6 +32,7 @@ export const makeCreateArchivedConventionRequest = useCaseBuilder(
               inputParams.immersionAppellation.appellationCode,
             userId: currentUser.id,
             createdAt: deps.timeGateway.now().toISOString(),
+            handledAt: null,
           };
 
     await uow.archivedConventionRequestRepository.save(

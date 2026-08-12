@@ -30,12 +30,14 @@ export type ArchivedConventionRequestEntity = (
 ) & {
   userId: UserId;
   createdAt: DateString;
+  handledAt: DateString | null;
 };
 
 type ArchivedConventionRequestRow = {
   id: string;
   user_id: string;
   created_at: Date;
+  handled_at: Date | null;
   convention_id: string | null;
   beneficiary_first_name: string | null;
   beneficiary_last_name: string | null;
@@ -86,6 +88,7 @@ export const toArchivedConventionRequestEntity = (
     id: row.id,
     userId: row.user_id,
     createdAt: row.created_at.toISOString(),
+    handledAt: row.handled_at?.toISOString() ?? null,
     ...reasonFields,
   };
 

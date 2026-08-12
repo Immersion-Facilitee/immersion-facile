@@ -23,6 +23,7 @@ export class InMemoryArchivedConventionRequestRepository
       id: request.id,
       user_id: request.userId,
       created_at: new Date(request.createdAt),
+      handled_at: request.handledAt ? new Date(request.handledAt) : null,
       ...(request.conventionSearchMethod === "withConventionDetails"
         ? {
             convention_id: null,

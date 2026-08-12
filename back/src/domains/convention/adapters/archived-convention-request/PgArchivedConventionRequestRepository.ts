@@ -26,39 +26,34 @@ export class PgArchivedConventionRequestRepository
   public async save(
     archivedConventionRequest: ArchivedConventionRequestEntity,
   ): Promise<void> {
-    const commonValues = {
-      id: archivedConventionRequest.id,
-      user_id: archivedConventionRequest.userId,
-      created_at: new Date(archivedConventionRequest.createdAt),
-      reason: archivedConventionRequest.reason,
-      other_reason: archivedConventionRequest.otherReason,
-    };
-
-    if (
-      archivedConventionRequest.conventionSearchMethod === "withConventionId"
-    ) {
-      await this.transaction
-        .insertInto("archived_convention_requests")
-        .values({
-          ...commonValues,
-          convention_id: archivedConventionRequest.conventionId,
-        })
-        .execute();
-      return;
-    }
-
     await this.transaction
       .insertInto("archived_convention_requests")
       .values({
-        ...commonValues,
-        beneficiary_first_name: archivedConventionRequest.beneficiaryFirstName,
-        beneficiary_last_name: archivedConventionRequest.beneficiaryLastName,
-        siret: archivedConventionRequest.siret,
-        immersion_date: archivedConventionRequest.immersionDate,
-        immersion_appellation_code: Number.parseInt(
-          archivedConventionRequest.immersionAppellationCode,
-          10,
-        ),
+        id: archivedConventionRequest.id,
+        user_id: archivedConventionRequest.userId,
+        created_at: new Date(archivedConventionRequest.createdAt),
+        handled_at: archivedConventionRequest.handledAt
+          ? new Date(archivedConventionRequest.handledAt)
+          : null,
+        reason: archivedConventionRequest.reason,
+        other_reason: archivedConventionRequest.otherReason,
+        ...(archivedConventionRequest.conventionSearchMethod ===
+        "withConventionId"
+          ? {
+              convention_id: archivedConventionRequest.conventionId,
+            }
+          : {
+              beneficiary_first_name:
+                archivedConventionRequest.beneficiaryFirstName,
+              beneficiary_last_name:
+                archivedConventionRequest.beneficiaryLastName,
+              siret: archivedConventionRequest.siret,
+              immersion_date: archivedConventionRequest.immersionDate,
+              immersion_appellation_code: Number.parseInt(
+                archivedConventionRequest.immersionAppellationCode,
+                10,
+              ),
+            }),
       })
       .execute();
   }

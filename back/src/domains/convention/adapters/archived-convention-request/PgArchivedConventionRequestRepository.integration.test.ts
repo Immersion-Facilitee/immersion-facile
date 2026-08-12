@@ -53,7 +53,7 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
 
     if (adapter === "Pg") {
       await db.deleteFrom("archived_convention_requests").execute();
-      await db.deleteFrom("users").where("id", "=", user.id).execute();
+      await db.deleteFrom("users").execute();
       await new PgUserRepository(db).save(user);
     }
   });
@@ -64,6 +64,7 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
         id: "11111111-1111-4111-8111-111111111111",
         userId: user.id,
         createdAt,
+        handledAt: null,
         conventionSearchMethod: "withConventionId",
         conventionId: "22222222-2222-4222-8222-222222222222",
         reason: "legalDispute",
@@ -78,6 +79,7 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
       const request: ArchivedConventionRequestEntity = {
         userId: user.id,
         createdAt,
+        handledAt: null,
         id: "33333333-3333-4333-8333-333333333333",
         conventionSearchMethod: "withConventionDetails",
         beneficiaryFirstName: "Jean",
@@ -130,6 +132,7 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
       const request: ArchivedConventionRequestEntity = {
         userId: user.id,
         createdAt,
+        handledAt: null,
         id,
         conventionSearchMethod: "withConventionDetails",
         beneficiaryFirstName: "Jean",
