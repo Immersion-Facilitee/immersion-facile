@@ -60,6 +60,8 @@ models:
         description: "Foreign key to appellations table"
         tests:
           - not_null
+      - name: remote_work_mode
+        description: "Remote work mode for the offer (ON_SITE, HYBRID or FULL_REMOTE)"
       - name: code_rome
         description: "ROME job category code"
       - name: appellation_label

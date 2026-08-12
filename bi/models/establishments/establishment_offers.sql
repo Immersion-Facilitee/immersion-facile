@@ -15,6 +15,7 @@ select
     offers.appellation_code,
     offers.created_at,
     offers.update_date,
+    offers.remote_work_mode,
     appellations.code_rome,
     appellations.libelle_appellation_long as appellation_label,
     appellations.libelle_appellation_court as appellation_label_short,
