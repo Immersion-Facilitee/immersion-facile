@@ -701,8 +701,21 @@ describe("convention e2e", () => {
   describe(`${displayRouteName(
     conventionMagicLinkRoutes.updateConvention,
   )} updates convention`, () => {
+    const partiallySignedConvention = new ConventionDtoBuilder(convention)
+      .withStatus("PARTIALLY_SIGNED")
+      .signedByEstablishmentRepresentative(
+        new Date("2025-01-15T10:00:00.000Z").toISOString(),
+      )
+      .build();
+    const beneficiary = new ConnectedUserBuilder()
+      .withId("beneficiary")
+      .withEmail(convention.signatories.beneficiary.email)
+      .buildUser();
+
     beforeEach(() => {
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(peAgency)];
       inMemoryUow.conventionRepository.setConventions([convention]);
+      inMemoryUow.userRepository.users = [];
     });
 
     it("200 - Success with JWT ConventionJwt", async () => {
@@ -714,9 +727,7 @@ describe("convention e2e", () => {
             .build(),
         ),
       ];
-      const updatedConvention: ConventionDto = new ConventionDtoBuilder(
-        convention,
-      )
+      const updatedConvention = new ConventionDtoBuilder(convention)
         .withBeneficiaryEmail("new@email.fr")
         .withStatus("READY_TO_SIGN")
         .withStatusJustification("justif")
@@ -742,6 +753,148 @@ describe("convention e2e", () => {
       expectHttpResponseToEqual(response, {
         status: 200,
         body: { id: convention.id },
+      });
+    });
+
+    it("200 - connected beneficiary can update convention", async () => {
+      gateways.timeGateway.setNextDate(new Date("2025-01-15T11:00:00.000Z"));
+      inMemoryUow.userRepository.users = [beneficiary];
+      inMemoryUow.conventionRepository.setConventions([
+        partiallySignedConvention,
+      ]);
+
+      const updatedConvention = new ConventionDtoBuilder(
+        partiallySignedConvention,
+      )
+        .withStatus("READY_TO_SIGN")
+        .withStatusJustification("justif")
+        .notSigned()
+        .build();
+
+      const response = await magicLinkRequest.updateConvention({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: beneficiary.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        urlParams: { conventionId: partiallySignedConvention.id },
+        body: { convention: updatedConvention },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: { id: partiallySignedConvention.id },
+      });
+
+      const signedEvent = inMemoryUow.outboxRepository.events.find(
+        (event) => event.topic === "ConventionModifiedAndSigned",
+      );
+      if (signedEvent?.topic !== "ConventionModifiedAndSigned")
+        throw new Error("Expected ConventionModifiedAndSigned event");
+      expectToEqual(signedEvent.payload.triggeredBy, {
+        kind: "connected-user",
+        userId: beneficiary.id,
+      });
+    });
+
+    it("403 - connected user whose email is not linked to the convention cannot update convention", async () => {
+      const userWithNoRightOnConvention = new ConnectedUserBuilder()
+        .withId("user-with-no-right-on-convention")
+        .withEmail("user-with-no-right-on-convention@mail.com")
+        .buildUser();
+
+      inMemoryUow.userRepository.users = [userWithNoRightOnConvention];
+
+      const updatedConvention = new ConventionDtoBuilder(convention)
+        .withStatus("READY_TO_SIGN")
+        .withStatusJustification("justif")
+        .build();
+
+      const response = await magicLinkRequest.updateConvention({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: userWithNoRightOnConvention.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        urlParams: { conventionId: convention.id },
+        body: { convention: updatedConvention },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.convention.updateForbidden({
+            id: convention.id,
+          }).message,
+        },
+      });
+    });
+
+    it("401 - invalid JWT", async () => {
+      const updatedConvention = new ConventionDtoBuilder(convention)
+        .withStatus("READY_TO_SIGN")
+        .withStatusJustification("justif")
+        .build();
+
+      const response = await magicLinkRequest.updateConvention({
+        headers: { authorization: "invalid-jwt" },
+        urlParams: { conventionId: convention.id },
+        body: { convention: updatedConvention },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
+      });
+    });
+
+    it("403 - convention id does not match the one in token", async () => {
+      const anotherConventionId =
+        "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" as ConventionId;
+      const anotherConvention = new ConventionDtoBuilder()
+        .withId(anotherConventionId)
+        .withAgencyId(peAgency.id)
+        .withStatus("READY_TO_SIGN")
+        .build();
+
+      inMemoryUow.conventionRepository.setConventions([
+        convention,
+        anotherConvention,
+      ]);
+
+      const updatedConvention = new ConventionDtoBuilder(anotherConvention)
+        .withStatus("READY_TO_SIGN")
+        .withStatusJustification("justif")
+        .build();
+
+      const jwt = generateConventionJwt(
+        createConventionMagicLinkPayload({
+          id: convention.id,
+          role: "beneficiary",
+          email: convention.signatories.beneficiary.email,
+          now: gateways.timeGateway.now(),
+        }),
+      );
+
+      const response = await magicLinkRequest.updateConvention({
+        headers: { authorization: jwt },
+        urlParams: { conventionId: anotherConventionId },
+        body: { convention: updatedConvention },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.convention.forbiddenConventionIdMismatch({
+            jwtConventionId: convention.id,
+            jwtRole: "beneficiary",
+            requestedConventionId: anotherConventionId,
+          }).message,
+        },
       });
     });
 
@@ -1273,6 +1426,53 @@ describe("convention e2e", () => {
           status: 404,
           message: errors.convention.notFound({ conventionId: unknownId })
             .message,
+        },
+      });
+    });
+
+    it("403 - convention id does not match the one in token", async () => {
+      const conventionWithValidStatus = new ConventionDtoBuilder(convention)
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .build();
+      const anotherConventionId =
+        "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" as ConventionId;
+      const anotherConvention = new ConventionDtoBuilder()
+        .withId(anotherConventionId)
+        .withAgencyId(peAgency.id)
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .build();
+
+      inMemoryUow.conventionRepository.setConventions([
+        conventionWithValidStatus,
+        anotherConvention,
+      ]);
+
+      const jwt = generateConventionJwt(
+        createConventionMagicLinkPayload({
+          id: conventionWithValidStatus.id,
+          role: "beneficiary",
+          email: conventionWithValidStatus.signatories.beneficiary.email,
+          now: gateways.timeGateway.now(),
+        }),
+      );
+
+      const response = await magicLinkRequest.sendAssessmentLink({
+        headers: { authorization: jwt },
+        body: {
+          conventionId: anotherConventionId,
+          notificationKind: "sms",
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.convention.forbiddenConventionIdMismatch({
+            jwtConventionId: conventionWithValidStatus.id,
+            jwtRole: "beneficiary",
+            requestedConventionId: anotherConventionId,
+          }).message,
         },
       });
     });

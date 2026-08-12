@@ -15,7 +15,6 @@ import {
   errors,
   expectArraysToMatch,
   expectHttpResponseToEqual,
-  expectObjectsToMatch,
   expectToEqual,
   type RenewConventionParams,
   ScheduleDtoBuilder,
@@ -518,6 +517,19 @@ describe("Magic link router", () => {
   });
 
   describe("POST /auth/sign-application/:conventionId", () => {
+    const agency = new AgencyDtoBuilder().build();
+    const convention = new ConventionDtoBuilder()
+      .withAgencyId(agency.id)
+      .withStatus("READY_TO_SIGN")
+      .notSigned()
+      .build();
+
+    beforeEach(() => {
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+      inMemoryUow.userRepository.users = [];
+    });
+
     it.each([
       {
         signatory: "establishment-representative",
@@ -537,20 +549,12 @@ describe("Magic link router", () => {
       async ({ signatory, getEmail }) => {
         const signedAt = new Date("2025-01-15T10:00:00.000Z");
         gateways.timeGateway.setNextDate(signedAt);
-        const agency = new AgencyDtoBuilder().build();
-        const convention = new ConventionDtoBuilder()
-          .withAgencyId(agency.id)
-          .withStatus("READY_TO_SIGN")
-          .notSigned()
-          .build();
         const signatoryUser = new ConnectedUserBuilder()
           .withId(`${getEmail(convention)}-user-id`)
           .withEmail(getEmail(convention))
           .buildUser();
 
-        inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
         inMemoryUow.userRepository.users = [signatoryUser];
-        inMemoryUow.conventionRepository.setConventions([convention]);
 
         const response = await httpClient.signConvention({
           urlParams: { conventionId: convention.id },
@@ -596,38 +600,136 @@ describe("Magic link router", () => {
     );
 
     it("403 - cannot sign with connected user who is not a signatory", async () => {
-      const agency = new AgencyDtoBuilder().build();
-      const convention = new ConventionDtoBuilder()
-        .withAgencyId(agency.id)
-        .withStatus("READY_TO_SIGN")
-        .notSigned()
-        .build();
       const userWithNoRightOnConvention = new ConnectedUserBuilder()
         .withId("user-with-no-right-on-convention")
         .withEmail("user-with-no-right-on-convention@mail.com")
         .buildUser();
 
       inMemoryUow.userRepository.users = [userWithNoRightOnConvention];
-      inMemoryUow.conventionRepository.setConventions([convention]);
-      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
 
-      const response = await request
-        .post(`/auth/sign-application/${convention.id}`)
-        .set({
+      const response = await httpClient.signConvention({
+        urlParams: { conventionId: convention.id },
+        headers: {
           authorization: generateConnectedUserJwt({
             userId: userWithNoRightOnConvention.id,
             version: currentJwtVersions.connectedUser,
           }),
-        })
-        .send();
+        },
+      });
 
-      expectObjectsToMatch(response, {
+      expectHttpResponseToEqual(response, {
         status: 403,
         body: {
           status: 403,
           message: errors.convention.connectedUserNotSignatory({
             userId: userWithNoRightOnConvention.id,
             conventionId: convention.id,
+          }).message,
+        },
+      });
+    });
+
+    it("200 - establishment-representative with valid magic link JWT can sign convention", async () => {
+      const signedAt = new Date("2025-01-15T10:00:00.000Z");
+      gateways.timeGateway.setNextDate(signedAt);
+
+      const establishmentRepresentativeJwt = generateConventionJwt(
+        createConventionMagicLinkPayload({
+          id: convention.id,
+          role: "establishment-representative",
+          email: convention.signatories.establishmentRepresentative.email,
+          now: new Date(),
+        }),
+      );
+
+      const response = await httpClient.signConvention({
+        urlParams: { conventionId: convention.id },
+        headers: { authorization: establishmentRepresentativeJwt },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: { id: convention.id },
+      });
+    });
+
+    it("401 - invalid JWT", async () => {
+      const response = await httpClient.signConvention({
+        urlParams: { conventionId: convention.id },
+        headers: { authorization: "invalid-jwt" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
+      });
+    });
+
+    it("404 - convention not found", async () => {
+      const unknownConventionId =
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" as ConventionId;
+      const jwt = generateConventionJwt(
+        createConventionMagicLinkPayload({
+          id: unknownConventionId,
+          role: "establishment-representative",
+          email: "rep@mail.com",
+          now: new Date(),
+        }),
+      );
+
+      inMemoryUow.conventionRepository.setConventions([]);
+
+      const response = await httpClient.signConvention({
+        urlParams: { conventionId: unknownConventionId },
+        headers: { authorization: jwt },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 404,
+        body: {
+          status: 404,
+          message: errors.convention.notFound({
+            conventionId: unknownConventionId,
+          }).message,
+        },
+      });
+    });
+
+    it("403 - convention id does not match the one in token", async () => {
+      const anotherConvention = new ConventionDtoBuilder()
+        .withId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
+        .withAgencyId(agency.id)
+        .withStatus("READY_TO_SIGN")
+        .notSigned()
+        .build();
+
+      inMemoryUow.conventionRepository.setConventions([
+        convention,
+        anotherConvention,
+      ]);
+
+      const jwt = generateConventionJwt(
+        createConventionMagicLinkPayload({
+          id: convention.id,
+          role: "establishment-representative",
+          email: convention.signatories.establishmentRepresentative.email,
+          now: new Date(),
+        }),
+      );
+
+      const response = await httpClient.signConvention({
+        urlParams: { conventionId: anotherConvention.id },
+        headers: { authorization: jwt },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.convention.forbiddenConventionIdMismatch({
+            jwtConventionId: convention.id,
+            jwtRole: "establishment-representative",
+            requestedConventionId: anotherConvention.id,
           }).message,
         },
       });
@@ -919,36 +1021,53 @@ describe("Magic link router", () => {
   });
 
   describe("POST /auth/convention/signatories/send-signature-link", () => {
-    it("200 - connected validator can send signature link to signatory", async () => {
-      const agency = new AgencyDtoBuilder().build();
-      const validator = new ConnectedUserBuilder()
-        .withId("validator")
-        .withEmail("validator@mail.com")
-        .buildUser();
-      const convention = new ConventionDtoBuilder()
-        .withStatus("READY_TO_SIGN")
-        .notSigned()
-        .build();
-      const establishmentRepresentative: User = {
-        email: convention.signatories.establishmentRepresentative.email,
-        firstName: "",
-        lastName: "",
-        id: "1",
-        proConnect: defaultProConnectInfos,
-        createdAt: new Date().toISOString(),
-      };
-      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
+    const agency = new AgencyDtoBuilder().build();
+    const convention = new ConventionDtoBuilder()
+      .withAgencyId(agency.id)
+      .withStatus("READY_TO_SIGN")
+      .notSigned()
+      .build();
+    const conventionWithBeneficiaryPhone = new ConventionDtoBuilder(convention)
+      .withBeneficiaryPhone("+33611111111")
+      .build();
+    const validator = new ConnectedUserBuilder()
+      .withId("validator")
+      .withEmail("validator@mail.com")
+      .buildUser();
+    const beneficiary = new ConnectedUserBuilder()
+      .withId("beneficiary")
+      .withEmail(convention.signatories.beneficiary.email)
+      .buildUser();
+    const establishmentRepresentativeConnected = new ConnectedUserBuilder()
+      .withId("establishment-representative")
+      .withEmail(convention.signatories.establishmentRepresentative.email)
+      .buildUser();
+    const establishmentRepresentativeUser: User = {
+      email: convention.signatories.establishmentRepresentative.email,
+      firstName: "",
+      lastName: "",
+      id: "1",
+      proConnect: defaultProConnectInfos,
+      createdAt: new Date().toISOString(),
+    };
 
+    beforeEach(() => {
+      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+      inMemoryUow.userRepository.users = [];
+    });
+
+    it("200 - connected validator can send signature link to signatory", async () => {
       inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
       ];
       inMemoryUow.userRepository.users = [
-        establishmentRepresentative,
+        establishmentRepresentativeUser,
         validator,
       ];
-      inMemoryUow.conventionRepository.setConventions([convention]);
 
       const response = await httpClient.sendSignatureLink({
         body: {
@@ -968,25 +1087,14 @@ describe("Magic link router", () => {
     });
 
     it("200 - connected beneficiary can send signature link to themselves", async () => {
-      const agency = new AgencyDtoBuilder().build();
-      const convention = new ConventionDtoBuilder()
-        .withStatus("READY_TO_SIGN")
-        .withBeneficiaryPhone("+33611111111")
-        .notSigned()
-        .build();
-      const beneficiary = new ConnectedUserBuilder()
-        .withId("beneficiary")
-        .withEmail(convention.signatories.beneficiary.email)
-        .buildUser();
-      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
-
-      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      inMemoryUow.conventionRepository.setConventions([
+        conventionWithBeneficiaryPhone,
+      ]);
       inMemoryUow.userRepository.users = [beneficiary];
-      inMemoryUow.conventionRepository.setConventions([convention]);
 
       const response = await httpClient.sendSignatureLink({
         body: {
-          conventionId: convention.id,
+          conventionId: conventionWithBeneficiaryPhone.id,
           signatoryRole: "beneficiary",
           notificationKind: "sms",
         },
@@ -1005,20 +1113,7 @@ describe("Magic link router", () => {
     });
 
     it("200 - connected beneficiary can send signature link to another signatory", async () => {
-      const agency = new AgencyDtoBuilder().build();
-      const convention = new ConventionDtoBuilder()
-        .withStatus("READY_TO_SIGN")
-        .notSigned()
-        .build();
-      const beneficiary = new ConnectedUserBuilder()
-        .withId("beneficiary")
-        .withEmail(convention.signatories.beneficiary.email)
-        .buildUser();
-      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
-
-      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
       inMemoryUow.userRepository.users = [beneficiary];
-      inMemoryUow.conventionRepository.setConventions([convention]);
 
       const response = await httpClient.sendSignatureLink({
         body: {
@@ -1041,31 +1136,20 @@ describe("Magic link router", () => {
     });
 
     it("200 - connected establishment representative can send signature link to a signatory", async () => {
-      const agency = new AgencyDtoBuilder().build();
-      const convention = new ConventionDtoBuilder()
-        .withStatus("READY_TO_SIGN")
-        .withBeneficiaryPhone("+33611111111")
-        .notSigned()
-        .build();
-      const establishmentRepresentative = new ConnectedUserBuilder()
-        .withId("establishment-representative")
-        .withEmail(convention.signatories.establishmentRepresentative.email)
-        .buildUser();
-      gateways.shortLinkGenerator.addMoreShortLinkIds(["shortLink1"]);
-
-      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
-      inMemoryUow.userRepository.users = [establishmentRepresentative];
-      inMemoryUow.conventionRepository.setConventions([convention]);
+      inMemoryUow.conventionRepository.setConventions([
+        conventionWithBeneficiaryPhone,
+      ]);
+      inMemoryUow.userRepository.users = [establishmentRepresentativeConnected];
 
       const response = await httpClient.sendSignatureLink({
         body: {
-          conventionId: convention.id,
+          conventionId: conventionWithBeneficiaryPhone.id,
           signatoryRole: "beneficiary",
           notificationKind: "sms",
         },
         headers: {
           authorization: generateConnectedUserJwt({
-            userId: establishmentRepresentative.id,
+            userId: establishmentRepresentativeConnected.id,
             version: 1,
           }),
         },
@@ -1078,19 +1162,12 @@ describe("Magic link router", () => {
     });
 
     it("403 - connected user whose email is not linked to the convention cannot send signature link", async () => {
-      const agency = new AgencyDtoBuilder().build();
-      const convention = new ConventionDtoBuilder()
-        .withStatus("READY_TO_SIGN")
-        .notSigned()
-        .build();
       const unrelatedUser = new ConnectedUserBuilder()
         .withId("unrelated-user")
         .withEmail("unrelated@mail.com")
         .buildUser();
 
-      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
       inMemoryUow.userRepository.users = [unrelatedUser];
-      inMemoryUow.conventionRepository.setConventions([convention]);
 
       const response = await httpClient.sendSignatureLink({
         body: {
@@ -1112,6 +1189,137 @@ describe("Magic link router", () => {
           status: 403,
           message:
             errors.convention.sendSignatureLinkNotAuthorizedForRole().message,
+        },
+      });
+    });
+
+    it("200 - validator with valid magic link JWT can send signature link", async () => {
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+        }),
+      ];
+      inMemoryUow.userRepository.users = [
+        establishmentRepresentativeUser,
+        validator,
+      ];
+
+      const validatorJwt = generateConventionJwt(
+        createConventionMagicLinkPayload({
+          id: convention.id,
+          role: "validator",
+          email: validator.email,
+          now: new Date(),
+        }),
+      );
+
+      const response = await httpClient.sendSignatureLink({
+        body: {
+          conventionId: convention.id,
+          signatoryRole: "establishment-representative",
+          notificationKind: "sms",
+        },
+        headers: { authorization: validatorJwt },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: "",
+      });
+    });
+
+    it("401 - invalid JWT", async () => {
+      const response = await httpClient.sendSignatureLink({
+        body: {
+          conventionId: convention.id,
+          signatoryRole: "beneficiary",
+          notificationKind: "sms",
+        },
+        headers: { authorization: "invalid-jwt" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
+      });
+    });
+
+    it("404 - convention not found", async () => {
+      const unknownConventionId =
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" as ConventionId;
+      const jwt = generateConventionJwt(
+        createConventionMagicLinkPayload({
+          id: unknownConventionId,
+          role: "validator",
+          email: "validator@mail.com",
+          now: new Date(),
+        }),
+      );
+
+      inMemoryUow.conventionRepository.setConventions([]);
+
+      const response = await httpClient.sendSignatureLink({
+        body: {
+          conventionId: unknownConventionId,
+          signatoryRole: "beneficiary",
+          notificationKind: "sms",
+        },
+        headers: { authorization: jwt },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 404,
+        body: {
+          status: 404,
+          message: errors.convention.notFound({
+            conventionId: unknownConventionId,
+          }).message,
+        },
+      });
+    });
+
+    it("403 - convention id does not match the one in token", async () => {
+      const anotherConventionId =
+        "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" as ConventionId;
+      const anotherConvention = new ConventionDtoBuilder()
+        .withId(anotherConventionId)
+        .withAgencyId(agency.id)
+        .withStatus("READY_TO_SIGN")
+        .notSigned()
+        .build();
+
+      inMemoryUow.conventionRepository.setConventions([
+        convention,
+        anotherConvention,
+      ]);
+
+      const jwt = generateConventionJwt(
+        createConventionMagicLinkPayload({
+          id: convention.id,
+          role: "validator",
+          email: "validator@mail.com",
+          now: new Date(),
+        }),
+      );
+
+      const response = await httpClient.sendSignatureLink({
+        body: {
+          conventionId: anotherConventionId,
+          signatoryRole: "beneficiary",
+          notificationKind: "sms",
+        },
+        headers: { authorization: jwt },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.convention.forbiddenConventionIdMismatch({
+            jwtConventionId: convention.id,
+            jwtRole: "validator",
+            requestedConventionId: anotherConventionId,
+          }).message,
         },
       });
     });
