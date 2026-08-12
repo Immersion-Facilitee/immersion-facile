@@ -22,7 +22,10 @@ export const makeRemoveUserFromAgency = useCaseBuilder("RemoveUserFromAgency")
     async ({ currentUser, uow, inputParams: { agencyId, userId }, deps }) => {
       const isUserHimself = currentUser.id === userId;
       if (!isUserHimself)
-        throwIfNotAgencyAdminOrBackofficeAdmin(agencyId, currentUser);
+        throwIfNotAgencyAdminOrBackofficeAdmin({
+          agencyIds: [agencyId],
+          currentUser,
+        });
 
       const user = await uow.userRepository.getById(userId);
       if (!user) throw errors.user.notFound({ userId });

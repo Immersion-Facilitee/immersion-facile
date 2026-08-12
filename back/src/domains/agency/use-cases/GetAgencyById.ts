@@ -19,7 +19,10 @@ export const makeGetAgencyById = useCaseBuilder("GetAgencyById")
 
     if (!agency) throw errors.agency.notFound({ agencyId: inputParams });
 
-    throwIfNotAgencyAdminOrBackofficeAdmin(agency.id, currentUser);
+    throwIfNotAgencyAdminOrBackofficeAdmin({
+      agencyIds: [agency.id],
+      currentUser,
+    });
 
     return agencyWithRightToAgencyDto(uow, agency);
   });

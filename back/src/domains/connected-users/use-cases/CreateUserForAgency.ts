@@ -30,7 +30,10 @@ export const makeCreateUserForAgency = useCaseBuilder("CreateUserForAgency")
     dashboardGateway: DashboardGateway;
   }>()
   .build(async ({ inputParams, uow, currentUser, deps }) => {
-    throwIfNotAgencyAdminOrBackofficeAdmin(inputParams.agencyId, currentUser);
+    throwIfNotAgencyAdminOrBackofficeAdmin({
+      agencyIds: [inputParams.agencyId],
+      currentUser,
+    });
 
     const agency = await uow.agencyRepository.getById(inputParams.agencyId);
     if (!agency)
