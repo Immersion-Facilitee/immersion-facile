@@ -57,6 +57,7 @@ describe("NotifyUserThatArchivedConventionRequestWasReceived", () => {
     await uow.archivedConventionRequestRepository.save({
       id: archivedConventionRequestId,
       userId: requester.id,
+      handledAt: null,
       createdAt: "2024-06-01T12:00:00.000Z",
       conventionSearchMethod: "withConventionId",
       conventionId: "22222222-2222-4222-8222-222222222222",
@@ -122,6 +123,7 @@ describe("NotifyUserThatArchivedConventionRequestWasReceived", () => {
     await uow.archivedConventionRequestRepository.save({
       id: archivedConventionRequestId,
       userId: requester.id,
+      handledAt: null,
       createdAt: "2024-06-01T12:00:00.000Z",
       conventionSearchMethod: "withConventionId",
       conventionId: "22222222-2222-4222-8222-222222222222",
