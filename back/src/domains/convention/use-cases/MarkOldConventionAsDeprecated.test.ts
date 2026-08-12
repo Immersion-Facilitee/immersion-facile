@@ -3,14 +3,14 @@ import {
   expectToEqual,
   reasonableSchedule,
 } from "shared";
-import { makeCreateNewEvent } from "../core/events/ports/EventBus";
-import { CustomTimeGateway } from "../core/time-gateway/adapters/CustomTimeGateway";
+import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
+import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
-} from "../core/unit-of-work/adapters/createInMemoryUow";
-import { InMemoryUowPerformer } from "../core/unit-of-work/adapters/InMemoryUowPerformer";
-import { TestUuidGenerator } from "../core/uuid-generator/adapters/UuidGeneratorImplementations";
+} from "../../core/unit-of-work/adapters/createInMemoryUow";
+import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
+import { TestUuidGenerator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
 import {
   type MarkOldConventionAsDeprecated,
   makeMarkOldConventionAsDeprecated,
