@@ -25,10 +25,14 @@ import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
 import type { SuperTest, Test } from "supertest";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
+import type { ArchivedConventionRequestEntity } from "../../../../domains/convention/entities/ArchivedConventionRequestEntity";
 import type { BasicEventCrawler } from "../../../../domains/core/events/adapters/EventCrawlerImplementations";
 import type { GenerateConnectedUserJwt } from "../../../../domains/core/jwt";
 import { broadcastToFtServiceName } from "../../../../domains/core/saved-errors/ports/BroadcastFeedbacksRepository";
-import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
+import type {
+  InMemoryOutOfTransactionQueries,
+  InMemoryUnitOfWork,
+} from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { toAgencyWithRights } from "../../../../utils/agency";
 import {
   buildTestApp,
@@ -48,6 +52,7 @@ describe("authenticatedConventionRoutes", () => {
   let inMemoryUow: InMemoryUnitOfWork;
   let eventCrawler: BasicEventCrawler;
   let gateways: InMemoryGateways;
+  let queries: InMemoryOutOfTransactionQueries;
   let validToken: ConnectedUserJwt;
 
   beforeEach(async () => {
@@ -58,6 +63,7 @@ describe("authenticatedConventionRoutes", () => {
       inMemoryUow,
       eventCrawler,
       gateways,
+      queries,
     } = await buildTestApp());
 
     httpClient = createSupertestSharedClient(
@@ -1266,6 +1272,128 @@ describe("authenticatedConventionRoutes", () => {
           reason: "legalDispute",
         },
       });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: authExpiredMessage(),
+        },
+      });
+    });
+  });
+
+  describe(`${displayRouteName(
+    authenticatedConventionRoutes.fetchArchivedConventionRequestToReviewList,
+  )} submits an archived convention access request`, () => {
+    const convention = new ConventionDtoBuilder().build();
+    const adminUser = new ConnectedUserBuilder()
+      .withId("admin-user")
+      .withIsAdmin(true)
+      .buildUser();
+    const requesterUser = new ConnectedUserBuilder()
+      .withId("basic-user")
+      .buildUser();
+
+    const archivedConventionRequestEntity: ArchivedConventionRequestEntity = {
+      id: "11111111-1111-4111-8111-111111111111",
+      conventionSearchMethod: "withConventionId",
+      conventionId: convention.id,
+      reason: "legalDispute",
+      createdAt: new Date().toISOString(),
+      userId: requesterUser.id,
+    };
+
+    it("200 - succeeds with a valid request", async () => {
+      inMemoryUow.userRepository.users = [adminUser, requesterUser];
+      queries.archivedConventionRequest.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
+        [archivedConventionRequestEntity];
+
+      const response =
+        await httpClient.fetchArchivedConventionRequestToReviewList({
+          headers: {
+            authorization: generateConnectedUserJwt(
+              {
+                version: currentJwtVersions.connectedUser,
+                userId: adminUser.id,
+              },
+              10,
+            ),
+          },
+        });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: [
+          {
+            id: archivedConventionRequestEntity.id,
+            createdAt: archivedConventionRequestEntity.createdAt,
+            reason: archivedConventionRequestEntity.reason,
+            requester: {
+              email: requesterUser.email,
+              firstname: requesterUser.firstName,
+              lastname: requesterUser.lastName,
+            },
+          },
+        ],
+      });
+    });
+
+    it("404 - users not found", async () => {
+      inMemoryUow.userRepository.users = [adminUser];
+      queries.archivedConventionRequest.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
+        [archivedConventionRequestEntity];
+
+      const response =
+        await httpClient.fetchArchivedConventionRequestToReviewList({
+          headers: {
+            authorization: generateConnectedUserJwt({
+              version: currentJwtVersions.connectedUser,
+              iat: Date.now(),
+              exp: addDays(new Date(), 30).getTime(),
+              userId: adminUser.id,
+            }),
+          },
+        });
+
+      expectHttpResponseToEqual(response, {
+        status: 404,
+        body: {
+          status: 404,
+          message: errors.users.notFound({ userIds: [requesterUser.id] })
+            .message,
+        },
+      });
+    });
+
+    it("401 - Invalid JWT", async () => {
+      const response =
+        await httpClient.fetchArchivedConventionRequestToReviewList({
+          headers: { authorization: "invalid-token" },
+        });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: invalidTokenMessage,
+        },
+      });
+    });
+
+    it("401 - Expired JWT", async () => {
+      const token = generateConnectedUserJwt(
+        {
+          userId: "basic-user",
+          version: currentJwtVersions.connectedUser,
+        },
+        0,
+      );
+
+      const response =
+        await httpClient.fetchArchivedConventionRequestToReviewList({
+          headers: { authorization: token },
+        });
 
       expectHttpResponseToEqual(response, {
         status: 401,

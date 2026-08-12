@@ -114,13 +114,18 @@ export const createInMemoryUow = () => {
 
 export type InMemoryUnitOfWork = ReturnType<typeof createInMemoryUow>;
 
+export type InMemoryOutOfTransactionQueries = ReturnType<
+  typeof createInMemoryOutOfTransactionQueries
+>;
+
 export const createInMemoryOutOfTransactionQueries = (
   uow: InMemoryUnitOfWork,
-): OutOfTransactionQueries => ({
-  convention: uow.conventionQueries,
-  establishmentLead: uow.establishmentLeadQueries,
-  shortLink: uow.shortLinkQuery,
-  featureFlag: uow.featureFlagQueries,
-  statistic: uow.statisticQueries,
-  archivedConventionRequest: new InMemoryArchivedConventionRequestQueries(),
-});
+) =>
+  ({
+    convention: uow.conventionQueries,
+    establishmentLead: uow.establishmentLeadQueries,
+    shortLink: uow.shortLinkQuery,
+    featureFlag: uow.featureFlagQueries,
+    statistic: uow.statisticQueries,
+    archivedConventionRequest: new InMemoryArchivedConventionRequestQueries(),
+  }) satisfies OutOfTransactionQueries;
