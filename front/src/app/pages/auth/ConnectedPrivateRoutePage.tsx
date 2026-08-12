@@ -2,9 +2,9 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
+import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import Tile from "@codegouvfr/react-dsfr/Tile";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { type ReactElement, type ReactNode, useEffect, useState } from "react";
 import {
   Loader,
@@ -35,16 +35,13 @@ import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import type { FrontAdminRouteTab } from "src/app/pages/admin/AdminTabs";
 import type { ConventionTemplateFormRoute } from "src/app/pages/convention/ConventionTemplateForm";
-import {
-  commonIllustrations,
-  loginIllustration,
-} from "src/assets/img/illustrations";
+import { commonIllustrations } from "src/assets/img/illustrations";
 import { outOfReduxDependencies } from "src/config/dependencies";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { authSlice } from "src/core-logic/domain/auth/auth.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
-import { match, P } from "ts-pattern";
+import { match } from "ts-pattern";
 import type { Route } from "type-route";
 import { z } from "zod";
 import { WithFeedbackReplacer } from "../../components/feedback/WithFeedbackReplacer";
@@ -206,7 +203,10 @@ export const ConnectedPrivateRoutePage = ({
   }, [authIsLoading, isConnectedUser, afterLoginRedirectionUrl, dispatch]);
 
   const page = getAllowedStartAuthPage(route.name, route.params);
-  const pageContent = pageContentByRoute[page] ?? pageContentByRoute.default;
+
+  const [selectedLoginPersona, setSelectedLoginPersona] =
+    useState<LoginPersona | null>(loginPersonaByLoginSource[page]);
+
   const alreadyUsedAuthentication = route.params.alreadyUsedAuthentication;
 
   if (!isConnectedUser) {
@@ -224,14 +224,7 @@ export const ConnectedPrivateRoutePage = ({
           <MainWrapper
             layout="default"
             pageHeader={
-              <PageHeader
-                title={pageContent.title}
-                illustration={
-                  "illustration" in pageContent
-                    ? pageContent.illustration
-                    : undefined
-                }
-              >
+              <PageHeader title={loginPageTitle}>
                 {alreadyUsedAuthentication && (
                   <Alert
                     className={fr.cx("fr-mb-2w")}
@@ -240,17 +233,61 @@ export const ConnectedPrivateRoutePage = ({
                     description="Veuillez renouveler votre demande de connexion."
                   />
                 )}
-                <p className={fr.cx("fr-text--lead")}>
-                  {pageContent.description}
-                </p>
+                <p className={fr.cx("fr-text--lead")}>{loginPageDescription}</p>
 
-                {match({
-                  withEmailLogin: pageContent.withEmailLogin,
-                  withProConnectLogin: pageContent.withProConnectLogin,
-                })
-                  .with(
-                    { withEmailLogin: true, withProConnectLogin: true },
-                    () => (
+                <div>
+                  <h3 className={fr.cx("fr-h4", "fr-mb-2w")}>Vous êtes...</h3>
+
+                  <RadioButtons
+                    className={fr.cx("fr-mb-2w")}
+                    classes={{ inputGroup: fr.cx("fr-col-4") }}
+                    name="loginPersona"
+                    orientation="horizontal"
+                    options={[
+                      {
+                        label: "Un candidat",
+                        hintText:
+                          "Vous souhaitez découvrir un métier, initier une démarche de recrutement ou confirmer un projet pro ?",
+                        illustration: (
+                          <img
+                            alt="Candidat"
+                            src={commonIllustrations.candidate}
+                          />
+                        ),
+                        nativeInputProps: {
+                          value: "beneficiary",
+                          checked: selectedLoginPersona === "beneficiary",
+                          onChange: () =>
+                            setSelectedLoginPersona("beneficiary"),
+                        },
+                      },
+                      {
+                        label: "Un professionnel",
+                        hintText:
+                          "Vous accueillez des personnes en immersion ou vous prescrivez des immersions pour vos bénéficiaires ?",
+                        illustration: (
+                          <img
+                            alt="Professionnel"
+                            src={commonIllustrations.miseEnRelation}
+                          />
+                        ),
+                        nativeInputProps: {
+                          value: "professional",
+                          checked: selectedLoginPersona === "professional",
+                          onChange: () =>
+                            setSelectedLoginPersona("professional"),
+                        },
+                      },
+                    ]}
+                  />
+
+                  {match(selectedLoginPersona)
+                    .with("beneficiary", () => (
+                      <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
+                        <LoginWithEmail page={page} />
+                      </div>
+                    ))
+                    .with("professional", () => (
                       <SeparatedSection
                         firstSection={<LoginWithEmail page={page} />}
                         secondSection={
@@ -260,87 +297,54 @@ export const ConnectedPrivateRoutePage = ({
                           />
                         }
                       />
-                    ),
-                  )
-                  .with(
-                    { withEmailLogin: true, withProConnectLogin: P.nullish },
-                    () => (
-                      <div
-                        className={fr.cx(
-                          "fr-grid-row",
-                          "fr-grid-row--gutters",
-                          "fr-grid-row--middle",
-                        )}
-                      >
-                        <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
-                          <LoginWithEmail page={page} />
-                        </div>
-                        <div className={fr.cx("fr-col-12", "fr-col-lg-4")}>
-                          <img src={loginIllustration} alt="" />
-                        </div>
-                      </div>
-                    ),
-                  )
-                  .with(
-                    { withProConnectLogin: true, withEmailLogin: P.nullish },
-                    () => (
-                      <LoginWithProConnect
-                        page={page}
-                        redirectUri={route.href}
-                      />
-                    ),
-                  )
-                  .with(
-                    {
-                      withEmailLogin: P.nullish,
-                      withProConnectLogin: P.nullish,
-                    },
-                    () => <p>Aucune méthode de connexion disponible</p>,
-                  )
-                  .exhaustive()}
+                    ))
+                    .with(null, () => null)
+                    .exhaustive()}
 
-                <p className={fr.cx("fr-hint-text")}>
-                  Si votre messagerie est protégée une anti-spam, pensez à
-                  ajouter l’adresse{" "}
-                  <strong>{immersionFacileNoReplyEmail}</strong> à votre liste
-                  de contacts autorisés.
-                </p>
+                  {selectedLoginPersona && (
+                    <p className={fr.cx("fr-hint-text")}>
+                      Si votre messagerie est protégée une anti-spam, pensez à
+                      ajouter l’adresse{" "}
+                      <strong>{immersionFacileNoReplyEmail}</strong> à votre
+                      liste de contacts autorisés.
+                    </p>
+                  )}
+                </div>
               </PageHeader>
             }
             vSpacing={2}
           >
-            <section className={fr.cx("fr-mb-8w")}>
-              {pageContent.cardsTitle && (
-                <h2 className={fr.cx("fr-h3")}>{pageContent.cardsTitle}</h2>
-              )}
-              <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-                {pageContent.cards?.map((card) => (
-                  <div
-                    className={fr.cx("fr-col-12", "fr-col-lg-4")}
-                    key={card.description?.toString()}
-                  >
-                    <Tile
-                      title={card.title}
-                      desc={card.description}
-                      imageUrl={card.illustration}
-                      imageAlt=""
-                      imageSvg={false}
-                      detail={
-                        card.link ? (
-                          <a
-                            href={card.link.href}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {card.link.label}
-                          </a>
-                        ) : undefined
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-            </section>
+            {selectedLoginPersona && (
+              <section className={fr.cx("fr-mb-8w")}>
+                <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+                  {loginCardsByPersona[selectedLoginPersona].map((card) => (
+                    <div
+                      className={fr.cx("fr-col-12", "fr-col-lg-4")}
+                      key={card.description?.toString()}
+                    >
+                      <Tile
+                        title={card.title}
+                        desc={card.description}
+                        imageUrl={card.illustration}
+                        imageAlt=""
+                        imageSvg={false}
+                        detail={
+                          card.link ? (
+                            <a
+                              href={card.link.href}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {card.link.label}
+                            </a>
+                          ) : undefined
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </MainWrapper>
         </HeaderFooterLayout>
       </WithFeedbackReplacer>
@@ -407,115 +411,78 @@ const getAllowedStartAuthPage = (
   return "admin";
 };
 
-type PageContent = {
+type LoginPersona = "professional" | "beneficiary";
+
+const loginPageTitle = "Connexion ou création de compte";
+const loginPageDescription =
+  "La connexion crée votre compte automatiquement, sans démarche supplémentaire.";
+
+const loginPersonaByLoginSource: Record<
+  AllowedLoginSource,
+  LoginPersona | null
+> = {
+  formEstablishment: "professional",
+  establishmentDashboard: "professional",
+  establishmentDashboardDiscussions: "professional",
+  addAgency: "professional",
+  agencyDashboard: "professional",
+  agencyDashboardAgencyDetails: "professional",
+  manageConventionConnectedUser: "professional",
+  admin: "professional",
+  conventionTemplate: "professional",
+  archivedConventionRequest: null,
+  myAccount: "professional",
+  beneficiaryDashboard: "beneficiary",
+  beneficiaryDashboardDiscussions: "beneficiary",
+  beneficiaryDashboardConventions: "beneficiary",
+};
+
+type LoginPersonaCard = {
   title: string;
   description: ReactNode;
-  cardsTitle?: string;
-  cards?: {
-    title: string;
-    description: ReactNode;
-    link?: {
-      href?: string;
-      label: string;
-    };
-    illustration: string;
-  }[];
-  illustration?: string;
-} & (
-  | { withEmailLogin: true; withProConnectLogin: true }
-  | { withEmailLogin: true; withProConnectLogin?: never }
-  | { withEmailLogin?: never; withProConnectLogin: true }
-);
+  link?: {
+    href?: string;
+    label: string;
+  };
+  illustration: string;
+};
 
-const establishmentDashboardContent: PageContent = {
-  title: "Mon espace entreprise",
-  description: (
-    <>
-      <strong>Un compte unique</strong> pour accéder à vos candidatures, vos
-      conventions et vos offres d’immersions.
-    </>
-  ),
-  cardsTitle: "Tous les avantages du compte entreprise",
-  withEmailLogin: true,
-  withProConnectLogin: true,
-  cards: [
+const loginCardsByPersona: Record<LoginPersona, LoginPersonaCard[]> = {
+  professional: [
     {
       title: "Vos démarches centralisées",
       description:
-        "Plus besoin de chercher dans vos emails ! Retrouvez toutes vos candidatures et conventions au même endroit.",
+        "Retrouvez et pilotez facilement l'ensemble de vos démarches depuis votre espace.",
       illustration: commonIllustrations.warning,
+    },
+    {
+      title: "Des démarches simplifiées",
+      description:
+        "Gagnez un temps précieux grâce à nos conventions d'immersion entièrement dématérialisées.",
+      illustration: commonIllustrations.inscription,
     },
     {
       title: "Un accès simplifié",
       description:
-        "Utilisez un seul identifiant pour vous connecter à l’ensemble des services de la Plateforme de l’Inclusion.",
-      illustration: commonIllustrations.inscription,
-    },
-    {
-      title: "Gérez vos offres",
-      description:
-        "Devenez administrateur de votre établissement et gérez directement vos offres d’immersions.",
+        "Utilisez un seul identifiant pour vous connecter à l’ensemble des sites partenaires ProConnect.",
       illustration: commonIllustrations.monCompte,
     },
   ],
-};
-
-const agencyDashboardContent: PageContent = {
-  title: "Mon espace prescripteur",
-  description: (
-    <>
-      <strong>Un compte unique</strong> pour accéder à vos conventions et
-      consulter vos statistiques.
-    </>
-  ),
-  cardsTitle: "Tous les avantages du compte prescripteur",
-  withEmailLogin: true,
-  withProConnectLogin: true,
-  cards: [
-    {
-      title: "Une connexion simplifiée",
-      description:
-        "Pas besoin de créer un nouveau mot de passe si vous appartenez à France Travail, Cap Emploi...",
-      illustration: commonIllustrations.warning,
-    },
-    {
-      title: "Un seul identifiant",
-      description:
-        "Utilisez un seul identifiant pour vous connecter à l’ensemble des services de la Plateforme de l’Inclusion.",
-      illustration: commonIllustrations.inscription,
-    },
-    {
-      title: "Tout au même endroit",
-      description:
-        "Un seul espace pour accéder aux conventions et statistiques de vos organismes.",
-      illustration: commonIllustrations.monCompte,
-    },
-  ],
-};
-
-const beneficiaryDashboardContent: PageContent = {
-  title: "Mon espace bénéficiaire",
-  description: (
-    <>
-      Un espace unique pour <strong>suivre vos candidatures</strong>.
-    </>
-  ),
-  cardsTitle: "Votre parcours Immersion Facilitée",
-  withEmailLogin: true,
-  cards: [
+  beneficiary: [
     {
       title: "Gérer mes candidatures",
       description:
-        "Retrouvez l'historique des candidatures que vous avez envoyées.",
+        "Retrouvez tous vos échanges. Répondez aux entreprises et suivez l'avancement de vos demandes en temps réel.",
       illustration: commonIllustrations.warning,
       link: {
+        href: `${immersionFacileHelpdeskRootUrl}/article/mon-espace-candidat-1thteqo/`,
         label: "Comment fonctionne l'espace candidat ?",
       },
     },
     {
       title: "Suivre ma convention",
       description:
-        "La gestion des conventions arrive bientôt. En attendant, retrouvez notre guide pour suivre votre demande.",
+        "Suivez et gérez vos conventions et bilans à chaque étape, directement depuis vos mails ou votre espace.",
       illustration: commonIllustrations.inscription,
       link: {
         href: `${immersionFacileHelpdeskRootUrl}/article/comment-suivre-ma-demande-de-convention-1gbhxt4/`,
@@ -534,120 +501,6 @@ const beneficiaryDashboardContent: PageContent = {
     },
   ],
 };
-
-const defaultPageContent: PageContent = {
-  title: "Se connecter à Immersion Facilitée",
-  description: (
-    <>
-      <strong>Un compte unique</strong> pour accéder à votre espace entreprise,
-      prescripteur ou candidat.
-    </>
-  ),
-  withEmailLogin: true,
-  withProConnectLogin: true,
-};
-
-const pageContentByRoute: Record<AllowedLoginSource | "default", PageContent> =
-  {
-    formEstablishment: {
-      title: "Proposer une immersion",
-      description: (
-        <>
-          <strong>Un compte unique</strong> pour publier et mettre à jour vos
-          offres d’immersion. Vous pourrez aussi suivre et gérez toutes les
-          candidatures reçues en un seul endroit.
-        </>
-      ),
-      cardsTitle: "Tous les avantages du compte entreprise",
-      withEmailLogin: true,
-      withProConnectLogin: true,
-      cards: [
-        {
-          title: "Vos démarches centralisées",
-          description:
-            "Plus besoin de chercher dans vos emails ! Retrouvez toutes vos candidatures et conventions au même endroit.",
-          illustration: commonIllustrations.warning,
-        },
-        {
-          title: "Un accès simplifié",
-          description:
-            "Utilisez un seul identifiant pour vous connecter à l’ensemble des services de la Plateforme de l’Inclusion.",
-          illustration: commonIllustrations.inscription,
-        },
-        {
-          title: "Gérez vos offres",
-          description: (
-            <>
-              <strong>Devenez administrateur</strong> de votre établissement et
-              gérez directement vos offres d’immersions.
-            </>
-          ),
-          illustration: commonIllustrations.monCompte,
-        },
-      ],
-    },
-    establishmentDashboard: establishmentDashboardContent,
-    establishmentDashboardDiscussions: establishmentDashboardContent,
-    addAgency: {
-      title: "Inscrire mon organisme",
-      description: (
-        <>
-          L'inscription vous permet de{" "}
-          <strong>valider les demandes d'immersion</strong> remplies sur
-          Immersion Facilitée. Elle est accessible aux{" "}
-          <a
-            className={fr.cx("fr-link", "fr-text--lead")}
-            href={`${immersionFacileHelpdeskRootUrl}/article/qui-peut-prescrire-une-immersion-6frnyn/`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            prescripteurs de droit, structures d'accompagnement et prescripteurs
-            délégataires
-          </a>
-          .
-        </>
-      ),
-      cardsTitle: "Tous les avantages du compte prescripteur",
-      withEmailLogin: true,
-      withProConnectLogin: true,
-      cards: [
-        {
-          title: "Une connexion simplifiée",
-          description:
-            "Pas besoin de créer un nouveau mot de passe si vous appartenez à France Travail, Cap Emploi...",
-          illustration: commonIllustrations.warning,
-        },
-        {
-          title: "Un seul identifiant",
-          description:
-            "Utilisez un seul identifiant pour vous connecter à l’ensemble des services de la Plateforme de l’Inclusion.",
-          illustration: commonIllustrations.inscription,
-        },
-        {
-          title: "Tout au même endroit",
-          description:
-            "Un seul espace pour accéder aux conventions et statistiques de vos organismes.",
-          illustration: commonIllustrations.monCompte,
-        },
-      ],
-    },
-    agencyDashboard: agencyDashboardContent,
-    agencyDashboardAgencyDetails: agencyDashboardContent,
-    manageConventionConnectedUser: agencyDashboardContent,
-    admin: {
-      title: "Mon espace administrateur",
-      description: "Pour la super team IF 😉",
-      withEmailLogin: true,
-      withProConnectLogin: true,
-    },
-    conventionTemplate: defaultPageContent,
-    archivedConventionRequest: defaultPageContent,
-    myAccount: defaultPageContent,
-    beneficiaryDashboard: beneficiaryDashboardContent,
-    beneficiaryDashboardDiscussions: beneficiaryDashboardContent,
-    beneficiaryDashboardConventions: beneficiaryDashboardContent,
-    default: defaultPageContent,
-  };
 
 const LoginWithEmail = ({ page }: { page: AllowedLoginSource }) => {
   const route = useRoute();
