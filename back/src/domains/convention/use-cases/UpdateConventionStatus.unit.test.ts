@@ -42,6 +42,7 @@ describe("UpdateConventionStatus", () => {
       ],
       allowedConnectedUsers: [
         "userWithRoleEstablishmentRepresentative",
+        "userWithRoleBeneficiary",
         "userWithRoleBackofficeAdmin",
         "userWithRoleBackofficeAdminAndValidator",
         "userWithRoleValidator",
@@ -65,6 +66,7 @@ describe("UpdateConventionStatus", () => {
       ],
       allowedConnectedUsers: [
         "userWithRoleEstablishmentRepresentative",
+        "userWithRoleBeneficiary",
         "userWithRoleBackofficeAdmin",
         "userWithRoleBackofficeAdminAndValidator",
         "userWithRoleCounsellor",
@@ -87,7 +89,10 @@ describe("UpdateConventionStatus", () => {
       },
       expectedDomainTopic: "ConventionPartiallySigned",
       allowedMagicLinkRoles: validSignatoryRoles,
-      allowedConnectedUsers: ["userWithRoleEstablishmentRepresentative"],
+      allowedConnectedUsers: [
+        "userWithRoleEstablishmentRepresentative",
+        "userWithRoleBeneficiary",
+      ],
       allowedInitialStatuses: ["READY_TO_SIGN", "PARTIALLY_SIGNED"],
     });
     rejectStatusTransitionTests({
@@ -96,7 +101,10 @@ describe("UpdateConventionStatus", () => {
         conventionId: conventionWithAgencyOneStepValidationId,
       },
       allowedMagicLinkRoles: validSignatoryRoles,
-      allowedConnectedUsers: ["userWithRoleEstablishmentRepresentative"],
+      allowedConnectedUsers: [
+        "userWithRoleEstablishmentRepresentative",
+        "userWithRoleBeneficiary",
+      ],
       allowedInitialStatuses: ["READY_TO_SIGN", "PARTIALLY_SIGNED"],
     });
   });
