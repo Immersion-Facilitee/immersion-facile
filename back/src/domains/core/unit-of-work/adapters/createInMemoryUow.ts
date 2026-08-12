@@ -1,7 +1,8 @@
 import { InMemoryAgencyGroupRepository } from "../../../agency/adapters/InMemoryAgencyGroupRepository";
 import { InMemoryAgencyRepository } from "../../../agency/adapters/InMemoryAgencyRepository";
 import { InMemoryDelegationContactRepository } from "../../../agency/adapters/InMemoryDelegationContactRepository";
-import { InMemoryArchivedConventionRequestRepository } from "../../../convention/adapters/InMemoryArchivedConventionRequestRepository";
+import { InMemoryArchivedConventionRequestQueries } from "../../../convention/adapters/archived-convention-request/InMemoryArchivedConventionRequestQueries";
+import { InMemoryArchivedConventionRequestRepository } from "../../../convention/adapters/archived-convention-request/InMemoryArchivedConventionRequestRepository";
 import { InMemoryAssessmentRepository } from "../../../convention/adapters/InMemoryAssessmentRepository";
 import { InMemoryConventionDraftRepository } from "../../../convention/adapters/InMemoryConventionDraftRepository";
 import { InMemoryConventionExternalIdRepository } from "../../../convention/adapters/InMemoryConventionExternalIdRepository";
@@ -121,4 +122,5 @@ export const createInMemoryOutOfTransactionQueries = (
   shortLink: uow.shortLinkQuery,
   featureFlag: uow.featureFlagQueries,
   statistic: uow.statisticQueries,
+  archivedConventionRequest: new InMemoryArchivedConventionRequestQueries(),
 });

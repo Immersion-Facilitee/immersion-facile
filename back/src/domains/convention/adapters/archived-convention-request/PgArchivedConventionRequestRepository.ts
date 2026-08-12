@@ -1,10 +1,10 @@
 import type { ArchivedConventionRequestId } from "shared";
-import type { KyselyDb } from "../../../config/pg/kysely/kyselyUtils";
+import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
 import {
   type ArchivedConventionRequestEntity,
   toArchivedConventionRequestEntity,
-} from "../entities/ArchivedConventionRequestEntity";
-import type { ArchivedConventionRequestRepository } from "../ports/ArchivedConventionRequestRepository";
+} from "../../entities/ArchivedConventionRequestEntity";
+import type { ArchivedConventionRequestRepository } from "../../ports/ArchivedConventionRequestRepository";
 
 export class PgArchivedConventionRequestRepository
   implements ArchivedConventionRequestRepository

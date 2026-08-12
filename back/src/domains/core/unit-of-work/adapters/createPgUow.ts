@@ -2,7 +2,7 @@ import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
 import { PgAgencyGroupRepository } from "../../../agency/adapters/PgAgencyGroupRepository";
 import { PgAgencyRepository } from "../../../agency/adapters/PgAgencyRepository";
 import { PgDelegationContactRepository } from "../../../agency/adapters/PgDelegationContactRepository";
-import { PgArchivedConventionRequestRepository } from "../../../convention/adapters/PgArchivedConventionRequestRepository";
+import { PgArchivedConventionRequestRepository } from "../../../convention/adapters/archived-convention-request/PgArchivedConventionRequestRepository";
 import { PgAssessmentRepository } from "../../../convention/adapters/PgAssessmentRepository";
 import { PgConventionDraftRepository } from "../../../convention/adapters/PgConventionDraftRepository";
 import { PgConventionExternalIdRepository } from "../../../convention/adapters/PgConventionExternalIdRepository";

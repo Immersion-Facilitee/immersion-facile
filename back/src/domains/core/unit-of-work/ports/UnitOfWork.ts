@@ -1,6 +1,7 @@
 import type { AgencyGroupRepository } from "../../../agency/ports/AgencyGroupRepository";
 import type { AgencyRepository } from "../../../agency/ports/AgencyRepository";
 import type { DelegationContactRepository } from "../../../agency/ports/DelegationContactRepository";
+import type { ArchivedConventionRequestQueries } from "../../../convention/ports/ArchivedConventionRequestQueries";
 import type { ArchivedConventionRequestRepository } from "../../../convention/ports/ArchivedConventionRequestRepository";
 import type { AssessmentRepository } from "../../../convention/ports/AssessmentRepository";
 import type { ConventionDraftRepository } from "../../../convention/ports/ConventionDraftRepository";
@@ -77,6 +78,7 @@ export type UnitOfWork = {
 };
 
 export type OutOfTransactionQueries = {
+  archivedConventionRequest: ArchivedConventionRequestQueries;
   convention: ConventionQueries;
   establishmentLead: EstablishmentLeadQueries;
   shortLink: ShortLinkQuery;
