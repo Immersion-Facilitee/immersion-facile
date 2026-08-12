@@ -537,6 +537,8 @@ sources:
             description: "Timestamp when offer was created"
           - name: update_date
             description: "Timestamp when offer was updated"
+          - name: remote_work_mode
+            description: "Remote work mode for the offer (ON_SITE, HYBRID or FULL_REMOTE)"
 
       - name: marketing_establishment_contacts
         description: "Marketing contacts for establishments"
