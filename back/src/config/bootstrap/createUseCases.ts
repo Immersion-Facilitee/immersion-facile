@@ -41,6 +41,7 @@ import { makeDeleteConventionDraft } from "../../domains/convention/use-cases/De
 import { makeDeleteConventionTemplate } from "../../domains/convention/use-cases/DeleteConventionTemplate";
 import { makeEditConventionCounsellorName } from "../../domains/convention/use-cases/EditConventionCounsellorName";
 import { makeEditConventionWithFinalStatus } from "../../domains/convention/use-cases/EditConventionWithFinalStatus";
+import { makeFetchArchivedConventionRequestToReviewList } from "../../domains/convention/use-cases/FetchArchivedConventionRequestToReviewList";
 import { makeGetAgencyPublicInfoById } from "../../domains/convention/use-cases/GetAgencyPublicInfoById";
 import { makeGetApiConsumersByConvention } from "../../domains/convention/use-cases/GetApiConsumersByConvention";
 import { makeGetAssessmentByConventionId } from "../../domains/convention/use-cases/GetAssessmentByConventionId";
@@ -318,6 +319,13 @@ export const createUseCases = ({
         timeGateway: gateways.timeGateway,
       },
     }),
+    fetchArchivedConventionRequestToReviewList:
+      makeFetchArchivedConventionRequestToReviewList({
+        uowPerformer,
+        deps: {
+          archivedConventionRequestQueries: queries.archivedConventionRequest,
+        },
+      }),
     bindConventionToFederatedIdentity: makeBindConventionToFederatedIdentity({
       uowPerformer,
       deps: {

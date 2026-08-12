@@ -9,10 +9,10 @@ import {
 import {
   type KyselyDb,
   makeKyselyDb,
-} from "../../../config/pg/kysely/kyselyUtils";
-import { makeTestPgPool } from "../../../config/pg/pgPool";
-import { PgUserRepository } from "../../core/authentication/connected-user/adapters/PgUserRepository";
-import type { ArchivedConventionRequestEntity } from "../entities/ArchivedConventionRequestEntity";
+} from "../../../../config/pg/kysely/kyselyUtils";
+import { makeTestPgPool } from "../../../../config/pg/pgPool";
+import { PgUserRepository } from "../../../core/authentication/connected-user/adapters/PgUserRepository";
+import type { ArchivedConventionRequestEntity } from "../../entities/ArchivedConventionRequestEntity";
 import { InMemoryArchivedConventionRequestRepository } from "./InMemoryArchivedConventionRequestRepository";
 import { PgArchivedConventionRequestRepository } from "./PgArchivedConventionRequestRepository";
 
