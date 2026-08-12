@@ -162,8 +162,38 @@ describe("GetConnectedUsers", () => {
       uow.userRepository.users = [connectedPaulUser];
 
       await expectPromiseToFailWithError(
-        getConnectedUsers.execute({ agencyId: agency2.id }, connectedPaulUser),
+        getConnectedUsers.execute(
+          { agencyIds: [agency2.id] },
+          connectedPaulUser,
+        ),
         errors.user.forbidden({ userId: connectedPaulUser.id }),
+      );
+    });
+
+    it("throws Forbidden if filter has agencyRole and agencyIds and user is not backoffice nor agency admin", async () => {
+      uow.userRepository.users = [connectedPaulUser];
+
+      await expectPromiseToFailWithError(
+        getConnectedUsers.execute(
+          { agencyRole: "to-review", agencyIds: [agency1.id] },
+          connectedPaulUser,
+        ),
+        errors.user.forbidden({ userId: connectedPaulUser.id }),
+      );
+    });
+
+    it("throws Forbidden if agency admin requests an agency he is not admin on", async () => {
+      uow.userRepository.users = [agencyAdminUser];
+
+      await expectPromiseToFailWithError(
+        getConnectedUsers.execute(
+          {
+            agencyRole: "to-review",
+            agencyIds: [agency1.id, agencyWithRefersToWithRights.id],
+          },
+          agencyAdmin,
+        ),
+        errors.user.forbidden({ userId: agencyAdminUser.id }),
       );
     });
   });
@@ -203,7 +233,7 @@ describe("GetConnectedUsers", () => {
         uow.agencyRepository.agencies = [agency1WithRights, agency2WithRights];
 
         const users = await getConnectedUsers.execute(
-          { agencyId: agency1.id },
+          { agencyIds: [agency1.id] },
           connectedBackOffice,
         );
 
@@ -245,7 +275,7 @@ describe("GetConnectedUsers", () => {
         ];
 
         const users = await getConnectedUsers.execute(
-          { agencyId: agencyWithRefersToWithRights.id },
+          { agencyIds: [agencyWithRefersToWithRights.id] },
           agencyAdmin,
         );
 
@@ -259,6 +289,58 @@ describe("GetConnectedUsers", () => {
                 ]),
                 isNotifiedByEmail: true,
                 roles: ["agency-admin"],
+              },
+            ],
+          },
+        ]);
+      });
+    });
+
+    describe("byAgencyRoleAndAgencyIds", () => {
+      it.each([
+        {
+          currentUserLabel: "backoffice admin",
+          currentUser: connectedBackOffice,
+        },
+        {
+          currentUserLabel: "agency admin",
+          currentUser: agencyAdmin,
+        },
+      ])("gets the users by agencyRole and agencyIds when $currentUserLabel requests it", async ({
+        currentUser,
+      }) => {
+        uow.userRepository.users = [
+          johnUser,
+          paulUser,
+          backOfficeUser,
+          agencyAdminUser,
+        ];
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agencyWithRefersTo, {
+            [johnUser.id]: toReviewAndNotifiedUserRight,
+            [agencyAdminUser.id]: {
+              roles: ["agency-admin"],
+              isNotifiedByEmail: true,
+            },
+          }),
+          agency2WithRights,
+        ];
+
+        const users = await getConnectedUsers.execute(
+          { agencyRole: "to-review", agencyIds: [agencyWithRefersTo.id] },
+          currentUser,
+        );
+
+        expectToEqual(users, [
+          {
+            ...connectedJohnUser,
+            agencyRights: [
+              {
+                agency: toAgencyDtoForAgencyUsersAndAdmins(agencyWithRefersTo, [
+                  agencyAdminUser.email,
+                ]),
+                isNotifiedByEmail: true,
+                roles: ["to-review"],
               },
             ],
           },
@@ -298,7 +380,7 @@ describe("GetConnectedUsers", () => {
       ];
 
       const users = await getConnectedUsers.execute(
-        { agencyId: agency1.id },
+        { agencyIds: [agency1.id] },
         connectedBackOffice,
       );
 
@@ -357,7 +439,7 @@ describe("GetConnectedUsers", () => {
 
       expectToEqual(
         await getConnectedUsers.execute(
-          { agencyId: agency1.id },
+          { agencyIds: [agency1.id] },
           connectedBackOffice,
         ),
         [

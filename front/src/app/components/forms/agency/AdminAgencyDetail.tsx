@@ -34,7 +34,7 @@ export const AdminAgencyDetail = ({ route }: AdminAgencyDetailProps) => {
     );
     dispatch(
       connectedUsersAdminSlice.actions.fetchAgencyUsersRequested({
-        agencyId: route.params.agencyId,
+        agencyIds: [route.params.agencyId],
       }),
     );
     return () => {

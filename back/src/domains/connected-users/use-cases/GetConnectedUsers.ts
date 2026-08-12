@@ -1,6 +1,6 @@
 import {
   type ConnectedUser,
-  isWithAgencyId,
+  type WithUserFilters,
   withUserFiltersSchema,
 } from "shared";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
@@ -16,16 +16,16 @@ export const makeGetConnectedUsers = useCaseBuilder("GetConnectedUsers")
   .withCurrentUser<ConnectedUser>()
   .withOutput<ConnectedUser[]>()
   .build(async ({ uow, currentUser, inputParams: filters }) => {
-    isWithAgencyId(filters)
-      ? throwIfNotAgencyAdminOrBackofficeAdmin(filters.agencyId, currentUser)
-      : throwIfNotAdmin(currentUser);
+    throwIfNotAuthorized(filters, currentUser);
 
     const userIds =
       await uow.agencyRepository.getUserIdWithAgencyRightsByFilters(filters);
 
-    const agencyId = isWithAgencyId(filters) ? filters.agencyId : undefined;
-
-    const users = await getConnectedUsersByUserIds(uow, userIds, agencyId);
+    const users = await getConnectedUsersByUserIds(
+      uow,
+      userIds,
+      filters.agencyIds ?? [],
+    );
 
     return users.sort((a, b) => {
       const firstNameA = a.firstName.trim();
@@ -43,3 +43,17 @@ export const makeGetConnectedUsers = useCaseBuilder("GetConnectedUsers")
         : a.lastName.trim().localeCompare(b.lastName.trim());
     });
   });
+
+const throwIfNotAuthorized = (
+  filters: WithUserFilters,
+  currentUser: ConnectedUser,
+): void => {
+  if (filters.agencyIds) {
+    throwIfNotAgencyAdminOrBackofficeAdmin({
+      agencyIds: filters.agencyIds,
+      currentUser,
+    });
+    return;
+  }
+  throwIfNotAdmin(currentUser);
+};

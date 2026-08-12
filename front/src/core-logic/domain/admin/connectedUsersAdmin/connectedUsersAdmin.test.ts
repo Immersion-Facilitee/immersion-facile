@@ -175,7 +175,7 @@ describe("Agency registration for authenticated users", () => {
       );
       store.dispatch(
         connectedUsersAdminSlice.actions.fetchConnectedUsersToReviewRequested({
-          agencyId: agency2.id,
+          agencyIds: [agency2.id],
         }),
       );
       expectIsFetchingIcUsersNeedingReviewToBe(true);
@@ -284,7 +284,7 @@ describe("Agency registration for authenticated users", () => {
         };
       store.dispatch(
         connectedUsersAdminSlice.actions.fetchAgencyUsersRequested({
-          agencyId: agency2.id,
+          agencyIds: [agency2.id],
         }),
       );
       expectIsFetchingAgencyUsersToBe(true);
@@ -308,7 +308,7 @@ describe("Agency registration for authenticated users", () => {
     it("stores error message when something goes wrong in fetching", () => {
       store.dispatch(
         connectedUsersAdminSlice.actions.fetchAgencyUsersRequested({
-          agencyId: "any-id",
+          agencyIds: ["any-id"],
         }),
       );
       const errorMessage = "Error fetching users";

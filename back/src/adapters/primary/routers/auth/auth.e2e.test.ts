@@ -893,7 +893,7 @@ describe("auth router", () => {
         ];
 
         const response = await authRoutesClient.getConnectedUsers({
-          queryParams: { agencyId: agency.id },
+          queryParams: { agencyIds: [agency.id] },
           headers: {
             authorization: generateConnectedUserJwt({
               userId: agencyUser.id,
