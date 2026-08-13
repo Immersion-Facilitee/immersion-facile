@@ -65,8 +65,8 @@ export const LayoutHeader = () => {
       },
     },
     <Button
-      key={currentUser ? quickAccessIds.myAccount : quickAccessIds.login}
-      id={currentUser ? quickAccessIds.myAccount : quickAccessIds.login}
+      key={quickAccessIds.myAccount}
+      id={quickAccessIds.myAccount}
       priority="secondary"
       iconId="fr-icon-account-line"
       linkProps={frontRoutes.myAccount().link}
@@ -75,7 +75,7 @@ export const LayoutHeader = () => {
         ? currentUser.firstName && currentUser.lastName
           ? `${currentUser.firstName} ${currentUser.lastName}`
           : currentUser.email
-        : "Mon compte"}
+        : "Se connecter"}
     </Button>,
   ];
 
