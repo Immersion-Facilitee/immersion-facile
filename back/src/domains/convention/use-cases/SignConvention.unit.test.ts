@@ -257,18 +257,28 @@ describe("Sign convention", () => {
           signatory: "establishment-representative",
           getEmail: (convention: ConventionDto) =>
             convention.signatories.establishmentRepresentative.email,
+          expectedSignatorySignedAt: (signedAt: string) => ({
+            establishmentRepresentativeSignedAt: signedAt,
+          }),
         },
         {
           signatory: "beneficiary",
           getEmail: (convention: ConventionDto) =>
             convention.signatories.beneficiary.email,
+          expectedSignatorySignedAt: (signedAt: string) => ({
+            beneficiarySignedAt: signedAt,
+          }),
         },
       ] satisfies {
         signatory: "establishment-representative" | "beneficiary";
         getEmail: (convention: ConventionDto) => string;
+        expectedSignatorySignedAt: (signedAt: string) => {
+          establishmentRepresentativeSignedAt?: string;
+          beneficiarySignedAt?: string;
+        };
       }[])("updates the convention with new signature when connected user is $signatory", async ({
-        signatory,
         getEmail,
+        expectedSignatorySignedAt,
       }) => {
         const { convention, agency } =
           prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
@@ -295,14 +305,10 @@ describe("Sign convention", () => {
         const expectedConvention: ConventionDto = {
           ...convention,
           status: "PARTIALLY_SIGNED",
-          signatories: makeSignatories(convention, {
-            establishmentRepresentativeSignedAt:
-              signatory === "establishment-representative"
-                ? signedAt.toISOString()
-                : undefined,
-            beneficiarySignedAt:
-              signatory === "beneficiary" ? signedAt.toISOString() : undefined,
-          }),
+          signatories: makeSignatories(
+            convention,
+            expectedSignatorySignedAt(signedAt.toISOString()),
+          ),
         };
 
         expectToEqual(uow.conventionRepository.conventions, [

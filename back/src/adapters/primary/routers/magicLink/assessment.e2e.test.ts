@@ -14,7 +14,6 @@ import {
   errors,
   expectArraysToMatch,
   expectHttpResponseToEqual,
-  expectToEqual,
   type LegacyAssessmentDto,
 } from "shared";
 import type { HttpClient } from "shared-routes";
@@ -597,15 +596,23 @@ describe("Assessment routes", () => {
         status: 200,
         body: "",
       });
-      const signedEvent = inMemoryUow.outboxRepository.events.find(
-        (event) => event.topic === "AssessmentSignedByBeneficiary",
-      );
-      if (signedEvent?.topic !== "AssessmentSignedByBeneficiary")
-        throw new Error("Expected AssessmentSignedByBeneficiary event");
-      expectToEqual(signedEvent.payload.triggeredBy, {
-        kind: "connected-user",
-        userId: beneficiary.id,
-      });
+      expectArraysToMatch(inMemoryUow.outboxRepository.events, [
+        {
+          topic: "AssessmentSignedByBeneficiary",
+          payload: {
+            conventionId: convention.id,
+            assessment: expect.objectContaining({
+              conventionId: convention.id,
+              beneficiaryAgreement: true,
+              beneficiaryFeedback: "my feedback",
+            }),
+            triggeredBy: {
+              kind: "connected-user",
+              userId: beneficiary.id,
+            },
+          },
+        },
+      ]);
     });
 
     it("403 - connected user email is not linked to the convention", async () => {
