@@ -350,7 +350,7 @@ export const signConvention = async ({
   convention: ConventionDto;
   now: DateTimeIsoString;
   role: SignatoryRole;
-}) => {
+}): Promise<ConventionDto> => {
   const agencyWithRights = await uow.agencyRepository.getById(
     convention.agencyId,
   );

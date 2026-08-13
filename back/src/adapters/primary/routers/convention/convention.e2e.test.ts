@@ -20,6 +20,7 @@ import {
   displayRouteName,
   errors,
   expectArraysToEqual,
+  expectArraysToMatch,
   expectEmailOfType,
   expectHttpResponseToEqual,
   expectToEqual,
@@ -786,15 +787,21 @@ describe("convention e2e", () => {
         body: { id: partiallySignedConvention.id },
       });
 
-      const signedEvent = inMemoryUow.outboxRepository.events.find(
-        (event) => event.topic === "ConventionModifiedAndSigned",
-      );
-      if (signedEvent?.topic !== "ConventionModifiedAndSigned")
-        throw new Error("Expected ConventionModifiedAndSigned event");
-      expectToEqual(signedEvent.payload.triggeredBy, {
-        kind: "connected-user",
-        userId: beneficiary.id,
-      });
+      expectArraysToMatch(inMemoryUow.outboxRepository.events, [
+        {
+          topic: "ConventionModifiedAndSigned",
+          payload: {
+            convention: expect.objectContaining({
+              id: partiallySignedConvention.id,
+              status: "PARTIALLY_SIGNED",
+            }),
+            triggeredBy: {
+              kind: "connected-user",
+              userId: beneficiary.id,
+            },
+          },
+        },
+      ]);
     });
 
     it("403 - connected user whose email is not linked to the convention cannot update convention", async () => {
