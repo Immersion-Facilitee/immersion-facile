@@ -18,8 +18,8 @@ import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
-import { agencyAdminSelectors } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.selectors";
-import { agencyAdminSlice } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.slice";
+import { fetchAgencyOptionsSelectors } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.selectors";
+import { fetchAgencyOptionsSlice } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.slice";
 import { useStyles } from "tss-react/dsfr";
 
 export const useAgencyAdminAutocomplete = () => {
@@ -28,7 +28,7 @@ export const useAgencyAdminAutocomplete = () => {
   return {
     updateSearchTerm: (searchTerm: string) =>
       dispatch(
-        agencyAdminSlice.actions.fetchAgencyOptionsRequested(searchTerm),
+        fetchAgencyOptionsSlice.actions.fetchAgencyOptionsRequested(searchTerm),
       ),
     selectOption: (agencyId: AgencyId) => {
       dispatch(
@@ -65,9 +65,10 @@ export const AgencyAdminAutocomplete = ({
   locator,
   onAgencySelected,
 }: AgencyAdminAutocompleteProps): JSX.Element => {
-  // TODO Mutualiser juste l'autocomplete avec les conventions ? Ou passer le selecteur en param du composant
-  const isLoading = useAppSelector(agencyAdminSelectors.isLoading);
-  const agencyOptions = useAppSelector(agencyAdminSelectors.agencyOptions);
+  const isLoading = useAppSelector(fetchAgencyOptionsSelectors.isLoading);
+  const agencyOptions = useAppSelector(
+    fetchAgencyOptionsSelectors.agencyOptions,
+  );
   const selectedAgency = useAppSelector(fetchAgencySelectors.agency);
   const { updateSearchTerm, selectOption, clearOption } =
     useAgencyAdminAutocomplete();

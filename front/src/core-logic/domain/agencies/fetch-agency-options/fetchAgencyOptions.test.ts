@@ -1,9 +1,9 @@
 import { type AgencyOption, expectToEqual } from "shared";
-import { agencyAdminSelectors } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.selectors";
+import { fetchAgencyOptionsSelectors } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.selectors";
 import {
-  type AgencyAdminState,
-  agencyAdminInitialState,
-  agencyAdminSlice,
+  type FetchAgencyOptionsState,
+  fetchAgencyOptionsInitialState,
+  fetchAgencyOptionsSlice,
 } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.slice";
 import {
   createTestStore,
@@ -17,7 +17,7 @@ describe("agencyAdmin", () => {
 
   beforeEach(() => {
     ({ store, dependencies } = createTestStore({
-      agencyAdmin: agencyAdminInitialState,
+      fetchAgencyOptions: fetchAgencyOptionsInitialState,
     }));
   });
 
@@ -25,7 +25,7 @@ describe("agencyAdmin", () => {
     describe("Agency autocomplete", () => {
       it("shows when search is onGoing", () => {
         store.dispatch(
-          agencyAdminSlice.actions.fetchAgencyOptionsRequested("agen"),
+          fetchAgencyOptionsSlice.actions.fetchAgencyOptionsRequested("agen"),
         );
         expectIsLoadingToBe(true);
       });
@@ -33,7 +33,9 @@ describe("agencyAdmin", () => {
       it("does not trigger call api before debounce time is reached, then triggers search and gets results", () => {
         const searchedText = "agen";
         store.dispatch(
-          agencyAdminSlice.actions.fetchAgencyOptionsRequested(searchedText),
+          fetchAgencyOptionsSlice.actions.fetchAgencyOptionsRequested(
+            searchedText,
+          ),
         );
         expectIsLoadingToBe(true);
         fastForwardObservables();
@@ -62,15 +64,19 @@ describe("agencyAdmin", () => {
     });
   });
 
-  const expectAgencyAdminStateToMatch = (params: Partial<AgencyAdminState>) => {
+  const expectAgencyAdminStateToMatch = (
+    params: Partial<FetchAgencyOptionsState>,
+  ) => {
     expectToEqual(
-      agencyAdminSelectors.agencyOptions(store.getState()),
+      fetchAgencyOptionsSelectors.agencyOptions(store.getState()),
       params.agencyOptions,
     );
   };
 
   const expectIsLoadingToBe = (isLoading: boolean) =>
-    expect(agencyAdminSelectors.isLoading(store.getState())).toBe(isLoading);
+    expect(fetchAgencyOptionsSelectors.isLoading(store.getState())).toBe(
+      isLoading,
+    );
 
   const fastForwardObservables = () => dependencies.scheduler.flush();
 
