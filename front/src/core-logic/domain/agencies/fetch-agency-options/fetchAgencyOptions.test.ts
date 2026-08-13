@@ -1,10 +1,10 @@
 import { type AgencyOption, expectToEqual } from "shared";
-import { agencyAdminSelectors } from "src/core-logic/domain/admin/agenciesAdmin/fetch-agency-options/fetchAgencyOptions.selectors";
+import { agencyAdminSelectors } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.selectors";
 import {
   type AgencyAdminState,
   agencyAdminInitialState,
   agencyAdminSlice,
-} from "src/core-logic/domain/admin/agenciesAdmin/fetch-agency-options/fetchAgencyOptions.slice";
+} from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.slice";
 import {
   createTestStore,
   type TestDependencies,

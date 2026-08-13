@@ -7,8 +7,6 @@ import {
 } from "redux-observable";
 import { catchError } from "rxjs";
 import type { Dependencies } from "src/config/dependencies";
-import { agenciesAdminEpics } from "src/core-logic/domain/admin/agenciesAdmin/fetch-agency-options/fetchAgencyOptions.epics";
-import { agencyAdminSlice } from "src/core-logic/domain/admin/agenciesAdmin/fetch-agency-options/fetchAgencyOptions.slice";
 import { dashboardUrlsEpics } from "src/core-logic/domain/admin/dashboardUrls/dashboardUrls.epics";
 import { dashboardUrlsSlice } from "src/core-logic/domain/admin/dashboardUrls/dashboardUrls.slice";
 import { fetchUserEpics } from "src/core-logic/domain/admin/fetchUser/fetchUser.epic";
@@ -23,6 +21,8 @@ import { createUserOnAgencyEpics } from "src/core-logic/domain/agencies/create-u
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
 import { fetchAgencyEpics } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.epics";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
+import { agenciesAdminEpics } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.epics";
+import { agencyAdminSlice } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.slice";
 import { removeUserFromAgencyEpics } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.epics";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateAgencyEpics } from "src/core-logic/domain/agencies/update-agency/updateAgency.epics";
