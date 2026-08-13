@@ -13,6 +13,7 @@ import {
 import { useDispatch } from "react-redux";
 import {
   agencyModifierRoles,
+  allAgencyRoles,
   allSignatoryRoles,
   assessmentSignatureReminderAuthorizedRoles,
   type ConventionReadDto,
@@ -179,13 +180,18 @@ export const ConventionValidation = ({
     currentUser?.isBackofficeAdmin &&
     new Date(convention.dateEnd) < subMonths(new Date(), 25);
 
+  const statusBadgeUserKind =
+    intersection(roles, [...allAgencyRoles, "back-office"]).length > 0
+      ? "agency"
+      : "beneficiary";
+
   return (
     <>
       <div className={fr.cx("fr-grid-row", "fr-grid-row--middle", "fr-mb-3w")}>
         <Badge
           className={`${fr.cx("fr-mr-2w")} ${labelAndSeverityByStatus[status].color}`}
         >
-          {labelAndSeverityByStatus[status].label.agency}
+          {labelAndSeverityByStatus[status].label[statusBadgeUserKind]}
         </Badge>
         {shouldShowConventionLastBroadcastFeedbackErrorInfo && (
           <Badge className={fr.cx("fr-mr-2w")} severity="error">

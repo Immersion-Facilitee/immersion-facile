@@ -506,11 +506,14 @@ const createButtonPropsByVerificationAction = (
         onSubmit: createOnSubmitWithFeedbackKind,
         buttonId: domElementIds.manageConvention.editCounsellorNameButton,
       }),
-      isVisibleForUserRights: isAllowedConventionTransition(
-        convention,
-        "READY_TO_SIGN",
-        requesterRoles,
-      ),
+      isVisibleForUserRights:
+        intersection(requesterRoles, [...agencyModifierRoles, "back-office"])
+          .length > 0 &&
+        isAllowedConventionTransition(
+          convention,
+          "READY_TO_SIGN",
+          requesterRoles,
+        ),
       buttonArea: "editionArea",
     },
     TRANSFER: {
