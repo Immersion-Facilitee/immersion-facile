@@ -12,7 +12,7 @@ const NB_MONTHS_BEFORE_SUGGEST = 6;
 
 type Report = {
   numberOfEstablishmentsToContact: number;
-  errors?: Record<SiretDto, Error>;
+  errors: Record<SiretDto, Error>;
 };
 
 export type SuggestEstablishmentReengagementsScript = ReturnType<
@@ -28,41 +28,75 @@ export const makeSuggestEstablishmentReengagementsScript = useCaseBuilder(
     suggestEstablishmentReengagement: SuggestEstablishmentReengagement;
     timeGateway: TimeGateway;
     uowPerformer: UnitOfWorkPerformer;
+    batchSize: number;
+    maxEstablishmentsToReengage: number;
   }>()
   .build(async ({ deps }) => {
     logger.info({
       message:
         "[triggerSuggestEstablishmentReengagementEvery6Months] Script started.",
     });
-    const since = subMonths(deps.timeGateway.now(), NB_MONTHS_BEFORE_SUGGEST);
-
-    const siretsToContact = await deps.uowPerformer.perform(async (uow) =>
-      uow.establishmentAggregateRepository.getSiretOfEstablishmentsToSuggestUpdate(
-        since,
-      ),
+    const sixMonthsAgo = subMonths(
+      deps.timeGateway.now(),
+      NB_MONTHS_BEFORE_SUGGEST,
     );
-
-    if (siretsToContact.length === 0)
-      return { numberOfEstablishmentsToContact: 0 };
-
-    logger.info({
-      message: `[triggerSuggestEstablishmentReengagementEvery6Months] Found ${
-        siretsToContact.length
-      } establishments not updated since ${since} to contact, with siret : ${siretsToContact.join(
-        ", ",
-      )}`,
-    });
 
     const errors: Record<SiretDto, Error> = {};
+    let offset = 0;
+    const siretsToContact: SiretDto[] = [];
 
-    await executeInSequence(siretsToContact, (siret) =>
-      deps.suggestEstablishmentReengagement.execute(siret).catch((error) => {
-        errors[siret] = castError(error);
-      }),
-    );
+    while (siretsToContact.length < deps.maxEstablishmentsToReengage) {
+      const { candidateCount, batchSirets } = await deps.uowPerformer.perform(
+        async (uow) => {
+          const candidateSirets =
+            await uow.establishmentAggregateRepository.getSiretsOfEstablishmentsNotUpdatedSince(
+              {
+                updatedBefore: sixMonthsAgo,
+                limit: deps.batchSize,
+                offset,
+              },
+            );
+          if (candidateSirets.length === 0)
+            return { candidateCount: 0, batchSirets: [] };
 
-    return {
-      numberOfEstablishmentsToContact: siretsToContact.length,
-      errors,
-    };
+          const alreadySuggestedSirets =
+            await uow.notificationRepository.filterEstablishmentSiretsAlreadySuggestedReengagement(
+              { sirets: candidateSirets, suggestedSince: sixMonthsAgo },
+            );
+          const alreadySuggestedSet = new Set(alreadySuggestedSirets);
+
+          return {
+            candidateCount: candidateSirets.length,
+            batchSirets: candidateSirets.filter(
+              (siret) => !alreadySuggestedSet.has(siret),
+            ),
+          };
+        },
+      );
+
+      const maxSiretsToTake =
+        deps.maxEstablishmentsToReengage - siretsToContact.length;
+      siretsToContact.push(...batchSirets.slice(0, maxSiretsToTake));
+
+      if (candidateCount < deps.batchSize) break;
+      offset += deps.batchSize;
+    }
+
+    if (siretsToContact.length > 0) {
+      logger.info({
+        message: `[triggerSuggestEstablishmentReengagementEvery6Months] Found ${
+          siretsToContact.length
+        } establishments not updated since ${sixMonthsAgo} to contact, with siret : ${siretsToContact.join(
+          ", ",
+        )}`,
+      });
+
+      await executeInSequence(siretsToContact, (siret) =>
+        deps.suggestEstablishmentReengagement.execute(siret).catch((error) => {
+          errors[siret] = castError(error);
+        }),
+      );
+    }
+
+    return { numberOfEstablishmentsToContact: siretsToContact.length, errors };
   });

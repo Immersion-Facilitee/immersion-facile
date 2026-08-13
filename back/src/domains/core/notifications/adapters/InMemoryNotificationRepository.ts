@@ -18,6 +18,7 @@ import {
   replaceElementWhere,
   type ShortLinkId,
   type Signatory,
+  type SiretDto,
   type SmsNotification,
   type TemplatedEmail,
   type UserId,
@@ -34,7 +35,6 @@ import type {
 } from "../ports/NotificationRepository";
 
 export class InMemoryNotificationRepository implements NotificationRepository {
-  // for tests purposes
   public notifications: Notification[] = [];
 
   async deleteOldestNotifications({
@@ -254,6 +254,27 @@ export class InMemoryNotificationRepository implements NotificationRepository {
     });
 
     return Array.from(new Set(matchingUserIds));
+  }
+
+  async filterEstablishmentSiretsAlreadySuggestedReengagement({
+    sirets,
+    suggestedSince,
+  }: {
+    sirets: SiretDto[];
+    suggestedSince: Date;
+  }): Promise<SiretDto[]> {
+    if (sirets.length === 0) return [];
+
+    const matchingSirets = this.notifications.flatMap((n) => {
+      if (n.kind !== "email") return [];
+      if (n.templatedContent.kind !== "ESTABLISHMENT_REENGAGEMENT_SUGGESTION")
+        return [];
+      const siret = n.followedIds.establishmentSiret;
+      if (!siret || !sirets.includes(siret)) return [];
+      return new Date(n.createdAt) > suggestedSince ? [siret] : [];
+    });
+
+    return Array.from(new Set(matchingSirets));
   }
 }
 

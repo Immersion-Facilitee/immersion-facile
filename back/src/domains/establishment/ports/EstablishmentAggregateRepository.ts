@@ -63,7 +63,6 @@ export type EstablishmentAggregateFilters = {
 };
 
 export interface EstablishmentAggregateRepository {
-  //Establishment aggregate
   delete(siret: SiretDto): Promise<void>;
   insertEstablishmentAggregate(
     establishmentAggregate: EstablishmentAggregate,
@@ -87,12 +86,10 @@ export interface EstablishmentAggregateRepository {
     fromDate: Date,
   ): Promise<number>;
 
-  //Offers
   getOffersAsAppellationAndRomeDtosBySiret(
     siret: string,
   ): Promise<AppellationAndRomeDto[]>;
 
-  //SearchResult & SearchImmersionResults
   getSearchResultBySearchQuery(
     siret: SiretDto,
     appellationCode: AppellationCode,
@@ -104,9 +101,13 @@ export interface EstablishmentAggregateRepository {
   getOffers(
     params: GetOffersParams,
   ): Promise<DataWithPagination<InternalOfferDto>>;
-  //Sirets
+
   getSiretsOfEstablishmentsWithRomeCode(rome: string): Promise<SiretDto[]>;
-  getSiretOfEstablishmentsToSuggestUpdate(before: Date): Promise<SiretDto[]>;
+  getSiretsOfEstablishmentsNotUpdatedSince(params: {
+    updatedBefore: Date;
+    limit: number;
+    offset?: number;
+  }): Promise<SiretDto[]>;
   getSiretsOfEstablishmentsNotCheckedAtInseeSince(
     checkDate: Date,
     maxResults: number,

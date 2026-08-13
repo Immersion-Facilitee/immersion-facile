@@ -16,6 +16,9 @@ type Report = {
   errors?: Record<SiretDto, any>;
 };
 
+const BATCH_SIZE = 5000;
+const MAX_ESTABLISHMENTS_TO_REENGAGE = 15000;
+
 const startScript = async (): Promise<Report> => {
   const timeGateway = new RealTimeGateway();
 
@@ -37,6 +40,8 @@ const startScript = async (): Promise<Report> => {
       }),
       timeGateway,
       uowPerformer,
+      batchSize: BATCH_SIZE,
+      maxEstablishmentsToReengage: MAX_ESTABLISHMENTS_TO_REENGAGE,
     },
   }).execute();
 };
