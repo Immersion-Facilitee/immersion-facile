@@ -135,13 +135,14 @@ const conventionListToTableData = (
     isPilotageEnabled ? (
       <Button
         key={convention.conventionId}
-        id={domElementIds.beneficiaryDashboardConventions.goToConventionButton}
+        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
+        size="small"
+        priority="secondary"
         linkProps={{
-          target: "_blank",
-          rel: "noreferrer",
-          href: frontRoutes.manageConventionConnectedUser({
+          ...frontRoutes.manageConventionConnectedUser({
             conventionId: convention.conventionId,
-          }).link.href,
+          }).link,
+          target: "_blank",
         }}
       >
         Voir la convention
@@ -149,8 +150,10 @@ const conventionListToTableData = (
     ) : (
       <Button
         disabled
+        size="small"
+        priority="secondary"
         key={convention.conventionId}
-        id={domElementIds.beneficiaryDashboardConventions.goToConventionButton}
+        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
       >
         Voir la convention
       </Button>
