@@ -39,7 +39,10 @@ import { useConventionTexts } from "src/app/contents/forms/convention/textSetup"
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { getConventionSubStatus } from "src/app/utils/conventionSubStatus";
 import { isAllowedConventionTransition } from "src/app/utils/IsAllowedConventionTransition";
-import { canAssessmentBeFilled } from "src/core-logic/domain/convention/convention.utils";
+import {
+  canAssessmentBeFilled,
+  getSignatoryToSign,
+} from "src/core-logic/domain/convention/convention.utils";
 import { conventionDraftSlice } from "src/core-logic/domain/convention/convention-draft/conventionDraft.slice";
 import { match, P } from "ts-pattern";
 export type ButtonConfiguration = {
@@ -354,16 +357,10 @@ const createButtonPropsByVerificationAction = (
     intersection(requesterRoles, [...allowedRolesToCreateAssessment]).length ===
       0;
 
-  const allowedToSignStatuses: ConventionStatus[] = [
-    "READY_TO_SIGN",
-    "PARTIALLY_SIGNED",
-  ];
-
-  const shouldShowSignatureAction =
-    requesterRoles.includes("establishment-representative") &&
-    !convention.signatories.establishmentRepresentative.signedAt &&
-    !currentUser?.isBackofficeAdmin &&
-    allowedToSignStatuses.includes(convention.status);
+  const shouldShowSignatureAction = !!getSignatoryToSign({
+    requesterRoles,
+    convention,
+  });
 
   const shouldShowConventionDocumentButton =
     convention.status === "ACCEPTED_BY_VALIDATOR";
