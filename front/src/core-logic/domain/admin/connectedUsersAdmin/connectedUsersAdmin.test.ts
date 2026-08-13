@@ -23,7 +23,7 @@ import {
   type TestDependencies,
 } from "src/core-logic/storeConfig/createTestStore";
 import type { ReduxStore } from "src/core-logic/storeConfig/store";
-import { agencyAdminInitialState } from "../../agencies/fetch-agency-options/fetchAgencyOptions.slice";
+import { fetchAgencyOptionsInitialState } from "../../agencies/fetch-agency-options/fetchAgencyOptions.slice";
 import { feedbacksSelectors } from "../../feedback/feedback.selectors";
 import {
   type ConnectedUsersAdminFeedback,
@@ -562,7 +562,7 @@ describe("Agency registration for authenticated users", () => {
 
       ({ store, dependencies } = createTestStore({
         admin: adminPreloadedState({
-          agencyAdmin: { ...agencyAdminInitialState },
+          fetchAgencyOptions: { ...fetchAgencyOptionsInitialState },
           connectedUsersAdmin: {
             ...connectedUsersAdminInitialState,
             agencyUsers: testUserSet,

@@ -1,12 +1,16 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "src/core-logic/storeConfig/store";
 
-const agencyState = ({ admin }: RootState) => admin.agencyAdmin;
+const fetchAgencyOptionsState = ({ fetchAgencyOptions }: RootState) =>
+  fetchAgencyOptions;
 
-export const agencyAdminSelectors = {
+export const fetchAgencyOptionsSelectors = {
   agencyOptions: createSelector(
-    agencyState,
+    fetchAgencyOptionsState,
     ({ agencyOptions }) => agencyOptions,
   ),
-  isLoading: createSelector(agencyState, ({ isLoading }) => isLoading),
+  isLoading: createSelector(
+    fetchAgencyOptionsState,
+    ({ isLoading }) => isLoading,
+  ),
 };

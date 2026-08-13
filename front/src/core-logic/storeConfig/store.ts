@@ -22,7 +22,7 @@ import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-u
 import { fetchAgencyEpics } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.epics";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import { agenciesAdminEpics } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.epics";
-import { agencyAdminSlice } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.slice";
+import { fetchAgencyOptionsSlice } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.slice";
 import { removeUserFromAgencyEpics } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.epics";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateAgencyEpics } from "src/core-logic/domain/agencies/update-agency/updateAgency.epics";
@@ -138,7 +138,7 @@ const allEpics: AppEpic<any>[] = [
 
 const appReducer = combineReducers({
   admin: combineReducers({
-    [agencyAdminSlice.name]: agencyAdminSlice.reducer,
+    [fetchAgencyOptionsSlice.name]: fetchAgencyOptionsSlice.reducer,
     [connectedUsersAdminSlice.name]: connectedUsersAdminSlice.reducer,
     [dashboardUrlsSlice.name]: dashboardUrlsSlice.reducer,
     [notificationsSlice.name]: notificationsSlice.reducer,
@@ -155,7 +155,7 @@ const appReducer = combineReducers({
     [createUserOnAgencySlice.name]: createUserOnAgencySlice.reducer,
     [removeUserFromAgencySlice.name]: removeUserFromAgencySlice.reducer,
   }),
-  [agencyAdminSlice.name]: agencyAdminSlice.reducer,
+  [fetchAgencyOptionsSlice.name]: fetchAgencyOptionsSlice.reducer,
   [agenciesSlice.name]: agenciesSlice.reducer,
   [appellationSlice.name]: appellationSlice.reducer,
   [assessmentSlice.name]: assessmentSlice.reducer,

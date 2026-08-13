@@ -10,9 +10,9 @@ import type {
   ActionOfSlice,
   AppEpic,
 } from "src/core-logic/storeConfig/redux.helpers";
-import { agencyAdminSlice } from "./fetchAgencyOptions.slice";
+import { fetchAgencyOptionsSlice } from "./fetchAgencyOptions.slice";
 
-export type AgencyAction = ActionOfSlice<typeof agencyAdminSlice>;
+export type AgencyAction = ActionOfSlice<typeof fetchAgencyOptionsSlice>;
 
 type AgencyEpic = AppEpic<AgencyAction | { type: "do-nothing" }>;
 
@@ -22,7 +22,7 @@ const agencyAdminGetByNameEpic: AgencyEpic = (
   { agencyGateway, scheduler },
 ) =>
   action$.pipe(
-    filter(agencyAdminSlice.actions.fetchAgencyOptionsRequested.match),
+    filter(fetchAgencyOptionsSlice.actions.fetchAgencyOptionsRequested.match),
     debounceTime(400, scheduler),
     distinctUntilChanged(),
     switchMap((action: PayloadAction<string>) =>
@@ -33,7 +33,7 @@ const agencyAdminGetByNameEpic: AgencyEpic = (
           action.payload,
       }),
     ),
-    map(agencyAdminSlice.actions.setAgencyOptions),
+    map(fetchAgencyOptionsSlice.actions.setAgencyOptions),
   );
 
 export const agenciesAdminEpics = [agencyAdminGetByNameEpic];
