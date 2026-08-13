@@ -11,6 +11,7 @@ import {
   type NotificationState,
   type NotificationsByKind,
   pipeWithValue,
+  type SiretDto,
   type SmsNotification,
   type TemplatedEmail,
   type TemplatedSms,
@@ -504,6 +505,35 @@ export class PgNotificationRepository implements NotificationRepository {
     return rows
       .map((r) => r.user_id)
       .filter((userId): userId is UserId => userId !== null);
+  }
+
+  public async filterEstablishmentSiretsAlreadySuggestedReengagement({
+    sirets,
+    suggestedSince,
+  }: {
+    sirets: SiretDto[];
+    suggestedSince: Date;
+  }): Promise<SiretDto[]> {
+    if (sirets.length === 0) return [];
+
+    const rows = await this.transaction
+      .selectFrom("notifications_email")
+      .where((eb) =>
+        isInArray(eb, "notifications_email.establishment_siret", sirets),
+      )
+      .where(
+        "notifications_email.email_kind",
+        "=",
+        "ESTABLISHMENT_REENGAGEMENT_SUGGESTION",
+      )
+      .where("notifications_email.created_at", ">", suggestedSince)
+      .select("notifications_email.establishment_siret")
+      .distinct()
+      .execute();
+
+    return rows
+      .map((r) => r.establishment_siret)
+      .filter((siret): siret is SiretDto => siret !== null);
   }
 }
 

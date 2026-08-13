@@ -205,31 +205,23 @@ export class PgEstablishmentAggregateRepository
     );
   }
 
-  public async getSiretOfEstablishmentsToSuggestUpdate(
-    before: Date,
-  ): Promise<SiretDto[]> {
+  public async getSiretsOfEstablishmentsNotUpdatedSince({
+    updatedBefore,
+    limit,
+    offset = 0,
+  }: {
+    updatedBefore: Date;
+    limit: number;
+    offset?: number;
+  }): Promise<SiretDto[]> {
     const result = await this.transaction
       .selectFrom("establishments")
       .select("establishments.siret")
-      .distinct()
-      .where("establishments.update_date", "<", before)
-      .where(({ not, exists, selectFrom }) =>
-        not(
-          exists(
-            selectFrom("notifications_email as n")
-              .select(sql`1`.as("__"))
-              .where(
-                "n.email_kind",
-                "=",
-                "ESTABLISHMENT_REENGAGEMENT_SUGGESTION",
-              )
-              .whereRef("n.establishment_siret", "=", "establishments.siret")
-              .where("n.created_at", ">", before)
-              .limit(1),
-          ),
-        ),
-      )
-
+      .where("establishments.update_date", "<", updatedBefore)
+      .orderBy("establishments.update_date", "asc")
+      .orderBy("establishments.siret", "asc")
+      .limit(limit)
+      .offset(offset)
       .execute();
 
     return result.map(({ siret }) => siret);

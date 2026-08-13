@@ -123,10 +123,24 @@ export class InMemoryEstablishmentAggregateRepository
     });
   }
 
-  public getSiretOfEstablishmentsToSuggestUpdate(): Promise<SiretDto[]> {
-    throw new Error(
-      "Method not implemented : getSiretOfEstablishmentsToSuggestUpdate, you can use PG implementation instead",
-    );
+  public async getSiretsOfEstablishmentsNotUpdatedSince({
+    updatedBefore,
+    limit,
+    offset = 0,
+  }: {
+    updatedBefore: Date;
+    limit: number;
+    offset?: number;
+  }): Promise<SiretDto[]> {
+    return this.#establishmentAggregates
+      .filter(({ establishment }) => establishment.updatedAt < updatedBefore)
+      .sort(
+        (a, b) =>
+          a.establishment.updatedAt.getTime() -
+          b.establishment.updatedAt.getTime(),
+      )
+      .map(({ establishment }) => establishment.siret)
+      .slice(offset, offset + limit);
   }
 
   public async getSiretsOfEstablishmentsNotCheckedAtInseeSince(

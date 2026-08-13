@@ -1087,6 +1087,106 @@ describe("PgNotificationRepository", () => {
       expectToEqual(result, []);
     });
   });
+
+  describe("filterEstablishmentSiretsAlreadySuggestedReengagement", () => {
+    const referenceDate = new Date("2026-01-15T10:00:00.000Z");
+    const siretA = "11110000111100";
+    const siretB = "22220000222200";
+    const siretC = "33330000333300";
+
+    const insertReengagementSuggestion = async ({
+      siret,
+      createdAt,
+    }: {
+      siret: string;
+      createdAt: Date;
+    }) =>
+      db
+        .insertInto("notifications_email")
+        .values({
+          id: uuid(),
+          email_kind: "ESTABLISHMENT_REENGAGEMENT_SUGGESTION",
+          establishment_siret: siret,
+          created_at: createdAt.toISOString(),
+        })
+        .execute();
+
+    it("returns empty array when sirets is empty", async () => {
+      await insertReengagementSuggestion({
+        siret: siretA,
+        createdAt: subDays(referenceDate, 3),
+      });
+
+      const result =
+        await pgNotificationRepository.filterEstablishmentSiretsAlreadySuggestedReengagement(
+          { sirets: [], suggestedSince: subDays(referenceDate, 10) },
+        );
+
+      expectToEqual(result, []);
+    });
+
+    it("returns only sirets that have been suggested after suggestedSince", async () => {
+      await insertReengagementSuggestion({
+        siret: siretA,
+        createdAt: subDays(referenceDate, 3),
+      });
+      await insertReengagementSuggestion({
+        siret: siretB,
+        createdAt: subDays(referenceDate, 5),
+      });
+      await insertReengagementSuggestion({
+        siret: siretC,
+        createdAt: subDays(referenceDate, 20),
+      });
+
+      const result =
+        await pgNotificationRepository.filterEstablishmentSiretsAlreadySuggestedReengagement(
+          {
+            sirets: [siretA, siretB, siretC],
+            suggestedSince: subDays(referenceDate, 10),
+          },
+        );
+
+      expectArraysToEqualIgnoringOrder(result, [siretA, siretB]);
+    });
+
+    it("ignores sirets whose suggestion exists but who are not in the input sirets", async () => {
+      await insertReengagementSuggestion({
+        siret: siretA,
+        createdAt: subDays(referenceDate, 3),
+      });
+      await insertReengagementSuggestion({
+        siret: siretB,
+        createdAt: subDays(referenceDate, 3),
+      });
+
+      const result =
+        await pgNotificationRepository.filterEstablishmentSiretsAlreadySuggestedReengagement(
+          { sirets: [siretA], suggestedSince: subDays(referenceDate, 10) },
+        );
+
+      expectArraysToEqualIgnoringOrder(result, [siretA]);
+    });
+
+    it("ignores notifications with a different email_kind", async () => {
+      await db
+        .insertInto("notifications_email")
+        .values({
+          id: uuid(),
+          email_kind: "TEST_EMAIL",
+          establishment_siret: siretA,
+          created_at: subDays(referenceDate, 3).toISOString(),
+        })
+        .execute();
+
+      const result =
+        await pgNotificationRepository.filterEstablishmentSiretsAlreadySuggestedReengagement(
+          { sirets: [siretA], suggestedSince: subDays(referenceDate, 10) },
+        );
+
+      expectToEqual(result, []);
+    });
+  });
 });
 
 const createTemplatedEmailNotification = ({
