@@ -162,6 +162,10 @@ const labelsByFeatureFlag: Record<
     title: "Archivage des conventions",
     enableLabel: "Activer la demande d'accès à une convention archivée",
   },
+  enableBeneficiaryConventionPilotage: {
+    title: "Pilotage convention candidat",
+    enableLabel: "Activer l'accès au pilotage depuis Mes conventions",
+  },
 };
 
 const FeatureFlagTextWithSeverityForm = ({

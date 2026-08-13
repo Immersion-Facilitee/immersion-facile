@@ -119,4 +119,5 @@ export const featureFlagsSchema: ZodSchemaWithInputMatchingOutput<FeatureFlags> 
     enableInactiveUsersCleanup: featureFlagBooleanSchema,
     enableInactiveUsersDeletionAutoProcessing: featureFlagBooleanSchema,
     enableRequestArchivedConvention: featureFlagBooleanSchema,
+    enableBeneficiaryConventionPilotage: featureFlagBooleanSchema,
   });
