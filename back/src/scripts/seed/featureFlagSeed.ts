@@ -43,6 +43,7 @@ export const featureFlagsSeed = async (uow: UnitOfWork) => {
     enableInactiveUsersCleanup: makeBooleanFeatureFlag(false),
     enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
     enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
+    enableBeneficiaryConventionPilotage: makeBooleanFeatureFlag(true),
   };
 
   await uow.featureFlagRepository.insertAll(featureFlags);
