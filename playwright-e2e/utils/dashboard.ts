@@ -32,7 +32,13 @@ export const goToBeneficiaryDashboardTab = async (
     .locator(".fr-tabs__list li")
     .nth(getTabIndexByTabName(beneficiaryDashboardTabsList, tab))
     .locator(".fr-tabs__tab");
-  await tabLocator.click({ force: true });
+  await expect(tabLocator).toBeVisible();
+  await tabLocator.click();
+  expect(await page.url()).toContain(
+    tab === "conventions"
+      ? frontRoutes.beneficiaryDashboardConventions().href
+      : frontRoutes.beneficiaryDashboardDiscussions().href,
+  );
 };
 
 type UserKind = "agency" | "establishment" | "candidate";
