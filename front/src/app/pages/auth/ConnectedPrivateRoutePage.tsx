@@ -224,7 +224,7 @@ export const ConnectedPrivateRoutePage = ({
           <MainWrapper
             layout="default"
             pageHeader={
-              <PageHeader title={loginPageTitle}>
+              <PageHeader title={"Connexion ou création de compte"}>
                 {alreadyUsedAuthentication && (
                   <Alert
                     className={fr.cx("fr-mb-2w")}
@@ -233,10 +233,13 @@ export const ConnectedPrivateRoutePage = ({
                     description="Veuillez renouveler votre demande de connexion."
                   />
                 )}
-                <p className={fr.cx("fr-text--lead")}>{loginPageDescription}</p>
+                <p className={fr.cx("fr-text--lead")}>
+                  La connexion crée votre compte automatiquement, sans démarche
+                  supplémentaire.
+                </p>
 
                 <div>
-                  <h3 className={fr.cx("fr-h4", "fr-mb-2w")}>Vous êtes...</h3>
+                  <h2 className={fr.cx("fr-h4", "fr-mb-2w")}>Vous êtes...</h2>
 
                   <RadioButtons
                     id={domElementIds.loginPersona.radioButtons}
@@ -414,10 +417,6 @@ const getAllowedStartAuthPage = (
 
 type LoginPersona = "professional" | "beneficiary";
 
-const loginPageTitle = "Connexion ou création de compte";
-const loginPageDescription =
-  "La connexion crée votre compte automatiquement, sans démarche supplémentaire.";
-
 const loginPersonaByLoginSource: Record<
   AllowedLoginSource,
   LoginPersona | null
@@ -431,11 +430,11 @@ const loginPersonaByLoginSource: Record<
   manageConventionConnectedUser: "professional",
   admin: "professional",
   conventionTemplate: "professional",
-  archivedConventionRequest: null,
-  myAccount: "professional",
   beneficiaryDashboard: "beneficiary",
   beneficiaryDashboardDiscussions: "beneficiary",
   beneficiaryDashboardConventions: "beneficiary",
+  archivedConventionRequest: null,
+  myAccount: null,
 };
 
 type LoginPersonaCard = {

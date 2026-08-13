@@ -11,9 +11,6 @@ const newAgencyUserEmail = testConfig.proConnect.username;
 const goToMyProfilePageFromHome = async (page: Page) => {
   await page.goto("/");
   await page.locator("#fr-header-quick-access-item-1").click();
-  await page
-    .locator(`#${domElementIds.header.navLinks.quickAccess.myAccount}`)
-    .click();
 };
 
 const goToFtAgencyAdminTabFromHome = async (page: Page) => {

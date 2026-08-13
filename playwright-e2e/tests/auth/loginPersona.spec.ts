@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { domElementIds, frontRoutes } from "shared";
 import { acceptCookiesIfBannerVisible } from "../../utils/utils";
 
@@ -8,7 +8,7 @@ const personaRadioIndex = {
 } as const;
 
 const loginPersonaRadio = (
-  page: import("@playwright/test").Page,
+  page: Page,
   persona: keyof typeof personaRadioIndex,
 ) =>
   page.locator(
@@ -16,7 +16,7 @@ const loginPersonaRadio = (
   );
 
 const selectLoginPersona = (
-  page: import("@playwright/test").Page,
+  page: Page,
   persona: keyof typeof personaRadioIndex,
 ) =>
   page
@@ -35,9 +35,7 @@ test.describe("Login page persona radio button", () => {
     await expect(loginPersonaRadio(page, "beneficiary")).not.toBeChecked();
     await expect(loginPersonaRadio(page, "professional")).not.toBeChecked();
     await expect(
-      page.locator(
-        `#${domElementIds.archivedConventionRequest.login.byEmailButton}`,
-      ),
+      page.locator(`#${domElementIds.archivedConventionRequest.login.byEmailButton}`),
     ).toHaveCount(0);
     await expect(
       page.locator(
@@ -47,9 +45,7 @@ test.describe("Login page persona radio button", () => {
 
     await selectLoginPersona(page, "beneficiary");
     await expect(
-      page.locator(
-        `#${domElementIds.archivedConventionRequest.login.byEmailButton}`,
-      ),
+      page.locator(`#${domElementIds.archivedConventionRequest.login.byEmailButton}`),
     ).toBeVisible();
     await expect(
       page.locator(
@@ -59,9 +55,7 @@ test.describe("Login page persona radio button", () => {
 
     await selectLoginPersona(page, "professional");
     await expect(
-      page.locator(
-        `#${domElementIds.archivedConventionRequest.login.byEmailButton}`,
-      ),
+      page.locator(`#${domElementIds.archivedConventionRequest.login.byEmailButton}`),
     ).toBeVisible();
     await expect(
       page.locator(
