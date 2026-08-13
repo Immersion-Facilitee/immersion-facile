@@ -39,6 +39,7 @@ import { TransferModalContent } from "src/app/components/forms/convention/manage
 import { ValidatorModalContent } from "src/app/components/forms/convention/manage-actions/modals/ValidatorModalContent";
 import { getBroadcastFeedbackDescription } from "src/app/contents/broadcast-feedback/broadcastFeedback";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
+import { getSignatoryToSign } from "src/core-logic/domain/convention/convention.utils";
 import { match, P } from "ts-pattern";
 
 export type ModalWrapperProps = {
@@ -369,11 +370,15 @@ export const ModalWrapper = (props: ModalWrapperProps) => {
             showFillAssessmentInfoModal: false,
           },
           () => {
+            const signatory = getSignatoryToSign({
+              requesterRoles: props.currentSignatoryRoles,
+              convention: props.convention,
+            });
+            if (!signatory) return null;
+
             return (
               <SignConventionModalContent
-                signatory={
-                  props.convention.signatories.establishmentRepresentative
-                }
+                signatory={signatory}
                 internshipKind={props.convention.internshipKind}
                 onCancel={() => {}}
                 onSubmit={() => {
