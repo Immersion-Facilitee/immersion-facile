@@ -247,12 +247,7 @@ export const {
     },
     ({ discussionId }) => `/discussions/${discussionId}`,
   ),
-  beneficiaryDashboardConventions: beneficiaryDashboard.extend(
-    {
-      conventionId: param.path.optional.string,
-    },
-    ({ conventionId }) => `/conventions/${conventionId}`,
-  ),
+  beneficiaryDashboardConventions: beneficiaryDashboard.extend("/conventions"),
   conventionConfirmation: defineRoute(
     {
       conventionId: param.path.string,
