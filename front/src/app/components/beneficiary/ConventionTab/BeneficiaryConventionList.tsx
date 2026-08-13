@@ -7,10 +7,12 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   type BeneficiaryConventionListDto,
   domElementIds,
+  frontRoutes,
   immersionFacileHelpdeskRootUrl,
 } from "shared";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { useFeatureFlags } from "src/app/hooks/useFeatureFlags";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { conventionListSelectors } from "src/core-logic/domain/connected-user/conventionList/connectedUserConventionList.selectors";
@@ -33,6 +35,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
   );
   const isLoading = useSelector(conventionListSelectors.isLoading);
   const feedback = useFeedbackTopic(feedbackTopic);
+  const { enableBeneficiaryConventionPilotage } = useFeatureFlags();
 
   useEffect(() => {
     if (jwt && !isLoading && beneficiaryConventionList === null)
@@ -64,7 +67,10 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
           <Table
             fixed
             headers={["Entreprise", "Statut", "Bilan", "Dates", "Actions"]}
-            data={conventionListToTableData(beneficiaryConventionList)}
+            data={conventionListToTableData(
+              beneficiaryConventionList,
+              enableBeneficiaryConventionPilotage.isActive,
+            )}
           />
         )}
       {beneficiaryConventionList?.length === 0 &&
@@ -104,6 +110,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
 
 const conventionListToTableData = (
   conventionList: BeneficiaryConventionListDto,
+  isPilotageEnabled: boolean,
 ): React.ReactNode[][] =>
   conventionList.map<React.ReactNode[]>((convention) => [
     convention.businessName,
@@ -125,7 +132,27 @@ const conventionListToTableData = (
         dateEnd={convention.dateEnd}
       />
     </Fragment>,
-    <Button disabled key={convention.conventionId}>
-      Voir la convention
-    </Button>,
+    isPilotageEnabled ? (
+      <Button
+        key={convention.conventionId}
+        id={domElementIds.beneficiaryDashboardConventions.goToConventionButton}
+        linkProps={{
+          target: "_blank",
+          rel: "noreferrer",
+          href: frontRoutes.manageConventionConnectedUser({
+            conventionId: convention.conventionId,
+          }).link.href,
+        }}
+      >
+        Voir la convention
+      </Button>
+    ) : (
+      <Button
+        disabled
+        key={convention.conventionId}
+        id={domElementIds.beneficiaryDashboardConventions.goToConventionButton}
+      >
+        Voir la convention
+      </Button>
+    ),
   ]);
