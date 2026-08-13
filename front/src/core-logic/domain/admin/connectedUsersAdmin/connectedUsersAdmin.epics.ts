@@ -10,7 +10,7 @@ import type {
   WithUserFilters,
 } from "shared";
 import { getConnectedUserJwt } from "src/core-logic/domain/admin/admin.helpers";
-import type { AgencyAction } from "src/core-logic/domain/admin/agenciesAdmin/fetch-agency-options/fetchAgencyOptions.epics";
+import type { AgencyAction } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.epics";
 import { updateAgencySlice } from "src/core-logic/domain/agencies/update-agency/updateAgency.slice";
 import { catchEpicError } from "src/core-logic/storeConfig/catchEpicError";
 import type {
