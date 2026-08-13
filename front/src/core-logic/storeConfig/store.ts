@@ -29,6 +29,8 @@ import { updateAgencyEpics } from "src/core-logic/domain/agencies/update-agency/
 import { updateAgencySlice } from "src/core-logic/domain/agencies/update-agency/updateAgency.slice";
 import { updateUserOnAgencyEpics } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.epic";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
+import { usersInReviewEpics } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.epics";
+import { usersToReviewSlice } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
 import { apiConsumerEpics } from "src/core-logic/domain/apiConsumer/apiConsumer.epics";
 import { apiConsumerSlice } from "src/core-logic/domain/apiConsumer/apiConsumer.slice";
 import { assessmentEpics } from "src/core-logic/domain/assessment/assessment.epics";
@@ -134,6 +136,7 @@ const allEpics: AppEpic<any>[] = [
   ...siretEpics,
   ...updateAgencyEpics,
   ...updateUserOnAgencyEpics,
+  ...usersInReviewEpics,
 ];
 
 const appReducer = combineReducers({
@@ -187,6 +190,7 @@ const appReducer = combineReducers({
   [siretSlice.name]: siretSlice.reducer,
   [nafSlice.name]: nafSlice.reducer,
   [conventionActionSlice.name]: conventionActionSlice.reducer,
+  [usersToReviewSlice.name]: usersToReviewSlice.reducer,
 });
 
 const rootReducer: typeof appReducer = (state, action) =>

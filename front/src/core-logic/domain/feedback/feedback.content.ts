@@ -7,6 +7,7 @@ import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fe
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateAgencySlice } from "src/core-logic/domain/agencies/update-agency/updateAgency.slice";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
+import { usersToReviewSlice } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
 import { apiConsumerSlice } from "src/core-logic/domain/apiConsumer/apiConsumer.slice";
 import { assessmentSlice } from "src/core-logic/domain/assessment/assessment.slice";
 import { sendAssessmentLinkSlice } from "src/core-logic/domain/assessment/send-assessment-link/sendAssessmentLink.slice";
@@ -43,6 +44,7 @@ const topics = [
   "agency-admin",
   "agency-for-dashboard",
   "agency-user-for-dashboard",
+  "agency-users-to-review",
   "agency-user",
   "agency-user-right-self",
   "api-consumer-global",
@@ -459,6 +461,15 @@ export const feedbacks: Record<
         "Problème lors de la suppression du rattachement l'utilisateur à cette agence",
       message:
         "Une erreur est survenue lors de la suppression du rattachement de l'utilisateur.",
+    },
+  },
+  "agency-users-to-review": {
+    "fetch.error": {
+      action: usersToReviewSlice.actions.fetchUsersToReviewFailed,
+      title:
+        "Problème rencontré lors de la récupération des rattachements en attente",
+      message:
+        "Une erreur est survenue lors de la récupération des rattachements en attente",
     },
   },
   "agency-admin": {
