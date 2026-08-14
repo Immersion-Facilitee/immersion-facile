@@ -65,6 +65,7 @@ const getButtonWithSubMenuIdAndLabels: (
 const getPrimaryAreaBySubStatus = (
   subStatus: ConventionSubStatus,
   isSignVisible: boolean,
+  isAssessmentSignPrimary: boolean,
 ): ButtonArea => {
   return match(subStatus)
     .with(
@@ -91,6 +92,12 @@ const getPrimaryAreaBySubStatus = (
       P.union(
         "acceptedByValidatorWithAssessmentWithBroadcastError",
         "acceptedByValidatorWithAssessmentWithoutBroadcastError",
+      ),
+      (): ButtonArea =>
+        isAssessmentSignPrimary ? "assessmentArea" : "conventionArea",
+    )
+    .with(
+      P.union(
         "acceptedByValidatorWithoutAssessmentDidNotStartWithBroadcastError",
         "acceptedByValidatorWithoutAssessmentDidNotStartWithoutBroadcastError",
         "acceptedByValidatorWithoutAssessmentDidStartEndingInOneDayOrMoreWithBroadcastError",
@@ -117,6 +124,7 @@ const getPrimaryAreaBySubStatus = (
 type RenderButtonsBySubStatusParams = {
   buttonConfig: ButtonConfiguration[];
   subStatus: ConventionSubStatus;
+  isAssessmentSignPrimary: boolean;
 };
 
 type RenderedButtons = {
@@ -141,12 +149,17 @@ const getRightAndLeftAreas = (
   buttonsConfig: ButtonConfiguration[],
   subStatus: ConventionSubStatus,
   isSignVisible: boolean,
+  isAssessmentSignPrimary: boolean,
 ): {
   leftAreas: ButtonArea[];
   rightAreas: ButtonArea[];
 } => {
   const areasConfig = getAreasConfig(buttonsConfig);
-  const primaryArea = getPrimaryAreaBySubStatus(subStatus, isSignVisible);
+  const primaryArea = getPrimaryAreaBySubStatus(
+    subStatus,
+    isSignVisible,
+    isAssessmentSignPrimary,
+  );
 
   const shouldShowOtherActionOnLeft =
     areasConfig["otherActionArea"].length > 0 &&
@@ -168,6 +181,7 @@ const getRightAndLeftAreas = (
 export const renderButtonsBySubStatus = ({
   buttonConfig,
   subStatus,
+  isAssessmentSignPrimary,
 }: RenderButtonsBySubStatusParams): RenderedButtons => {
   const buttonsConfig = buttonConfig.filter(
     (config) => config.isVisibleForUserRights,
@@ -176,13 +190,18 @@ export const renderButtonsBySubStatus = ({
     (config) =>
       config.buttonArea === "signatureArea" && config.isVisibleForUserRights,
   );
-  const primaryArea = getPrimaryAreaBySubStatus(subStatus, isSignVisible);
+  const primaryArea = getPrimaryAreaBySubStatus(
+    subStatus,
+    isSignVisible,
+    isAssessmentSignPrimary,
+  );
 
   const areasConfig = getAreasConfig(buttonsConfig);
   const { leftAreas, rightAreas } = getRightAndLeftAreas(
     buttonsConfig,
     subStatus,
     isSignVisible,
+    isAssessmentSignPrimary,
   );
 
   const renderButtonsForArea = (
