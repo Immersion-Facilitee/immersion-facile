@@ -212,7 +212,26 @@ export const AssessmentDocumentPage = ({
         }
         buttons={[
           {
+            children: "Consulter le bilan",
+            priority: "primary",
+            type: "button",
+            onClick: () => {
+              dispatch(
+                feedbackSlice.actions.clearFeedbackTopics(["sign-assessment"]),
+              );
+              dispatch(
+                assessmentSlice.actions.getAssessmentRequested({
+                  conventionId,
+                  jwt,
+                  feedbackTopic: "assessment",
+                }),
+              );
+            },
+          },
+          {
             children: "Découvrir d'autres immersions",
+            priority: "secondary",
+            type: "button",
             onClick: () => frontRoutes.search().push(),
           },
         ]}
