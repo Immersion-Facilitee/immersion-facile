@@ -3,6 +3,7 @@ import {
   type AssessmentCompletionStatusFilter,
   type ConventionAssessmentFields,
   isAssessmentToSign,
+  type Role,
 } from "shared";
 
 export type AssessmentLabelsAndSeverity = {
@@ -61,3 +62,13 @@ export const getAssessmentCompletionStatus = (
   if (isAssessmentToSign(assessment)) return "to-sign";
   return "finalized";
 };
+
+export const isBeneficiaryAssessmentToSign = ({
+  requesterRoles,
+  assessment,
+}: {
+  requesterRoles: Role[];
+  assessment: ConventionAssessmentFields["assessment"];
+}): boolean =>
+  requesterRoles.includes("beneficiary") &&
+  getAssessmentCompletionStatus(assessment) === "to-sign";

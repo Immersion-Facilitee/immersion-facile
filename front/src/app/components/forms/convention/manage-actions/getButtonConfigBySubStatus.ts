@@ -37,6 +37,7 @@ import {
 } from "src/app/components/forms/convention/manage-actions/getVerificationActionButtonProps";
 import { useConventionTexts } from "src/app/contents/forms/convention/textSetup";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
+import { isBeneficiaryAssessmentToSign } from "src/app/utils/assessment.utils";
 import { getConventionSubStatus } from "src/app/utils/conventionSubStatus";
 import { isAllowedConventionTransition } from "src/app/utils/IsAllowedConventionTransition";
 import {
@@ -665,7 +666,12 @@ const createButtonPropsByVerificationAction = (
     ACCESS_ASSESSMENT: {
       props: getVerificationActionProps({
         verificationAction: "ACCESS_ASSESSMENT",
-        children: "Consulter le bilan",
+        children: isBeneficiaryAssessmentToSign({
+          requesterRoles,
+          assessment: convention.assessment,
+        })
+          ? "Signer le bilan"
+          : "Consulter le bilan",
         jwt,
         convention,
         buttonId: domElementIds.manageConvention.assessmentDocumentButton,
