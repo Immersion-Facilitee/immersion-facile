@@ -33,6 +33,7 @@ import { agenciesSelectors } from "src/core-logic/domain/agencies/agencies.selec
 import { agenciesSlice } from "src/core-logic/domain/agencies/agencies.slice";
 import { assessmentSelectors } from "src/core-logic/domain/assessment/assessment.selectors";
 import { assessmentSlice } from "src/core-logic/domain/assessment/assessment.slice";
+import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import type { Route } from "type-route";
 import logoIf from "/assets/img/logo-if.svg";
@@ -76,6 +77,9 @@ export const AssessmentDocumentPage = ({
   const assessment = useAppSelector(assessmentSelectors.currentAssessment);
   const isAssessmentLoading = useAppSelector(assessmentSelectors.isLoading);
 
+  const userRolesForFetchedConvention = useAppSelector(
+    connectedUserSelectors.userRolesForFetchedConvention,
+  );
   const agencyInfo = useAppSelector(agenciesSelectors.details);
   const isAgencyInfoLoading = useAppSelector(agenciesSelectors.isLoading);
 
@@ -88,7 +92,9 @@ export const AssessmentDocumentPage = ({
   const fetchConventionError =
     conventionFormFeedback?.level === "error" &&
     conventionFormFeedback.on === "fetch";
-  const isBeneficiary = jwtPayload?.role === "beneficiary";
+  const isBeneficiary = jwtPayload.role
+    ? jwtPayload.role === "beneficiary"
+    : userRolesForFetchedConvention.includes("beneficiary");
 
   const isSignAssessmentSuccess =
     signAssessmentFeedback?.level === "success" &&
