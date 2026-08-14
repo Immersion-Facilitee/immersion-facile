@@ -1,27 +1,20 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import Input from "@codegouvfr/react-dsfr/Input";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { values } from "ramda";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { type SubmitHandler, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
   type AgencyDtoForAgencyUsersAndAdmins,
-  type AgencyId,
   type AgencyRight,
   domElementIds,
   frontRoutes,
-  type RejectConnectedUserRoleForAgencyParams,
-  rejectIcUserRoleForAgencyParamsSchema,
   type User,
-  type UserId,
   type UserParamsForAgency,
 } from "shared";
 import { AgencyUserModificationForm } from "src/app/components/agency/AgencyUserModificationForm";
-import { makeFieldError } from "src/app/hooks/formContents.hooks";
+import { RejectIcUserRegistrationToAgencyForm } from "src/app/components/agency/RejectIcUserRegistrationToAgencyForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
@@ -163,6 +156,7 @@ export const IcUserAgenciesToReview = ({
                 agency={{ id: selectedAgency.id, name: selectedAgency.name }}
                 userId={selectedUser.id}
                 key={`${selectedAgency.id}-${selectedUser.id}`}
+                onSubmit={closeIcUserRegistrationToAgencyModal}
               />
             ) : (
               <AgencyUserModificationForm
@@ -203,67 +197,3 @@ const {
   open: openIcUserRegistrationToAgencyModal,
   close: closeIcUserRegistrationToAgencyModal,
 } = createModal(userRegistrationToAgencyModalConfig);
-
-type IcUserRegistrationToAgencyFormProps = {
-  agency: {
-    id: AgencyId;
-    name: string;
-  };
-  userId: UserId;
-};
-
-const RejectIcUserRegistrationToAgencyForm = ({
-  agency,
-  userId,
-}: IcUserRegistrationToAgencyFormProps) => {
-  const dispatch = useDispatch();
-  const { register, handleSubmit, formState } =
-    useForm<RejectConnectedUserRoleForAgencyParams>({
-      resolver: zodResolver(rejectIcUserRoleForAgencyParamsSchema),
-      mode: "onTouched",
-      defaultValues: {
-        agencyId: agency.id,
-        userId,
-        justification: "",
-      },
-    });
-
-  const getFieldError = makeFieldError(formState);
-
-  const onFormSubmit: SubmitHandler<RejectConnectedUserRoleForAgencyParams> = (
-    values,
-  ) => {
-    dispatch(
-      connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested(
-        values,
-      ),
-    );
-    closeIcUserRegistrationToAgencyModal();
-  };
-
-  return (
-    <form onSubmit={handleSubmit(onFormSubmit)}>
-      <Input
-        label={`Motif de refus de rattachement à l'agence ${agency.name}`}
-        nativeInputProps={register("justification")}
-        {...getFieldError("justification")}
-      />
-      <ButtonsGroup
-        alignment="center"
-        inlineLayoutWhen="always"
-        buttons={[
-          {
-            type: "button",
-            priority: "secondary",
-            onClick: closeIcUserRegistrationToAgencyModal,
-            children: "Annuler",
-          },
-          {
-            type: "submit",
-            children: "Refuser le rattachement",
-          },
-        ]}
-      />
-    </form>
-  );
-};
