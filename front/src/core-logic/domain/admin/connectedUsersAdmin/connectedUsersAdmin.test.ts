@@ -348,9 +348,10 @@ describe("Agency registration for authenticated users", () => {
         values(user2AgencyRights),
       );
       store.dispatch(
-        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested(
-          payload,
-        ),
+        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested({
+          ...payload,
+          feedbackTopic: "agency-users-to-review",
+        }),
       );
       expectIsUpdatingUserAgencyToBe(true);
       dependencies.adminGateway.updateAgencyRoleForUserResponse$.next(
@@ -378,9 +379,10 @@ describe("Agency registration for authenticated users", () => {
       const errorMessage = `Error registering user ${payload.userId} to agency ${payload.agencyId} with roles ${payload.roles}`;
 
       store.dispatch(
-        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested(
-          payload,
-        ),
+        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested({
+          ...payload,
+          feedbackTopic: "agency-users-to-review",
+        }),
       );
       expectIsUpdatingUserAgencyToBe(true);
       dependencies.adminGateway.updateAgencyRoleForUserResponse$.error(
@@ -409,7 +411,10 @@ describe("Agency registration for authenticated users", () => {
 
       store.dispatch(
         connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested(
-          payload,
+          {
+            ...payload,
+            feedbackTopic: "agency-users-to-review",
+          },
         ),
       );
 
@@ -427,6 +432,7 @@ describe("Agency registration for authenticated users", () => {
           agencyId: "agency-id",
           justification: "osef",
           userId: "user-to-reject-id",
+          feedbackTopic: "agency-users-to-review",
         }),
       );
 
@@ -453,6 +459,7 @@ describe("Agency registration for authenticated users", () => {
           agencyId: "rejected-user-for-this-agency",
           justification: "osef",
           userId: "user-to-reject-id",
+          feedbackTopic: "agency-users-to-review",
         }),
       );
 

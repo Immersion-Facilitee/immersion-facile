@@ -122,9 +122,10 @@ export const IcUserAgenciesToReview = ({
     userParamsForAgency: UserParamsForAgency,
   ) => {
     dispatch(
-      connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested(
-        userParamsForAgency,
-      ),
+      connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested({
+        ...userParamsForAgency,
+        feedbackTopic: "agency-users-to-review",
+      }),
     );
   };
 
