@@ -421,6 +421,27 @@ describe("Agency registration for authenticated users", () => {
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
     });
 
+    it("rejects successfully even if user is not in connectedUsersNeedingReview", () => {
+      store.dispatch(
+        connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested({
+          agencyId: "agency-id",
+          justification: "osef",
+          userId: "user-to-reject-id",
+        }),
+      );
+
+      expectIsUpdatingUserAgencyToBe(true);
+
+      dependencies.adminGateway.rejectUserToAgencyResponse$.next();
+
+      expectIsUpdatingUserAgencyToBe(false);
+      expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
+      expectToEqual(
+        store.getState().admin.connectedUsersAdmin.connectedUsersNeedingReview,
+        {},
+      );
+    });
+
     it("Fail to rejects the user for agency", () => {
       const errorMessage = "reject user for agency failed";
       expectToEqual(

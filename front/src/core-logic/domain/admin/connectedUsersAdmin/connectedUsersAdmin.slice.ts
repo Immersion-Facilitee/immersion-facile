@@ -145,12 +145,15 @@ export const connectedUsersAdminSlice = createSlice({
       action: PayloadAction<RejectConnectedUserRoleForAgencyParams>,
     ) => {
       const { userId, agencyId } = action.payload;
-
-      const { [agencyId]: _agency, ...agenciesFiltered } =
-        state.connectedUsersNeedingReview[userId].agencyRights;
       state.isUpdatingConnectedUserAgency = false;
       state.feedback.kind = "agencyRejectionForUserSuccess";
-      state.connectedUsersNeedingReview[userId].agencyRights = agenciesFiltered;
+
+      const userNeedingReview = state.connectedUsersNeedingReview[userId];
+      if (!userNeedingReview) return;
+
+      const { [agencyId]: _agency, ...agenciesFiltered } =
+        userNeedingReview.agencyRights;
+      userNeedingReview.agencyRights = agenciesFiltered;
     },
 
     rejectAgencyWithRoleToUserFailed: (
