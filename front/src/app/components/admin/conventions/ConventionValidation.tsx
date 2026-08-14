@@ -185,6 +185,10 @@ export const ConventionValidation = ({
       ? "agency"
       : "beneficiary";
 
+  const assessmentLabelsAndSeverity = getAssessmentLabelsAndSeverityByStatus({
+    isPlural: false,
+  })[getAssessmentCompletionStatus(convention.assessment)];
+
   return (
     <>
       <div className={fr.cx("fr-grid-row", "fr-grid-row--middle", "fr-mb-3w")}>
@@ -201,16 +205,14 @@ export const ConventionValidation = ({
         {shouldShowAssessmentBadge && (
           <Badge
             className={fr.cx("fr-mr-2w")}
-            severity={
-              getAssessmentLabelsAndSeverityByStatus({ isPlural: false })[
-                getAssessmentCompletionStatus(convention.assessment)
-              ].severity
-            }
+            severity={assessmentLabelsAndSeverity.severity}
           >
             {
-              getAssessmentLabelsAndSeverityByStatus({ isPlural: false })[
-                getAssessmentCompletionStatus(convention.assessment)
-              ].shortLabel.agencyLabel
+              assessmentLabelsAndSeverity.shortLabel[
+                statusBadgeUserKind === "agency"
+                  ? "agencyLabel"
+                  : "beneficiaryLabel"
+              ]
             }
           </Badge>
         )}
