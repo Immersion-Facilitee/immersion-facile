@@ -471,6 +471,31 @@ export const feedbacks: Record<
       message:
         "Une erreur est survenue lors de la récupération des rattachements en attente",
     },
+    "update.success": {
+      action:
+        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserSucceeded,
+      title: "L'utilisateur a bien été rattaché à l'organisme",
+      message:
+        "L'utilisateur a bien été rattaché à l'organisme avec les droits demandés.",
+    },
+    "update.error": {
+      action:
+        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserFailed,
+      title: "Problème lors du rattachement",
+      message: "Une erreur est survenue lors du rattachement de l'utilisateur.",
+    },
+    "delete.success": {
+      action:
+        connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserSucceeded,
+      title: "Demande de rattachement rejetée",
+      message: "La demande de cet utilisateur a bien été rejetée.",
+    },
+    "delete.error": {
+      action: connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserFailed,
+      title: "Problème lors du rejet de la demande de rattachement",
+      message:
+        "Une erreur est survenue lors du rejet de la demande de rattachement de l'utilisateur.",
+    },
   },
   "agency-admin": {
     "fetch.error": {

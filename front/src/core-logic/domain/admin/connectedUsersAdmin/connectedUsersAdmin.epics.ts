@@ -11,6 +11,7 @@ import type {
 } from "shared";
 import { getConnectedUserJwt } from "src/core-logic/domain/admin/admin.helpers";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
+import type { PayloadActionWithFeedbackTopic } from "src/core-logic/domain/feedback/feedback.slice";
 import { catchEpicError } from "src/core-logic/storeConfig/catchEpicError";
 import type {
   ActionOfSlice,
@@ -83,7 +84,7 @@ const registerAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
       connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested
         .match,
     ),
-    switchMap((action: PayloadAction<UserParamsForAgency>) =>
+    switchMap((action: PayloadActionWithFeedbackTopic<UserParamsForAgency>) =>
       adminGateway
         .updateUserRoleForAgency$(
           action.payload,
@@ -95,12 +96,15 @@ const registerAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
               action.payload,
             ),
           ),
+          catchEpicError((error) =>
+            connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserFailed(
+              {
+                errorMessage: error.message,
+                feedbackTopic: action.payload.feedbackTopic,
+              },
+            ),
+          ),
         ),
-    ),
-    catchEpicError((error) =>
-      connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserFailed(
-        error?.message,
-      ),
     ),
   );
 
@@ -114,7 +118,7 @@ const rejectAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
       connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested
         .match,
     ),
-    switchMap((action: PayloadAction<RejectConnectedUserRoleForAgencyParams>) =>
+    switchMap((action: PayloadActionWithFeedbackTopic<RejectConnectedUserRoleForAgencyParams>) =>
       adminGateway
         .rejectUserForAgency$(action.payload, getConnectedUserJwt(state$.value))
         .pipe(
@@ -123,12 +127,13 @@ const rejectAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
               action.payload,
             ),
           ),
+          catchEpicError((error) =>
+            connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserFailed({
+              errorMessage: error.message,
+              feedbackTopic: action.payload.feedbackTopic,
+            }),
+          ),
         ),
-    ),
-    catchEpicError((error) =>
-      connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserFailed(
-        error?.message,
-      ),
     ),
   );
 

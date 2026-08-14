@@ -12,7 +12,9 @@ import type {
   WithUserFilters,
 } from "shared";
 import type { SubmitFeedBack } from "src/core-logic/domain/SubmitFeedback";
-import type { PayloadActionWithFeedbackTopic } from "../../feedback/feedback.slice";
+import type {
+  PayloadActionWithFeedbackTopic,
+} from "../../feedback/feedback.slice";
 
 export type ConnectedUserWithNormalizedAgencyRights = OmitFromExistingKeys<
   ConnectedUser,
@@ -106,43 +108,48 @@ export const connectedUsersAdminSlice = createSlice({
     },
     registerAgencyWithRoleToUserRequested: (
       state,
-      _action: PayloadAction<UserParamsForAgency>,
+      _action: PayloadActionWithFeedbackTopic<UserParamsForAgency>,
     ) => {
       state.isUpdatingConnectedUserAgency = true;
     },
     registerAgencyWithRoleToUserSucceeded: (
       state,
-      action: PayloadAction<UserParamsForAgency>,
+      action: PayloadActionWithFeedbackTopic<UserParamsForAgency>,
     ) => {
       const { userId, agencyId, roles: newRoles } = action.payload;
       state.isUpdatingConnectedUserAgency = false;
       state.feedback.kind = "agencyRegisterToUserSuccess";
+
+      const userNeedingReview = state.connectedUsersNeedingReview[userId];
+      if (!userNeedingReview) return;
+
       if (
-        !state.connectedUsersNeedingReview[userId].agencyRights[
-          agencyId
-        ].roles.some((role) => newRoles.includes(role))
-      ) {
-        state.connectedUsersNeedingReview[userId].agencyRights[agencyId].roles =
-          newRoles;
-      }
+        !userNeedingReview.agencyRights[agencyId].roles.some((role) =>
+          newRoles.includes(role),
+        )
+      )
+        userNeedingReview.agencyRights[agencyId].roles = newRoles;
     },
     registerAgencyWithRoleToUserFailed: (
       state,
-      action: PayloadAction<string>,
+      action: PayloadActionWithFeedbackTopic<{ errorMessage: string }>,
     ) => {
       state.isUpdatingConnectedUserAgency = false;
-      state.feedback = { kind: "errored", errorMessage: action.payload };
+      state.feedback = {
+        kind: "errored",
+        errorMessage: action.payload.errorMessage,
+      };
     },
     rejectAgencyWithRoleToUserRequested: (
       state,
-      _action: PayloadAction<RejectConnectedUserRoleForAgencyParams>,
+      _action: PayloadActionWithFeedbackTopic<RejectConnectedUserRoleForAgencyParams>,
     ) => {
       state.isUpdatingConnectedUserAgency = true;
     },
 
     rejectAgencyWithRoleToUserSucceeded: (
       state,
-      action: PayloadAction<RejectConnectedUserRoleForAgencyParams>,
+      action: PayloadActionWithFeedbackTopic<RejectConnectedUserRoleForAgencyParams>,
     ) => {
       const { userId, agencyId } = action.payload;
       state.isUpdatingConnectedUserAgency = false;
@@ -158,10 +165,15 @@ export const connectedUsersAdminSlice = createSlice({
 
     rejectAgencyWithRoleToUserFailed: (
       state,
-      action: PayloadAction<string>,
+      action: PayloadActionWithFeedbackTopic<{
+        errorMessage: string;
+      }>,
     ) => {
       state.isUpdatingConnectedUserAgency = false;
-      state.feedback = { kind: "errored", errorMessage: action.payload };
+      state.feedback = {
+        kind: "errored",
+        errorMessage: action.payload.errorMessage,
+      };
     },
 
     createUserOnAgencyRequested: (

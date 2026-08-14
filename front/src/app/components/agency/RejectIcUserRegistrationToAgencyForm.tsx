@@ -44,9 +44,10 @@ export const RejectIcUserRegistrationToAgencyForm = ({
     values,
   ) => {
     dispatch(
-      connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested(
-        values,
-      ),
+      connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested({
+        ...values,
+        feedbackTopic: "agency-users-to-review",
+      }),
     );
     onSubmit();
   };
