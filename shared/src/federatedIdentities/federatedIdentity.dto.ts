@@ -1,4 +1,3 @@
-import type { IdToken } from "../auth/auth.dto";
 import type { ConnectedUserJwt } from "../tokens/jwt.dto";
 import type { Flavor } from "../typeFlavors";
 
@@ -20,18 +19,11 @@ type GenericFederatedIdentity<
   Provider extends FederatedIdentityProvider,
   T extends FtConnectToken | ConnectedUserJwt,
   P = void,
-> = Provider extends "ftConnect"
-  ? {
-      provider: Provider;
-      token: T;
-      payload?: P;
-    }
-  : {
-      provider: Provider;
-      token: T;
-      payload?: P;
-      idToken: IdToken;
-    };
+> = {
+  provider: Provider;
+  token: T;
+  payload?: P;
+};
 
 export const authFailed = "AuthFailed";
 

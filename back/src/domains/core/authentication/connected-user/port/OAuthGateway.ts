@@ -1,12 +1,5 @@
-import type {
-  AbsoluteUrl,
-  Email,
-  ExternalId,
-  IdToken,
-  SiretDto,
-  WithIdToken,
-} from "shared";
-import type { OAuthJwt } from "../entities/OngoingOAuth";
+import type { AbsoluteUrl, Email, ExternalId, SiretDto } from "shared";
+import type { IdToken, OAuthJwt } from "../entities/OngoingOAuth";
 
 export type GetAccessTokenParams = {
   code: string;
@@ -51,7 +44,8 @@ export type GetLoginUrlParams = {
   state: string;
 };
 
-export type GetLogoutUrlParams = WithIdToken & {
+export type GetLogoutUrlParams = {
+  idToken: IdToken;
   state: string;
 };
 

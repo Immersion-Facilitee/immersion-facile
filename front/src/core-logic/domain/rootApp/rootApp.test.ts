@@ -52,7 +52,6 @@ describe("rootApp epic", () => {
     dependencies.localDeviceRepository.set("federatedIdentity", {
       provider: "proConnect",
       token,
-      idToken: "id-token",
     });
 
     expect(store.getState().auth.federatedIdentity).toBeNull();

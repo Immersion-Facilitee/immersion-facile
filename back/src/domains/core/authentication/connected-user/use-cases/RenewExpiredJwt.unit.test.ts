@@ -649,7 +649,6 @@ describe("RenewExpiredJwt use case", () => {
         {
           id: shortLinks[0],
           url: fakeGenerateConnectedUserUrlFn({
-            accessToken: undefined,
             user,
             ongoingOAuth: emailUsedOnGoingOAuth,
             now: timeGateway.now(),

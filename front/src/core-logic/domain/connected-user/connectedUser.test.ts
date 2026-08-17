@@ -78,7 +78,6 @@ describe("InclusionConnected", () => {
   const inclusionConnectedFederatedIdentity: FederatedIdentity = {
     provider: "proConnect",
     token: "fake-token",
-    idToken: "inclusion-connect-id-token",
   };
 
   beforeEach(() => {
@@ -152,7 +151,6 @@ describe("InclusionConnected", () => {
           federatedIdentity: {
             token: "some-existing-token",
             provider: "proConnect",
-            idToken: "inclusion-connect-id-token",
           },
           isLoading: true,
           isRequestingRenewExpiredJwt: false,

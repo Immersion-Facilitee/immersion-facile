@@ -197,7 +197,6 @@ const onConnectedUserDomainJwtPayload = async ({
         generateConnectedUserLoginUrl: deps.generateConnectedUserLoginUrl,
       })({
         user,
-        accessToken: undefined,
         ongoingOAuth,
         now: deps.timeGateway.now(),
       }),

@@ -6,7 +6,6 @@ import type {
   ConnectedUser,
   ConnectedUserJwt,
   InitiateLoginByEmailParams,
-  LogoutQueryParams,
   OAuthSuccessLoginParams,
   RenewExpiredJwtRequestDto,
   UserId,
@@ -39,20 +38,19 @@ export class HttpAuthGateway implements AuthGateway {
   }
 
   public getLogoutUrl$({
-    idToken,
-    authToken,
-    provider,
-  }: LogoutQueryParams & { authToken: string }): Observable<AbsoluteUrl> {
+    jwt,
+  }: {
+    jwt: ConnectedUserJwt;
+  }): Observable<AbsoluteUrl> {
     return from(
       this.httpClient
         .getOAuthLogoutUrl({
-          queryParams: { idToken, provider },
-          headers: { authorization: authToken },
+          headers: { authorization: jwt },
         })
         .then((response) =>
           match(response)
             .with({ status: 200 }, ({ body }) => body)
-            .with({ status: 401 }, logBodyAndThrow)
+            .with({ status: P.union(400, 401) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

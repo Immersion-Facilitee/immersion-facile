@@ -332,10 +332,16 @@ export const errors = {
       new ForbiddenError(
         `Le renouvellement d'une connexion du type ${provider} n'est pas supportée. Veuillez vous reconnecter manuellement.`,
       ),
+    missingIdToken: (state: OAuthState) =>
+      new ForbiddenError(
+        `L'authentification avec le state '${state}' n'a pas d'idToken.`,
+      ),
     missingOAuth: ({ state }: { state?: OAuthState }) =>
       new ForbiddenError(
         `Il n'y a pas d'authentification en cours ${state ? `avec l'état '${state}'` : ""}.`,
       ),
+    unsupportedProvider: ({ actual }: { actual: FederatedIdentityProvider }) =>
+      new ForbiddenError(`L'authentification '${actual}' n'est pas supportée.`),
     unusedOAuth: () =>
       new ForbiddenError(
         "Le renouvellement d'une connexion non utilisée n'est pas autorisé.",

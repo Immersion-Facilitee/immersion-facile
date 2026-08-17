@@ -5,7 +5,6 @@ import type {
   ConnectedUser,
   ConnectedUserJwt,
   InitiateLoginByEmailParams,
-  LogoutQueryParams,
   OAuthSuccessLoginParams,
   RenewExpiredJwtRequestDto,
   UserId,
@@ -14,9 +13,7 @@ import type {
 
 export interface AuthGateway {
   loginByEmail$: (params: InitiateLoginByEmailParams) => Observable<void>;
-  getLogoutUrl$(
-    payload: LogoutQueryParams & { authToken: string },
-  ): Observable<AbsoluteUrl>;
+  getLogoutUrl$(payload: { jwt: ConnectedUserJwt }): Observable<AbsoluteUrl>;
   getConnectedUser$(params: {
     jwt: ConnectedUserJwt;
     userId?: UserId;

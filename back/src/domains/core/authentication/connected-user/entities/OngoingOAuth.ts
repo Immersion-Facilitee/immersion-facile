@@ -4,12 +4,12 @@ import type {
   ExtractFromExisting,
   FederatedIdentityProvider,
   Flavor,
-  IdToken,
   OAuthState,
 } from "shared";
 
 export type OAuthJwt = Flavor<string, "OAuthJwt">;
 export type OAuthNonce = Flavor<string, "OAuthNonce">;
+export type IdToken = Flavor<string, "IdToken">;
 
 type OngoingAuthCommon = {
   userId?: string;

@@ -135,7 +135,6 @@ const saveEmailAuthenticationDataAndReturnRedirectURI = async ({
       user: newOrUpdatedUser,
       ongoingOAuth: updatedOngoingOAuth,
       now: timeGateway.now(),
-      accessToken: undefined,
     }),
   };
 };
@@ -180,7 +179,6 @@ const saveProConnectAuthenticationDataAndReturnRedirectURI = async ({
     provider: updatedOngoingOAuth.provider,
     redirectUri: deps.generateConnectedUserLoginUrl({
       user: newOrUpdatedUser,
-      accessToken,
       ongoingOAuth: updatedOngoingOAuth,
       now: deps.timeGateway.now(),
     }),

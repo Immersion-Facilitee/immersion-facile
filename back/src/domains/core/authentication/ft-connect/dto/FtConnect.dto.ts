@@ -5,11 +5,11 @@ import {
   type FederatedIdentityProvider,
   type FtConnectToken,
   type FtExternalId,
-  type IdToken,
   type InternshipKind,
   type PhoneNumber,
 } from "shared";
 import type { EntityFromDto } from "../../../../../utils/EntityFromDto";
+import type { IdToken } from "../../connected-user/entities/OngoingOAuth";
 import type { FtConnectImmersionAdvisorDto } from "./FtConnectAdvisor.dto";
 import type { FtConnectUserDto } from "./FtConnectUserDto";
 

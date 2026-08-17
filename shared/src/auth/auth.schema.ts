@@ -5,8 +5,6 @@ import {
   type AllowedLoginSource,
   type FederatedIdentityProvider,
   frontRoutes,
-  type LogoutQueryParams,
-  type OAuthProviderForLogin,
 } from "..";
 import { absoluteUrlSchema } from "../AbsoluteUrl";
 import { emailSchema } from "../email/email.schema";
@@ -83,15 +81,6 @@ export const oAuthSuccessLoginParamsSchema: ZodSchemaWithInputMatchingOutput<OAu
   z.object({
     code: z.string(),
     state: z.string(),
-  });
-
-const oAuthProviderForLoginSchema: ZodSchemaWithInputMatchingOutput<OAuthProviderForLogin> =
-  z.enum(["proConnect", "ftConnect"]);
-
-export const logoutQueryParamsSchema: ZodSchemaWithInputMatchingOutput<LogoutQueryParams> =
-  z.object({
-    idToken: z.string(),
-    provider: oAuthProviderForLoginSchema,
   });
 
 export const afterOAuthSuccessRedirectionResponseSchema: ZodSchemaWithInputMatchingOutput<AfterOAuthSuccessRedirectionResponse> =

@@ -56,7 +56,6 @@ export const allowedLoginSources: Record<
 
 export type ExternalId = Flavor<string, "ExternalId">;
 
-export type IdToken = Flavor<string, "IdToken">;
 export type IdentityProvider = Extract<
   FederatedIdentityProvider,
   "proConnect" | "email"
@@ -89,14 +88,6 @@ export type InitiateLoginByOAuthParams = WithRedirectUri & {
 
 export type InitiateLoginByEmailParams = WithRedirectUri & {
   email: Email;
-};
-
-export type LogoutQueryParams = WithIdToken & {
-  provider: FederatedIdentityProvider;
-};
-
-export type WithIdToken = {
-  idToken: IdToken;
 };
 
 export type AfterOAuthSuccessRedirectionResponse = {

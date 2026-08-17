@@ -29,10 +29,9 @@ import { feedbacksSelectors } from "../feedback/feedback.selectors";
 import type { PayloadWithFeedbackTopic } from "../feedback/feedback.slice";
 
 describe("Auth slice", () => {
-  const connectedUserFederatedIdentity: FederatedIdentity = {
+  const proConnectFederatedIdentity: FederatedIdentity = {
     provider: "proConnect",
     token: "123",
-    idToken: "id-token",
   };
 
   let store: ReduxStore;
@@ -54,25 +53,25 @@ describe("Auth slice", () => {
 
     store.dispatch(
       authSlice.actions.federatedIdentityProvided({
-        federatedIdentity: connectedUserFederatedIdentity,
+        federatedIdentity: proConnectFederatedIdentity,
         feedbackTopic: "auth-global",
       }),
     );
 
     expectAuthStateToBe({
       afterLoginRedirectionUrl: null,
-      federatedIdentity: connectedUserFederatedIdentity,
+      federatedIdentity: proConnectFederatedIdentity,
       isLoading: false,
       isRequestingLoginByEmail: false,
       isRequestingRenewExpiredJwt: false,
       requestedEmail: null,
     });
 
-    expectFederatedIdentityInDevice(connectedUserFederatedIdentity);
+    expectFederatedIdentityInDevice(proConnectFederatedIdentity);
 
     expectAuthStateToBe({
       afterLoginRedirectionUrl: null,
-      federatedIdentity: connectedUserFederatedIdentity,
+      federatedIdentity: proConnectFederatedIdentity,
       isLoading: false,
       isRequestingLoginByEmail: false,
       isRequestingRenewExpiredJwt: false,
@@ -80,213 +79,229 @@ describe("Auth slice", () => {
     });
   });
 
-  it.each([
-    {
-      provider: "proConnect",
-      federatedIdentity: connectedUserFederatedIdentity,
-    },
-  ])("when provider = '$provider', deletes federatedIdentity & partialConventionInUrl stored in device and in store, then redirects to provider logout page", ({
-    federatedIdentity,
-  }) => {
-    ({ store, dependencies } = createTestStore({
-      auth: {
-        isRequestingLoginByEmail: false,
-        isRequestingRenewExpiredJwt: false,
-        federatedIdentity: federatedIdentity,
-        afterLoginRedirectionUrl: null,
-        isLoading: true,
-        requestedEmail: null,
-      },
-      connectedUser: {
-        currentUser: new ConnectedUserBuilder().build(),
-        isLoading: false,
-        agenciesToReview: [],
-      },
-    }));
-    dependencies.localDeviceRepository.set(
-      "federatedIdentity",
-      federatedIdentity,
-    );
-
-    store.dispatch(
-      authSlice.actions.fetchLogoutUrlRequested({
-        mode: "device-and-oauth",
-        feedbackTopic: "auth-global",
-      }),
-    );
-
-    dependencies.authGateway.getLogoutUrlResponse$.next(
-      "http://yolo-logout.com",
-    );
-
-    expectAuthStateToBe({
-      afterLoginRedirectionUrl: null,
-      federatedIdentity: null,
-      isLoading: true,
-      isRequestingLoginByEmail: false,
-      isRequestingRenewExpiredJwt: false,
-      requestedEmail: null,
-    });
-
-    expectFederatedIdentityInDevice(undefined);
-    expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
-
-    expectToEqual(dependencies.navigationGateway.wentToUrls, [
-      "http://yolo-logout.com",
-    ]);
-  });
-
-  it("deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for without redirects to provider logout page.", () => {
-    ({ store, dependencies } = createTestStore({
-      auth: {
-        isRequestingLoginByEmail: false,
-        federatedIdentity: connectedUserFederatedIdentity,
-        afterLoginRedirectionUrl: null,
-        isLoading: true,
-        isRequestingRenewExpiredJwt: false,
-        requestedEmail: null,
-      },
-      connectedUser: {
-        currentUser: new ConnectedUserBuilder().build(),
-        isLoading: false,
-        agenciesToReview: [],
-      },
-    }));
-    dependencies.localDeviceRepository.set(
-      "federatedIdentity",
-      connectedUserFederatedIdentity,
-    );
-    store.dispatch(
-      authSlice.actions.fetchLogoutUrlRequested({
-        mode: "device-only",
-        feedbackTopic: "auth-global",
-      }),
-    );
-
-    expectAuthStateToBe({
-      afterLoginRedirectionUrl: null,
-      federatedIdentity: null,
-      isLoading: true,
-      isRequestingLoginByEmail: false,
-      isRequestingRenewExpiredJwt: false,
-      requestedEmail: null,
-    });
-
-    expectFederatedIdentityInDevice(undefined);
-    expectToEqual(dependencies.navigationGateway.wentToUrls, []);
-
-    expectAuthStateToBe({
-      afterLoginRedirectionUrl: null,
-      federatedIdentity: null,
-      isLoading: true,
-      isRequestingLoginByEmail: false,
-      isRequestingRenewExpiredJwt: false,
-      requestedEmail: null,
-    });
-    expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
-  });
-
-  it("deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for without redirects to provider logout page (when provider is not 'proConnect')", () => {
-    ({ store, dependencies } = createTestStore({
-      auth: {
-        isRequestingLoginByEmail: false,
-        federatedIdentity: connectedUserFederatedIdentity,
-        afterLoginRedirectionUrl: null,
-        isLoading: true,
-        isRequestingRenewExpiredJwt: false,
-        requestedEmail: null,
-      },
-      connectedUser: {
-        currentUser: null,
-        isLoading: false,
-        agenciesToReview: [],
-      },
-    }));
-    dependencies.localDeviceRepository.set(
-      "federatedIdentity",
-      connectedUserFederatedIdentity,
-    );
-
-    store.dispatch(
-      authSlice.actions.fetchLogoutUrlRequested({
-        mode: "device-only",
-        feedbackTopic: "auth-global",
-      }),
-    );
-
-    expectAuthStateToBe({
-      afterLoginRedirectionUrl: null,
-      federatedIdentity: null,
-      isLoading: true,
-      isRequestingLoginByEmail: false,
-      isRequestingRenewExpiredJwt: false,
-      requestedEmail: null,
-    });
-
-    expectFederatedIdentityInDevice(undefined);
-    expectToEqual(dependencies.navigationGateway.wentToUrls, []);
-
-    expectAuthStateToBe({
-      afterLoginRedirectionUrl: null,
-      federatedIdentity: null,
-      isLoading: true,
-      isRequestingLoginByEmail: false,
-      isRequestingRenewExpiredJwt: false,
-      requestedEmail: null,
-    });
-    expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
-  });
-
-  it("deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for without redirects to provider logout page (when provider is not 'proConnect')", () => {
-    ({ store, dependencies } = createTestStore({
-      auth: {
-        isRequestingLoginByEmail: false,
-        federatedIdentity: connectedUserFederatedIdentity,
-        afterLoginRedirectionUrl: null,
-        isLoading: true,
-        isRequestingRenewExpiredJwt: false,
-        requestedEmail: null,
-      },
-      connectedUser: {
-        currentUser: new ConnectedUserBuilder().build(),
-        isLoading: false,
-        agenciesToReview: [],
-      },
-    }));
-    dependencies.localDeviceRepository.set(
-      "federatedIdentity",
-      connectedUserFederatedIdentity,
-    );
-
-    store.dispatch(
-      authSlice.actions.fetchLogoutUrlRequested({
-        mode: "device-and-oauth",
-        feedbackTopic: "auth-global",
-      }),
-    );
-
-    dependencies.authGateway.getLogoutUrlResponse$.error(new Error("Error"));
-
-    expectAuthStateToBe({
-      afterLoginRedirectionUrl: null,
-      federatedIdentity: null,
-      isLoading: true,
-      isRequestingLoginByEmail: false,
-      isRequestingRenewExpiredJwt: false,
-      requestedEmail: null,
-    });
-
-    expectFederatedIdentityInDevice(undefined);
-    expectToEqual(dependencies.navigationGateway.wentToUrls, []);
-    expectToEqual(
-      feedbacksSelectors.feedbacks(store.getState())["auth-global"],
+  describe("fetchLogoutUrlRequested", () => {
+    it.each([
       {
-        on: "delete",
-        level: "error",
-        title: "Une erreur est survenue lors de la déconnexion",
-        message: "Vous n'avez pas pu vous déconnecter.",
+        provider: "proConnect",
+        federatedIdentity: proConnectFederatedIdentity,
       },
-    );
+    ])("when provider = '$provider', deletes federatedIdentity & partialConventionInUrl stored in device and in store, then redirects to provider logout page", ({
+      federatedIdentity,
+    }) => {
+      ({ store, dependencies } = createTestStore({
+        auth: {
+          isRequestingLoginByEmail: false,
+          isRequestingRenewExpiredJwt: false,
+          federatedIdentity: federatedIdentity,
+          afterLoginRedirectionUrl: null,
+          isLoading: true,
+          requestedEmail: null,
+        },
+        connectedUser: {
+          currentUser: new ConnectedUserBuilder().build(),
+          isLoading: false,
+          agenciesToReview: [],
+        },
+      }));
+      dependencies.localDeviceRepository.set(
+        "federatedIdentity",
+        federatedIdentity,
+      );
+
+      store.dispatch(
+        authSlice.actions.fetchLogoutUrlRequested({
+          mode: "device-and-oauth",
+          feedbackTopic: "auth-global",
+        }),
+      );
+
+      dependencies.authGateway.getLogoutUrlResponse$.next(
+        "http://yolo-logout.com",
+      );
+
+      expectAuthStateToBe({
+        afterLoginRedirectionUrl: null,
+        federatedIdentity: null,
+        isLoading: true,
+        isRequestingLoginByEmail: false,
+        isRequestingRenewExpiredJwt: false,
+        requestedEmail: null,
+      });
+
+      expectFederatedIdentityInDevice(undefined);
+      expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
+
+      expectToEqual(dependencies.navigationGateway.wentToUrls, [
+        "http://yolo-logout.com",
+      ]);
+    });
+
+    it("with provider proConnect - deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for without redirects to provider logout page", () => {
+      ({ store, dependencies } = createTestStore({
+        auth: {
+          isRequestingLoginByEmail: false,
+          federatedIdentity: proConnectFederatedIdentity,
+          afterLoginRedirectionUrl: null,
+          isLoading: true,
+          isRequestingRenewExpiredJwt: false,
+          requestedEmail: null,
+        },
+        connectedUser: {
+          currentUser: new ConnectedUserBuilder().build(),
+          isLoading: false,
+          agenciesToReview: [],
+        },
+      }));
+      dependencies.localDeviceRepository.set(
+        "federatedIdentity",
+        proConnectFederatedIdentity,
+      );
+      store.dispatch(
+        authSlice.actions.fetchLogoutUrlRequested({
+          mode: "device-only",
+          feedbackTopic: "auth-global",
+        }),
+      );
+
+      expectAuthStateToBe({
+        afterLoginRedirectionUrl: null,
+        federatedIdentity: null,
+        isLoading: true,
+        isRequestingLoginByEmail: false,
+        isRequestingRenewExpiredJwt: false,
+        requestedEmail: null,
+      });
+
+      expectFederatedIdentityInDevice(undefined);
+      expectToEqual(dependencies.navigationGateway.wentToUrls, []);
+
+      expectAuthStateToBe({
+        afterLoginRedirectionUrl: null,
+        federatedIdentity: null,
+        isLoading: true,
+        isRequestingLoginByEmail: false,
+        isRequestingRenewExpiredJwt: false,
+        requestedEmail: null,
+      });
+      expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
+    });
+
+    it("with provider email - deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for without redirects to provider logout page ", () => {
+      const emailFederatedIdentity: FederatedIdentity = {
+        provider: "email",
+        token: "token",
+      };
+
+      ({ store, dependencies } = createTestStore({
+        auth: {
+          isRequestingLoginByEmail: false,
+          federatedIdentity: emailFederatedIdentity,
+          afterLoginRedirectionUrl: null,
+          isLoading: true,
+          isRequestingRenewExpiredJwt: false,
+          requestedEmail: null,
+        },
+        connectedUser: {
+          currentUser: null,
+          isLoading: false,
+          agenciesToReview: [],
+        },
+      }));
+      dependencies.localDeviceRepository.set(
+        "federatedIdentity",
+        emailFederatedIdentity,
+      );
+
+      store.dispatch(
+        authSlice.actions.fetchLogoutUrlRequested({
+          mode: "device-only",
+          feedbackTopic: "auth-global",
+        }),
+      );
+
+      expectAuthStateToBe({
+        afterLoginRedirectionUrl: null,
+        federatedIdentity: null,
+        isLoading: true,
+        isRequestingLoginByEmail: false,
+        isRequestingRenewExpiredJwt: false,
+        requestedEmail: null,
+      });
+
+      expectFederatedIdentityInDevice(undefined);
+      expectToEqual(dependencies.navigationGateway.wentToUrls, []);
+
+      expectAuthStateToBe({
+        afterLoginRedirectionUrl: null,
+        federatedIdentity: null,
+        isLoading: true,
+        isRequestingLoginByEmail: false,
+        isRequestingRenewExpiredJwt: false,
+        requestedEmail: null,
+      });
+      expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
+      expectToEqual(
+        feedbacksSelectors.feedbacks(store.getState())["auth-global"],
+        {
+          on: "delete",
+          level: "error",
+          title: "Une erreur est survenue lors de la déconnexion",
+          message: "Vous n'avez pas pu vous déconnecter.",
+        },
+      );
+    });
+
+    it("on getLogoutUrlResponse error - deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for without redirects to provider logout page", () => {
+      ({ store, dependencies } = createTestStore({
+        auth: {
+          isRequestingLoginByEmail: false,
+          federatedIdentity: proConnectFederatedIdentity,
+          afterLoginRedirectionUrl: null,
+          isLoading: true,
+          isRequestingRenewExpiredJwt: false,
+          requestedEmail: null,
+        },
+        connectedUser: {
+          currentUser: new ConnectedUserBuilder().build(),
+          isLoading: false,
+          agenciesToReview: [],
+        },
+      }));
+      dependencies.localDeviceRepository.set(
+        "federatedIdentity",
+        proConnectFederatedIdentity,
+      );
+
+      store.dispatch(
+        authSlice.actions.fetchLogoutUrlRequested({
+          mode: "device-and-oauth",
+          feedbackTopic: "auth-global",
+        }),
+      );
+
+      dependencies.authGateway.getLogoutUrlResponse$.error(new Error("Error"));
+
+      expectAuthStateToBe({
+        afterLoginRedirectionUrl: null,
+        federatedIdentity: null,
+        isLoading: true,
+        isRequestingLoginByEmail: false,
+        isRequestingRenewExpiredJwt: false,
+        requestedEmail: null,
+      });
+
+      expectFederatedIdentityInDevice(undefined);
+      expectToEqual(dependencies.navigationGateway.wentToUrls, []);
+      expectToEqual(
+        feedbacksSelectors.feedbacks(store.getState())["auth-global"],
+        {
+          on: "delete",
+          level: "error",
+          title: "Une erreur est survenue lors de la déconnexion",
+          message: "Vous n'avez pas pu vous déconnecter.",
+        },
+      );
+    });
   });
 
   it("retrieves federatedIdentity if stored in device", () => {
@@ -301,20 +316,20 @@ describe("Auth slice", () => {
 
     dependencies.localDeviceRepository.set(
       "federatedIdentity",
-      connectedUserFederatedIdentity,
+      proConnectFederatedIdentity,
     );
     store.dispatch(rootAppSlice.actions.appIsReady());
 
     expectAuthStateToBe({
       afterLoginRedirectionUrl: null,
-      federatedIdentity: connectedUserFederatedIdentity,
+      federatedIdentity: proConnectFederatedIdentity,
       isLoading: false,
       isRequestingLoginByEmail: false,
       isRequestingRenewExpiredJwt: false,
       requestedEmail: null,
     });
 
-    expectFederatedIdentityInDevice(connectedUserFederatedIdentity);
+    expectFederatedIdentityInDevice(proConnectFederatedIdentity);
     const user: ConnectedUser = {
       id: "123",
       email: "mail@mail.com",
@@ -336,7 +351,7 @@ describe("Auth slice", () => {
 
     expectAuthStateToBe({
       afterLoginRedirectionUrl: null,
-      federatedIdentity: connectedUserFederatedIdentity,
+      federatedIdentity: proConnectFederatedIdentity,
       isLoading: false,
       isRequestingLoginByEmail: false,
       isRequestingRenewExpiredJwt: false,
@@ -537,7 +552,7 @@ describe("Auth slice", () => {
         isLoading: true,
       });
       dependencies.authGateway.confirmLoginByMagicLinkResponse$.next({
-        ...connectedUserFederatedIdentity,
+        ...proConnectFederatedIdentity,
         redirectUri,
       });
       expectAuthStateToBe({
