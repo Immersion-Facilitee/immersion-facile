@@ -133,6 +133,24 @@ export const orderedAgencyKindList = [
   "prepa-apprentissage", // legacy kept only for backward compatibility
 ] as const;
 
+export type PartnerAgencyKind = (typeof partnerAgencyKindList)[number];
+
+export const partnerAgencyKindList = [
+  "pole-emploi",
+  "mission-locale",
+  "operateur-cep",
+  "cap-emploi",
+  "conseil-departemental",
+  "structure-IAE",
+  "fonction-publique",
+  "cci",
+  "cma",
+  "chambre-agriculture",
+  "autre",
+  "immersion-facile",
+  "prepa-apprentissage",
+] as const;
+
 export type AllowedAgencyKindToAdd = Exclude<
   AgencyKind,
   "immersion-facile" | "prepa-apprentissage"
