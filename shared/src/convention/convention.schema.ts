@@ -1,6 +1,7 @@
 import { differenceInYears } from "date-fns";
 import { z } from "zod";
 import { withAcquisitionShape } from "../acquisition.dto";
+import { getCountryCodeFromAddress } from "../address/address.dto";
 import { addressDepartmentCodeSchema } from "../address/address.schema";
 import {
   agencyIdSchema,
@@ -87,6 +88,7 @@ import {
   type Beneficiary,
   type BeneficiaryCurrentEmployer,
   type BeneficiaryRepresentative,
+  CCI_FRENCH_ADDRESS_REQUIREMENT_RELEASE_DATE,
   type ConventionAssessmentFields,
   type ConventionCommon,
   type ConventionDto,
@@ -536,6 +538,16 @@ export const conventionSchema = z
         convention.schedule.complexSchedule,
         convention.dateEnd,
       );
+      if (
+        !isConventionBeforeMiniStageFranceAddressReleaseDate(
+          convention.dateSubmission,
+        ) &&
+        getCountryCodeFromAddress(convention.immersionAddress) !== "FR"
+      )
+        addIssue(
+          localization.miniStageImmersionAddressMustBeInFrance,
+          getConventionFieldName("immersionAddress"),
+        );
     }
 
     addIssueIfAgeLessThanMinimumAge(
@@ -749,6 +761,12 @@ const isConventionBeforeDistinctSignatoriesPhoneNumbersReleaseDate = (
 ) =>
   new Date(conventionSubimissionDate).getTime() <=
   SIGNATORIES_PHONE_NUMBER_DISTINCT_RELEASE_DATE.getTime();
+
+const isConventionBeforeMiniStageFranceAddressReleaseDate = (
+  conventionSubmissionDate: DateString,
+) =>
+  new Date(conventionSubmissionDate).getTime() <
+  CCI_FRENCH_ADDRESS_REQUIREMENT_RELEASE_DATE.getTime();
 
 const getSignatoriesEntries = (convention: ConventionDto) =>
   signatoryKeys.flatMap((key) => {

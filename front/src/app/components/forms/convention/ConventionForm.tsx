@@ -900,7 +900,14 @@ const ConventionFormContent = ({
                     )}
                   <AddressAutocompleteWithCountrySelect
                     {...formContents.immersionAddress}
-                    countryCode={establishmentAddressCountryCode ?? undefined}
+                    hideCountrySelect={
+                      conventionValues.internshipKind === "mini-stage-cci"
+                    }
+                    countryCode={
+                      conventionValues.internshipKind === "mini-stage-cci"
+                        ? defaultCountryCode
+                        : (establishmentAddressCountryCode ?? undefined)
+                    }
                     selectProps={{
                       inputId:
                         domElementIds.conventionImmersion.conventionSection
