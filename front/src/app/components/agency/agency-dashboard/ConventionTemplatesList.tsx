@@ -19,6 +19,7 @@ import {
   domElementIds,
   errors,
   frontRoutes,
+  miniStageAgencyKinds,
   type SaveConventionDraftFromConventionTemplateDto,
   saveConventionDraftFromConventionTemplateSchema,
   toDisplayedDate,
@@ -27,6 +28,7 @@ import { Feedback } from "src/app/components/feedback/Feedback";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { setValueAsUndefined } from "src/app/utils/form.utils";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
+import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { conventionDraftSlice } from "src/core-logic/domain/convention/convention-draft/conventionDraft.slice";
 import { conventionTemplateSelectors } from "src/core-logic/domain/convention-template/conventionTemplate.selectors";
 import { conventionTemplateSlice } from "src/core-logic/domain/convention-template/conventionTemplate.slice";
@@ -64,6 +66,7 @@ export const ConventionTemplatesList = ({
 }) => {
   const dispatch = useDispatch();
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
+  const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isLoading = useSelector(conventionTemplateSelectors.isLoading);
   const conventionTemplates = useSelector(
     conventionTemplateSelectors.conventionTemplates,
@@ -148,6 +151,14 @@ export const ConventionTemplatesList = ({
     };
   }, [dispatch]);
 
+  const hasMiniStageAgencyOnly =
+    currentUser?.agencyRights.some((agency) =>
+      miniStageAgencyKinds.includes(agency.agency.kind),
+    ) &&
+    !currentUser?.agencyRights.some(
+      (agency) => !miniStageAgencyKinds.includes(agency.agency.kind),
+    );
+
   return (
     <>
       <HeadingSection
@@ -155,18 +166,22 @@ export const ConventionTemplatesList = ({
         titleAs="h3"
         className={fr.cx("fr-mt-4w")}
         titleAction={
-          <Button
-            id={domElementIds.conventionTemplate.createConventionTemplateButton}
-            priority="primary"
-            iconId="fr-icon-add-line"
-            linkProps={
-              frontRoutes.conventionTemplate({
-                fromRoute: fromRoute.name,
-              }).link
-            }
-          >
-            Créer un nouveau modèle
-          </Button>
+          !hasMiniStageAgencyOnly && (
+            <Button
+              id={
+                domElementIds.conventionTemplate.createConventionTemplateButton
+              }
+              priority="primary"
+              iconId="fr-icon-add-line"
+              linkProps={
+                frontRoutes.conventionTemplate({
+                  fromRoute: fromRoute.name,
+                }).link
+              }
+            >
+              Créer un nouveau modèle
+            </Button>
+          )
         }
       >
         {isLoading && <Loader />}
