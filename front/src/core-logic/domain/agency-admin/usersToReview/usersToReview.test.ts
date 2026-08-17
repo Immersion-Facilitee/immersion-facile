@@ -4,7 +4,9 @@ import {
   expectToEqual,
   toAgencyDtoForAgencyUsersAndAdmins,
 } from "shared";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import {
+  type UserToReview,
   usersToReviewSlice,
   usersToReviewState,
 } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
@@ -60,8 +62,7 @@ describe("usersToReview", () => {
           email: connectedUser.email,
           firstName: connectedUser.firstName,
           lastName: connectedUser.lastName,
-          agencyId: agency.id,
-          agencyName: agency.name,
+          agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
         },
       ],
       isLoading: false,
@@ -99,6 +100,110 @@ describe("usersToReview", () => {
         on: "fetch",
         title:
           "Problème rencontré lors de la récupération des rattachements en attente",
+      },
+    );
+  });
+
+  it("should remove the rejected user registration from the list", () => {
+    const otherAgency = new AgencyDtoBuilder()
+      .withId("other-agency-id")
+      .withName("Other agency")
+      .build();
+
+    const userToReview: UserToReview = {
+      id: connectedUser.id,
+      email: connectedUser.email,
+      firstName: connectedUser.firstName,
+      lastName: connectedUser.lastName,
+      agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+    };
+    const otherUserToReview: UserToReview = {
+      ...userToReview,
+      agency: toAgencyDtoForAgencyUsersAndAdmins(otherAgency, []),
+    };
+
+    ({ store } = createTestStore({
+      usersToReview: {
+        usersToReview: [userToReview, otherUserToReview],
+        isLoading: false,
+      },
+    }));
+
+    store.dispatch(
+      connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserSucceeded({
+        agencyId: agency.id,
+        justification: "osef",
+        userId: connectedUser.id,
+        feedbackTopic: "agency-users-to-review",
+      }),
+    );
+
+    expectToEqual(store.getState().usersToReview, {
+      usersToReview: [otherUserToReview],
+      isLoading: false,
+    });
+
+    expectToEqual(
+      feedbacksSelectors.feedbacks(store.getState())["agency-users-to-review"],
+      {
+        level: "success",
+        message:
+          "Le rattachement de cet utilisateur à l'organisme a bien été rejeté.",
+        on: "delete",
+        title: "Demande de rattachement refusée",
+      },
+    );
+  });
+
+  it("should remove the registered user from the list", () => {
+    const otherAgency = new AgencyDtoBuilder()
+      .withId("other-agency-id")
+      .withName("Other agency")
+      .build();
+
+    const userToReview: UserToReview = {
+      id: connectedUser.id,
+      email: connectedUser.email,
+      firstName: connectedUser.firstName,
+      lastName: connectedUser.lastName,
+      agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+    };
+    const otherUserToReview: UserToReview = {
+      ...userToReview,
+      agency: toAgencyDtoForAgencyUsersAndAdmins(otherAgency, []),
+    };
+
+    ({ store } = createTestStore({
+      usersToReview: {
+        usersToReview: [userToReview, otherUserToReview],
+        isLoading: false,
+      },
+    }));
+
+    store.dispatch(
+      connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserSucceeded({
+        agencyId: agency.id,
+        userId: connectedUser.id,
+        roles: ["validator"],
+        email: connectedUser.email,
+        isNotifiedByEmail: false,
+        feedbackTopic: "agency-users-to-review",
+      }),
+    );
+
+    expectToEqual(store.getState().usersToReview, {
+      usersToReview: [otherUserToReview],
+      isLoading: false,
+    });
+
+    expectToEqual(
+      feedbacksSelectors.feedbacks(store.getState())["agency-users-to-review"],
+      {
+        level: "success",
+        message:
+          "L'utilisateur a bien été rattaché à l'organisme avec les droits demandés.",
+        on: "update",
+        title: "L'utilisateur a bien été rattaché à l'organisme",
       },
     );
   });

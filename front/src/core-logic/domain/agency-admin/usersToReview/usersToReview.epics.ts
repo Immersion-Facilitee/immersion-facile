@@ -23,14 +23,17 @@ const getUsersInReviewEpic: UsersInReviewEpic = (
         .pipe(
           map((connectedUsers) => ({
             usersToReview: connectedUsers.flatMap((connectedUser) =>
-              connectedUser.agencyRights.map((agencyRight) => ({
-                id: connectedUser.id,
-                email: connectedUser.email,
-                firstName: connectedUser.firstName,
-                lastName: connectedUser.lastName,
-                agencyId: agencyRight.agency.id,
-                agencyName: agencyRight.agency.name,
-              })),
+              connectedUser.agencyRights
+                .filter((agencyRight) =>
+                  agencyRight.roles.includes("to-review"),
+                )
+                .map((agencyRight) => ({
+                  id: connectedUser.id,
+                  email: connectedUser.email,
+                  firstName: connectedUser.firstName,
+                  lastName: connectedUser.lastName,
+                  agency: agencyRight.agency,
+                })),
             ),
             feedbackTopic: action.payload.feedbackTopic,
           })),

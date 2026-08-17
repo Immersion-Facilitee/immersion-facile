@@ -43,6 +43,9 @@ describe("RejectUserForAgency", () => {
     proConnect,
   };
 
+  const agency1 = new AgencyDtoBuilder().withId("agency1").build();
+  const agency2 = new AgencyDtoBuilder().withId("agency2").build();
+
   const adminBuilder = new ConnectedUserBuilder()
     .withIsAdmin(true)
     .withId("backoffice-admin");
@@ -52,6 +55,19 @@ describe("RejectUserForAgency", () => {
   const notAdminBuilder = new ConnectedUserBuilder().withId("not-an-admin-id");
   const connectedNotAdmin = notAdminBuilder.build();
   const notAdmin = notAdminBuilder.buildUser();
+
+  const agency1AdminBuilder = new ConnectedUserBuilder()
+    .withId("agency-admin-id")
+    .withIsAdmin(false)
+    .withAgencyRights([
+      {
+        agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
+        roles: ["agency-admin"],
+        isNotifiedByEmail: true,
+      },
+    ]);
+  const connectedAgency1Admin = agency1AdminBuilder.build();
+  const agency1Admin = agency1AdminBuilder.buildUser();
 
   let uow: InMemoryUnitOfWork;
   let rejectUserForAgencyUsecase: RejectUserForAgency;
@@ -73,7 +89,7 @@ describe("RejectUserForAgency", () => {
     uow.userRepository.users = [admin];
   });
 
-  it("Throws if current user is not a backoffice admin", async () => {
+  it("Throws if current user is not a backoffice admin nor an agency admin", async () => {
     uow.userRepository.users = [notAdmin];
 
     await expectPromiseToFailWithError(
@@ -89,9 +105,21 @@ describe("RejectUserForAgency", () => {
     );
   });
 
-  it("Throw when no icUser were found", async () => {
-    const agency1 = new AgencyDtoBuilder().withId("agency1").build();
+  it("throws Forbidden if agency admin rejects a user on an agency he is not admin on", async () => {
+    await expectPromiseToFailWithError(
+      rejectUserForAgencyUsecase.execute(
+        {
+          userId: user.id,
+          agencyId: agency2.id,
+          justification: "osef",
+        },
+        connectedAgency1Admin,
+      ),
+      errors.user.forbidden({ userId: connectedAgency1Admin.id }),
+    );
+  });
 
+  it("Throw when no icUser were found", async () => {
     const connectedUser: ConnectedUser = {
       ...user,
       proConnect,
@@ -122,8 +150,6 @@ describe("RejectUserForAgency", () => {
   });
 
   it("Throw when no agency were found", async () => {
-    const agency1 = new AgencyDtoBuilder().withId("agency1").build();
-
     const connectedUser: ConnectedUser = {
       ...user,
       proConnect,
@@ -155,11 +181,23 @@ describe("RejectUserForAgency", () => {
     );
   });
 
-  it("Remove agency right for IcUser", async () => {
+  it.each([
+    {
+      currentUserLabel: "backoffice admin",
+      currentUser: connectedAdmin,
+      usersInRepo: [admin, user],
+    },
+    {
+      currentUserLabel: "agency admin",
+      currentUser: connectedAgency1Admin,
+      usersInRepo: [agency1Admin, user],
+    },
+  ])("Remove agency right for IcUser when $currentUserLabel requests it", async ({
+    currentUser,
+    usersInRepo,
+  }) => {
     const now = new Date("2023-11-07");
     timeGateway.setNextDate(now);
-    const agency1 = new AgencyDtoBuilder().withId("agency1").build();
-    const agency2 = new AgencyDtoBuilder().withId("agency2").build();
 
     uow.agencyRepository.agencies = [
       toAgencyWithRights(agency1, {
@@ -171,7 +209,7 @@ describe("RejectUserForAgency", () => {
       }),
     ];
 
-    uow.userRepository.users = [admin, user];
+    uow.userRepository.users = usersInRepo;
 
     await rejectUserForAgencyUsecase.execute(
       {
@@ -179,7 +217,7 @@ describe("RejectUserForAgency", () => {
         agencyId: agency1.id,
         justification: "osef",
       },
-      connectedAdmin,
+      currentUser,
     );
 
     expectToEqual(uow.agencyRepository.agencies, [
@@ -202,7 +240,7 @@ describe("RejectUserForAgency", () => {
           justification: "osef",
           triggeredBy: {
             kind: "connected-user",
-            userId: connectedAdmin.id,
+            userId: currentUser.id,
           },
         },
         publications: [],

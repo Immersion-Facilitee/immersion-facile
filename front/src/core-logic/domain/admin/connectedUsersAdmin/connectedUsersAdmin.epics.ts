@@ -118,22 +118,30 @@ const rejectAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
       connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested
         .match,
     ),
-    switchMap((action: PayloadActionWithFeedbackTopic<RejectConnectedUserRoleForAgencyParams>) =>
-      adminGateway
-        .rejectUserForAgency$(action.payload, getConnectedUserJwt(state$.value))
-        .pipe(
-          map(() =>
-            connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserSucceeded(
-              action.payload,
+    switchMap(
+      (
+        action: PayloadActionWithFeedbackTopic<RejectConnectedUserRoleForAgencyParams>,
+      ) =>
+        adminGateway
+          .rejectUserForAgency$(
+            action.payload,
+            getConnectedUserJwt(state$.value),
+          )
+          .pipe(
+            map(() =>
+              connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserSucceeded(
+                action.payload,
+              ),
+            ),
+            catchEpicError((error) =>
+              connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserFailed(
+                {
+                  errorMessage: error.message,
+                  feedbackTopic: action.payload.feedbackTopic,
+                },
+              ),
             ),
           ),
-          catchEpicError((error) =>
-            connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserFailed({
-              errorMessage: error.message,
-              feedbackTopic: action.payload.feedbackTopic,
-            }),
-          ),
-        ),
     ),
   );
 

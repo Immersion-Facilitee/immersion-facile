@@ -410,12 +410,10 @@ describe("Agency registration for authenticated users", () => {
       };
 
       store.dispatch(
-        connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested(
-          {
-            ...payload,
-            feedbackTopic: "agency-users-to-review",
-          },
-        ),
+        connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested({
+          ...payload,
+          feedbackTopic: "agency-users-to-review",
+        }),
       );
 
       expectIsUpdatingUserAgencyToBe(true);

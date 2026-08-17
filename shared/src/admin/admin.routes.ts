@@ -78,7 +78,7 @@ export const adminRoutes = defineRoutes({
 
   rejectIcUserForAgency: defineRoute({
     method: "delete",
-    url: "/admin/inclusion-connected/users",
+    url: "/inclusion-connected/users",
     requestBodySchema: rejectIcUserRoleForAgencyParamsSchema,
     ...withAuthorizationHeaders,
     responses: {

@@ -21,6 +21,7 @@ import { AgencyUserModificationForm } from "src/app/components/agency/AgencyUser
 import { AgencyLineRightsCTAs } from "src/app/components/agency/agencies-table/agency-line/AgencyLineRightsCTAs";
 import { agencyRolesToDisplay } from "src/app/contents/userRolesToDisplay";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { hasCounsellorRoles } from "src/core-logic/domain/agencies/agencies.helpers";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
@@ -52,15 +53,19 @@ export const AgencyRightsTable = ({
   const isBackofficeAdmin = currentUser?.isBackofficeAdmin;
   const [selectedAgencyRight, setSelectedAgencyRight] =
     useState<AgencyRight | null>(null);
+  const isLoadingSelectedAgencyUsers = useAppSelector(
+    fetchAgencySelectors.isLoading,
+  );
   const selectedAgencyUsersById = useAppSelector(
     fetchAgencySelectors.agencyUsers,
   );
-  const selectedAgencyHasCounsellorRoles = values(selectedAgencyUsersById).some(
-    (user) =>
-      values(user.agencyRights)
-        .filter((right) => right.agency.id === selectedAgencyRight?.agency.id)
-        .some((right) => right.roles.includes("counsellor")),
-  );
+  const selectedAgencyHasCounsellorRoles =
+    selectedAgencyRight?.agency.id && !isLoadingSelectedAgencyUsers
+      ? hasCounsellorRoles({
+          users: values(selectedAgencyUsersById),
+          agencyId: selectedAgencyRight.agency.id,
+        })
+      : false;
 
   const userModal = useMemo(
     () =>

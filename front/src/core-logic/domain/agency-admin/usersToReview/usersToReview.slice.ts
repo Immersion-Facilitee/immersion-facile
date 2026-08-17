@@ -1,5 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { AgencyId, UserId, WithUserFilters } from "shared";
+import type {
+  AgencyDtoForAgencyUsersAndAdmins,
+  AgencyId,
+  UserId,
+  WithUserFilters,
+} from "shared";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import type { PayloadActionWithFeedbackTopic } from "src/core-logic/domain/feedback/feedback.slice";
 
 export type UserToReview = {
@@ -7,16 +13,15 @@ export type UserToReview = {
   email: string;
   firstName: string;
   lastName: string;
-  agencyId: AgencyId;
-  agencyName: string;
+  agency: AgencyDtoForAgencyUsersAndAdmins;
 };
 
-export type AdminAgencyState = {
+type UsersToReviewState = {
   isLoading: boolean;
   usersToReview: UserToReview[];
 };
 
-export const usersToReviewState: AdminAgencyState = {
+export const usersToReviewState: UsersToReviewState = {
   usersToReview: [],
   isLoading: false,
 };
@@ -46,5 +51,28 @@ export const usersToReviewSlice = createSlice({
     ) => {
       state.isLoading = false;
     },
+  },
+  extraReducers: (builder) => {
+    const removeUserRegistration = (
+      state: UsersToReviewState,
+      action: { payload: { userId: UserId; agencyId: AgencyId } },
+    ) => {
+      state.usersToReview = state.usersToReview.filter(
+        (user) =>
+          !(
+            user.id === action.payload.userId &&
+            user.agency.id === action.payload.agencyId
+          ),
+      );
+    };
+
+    builder.addCase(
+      connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserSucceeded,
+      removeUserRegistration,
+    );
+    builder.addCase(
+      connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserSucceeded,
+      removeUserRegistration,
+    );
   },
 });
