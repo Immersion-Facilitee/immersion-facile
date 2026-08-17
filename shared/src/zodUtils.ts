@@ -37,6 +37,8 @@ export const localization = {
     "Les numéros de téléphone des signataires doivent être différents.",
   invalidAppellations: "Les métiers renseignés sont invalides.",
   invalidAddress: "L'adresse est invalide",
+  miniStageImmersionAddressMustBeInFrance:
+    "Le lieu du mini-stage doit être en France.",
   invalidEnum: "Vous devez sélectionner une option parmi celles proposées",
   invalidSiret: "SIRET doit être composé de 14 chiffres",
 };

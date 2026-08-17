@@ -187,6 +187,9 @@ export const CCI_WEEKLY_LIMITED_SCHEDULE_AGE = AGES.SIXTEEN;
 
 export const CCI_15YO_REQUIREMENT_RELEASE_DATE = new Date("2023-12-22");
 export const CCI_16YO_REQUIREMENT_RELEASE_DATE = new Date("2026-03-03");
+export const CCI_FRENCH_ADDRESS_REQUIREMENT_RELEASE_DATE = new Date(
+  "2026-08-21",
+);
 
 type MINI_STAGE_RULE = {
   maxWeeklyHours: number;

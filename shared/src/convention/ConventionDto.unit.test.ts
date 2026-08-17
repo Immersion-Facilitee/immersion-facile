@@ -6,6 +6,7 @@ import {
   type DailyScheduleDto,
   type DateIntervalDto,
   type DateString,
+  localization,
   MAX_PRESENCE_DAYS_RELEASE_DATE,
   maxPresenceDaysByInternshipKind,
   SIGNATORIES_PHONE_NUMBER_DISTINCT_RELEASE_DATE,
@@ -30,6 +31,7 @@ import {
   type BeneficiaryRepresentative,
   CCI_15YO_REQUIREMENT_RELEASE_DATE,
   CCI_16YO_REQUIREMENT_RELEASE_DATE,
+  CCI_FRENCH_ADDRESS_REQUIREMENT_RELEASE_DATE,
   type ConventionInternshipKindSpecific,
   type ConventionReadDto,
   conventionStatuses,
@@ -1457,6 +1459,72 @@ describe("conventionDtoSchema", () => {
             .build(),
         );
       });
+    });
+  });
+
+  describe("CCI immersion address must be in France", () => {
+    const belgianAddress =
+      "14 Boulevard de Berlaimont 1000 Bruxelles, Belgique";
+    const makeMiniStageConvention = (
+      immersionAddress: string,
+      dateSubmission = addDays(
+        CCI_FRENCH_ADDRESS_REQUIREMENT_RELEASE_DATE,
+        1,
+      ).toISOString(),
+    ) =>
+      new ConventionDtoBuilder()
+        .withInternshipKind("mini-stage-cci")
+        .withDateStart(DATE_START)
+        .withDateEnd(addDays(new Date(DATE_START), 4).toISOString())
+        .withDateSubmission(dateSubmission)
+        .withSchedule(reasonableSchedule, ["dimanche"])
+        .withImmersionAddress(immersionAddress)
+        .build();
+
+    it("accepts a French address", () => {
+      expectDtoToBeValid(
+        conventionSchema,
+        makeMiniStageConvention(
+          "169 boulevard de la villette, 75010 Paris, France",
+        ),
+      );
+    });
+
+    it("accepts a DROM-COM address without country name", () => {
+      expectDtoToBeValid(
+        conventionSchema,
+        makeMiniStageConvention("97438 SAINTE-MARIE"),
+      );
+    });
+
+    it("rejects a Belgian address when submitted after the release date", () => {
+      expectDtoInvalidWithIssueMessages(
+        conventionSchema,
+        makeMiniStageConvention(belgianAddress),
+        [
+          `immersionAddress: ${localization.miniStageImmersionAddressMustBeInFrance}`,
+        ],
+      );
+    });
+
+    it(`accepts a Belgian address when submitted before ${CCI_FRENCH_ADDRESS_REQUIREMENT_RELEASE_DATE}`, () => {
+      expectDtoToBeValid(
+        conventionSchema,
+        makeMiniStageConvention(
+          belgianAddress,
+          subDays(CCI_FRENCH_ADDRESS_REQUIREMENT_RELEASE_DATE, 1).toISOString(),
+        ),
+      );
+    });
+
+    it("accepts a Belgian address when internship kind is immersion", () => {
+      expectDtoToBeValid(
+        conventionSchema,
+        new ConventionDtoBuilder()
+          .withInternshipKind("immersion")
+          .withImmersionAddress(belgianAddress)
+          .build(),
+      );
     });
   });
 });
