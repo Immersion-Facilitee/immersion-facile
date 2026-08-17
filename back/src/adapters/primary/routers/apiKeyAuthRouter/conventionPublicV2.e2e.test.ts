@@ -24,7 +24,7 @@ import {
 } from "./publicApiV2.routes";
 
 describe("Convention routes", () => {
-  const agency = new AgencyDtoBuilder().build();
+  const agency = new AgencyDtoBuilder().withKind("pole-emploi").build();
 
   const convention = new ConventionDtoBuilder().withAgencyId(agency.id).build();
   const conventionReadConsumerWithAgencyIdsScope = new ApiConsumerBuilder()
@@ -205,7 +205,7 @@ describe("Convention routes", () => {
           agencyName: agency.name,
           agencyDepartment: agency.address.departmentCode,
           agencyContactEmail: agency.contactEmail,
-          agencyKind: agency.kind,
+          agencyKind: "pole-emploi",
           agencySiret: agency.agencySiret,
           agencyValidationSteps: "validator-only",
           assessment: {
@@ -307,7 +307,7 @@ describe("Convention routes", () => {
             ...convention,
             agencyName: agency.name,
             agencyDepartment: agency.address.departmentCode,
-            agencyKind: agency.kind,
+            agencyKind: "pole-emploi",
             agencyContactEmail: agency.contactEmail,
             agencySiret: agency.agencySiret,
             agencyValidationSteps: "validator-only",
@@ -356,7 +356,7 @@ describe("Convention routes", () => {
               agencyName: agency.name,
               agencyContactEmail: agency.contactEmail,
               agencyDepartment: agency.address.departmentCode,
-              agencyKind: agency.kind,
+              agencyKind: "pole-emploi",
               agencySiret: agency.agencySiret,
               agencyValidationSteps: "validator-only",
               assessment: null,

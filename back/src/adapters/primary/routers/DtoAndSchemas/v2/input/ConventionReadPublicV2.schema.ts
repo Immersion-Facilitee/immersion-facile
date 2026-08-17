@@ -1,5 +1,4 @@
 import {
-  agencyKindSchema,
   agencyValidationSteps,
   assessmentStatuses,
   conventionLastRemindersSchema,
@@ -8,6 +7,7 @@ import {
   emailSchema,
   legacyAssessmentStatuses,
   makeDateStringSchema,
+  partnerAgencyKindSchema,
   siretSchema,
   withBannedEstablishmentInformationSchema,
   type ZodSchemaWithInputMatchingOutput,
@@ -21,16 +21,17 @@ export const conventionReadPublicV2Schema: ZodSchemaWithInputMatchingOutput<Conv
       z.object({
         agencyName: z.string(),
         agencyDepartment: z.string(),
-        agencyKind: agencyKindSchema,
+        agencyKind: partnerAgencyKindSchema,
         agencyContactEmail: emailSchema,
         agencySiret: siretSchema,
         agencyValidationSteps: z.enum(agencyValidationSteps),
-        agencyRefersToOtherAgency: z
+        agencyRefersTo: z
           .object({
             id: z.string(),
             name: z.string(),
             contactEmail: emailSchema,
-            kind: z.string(),
+            kind: partnerAgencyKindSchema,
+            siret: siretSchema,
           })
           .optional(),
         assessment: z

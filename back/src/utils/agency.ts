@@ -11,6 +11,7 @@ import {
   type ConventionAgencyPublicFields,
   type Email,
   errors,
+  type PartnerAgencyKind,
   pipeWithValue,
   toAgencyDtoForAgencyUsersAndAdmins,
   type UserId,
@@ -18,6 +19,10 @@ import {
 } from "shared";
 import type { AgencyRepository } from "../domains/agency/ports/AgencyRepository";
 import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
+
+export const toPartnerAgencyKind = (
+  agencyKind: AgencyKind,
+): PartnerAgencyKind => agencyKind;
 
 export const toAgencyWithRights = (
   { counsellorEmails, validatorEmails, ...rest }: AgencyDto,
