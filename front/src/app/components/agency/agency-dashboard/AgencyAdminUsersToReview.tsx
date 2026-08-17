@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import Table from "@codegouvfr/react-dsfr/Table";
@@ -21,6 +22,7 @@ import { hasCounsellorRoles } from "src/core-logic/domain/agencies/agencies.help
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import type { UserToReview } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
+import type { FeedbackLevel } from "src/core-logic/domain/feedback/feedback.slice";
 
 const userRegistrationToAgencyModalConfig = {
   isOpenedByDefault: false,
@@ -36,6 +38,40 @@ const {
 type ReviewActionProps = {
   userToReview: UserToReview;
   action: "register" | "reject";
+};
+
+const getDisplayedUsername = ({
+  firstName,
+  lastName,
+}: {
+  firstName: string;
+  lastName: string;
+}): string => {
+  if (firstName.length === 0 && lastName.length === 0) return "L'utilisateur";
+
+  return getFormattedFirstnameAndLastname({
+    firstname: firstName,
+    lastname: lastName,
+  });
+};
+
+const getFeedbackDescription = ({
+  level,
+  message,
+  action,
+  agencyName,
+  username,
+}: {
+  level: FeedbackLevel;
+  message: string;
+  action: ReviewActionProps["action"];
+  agencyName: string;
+  username: string;
+}): string => {
+  if (level !== "success") return message;
+  if (action === "register")
+    return `${username} a bien été ajouté à l'organisme ${agencyName}.`;
+  return `${username} n'a pas été ajouté à l'organisme ${agencyName}.`;
 };
 
 export const AgencyAdminUsersToReview = ({
@@ -79,7 +115,30 @@ export const AgencyAdminUsersToReview = ({
         title="Demandes de rattachement"
         titleAs="h2"
       >
-        <Feedback topics={["agency-users-to-review"]} closable />
+        {reviewActionProps && (
+          <Feedback
+            topics={["agency-users-to-review"]}
+            render={({ level, title, message }) => (
+              <Alert
+                closable
+                small
+                severity={level}
+                className={fr.cx("fr-mt-2w")}
+                title={title}
+                description={getFeedbackDescription({
+                  level,
+                  message,
+                  action: reviewActionProps.action,
+                  agencyName: reviewActionProps.userToReview.agency.name,
+                  username: getDisplayedUsername({
+                    firstName: reviewActionProps.userToReview.firstName,
+                    lastName: reviewActionProps.userToReview.lastName,
+                  }),
+                })}
+              />
+            )}
+          />
+        )}
         {usersToReview.length > 0 ? (
           <Table
             fixed

@@ -474,7 +474,7 @@ export const feedbacks: Record<
     "update.success": {
       action:
         connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserSucceeded,
-      title: "L'utilisateur a bien été rattaché à l'organisme",
+      title: "L'utilisateur a bien été ajouté",
       message:
         "L'utilisateur a bien été rattaché à l'organisme avec les droits demandés.",
     },

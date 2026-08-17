@@ -147,10 +147,9 @@ describe("usersToReview", () => {
       feedbacksSelectors.feedbacks(store.getState())["agency-users-to-review"],
       {
         level: "success",
-        message:
-          "Le rattachement de cet utilisateur à l'organisme a bien été rejeté.",
+        message: "La demande de cet utilisateur a bien été rejetée.",
         on: "delete",
-        title: "Demande de rattachement refusée",
+        title: "Demande de rattachement rejetée",
       },
     );
   });
@@ -203,7 +202,7 @@ describe("usersToReview", () => {
         message:
           "L'utilisateur a bien été rattaché à l'organisme avec les droits demandés.",
         on: "update",
-        title: "L'utilisateur a bien été rattaché à l'organisme",
+        title: "L'utilisateur a bien été ajouté",
       },
     );
   });
