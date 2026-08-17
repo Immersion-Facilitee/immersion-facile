@@ -1355,7 +1355,11 @@ export const domElementIds = {
   myAccountAgencies: {},
   myAccountEstablishments: {},
   myAccountAgencyRegistration: {},
-  agencyDashboardAgencies: {},
+  agencyDashboardAgencies: {
+    userRegistrationToAgency: {
+      modal: "im-agency-dashboard-agencies__user-registration-to-agency-modal",
+    },
+  },
   agencyDashboardAgencyDetails: {
     login: {
       proConnectButton:

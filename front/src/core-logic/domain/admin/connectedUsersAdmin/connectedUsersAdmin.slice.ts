@@ -12,9 +12,7 @@ import type {
   WithUserFilters,
 } from "shared";
 import type { SubmitFeedBack } from "src/core-logic/domain/SubmitFeedback";
-import type {
-  PayloadActionWithFeedbackTopic,
-} from "../../feedback/feedback.slice";
+import type { PayloadActionWithFeedbackTopic } from "../../feedback/feedback.slice";
 
 export type ConnectedUserWithNormalizedAgencyRights = OmitFromExistingKeys<
   ConnectedUser,

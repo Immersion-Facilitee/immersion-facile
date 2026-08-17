@@ -5,7 +5,7 @@ import {
 } from "shared";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
-import { throwIfNotAdmin } from "../helpers/authorization.helper";
+import { throwIfNotAgencyAdminOrBackofficeAdmin } from "../helpers/authorization.helper";
 
 export type RejectUserForAgency = ReturnType<typeof makeRejectUserForAgency>;
 export const makeRejectUserForAgency = useCaseBuilder("RejectUserForAgency")
@@ -16,7 +16,10 @@ export const makeRejectUserForAgency = useCaseBuilder("RejectUserForAgency")
     createNewEvent: CreateNewEvent;
   }>()
   .build(async ({ uow, currentUser, deps, inputParams }) => {
-    throwIfNotAdmin(currentUser);
+    throwIfNotAgencyAdminOrBackofficeAdmin({
+      agencyIds: [inputParams.agencyId],
+      currentUser,
+    });
     const userToUpdate = await uow.userRepository.getById(inputParams.userId);
 
     if (!userToUpdate)

@@ -17,6 +17,7 @@ import { AgencyUserModificationForm } from "src/app/components/agency/AgencyUser
 import { RejectIcUserRegistrationToAgencyForm } from "src/app/components/agency/RejectIcUserRegistrationToAgencyForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import { hasCounsellorRoles } from "src/core-logic/domain/agencies/agencies.helpers";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 
@@ -111,12 +112,12 @@ export const IcUserAgenciesToReview = ({
   const selectedAgencyUsersById = useAppSelector(
     fetchAgencySelectors.agencyUsers,
   );
-  const selectedAgencyHasCounsellorRoles = values(selectedAgencyUsersById).some(
-    (user) =>
-      values(user.agencyRights)
-        .filter((right) => right.agency.id === selectedAgency?.id)
-        .some((right) => right.roles.includes("counsellor")),
-  );
+  const selectedAgencyHasCounsellorRoles = selectedAgency?.id
+    ? hasCounsellorRoles({
+        users: values(selectedAgencyUsersById),
+        agencyId: selectedAgency.id,
+      })
+    : false;
 
   const onUserRegistrationSubmitted = (
     userParamsForAgency: UserParamsForAgency,
