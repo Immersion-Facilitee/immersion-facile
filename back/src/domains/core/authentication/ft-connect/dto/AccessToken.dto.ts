@@ -1,4 +1,4 @@
-import type { IdToken } from "shared";
+import type { IdToken } from "../../connected-user/entities/OngoingOAuth";
 
 export type AccessTokenDto = {
   value: string;

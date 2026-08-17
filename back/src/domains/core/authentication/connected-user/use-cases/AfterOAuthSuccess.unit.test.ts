@@ -9,7 +9,6 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
   frontRoutes,
-  type IdToken,
   makeRouteAbsoluteUrl,
   type OAuthSuccessLoginParams,
   type SiretDto,
@@ -38,7 +37,7 @@ import {
   fakeProviderConfig,
   InMemoryProConnectOAuthGateway,
 } from "../adapters/oauth-gateway/InMemoryOAuthGateway";
-import type { OngoingOAuth } from "../entities/OngoingOAuth";
+import type { IdToken, OngoingOAuth } from "../entities/OngoingOAuth";
 import type {
   FTConnectGetAccessTokenPayload,
   ProConnectGetAccessTokenPayload,
@@ -390,7 +389,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
           keys(allowedLoginSources),
         )("generates an app token and returns a redirection url which includes token and user data for %s", async (source) => {
           const allowedRoute = allowedLoginSources[source];
-          const { initialOngoingOAuth, idToken, userId } =
+          const { initialOngoingOAuth, userId } =
             makeSuccessfulAuthenticationConditions(allowedRoute({}).href);
 
           const response = await afterOAuthSuccessRedirection.execute({
@@ -400,7 +399,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
 
           expectToEqual(response, {
             provider: "proConnect",
-            redirectUri: `http://fake-connected-user${allowedRoute({ token: `jwt-${userId}`, idToken, provider: "proConnect" }).href}`,
+            redirectUri: `http://fake-connected-user${allowedRoute({ token: `jwt-${userId}`, provider: "proConnect" }).href}`,
           });
         });
       });
@@ -814,7 +813,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
         });
         expectToEqual(result, {
           provider: "email",
-          redirectUri: `http://fake-connected-user/admin?token=jwt-${userId}&idToken=&provider=email`,
+          redirectUri: `http://fake-connected-user/admin?token=jwt-${userId}&provider=email`,
         });
       });
 
@@ -922,7 +921,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
 
         expectToEqual(redirectedUrl, {
           provider: "email",
-          redirectUri: `http://fake-connected-user${allowedRoute({ token: "jwt-new-user-id", idToken: "", provider: "email" }).href}`,
+          redirectUri: `http://fake-connected-user${allowedRoute({ token: "jwt-new-user-id", provider: "email" }).href}`,
         });
       });
     });

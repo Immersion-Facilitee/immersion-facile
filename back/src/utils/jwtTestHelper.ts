@@ -50,7 +50,6 @@ export const fakeGenerateMagicLinkUrlFn: GenerateConventionMagicLinkUrl = ({
 };
 
 export const fakeGenerateConnectedUserUrlFn: GenerateConnectedUserLoginUrl = ({
-  accessToken,
   user,
   ongoingOAuth,
 }) => {
@@ -62,7 +61,6 @@ export const fakeGenerateConnectedUserUrlFn: GenerateConnectedUserLoginUrl = ({
     {
       ...params,
       token: `jwt-${user.id}` as ConnectedUserJwt,
-      idToken: accessToken?.idToken ?? "",
       provider: ongoingOAuth.provider,
     },
   )}`;

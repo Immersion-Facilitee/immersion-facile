@@ -133,11 +133,13 @@ const getLogoutUrl$ = (
 ): Observable<AbsoluteUrl | undefined> => {
   const { federatedIdentity } = authState;
   if (!federatedIdentity) return throwError(() => errors.auth.missingOAuth({}));
+  if (federatedIdentity.provider !== "proConnect")
+    return throwError(() =>
+      errors.auth.unsupportedProvider({ actual: federatedIdentity.provider }),
+    );
   return action.payload.mode === "device-and-oauth"
     ? authGateway.getLogoutUrl$({
-        idToken: federatedIdentity.idToken,
-        authToken: federatedIdentity.token,
-        provider: federatedIdentity.provider,
+        jwt: federatedIdentity.token,
       })
     : of(undefined);
 };

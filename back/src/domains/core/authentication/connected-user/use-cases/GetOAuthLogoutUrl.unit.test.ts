@@ -57,10 +57,7 @@ describe("GetOAuthLogoutUrl", () => {
       it("throws when it does not find the ongoingOAuth", async () => {
         uow.ongoingOAuthRepository.ongoingOAuths = [];
         await expectPromiseToFailWithError(
-          getOAuthLogoutUrl.execute(
-            { idToken: "whatever", provider: "proConnect" },
-            connectedUser,
-          ),
+          getOAuthLogoutUrl.execute(undefined, connectedUser),
           errors.auth.missingOAuth({}),
         );
       });
@@ -81,10 +78,7 @@ describe("GetOAuthLogoutUrl", () => {
         };
         uow.ongoingOAuthRepository.ongoingOAuths = [ongoingOAuth];
         expectToEqual(
-          await getOAuthLogoutUrl.execute(
-            { idToken, provider: "proConnect" },
-            connectedUser,
-          ),
+          await getOAuthLogoutUrl.execute(undefined, connectedUser),
           `${
             fakeProviderConfig.providerBaseUri
           }${fakeProConnectLogoutUri}?${queryParamsAsString({
@@ -97,21 +91,47 @@ describe("GetOAuthLogoutUrl", () => {
       });
     });
 
-    describe("when provider is 'ftConnect'", () => {
-      it("returns the ftConnect logout url", async () => {
-        const idToken = "fake-id-token";
+    describe("wrong paths", () => {
+      it("fails on FtConnect provider", async () => {
+        const ongoingOAuth: OngoingOAuth = {
+          fromUri: "/uri",
+          state: "some-state",
+          nonce: "some-nonce",
+          provider: "ftConnect",
+          accessToken: "fake-access-token",
+          userId: user.id,
+          usedAt: null,
+          idToken: "token",
+        };
+        uow.ongoingOAuthRepository.ongoingOAuths = [ongoingOAuth];
 
-        const logoutUrl = await getOAuthLogoutUrl.execute(
-          { idToken, provider: "ftConnect" },
-          connectedUser,
+        await expectPromiseToFailWithError(
+          getOAuthLogoutUrl.execute(undefined, connectedUser),
+          errors.auth.accessTokenErrorType({
+            actualType: ongoingOAuth.provider,
+            expectedType: "proConnect",
+          }),
         );
+      });
 
-        expectToEqual(
-          logoutUrl,
-          `https://fake-ft-connect-logout-url?${queryParamsAsString({
-            id_token_hint: idToken,
-            redirect_uri: "fake-redirect-uri",
-          })}`,
+      it("fails on email provider", async () => {
+        const ongoingOAuth: OngoingOAuth = {
+          fromUri: "/uri",
+          state: "some-state",
+          nonce: "some-nonce",
+          provider: "email",
+          userId: user.id,
+          usedAt: null,
+          email: "mail@mail.com",
+        };
+        uow.ongoingOAuthRepository.ongoingOAuths = [ongoingOAuth];
+
+        await expectPromiseToFailWithError(
+          getOAuthLogoutUrl.execute(undefined, connectedUser),
+          errors.auth.accessTokenErrorType({
+            actualType: ongoingOAuth.provider,
+            expectedType: "proConnect",
+          }),
         );
       });
     });

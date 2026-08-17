@@ -12,7 +12,6 @@ import {
   type User,
 } from "shared";
 import type { EmailOrProConnectOngoingAuth } from "../../domains/core/authentication/connected-user/entities/OngoingOAuth";
-import type { GetAccessTokenResult } from "../../domains/core/authentication/connected-user/port/OAuthGateway";
 import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
@@ -85,7 +84,6 @@ export type GenerateConnectedUserLoginUrl = ReturnType<
 
 export type GenerateConnectedUserLoginUrlParams = {
   user: User;
-  accessToken: GetAccessTokenResult | undefined;
   ongoingOAuth: EmailOrProConnectOngoingAuth;
   now: Date;
 };
@@ -94,7 +92,6 @@ export const makeGenerateConnectedUserLoginUrl =
   (config: AppConfig, generateConnectedUserJwt: GenerateConnectedUserJwt) =>
   ({
     user,
-    accessToken,
     ongoingOAuth,
     now,
   }: GenerateConnectedUserLoginUrlParams): AbsoluteUrl => {
@@ -113,7 +110,6 @@ export const makeGenerateConnectedUserLoginUrl =
     const queryParams = queryParamsAsString<ConnectedUserQueryParams>({
       ...params,
       token: jwt,
-      idToken: accessToken?.idToken ?? "",
       provider: ongoingOAuth.provider,
     });
 

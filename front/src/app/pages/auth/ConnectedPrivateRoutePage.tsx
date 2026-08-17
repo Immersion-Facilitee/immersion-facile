@@ -165,7 +165,7 @@ export const ConnectedPrivateRoutePage = ({
   );
 
   useEffect(() => {
-    const { token, provider, idToken = "" } = route.params;
+    const { token, provider } = route.params;
 
     if (
       token &&
@@ -178,7 +178,6 @@ export const ConnectedPrivateRoutePage = ({
           federatedIdentity: {
             provider,
             token,
-            idToken,
           },
           feedbackTopic: "auth-global",
         }),

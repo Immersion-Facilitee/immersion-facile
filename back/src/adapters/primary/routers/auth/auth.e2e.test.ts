@@ -378,7 +378,6 @@ describe("auth router", () => {
 
           expectToEqual(params, {
             token: expect.any(String),
-            idToken: "",
             provider: "email",
           });
 
@@ -625,10 +624,17 @@ describe("auth router", () => {
     describe(`${displayRouteName(
       authRoutes.getOAuthLogoutUrl,
     )} returns the logout url`, () => {
+      const user = new UserBuilder()
+        .withProConnectInfos({ externalId: "id", siret: "00000000000000" })
+        .build();
+
+      beforeEach(() => {
+        inMemoryUow.userRepository.users = [user];
+      });
+
       describe("when provider is 'proConnect'", () => {
         it("returns 401 if authorization header is missing", async () => {
           const response = await authRoutesClient.getOAuthLogoutUrl({
-            queryParams: { idToken: "fake-id-token", provider: "proConnect" },
             headers: { authorization: "" },
           });
 
@@ -642,6 +648,8 @@ describe("auth router", () => {
         });
 
         it("returns 401 when user does not exist", async () => {
+          inMemoryUow.userRepository.users = [];
+
           const token = generateConnectedUserJwt({
             userId: "missing-user-id",
             version: currentJwtVersions.connectedUser,
@@ -649,10 +657,6 @@ describe("auth router", () => {
 
           const response = await authRoutesClient.getOAuthLogoutUrl({
             headers: { authorization: token },
-            queryParams: {
-              idToken: "fake-id-token",
-              provider: "proConnect",
-            },
           });
 
           expectHttpResponseToEqual(response, {
@@ -665,11 +669,6 @@ describe("auth router", () => {
         });
 
         it("returns a correct logout url with status 200", async () => {
-          const user = new UserBuilder()
-            .withProConnectInfos({ externalId: "id", siret: "00000000000000" })
-            .build();
-
-          inMemoryUow.userRepository.users = [user];
           const state = "fake-state";
           inMemoryUow.ongoingOAuthRepository.ongoingOAuths = [
             {
@@ -681,7 +680,7 @@ describe("auth router", () => {
               nonce: "fake-nonce",
               externalId: user.proConnect?.externalId,
               usedAt: null,
-              idToken: null,
+              idToken: "idtoken",
             },
           ];
 
@@ -692,10 +691,6 @@ describe("auth router", () => {
 
           const response = await authRoutesClient.getOAuthLogoutUrl({
             headers: { authorization: token },
-            queryParams: {
-              idToken: "fake-id-token",
-              provider: "proConnect",
-            },
           });
 
           expectHttpResponseToEqual(response, {
@@ -703,7 +698,7 @@ describe("auth router", () => {
               appConfig.proConnectConfig.providerBaseUri
             }${fakeProConnectLogoutUri}?${queryParamsAsString({
               postLogoutRedirectUrl: appConfig.immersionFacileBaseUrl,
-              idToken: "fake-id-token",
+              idToken: "idtoken",
               state,
             })}`,
             status: 200,
@@ -713,20 +708,38 @@ describe("auth router", () => {
 
       describe("when provider is 'ftConnect'", () => {
         it("when ftConnect, returns a correct logout url with status 200", async () => {
-          const response = await authRoutesClient.getOAuthLogoutUrl({
-            headers: { authorization: "fake-token" },
-            queryParams: {
-              idToken: "fake-id-token",
+          inMemoryUow.ongoingOAuthRepository.ongoingOAuths = [
+            {
+              fromUri: "uri",
+              userId: user.id,
+              accessToken: "yolo",
               provider: "ftConnect",
+              state,
+              nonce: "fake-nonce",
+              externalId: user.proConnect?.externalId,
+              usedAt: null,
+              idToken: "id-token",
             },
+          ];
+
+          const token = generateConnectedUserJwt({
+            userId: user.id,
+            version: currentJwtVersions.connectedUser,
+          });
+
+          const response = await authRoutesClient.getOAuthLogoutUrl({
+            headers: { authorization: token },
           });
 
           expectHttpResponseToEqual(response, {
-            body: `https://fake-ft-connect-logout-url?${queryParamsAsString({
-              id_token_hint: "fake-id-token",
-              redirect_uri: "fake-redirect-uri",
-            })}`,
-            status: 200,
+            body: {
+              message: errors.auth.accessTokenErrorType({
+                actualType: "ftConnect",
+                expectedType: "proConnect",
+              }).message,
+              status: 400,
+            },
+            status: 400,
           });
         });
       });

@@ -15,7 +15,6 @@ import {
   afterOAuthSuccessRedirectionResponseSchema,
   initiateLoginByEmailParamsSchema,
   initiateLoginByOAuthParamsSchema,
-  logoutQueryParamsSchema,
   oAuthSuccessLoginParamsSchema,
 } from "./auth.schema";
 
@@ -88,10 +87,10 @@ export const authRoutes = defineRoutes({
   getOAuthLogoutUrl: defineRoute({
     method: "get",
     url: "/logout/oauth",
-    queryParamsSchema: logoutQueryParamsSchema,
     ...withAuthorizationHeaders,
     responses: {
       200: absoluteUrlSchema,
+      400: httpErrorSchema,
       401: httpErrorSchema,
     },
   }),

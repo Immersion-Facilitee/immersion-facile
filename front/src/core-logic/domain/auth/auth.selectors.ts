@@ -5,7 +5,7 @@ import { connectedUserSelectors } from "../connected-user/connectedUser.selector
 
 const rootAuthSelector = createRootSelector((state) => state.auth);
 
-const currentFederatedIdentity = createSelector(
+const federatedIdentity = createSelector(
   rootAuthSelector,
   (auth) => auth.federatedIdentity,
 );
@@ -30,7 +30,7 @@ const requestedEmail = createSelector(
 );
 
 const isConnectedUser = createSelector(
-  currentFederatedIdentity,
+  federatedIdentity,
   (federatedIdentity) =>
     federatedIdentity?.provider === "proConnect" ||
     federatedIdentity?.provider === "email",
@@ -38,7 +38,7 @@ const isConnectedUser = createSelector(
 
 const connectedUserJwt = createSelector(
   isConnectedUser,
-  currentFederatedIdentity,
+  federatedIdentity,
   (isConnectedUser, federatedIdentity) =>
     isConnectedUser
       ? (federatedIdentity?.token as ConnectedUserJwt)
@@ -53,7 +53,7 @@ const isAdminConnected = createSelector(
 );
 
 export const authSelectors = {
-  federatedIdentity: currentFederatedIdentity,
+  federatedIdentity,
   isAdminConnected,
   isConnectedUser,
   connectedUserJwt,
