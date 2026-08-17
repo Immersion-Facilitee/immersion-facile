@@ -1,15 +1,15 @@
 import type {
   ArchivedConventionRequestQueries,
-  FirstOldestArchivedConventionRequestToReviewList,
+  ArchivedConventionRequestToReviewList,
 } from "../../ports/ArchivedConventionRequestQueries";
 
 export class InMemoryArchivedConventionRequestQueries
   implements ArchivedConventionRequestQueries
 {
-  getFirstOldestArchivedConventionRequestToReviewListNextResponse: FirstOldestArchivedConventionRequestToReviewList =
+  getFirstOldestArchivedConventionRequestToReviewListNextResponse: ArchivedConventionRequestToReviewList =
     [];
 
-  public async getFirstOldestArchivedConventionRequestToReviewList(): Promise<FirstOldestArchivedConventionRequestToReviewList> {
+  public async getFirstOldestArchivedConventionRequestToReviewList(): Promise<ArchivedConventionRequestToReviewList> {
     return this.getFirstOldestArchivedConventionRequestToReviewListNextResponse;
   }
 }

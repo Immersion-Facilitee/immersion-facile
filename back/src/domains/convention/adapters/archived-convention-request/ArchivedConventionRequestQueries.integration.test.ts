@@ -8,7 +8,7 @@ import {
 import { makeTestPgPool } from "../../../../config/pg/pgPool";
 import { PgUserRepository } from "../../../core/authentication/connected-user/adapters/PgUserRepository";
 import type { ArchivedConventionRequestEntity } from "../../entities/ArchivedConventionRequestEntity";
-import type { FirstOldestArchivedConventionRequestToReviewList } from "../../ports/ArchivedConventionRequestQueries";
+import type { ArchivedConventionRequestToReviewList } from "../../ports/ArchivedConventionRequestQueries";
 import { InMemoryArchivedConventionRequestQueries } from "./InMemoryArchivedConventionRequestQueries";
 import { PgArchivedConventionRequestQueries } from "./PgArchivedConventionRequestQueries";
 import { PgArchivedConventionRequestRepository } from "./PgArchivedConventionRequestRepository";
@@ -103,8 +103,7 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
         reason: "legalDispute",
       };
 
-      const expectedResults: FirstOldestArchivedConventionRequestToReviewList =
-        [];
+      const expectedResults: ArchivedConventionRequestToReviewList = [];
 
       if (queries instanceof PgArchivedConventionRequestQueries) {
         await saveEntitiesInRepo(db, [oldRequestAlreadyHandled]);

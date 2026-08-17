@@ -2,7 +2,7 @@ import { archivedConventionRequestReasonSchema } from "shared";
 import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
 import type {
   ArchivedConventionRequestQueries,
-  FirstOldestArchivedConventionRequestToReviewList,
+  ArchivedConventionRequestToReviewList,
 } from "../../ports/ArchivedConventionRequestQueries";
 
 export class PgArchivedConventionRequestQueries
@@ -10,7 +10,7 @@ export class PgArchivedConventionRequestQueries
 {
   constructor(private readonly transaction: KyselyDb) {}
 
-  public async getFirstOldestArchivedConventionRequestToReviewList(): Promise<FirstOldestArchivedConventionRequestToReviewList> {
+  public async getFirstOldestArchivedConventionRequestToReviewList(): Promise<ArchivedConventionRequestToReviewList> {
     return this.transaction
       .selectFrom("archived_convention_requests")
       .select(["id", "reason", "user_id", "created_at"])
