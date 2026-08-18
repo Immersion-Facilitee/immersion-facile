@@ -1,8 +1,6 @@
 import {
   ConventionDtoBuilder,
-  type ConventionReadDto,
   type CreateWebhookSubscription,
-  conventionReadSchema,
   localization,
   makeEmptyLastReminders,
   type ZodSchemaWithInputMatchingOutput,
@@ -11,6 +9,8 @@ import { createOpenApiGenerator } from "shared-routes/openapi";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { ConventionUpdatedSubscriptionCallbackBody } from "../../../../domains/core/api-consumer/ports/SubscribersGateway";
+import type { ConventionReadPublicV2Dto } from "../DtoAndSchemas/v2/input/ConventionReadPublicV2.dto";
+import { conventionReadPublicV2Schema } from "../DtoAndSchemas/v2/input/ConventionReadPublicV2.schema";
 
 import {
   publicApiV2ConventionRoutes,
@@ -86,7 +86,7 @@ const error429Example = {
   message: "Too many requests, please try again later.",
 };
 
-const conventionExample: ConventionReadDto = {
+const conventionExample: ConventionReadPublicV2Dto = {
   ...new ConventionDtoBuilder().build(),
   agencyName: "Agence de test",
   agencyDepartment: "75",
@@ -107,7 +107,7 @@ const conventionExample: ConventionReadDto = {
 
 const callbackBodySchema: ZodSchemaWithInputMatchingOutput<ConventionUpdatedSubscriptionCallbackBody> =
   z.object({
-    payload: z.object({ convention: conventionReadSchema }),
+    payload: z.object({ convention: conventionReadPublicV2Schema }),
     subscribedEvent: z.enum(["convention.updated"], {
       error: localization.invalidEnum,
     }),

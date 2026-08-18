@@ -222,7 +222,7 @@ describe("Broadcast to partners on updated convention", () => {
               agencyName: agency1.name,
               agencyDepartment: agency1.address.departmentCode,
               agencyContactEmail: agency1.contactEmail,
-              agencyKind: agency1.kind,
+              agencyKind: "autre",
               agencySiret: agency1.agencySiret,
               agencyValidationSteps: "counsellor-and-validator",
               assessment: null,
@@ -250,7 +250,7 @@ describe("Broadcast to partners on updated convention", () => {
               agencyName: agency2.name,
               agencyDepartment: agency2.address.departmentCode,
               agencyContactEmail: agency2.contactEmail,
-              agencyKind: agency2.kind,
+              agencyKind: "autre",
               agencySiret: agency2.agencySiret,
               agencyValidationSteps: "counsellor-and-validator",
               assessment: null,
@@ -299,7 +299,7 @@ describe("Broadcast to partners on updated convention", () => {
               agencyName: agency2.name,
               agencyDepartment: agency2.address.departmentCode,
               agencyContactEmail: agency2.contactEmail,
-              agencyKind: agency2.kind,
+              agencyKind: "autre",
               agencySiret: agency2.agencySiret,
               agencyValidationSteps: "counsellor-and-validator",
               immersionAppellation: {
@@ -480,12 +480,12 @@ describe("Broadcast to partners on updated convention", () => {
               agencyName: agencyWithRefersTo.name,
               agencyDepartment: agencyWithRefersTo.address.departmentCode,
               agencyContactEmail: agencyWithRefersTo.contactEmail,
-              agencyKind: agencyWithRefersTo.kind,
+              agencyKind: "autre",
               agencySiret: agencyWithRefersTo.agencySiret,
               agencyValidationSteps: "counsellor-and-validator",
               agencyRefersTo: {
                 id: agency1.id,
-                kind: agency1.kind,
+                kind: "autre",
                 name: agency1.name,
                 contactEmail: agency1.contactEmail,
                 siret: agency1.agencySiret,
@@ -512,12 +512,12 @@ describe("Broadcast to partners on updated convention", () => {
               agencyName: agencyWithRefersTo.name,
               agencyDepartment: agencyWithRefersTo.address.departmentCode,
               agencyContactEmail: agencyWithRefersTo.contactEmail,
-              agencyKind: agencyWithRefersTo.kind,
+              agencyKind: "autre",
               agencySiret: agencyWithRefersTo.agencySiret,
               agencyValidationSteps: "counsellor-and-validator",
               agencyRefersTo: {
                 id: agency1.id,
-                kind: agency1.kind,
+                kind: "autre",
                 name: agency1.name,
                 contactEmail: agency1.contactEmail,
                 siret: agency1.agencySiret,
@@ -538,6 +538,134 @@ describe("Broadcast to partners on updated convention", () => {
     ];
 
     expectToEqual(subscribersGateway.calls, expectedCallsAfterFirstExecute);
+  });
+
+  describe("when broadcasting france travail kinds", () => {
+    const franceTravailAgency = toAgencyWithRights(
+      new AgencyDtoBuilder()
+        .withId("france-travail-agency")
+        .withKind("pole-emploi")
+        .build(),
+      {
+        [validator1.id]: { roles: ["validator"], isNotifiedByEmail: true },
+      },
+    );
+    const agencyReferringToFranceTravail = toAgencyWithRights(
+      new AgencyDtoBuilder()
+        .withId("agency-referring-to-france-travail")
+        .withKind("autre")
+        .withRefersToAgencyInfo({
+          refersToAgencyId: franceTravailAgency.id,
+          refersToAgencyName: franceTravailAgency.name,
+          refersToAgencyContactEmail: franceTravailAgency.contactEmail,
+        })
+        .build(),
+      {
+        [validator1.id]: { roles: ["validator"], isNotifiedByEmail: true },
+      },
+    );
+    const apiConsumer = new ApiConsumerBuilder()
+      .withId("pe-api-consumer")
+      .withConventionRight({
+        kinds: ["SUBSCRIPTION"],
+        scope: {
+          agencyIds: [
+            franceTravailAgency.id,
+            agencyReferringToFranceTravail.id,
+          ],
+        },
+        subscriptions: [
+          {
+            ...subscriptionParams,
+            subscribedEvent: "convention.updated",
+            createdAt: new Date().toISOString(),
+            id: "pe-subscription-id",
+          },
+        ],
+      })
+      .build();
+
+    beforeEach(() => {
+      uow.agencyRepository.agencies = [
+        franceTravailAgency,
+        agencyReferringToFranceTravail,
+      ];
+      uow.apiConsumerRepository.consumers = [apiConsumer];
+    });
+
+    it("broadcasts france travail agencyKind as pole-emploi", async () => {
+      const convention = new ConventionDtoBuilder()
+        .withId("33333333-ee70-4c90-b3f4-668d492f7395")
+        .withAgencyId(franceTravailAgency.id)
+        .build();
+      uow.conventionRepository.setConventions([convention]);
+
+      await broadcastUpdatedConvention.execute({ conventionId: convention.id });
+
+      expectToEqual(subscribersGateway.calls, [
+        {
+          body: {
+            subscribedEvent: "convention.updated",
+            payload: {
+              convention: {
+                ...convention,
+                agencyName: franceTravailAgency.name,
+                agencyDepartment: franceTravailAgency.address.departmentCode,
+                agencyContactEmail: franceTravailAgency.contactEmail,
+                agencyKind: "pole-emploi",
+                agencySiret: franceTravailAgency.agencySiret,
+                agencyValidationSteps: "validator-only",
+                assessment: null,
+                lastReminders: makeEmptyLastReminders(),
+                isEstablishmentBanned: false,
+              },
+            },
+          },
+          subscriptionParams,
+        },
+      ]);
+    });
+
+    it("broadcasts france travail agencyRefersTo.kind as pole-emploi", async () => {
+      const convention = new ConventionDtoBuilder()
+        .withId("44444444-ee70-4c90-b3f4-668d492f7395")
+        .withAgencyId(agencyReferringToFranceTravail.id)
+        .build();
+      uow.conventionRepository.setConventions([convention]);
+
+      await broadcastUpdatedConvention.execute({ conventionId: convention.id });
+
+      expectToEqual(subscribersGateway.calls, [
+        {
+          body: {
+            subscribedEvent: "convention.updated",
+            payload: {
+              convention: {
+                ...convention,
+                agencyName: agencyReferringToFranceTravail.name,
+                agencyDepartment:
+                  agencyReferringToFranceTravail.address.departmentCode,
+                agencyContactEmail: agencyReferringToFranceTravail.contactEmail,
+                agencyKind: "autre",
+                agencySiret: agencyReferringToFranceTravail.agencySiret,
+                agencyValidationSteps: "validator-only",
+                agencyRefersTo: {
+                  id: franceTravailAgency.id,
+                  kind: "pole-emploi",
+                  name: franceTravailAgency.name,
+                  contactEmail: franceTravailAgency.contactEmail,
+                  siret: franceTravailAgency.agencySiret,
+                },
+                assessment: null,
+                lastReminders: makeEmptyLastReminders(),
+                isEstablishmentBanned: false,
+              },
+            },
+          },
+          subscriptionParams,
+        },
+      ]);
+    });
   });
 
   describe("when previousAgencyId is provided (convention transfer)", () => {
