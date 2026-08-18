@@ -14,6 +14,7 @@ import type { NpsRepository } from "../../../convention/ports/NpsRepository";
 import type { BannedEstablishmentRepository } from "../../../establishment/ports/BannedEstablishmentRepository";
 import type { DeletedEstablishmentRepository } from "../../../establishment/ports/DeletedEstablishmentRepository";
 import type { DiscussionRepository } from "../../../establishment/ports/DiscussionRepository";
+import type { EstablishmentAggregateQueries } from "../../../establishment/ports/EstablishmentAggregateQueries";
 import type { EstablishmentAggregateRepository } from "../../../establishment/ports/EstablishmentAggregateRepository";
 import type { EstablishmentLeadQueries } from "../../../establishment/ports/EstablishmentLeadQueries";
 import type { EstablishmentLeadRepository } from "../../../establishment/ports/EstablishmentLeadRepository";
@@ -84,4 +85,5 @@ export type OutOfTransactionQueries = {
   shortLink: ShortLinkQuery;
   featureFlag: FeatureFlagQueries;
   statistic: StatisticQueries;
+  establishmentAggregate: EstablishmentAggregateQueries;
 };

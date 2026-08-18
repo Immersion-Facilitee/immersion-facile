@@ -14,6 +14,7 @@ import { InMemoryNpsRepository } from "../../../convention/adapters/InMemoryNpsR
 import { InMemoryBannedEstablishmentRepository } from "../../../establishment/adapters/InMemoryBannedEstablishmentRepository";
 import { InMemoryDeletedEstablishmentRepository } from "../../../establishment/adapters/InMemoryDeletedEstablishmentRepository";
 import { InMemoryDiscussionRepository } from "../../../establishment/adapters/InMemoryDiscussionRepository";
+import { InMemoryEstablishmentAggregateQueries } from "../../../establishment/adapters/InMemoryEstablishmentAggregateQueries";
 import { InMemoryEstablishmentAggregateRepository } from "../../../establishment/adapters/InMemoryEstablishmentAggregateRepository";
 import { InMemoryEstablishmentLeadQueries } from "../../../establishment/adapters/InMemoryEstablishmentLeadQueries";
 import { InMemoryEstablishmentLeadRepository } from "../../../establishment/adapters/InMemoryEstablishmentLeadRepository";
@@ -128,4 +129,5 @@ export const createInMemoryOutOfTransactionQueries = (
     featureFlag: uow.featureFlagQueries,
     statistic: uow.statisticQueries,
     archivedConventionRequest: new InMemoryArchivedConventionRequestQueries(),
+    establishmentAggregate: new InMemoryEstablishmentAggregateQueries(),
   }) satisfies OutOfTransactionQueries;

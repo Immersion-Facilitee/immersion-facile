@@ -15,6 +15,7 @@ import { PgNpsRepository } from "../../../convention/adapters/PgNpsRepository";
 import { PgBannedEstablishmentRepository } from "../../../establishment/adapters/PgBannedEstablishmentRepository";
 import { PgDeletedEstablishmentRepository } from "../../../establishment/adapters/PgDeletedEstablishmentRepository";
 import { PgDiscussionRepository } from "../../../establishment/adapters/PgDiscussionRepository";
+import { PgEstablishmentAggregateQueries } from "../../../establishment/adapters/PgEstablishmentAggregateQueries";
 import { PgEstablishmentAggregateRepository } from "../../../establishment/adapters/PgEstablishmentAggregateRepository";
 import { PgEstablishmentLeadQueries } from "../../../establishment/adapters/PgEstablishmentLeadQueries";
 import { PgEstablishmentLeadRepository } from "../../../establishment/adapters/PgEstablishmentLeadRepository";
@@ -102,4 +103,5 @@ export const createPgQueries = (kysely: KyselyDb): OutOfTransactionQueries => ({
   statistic: new PgStatisticQueries(kysely),
   featureFlag: new PgFeatureFlagQueries(kysely),
   archivedConventionRequest: new PgArchivedConventionRequestQueries(kysely),
+  establishmentAggregate: new PgEstablishmentAggregateQueries(kysely),
 });
