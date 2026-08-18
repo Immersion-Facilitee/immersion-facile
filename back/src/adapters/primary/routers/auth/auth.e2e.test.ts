@@ -742,10 +742,10 @@ describe("auth router", () => {
       proConnect: defaultProConnectInfos,
       createdAt: new Date().toISOString(),
     };
-    const agency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+    const agency = new AgencyDtoBuilder().withKind("france-travail").build();
 
     describe("/inclusion-connected/user", () => {
-      const agency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+      const agency = new AgencyDtoBuilder().withKind("france-travail").build();
       const agencyForUsers = toAgencyDtoForAgencyUsersAndAdmins(agency, []);
 
       it(`${displayRouteName(

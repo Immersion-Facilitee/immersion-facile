@@ -46,7 +46,10 @@ import type {
 } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
-import { toAgencyWithRights } from "../../../../utils/agency";
+import {
+  toAgencyWithRights,
+  toPartnerAgencyKind,
+} from "../../../../utils/agency";
 import {
   buildTestApp,
   type InMemoryGateways,
@@ -59,7 +62,7 @@ import {
 import { processEventsForEmailToBeSent } from "../../../../utils/processEventsForEmailToBeSent";
 
 describe("convention e2e", () => {
-  const peAgency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+  const ftAgency = new AgencyDtoBuilder().withKind("france-travail").build();
 
   const validator: User = {
     id: "my-user-id",
@@ -70,7 +73,7 @@ describe("convention e2e", () => {
     createdAt: new Date().toISOString(),
   };
   const convention = new ConventionDtoBuilder()
-    .withAgencyId(peAgency.id)
+    .withAgencyId(ftAgency.id)
     .withFederatedIdentity({ provider: "ftConnect", token: "some-id" })
     .build();
 
@@ -353,7 +356,7 @@ describe("convention e2e", () => {
     beforeEach(() => {
       inMemoryUow.conventionRepository.setConventions([convention]);
       inMemoryUow.agencyRepository.agencies = [
-        toAgencyWithRights(peAgency, {
+        toAgencyWithRights(ftAgency, {
           [validator.id]: { roles: ["validator"], isNotifiedByEmail: false },
         }),
       ];
@@ -415,11 +418,11 @@ describe("convention e2e", () => {
         status: 200,
         body: {
           ...convention,
-          agencyName: peAgency.name,
-          agencyDepartment: peAgency.address.departmentCode,
-          agencyContactEmail: peAgency.contactEmail,
-          agencyKind: peAgency.kind,
-          agencySiret: peAgency.agencySiret,
+          agencyName: ftAgency.name,
+          agencyDepartment: ftAgency.address.departmentCode,
+          agencyContactEmail: ftAgency.contactEmail,
+          agencyKind: ftAgency.kind,
+          agencySiret: ftAgency.agencySiret,
           agencyValidationSteps: "validator-only",
           assessment: {
             status: "COMPLETED",
@@ -549,11 +552,11 @@ describe("convention e2e", () => {
         status: 200,
         body: {
           ...convention,
-          agencyName: peAgency.name,
-          agencyDepartment: peAgency.address.departmentCode,
-          agencyContactEmail: peAgency.contactEmail,
-          agencyKind: peAgency.kind,
-          agencySiret: peAgency.agencySiret,
+          agencyName: ftAgency.name,
+          agencyDepartment: ftAgency.address.departmentCode,
+          agencyContactEmail: ftAgency.contactEmail,
+          agencyKind: ftAgency.kind,
+          agencySiret: ftAgency.agencySiret,
           agencyValidationSteps: "validator-only",
           assessment: {
             status: "COMPLETED",
@@ -614,7 +617,7 @@ describe("convention e2e", () => {
       .buildUser();
 
     beforeEach(() => {
-      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(peAgency)];
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(ftAgency)];
       inMemoryUow.conventionRepository.setConventions([convention]);
       inMemoryUow.userRepository.users = [];
     });
@@ -763,7 +766,7 @@ describe("convention e2e", () => {
         "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" as ConventionId;
       const anotherConvention = new ConventionDtoBuilder()
         .withId(anotherConventionId)
-        .withAgencyId(peAgency.id)
+        .withAgencyId(ftAgency.id)
         .withStatus("READY_TO_SIGN")
         .build();
 
@@ -847,7 +850,7 @@ describe("convention e2e", () => {
 
     beforeEach(() => {
       inMemoryUow.agencyRepository.agencies = [
-        toAgencyWithRights(peAgency, {
+        toAgencyWithRights(ftAgency, {
           [validator.id]: { roles: ["validator"], isNotifiedByEmail: false },
         }),
       ];
@@ -919,12 +922,12 @@ describe("convention e2e", () => {
             ...convention,
             status: "REJECTED",
             statusJustification,
-            agencyName: peAgency.name,
-            agencyDepartment: peAgency.address.departmentCode,
-            agencyContactEmail: peAgency.contactEmail,
-            agencyKind: peAgency.kind,
-            agencySiret: peAgency.agencySiret,
-            agencyValidatorEmails: peAgency.validatorEmails,
+            agencyName: ftAgency.name,
+            agencyDepartment: ftAgency.address.departmentCode,
+            agencyContactEmail: ftAgency.contactEmail,
+            agencyKind: toPartnerAgencyKind(ftAgency.kind),
+            agencySiret: ftAgency.agencySiret,
+            agencyValidatorEmails: ftAgency.validatorEmails,
             agencyValidationSteps: "validator-only",
             agencyRefersTo: undefined,
             assessment: null,
@@ -1111,7 +1114,7 @@ describe("convention e2e", () => {
     beforeEach(() => {
       inMemoryUow.conventionRepository.setConventions([convention]);
       inMemoryUow.agencyRepository.agencies = [
-        toAgencyWithRights(peAgency, {
+        toAgencyWithRights(ftAgency, {
           [validator.id]: { roles: ["validator"], isNotifiedByEmail: false },
         }),
       ];
@@ -1346,7 +1349,7 @@ describe("convention e2e", () => {
         "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" as ConventionId;
       const anotherConvention = new ConventionDtoBuilder()
         .withId(anotherConventionId)
-        .withAgencyId(peAgency.id)
+        .withAgencyId(ftAgency.id)
         .withStatus("ACCEPTED_BY_VALIDATOR")
         .build();
 
@@ -1403,7 +1406,7 @@ describe("convention e2e", () => {
         conventionWithAssessment,
       ]);
       inMemoryUow.agencyRepository.agencies = [
-        toAgencyWithRights(peAgency, {
+        toAgencyWithRights(ftAgency, {
           [validator.id]: { roles: ["validator"], isNotifiedByEmail: false },
         }),
       ];

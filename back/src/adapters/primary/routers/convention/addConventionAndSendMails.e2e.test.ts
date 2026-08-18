@@ -111,10 +111,10 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
   });
 
   it("Scenario: convention submitted, then signed, then validated", async () => {
-    const peAgency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+    const ftAgency = new AgencyDtoBuilder().withKind("france-travail").build();
 
     const initialConvention = new ConventionDtoBuilder()
-      .withAgencyId(peAgency.id)
+      .withAgencyId(ftAgency.id)
       .notSigned()
       .withStatus("READY_TO_SIGN")
       .withoutDateValidation()
@@ -135,7 +135,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     ]);
 
     appAndDeps.inMemoryUow.agencyRepository.agencies = [
-      toAgencyWithRights(peAgency, {
+      toAgencyWithRights(ftAgency, {
         [validator.id]: { roles: ["validator"], isNotifiedByEmail: true },
       }),
     ];
