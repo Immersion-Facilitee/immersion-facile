@@ -22,7 +22,6 @@ import { AdminTabs } from "src/app/pages/admin/AdminTabs";
 import { AdminUserDetail } from "src/app/pages/admin/AdminUserDetail";
 import { AddAgencyPage } from "src/app/pages/agency/AddAgencyPage";
 import { AgencyDashboardMainTab } from "src/app/pages/agency-dashboard/AgencyDashboardMainTab";
-import { ConventionManageConnectedUser } from "src/app/pages/agency-dashboard/ConventionManageConnectedUser";
 import { AdminPrivateRoutePage } from "src/app/pages/auth/AdminPrivateRoutePage";
 import { ConnectedPrivateRoutePage } from "src/app/pages/auth/ConnectedPrivateRoutePage";
 import { DashboardPrivateRoutePage } from "src/app/pages/auth/DashboardPrivateRoutePage";
@@ -32,6 +31,7 @@ import { ArchivedConventionRequestPage } from "src/app/pages/convention/Archived
 import { AssessmentDocumentPage } from "src/app/pages/convention/AssessmentDocumentPage";
 import { ConventionConfirmationPage } from "src/app/pages/convention/ConventionConfirmationPage";
 import { ConventionImmersionPage } from "src/app/pages/convention/ConventionImmersionPage";
+import { ConventionManageConnectedUser } from "src/app/pages/convention/ConventionManageConnectedUser";
 import { ConventionMiniStagePage } from "src/app/pages/convention/ConventionMiniStagePage";
 import { ConventionSignPage } from "src/app/pages/convention/ConventionSignPage";
 import { ConventionStatusDashboardPage } from "src/app/pages/convention/ConventionStatusDashboardPage";
