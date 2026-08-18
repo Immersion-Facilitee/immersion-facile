@@ -9,6 +9,7 @@ import {
   isApiConsumerAllowed,
   pipeWithValue,
 } from "shared";
+import { toPartnerAgencyKind } from "../../../../utils/agency";
 import { conventionDtosToConventionReadDtos } from "../../../../utils/convention";
 import { createLogger } from "../../../../utils/logger";
 import { withConventionIdAndPreviousAgencySchema } from "../../../convention/use-cases/broadcast/broadcastConventionParams";
@@ -170,6 +171,15 @@ const notifySubscriber = ({
     const convention = {
       ...conventionRead,
       immersionAppellation,
+      agencyKind: toPartnerAgencyKind(conventionRead.agencyKind),
+      ...(conventionRead.agencyRefersTo
+        ? {
+            agencyRefersTo: {
+              ...conventionRead.agencyRefersTo,
+              kind: toPartnerAgencyKind(conventionRead.agencyRefersTo.kind),
+            },
+          }
+        : {}),
     };
 
     if (conventionRead.agencyKind === "mission-locale") {
