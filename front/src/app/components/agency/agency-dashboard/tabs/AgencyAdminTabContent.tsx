@@ -1,6 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   HeadingSection,
   Loader,
@@ -43,6 +43,13 @@ export const AgencyAdminTabContent = ({
   const isLoadingUsersToReview = useSelector(usersToReviewSelectors.isLoading);
   const [hasRequestedUsersToReview, setHasRequestedUsersToReview] =
     useState(false);
+  const agencyIdsUserIsAdminOn = useMemo(
+    () =>
+      activeAgencyRights
+        .filter((agencyRight) => agencyRight.roles.includes("agency-admin"))
+        .map((agencyRight) => agencyRight.agency.id),
+    [activeAgencyRights],
+  );
 
   useScrollTo(
     useFeedbackTopics(["agency-user-for-dashboard", "agency-users-to-review"])
@@ -67,20 +74,16 @@ export const AgencyAdminTabContent = ({
     ).length > 0;
 
   useEffect(() => {
-    const agencyIds = activeAgencyRights
-      .filter((agencyRight) => agencyRight.roles.includes("agency-admin"))
-      .map((agencyRight) => agencyRight.agency.id);
-
-    if (agencyIds.length === 0) return;
+    if (agencyIdsUserIsAdminOn.length === 0) return;
 
     dispatch(
       usersToReviewSlice.actions.fetchUsersToReviewRequested({
         agencyRole: "to-review",
-        agencyIds,
+        agencyIds: agencyIdsUserIsAdminOn,
         feedbackTopic: "agency-users-to-review",
       }),
     );
-  }, [dispatch, activeAgencyRights]);
+  }, [dispatch, agencyIdsUserIsAdminOn]);
 
   if (hasRequestedUsersToReview) {
     return (

@@ -4,7 +4,7 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { values } from "ramda";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HeadingSection, Loader } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
@@ -22,7 +22,10 @@ import { hasCounsellorRoles } from "src/core-logic/domain/agencies/agencies.help
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import type { UserToReview } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
-import type { FeedbackLevel } from "src/core-logic/domain/feedback/feedback.slice";
+import {
+  type FeedbackLevel,
+  feedbackSlice,
+} from "src/core-logic/domain/feedback/feedback.slice";
 
 const userRegistrationToAgencyModalConfig = {
   isOpenedByDefault: false,
@@ -106,6 +109,12 @@ export const AgencyAdminUsersToReview = ({
       }),
     );
   };
+
+  useEffect(() => {
+    return () => {
+      dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
+    };
+  }, [dispatch]);
 
   return (
     <>

@@ -1,7 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { subMinutes } from "date-fns";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Loader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import { type AgencyRight, distinguishAgencyRights } from "shared";
@@ -26,6 +26,10 @@ export const AgencyDashboardMainTab = ({
   const dispatch = useDispatch();
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isLoading = useAppSelector(connectedUserSelectors.isLoading);
+  const { activeAgencyRights, toReviewAgencyRights } = useMemo(
+    () => distinguishAgencyRights(currentUser?.agencyRights ?? []),
+    [currentUser?.agencyRights],
+  );
 
   const feedbackTopic: FeedbackTopic = "dashboard-agency-register-user";
 
@@ -91,9 +95,6 @@ export const AgencyDashboardMainTab = ({
             currentUser: P.not(null),
           },
           ({ currentUser }) => {
-            const { activeAgencyRights, toReviewAgencyRights } =
-              distinguishAgencyRights(currentUser.agencyRights);
-
             const onUserRegistrationCancelledRequested =
               (feedbackTopic: FeedbackTopic) => (agencyRight: AgencyRight) => {
                 dispatch(
