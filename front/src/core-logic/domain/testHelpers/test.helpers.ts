@@ -38,7 +38,7 @@ const defaultFlagsInFront: FeatureFlags = {
   enableInactiveUsersCleanup: makeBooleanFeatureFlag(false),
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
   enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
-  enableBeneficiaryConventionPilotage: makeBooleanFeatureFlag(false),
+  enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
 };
 
 export const makeStubFeatureFlags = (

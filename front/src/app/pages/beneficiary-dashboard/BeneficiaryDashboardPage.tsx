@@ -12,7 +12,7 @@ import { useAppSelector } from "src/app/hooks/reduxHooks";
 import type { DashboardTab } from "src/app/utils/dashboard";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { discussionSelectors } from "src/core-logic/domain/discussion/discussion.selectors";
-import { BeneficiaryConventionTabContent } from "../../components/beneficiary/ConventionTab/BeneficiaryConventionTabContent";
+import { BeneficiaryConventionList } from "../../components/beneficiary/ConventionTab/BeneficiaryConventionList";
 import type { FrontBeneficiaryDashboardRoute } from "../auth/ConnectedPrivateRoutePage";
 import {
   beneficiaryDashboardRouteNameFromTabId,
@@ -75,7 +75,7 @@ const tabs: (DashboardTab & { tabId: BeneficiaryDashboardTab })[] = [
   },
   {
     label: "Mes conventions",
-    content: <BeneficiaryConventionTabContent />,
+    content: <BeneficiaryConventionList />,
     tabId: "conventions",
   },
 ];

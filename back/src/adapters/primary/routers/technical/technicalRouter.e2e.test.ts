@@ -416,7 +416,7 @@ describe("technical router", () => {
       enableInactiveUsersCleanup: makeBooleanFeatureFlag(false),
       enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
       enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
-      enableBeneficiaryConventionPilotage: makeBooleanFeatureFlag(false),
+      enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
     };
     it(`${displayRouteName(
       technicalRoutes.featureFlags,

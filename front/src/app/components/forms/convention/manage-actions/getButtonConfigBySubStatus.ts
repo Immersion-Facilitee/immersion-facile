@@ -1,6 +1,5 @@
 /** biome-ignore-all lint/complexity/useLiteralKeys: false positive */
 
-import { intersection } from "ramda";
 import type { Dispatch, SetStateAction } from "react";
 import { useDispatch } from "react-redux";
 import {
@@ -37,7 +36,7 @@ import {
 } from "src/app/components/forms/convention/manage-actions/getVerificationActionButtonProps";
 import { useConventionTexts } from "src/app/contents/forms/convention/textSetup";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
-import { isBeneficiaryAssessmentToSign } from "src/app/utils/assessment.utils";
+import { isAssessmentToBeSignedByBeneficiary } from "src/app/utils/assessment.utils";
 import { getConventionSubStatus } from "src/app/utils/conventionSubStatus";
 import { isAllowedConventionTransition } from "src/app/utils/IsAllowedConventionTransition";
 import {
@@ -345,18 +344,22 @@ const createButtonPropsByVerificationAction = (
   const shouldShowAssessmentFullFillAction =
     canAssessmentBeFilled(convention) &&
     !isConventionEndingInOneDayOrMore(convention.dateEnd) &&
-    intersection(requesterRoles, [...allowedRolesToCreateAssessment]).length >
-      0;
+    hasAllowedRole({
+      allowedRoles: [...allowedRolesToCreateAssessment],
+      candidateRoles: requesterRoles,
+    });
 
   const shouldShowFillAssessmentInfoButton =
     canAssessmentBeFilled(convention) &&
     !isConventionEndingInOneDayOrMore(convention.dateEnd) &&
-    intersection(requesterRoles, [
-      ...establishmentsRoles,
-      "establishment-representative",
-    ]).length > 0 &&
-    intersection(requesterRoles, [...allowedRolesToCreateAssessment]).length ===
-      0;
+    hasAllowedRole({
+      allowedRoles: [...establishmentsRoles, "establishment-representative"],
+      candidateRoles: requesterRoles,
+    }) &&
+    !hasAllowedRole({
+      allowedRoles: [...allowedRolesToCreateAssessment],
+      candidateRoles: requesterRoles,
+    });
 
   const shouldShowSignatureAction = !!getSignatoryToSign({
     requesterRoles,
@@ -387,9 +390,10 @@ const createButtonPropsByVerificationAction = (
     shouldShowBroadcastAgainButton && !!broadcastErrorFeedback;
 
   const canEditConventionWithFinalStatus =
-    intersection(requesterRoles, [
-      ...allowedRolesToEditConventionWithFinalStatus,
-    ]).length > 0 ||
+    hasAllowedRole({
+      allowedRoles: [...allowedRolesToEditConventionWithFinalStatus],
+      candidateRoles: requesterRoles,
+    }) ||
     (!!currentUser &&
       userHasEnoughRightsOnConvention(currentUser, convention, [
         ...agencyModifierRoles,
@@ -410,12 +414,15 @@ const createButtonPropsByVerificationAction = (
     )
       return true;
     if (
-      intersection(requesterRoles, [
-        "agency-admin",
-        "counsellor",
-        "validator",
-        "back-office",
-      ]).length > 0 &&
+      hasAllowedRole({
+        allowedRoles: [
+          "agency-admin",
+          "counsellor",
+          "validator",
+          "back-office",
+        ],
+        candidateRoles: requesterRoles,
+      }) &&
       allowedToTransferStatuses.includes(convention.status)
     )
       return true;
@@ -508,8 +515,10 @@ const createButtonPropsByVerificationAction = (
         buttonId: domElementIds.manageConvention.editCounsellorNameButton,
       }),
       isVisibleForUserRights:
-        intersection(requesterRoles, [...agencyModifierRoles, "back-office"])
-          .length > 0 &&
+        hasAllowedRole({
+          allowedRoles: [...agencyModifierRoles, "back-office"],
+          candidateRoles: requesterRoles,
+        }) &&
         isAllowedConventionTransition(
           convention,
           "READY_TO_SIGN",
@@ -666,7 +675,7 @@ const createButtonPropsByVerificationAction = (
     ACCESS_ASSESSMENT: {
       props: getVerificationActionProps({
         verificationAction: "ACCESS_ASSESSMENT",
-        children: isBeneficiaryAssessmentToSign({
+        children: isAssessmentToBeSignedByBeneficiary({
           requesterRoles,
           assessment: convention.assessment,
         })
