@@ -160,7 +160,7 @@ async function makeAgencyDashboards({
   );
 
   const isSynchronisationEnableForAgency =
-    agencyKinds.includes("pole-emploi") ||
+    agencyKinds.includes("france-travail") ||
     (
       await uow.apiConsumerRepository.getByFilters({
         agencyIds,

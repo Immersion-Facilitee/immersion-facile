@@ -26,7 +26,7 @@ export const makeRemoveConventionFTAdvisorIfAgencyIsNotFranceTravail =
           agencyId: convention.agencyId,
         });
 
-      if (agency.kind !== "pole-emploi")
+      if (agency.kind !== "france-travail")
         await uow.conventionFranceTravailAdvisorRepository.deleteByConventionId(
           inputParams.conventionId,
         );

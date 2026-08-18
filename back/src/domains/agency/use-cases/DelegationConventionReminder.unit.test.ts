@@ -32,7 +32,7 @@ describe("DelegationConventionReminder", () => {
     .withDelegationAgencyInfo({
       delegationEndDate: delegationEndDateIso,
       delegationAgencyName: "DR France Travail",
-      delegationAgencyKind: "pole-emploi",
+      delegationAgencyKind: "france-travail",
     })
     .build();
 
@@ -126,7 +126,7 @@ describe("DelegationConventionReminder", () => {
       .withDelegationAgencyInfo({
         delegationEndDate: new Date("2025-01-01").toISOString(),
         delegationAgencyName: "DR France Travail",
-        delegationAgencyKind: "pole-emploi",
+        delegationAgencyKind: "france-travail",
       })
       .build();
     uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
@@ -226,7 +226,7 @@ describe("DelegationConventionReminder", () => {
           params: {
             agencyName: agencyWithDelegation.name,
             delegationAgencyName: "DR France Travail",
-            delegationAgencyKind: "pole-emploi",
+            delegationAgencyKind: "france-travail",
           },
         },
       },
@@ -301,17 +301,17 @@ describe("DelegationConventionReminder", () => {
       .withDelegationAgencyInfo({
         delegationEndDate: delegationEndDateIso,
         delegationAgencyName: "DR France Travail",
-        delegationAgencyKind: "pole-emploi",
+        delegationAgencyKind: "france-travail",
       })
       .build();
     const peAgency = new AgencyDtoBuilder()
       .withId("agency-pe")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withStatus("active")
       .withDelegationAgencyInfo({
         delegationEndDate: delegationEndDateIso,
         delegationAgencyName: "DR France Travail",
-        delegationAgencyKind: "pole-emploi",
+        delegationAgencyKind: "france-travail",
       })
       .build();
     const agencyWithoutEndDate = new AgencyDtoBuilder()

@@ -23,7 +23,7 @@ describe("RemoveConventionFTAdvisorIfAgencyIsNotFranceTravail", () => {
   const conventionId = "add5c20e-6dd2-45af-affe-927358005251";
   const ftAgency = new AgencyDtoBuilder()
     .withId("ft-agency-id")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .build();
   const missionLocaleAgency = new AgencyDtoBuilder()
     .withId("ml-agency-id")

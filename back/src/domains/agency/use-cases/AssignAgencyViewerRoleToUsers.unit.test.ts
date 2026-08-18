@@ -35,19 +35,19 @@ describe("AssignAgencyViewerRoleToUsers", () => {
     .withEmail("user3@example.com")
     .buildUser();
 
-  const poleEmploiAgency1 = toAgencyWithRights(
+  const ftAgency1 = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withId("pe-agency-1")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withStatus("active")
       .withName("PE Agency 1")
       .build(),
   );
 
-  const poleEmploiAgency2 = toAgencyWithRights(
+  const ftAgency2 = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withId("pe-agency-2")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withStatus("active")
       .withName("PE Agency 2")
       .build(),
@@ -74,7 +74,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
   const inactiveAgency = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withId("inactive-agency")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withStatus("needsReview")
       .withName("Inactive Agency")
       .build(),
@@ -83,16 +83,16 @@ describe("AssignAgencyViewerRoleToUsers", () => {
   const fromApiPEAgency = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withId("from-api-pe-agency")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withStatus("from-api-PE")
       .withName("From API PE Agency")
       .build(),
   );
 
-  const poleEmploiAgencyWithUser1ViewerRole = toAgencyWithRights(
+  const ftAgencyWithUser1ViewerRole = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withId("pe-agency-with-user1-viewer")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withStatus("active")
       .withName("PE Agency with User1 Viewer Role")
       .build(),
@@ -104,10 +104,10 @@ describe("AssignAgencyViewerRoleToUsers", () => {
     },
   );
 
-  const poleEmploiAgencyWithUser1AdminRole = toAgencyWithRights(
+  const ftAgencyWithUser1AdminRole = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withId("pe-agency-with-user1-admin")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withStatus("active")
       .withName("PE Agency with User1 Admin Role")
       .build(),
@@ -140,14 +140,14 @@ describe("AssignAgencyViewerRoleToUsers", () => {
     });
 
     uow.agencyRepository.agencies = [
-      poleEmploiAgency1,
-      poleEmploiAgency2,
+      ftAgency1,
+      ftAgency2,
       capEmploiAgency,
       conseilDepartementalAgency,
       inactiveAgency,
       fromApiPEAgency,
-      poleEmploiAgencyWithUser1ViewerRole,
-      poleEmploiAgencyWithUser1AdminRole,
+      ftAgencyWithUser1ViewerRole,
+      ftAgencyWithUser1AdminRole,
     ];
 
     uow.userRepository.users = [user1, user2, user3];
@@ -158,7 +158,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
       expectToEqual(
         await assignAgencyViewerRole.execute({
           userIds: [user1.id, user2.id],
-          agencyKinds: ["pole-emploi", "cap-emploi"],
+          agencyKinds: ["france-travail", "cap-emploi"],
         }),
         {
           agenciesSuccessfullyUpdated: 6,
@@ -169,14 +169,14 @@ describe("AssignAgencyViewerRoleToUsers", () => {
 
       expectToEqual(uow.agencyRepository.agencies, [
         {
-          ...poleEmploiAgency1,
+          ...ftAgency1,
           usersRights: {
             ...user1ViewerRights,
             ...user2ViewerRights,
           },
         },
         {
-          ...poleEmploiAgency2,
+          ...ftAgency2,
           usersRights: {
             ...user1ViewerRights,
             ...user2ViewerRights,
@@ -199,14 +199,14 @@ describe("AssignAgencyViewerRoleToUsers", () => {
           },
         },
         {
-          ...poleEmploiAgencyWithUser1ViewerRole,
+          ...ftAgencyWithUser1ViewerRole,
           usersRights: {
             ...user1ViewerRights,
             ...user2ViewerRights,
           },
         },
         {
-          ...poleEmploiAgencyWithUser1AdminRole,
+          ...ftAgencyWithUser1AdminRole,
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -221,7 +221,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
     it("should only process active and from-api-PE agencies", async () => {
       const result = await assignAgencyViewerRole.execute({
         userIds: [user1.id],
-        agencyKinds: ["pole-emploi"],
+        agencyKinds: ["france-travail"],
       });
 
       expectToEqual(result, {
@@ -232,11 +232,11 @@ describe("AssignAgencyViewerRoleToUsers", () => {
 
       expectToEqual(uow.agencyRepository.agencies, [
         {
-          ...poleEmploiAgency1,
+          ...ftAgency1,
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgency2,
+          ...ftAgency2,
           usersRights: user1ViewerRights,
         },
         capEmploiAgency,
@@ -247,11 +247,11 @@ describe("AssignAgencyViewerRoleToUsers", () => {
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgencyWithUser1ViewerRole,
+          ...ftAgencyWithUser1ViewerRole,
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgencyWithUser1AdminRole,
+          ...ftAgencyWithUser1AdminRole,
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -265,7 +265,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
     it("should not assign roles to agencies where user already has viewer role", async () => {
       const result = await assignAgencyViewerRole.execute({
         userIds: [user1.id],
-        agencyKinds: ["pole-emploi"],
+        agencyKinds: ["france-travail"],
       });
 
       expectToEqual(result, {
@@ -276,11 +276,11 @@ describe("AssignAgencyViewerRoleToUsers", () => {
 
       expectToEqual(uow.agencyRepository.agencies, [
         {
-          ...poleEmploiAgency1,
+          ...ftAgency1,
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgency2,
+          ...ftAgency2,
           usersRights: user1ViewerRights,
         },
         capEmploiAgency,
@@ -291,11 +291,11 @@ describe("AssignAgencyViewerRoleToUsers", () => {
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgencyWithUser1ViewerRole,
+          ...ftAgencyWithUser1ViewerRole,
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgencyWithUser1AdminRole,
+          ...ftAgencyWithUser1AdminRole,
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -309,7 +309,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
     it("should add agency-viewer role to existing roles when user has other roles", async () => {
       const result = await assignAgencyViewerRole.execute({
         userIds: [user1.id],
-        agencyKinds: ["pole-emploi"],
+        agencyKinds: ["france-travail"],
       });
 
       expectToEqual(result, {
@@ -320,11 +320,11 @@ describe("AssignAgencyViewerRoleToUsers", () => {
 
       expectToEqual(uow.agencyRepository.agencies, [
         {
-          ...poleEmploiAgency1,
+          ...ftAgency1,
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgency2,
+          ...ftAgency2,
           usersRights: user1ViewerRights,
         },
         capEmploiAgency,
@@ -335,11 +335,11 @@ describe("AssignAgencyViewerRoleToUsers", () => {
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgencyWithUser1ViewerRole,
+          ...ftAgencyWithUser1ViewerRole,
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgencyWithUser1AdminRole,
+          ...ftAgencyWithUser1AdminRole,
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -353,7 +353,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
     it("should handle multiple agency kinds", async () => {
       const result = await assignAgencyViewerRole.execute({
         userIds: [user1.id],
-        agencyKinds: ["pole-emploi", "cap-emploi", "conseil-departemental"],
+        agencyKinds: ["france-travail", "cap-emploi", "conseil-departemental"],
       });
 
       expectToEqual(result, {
@@ -364,11 +364,11 @@ describe("AssignAgencyViewerRoleToUsers", () => {
 
       expectToEqual(uow.agencyRepository.agencies, [
         {
-          ...poleEmploiAgency1,
+          ...ftAgency1,
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgency2,
+          ...ftAgency2,
           usersRights: user1ViewerRights,
         },
         {
@@ -385,11 +385,11 @@ describe("AssignAgencyViewerRoleToUsers", () => {
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgencyWithUser1ViewerRole,
+          ...ftAgencyWithUser1ViewerRole,
           usersRights: user1ViewerRights,
         },
         {
-          ...poleEmploiAgencyWithUser1AdminRole,
+          ...ftAgencyWithUser1AdminRole,
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -406,7 +406,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
       await expectPromiseToFailWithError(
         assignAgencyViewerRole.execute({
           userIds: ["non-existent-user"],
-          agencyKinds: ["pole-emploi"],
+          agencyKinds: ["france-travail"],
         }),
         errors.users.notFound({ userIds: ["non-existent-user"] }),
       );

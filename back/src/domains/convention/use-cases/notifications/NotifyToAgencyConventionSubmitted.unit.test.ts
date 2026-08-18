@@ -102,7 +102,7 @@ describe("NotifyToAgencyConventionSubmitted", () => {
   const agencyFtWithCounsellors = toAgencyWithRights(
     AgencyDtoBuilder.create("agency-pe-with-councellors")
 
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withName("test-agency-name")
       .build(),
     {

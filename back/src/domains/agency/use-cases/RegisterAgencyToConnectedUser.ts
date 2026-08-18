@@ -33,7 +33,7 @@ export const makeRegisterAgencyToConnectedUser = useCaseBuilder(
     const agencies = await uow.agencyRepository.getByIds(agencyIds);
 
     const agencyWithKindFt = agencies.find(
-      (agency) => agency.kind === "pole-emploi",
+      (agency) => agency.kind === "france-travail",
     );
     if (agencyWithKindFt && !isFTUser(currentUser))
       throw errors.agency.registerNotFtUserForbidden({

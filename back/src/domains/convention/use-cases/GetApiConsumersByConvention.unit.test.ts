@@ -31,7 +31,7 @@ describe("GetApiConsumersByConvention", () => {
 
   const uuidGenerator = new TestUuidGenerator();
 
-  const ftAgency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+  const ftAgency = new AgencyDtoBuilder().withKind("france-travail").build();
 
   const conventionWithFtAgency = new ConventionDtoBuilder()
     .withAgencyId(ftAgency.id)
@@ -112,7 +112,7 @@ describe("GetApiConsumersByConvention", () => {
   });
   it.each([
     "conseil-departemental",
-    "pole-emploi",
+    "france-travail",
     "cap-emploi",
   ] as AgencyKind[])("return an array with France Travail if convention is of kind %s and if user has right on the convention", async (kind) => {
     const agencyWithKind = new AgencyDtoBuilder().withKind(kind).build();
@@ -283,7 +283,7 @@ describe("GetApiConsumersByConvention", () => {
         .withName("si-ft-kind")
         .withConventionRight({
           kinds: ["SUBSCRIPTION"],
-          scope: { agencyKinds: ["pole-emploi"] },
+          scope: { agencyKinds: ["france-travail"] },
           subscriptions: [
             {
               id: uuidGenerator.new(),
@@ -323,7 +323,7 @@ describe("GetApiConsumersByConvention", () => {
       );
     });
 
-    it("returns only France Travail when referred agency is pole-emploi and no API consumer matches the main agency", async () => {
+    it("returns only France Travail when referred agency is france-travail and no API consumer matches the main agency", async () => {
       const apiConsumerScopedToOtherAgency = new ApiConsumerBuilder()
         .withName("si-another-agency")
         .withConventionRight({

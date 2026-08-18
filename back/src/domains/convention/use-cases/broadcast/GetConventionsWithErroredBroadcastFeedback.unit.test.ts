@@ -23,7 +23,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
   const agencyId1 = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
   const userId1 = "user-id-1";
   const agency1 = toAgencyWithRights(
-    new AgencyDtoBuilder().withId(agencyId1).withKind("pole-emploi").build(),
+    new AgencyDtoBuilder().withId(agencyId1).withKind("france-travail").build(),
     {
       [userId1]: { isNotifiedByEmail: true, roles: ["validator"] },
     },
@@ -207,7 +207,10 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
   it("should only include agencies where user has roles", async () => {
     const agencyId2 = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
     const agency2 = toAgencyWithRights(
-      new AgencyDtoBuilder().withId(agencyId2).withKind("pole-emploi").build(),
+      new AgencyDtoBuilder()
+        .withId(agencyId2)
+        .withKind("france-travail")
+        .build(),
       {
         [userId1]: { isNotifiedByEmail: true, roles: [] },
       },

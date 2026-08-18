@@ -86,7 +86,7 @@ describe.each(
     "10000000-0000-0000-1111-000000000001",
   )
     .withName("agency1")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .withAddress({
       streetNumberAndAddress: "Agency 1 address",
       city: "Paris",
@@ -294,7 +294,7 @@ describe.each(
             city: "Bayonne",
           })
           .withPhoneNumber(phoneNumber)
-          .withKind("pole-emploi")
+          .withKind("france-travail")
           .build(),
         {
           [validator2.id]: { isNotifiedByEmail: false, roles: ["validator"] },
@@ -311,7 +311,7 @@ describe.each(
             city: "Bayonne",
           })
           .withPhoneNumber(phoneNumber)
-          .withKind("pole-emploi")
+          .withKind("france-travail")
           .build(),
         {
           [validator2.id]: { isNotifiedByEmail: false, roles: ["validator"] },
@@ -356,7 +356,7 @@ describe.each(
             city: "Bayonne",
           })
           .withPhoneNumber("+33610101010")
-          .withKind("pole-emploi")
+          .withKind("france-travail")
           .withStatusJustification("justification du rejet")
           .withSignature("new signature")
           .withLogoUrl("http://new-logo-url.fr")
@@ -522,7 +522,7 @@ describe.each(
       const updatedDelegationInfo: DelegationAgencyInfo = {
         delegationEndDate: new Date("2030-06-15").toISOString(),
         delegationAgencyName: "France Travail",
-        delegationAgencyKind: "pole-emploi",
+        delegationAgencyKind: "france-travail",
       };
 
       await agencyRepository.insert(agencyWithDelegation);
@@ -609,7 +609,7 @@ describe.each(
       const delegationInfo = {
         delegationEndDate: new Date("2029-01-01").toISOString(),
         delegationAgencyName: "France Travail",
-        delegationAgencyKind: "pole-emploi" as const,
+        delegationAgencyKind: "france-travail" as const,
       };
 
       const agencyWithDelegation = toAgencyWithRights(
@@ -794,7 +794,7 @@ describe.each(
       agency1builder
         .withId("00000000-0000-0000-0000-000000000001")
         .withAgencySiret("00000000000001")
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .withName("Agence Pôle emploi VITRY‐SUR‐SEINE")
         .withCoveredDepartments(["94"])
         .build(),
@@ -806,7 +806,7 @@ describe.each(
       agency1builder
         .withId("00000000-0000-0000-0000-000000000002")
         .withAgencySiret("00000000000002")
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .withName("Agence Pôle emploi VITRY-LE-FRANCOIS")
         .withCoveredDepartments(["51"])
         .build(),
@@ -818,7 +818,7 @@ describe.each(
       agency1builder
         .withId("00000000-0000-0000-0000-000000000003")
         .withAgencySiret("00000000000003")
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .withName("Agence Pôle emploi VITROLLES")
         .withCoveredDepartments(["13"])
         .build(),
@@ -1011,7 +1011,7 @@ describe.each(
         expect(
           (
             await agencyRepository.getAgencies({
-              filters: { kinds: ["pole-emploi"] },
+              filters: { kinds: ["france-travail"] },
             })
           ).data,
         ).toEqual([agency1PEVitrySurSeine]);
@@ -1569,7 +1569,7 @@ describe.each(
             .withDelegationAgencyInfo({
               delegationEndDate,
               delegationAgencyName: "DR France Travail",
-              delegationAgencyKind: "pole-emploi",
+              delegationAgencyKind: "france-travail",
             })
             .build(),
           {
@@ -1584,7 +1584,7 @@ describe.each(
             .withDelegationAgencyInfo({
               delegationEndDate: otherDelegationEndDate,
               delegationAgencyName: "DR France Travail",
-              delegationAgencyKind: "pole-emploi",
+              delegationAgencyKind: "france-travail",
             })
             .build(),
           {
@@ -1624,7 +1624,7 @@ describe.each(
       agency1builder
         .withId("00000000-0000-0000-0000-000000000001")
         .withAgencySiret("00000000000001")
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .withStatus("active")
         .build(),
       {
@@ -1635,7 +1635,7 @@ describe.each(
       agency1builder
         .withId("00000000-0000-0000-0000-000000000002")
         .withAgencySiret("00000000000002")
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .withStatus("closed")
         .withStatusJustification(null)
         .build(),
@@ -1678,7 +1678,7 @@ describe.each(
     it("filters by kinds", async () => {
       expectToEqual(
         await agencyRepository.getAgencyIdsByFilters({
-          kinds: ["pole-emploi"],
+          kinds: ["france-travail"],
         }),
         [agencyPeActive.id, agencyPeClosed.id],
       );
@@ -1696,7 +1696,7 @@ describe.each(
     it("filters by kinds and statuses", async () => {
       expectToEqual(
         await agencyRepository.getAgencyIdsByFilters({
-          kinds: ["pole-emploi"],
+          kinds: ["france-travail"],
           statuses: ["active"],
         }),
         [agencyPeActive.id],

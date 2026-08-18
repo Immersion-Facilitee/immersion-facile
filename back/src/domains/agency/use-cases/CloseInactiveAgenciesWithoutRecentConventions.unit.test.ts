@@ -581,15 +581,15 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       });
     });
 
-    it("should not close agencies of kind pole-emploi even if they are considered inactive", async () => {
-      const poleEmploiAgency = AgencyDtoBuilder.create("pole-emploi-agency-id")
+    it("should not close agencies of kind france-travail even if they are considered inactive", async () => {
+      const ftAgency = AgencyDtoBuilder.create("pole-emploi-agency-id")
         .withName("Pôle Emploi Agency")
         .withStatus("active")
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .withCreatedAt(subMonths(defaultDate, 7).toISOString())
         .build();
 
-      const poleEmploiAgencyWithRights = toAgencyWithRights(poleEmploiAgency, {
+      const poleEmploiAgencyWithRights = toAgencyWithRights(ftAgency, {
         [admin1.id]: {
           isNotifiedByEmail: true,
           roles: ["agency-admin"],

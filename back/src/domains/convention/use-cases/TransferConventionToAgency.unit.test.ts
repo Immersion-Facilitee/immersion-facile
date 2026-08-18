@@ -659,7 +659,7 @@ describe("TransferConventionToAgency", () => {
         it("should keep federated identity if new agency is france-travail", async () => {
           const transferredToAgency: AgencyDto = {
             ...otherAgency,
-            kind: "pole-emploi",
+            kind: "france-travail",
           };
 
           uow.agencyRepository.agencies = [
@@ -1004,7 +1004,7 @@ describe("TransferConventionToAgency", () => {
         it("should keep federated identity if new agency is france-travail", async () => {
           const transferredToAgency: AgencyDto = {
             ...otherAgency,
-            kind: "pole-emploi",
+            kind: "france-travail",
           };
 
           uow.agencyRepository.agencies = [

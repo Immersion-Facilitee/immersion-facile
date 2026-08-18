@@ -62,7 +62,7 @@ const getAgencyKindsFromFilterKind = (
   filterKind: AgencyKindFilter,
 ): AgencyKind[] | undefined => {
   if (filterKind === "withoutRefersToAgency") return undefined;
-  if (filterKind === "immersionPeOnly") return ["pole-emploi"];
+  if (filterKind === "immersionFtOnly") return ["france-travail"];
   if (filterKind === "miniStageOnly") return miniStageAgencyKinds;
   if (filterKind === "miniStageExcluded")
     return orderedAgencyKindList.filter(

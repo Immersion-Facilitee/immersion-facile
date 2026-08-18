@@ -54,7 +54,7 @@ export const makeNotifyToAgencyConventionSubmitted = useCaseBuilder(
               ? agency.counsellorEmails
               : agency.validatorEmails,
           warning:
-            agency.kind === "pole-emploi"
+            agency.kind === "france-travail"
               ? "Merci de vérifier le conseiller référent associé à ce bénéficiaire."
               : undefined,
         };

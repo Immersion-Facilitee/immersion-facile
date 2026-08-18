@@ -444,7 +444,7 @@ describe("Update agency", () => {
       .withDelegationAgencyInfo({
         delegationEndDate: new Date("2029-01-01").toISOString(),
         delegationAgencyName: "France Travail",
-        delegationAgencyKind: "pole-emploi",
+        delegationAgencyKind: "france-travail",
       })
       .build();
 
