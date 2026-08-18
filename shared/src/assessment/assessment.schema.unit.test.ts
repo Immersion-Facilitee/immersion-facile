@@ -194,7 +194,7 @@ describe("Assessment form schema", () => {
       .build(),
     agencyName: "My agency",
     agencyDepartment: "75",
-    agencyKind: "pole-emploi",
+    agencyKind: "france-travail",
     agencyContactEmail: "agency@mail.fr",
     agencySiret: "77567187800032",
     agencyValidationSteps: "validator-only",

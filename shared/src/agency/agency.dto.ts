@@ -118,7 +118,7 @@ export type AgencyKind = (typeof orderedAgencyKindList)[number];
 export const orderedAgencyKindList = [
   // ⚠️DO NOT EDIT ORDER ⚠️
   // This is the preferred order for displaying the kinds in a select
-  "pole-emploi", // TODO: remplacer l'agency kind PE par FT
+  "france-travail",
   "mission-locale",
   "operateur-cep",
   "cap-emploi",
@@ -157,7 +157,7 @@ export type AllowedAgencyKindToAdd = Exclude<
 >;
 
 export const agencyKindToLabel: Record<AllowedAgencyKindToAdd, string> = {
-  "pole-emploi": "France Travail (anciennement Pôle emploi)",
+  "france-travail": "France Travail (anciennement Pôle emploi)",
   "mission-locale": "Mission Locale",
   "operateur-cep": "Opérateur du CEP",
   "cap-emploi": "Cap Emploi",
@@ -188,7 +188,7 @@ export const fitForDelegationAgencyKind = allAgencyKindsAllowedToAdd.filter(
 );
 
 export const delegationAgencyKindList = [
-  "pole-emploi",
+  "france-travail",
   "mission-locale",
   "conseil-departemental",
   "cap-emploi",
@@ -221,7 +221,7 @@ export type AgencyOption = {
 };
 
 export const agencyKindFilters = [
-  "immersionPeOnly",
+  "immersionFtOnly",
   "miniStageOnly",
   "miniStageExcluded",
   "withoutRefersToAgency",
@@ -290,7 +290,7 @@ export const makeListAgencyOptionsKindFilter = ({
   if (shouldListAll) return "miniStageExcluded";
   return convention.signatories?.beneficiary?.federatedIdentity?.provider ===
     "ftConnect"
-    ? "immersionPeOnly"
+    ? "immersionFtOnly"
     : "miniStageExcluded";
 };
 

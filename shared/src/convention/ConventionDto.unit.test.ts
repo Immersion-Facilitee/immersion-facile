@@ -217,7 +217,7 @@ describe("conventionDtoSchema", () => {
         agencySiret: "00000000000000",
         agencyContactEmail: "contact@mail.com",
         agencyDepartment: "75",
-        agencyKind: "pole-emploi",
+        agencyKind: "france-travail",
         agencyValidationSteps: "validator-only",
         assessment: {
           status: "COMPLETED",
@@ -241,7 +241,7 @@ describe("conventionDtoSchema", () => {
         agencySiret: "00000000000000",
         agencyContactEmail: "contact@mail.com",
         agencyDepartment: "90",
-        agencyKind: "pole-emploi",
+        agencyKind: "france-travail",
         agencyValidationSteps: "validator-only",
         assessment: {
           status: "COMPLETED",

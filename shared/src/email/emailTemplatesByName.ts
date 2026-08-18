@@ -123,7 +123,7 @@ export const emailTemplatesByName =
       <strong>• Vous devez encore en faire la demande</strong>
       Adressez-vous directement à votre prescripteur de droit : <strong>${delegationAgencyName}</strong>.
       ${
-        delegationAgencyKind === "pole-emploi"
+        delegationAgencyKind === "france-travail"
           ? `• Pour France Travail : utilisez ce formulaire pour obtenir le bon interlocuteur : <a href="https://tally.so/r/w7WM49" target="_blank">https://tally.so/r/w7WM49</a>`
           : ""
       }
