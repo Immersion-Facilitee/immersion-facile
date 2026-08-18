@@ -8,7 +8,6 @@ import {
   expectArraysToEqualIgnoringOrder,
   expectPromiseToFailWithError,
   expectToEqual,
-  type InternalOfferDto,
   LocationBuilder,
   type NafCode,
   type SearchSortedBy,
@@ -3534,14 +3533,4 @@ describe("PgEstablishmentAggregateRepository", () => {
       );
     });
   });
-});
-
-const toReadableSearchResult = ({
-  address,
-  rome,
-  distance_m,
-}: InternalOfferDto) => ({
-  address: `${address?.streetNumberAndAddress} ${address?.postcode} ${address?.city}`,
-  rome,
-  distance_m,
 });
