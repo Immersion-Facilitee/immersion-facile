@@ -1,4 +1,4 @@
-import { addDays, addMilliseconds, subDays } from "date-fns";
+import { addMilliseconds, subDays } from "date-fns";
 import type { Pool } from "pg";
 import {
   arrayFromNumber,
@@ -6,7 +6,6 @@ import {
   errors,
   expectArraysToEqual,
   expectArraysToEqualIgnoringOrder,
-  expectArraysToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
   type InternalOfferDto,
@@ -44,16 +43,12 @@ import { PgEstablishmentAggregateRepository } from "./PgEstablishmentAggregateRe
 import {
   analysteEnGeomatiqueImmersionOffer,
   artisteCirqueOffer,
-  bassompierreSaintesLocation,
   cartographeImmersionOffer,
-  cartographeSearchMade,
-  centerOfSaintesGeoPosition,
   closedEstablishment,
   cuvisteOffer,
   establishment0145Z_A,
   establishment0145Z_B,
   establishment4741Z,
-  establishment9900Z,
   establishmentCuvisteAtChaniersAndLaRochelle,
   establishmentCuvisteAtSaintesAndVeaux,
   establishmentWithFitForDisabledWorkersNo,
@@ -62,27 +57,18 @@ import {
   establishmentWithOfferA1101_AtPosition,
   establishmentWithOfferA1101_close,
   establishmentWithOfferA1101_outOfDistanceRange,
-  groomChevauxOffer,
   locationOfCloseSearchPosition,
   locationOfSearchPosition,
   locationOutOfAnySearchedPosition,
   makeExpectedSearchResult,
   offer_A1101_11987,
-  offer_A1101_12862,
-  offer_A1101_17751,
-  offer_A1101_20404,
   osefUser,
   osefUserRight,
-  portHubleChaniersLocation,
   randomizeTestEstablishmentAggregates,
   searchableByAllEstablishment,
   searchableByJobSeekerEstablishment,
   searchableByStudentsEstablishment,
-  searchMadeDistanceWithoutRome,
-  sortSearchResultsByDistanceAndRomeAndSiretOnRandomResults,
-  tourDeLaChaineLaRochelleLocation,
   unavailableEstablishment,
-  veauxLocation,
 } from "./PgEstablishmentAggregateRepository.test.helpers";
 
 describe("PgEstablishmentAggregateRepository", () => {

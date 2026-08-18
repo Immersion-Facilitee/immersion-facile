@@ -129,5 +129,7 @@ export const createInMemoryOutOfTransactionQueries = (
     featureFlag: uow.featureFlagQueries,
     statistic: uow.statisticQueries,
     archivedConventionRequest: new InMemoryArchivedConventionRequestQueries(),
-    establishmentAggregate: new InMemoryEstablishmentAggregateQueries(),
+    establishmentAggregate: new InMemoryEstablishmentAggregateQueries(
+      uow.establishmentAggregateRepository,
+    ),
   }) satisfies OutOfTransactionQueries;

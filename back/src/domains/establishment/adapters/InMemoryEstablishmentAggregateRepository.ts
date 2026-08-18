@@ -98,29 +98,6 @@ export class InMemoryEstablishmentAggregateRepository
     );
   }
 
-  public async getSearchResultBySearchQuery(
-    siret: SiretDto,
-    appellationCode: AppellationCode,
-    locationId: LocationId,
-  ): Promise<InternalOfferDto | undefined> {
-    const aggregate = this.establishmentAggregates.find(
-      (aggregate) => aggregate.establishment.siret === siret,
-    );
-    if (!aggregate) return;
-
-    const offer = aggregate.offers.find(
-      (offer) => offer.appellationCode === appellationCode,
-    );
-    if (!offer) return;
-
-    return buildSearchImmersionResultDtoForSiretRomeAndLocation({
-      establishmentAgg: aggregate,
-      searchedAppellationCode: offer.appellationCode,
-      locationId,
-      remoteWorkMode: offer.remoteWorkMode,
-    });
-  }
-
   public async getSiretsOfEstablishmentsNotUpdatedSince({
     updatedBefore,
     limit,
@@ -344,7 +321,7 @@ export class InMemoryEstablishmentAggregateRepository
   }
 }
 
-const buildSearchImmersionResultDtoForSiretRomeAndLocation = ({
+export const buildSearchImmersionResultDtoForSiretRomeAndLocation = ({
   establishmentAgg,
   searchedAppellationCode,
   locationId,
