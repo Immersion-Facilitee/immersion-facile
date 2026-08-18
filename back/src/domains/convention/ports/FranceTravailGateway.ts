@@ -1,12 +1,20 @@
 import {
   type AgencyId,
+  type AgencyRefersToInConvention,
   type AssessmentDto,
   agencyIdSchema,
+  agencyValidationSteps,
   assessmentDtoSchema,
   type ConventionReadDto,
-  conventionReadSchema,
+  conventionAssessmentFieldsSchema,
+  conventionLastRemindersSchema,
+  conventionSchema,
   emailSchema,
+  type PartnerAgencyKind,
+  partnerAgencyKindSchema,
   type SubscriberErrorFeedback,
+  siretSchema,
+  withBannedEstablishmentInformationSchema,
 } from "shared";
 import z from "zod";
 import type { AccessTokenResponse } from "../../../config/bootstrap/appConfig";
@@ -50,14 +58,42 @@ export interface FranceTravailGateway {
   getAccessToken: (scope: string) => Promise<AccessTokenResponse>;
 }
 
-export type FranceTravailConventionReadDto = ConventionReadDto & {
+export type FranceTravailConventionReadDto = Omit<
+  ConventionReadDto,
+  "agencyKind" | "agencyRefersTo"
+> & {
+  agencyKind: PartnerAgencyKind;
+  agencyRefersTo?: Omit<AgencyRefersToInConvention, "kind"> & {
+    kind: PartnerAgencyKind;
+  };
   agencyValidatorEmails: string[];
 };
 
 const franceTravailConventionReadDtoSchema: z.ZodType<FranceTravailConventionReadDto> =
-  conventionReadSchema.and(
-    z.object({ agencyValidatorEmails: z.array(emailSchema) }),
-  );
+  conventionSchema
+    .and(
+      z.object({
+        agencyName: z.string(),
+        agencyDepartment: z.string(),
+        agencyKind: partnerAgencyKindSchema,
+        agencyContactEmail: emailSchema,
+        agencySiret: siretSchema,
+        agencyValidationSteps: z.enum(agencyValidationSteps),
+        agencyRefersTo: z
+          .object({
+            id: z.string(),
+            name: z.string(),
+            contactEmail: emailSchema,
+            kind: partnerAgencyKindSchema,
+            siret: siretSchema,
+          })
+          .optional(),
+        assessment: conventionAssessmentFieldsSchema,
+        lastReminders: conventionLastRemindersSchema,
+        agencyValidatorEmails: z.array(emailSchema),
+      }),
+    )
+    .and(withBannedEstablishmentInformationSchema);
 
 export const notifyFranceTravailOnConventionUpdatedParamsSchema: z.ZodType<NotifyFranceTravailOnConventionUpdatedParams> =
   z.union([

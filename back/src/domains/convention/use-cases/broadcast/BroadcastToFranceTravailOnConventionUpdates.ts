@@ -10,6 +10,7 @@ import {
   sliceTextUpToBytesLimit,
 } from "shared";
 import z from "zod";
+import { toPartnerAgencyKind } from "../../../../utils/agency";
 import { isAxiosError } from "../../../../utils/axiosUtils";
 import { broadcastToFtServiceName } from "../../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
@@ -166,6 +167,15 @@ const makeFranceTravailSupportedConvention = (
     cleanSpecialChars(convention.individualProtectionDescription),
     255,
   ),
+  agencyKind: toPartnerAgencyKind(convention.agencyKind),
+  ...(convention.agencyRefersTo
+    ? {
+        agencyRefersTo: {
+          ...convention.agencyRefersTo,
+          kind: toPartnerAgencyKind(convention.agencyRefersTo.kind),
+        },
+      }
+    : {}),
   agencyValidatorEmails: agency.validatorEmails,
 });
 

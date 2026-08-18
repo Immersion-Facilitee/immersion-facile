@@ -111,6 +111,91 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
     expectToEqual(franceTravailGateway.broadcastParamsCalls, []);
   });
 
+  it("broadcasts france travail agencyKind as pole-emploi", async () => {
+    const convention = conventionReadDtoFrom({
+      convention: conventionLinkedToFTWithoutFederatedIdentity,
+      agency: {
+        ...peAgencyWithoutCounsellorsAndValidators,
+        counsellorEmails: [counsellor.email],
+        validatorEmails: [validator.email],
+      },
+    });
+
+    await broadcastToFranceTravailOnConventionUpdates.execute({
+      eventType: "CONVENTION_UPDATED",
+      convention,
+    });
+
+    expectToEqual(franceTravailGateway.broadcastParamsCalls, [
+      {
+        eventType: "CONVENTION_UPDATED",
+        convention: {
+          ...convention,
+          agencyKind: "pole-emploi",
+          agencyValidatorEmails: [validator.email],
+        },
+      },
+    ]);
+  });
+
+  it("broadcasts france travail agencyRefersTo.kind as pole-emploi", async () => {
+    const agencyWithRefersTo = toAgencyWithRights(
+      new AgencyDtoBuilder(peAgencyWithoutCounsellorsAndValidators)
+        .withId("agency-with-refers-to-for-outbound-kind")
+        .withKind("autre")
+        .withRefersToAgencyInfo({
+          refersToAgencyId: peAgencyWithoutCounsellorsAndValidators.id,
+          refersToAgencyName: peAgencyWithoutCounsellorsAndValidators.name,
+          refersToAgencyContactEmail:
+            peAgencyWithoutCounsellorsAndValidators.contactEmail,
+        })
+        .build(),
+    );
+
+    uow.agencyRepository.agencies = [
+      toAgencyWithRights(peAgencyWithoutCounsellorsAndValidators),
+      agencyWithRefersTo,
+    ];
+
+    const conventionLinkedToAgencyReferingToFt = new ConventionDtoBuilder()
+      .withId("55555555-5555-4000-9555-555555555555")
+      .withAgencyId(agencyWithRefersTo.id)
+      .build();
+
+    const convention = conventionReadDtoFrom({
+      convention: conventionLinkedToAgencyReferingToFt,
+      agency: {
+        ...agencyWithRefersTo,
+        validatorEmails: [],
+        counsellorEmails: [],
+      },
+      referredAgency: peAgencyWithoutCounsellorsAndValidators,
+    });
+
+    await broadcastToFranceTravailOnConventionUpdates.execute({
+      eventType: "CONVENTION_UPDATED",
+      convention,
+    });
+
+    expectToEqual(franceTravailGateway.broadcastParamsCalls, [
+      {
+        eventType: "CONVENTION_UPDATED",
+        convention: {
+          ...convention,
+          agencyKind: "autre",
+          agencyRefersTo: {
+            id: peAgencyWithoutCounsellorsAndValidators.id,
+            name: peAgencyWithoutCounsellorsAndValidators.name,
+            contactEmail: peAgencyWithoutCounsellorsAndValidators.contactEmail,
+            kind: "pole-emploi",
+            siret: peAgencyWithoutCounsellorsAndValidators.agencySiret,
+          },
+          agencyValidatorEmails: [],
+        },
+      },
+    ]);
+  });
+
   it("Conventions without federated id are still sent, with their externalId", async () => {
     const externalId = "00000000001";
     uow.conventionExternalIdRepository.externalIdsByConventionId = {
