@@ -27,12 +27,12 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
   const agency = new AgencyDtoBuilder()
     .withId("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
     .withName("Test Agency")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .build();
   const agency2 = new AgencyDtoBuilder()
     .withId("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab")
     .withName("Test Agency 2")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .build();
 
   const validatedConvention = new ConventionDtoBuilder()

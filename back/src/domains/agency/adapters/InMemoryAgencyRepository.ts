@@ -429,7 +429,7 @@ const agency3: AgencyWithUsersRights = {
   name: "Test Agency 3 (back)",
   status: "active",
   agencySiret: "00000000000000",
-  kind: "pole-emploi",
+  kind: "france-travail",
   usersRights: {
     validatorUserA3: { isNotifiedByEmail: true, roles: ["validator"] },
   },
@@ -461,7 +461,7 @@ const agency1: AgencyWithUsersRights = {
   id: "test-agency-1-back",
   name: "Test Agency 1 (back)",
   status: "active",
-  kind: "pole-emploi",
+  kind: "france-travail",
   usersRights: {
     counsellorUserA1: { isNotifiedByEmail: true, roles: ["counsellor"] },
     validatorUserA1: { isNotifiedByEmail: true, roles: ["validator"] },
@@ -596,7 +596,7 @@ const testAgencies: AgencyWithUsersRights[] = [
     delegationAgencyInfo: {
       delegationEndDate: new Date("2029-01-01").toISOString(),
       delegationAgencyName: "Delegation Agency 1",
-      delegationAgencyKind: "pole-emploi",
+      delegationAgencyKind: "france-travail",
     },
   },
   {
@@ -633,7 +633,7 @@ const testAgencies: AgencyWithUsersRights[] = [
     delegationAgencyInfo: {
       delegationEndDate: new Date("2028-01-01").toISOString(),
       delegationAgencyName: "Delegation Agency 2",
-      delegationAgencyKind: "pole-emploi",
+      delegationAgencyKind: "france-travail",
     },
   },
 ];

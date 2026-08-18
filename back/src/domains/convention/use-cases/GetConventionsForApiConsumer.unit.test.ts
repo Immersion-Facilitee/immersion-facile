@@ -21,7 +21,7 @@ import {
 describe("Get Conventions for ApiConsumer", () => {
   const agencyFranceTravail = new AgencyDtoBuilder()
     .withId("11111111-1111-4111-8111-111111111111")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .withAddress({
       streetNumberAndAddress: "1 rue de Paris",
       city: "Paris",
@@ -177,7 +177,7 @@ describe("Get Conventions for ApiConsumer", () => {
         const apiConsumer = new ApiConsumerBuilder()
           .withConventionRight({
             scope: {
-              agencyKinds: ["pole-emploi"],
+              agencyKinds: ["france-travail"],
             },
             kinds: ["READ"],
             subscriptions: [],
@@ -209,7 +209,7 @@ describe("Get Conventions for ApiConsumer", () => {
         const apiConsumer = new ApiConsumerBuilder()
           .withConventionRight({
             scope: {
-              agencyKinds: ["pole-emploi", "mission-locale"],
+              agencyKinds: ["france-travail", "mission-locale"],
             },
             kinds: ["READ"],
             subscriptions: [],

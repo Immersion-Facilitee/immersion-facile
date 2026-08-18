@@ -38,11 +38,11 @@ describe("Send email when agency of type other added ", () => {
     .withKind("autre")
     .build();
 
-  const peAgency = new AgencyDtoBuilder()
+  const ftAgency = new AgencyDtoBuilder()
     .withId("peAgency")
     .withName("just-added-agency")
     .withLogoUrl("https://agency-logo.com")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .build();
 
   const agencyWithRefersTo = new AgencyDtoBuilder()
@@ -87,7 +87,7 @@ describe("Send email when agency of type other added ", () => {
           roles: ["counsellor", "validator"],
         },
       }),
-      toAgencyWithRights(peAgency, {
+      toAgencyWithRights(ftAgency, {
         [counsellor.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
         [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         [counsellorAndValidator.id]: {
@@ -139,7 +139,7 @@ describe("Send email when agency of type other added ", () => {
 
   it("doesn't send an email to agency if agency isn't of type 'autre' ", async () => {
     await sendEmailWhenNewAgencyOfTypeOtherAdded.execute({
-      agencyId: peAgency.id,
+      agencyId: ftAgency.id,
     });
 
     expectSavedNotificationsAndEvents({

@@ -15,19 +15,19 @@ import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryU
 import { type GetAgencyById, makeGetAgencyById } from "./GetAgencyById";
 
 describe("getAgencyByIdForDashboard", () => {
-  const peAgency = new AgencyDtoBuilder()
+  const ftAgency = new AgencyDtoBuilder()
     .withId("peAgency")
     .withName("just-added-agency")
     .withLogoUrl("https://agency-logo.com")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .build();
 
   const agencyWithRefersTo = new AgencyDtoBuilder()
     .withId("id-of-agency-refering-to-other")
     .withRefersToAgencyInfo({
-      refersToAgencyId: peAgency.id,
-      refersToAgencyName: peAgency.name,
-      refersToAgencyContactEmail: peAgency.contactEmail,
+      refersToAgencyId: ftAgency.id,
+      refersToAgencyName: ftAgency.name,
+      refersToAgencyContactEmail: ftAgency.contactEmail,
     })
     .withName("just-added-agency-refering-to-other-one")
     .withLogoUrl("https://agency-refering-logo.com")
@@ -41,7 +41,7 @@ describe("getAgencyByIdForDashboard", () => {
     .withDelegationAgencyInfo({
       delegationEndDate: new Date("2029-01-01").toISOString(),
       delegationAgencyName: "France Travail",
-      delegationAgencyKind: "pole-emploi",
+      delegationAgencyKind: "france-travail",
     })
     .build();
 
@@ -93,7 +93,7 @@ describe("getAgencyByIdForDashboard", () => {
       agencyAdminUser,
     ];
     uow.agencyRepository.agencies = [
-      toAgencyWithRights(peAgency, {
+      toAgencyWithRights(ftAgency, {
         [counsellor1.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
         [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
       }),
@@ -163,7 +163,7 @@ describe("getAgencyByIdForDashboard", () => {
 
     it("Throw when user is not admin on agency", async () => {
       uow.agencyRepository.agencies = [
-        toAgencyWithRights(peAgency, {
+        toAgencyWithRights(ftAgency, {
           [counsellor1.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),

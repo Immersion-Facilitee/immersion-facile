@@ -34,7 +34,7 @@ describe("GetConventionsForAgencyUser", () => {
     new AgencyDtoBuilder()
       .withId("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
       .withName("Test Agency")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .build(),
     {
       [agencyUserId]: { isNotifiedByEmail: true, roles: ["validator"] },

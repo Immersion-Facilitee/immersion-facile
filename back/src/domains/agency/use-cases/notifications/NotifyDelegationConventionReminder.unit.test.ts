@@ -25,7 +25,7 @@ import {
 describe("NotifyDelegationConventionReminder", () => {
   const delegationEndDate = new Date("2026-06-30").toISOString();
   const delegationAgencyName = "DR France Travail";
-  const delegationAgencyKind = "pole-emploi" as const;
+  const delegationAgencyKind = "france-travail" as const;
   const counsellor = new ConnectedUserBuilder()
     .withId("counsellor")
     .withEmail("counsellor@example.com")
@@ -258,7 +258,7 @@ describe("NotifyDelegationConventionReminder", () => {
     it("throws forbidden when agency kind is not autre", async () => {
       const poleEmploiAgency = new AgencyDtoBuilder()
         .withId(agency.id)
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .withStatus("active")
         .withDelegationAgencyInfo({
           delegationEndDate,

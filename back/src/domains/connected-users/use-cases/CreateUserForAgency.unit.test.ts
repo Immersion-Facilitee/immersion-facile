@@ -99,7 +99,7 @@ describe("CreateUserForAgency", () => {
   });
 
   it("throws bad request if attempt to add counsellor role to a user in a FT agency", async () => {
-    const agency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+    const agency = new AgencyDtoBuilder().withKind("france-travail").build();
     uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
 
     await expectPromiseToFailWithError(

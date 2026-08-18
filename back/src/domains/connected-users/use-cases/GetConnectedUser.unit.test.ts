@@ -114,7 +114,7 @@ describe("GetConnectedUser", () => {
           agencyRolesAllowedToGetDashboard,
         )("when role is '%s'", async (agencyUserRole) => {
           const agency = agencyWithoutCounsellorAndValidatorBuilder
-            .withKind("pole-emploi")
+            .withKind("france-travail")
             .build();
 
           uow.agencyRepository.agencies = [
@@ -241,16 +241,16 @@ describe("GetConnectedUser", () => {
 
         const agency1 = agencyBuilder
           .withId("1111")
-          .withKind("pole-emploi")
+          .withKind("france-travail")
           .build();
         const agency2 = agencyBuilder
           .withId("2222")
-          .withKind("pole-emploi")
+          .withKind("france-travail")
           .build();
         const agency3 = agencyBuilder.withId("3333").withKind("autre").build();
         const agency4 = agencyBuilder
           .withId("4444")
-          .withKind("pole-emploi")
+          .withKind("france-travail")
           .build();
 
         uow.agencyRepository.agencies = [
@@ -331,7 +331,7 @@ describe("GetConnectedUser", () => {
 
         const agency1 = agencyBuilder
           .withId("1111")
-          .withKind("pole-emploi")
+          .withKind("france-travail")
           .build();
         const agency2 = agencyBuilder.withId("2222").withKind("autre").build();
         const agency3 = agencyBuilder.withId("3333").withKind("cci").build();

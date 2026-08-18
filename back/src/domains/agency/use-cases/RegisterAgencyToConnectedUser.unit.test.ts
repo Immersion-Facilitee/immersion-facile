@@ -56,7 +56,7 @@ describe("RegisterAgencyToConnectedUser use case", () => {
   const agency1 = new AgencyDtoBuilder().withId("agency-111").build();
   const agency2 = new AgencyDtoBuilder().withId("agency-222").build();
   const agencyFt = new AgencyDtoBuilder()
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .withId("agencyFt")
     .build();
 

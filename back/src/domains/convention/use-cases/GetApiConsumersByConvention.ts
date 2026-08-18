@@ -75,7 +75,7 @@ export const makeGetApiConsumersByConvention = useCaseBuilder(
     );
 
     const agencyKindsAllowedToBroadcastToFT: AgencyKind[] = [
-      "pole-emploi",
+      "france-travail",
       "cap-emploi",
       "conseil-departemental",
     ];

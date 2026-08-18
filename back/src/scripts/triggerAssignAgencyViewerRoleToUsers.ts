@@ -20,10 +20,10 @@ const TARGET_USER_IDS: UserId[] =
     : [];
 
 const TARGET_AGENCY_KINDS: (
-  | "pole-emploi"
+  | "france-travail"
   | "cap-emploi"
   | "conseil-departemental"
-)[] = ["pole-emploi", "cap-emploi", "conseil-departemental"];
+)[] = ["france-travail", "cap-emploi", "conseil-departemental"];
 
 const executeAssignAgencyViewerRole = async () => {
   if (TARGET_USER_IDS.length === 0) {

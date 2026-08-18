@@ -58,28 +58,28 @@ describe("Query: List agencies by filter", () => {
       .withKind("cci")
       .build(),
   );
-  const peAgency1InParis = toAgencyWithRights(
+  const ftAgency1InParis = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withId("3")
       .withName("Agence PE 3")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withAddress(parisAddress)
       .build(),
   );
-  const peAgency2InParis = toAgencyWithRights(
+  const ftAgency2InParis = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withId("4")
       .withName("Agence PE 4")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .withAddress(parisAddress)
       .build(),
   );
   const otherAgencyWithRefersToInCergy = toAgencyWithRights(
     new AgencyDtoBuilder()
       .withRefersToAgencyInfo({
-        refersToAgencyId: peAgency2InParis.id,
-        refersToAgencyName: peAgency2InParis.name,
-        refersToAgencyContactEmail: peAgency2InParis.contactEmail,
+        refersToAgencyId: ftAgency2InParis.id,
+        refersToAgencyName: ftAgency2InParis.name,
+        refersToAgencyContactEmail: ftAgency2InParis.contactEmail,
       })
       .withId("5")
       .withName("Agence avec refersTo")
@@ -131,8 +131,8 @@ describe("Query: List agencies by filter", () => {
     otherAgencyInParis,
     cciAgency1InCergy,
     cciAgency2InParis,
-    peAgency1InParis,
-    peAgency2InParis,
+    ftAgency1InParis,
+    ftAgency2InParis,
     otherAgencyWithRefersToInCergy,
     agencyWithSiret,
     agencyChambreAgriculture,
@@ -219,13 +219,13 @@ describe("Query: List agencies by filter", () => {
       );
     });
 
-    it("List immersionPeOnly agencies", async () => {
+    it("List immersionFtOnly agencies", async () => {
       expectToEqual(
         await listAgencyOptionsByFilter.execute(
-          { filterKind: "immersionPeOnly" },
+          { filterKind: "immersionFtOnly" },
           undefined,
         ),
-        [peAgency1InParis, peAgency2InParis].map(toAgencyOption),
+        [ftAgency1InParis, ftAgency2InParis].map(toAgencyOption),
       );
     });
 
@@ -237,8 +237,8 @@ describe("Query: List agencies by filter", () => {
         ),
         [
           otherAgencyInParis,
-          peAgency1InParis,
-          peAgency2InParis,
+          ftAgency1InParis,
+          ftAgency2InParis,
           otherAgencyWithRefersToInCergy,
           agencyWithSiret,
         ].map(toAgencyOption),
@@ -292,8 +292,8 @@ describe("Query: List agencies by filter", () => {
         [
           otherAgencyInParis,
           cciAgency2InParis,
-          peAgency1InParis,
-          peAgency2InParis,
+          ftAgency1InParis,
+          ftAgency2InParis,
         ].map(toAgencyOption),
       );
     });
@@ -316,7 +316,7 @@ describe("Query: List agencies by filter", () => {
           { nameIncludes: "PE" },
           undefined,
         ),
-        [peAgency1InParis, peAgency2InParis].map(toAgencyOption),
+        [ftAgency1InParis, ftAgency2InParis].map(toAgencyOption),
       );
     });
 
