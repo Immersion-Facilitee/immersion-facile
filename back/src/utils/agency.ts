@@ -22,7 +22,8 @@ import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
 
 export const toPartnerAgencyKind = (
   agencyKind: AgencyKind,
-): PartnerAgencyKind => agencyKind;
+): PartnerAgencyKind =>
+  agencyKind === "france-travail" ? "pole-emploi" : agencyKind;
 
 export const toAgencyWithRights = (
   { counsellorEmails, validatorEmails, ...rest }: AgencyDto,
