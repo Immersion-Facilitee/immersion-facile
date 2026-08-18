@@ -62,12 +62,18 @@ const getButtonWithSubMenuIdAndLabels: (
   };
 };
 
-const getPrimaryAreaBySubStatus = (
-  subStatus: ConventionSubStatus,
-  isSignVisible: boolean,
-  isAssessmentSignPrimary: boolean,
-): ButtonArea => {
-  return match(subStatus)
+type SubStatusButtonLayoutParams = {
+  subStatus: ConventionSubStatus;
+  isSignVisible: boolean;
+  isAssessmentSignPrimary: boolean;
+};
+
+const getPrimaryAreaBySubStatus = ({
+  subStatus,
+  isSignVisible,
+  isAssessmentSignPrimary,
+}: SubStatusButtonLayoutParams): ButtonArea =>
+  match(subStatus)
     .with(
       P.union(
         "readyToSignWithBroadcastError",
@@ -119,7 +125,6 @@ const getPrimaryAreaBySubStatus = (
       (): ButtonArea => "otherActionArea",
     )
     .exhaustive();
-};
 
 type RenderButtonsBySubStatusParams = {
   buttonConfig: ButtonConfiguration[];
@@ -145,21 +150,23 @@ const getAreasConfig = (
   );
 };
 
-const getRightAndLeftAreas = (
-  buttonsConfig: ButtonConfiguration[],
-  subStatus: ConventionSubStatus,
-  isSignVisible: boolean,
-  isAssessmentSignPrimary: boolean,
-): {
+const getRightAndLeftAreas = ({
+  buttonsConfig,
+  subStatus,
+  isSignVisible,
+  isAssessmentSignPrimary,
+}: {
+  buttonsConfig: ButtonConfiguration[];
+} & SubStatusButtonLayoutParams): {
   leftAreas: ButtonArea[];
   rightAreas: ButtonArea[];
 } => {
   const areasConfig = getAreasConfig(buttonsConfig);
-  const primaryArea = getPrimaryAreaBySubStatus(
+  const primaryArea = getPrimaryAreaBySubStatus({
     subStatus,
     isSignVisible,
     isAssessmentSignPrimary,
-  );
+  });
 
   const shouldShowOtherActionOnLeft =
     areasConfig["otherActionArea"].length > 0 &&
@@ -190,19 +197,19 @@ export const renderButtonsBySubStatus = ({
     (config) =>
       config.buttonArea === "signatureArea" && config.isVisibleForUserRights,
   );
-  const primaryArea = getPrimaryAreaBySubStatus(
+  const primaryArea = getPrimaryAreaBySubStatus({
     subStatus,
     isSignVisible,
     isAssessmentSignPrimary,
-  );
+  });
 
   const areasConfig = getAreasConfig(buttonsConfig);
-  const { leftAreas, rightAreas } = getRightAndLeftAreas(
+  const { leftAreas, rightAreas } = getRightAndLeftAreas({
     buttonsConfig,
     subStatus,
     isSignVisible,
     isAssessmentSignPrimary,
-  );
+  });
 
   const renderButtonsForArea = (
     buttonConfigurations: ButtonConfiguration[],

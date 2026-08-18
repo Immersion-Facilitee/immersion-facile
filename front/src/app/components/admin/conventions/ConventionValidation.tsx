@@ -3,7 +3,6 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import { subMonths } from "date-fns";
-import { intersection } from "ramda";
 import { useEffect, useState } from "react";
 import {
   ConventionRenewedInformations,
@@ -19,6 +18,7 @@ import {
   type ConventionReadDto,
   conventionSignatoryRoleBySignatoryKey,
   getDaysBetween,
+  hasAllowedRole,
   isConventionEndingInOneDayOrMore,
   isConventionRenewed,
   isConventionValidated,
@@ -108,23 +108,36 @@ export const ConventionValidation = ({
     dateEnd: _,
   } = convention;
 
+  const isAgencyOrBackofficeUser = hasAllowedRole({
+    allowedRoles: [...allAgencyRoles, "back-office"],
+    candidateRoles: roles,
+  });
+
   const shouldShowAssessmentReminderButton =
     canAssessmentBeFilled(convention) &&
     !isConventionEndingInOneDayOrMore(convention.dateEnd) &&
-    intersection(roles, [
-      ...agencyModifierRoles,
-      ...allSignatoryRoles,
-      "back-office",
-    ]).length > 0;
+    hasAllowedRole({
+      allowedRoles: [
+        ...agencyModifierRoles,
+        ...allSignatoryRoles,
+        "back-office",
+      ],
+      candidateRoles: roles,
+    });
 
   const shouldShowAssessmentSignatureReminderButton =
     getAssessmentCompletionStatus(convention.assessment) === "to-sign" &&
-    intersection(roles, [...assessmentSignatureReminderAuthorizedRoles])
-      .length > 0;
+    hasAllowedRole({
+      allowedRoles: assessmentSignatureReminderAuthorizedRoles,
+      candidateRoles: roles,
+    });
 
   const shouldShowConventionLastBroadcastFeedbackErrorInfo =
     conventionLastBroadcastFeedback?.subscriberErrorFeedback &&
-    intersection(roles, [...agencyModifierRoles, "back-office"]).length > 0 &&
+    hasAllowedRole({
+      allowedRoles: [...agencyModifierRoles, "back-office"],
+      candidateRoles: roles,
+    }) &&
     currentUser &&
     hasUserRightsOnAgencyBroadcast(currentUser);
   const shouldShowAssessmentBadge =
@@ -180,10 +193,9 @@ export const ConventionValidation = ({
     currentUser?.isBackofficeAdmin &&
     new Date(convention.dateEnd) < subMonths(new Date(), 25);
 
-  const statusBadgeUserKind =
-    intersection(roles, [...allAgencyRoles, "back-office"]).length > 0
-      ? "agency"
-      : "beneficiary";
+  const statusBadgeUserKind = isAgencyOrBackofficeUser
+    ? "agency"
+    : "beneficiary";
 
   const assessmentLabelsAndSeverity = getAssessmentLabelsAndSeverityByStatus({
     isPlural: false,

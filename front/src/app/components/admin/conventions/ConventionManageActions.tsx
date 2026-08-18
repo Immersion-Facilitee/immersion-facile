@@ -28,7 +28,7 @@ import { getButtonConfigBySubStatus } from "src/app/components/forms/convention/
 import type { VerificationAction } from "src/app/components/forms/convention/manage-actions/getVerificationActionButtonProps";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { isBeneficiaryAssessmentToSign } from "src/app/utils/assessment.utils";
+import { isAssessmentToBeSignedByBeneficiary } from "src/app/utils/assessment.utils";
 import { getConventionSubStatus } from "src/app/utils/conventionSubStatus";
 import { apiConsumerSelectors } from "src/core-logic/domain/apiConsumer/apiConsumer.selector";
 import { assessmentSlice } from "src/core-logic/domain/assessment/assessment.slice";
@@ -317,7 +317,7 @@ export const ConventionManageActions = ({
     broadcastErrorFeedback: broadcastErrorFeedback ?? null,
   });
 
-  const isAssessmentSignPrimary = isBeneficiaryAssessmentToSign({
+  const isAssessmentSignPrimary = isAssessmentToBeSignedByBeneficiary({
     requesterRoles,
     assessment: convention.assessment,
   });

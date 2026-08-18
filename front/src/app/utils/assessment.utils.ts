@@ -63,7 +63,7 @@ export const getAssessmentCompletionStatus = (
   return "finalized";
 };
 
-export const isBeneficiaryAssessmentToSign = ({
+export const isAssessmentToBeSignedByBeneficiary = ({
   requesterRoles,
   assessment,
 }: {

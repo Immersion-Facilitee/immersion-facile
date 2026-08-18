@@ -35,7 +35,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
   );
   const isLoading = useSelector(conventionListSelectors.isLoading);
   const feedback = useFeedbackTopic(feedbackTopic);
-  const { enableBeneficiaryConventionPilotage } = useFeatureFlags();
+  const { enableBeneficiaryManageConvention } = useFeatureFlags();
 
   useEffect(() => {
     if (jwt && !isLoading && beneficiaryConventionList === null)
@@ -69,7 +69,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
             headers={["Entreprise", "Statut", "Bilan", "Dates", "Actions"]}
             data={conventionListToTableData(
               beneficiaryConventionList,
-              enableBeneficiaryConventionPilotage.isActive,
+              enableBeneficiaryManageConvention.isActive,
             )}
           />
         )}
@@ -110,7 +110,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
 
 const conventionListToTableData = (
   conventionList: BeneficiaryConventionListDto,
-  isPilotageEnabled: boolean,
+  isBeneficiaryManageConventionEnabled: boolean,
 ): React.ReactNode[][] =>
   conventionList.map<React.ReactNode[]>((convention) => [
     convention.businessName,
@@ -132,7 +132,7 @@ const conventionListToTableData = (
         dateEnd={convention.dateEnd}
       />
     </Fragment>,
-    isPilotageEnabled ? (
+    isBeneficiaryManageConventionEnabled ? (
       <Button
         key={convention.conventionId}
         id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
