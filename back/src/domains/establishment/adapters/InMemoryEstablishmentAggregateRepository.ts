@@ -1,4 +1,4 @@
-import { isEmpty, uniqBy } from "ramda";
+import { isEmpty } from "ramda";
 import {
   type AppellationAndRomeDto,
   type AppellationCode,
@@ -17,12 +17,10 @@ import {
 } from "shared";
 import { distanceBetweenCoordinatesInMeters } from "../../../utils/distanceBetweenCoordinatesInMeters";
 import type { EstablishmentAggregate } from "../entities/EstablishmentAggregate";
-import { hasSearchMadeGeoParams } from "../entities/SearchMadeEntity";
 import type {
   EstablishmentAggregateFilters,
   EstablishmentAggregateRepository,
   GetOffersParams,
-  LegacySearchImmersionParams,
   SearchImmersionResult,
   UpdateEstablishmentsWithInseeDataParams,
 } from "../ports/EstablishmentAggregateRepository";
@@ -293,65 +291,6 @@ export class InMemoryEstablishmentAggregateRepository
         totalRecords: allOffers.length,
       },
     };
-  }
-
-  public async legacySearchImmersionResults({
-    searchMade,
-    fitForDisabledWorkers,
-    maxResults,
-  }: LegacySearchImmersionParams): Promise<SearchImmersionResult[]> {
-    return this.#establishmentAggregates
-      .filter((aggregate) => aggregate.establishment.isOpen)
-      .filter((aggregate) =>
-        searchMade.searchableBy
-          ? aggregate.establishment.searchableBy[searchMade.searchableBy]
-          : true,
-      )
-      .filter((agg) => {
-        if (fitForDisabledWorkers === undefined) return true;
-        if (fitForDisabledWorkers === true) {
-          return ["yes-declared-only", "yes-ft-certified"].includes(
-            agg.establishment.fitForDisabledWorkers,
-          );
-        }
-
-        if (fitForDisabledWorkers === false) {
-          return ["no"].includes(agg.establishment.fitForDisabledWorkers);
-        }
-
-        fitForDisabledWorkers satisfies never;
-        return false;
-      })
-      .filter((aggregate) =>
-        searchMade.nafCodes?.length
-          ? searchMade.nafCodes.includes(aggregate.establishment.nafDto.code)
-          : true,
-      )
-      .flatMap((aggregate) =>
-        uniqBy((offer) => offer.romeCode, aggregate.offers)
-          .filter(
-            (offer) =>
-              !searchMade.appellationCodes ||
-              searchMade.appellationCodes.includes(offer.appellationCode),
-          )
-          .map((offer) =>
-            buildSearchImmersionResultDtoForSiretRomeAndLocation({
-              establishmentAgg: aggregate,
-              searchedAppellationCode: offer.appellationCode,
-              ...(hasSearchMadeGeoParams(searchMade)
-                ? {
-                    position: {
-                      lat: searchMade.lat,
-                      lon: searchMade.lon,
-                    },
-                  }
-                : {}),
-              locationId: aggregate.establishment.locations[0].id,
-              remoteWorkMode: offer.remoteWorkMode,
-            }),
-          ),
-      )
-      .slice(0, maxResults);
   }
 
   public async updateEstablishmentAggregate(

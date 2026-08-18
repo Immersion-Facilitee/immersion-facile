@@ -1025,7 +1025,7 @@ export const createUseCases = ({
       uowPerformer,
     }),
     getSearchResultBySearchQuery: makeGetSearchResultBySearchQuery({
-      uowPerformer,
+      deps: { establishmentAggregateQueries: queries.establishmentAggregate },
     }),
     contactEstablishment: makeContactEstablishment({
       uowPerformer,

@@ -90,14 +90,6 @@ export interface EstablishmentAggregateRepository {
     siret: string,
   ): Promise<AppellationAndRomeDto[]>;
 
-  getSearchResultBySearchQuery(
-    siret: SiretDto,
-    appellationCode: AppellationCode,
-    locationId?: LocationId,
-  ): Promise<RepositorySearchResultDto | undefined>;
-  legacySearchImmersionResults(
-    searchImmersionParams: LegacySearchImmersionParams,
-  ): Promise<RepositorySearchImmersionResult[]>;
   getOffers(
     params: GetOffersParams,
   ): Promise<DataWithPagination<InternalOfferDto>>;

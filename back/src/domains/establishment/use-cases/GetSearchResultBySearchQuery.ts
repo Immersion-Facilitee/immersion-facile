@@ -5,6 +5,7 @@ import {
   searchResultQuerySchema,
 } from "shared";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
+import type { EstablishmentAggregateQueries } from "../ports/EstablishmentAggregateQueries";
 
 export type GetSearchResultBySearchQuery = ReturnType<
   typeof makeGetSearchResultBySearchQuery
@@ -16,10 +17,15 @@ export const makeGetSearchResultBySearchQuery = useCaseBuilder(
   .withInput(searchResultQuerySchema)
   .withOutput<InternalOfferDto>()
   .withCurrentUser<ApiConsumer | void>()
+  .withDeps<{ establishmentAggregateQueries: EstablishmentAggregateQueries }>()
+  .notTransactional()
   .build(
-    async ({ inputParams: { appellationCode, siret, locationId }, uow }) => {
+    async ({
+      inputParams: { appellationCode, siret, locationId },
+      deps: { establishmentAggregateQueries },
+    }) => {
       const searchResult =
-        await uow.establishmentAggregateRepository.getSearchResultBySearchQuery(
+        await establishmentAggregateQueries.getSearchResultBySearchQuery(
           siret,
           appellationCode,
           locationId,
