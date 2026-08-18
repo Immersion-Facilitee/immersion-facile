@@ -14,10 +14,10 @@ import {
 } from "../../../utils/buildTestApp";
 
 describe("security e2e", () => {
-  const peAgency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+  const ftAgency = new AgencyDtoBuilder().withKind("france-travail").build();
 
   const convention = new ConventionDtoBuilder()
-    .withAgencyId(peAgency.id)
+    .withAgencyId(ftAgency.id)
     .withFederatedIdentity({ provider: "ftConnect", token: "some-id" })
     .build();
 

@@ -2,7 +2,6 @@ import {
   AgencyDtoBuilder,
   type AssessmentDto,
   ConventionDtoBuilder,
-  type ConventionReadDto,
   displayRouteName,
   errors,
   expectHttpResponseToEqual,
@@ -18,13 +17,14 @@ import type { GenerateApiConsumerJwt } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { toAgencyWithRights } from "../../../../utils/agency";
 import { buildTestApp } from "../../../../utils/buildTestApp";
+import type { ConventionReadPublicV2Dto } from "../DtoAndSchemas/v2/input/ConventionReadPublicV2.dto";
 import {
   type PublicApiV2ConventionRoutes,
   publicApiV2ConventionRoutes,
 } from "./publicApiV2.routes";
 
 describe("Convention routes", () => {
-  const agency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+  const agency = new AgencyDtoBuilder().withKind("france-travail").build();
 
   const convention = new ConventionDtoBuilder().withAgencyId(agency.id).build();
   const conventionReadConsumerWithAgencyIdsScope = new ApiConsumerBuilder()
@@ -362,7 +362,7 @@ describe("Convention routes", () => {
               assessment: null,
               lastReminders: makeEmptyLastReminders(),
               isEstablishmentBanned: false,
-            } satisfies ConventionReadDto,
+            } satisfies ConventionReadPublicV2Dto,
           ],
           status: 200,
         },

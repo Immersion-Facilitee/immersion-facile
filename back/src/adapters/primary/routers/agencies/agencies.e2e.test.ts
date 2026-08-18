@@ -302,7 +302,9 @@ describe("Agency routes", () => {
     });
 
     describe("/inclusion-connected/register-agency", () => {
-      const agencyFt = new AgencyDtoBuilder().withKind("pole-emploi").build();
+      const agencyFt = new AgencyDtoBuilder()
+        .withKind("france-travail")
+        .build();
       const agencyFtUser: User = {
         id: "123",
         email: "joe@francetravail.fr",

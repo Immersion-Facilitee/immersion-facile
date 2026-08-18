@@ -40,7 +40,7 @@ import {
 } from "../../../../utils/buildTestApp";
 
 describe("authenticatedConventionRoutes", () => {
-  const agency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+  const agency = new AgencyDtoBuilder().withKind("france-travail").build();
   const validator = new ConnectedUserBuilder()
     .withId("validator")
     .withEmail("validator@mail.com")
@@ -288,11 +288,11 @@ describe("authenticatedConventionRoutes", () => {
       ASSESSEMENT_SIGNATURE_RELEASE_DATE,
       2,
     ).toISOString();
-    const peAgency = new AgencyDtoBuilder().withKind("pole-emploi").build();
+    const ftAgency = new AgencyDtoBuilder().withKind("france-travail").build();
 
     const conventionWithAssessment = new ConventionDtoBuilder()
       .withId("aaaaac99-9c0b-1bbb-bb6d-6bb9bd38aaaa")
-      .withAgencyId(peAgency.id)
+      .withAgencyId(ftAgency.id)
       .withDateStart(new Date("2023-03-15").toISOString())
       .withDateEnd(new Date("2023-03-20").toISOString())
       .withDateSubmission(new Date("2023-03-10").toISOString())
@@ -301,7 +301,7 @@ describe("authenticatedConventionRoutes", () => {
 
     const conventionWithoutAssessment = new ConventionDtoBuilder()
       .withId("bbbbbc99-9c0b-1bbb-bb6d-6bb9bd38bbbb")
-      .withAgencyId(peAgency.id)
+      .withAgencyId(ftAgency.id)
       .withDateStart(new Date("2023-02-15").toISOString())
       .withDateEnd(new Date("2023-02-20").toISOString())
       .withDateSubmission(new Date("2023-02-10").toISOString())
@@ -310,7 +310,7 @@ describe("authenticatedConventionRoutes", () => {
 
     beforeEach(async () => {
       inMemoryUow.agencyRepository.agencies = [
-        toAgencyWithRights(peAgency, {
+        toAgencyWithRights(ftAgency, {
           [validator.id]: { roles: ["validator"], isNotifiedByEmail: false },
         }),
       ];
@@ -375,7 +375,7 @@ describe("authenticatedConventionRoutes", () => {
         dateStart: conventionWithAssessment.dateStart,
         dateEnd: conventionWithAssessment.dateEnd,
         businessName: conventionWithAssessment.businessName,
-        agencyName: peAgency.name,
+        agencyName: ftAgency.name,
         agencyReferent: conventionWithAssessment.agencyReferent,
         assessment: {
           status: "COMPLETED",
@@ -397,7 +397,7 @@ describe("authenticatedConventionRoutes", () => {
         dateStart: conventionWithoutAssessment.dateStart,
         dateEnd: conventionWithoutAssessment.dateEnd,
         businessName: conventionWithoutAssessment.businessName,
-        agencyName: peAgency.name,
+        agencyName: ftAgency.name,
         agencyReferent: conventionWithoutAssessment.agencyReferent,
         assessment: null,
         beneficiary: {
@@ -449,7 +449,7 @@ describe("authenticatedConventionRoutes", () => {
         dateStart: conventionWithAssessment.dateStart,
         dateEnd: conventionWithAssessment.dateEnd,
         businessName: conventionWithAssessment.businessName,
-        agencyName: peAgency.name,
+        agencyName: ftAgency.name,
         agencyReferent: conventionWithAssessment.agencyReferent,
         assessment: {
           status: "COMPLETED",
@@ -522,7 +522,7 @@ describe("authenticatedConventionRoutes", () => {
       const response = await httpClient.getConventionsForAgencyUser({
         headers: { authorization: jwt },
         queryParams: {
-          agencyIds: [peAgency.id],
+          agencyIds: [ftAgency.id],
           sortBy: "dateStart",
           page: 1,
           perPage: 10,
@@ -535,7 +535,7 @@ describe("authenticatedConventionRoutes", () => {
         dateStart: conventionWithAssessment.dateStart,
         dateEnd: conventionWithAssessment.dateEnd,
         businessName: conventionWithAssessment.businessName,
-        agencyName: peAgency.name,
+        agencyName: ftAgency.name,
         agencyReferent: conventionWithAssessment.agencyReferent,
         assessment: {
           status: "COMPLETED",
@@ -557,7 +557,7 @@ describe("authenticatedConventionRoutes", () => {
         dateStart: conventionWithoutAssessment.dateStart,
         dateEnd: conventionWithoutAssessment.dateEnd,
         businessName: conventionWithoutAssessment.businessName,
-        agencyName: peAgency.name,
+        agencyName: ftAgency.name,
         agencyReferent: conventionWithoutAssessment.agencyReferent,
         assessment: null,
         beneficiary: {
@@ -590,14 +590,14 @@ describe("authenticatedConventionRoutes", () => {
     authenticatedConventionRoutes.getConventionsWithUnfinalizedAssessment,
   )}`, () => {
     const now = new Date("2026-06-15T10:00:00.000Z");
-    const peAgency = new AgencyDtoBuilder()
+    const ftAgency = new AgencyDtoBuilder()
       .withId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
-      .withKind("pole-emploi")
+      .withKind("france-travail")
       .build();
 
     const convention1 = new ConventionDtoBuilder()
       .withId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
-      .withAgencyId(peAgency.id)
+      .withAgencyId(ftAgency.id)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withDateStart(new Date("2026-04-01").toISOString())
       .withDateEnd(new Date("2026-06-10").toISOString())
@@ -607,7 +607,7 @@ describe("authenticatedConventionRoutes", () => {
 
     const convention2 = new ConventionDtoBuilder()
       .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
-      .withAgencyId(peAgency.id)
+      .withAgencyId(ftAgency.id)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withDateStart(new Date("2026-02-01").toISOString())
       .withDateEnd(new Date("2026-02-10").toISOString())
@@ -623,7 +623,7 @@ describe("authenticatedConventionRoutes", () => {
     beforeEach(() => {
       gateways.timeGateway.defaultDate = now;
       inMemoryUow.agencyRepository.agencies = [
-        toAgencyWithRights(peAgency, {
+        toAgencyWithRights(ftAgency, {
           [validator.id]: { roles: ["validator"], isNotifiedByEmail: false },
         }),
       ];
