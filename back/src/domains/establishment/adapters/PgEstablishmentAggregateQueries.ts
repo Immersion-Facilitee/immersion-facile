@@ -22,7 +22,7 @@ export class PgEstablishmentAggregateQueries
           .where("establishment_siret", "=", siret)
           .executeTakeFirst()
           .then((result) => result !== undefined)
-      : Promise.resolve(false);
+      : false;
 
     const locationIds =
       isLocationIdExisting && locationId ? [locationId] : undefined;

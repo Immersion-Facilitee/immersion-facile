@@ -34,7 +34,6 @@ describe("PgEstablishmentAggregateQueries", () => {
     await kyselyDb.deleteFrom("establishments_location_infos").execute();
     await kyselyDb.deleteFrom("establishments_location_positions").execute();
     await kyselyDb.deleteFrom("establishments").execute();
-    await kyselyDb.deleteFrom("convention_templates").execute();
     await kyselyDb.deleteFrom("users").execute();
     await kyselyDb.deleteFrom("banned_establishments").execute();
 
