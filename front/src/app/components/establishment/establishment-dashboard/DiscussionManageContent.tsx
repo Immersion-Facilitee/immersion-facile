@@ -10,10 +10,12 @@ import DOMPurify from "dompurify";
 import { useEffect, useState } from "react";
 import {
   BorderedSection,
+  ButtonWithSubMenu,
   DiscussionContentContainer,
   ExchangeMessage,
   Loader,
   SectionHighlight,
+  useBreakpoint,
 } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
@@ -281,6 +283,29 @@ const getDiscussionActionsButtons = ({
     .exhaustive();
 };
 
+const shouldShowDiscussionActionButtons = ({
+  discussion,
+  viewer,
+}: {
+  discussion: DiscussionReadDto;
+  viewer: ExchangeRole;
+}): boolean =>
+  match(viewer)
+    .with(
+      "establishment",
+      () => discussion.status === "PENDING" || discussion.status === "ACCEPTED",
+    )
+    .with(
+      "potentialBeneficiary",
+      () =>
+        !(
+          discussion.status === "ACCEPTED" &&
+          discussion.candidateWarnedMethod !== null &&
+          discussion.conventionId === undefined
+        ),
+    )
+    .exhaustive();
+
 const getDiscussionStatusUpdatedFeedbackMessage = (
   discussion: DiscussionReadDto,
 ): string => {
@@ -330,6 +355,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
   const relatedOffer = useAppSelector(searchSelectors.currentSearchResult);
   const [shouldShowContactInfo, setShouldShowContactInfo] =
     useState<boolean>(false);
+  const isDesktop = useBreakpoint("lg");
 
   const saveConventionDraftThenRedirectRequested = ({
     conventionDraft,
@@ -346,6 +372,23 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
         feedbackTopic: "convention-draft",
       }),
     );
+
+  const discussionActionsButtons = getDiscussionActionsButtons({
+    discussion,
+    connectedUser,
+    viewer,
+    makeInitiateConventionDraftButtonProps: (discussionProps) =>
+      getActivateDraftConventionButtonProps({
+        ...discussionProps,
+        saveConventionDraftThenRedirectRequested,
+        saveConventionDraftIsLoading,
+      }),
+  });
+  const shouldShowDiscussionActions = shouldShowDiscussionActionButtons({
+    discussion,
+    viewer,
+  });
+
   return (
     <>
       <Feedback
@@ -551,9 +594,19 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           .exhaustive()}
         aside={
           <>
-            {discussion.kind === "IF" &&
-              (viewer === "potentialBeneficiary" ||
-                discussion.potentialBeneficiary.resumeLink) && (
+            {discussion.kind === "IF" && (
+              <>
+                {!isDesktop && shouldShowDiscussionActions && (
+                  <ButtonWithSubMenu
+                    navItems={discussionActionsButtons}
+                    priority="primary"
+                    buttonLabel={"Actions"}
+                    buttonIconId={"fr-icon-more-fill"}
+                    iconPosition="right"
+                    className={fr.cx("fr-mb-2w")}
+                  />
+                )}
+
                 <BorderedSection className={fr.cx("fr-p-2w", "fr-mb-2w")}>
                   {viewer === "potentialBeneficiary" ? (
                     <>
@@ -596,68 +649,41 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
                       </ul>
                     </>
                   ) : (
-                    <>
-                      <h3 className={fr.cx("fr-h6")}>Profil du candidat</h3>
+                    discussion.potentialBeneficiary.resumeLink && (
+                      <>
+                        <h3 className={fr.cx("fr-h6")}>Profil du candidat</h3>
 
-                      <a
-                        href={discussion.potentialBeneficiary.resumeLink}
-                        title="CV du candidat"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        CV
-                      </a>
-                    </>
+                        <a
+                          href={discussion.potentialBeneficiary.resumeLink}
+                          title="CV du candidat"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          CV
+                        </a>
+                      </>
+                    )
                   )}
                 </BorderedSection>
-              )}
-            {(discussion.status === "PENDING" ||
-              discussion.status === "ACCEPTED") &&
-              viewer === "establishment" && (
-                <BorderedSection>
-                  <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                  <ButtonsGroup
-                    buttons={getDiscussionActionsButtons({
-                      discussion,
-                      connectedUser,
-                      viewer,
-                      makeInitiateConventionDraftButtonProps: (
-                        discussionProps,
-                      ) =>
-                        getActivateDraftConventionButtonProps({
-                          ...discussionProps,
-                          saveConventionDraftThenRedirectRequested,
-                          saveConventionDraftIsLoading,
-                        }),
-                    })}
-                  />
-                </BorderedSection>
-              )}
-            {viewer === "potentialBeneficiary" &&
-              !(
-                discussion.status === "ACCEPTED" &&
-                discussion.candidateWarnedMethod !== null &&
-                discussion.conventionId === undefined
-              ) && (
-                <BorderedSection className={fr.cx("fr-p-2w", "fr-mt-2w")}>
-                  <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                  <ButtonsGroup
-                    buttons={getDiscussionActionsButtons({
-                      discussion,
-                      connectedUser,
-                      viewer,
-                      makeInitiateConventionDraftButtonProps: (
-                        discussionProps,
-                      ) =>
-                        getActivateDraftConventionButtonProps({
-                          ...discussionProps,
-                          saveConventionDraftThenRedirectRequested,
-                          saveConventionDraftIsLoading,
-                        }),
-                    })}
-                  />
-                </BorderedSection>
-              )}
+              </>
+            )}
+            {isDesktop && discussion.kind === "IF" && (
+              <>
+                {viewer === "establishment" && shouldShowDiscussionActions && (
+                  <BorderedSection>
+                    <h3 className={fr.cx("fr-h6")}>Actions</h3>
+                    <ButtonsGroup buttons={discussionActionsButtons} />
+                  </BorderedSection>
+                )}
+                {viewer === "potentialBeneficiary" &&
+                  shouldShowDiscussionActions && (
+                    <BorderedSection className={fr.cx("fr-p-2w", "fr-mt-2w")}>
+                      <h3 className={fr.cx("fr-h6")}>Actions</h3>
+                      <ButtonsGroup buttons={discussionActionsButtons} />
+                    </BorderedSection>
+                  )}
+              </>
+            )}
           </>
         }
       />
