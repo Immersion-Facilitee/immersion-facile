@@ -15,11 +15,11 @@ export const agencySeed = async (
   const agenciesCountByKind = 10;
 
   const randomAgencies: Record<AgencyKind, AgencyId[]> = {
-    "pole-emploi": await Promise.all(
+    "france-travail": await Promise.all(
       [...Array(agenciesCountByKind).keys()].map(() =>
         insertAgencySeed({
           uow,
-          kind: "pole-emploi",
+          kind: "france-travail",
           userId: seedUsers.adminUser.id,
           agencyContactEmail: seedUsers.adminUser.email,
         }),

@@ -71,11 +71,11 @@ export const insertSpecificAgenciesWithUserRight = async ({
   userId: UserId;
   agencyIds: Record<AgencyKind, AgencyId[]>;
 }): Promise<Record<AgencyKind, AgencyId[]>> => {
-  const peAgency = new AgencyDtoBuilder()
+  const ftAgency = new AgencyDtoBuilder()
     .withId(SEED_FT_AGENCY_ID)
     .withName("Agence France Travail Paris")
     .withSignature("PE agency signature")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .withStatus("active")
     .withAddress(seedAddresses[0])
     .build();
@@ -136,7 +136,7 @@ export const insertSpecificAgenciesWithUserRight = async ({
   };
 
   await uow.agencyRepository.insert(
-    toAgencyWithRights(peAgency, connectedValidator),
+    toAgencyWithRights(ftAgency, connectedValidator),
   );
   await uow.agencyRepository.insert(
     toAgencyWithRights(cciAgency, connectedValidator),
@@ -153,7 +153,7 @@ export const insertSpecificAgenciesWithUserRight = async ({
 
   return {
     ...agencyIds,
-    "pole-emploi": [...agencyIds["pole-emploi"], peAgency.id],
+    "france-travail": [...agencyIds["france-travail"], ftAgency.id],
     "mission-locale": [...agencyIds["mission-locale"], missionLocaleAgency.id],
   };
 };
