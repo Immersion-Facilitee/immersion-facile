@@ -84,10 +84,7 @@ a.status as agency_status,
 a.agency_siret::text as agency_siret,
 nullif(trim(concat(c.agency_referent_first_name, ' ', c.agency_referent_last_name)), '') as agency_referent_name,
 refer_a.name as referring_agency_name,
-case
-    when a.kind = 'pole-emploi' then 'france-travail'
-    else a.kind
-end as agency_kind,
+a.kind as agency_kind,
 pdr.department_name as agency_department_name,
 pdr.region_name as agency_region_name,
 

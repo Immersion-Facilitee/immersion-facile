@@ -40,8 +40,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
         '"france-travail"'
       )::jsonb
     )
-    WHERE (rights #> '{convention,scope}') ? 'agencyKinds'
-      AND rights #> '{convention,scope,agencyKinds}' @> '"pole-emploi"'::jsonb;
+    WHERE rights #> '{convention,scope,agencyKinds}' @> '"pole-emploi"'::jsonb;
   `);
 }
 
@@ -85,7 +84,6 @@ export async function down(pgm: MigrationBuilder): Promise<void> {
         '"pole-emploi"'
       )::jsonb
     )
-    WHERE (rights #> '{convention,scope}') ? 'agencyKinds'
-      AND rights #> '{convention,scope,agencyKinds}' @> '"france-travail"'::jsonb;
+    WHERE rights #> '{convention,scope,agencyKinds}' @> '"france-travail"'::jsonb;
   `);
 }

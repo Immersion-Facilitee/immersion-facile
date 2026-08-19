@@ -14,10 +14,7 @@
 select
     a.id,
     a.name,
-    case
-        when a.kind = 'pole-emploi' then 'france-travail'
-        else a.kind
-    end as kind,
+    a.kind,
     a.questionnaire_url,
     a.email_signature,
     a.legacy_address,

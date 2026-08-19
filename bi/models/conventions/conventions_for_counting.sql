@@ -35,10 +35,7 @@ select
     a.name as agency_name,
     c.status as status_technical,
     a.status as agency_status,
-    case
-        when a.kind = 'pole-emploi' then 'france-travail'
-        else a.kind
-    end as agency_kind,
+    a.kind as agency_kind,
     pdr.department_name as agency_department_name,
     pdr.region_name as agency_region_name,
     c.date_validation,
