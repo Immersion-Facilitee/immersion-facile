@@ -306,7 +306,7 @@ export const defaultEmailValueByEmailKind: {
   AGENCY_DELEGATION_CONVENTION_EXPIRED: {
     agencyName: "AGENCY_NAME",
     delegationAgencyName: "DELEGATION_AGENCY_NAME",
-    delegationAgencyKind: "pole-emploi",
+    delegationAgencyKind: "france-travail",
   },
   AGENCY_DELEGATION_CONVENTION_EXPIRING_SOON: {
     agencyName: "AGENCY_NAME",

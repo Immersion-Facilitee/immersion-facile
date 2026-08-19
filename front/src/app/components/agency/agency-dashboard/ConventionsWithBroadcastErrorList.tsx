@@ -225,9 +225,9 @@ export const ConventionsWithBroadcastErrorList = ({
     };
   }, [dispatch, connectedUserJwt]);
 
-  const isPeUser = currentUser?.agencyRights.some(
+  const isFtUser = currentUser?.agencyRights.some(
     (agencyRight) =>
-      agencyRight.agency.kind === "pole-emploi" &&
+      agencyRight.agency.kind === "france-travail" &&
       activeAgencyStatuses.includes(agencyRight.agency.status),
   );
 
@@ -246,11 +246,11 @@ export const ConventionsWithBroadcastErrorList = ({
       titleAs="h2"
       className={fr.cx("fr-mt-2w", "fr-mb-4w")}
       titleAction={
-        (isPeUser || isMiloUser) && (
+        (isFtUser || isMiloUser) && (
           <Button
             priority="secondary"
             linkProps={{
-              href: isPeUser
+              href: isFtUser
                 ? "https://poleemploi.sharepoint.com/:p:/r/sites/NAT-Mediatheque-Appropriation/Documents/Immersion_facilitee/Immersion_facilitee/Guide_de_gestion_des_conventions_en_erreur.pptx?d=w489a3c6b6e5148e6bea287ddfadba8c7&csf=1&web=1&e=i1GD5H"
                 : "https://docs.google.com/presentation/d/14iN1tBOznkwYka-x-ZHmD-Msy5fE2dYqC3Yc1zfxw8A/edit?slide=id.g3bedc2e4d54_2_0#slide=id.g3bedc2e4d54_2_0",
               target: "_blank",

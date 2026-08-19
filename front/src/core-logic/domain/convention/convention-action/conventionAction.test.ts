@@ -626,7 +626,7 @@ describe("convention action slice", () => {
         agencyName: "agency-transferred-name",
         agencyContactEmail: "contact@mail.com",
         agencyDepartment: "87",
-        agencyKind: "pole-emploi" as const,
+        agencyKind: "france-travail",
         agencyRefersTo: undefined,
         agencySiret: "22220000111155",
         agencyValidationSteps: "validator-only",

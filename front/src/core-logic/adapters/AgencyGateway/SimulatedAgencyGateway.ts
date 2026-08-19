@@ -44,7 +44,7 @@ export const PE_AGENCY_ACTIVE = new AgencyDtoBuilder()
     city: "Paris",
     departmentCode: "75",
   })
-  .withKind("pole-emploi")
+  .withKind("france-travail")
   .withSignature("Mon agence PE")
   .withStatus("active")
   .build();

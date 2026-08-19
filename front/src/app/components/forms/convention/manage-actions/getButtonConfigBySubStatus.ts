@@ -301,7 +301,7 @@ export const hasUserRightsOnAgencyBroadcast = (
   }
   return currentUser.agencyRights.some(
     (agencyRight) =>
-      agencyRight.agency.kind === "pole-emploi" ||
+      agencyRight.agency.kind === "france-travail" ||
       agencyRight.agency.kind === "mission-locale",
   );
 };

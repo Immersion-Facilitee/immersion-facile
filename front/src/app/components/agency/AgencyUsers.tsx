@@ -229,7 +229,7 @@ export const AgencyUsers = ({
                   routeName={routeName}
                   hasCounsellorRoles={hasCounsellorRoles}
                   modalId={manageUserModalId}
-                  isFTAgency={agency.kind === "pole-emploi"}
+                  isFTAgency={agency.kind === "france-travail"}
                 />
               </>
             )}

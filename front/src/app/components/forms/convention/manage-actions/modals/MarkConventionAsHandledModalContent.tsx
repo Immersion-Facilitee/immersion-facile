@@ -22,9 +22,9 @@ export const MarkConventionAsHandledModalContent = ({
   closeModal,
   onSubmit: onSubmitProp,
 }: MarkConventionAsHandledModalContentProps) => {
-  const isPeUser = currentUser?.agencyRights.some(
+  const isFtUser = currentUser?.agencyRights.some(
     (agencyRight) =>
-      agencyRight.agency.kind === "pole-emploi" &&
+      agencyRight.agency.kind === "france-travail" &&
       !agencyRight.roles.includes("to-review"),
   );
 
@@ -74,7 +74,7 @@ export const MarkConventionAsHandledModalContent = ({
         </form>
       </FormProvider>
 
-      {isPeUser && (
+      {isFtUser && (
         <p>
           Si nécessaire, vous pouvez retrouver les instructions détaillées pour
           la saisie d'une convention en cliquant sur le lien suivant:{" "}
