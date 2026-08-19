@@ -2,19 +2,18 @@ import { BehaviorSubject, delay, type Observable, of, Subject } from "rxjs";
 import type {
   AppellationAndRomeDto,
   AppellationSearchInputParams,
-  GetSiretInfo,
+  GetSiretEstablishmentDtoResponse,
   RomeDto,
 } from "shared";
 import type { FormCompletionGateway } from "src/core-logic/ports/FormCompletionGateway";
 
 export class TestFormCompletionGateway implements FormCompletionGateway {
-  public getSiretInfoCallCount = 0;
-
-  public getSiretInfoIfNotAlreadySavedCallCount = 0;
+  public getSiretEstablishmentDtoResponseCallCount = 0;
 
   public isSiretInDb$ = new Subject<boolean>();
 
-  public siretInfo$ = new Subject<GetSiretInfo>();
+  public getSiretEstablishmentDto$ =
+    new Subject<GetSiretEstablishmentDtoResponse>();
 
   public appellationDtoMatching$ = new Subject<AppellationAndRomeDto[]>();
 
@@ -45,21 +44,15 @@ export class TestFormCompletionGateway implements FormCompletionGateway {
       : this.#romeDtos$;
   }
 
-  public getSiretInfo$(): Observable<GetSiretInfo> {
-    this.getSiretInfoCallCount++;
-    return this.siretInfo$;
-  }
-
-  public getSiretInfoIfNotAlreadySaved$(): Observable<GetSiretInfo> {
-    this.getSiretInfoIfNotAlreadySavedCallCount++;
-    return this.siretInfo$;
+  public getSiretEstablishmentDtoResponse$(): Observable<GetSiretEstablishmentDtoResponse> {
+    this.getSiretEstablishmentDtoResponseCallCount++;
+    return this.getSiretEstablishmentDto$;
   }
 
   public isSiretAlreadySaved$(): Observable<boolean> {
     return this.isSiretInDb$;
   }
 
-  // for test purpose
   public get romeDtos$() {
     return this.#romeDtos$;
   }

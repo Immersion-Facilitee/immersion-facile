@@ -12,19 +12,25 @@ import type { ActionOfSlice } from "src/core-logic/storeConfig/redux.helpers";
 
 export type InvalidSiretError = "SIRET must be 14 digits";
 
+export type SiretSliceError =
+  | GetSiretInfoError
+  | InvalidSiretError
+  | string
+  | "Already exists";
+
 export interface SiretState {
   currentSiret: string;
   isSearching: boolean;
-  shouldFetchEvenIfAlreadySaved: boolean;
+  shouldThrowErrorOnAlreadySaved: boolean;
   establishment: SiretEstablishmentDto | null;
-  error: GetSiretInfoError | InvalidSiretError | null;
+  error: SiretSliceError | null;
   countryCode: SupportedCountryCode | null;
 }
 
 const initialState: SiretState = {
   currentSiret: "",
   isSearching: false,
-  shouldFetchEvenIfAlreadySaved: true,
+  shouldThrowErrorOnAlreadySaved: false,
   establishment: null,
   error: null,
   countryCode: null,
@@ -34,15 +40,15 @@ export const siretSlice = createSlice({
   name: "siret",
   initialState,
   reducers: {
-    setShouldFetchEvenIfAlreadySaved: (
+    setShouldThrowErrorOnAlreadySaved: (
       state,
       action: PayloadAction<{
-        shouldFetchEvenIfAlreadySaved: boolean;
+        shouldThrowErrorOnAlreadySaved: boolean;
         addressAutocompleteLocator: AddressAutocompleteLocator | null;
       }>,
     ) => {
-      state.shouldFetchEvenIfAlreadySaved =
-        action.payload.shouldFetchEvenIfAlreadySaved;
+      state.shouldThrowErrorOnAlreadySaved =
+        action.payload.shouldThrowErrorOnAlreadySaved;
     },
     siretModified: (
       state,
@@ -90,7 +96,7 @@ export const siretSlice = createSlice({
       state.isSearching = false;
       state.establishment = null;
     },
-    siretInfoFailed: (state, action: PayloadAction<GetSiretInfoError>) => {
+    siretInfoFailed: (state, action: PayloadAction<SiretSliceError>) => {
       state.isSearching = false;
       state.error = action.payload;
     },

@@ -9,15 +9,12 @@ import {
 import {
   type AppellationAndRomeDto,
   type AppellationSearchInputParams,
-  apiSirenNotAvailableSiret,
   apiSirenUnexpectedError,
-  conflictErrorSiret,
-  type GetSiretInfo,
+  type GetSiretEstablishmentDtoResponse,
   type RomeDto,
   type SiretDto,
   type SiretEstablishmentDto,
   siretApiMissingEstablishmentMessage,
-  siretApiUnavailableSiretErrorMessage,
   siretApiUnexpectedErrorErrorMessage,
   siretSchema,
   sleep,
@@ -99,23 +96,19 @@ export class SimulatedFormCompletionGateway implements FormCompletionGateway {
       : this.#romeDtos$;
   }
 
-  public getSiretInfo$(siret: SiretDto): Observable<GetSiretInfo> {
+  public getSiretEstablishmentDtoResponse$(
+    siret: SiretDto,
+  ): Observable<GetSiretEstablishmentDtoResponse> {
     const response$ = of(this.#simulatedResponse(siret));
     return this.simulatedLatency
       ? response$.pipe(delay(this.simulatedLatency))
       : response$;
   }
 
-  public getSiretInfoIfNotAlreadySaved$(
-    siret: SiretDto,
-  ): Observable<GetSiretInfo> {
-    return this.getSiretInfo$(siret);
-  }
-
   public isSiretAlreadySaved$(siret: SiretDto): Observable<boolean> {
     const response = this.#simulatedResponse(siret);
     const response$ = of(
-      response === "Establishment with this siret is already in our DB",
+      typeof response === "object" ? response.isAlreadySaved : false,
     );
     return this.simulatedLatency
       ? response$.pipe(delay(this.simulatedLatency))
@@ -127,15 +120,11 @@ export class SimulatedFormCompletionGateway implements FormCompletionGateway {
     return this.#romeDtos$;
   }
 
-  #simulatedResponse(rawSiret: SiretDto): GetSiretInfo {
+  #simulatedResponse(rawSiret: SiretDto): GetSiretEstablishmentDtoResponse {
     const siret = siretSchema.parse(rawSiret);
 
     if (siret === tooManySirenRequestsSiret)
       return tooManySirenRequestsSiretErrorMessage;
-    if (siret === apiSirenNotAvailableSiret)
-      return siretApiUnavailableSiretErrorMessage;
-    if (siret === conflictErrorSiret)
-      return "Establishment with this siret is already in our DB";
     if (siret === apiSirenUnexpectedError)
       throw new Error(siretApiUnexpectedErrorErrorMessage);
     const establishment = this.sireneEstablishments[siret];
