@@ -272,7 +272,7 @@ describe("SomeUseCase", () => {
 
   const agency = new AgencyDtoBuilder()
     .withId("agency-id")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .build();
 
   const convention = new ConventionDtoBuilder()

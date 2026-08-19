@@ -135,7 +135,7 @@ test.describe("Convention manage actions from prescriber dashboard", () => {
     ).toHaveValue("75");
     await expect(
       managePage.locator(`#${conventionSection.agencyKind}`),
-    ).toHaveValue("pole-emploi");
+    ).toHaveValue("france-travail");
     await expect(
       managePage.locator(`#${conventionSection.agencyId}`),
     ).toHaveValue(SEED_FT_AGENCY_ID);
