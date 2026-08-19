@@ -209,7 +209,7 @@ export const BeneficiaryFormSection = ({
 
       {values.signatories.beneficiary.email && (
         <ConventionEmailWarning
-          shouldShowFtSpecificMessage={values.agencyKind === "pole-emploi"}
+          shouldShowFtSpecificMessage={values.agencyKind === "france-travail"}
         />
       )}
       <PhoneInput

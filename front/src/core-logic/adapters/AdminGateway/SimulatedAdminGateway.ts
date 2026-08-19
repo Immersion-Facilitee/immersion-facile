@@ -208,7 +208,7 @@ const apiConsumers: ApiConsumer[] = [
       convention: {
         kinds: ["READ", "WRITE"],
         scope: {
-          agencyKinds: ["pole-emploi", "mission-locale"],
+          agencyKinds: ["france-travail", "mission-locale"],
         },
         subscriptions: [],
       },

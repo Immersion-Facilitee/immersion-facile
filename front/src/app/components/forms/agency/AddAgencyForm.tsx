@@ -302,9 +302,9 @@ const AgencyForm = ({
               setValue("kind", value);
             },
           }}
-          state={selectedKind === "pole-emploi" ? "error" : "default"}
+          state={selectedKind === "france-travail" ? "error" : "default"}
           stateRelatedMessage={
-            selectedKind === "pole-emploi" ? agencyErrorMessage : undefined
+            selectedKind === "france-travail" ? agencyErrorMessage : undefined
           }
           {...register("kind")}
         />
