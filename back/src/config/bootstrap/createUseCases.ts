@@ -882,7 +882,6 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         proConnectOAuthGateway: gateways.proConnectOAuthGateway,
-        ftConnectGateway: gateways.ftConnectGateway,
       },
     }),
     createAssessment: makeCreateAssessment({

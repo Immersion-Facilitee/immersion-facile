@@ -11,7 +11,6 @@ import {
   type InMemoryUnitOfWork,
 } from "../../../unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../../unit-of-work/adapters/InMemoryUowPerformer";
-import { InMemoryFtConnectGateway } from "../../ft-connect/adapters/ft-connect-gateway/InMemoryFtConnectGateway";
 import {
   fakeProConnectLogoutUri,
   fakeProviderConfig,
@@ -48,7 +47,6 @@ describe("GetOAuthLogoutUrl", () => {
           proConnectOAuthGateway: new InMemoryProConnectOAuthGateway(
             fakeProviderConfig,
           ),
-          ftConnectGateway: new InMemoryFtConnectGateway(),
         },
       });
     });
@@ -132,6 +130,25 @@ describe("GetOAuthLogoutUrl", () => {
             actualType: ongoingOAuth.provider,
             expectedType: "proConnect",
           }),
+        );
+      });
+
+      it("fails on missing idToken provider", async () => {
+        const ongoingOAuth: OngoingOAuth = {
+          fromUri: "/uri",
+          state: "some-state",
+          nonce: "some-nonce",
+          provider: "proConnect",
+          accessToken: "fake-access-token",
+          userId: user.id,
+          usedAt: null,
+          idToken: null,
+        };
+        uow.ongoingOAuthRepository.ongoingOAuths = [ongoingOAuth];
+
+        await expectPromiseToFailWithError(
+          getOAuthLogoutUrl.execute(undefined, connectedUser),
+          errors.auth.missingIdToken(ongoingOAuth.state),
         );
       });
     });

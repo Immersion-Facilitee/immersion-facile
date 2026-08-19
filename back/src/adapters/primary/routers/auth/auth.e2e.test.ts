@@ -707,7 +707,7 @@ describe("auth router", () => {
       });
 
       describe("when provider is 'ftConnect'", () => {
-        it("when ftConnect, returns a correct logout url with status 200", async () => {
+        it("when ftConnect, returns an error with status 400", async () => {
           inMemoryUow.ongoingOAuthRepository.ongoingOAuths = [
             {
               fromUri: "uri",

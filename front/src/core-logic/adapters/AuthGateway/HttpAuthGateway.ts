@@ -50,7 +50,7 @@ export class HttpAuthGateway implements AuthGateway {
         .then((response) =>
           match(response)
             .with({ status: 200 }, ({ body }) => body)
-            .with({ status: P.union(400, 401) }, logBodyAndThrow)
+            .with({ status: P.union(400, 401, 403) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );
