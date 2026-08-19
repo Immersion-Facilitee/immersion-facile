@@ -22,7 +22,7 @@ import {
 } from "./ResyncOldConventionsToFt";
 
 describe("ResyncOldConventionsToFt use case", () => {
-  const agencyFT = new AgencyDtoBuilder().withKind("pole-emploi").build();
+  const agencyFT = new AgencyDtoBuilder().withKind("france-travail").build();
   const conventionToSync1 = new ConventionDtoBuilder()
     .withId("6f59c7b7-c2c9-4a31-a3eb-377ea83ae08b")
     .withAgencyId(agencyFT.id)
@@ -114,7 +114,7 @@ describe("ResyncOldConventionsToFt use case", () => {
             agencyName: agencyFT.name,
             agencyDepartment: agencyFT.address.departmentCode,
             agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: agencyFT.kind,
+            agencyKind: "pole-emploi",
             agencySiret: agencyFT.agencySiret,
             agencyValidatorEmails: agencyFT.validatorEmails,
             agencyValidationSteps: "validator-only",
@@ -130,7 +130,7 @@ describe("ResyncOldConventionsToFt use case", () => {
             agencyName: agencyFT.name,
             agencyDepartment: agencyFT.address.departmentCode,
             agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: agencyFT.kind,
+            agencyKind: "pole-emploi",
             agencySiret: agencyFT.agencySiret,
             agencyValidatorEmails: agencyFT.validatorEmails,
             agencyValidationSteps: "validator-only",
@@ -162,7 +162,7 @@ describe("ResyncOldConventionsToFt use case", () => {
       });
     });
 
-    it("when agency is not kind pole-emploi", async () => {
+    it("when agency is not kind france-travail", async () => {
       const agencyCCI = new AgencyDtoBuilder().withKind("cci").build();
       const conventionToSync = new ConventionDtoBuilder()
         .withAgencyId(agencyCCI.id)
@@ -184,13 +184,13 @@ describe("ResyncOldConventionsToFt use case", () => {
           id: conventionToSync.id,
           status: "SKIP",
           processDate: timeGateway.now(),
-          reason: "Agency is not of kind pole-emploi",
+          reason: "Agency is not of kind france-travail",
         },
       ]);
       expectToEqual(report, {
         success: 0,
         skips: {
-          [conventionToSync.id]: "Agency is not of kind pole-emploi",
+          [conventionToSync.id]: "Agency is not of kind france-travail",
         },
         errors: {},
       });
@@ -267,7 +267,7 @@ describe("ResyncOldConventionsToFt use case", () => {
             agencyName: agencyFT.name,
             agencyDepartment: agencyFT.address.departmentCode,
             agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: agencyFT.kind,
+            agencyKind: "pole-emploi",
             agencySiret: agencyFT.agencySiret,
             agencyValidatorEmails: agencyFT.validatorEmails,
             agencyValidationSteps: "validator-only",
@@ -283,7 +283,7 @@ describe("ResyncOldConventionsToFt use case", () => {
             agencyName: agencyFT.name,
             agencyDepartment: agencyFT.address.departmentCode,
             agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: agencyFT.kind,
+            agencyKind: "pole-emploi",
             agencySiret: agencyFT.agencySiret,
             agencyValidatorEmails: agencyFT.validatorEmails,
             agencyValidationSteps: "validator-only",
@@ -395,7 +395,7 @@ describe("ResyncOldConventionsToFt use case", () => {
             agencyName: agencyFT.name,
             agencyDepartment: agencyFT.address.departmentCode,
             agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: agencyFT.kind,
+            agencyKind: "pole-emploi",
             agencySiret: agencyFT.agencySiret,
             agencyValidatorEmails: agencyFT.validatorEmails,
             agencyValidationSteps: "validator-only",
@@ -457,7 +457,7 @@ describe("ResyncOldConventionsToFt use case", () => {
             ...conventionToSync1,
             agencyName: agencyFT.name,
             agencyDepartment: agencyFT.address.departmentCode,
-            agencyKind: agencyFT.kind,
+            agencyKind: "pole-emploi",
             agencyContactEmail: agencyFT.contactEmail,
             agencySiret: agencyFT.agencySiret,
             agencyValidatorEmails: agencyFT.validatorEmails,
@@ -517,7 +517,7 @@ describe("ResyncOldConventionsToFt use case", () => {
             agencyName: agencyFT.name,
             agencyDepartment: agencyFT.address.departmentCode,
             agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: agencyFT.kind,
+            agencyKind: "pole-emploi",
             agencySiret: agencyFT.agencySiret,
             agencyValidatorEmails: agencyFT.validatorEmails,
             agencyValidationSteps: "validator-only",

@@ -284,11 +284,11 @@ export const shouldBroadcastToFranceTravail = ({
 }): boolean => {
   const isBroadcastToFranceTravailAllowedForKind = (agencyKind: AgencyKind) => {
     if (agency.kind === agencyKind) return true;
-    if (refersToAgency && refersToAgency.kind === "pole-emploi") return true;
+    if (refersToAgency && refersToAgency.kind === "france-travail") return true;
     return false;
   };
 
-  if (isBroadcastToFranceTravailAllowedForKind("pole-emploi")) return true;
+  if (isBroadcastToFranceTravailAllowedForKind("france-travail")) return true;
 
   if (
     featureFlags.enableBroadcastOfMissionLocaleToFT.isActive &&

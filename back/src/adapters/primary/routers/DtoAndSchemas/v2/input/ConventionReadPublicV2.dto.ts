@@ -17,15 +17,18 @@ export type ConventionReadPublicV2Dto = Omit<
 
 export const conventionReadToConventionReadPublicV2 = (
   conventionReadDto: ConventionReadDto,
-): ConventionReadPublicV2Dto => ({
-  ...conventionReadDto,
-  agencyKind: toPartnerAgencyKind(conventionReadDto.agencyKind),
-  ...(conventionReadDto.agencyRefersTo
-    ? {
-        agencyRefersTo: {
-          ...conventionReadDto.agencyRefersTo,
-          kind: toPartnerAgencyKind(conventionReadDto.agencyRefersTo.kind),
-        },
-      }
-    : {}),
-});
+): ConventionReadPublicV2Dto => {
+  const { agencyKind, agencyRefersTo, ...rest } = conventionReadDto;
+  return {
+    ...rest,
+    agencyKind: toPartnerAgencyKind(agencyKind),
+    ...(agencyRefersTo
+      ? {
+          agencyRefersTo: {
+            ...agencyRefersTo,
+            kind: toPartnerAgencyKind(agencyRefersTo.kind),
+          },
+        }
+      : {}),
+  };
+};

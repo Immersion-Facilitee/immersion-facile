@@ -9,6 +9,7 @@ import {
 } from "shared";
 import { AppConfig } from "../../../../config/bootstrap/appConfig";
 
+import { toPartnerAgencyKind } from "../../../../utils/agency";
 import { makeAxiosInstances } from "../../../../utils/axiosUtils";
 import type { ConventionUpdatedSubscriptionCallbackBody } from "../ports/SubscribersGateway";
 import { HttpSubscribersGateway } from "./HttpSubscribersGateway";
@@ -31,8 +32,24 @@ describe("HttpSubscribersGateway", () => {
     lastReminders: makeEmptyLastReminders(),
   };
 
+  const { agencyKind, agencyRefersTo, ...conventionWithoutAgencyKinds } =
+    conventionReadDto;
+
   const subscriptionBody: ConventionUpdatedSubscriptionCallbackBody = {
-    payload: { convention: conventionReadDto },
+    payload: {
+      convention: {
+        ...conventionWithoutAgencyKinds,
+        agencyKind: toPartnerAgencyKind(agencyKind),
+        ...(agencyRefersTo
+          ? {
+              agencyRefersTo: {
+                ...agencyRefersTo,
+                kind: toPartnerAgencyKind(agencyRefersTo.kind),
+              },
+            }
+          : {}),
+      },
+    },
     subscribedEvent: "convention.updated",
   };
 

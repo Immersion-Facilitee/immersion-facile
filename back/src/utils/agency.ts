@@ -221,7 +221,7 @@ export const throwErrorIfAttemptToAddCounsellorRoleToFTAgency = ({
   agencyKind: AgencyKind;
   roles: AgencyRole[];
 }) => {
-  if (agencyKind === "pole-emploi" && roles.includes("counsellor")) {
+  if (agencyKind === "france-travail" && roles.includes("counsellor")) {
     throw errors.agency.invalidCounsellorRoleForFTAgency();
   }
 };
