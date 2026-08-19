@@ -10,10 +10,10 @@ import DOMPurify from "dompurify";
 import { useEffect, useState } from "react";
 import {
   BorderedSection,
+  DiscussionContentContainer,
   ExchangeMessage,
   Loader,
   SectionHighlight,
-  useBreakpoint,
 } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
@@ -330,7 +330,6 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
   const relatedOffer = useAppSelector(searchSelectors.currentSearchResult);
   const [shouldShowContactInfo, setShouldShowContactInfo] =
     useState<boolean>(false);
-  const isDesktopScreen = useBreakpoint("lg");
 
   const saveConventionDraftThenRedirectRequested = ({
     conventionDraft,
@@ -502,174 +501,166 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           />
         )}
 
-      <div
-        className={fr.cx(
-          "fr-grid-row",
-          "fr-grid-row--top",
-          "fr-grid-row--gutters",
-          "fr-my-2w",
-        )}
-      >
-        <div
-          className={fr.cx("fr-col-12", "fr-col-lg-8")}
-          style={{ order: isDesktopScreen ? 1 : 2 }}
-        >
-          {match(discussion.contactMode)
-            .with("EMAIL", () => (
+      <DiscussionContentContainer
+        className={fr.cx("fr-my-2w")}
+        content={match(discussion.contactMode)
+          .with("EMAIL", () => (
+            <>
+              <BorderedSection>
+                <DiscussionExchangeMessageForm
+                  discussionId={discussion.id}
+                  viewer={viewer}
+                />
+              </BorderedSection>
+              <BorderedSection className={fr.cx("fr-mt-2w")}>
+                <DiscussionExchangesList
+                  discussion={discussion}
+                  viewer={viewer}
+                />
+              </BorderedSection>
+            </>
+          ))
+          .with(P.union("PHONE", "IN_PERSON"), (contactMode) =>
+            viewer === "potentialBeneficiary" ? (
               <>
+                <Feedback
+                  topics={["dashboard-discussion-contact-info"]}
+                  className={fr.cx("fr-mb-2w")}
+                />
                 <BorderedSection>
-                  <DiscussionExchangeMessageForm
-                    discussionId={discussion.id}
-                    viewer={viewer}
+                  <EstablishmentContactInformation
+                    discussionEstablishmentContactInfo={
+                      discussionEstablishmentContactInfo
+                    }
+                    contactMode={contactMode}
                   />
                 </BorderedSection>
                 <BorderedSection className={fr.cx("fr-mt-2w")}>
-                  <DiscussionExchangesList
-                    discussion={discussion}
-                    viewer={viewer}
-                  />
+                  <BeneficiaryGuideInformation contactMode={contactMode} />
                 </BorderedSection>
               </>
-            ))
-            .with(P.union("PHONE", "IN_PERSON"), (contactMode) =>
-              viewer === "potentialBeneficiary" ? (
-                <>
-                  <Feedback
-                    topics={["dashboard-discussion-contact-info"]}
-                    className={fr.cx("fr-mb-2w")}
-                  />
-                  <BorderedSection>
-                    <EstablishmentContactInformation
-                      discussionEstablishmentContactInfo={
-                        discussionEstablishmentContactInfo
-                      }
-                      contactMode={contactMode}
-                    />
-                  </BorderedSection>
-                  <BorderedSection className={fr.cx("fr-mt-2w")}>
-                    <BeneficiaryGuideInformation contactMode={contactMode} />
-                  </BorderedSection>
-                </>
-              ) : (
-                <BorderedSection>
-                  <DiscussionExchangeMessageForm
-                    viewer="establishment"
-                    discussionId={discussion.id}
-                  />
-                </BorderedSection>
-              ),
-            )
-            .exhaustive()}
-        </div>
-        <div
-          className={fr.cx("fr-col-12", "fr-col-lg-4")}
-          style={{ order: isDesktopScreen ? 2 : 1 }}
-        >
-          {discussion.kind === "IF" &&
-            (viewer === "potentialBeneficiary" ||
-              discussion.potentialBeneficiary.resumeLink) && (
-              <BorderedSection className={fr.cx("fr-p-2w", "fr-mb-2w")}>
-                {viewer === "potentialBeneficiary" ? (
-                  <>
-                    <h3 className={fr.cx("fr-h6")}>Entreprise</h3>
+            ) : (
+              <BorderedSection>
+                <DiscussionExchangeMessageForm
+                  viewer="establishment"
+                  discussionId={discussion.id}
+                />
+              </BorderedSection>
+            ),
+          )
+          .exhaustive()}
+        aside={
+          <>
+            {discussion.kind === "IF" &&
+              (viewer === "potentialBeneficiary" ||
+                discussion.potentialBeneficiary.resumeLink) && (
+                <BorderedSection className={fr.cx("fr-p-2w", "fr-mb-2w")}>
+                  {viewer === "potentialBeneficiary" ? (
+                    <>
+                      <h3 className={fr.cx("fr-h6")}>Entreprise</h3>
 
-                    <ul className={fr.cx("fr-raw-list")}>
-                      {relatedOffer?.website && (
-                        <li className={fr.cx("fr-mb-1w")}>
+                      <ul className={fr.cx("fr-raw-list")}>
+                        {relatedOffer?.website && (
+                          <li className={fr.cx("fr-mb-1w")}>
+                            <a
+                              href={relatedOffer.website}
+                              title="Site web de l'entreprise"
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Site web de l'entreprise
+                            </a>
+                          </li>
+                        )}
+
+                        <li>{discussion.businessName}</li>
+
+                        <li className={fr.cx("fr-mt-1w")}>
                           <a
-                            href={relatedOffer.website}
-                            title="Site web de l'entreprise"
+                            title="Offre d'immersion"
                             target="_blank"
                             rel="noreferrer"
+                            href={
+                              frontRoutes.searchResult({
+                                appellationCode: [
+                                  discussion.appellation.appellationCode,
+                                ],
+                                siret: discussion.siret,
+                                location: discussion.locationId,
+                              }).href
+                            }
                           >
-                            Site web de l'entreprise
+                            Voir l'offre
                           </a>
                         </li>
-                      )}
+                      </ul>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className={fr.cx("fr-h6")}>Profil du candidat</h3>
 
-                      <li>{discussion.businessName}</li>
-
-                      <li className={fr.cx("fr-mt-1w")}>
-                        <a
-                          title="Offre d'immersion"
-                          target="_blank"
-                          rel="noreferrer"
-                          href={
-                            frontRoutes.searchResult({
-                              appellationCode: [
-                                discussion.appellation.appellationCode,
-                              ],
-                              siret: discussion.siret,
-                              location: discussion.locationId,
-                            }).href
-                          }
-                        >
-                          Voir l'offre
-                        </a>
-                      </li>
-                    </ul>
-                  </>
-                ) : (
-                  <>
-                    <h3 className={fr.cx("fr-h6")}>Profil du candidat</h3>
-
-                    <a
-                      href={discussion.potentialBeneficiary.resumeLink}
-                      title="CV du candidat"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      CV
-                    </a>
-                  </>
-                )}
-              </BorderedSection>
-            )}
-          {(discussion.status === "PENDING" ||
-            discussion.status === "ACCEPTED") &&
-            viewer === "establishment" && (
-              <BorderedSection>
-                <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                <ButtonsGroup
-                  buttons={getDiscussionActionsButtons({
-                    discussion,
-                    connectedUser,
-                    viewer,
-                    makeInitiateConventionDraftButtonProps: (discussionProps) =>
-                      getActivateDraftConventionButtonProps({
-                        ...discussionProps,
-                        saveConventionDraftThenRedirectRequested,
-                        saveConventionDraftIsLoading,
-                      }),
-                  })}
-                />
-              </BorderedSection>
-            )}
-          {viewer === "potentialBeneficiary" &&
-            !(
-              discussion.status === "ACCEPTED" &&
-              discussion.candidateWarnedMethod !== null &&
-              discussion.conventionId === undefined
-            ) && (
-              <BorderedSection className={fr.cx("fr-p-2w", "fr-mt-2w")}>
-                <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                <ButtonsGroup
-                  buttons={getDiscussionActionsButtons({
-                    discussion,
-                    connectedUser,
-                    viewer,
-                    makeInitiateConventionDraftButtonProps: (discussionProps) =>
-                      getActivateDraftConventionButtonProps({
-                        ...discussionProps,
-                        saveConventionDraftThenRedirectRequested,
-                        saveConventionDraftIsLoading,
-                      }),
-                  })}
-                />
-              </BorderedSection>
-            )}
-        </div>
-      </div>
+                      <a
+                        href={discussion.potentialBeneficiary.resumeLink}
+                        title="CV du candidat"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        CV
+                      </a>
+                    </>
+                  )}
+                </BorderedSection>
+              )}
+            {(discussion.status === "PENDING" ||
+              discussion.status === "ACCEPTED") &&
+              viewer === "establishment" && (
+                <BorderedSection>
+                  <h3 className={fr.cx("fr-h6")}>Actions</h3>
+                  <ButtonsGroup
+                    buttons={getDiscussionActionsButtons({
+                      discussion,
+                      connectedUser,
+                      viewer,
+                      makeInitiateConventionDraftButtonProps: (
+                        discussionProps,
+                      ) =>
+                        getActivateDraftConventionButtonProps({
+                          ...discussionProps,
+                          saveConventionDraftThenRedirectRequested,
+                          saveConventionDraftIsLoading,
+                        }),
+                    })}
+                  />
+                </BorderedSection>
+              )}
+            {viewer === "potentialBeneficiary" &&
+              !(
+                discussion.status === "ACCEPTED" &&
+                discussion.candidateWarnedMethod !== null &&
+                discussion.conventionId === undefined
+              ) && (
+                <BorderedSection className={fr.cx("fr-p-2w", "fr-mt-2w")}>
+                  <h3 className={fr.cx("fr-h6")}>Actions</h3>
+                  <ButtonsGroup
+                    buttons={getDiscussionActionsButtons({
+                      discussion,
+                      connectedUser,
+                      viewer,
+                      makeInitiateConventionDraftButtonProps: (
+                        discussionProps,
+                      ) =>
+                        getActivateDraftConventionButtonProps({
+                          ...discussionProps,
+                          saveConventionDraftThenRedirectRequested,
+                          saveConventionDraftIsLoading,
+                        }),
+                    })}
+                  />
+                </BorderedSection>
+              )}
+          </>
+        }
+      />
 
       {createPortal(
         <RejectDiscussionModal discussion={discussion} />,
