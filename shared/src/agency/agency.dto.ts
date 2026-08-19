@@ -136,6 +136,8 @@ export const orderedAgencyKindList = [
 export type PartnerAgencyKind = (typeof partnerAgencyKindList)[number];
 
 export const partnerAgencyKindList = [
+  // ⚠️ DO NOT EDIT ⚠️
+  // Used by API v2 and partner broadcasts. Keep "pole-emploi" for backward compatibility.
   "pole-emploi",
   "mission-locale",
   "operateur-cep",
