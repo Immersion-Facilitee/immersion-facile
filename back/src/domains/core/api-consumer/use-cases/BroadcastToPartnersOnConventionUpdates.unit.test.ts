@@ -544,7 +544,7 @@ describe("Broadcast to partners on updated convention", () => {
     const franceTravailAgency = toAgencyWithRights(
       new AgencyDtoBuilder()
         .withId("france-travail-agency")
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .build(),
       {
         [validator1.id]: { roles: ["validator"], isNotifiedByEmail: true },
@@ -672,7 +672,7 @@ describe("Broadcast to partners on updated convention", () => {
     const previousAgency = toAgencyWithRights(
       new AgencyDtoBuilder()
         .withId("previous-agency")
-        .withKind("pole-emploi" as AgencyKind)
+        .withKind("france-travail")
         .build(),
       {
         [counsellor1.id]: { roles: ["counsellor"], isNotifiedByEmail: true },

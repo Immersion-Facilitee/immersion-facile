@@ -223,7 +223,7 @@ describe("PgApiConsumerRepository", () => {
       it("returns empty array when no api consumers matching agencyKinds filter", async () => {
         expectToEqual(
           await apiConsumerRepository.getByFilters({
-            agencyKinds: ["pole-emploi"],
+            agencyKinds: ["france-travail"],
           }),
           [],
         );
@@ -258,7 +258,7 @@ describe("PgApiConsumerRepository", () => {
         expectToEqual(
           await apiConsumerRepository.getByFilters({
             agencyIds: [new UuidV4Generator().new()],
-            agencyKinds: ["pole-emploi"],
+            agencyKinds: ["france-travail"],
           }),
           [],
         );

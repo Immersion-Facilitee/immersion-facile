@@ -15,7 +15,10 @@ import {
   reasonableSchedule,
   UserBuilder,
 } from "shared";
-import { toAgencyWithRights } from "../../../../utils/agency";
+import {
+  toAgencyWithRights,
+  toPartnerAgencyKind,
+} from "../../../../utils/agency";
 import { broadcastToFtServiceName } from "../../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {
@@ -32,7 +35,7 @@ import {
 describe("BroadcastToFranceTravailOnConventionUpdates", () => {
   const peAgencyWithoutCounsellorsAndValidators = new AgencyDtoBuilder()
     .withId("some-pe-agency")
-    .withKind("pole-emploi")
+    .withKind("france-travail")
     .build();
 
   const agencySIAE = toAgencyWithRights(
@@ -93,7 +96,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
     ];
   });
 
-  it("Skips convention if not linked to an agency of kind pole-emploi nor agencyRefersTo of kind pole-emploi", async () => {
+  it("Skips convention if not linked to an agency of kind france-travail nor agencyRefersTo of kind france-travail", async () => {
     uow.agencyRepository.agencies = [agencySIAE];
 
     await broadcastToFranceTravailOnConventionUpdates.execute({
@@ -130,7 +133,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       {
         eventType: "CONVENTION_UPDATED",
         convention: {
-          ...convention,
+          ...toExpectedFtConvention(convention),
           agencyKind: "pole-emploi",
           agencyValidatorEmails: [validator.email],
         },
@@ -181,7 +184,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       {
         eventType: "CONVENTION_UPDATED",
         convention: {
-          ...convention,
+          ...toExpectedFtConvention(convention),
           agencyKind: "autre",
           agencyRefersTo: {
             id: peAgencyWithoutCounsellorsAndValidators.id,
@@ -222,7 +225,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       {
         eventType: "CONVENTION_UPDATED",
         convention: {
-          ...convention,
+          ...toExpectedFtConvention(convention),
           agencyValidatorEmails: [validator.email],
         },
       },
@@ -266,7 +269,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       {
         eventType: "CONVENTION_UPDATED",
         convention: {
-          ...conventionRead,
+          ...toExpectedFtConvention(conventionRead),
           agencyValidatorEmails: [validator.email],
         },
       },
@@ -316,7 +319,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       {
         eventType: "CONVENTION_UPDATED",
         convention: {
-          ...conventionRead,
+          ...toExpectedFtConvention(conventionRead),
           agencyValidatorEmails: [validator.email],
         },
       },
@@ -459,7 +462,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       {
         eventType: "CONVENTION_UPDATED",
         convention: {
-          ...conventionRead,
+          ...toExpectedFtConvention(conventionRead),
           agencyValidatorEmails: [validator.email],
         },
       },
@@ -496,24 +499,26 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       {
         eventType: "CONVENTION_UPDATED",
         convention: {
-          ...conventionReadDtoFrom({
-            convention: {
-              ...convention,
-              sanitaryPreventionDescription:
-                "•	Lavage regulier des mains 	•	Port d'une tenue propre (blouse, tablier) 	•	Port du filet a cheveux ou charlotte 	•	Nettoyage frequent du plan de travail et du materiel 	•	Respect des regles d'hygiene liees a la manipulation des produits aliment",
-              individualProtectionDescription:
-                "Gants a usage unique  Masques (chirurgicaux ou FFP2 selon les situations)  Tenue professionnelle (pantalon, polo ou blouson aux normes)  Chaussures de securite ou adaptees au transport sanitaire  Gilet fluorescent pour interventions sur voie publique",
-              establishmentTutor: {
-                ...convention.establishmentTutor,
-                job: "Responsable des affaires juridiques et institutionnelles au sein du Service des Affaires juridiques et institutionnelles ; Délégué à la protection des données personnelles (DPO) ; Responsable de l’accès aux documents administratifs (PRADA)",
+          ...toExpectedFtConvention(
+            conventionReadDtoFrom({
+              convention: {
+                ...convention,
+                sanitaryPreventionDescription:
+                  "•	Lavage regulier des mains 	•	Port d'une tenue propre (blouse, tablier) 	•	Port du filet a cheveux ou charlotte 	•	Nettoyage frequent du plan de travail et du materiel 	•	Respect des regles d'hygiene liees a la manipulation des produits aliment",
+                individualProtectionDescription:
+                  "Gants a usage unique  Masques (chirurgicaux ou FFP2 selon les situations)  Tenue professionnelle (pantalon, polo ou blouson aux normes)  Chaussures de securite ou adaptees au transport sanitaire  Gilet fluorescent pour interventions sur voie publique",
+                establishmentTutor: {
+                  ...convention.establishmentTutor,
+                  job: "Responsable des affaires juridiques et institutionnelles au sein du Service des Affaires juridiques et institutionnelles ; Délégué à la protection des données personnelles (DPO) ; Responsable de l’accès aux documents administratifs (PRADA)",
+                },
               },
-            },
-            agency: {
-              ...peAgencyWithoutCounsellorsAndValidators,
-              counsellorEmails: [counsellor.email],
-              validatorEmails: [validator.email],
-            },
-          }),
+              agency: {
+                ...peAgencyWithoutCounsellorsAndValidators,
+                counsellorEmails: [counsellor.email],
+                validatorEmails: [validator.email],
+              },
+            }),
+          ),
           agencyValidatorEmails: [validator.email],
         },
       },
@@ -586,7 +591,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       {
         eventType: "CONVENTION_UPDATED",
         convention: {
-          ...conventionRead,
+          ...toExpectedFtConvention(conventionRead),
           agencyValidatorEmails: [],
         },
       },
@@ -679,7 +684,10 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
         expectToEqual(franceTravailGateway.broadcastParamsCalls, [
           {
             eventType: "CONVENTION_UPDATED",
-            convention: { ...conventionRead, agencyValidatorEmails: [] },
+            convention: {
+              ...toExpectedFtConvention(conventionRead),
+              agencyValidatorEmails: [],
+            },
           },
         ]);
       });
@@ -791,7 +799,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
     const peAgency = toAgencyWithRights(
       new AgencyDtoBuilder()
         .withId("pe-agency-for-transfer")
-        .withKind("pole-emploi")
+        .withKind("france-travail")
         .build(),
     );
 
@@ -836,7 +844,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
         {
           eventType: "CONVENTION_UPDATED",
           convention: {
-            ...conventionRead,
+            ...toExpectedFtConvention(conventionRead),
             agencyValidatorEmails: [],
           },
           previousAgencyId: peAgency.id,
@@ -852,7 +860,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       const anotherPeAgency = toAgencyWithRights(
         new AgencyDtoBuilder()
           .withId("another-pe-agency")
-          .withKind("pole-emploi")
+          .withKind("france-travail")
           .build(),
       );
       uow.agencyRepository.agencies = [peAgency, anotherPeAgency];
@@ -876,7 +884,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
         {
           eventType: "CONVENTION_UPDATED",
           convention: {
-            ...conventionRead,
+            ...toExpectedFtConvention(conventionRead),
             agencyValidatorEmails: [],
           },
           previousAgencyId: anotherPeAgency.id,
@@ -962,4 +970,20 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
     lastReminders: makeEmptyLastReminders(),
     isEstablishmentBanned: false,
   });
+
+  const toExpectedFtConvention = (convention: ConventionReadDto) => {
+    const { agencyKind, agencyRefersTo, ...rest } = convention;
+    return {
+      ...rest,
+      agencyKind: toPartnerAgencyKind(agencyKind),
+      ...(agencyRefersTo
+        ? {
+            agencyRefersTo: {
+              ...agencyRefersTo,
+              kind: toPartnerAgencyKind(agencyRefersTo.kind),
+            },
+          }
+        : {}),
+    };
+  };
 });

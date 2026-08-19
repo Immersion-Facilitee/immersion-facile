@@ -168,15 +168,16 @@ const notifySubscriber = ({
       });
     }
 
+    const { agencyKind, agencyRefersTo, ...rest } = conventionRead;
     const convention = {
-      ...conventionRead,
+      ...rest,
       immersionAppellation,
-      agencyKind: toPartnerAgencyKind(conventionRead.agencyKind),
-      ...(conventionRead.agencyRefersTo
+      agencyKind: toPartnerAgencyKind(agencyKind),
+      ...(agencyRefersTo
         ? {
             agencyRefersTo: {
-              ...conventionRead.agencyRefersTo,
-              kind: toPartnerAgencyKind(conventionRead.agencyRefersTo.kind),
+              ...agencyRefersTo,
+              kind: toPartnerAgencyKind(agencyRefersTo.kind),
             },
           }
         : {}),

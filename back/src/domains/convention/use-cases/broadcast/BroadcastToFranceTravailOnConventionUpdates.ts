@@ -105,7 +105,7 @@ export const makeBroadcastToFranceTravailOnConventionUpdates = useCaseBuilder(
             id: inputParams.convention.id,
             status: "SKIP",
             processDate: deps.timeGateway.now(),
-            reason: "Agency is not of kind pole-emploi",
+            reason: "Agency is not of kind france-travail",
           })
         : undefined;
 
@@ -153,31 +153,34 @@ export const makeBroadcastToFranceTravailOnConventionUpdates = useCaseBuilder(
 const makeFranceTravailSupportedConvention = (
   convention: ConventionReadDto,
   agency: AgencyDto,
-): FranceTravailConventionReadDto => ({
-  ...convention,
-  establishmentTutor: {
-    ...convention.establishmentTutor,
-    job: sliceTextUpToBytesLimit(convention.establishmentTutor.job, 255),
-  },
-  sanitaryPreventionDescription: sliceTextUpToBytesLimit(
-    cleanSpecialChars(convention.sanitaryPreventionDescription),
-    255,
-  ),
-  individualProtectionDescription: sliceTextUpToBytesLimit(
-    cleanSpecialChars(convention.individualProtectionDescription),
-    255,
-  ),
-  agencyKind: toPartnerAgencyKind(convention.agencyKind),
-  ...(convention.agencyRefersTo
-    ? {
-        agencyRefersTo: {
-          ...convention.agencyRefersTo,
-          kind: toPartnerAgencyKind(convention.agencyRefersTo.kind),
-        },
-      }
-    : {}),
-  agencyValidatorEmails: agency.validatorEmails,
-});
+): FranceTravailConventionReadDto => {
+  const { agencyKind, agencyRefersTo, ...rest } = convention;
+  return {
+    ...rest,
+    agencyKind: toPartnerAgencyKind(agencyKind),
+    ...(agencyRefersTo
+      ? {
+          agencyRefersTo: {
+            ...agencyRefersTo,
+            kind: toPartnerAgencyKind(agencyRefersTo.kind),
+          },
+        }
+      : {}),
+    establishmentTutor: {
+      ...convention.establishmentTutor,
+      job: sliceTextUpToBytesLimit(convention.establishmentTutor.job, 255),
+    },
+    sanitaryPreventionDescription: sliceTextUpToBytesLimit(
+      cleanSpecialChars(convention.sanitaryPreventionDescription),
+      255,
+    ),
+    individualProtectionDescription: sliceTextUpToBytesLimit(
+      cleanSpecialChars(convention.individualProtectionDescription),
+      255,
+    ),
+    agencyValidatorEmails: agency.validatorEmails,
+  };
+};
 
 const isBroadcastTimeoutError = (
   response: FranceTravailBroadcastResponse,
