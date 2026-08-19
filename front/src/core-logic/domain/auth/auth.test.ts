@@ -186,7 +186,7 @@ describe("Auth slice", () => {
       expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
     });
 
-    it("with provider email - deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for without redirects to provider logout page ", () => {
+    it("with provider email and mode device-and-oauth - deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for and provides error feedback ", () => {
       const emailFederatedIdentity: FederatedIdentity = {
         provider: "email",
         token: "token",
@@ -214,7 +214,7 @@ describe("Auth slice", () => {
 
       store.dispatch(
         authSlice.actions.fetchLogoutUrlRequested({
-          mode: "device-only",
+          mode: "device-and-oauth",
           feedbackTopic: "auth-global",
         }),
       );
@@ -231,14 +231,6 @@ describe("Auth slice", () => {
       expectFederatedIdentityInDevice(undefined);
       expectToEqual(dependencies.navigationGateway.wentToUrls, []);
 
-      expectAuthStateToBe({
-        afterLoginRedirectionUrl: null,
-        federatedIdentity: null,
-        isLoading: true,
-        isRequestingLoginByEmail: false,
-        isRequestingRenewExpiredJwt: false,
-        requestedEmail: null,
-      });
       expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
       expectToEqual(
         feedbacksSelectors.feedbacks(store.getState())["auth-global"],

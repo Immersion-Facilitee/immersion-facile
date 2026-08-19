@@ -1,6 +1,5 @@
 import { type AbsoluteUrl, type ConnectedUser, errors } from "shared";
 import { useCaseBuilder } from "../../../useCaseBuilder";
-import type { FtConnectGateway } from "../../ft-connect/port/FtConnectGateway";
 import type { OAuthGateway } from "../port/OAuthGateway";
 
 export type GetOAuthLogoutUrl = ReturnType<typeof makeGetOAuthLogoutUrl>;
@@ -10,7 +9,6 @@ export const makeGetOAuthLogoutUrl = useCaseBuilder("GetOAuthLogoutUrl")
   .withCurrentUser<ConnectedUser | undefined>()
   .withDeps<{
     proConnectOAuthGateway: OAuthGateway;
-    ftConnectGateway: FtConnectGateway;
   }>()
   .build(async ({ uow, deps: { proConnectOAuthGateway }, currentUser }) => {
     if (!currentUser) throw errors.user.unauthorized();

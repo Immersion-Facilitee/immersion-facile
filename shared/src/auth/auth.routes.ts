@@ -92,6 +92,7 @@ export const authRoutes = defineRoutes({
       200: absoluteUrlSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
+      403: httpErrorSchema,
     },
   }),
   renewExpiredJwt: defineRoute({
