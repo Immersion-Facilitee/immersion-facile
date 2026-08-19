@@ -35,7 +35,7 @@ export const EstablishmentBusinessFields = ({
     establishmentInfos,
     isFetchingSiret,
   } = useSiretFetcher({
-    shouldFetchEvenIfAlreadySaved: true,
+    shouldThrowErrorOnAlreadySaved: false,
     addressAutocompleteLocator: "convention-immersion-address",
   });
   const convention = useAppSelector(conventionSelectors.convention);

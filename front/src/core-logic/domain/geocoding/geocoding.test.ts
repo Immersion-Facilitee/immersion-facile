@@ -383,6 +383,7 @@ describe("Geocoding epic", () => {
           isOpen: true,
           numberEmployeesRange: "1-2",
           siret: "12345678901234",
+          isAlreadySaved: false,
         },
         feedbackTopic: "siret-input",
         addressAutocompleteLocator: locator,

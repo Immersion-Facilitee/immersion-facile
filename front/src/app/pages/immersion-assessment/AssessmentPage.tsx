@@ -77,7 +77,7 @@ export const AssessmentPage = ({ route }: AssessmentPageProps) => {
   });
 
   const { isFetchingSiret, updateSiret, currentSiret } = useSiretFetcher({
-    shouldFetchEvenIfAlreadySaved: false,
+    shouldThrowErrorOnAlreadySaved: true,
     addressAutocompleteLocator: null,
   });
 

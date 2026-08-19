@@ -1,24 +1,21 @@
-import { filter, map, type Observable, switchMap } from "rxjs";
+import { filter, map, switchMap } from "rxjs";
 import {
-  type GetSiretInfo,
   type GetSiretInfoError,
   getCountryCodeFromAddress,
-  type SiretDto,
   siretSchema,
 } from "shared";
 import {
   type SiretAction,
   siretSlice,
 } from "src/core-logic/domain/siret/siret.slice";
-import type { FormCompletionGateway } from "src/core-logic/ports/FormCompletionGateway";
 import { catchEpicError } from "src/core-logic/storeConfig/catchEpicError";
 import type { AppEpic } from "src/core-logic/storeConfig/redux.helpers";
 
 type SiretEpic = AppEpic<SiretAction>;
 
-const toggleShouldFetchEvenIfAlreadySaved: SiretEpic = (action$, state$) =>
+const toggleShouldThrowErrorOnAlreadySaved: SiretEpic = (action$, state$) =>
   action$.pipe(
-    filter(siretSlice.actions.setShouldFetchEvenIfAlreadySaved.match),
+    filter(siretSlice.actions.setShouldThrowErrorOnAlreadySaved.match),
     map((action) =>
       siretSlice.actions.siretModified({
         siret: state$.value.siret.currentSiret,
@@ -44,58 +41,48 @@ const getSiretEpic: SiretEpic = (
   state$,
   { formCompletionGateway },
 ) => {
-  const getSiret$ = makeGetSiret(formCompletionGateway);
-
   return action$.pipe(
     filter(siretSlice.actions.siretInfoRequested.match),
     switchMap((action) =>
-      getSiret$({
-        shouldFetchEvenIfAlreadySaved:
-          state$.value.siret.shouldFetchEvenIfAlreadySaved,
-        siret: action.payload.siret,
-      }).pipe(
-        map((siretResult) => {
-          if (siretResult === null)
-            return siretSlice.actions.siretInfoDisabledAndNoMatchInDbFound({
-              siret: state$.value.siret.currentSiret,
-            });
-          return typeof siretResult === "string"
-            ? siretSlice.actions.siretInfoFailed(siretResult)
-            : siretSlice.actions.siretInfoSucceeded({
-                siretEstablishment: siretResult,
-                feedbackTopic: action.payload.feedbackTopic,
-                addressAutocompleteLocator:
-                  action.payload.addressAutocompleteLocator,
-                countryCode: getCountryCodeFromAddress(
-                  siretResult.businessAddress,
-                ),
+      formCompletionGateway
+        .getSiretEstablishmentDtoResponse$(action.payload.siret)
+        .pipe(
+          map((siretResult) => {
+            if (siretResult === null)
+              return siretSlice.actions.siretInfoDisabledAndNoMatchInDbFound({
+                siret: state$.value.siret.currentSiret,
               });
-        }),
-        catchEpicError((error) =>
-          siretSlice.actions.siretInfoFailed(
-            error.message as GetSiretInfoError,
+            if (typeof siretResult === "string")
+              return siretSlice.actions.siretInfoFailed(siretResult);
+
+            if (
+              state$.value.siret.shouldThrowErrorOnAlreadySaved &&
+              siretResult.isAlreadySaved
+            )
+              return siretSlice.actions.siretInfoFailed("Already exists");
+
+            return siretSlice.actions.siretInfoSucceeded({
+              siretEstablishment: siretResult,
+              feedbackTopic: action.payload.feedbackTopic,
+              addressAutocompleteLocator:
+                action.payload.addressAutocompleteLocator,
+              countryCode: getCountryCodeFromAddress(
+                siretResult.businessAddress,
+              ),
+            });
+          }),
+          catchEpicError((error) =>
+            siretSlice.actions.siretInfoFailed(
+              error.message as GetSiretInfoError,
+            ),
           ),
         ),
-      ),
     ),
   );
 };
 
-const makeGetSiret =
-  (siretGatewayThroughBack: FormCompletionGateway) =>
-  ({
-    shouldFetchEvenIfAlreadySaved,
-    siret,
-  }: {
-    shouldFetchEvenIfAlreadySaved: boolean;
-    siret: SiretDto;
-  }): Observable<GetSiretInfo | null> =>
-    shouldFetchEvenIfAlreadySaved
-      ? siretGatewayThroughBack.getSiretInfo$(siret)
-      : siretGatewayThroughBack.getSiretInfoIfNotAlreadySaved$(siret);
-
 export const siretEpics = [
   triggerSiretFetchEpic,
   getSiretEpic,
-  toggleShouldFetchEvenIfAlreadySaved,
+  toggleShouldThrowErrorOnAlreadySaved,
 ];

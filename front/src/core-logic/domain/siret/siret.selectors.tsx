@@ -1,7 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { ReactNode } from "react";
-import { frontRoutes, type GetSiretInfoError } from "shared";
-import type { InvalidSiretError } from "src/core-logic/domain/siret/siret.slice";
+import { frontRoutes } from "shared";
+import type { SiretSliceError } from "src/core-logic/domain/siret/siret.slice";
 import { createRootSelector } from "src/core-logic/storeConfig/store";
 
 const siretState = createRootSelector(({ siret }) => siret);
@@ -23,9 +23,9 @@ const countryCode = createSelector(
 
 const isFetching = createSelector(siretState, ({ isSearching }) => isSearching);
 
-const shouldFetchEvenIfAlreadySaved = createSelector(
+const shouldThrowErrorOnAlreadySaved = createSelector(
   siretState,
-  ({ shouldFetchEvenIfAlreadySaved }) => shouldFetchEvenIfAlreadySaved,
+  ({ shouldThrowErrorOnAlreadySaved }) => shouldThrowErrorOnAlreadySaved,
 );
 
 const siretRawError = createSelector(siretState, ({ error }) => error);
@@ -38,20 +38,11 @@ const siretErrorToDisplay = createSelector(
   },
 );
 
-const isSiretAlreadySaved = createSelector(
-  siretState,
-  ({ error }) => error === "Establishment with this siret is already in our DB",
-);
-
-const errorTranslations: Partial<
-  Record<GetSiretInfoError | InvalidSiretError, ReactNode>
-> = {
+const errorTranslations: Partial<Record<SiretSliceError, ReactNode>> = {
   "Missing establishment on SIRENE API.":
     "Nous n'avons pas trouvé d'établissement correspondant à votre SIRET.",
-  "SIRENE API not available.":
-    "Le service de vérification du SIRET est indisponible.",
   "SIRET must be 14 digits": "Le SIRET doit être composé de 14 chiffres",
-  "Establishment with this siret is already in our DB": (
+  "Already exists": (
     <span>
       Cet établissement est déjà référencé. Veuillez faire une{" "}
       <a
@@ -67,6 +58,11 @@ const errorTranslations: Partial<
     "Le service de vérification du SIRET a reçu trop d'appels.",
 };
 
+const isSiretAlreadySaved = createSelector(
+  siretState,
+  ({ establishment }) => establishment?.isAlreadySaved,
+);
+
 export const siretSelectors = {
   isSiretAlreadySaved,
   siretErrorToDisplay,
@@ -74,6 +70,6 @@ export const siretSelectors = {
   currentSiret,
   establishmentInfos,
   isFetching,
-  shouldFetchEvenIfAlreadySaved,
+  shouldThrowErrorOnAlreadySaved,
   countryCode,
 };

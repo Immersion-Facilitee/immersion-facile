@@ -24,7 +24,7 @@ export const CreationSiretRelatedInputs = () => {
     siretErrorToDisplay,
     updateSiret,
   } = useSiretFetcher({
-    shouldFetchEvenIfAlreadySaved: false,
+    shouldThrowErrorOnAlreadySaved: true,
     addressAutocompleteLocator: "create-establishment-address",
   });
   const {

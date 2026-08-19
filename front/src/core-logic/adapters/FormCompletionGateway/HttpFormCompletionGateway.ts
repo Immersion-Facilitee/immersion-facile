@@ -3,11 +3,10 @@ import {
   type AppellationAndRomeDto,
   type AppellationSearchInputParams,
   type FormCompletionRoutes,
-  type GetSiretInfo,
+  type GetSiretEstablishmentDtoResponse,
   type GetSiretInfoError,
   type SiretDto,
   siretApiMissingEstablishmentMessage,
-  siretApiUnavailableSiretErrorMessage,
   tooManySirenRequestsSiretErrorMessage,
 } from "shared";
 import type {
@@ -38,20 +37,12 @@ export class HttpFormCompletionGateway implements FormCompletionGateway {
     );
   }
 
-  public getSiretInfo$(siret: SiretDto): Observable<GetSiretInfo> {
-    return from(
-      this.httpClient
-        .getSiretInfo({ urlParams: { siret } })
-        .then(handleSiretResponses),
-    );
-  }
-
-  public getSiretInfoIfNotAlreadySaved$(
+  public getSiretEstablishmentDtoResponse$(
     siret: SiretDto,
-  ): Observable<GetSiretInfo> {
+  ): Observable<GetSiretEstablishmentDtoResponse> {
     return from(
       this.httpClient
-        .getSiretInfoIfNotAlreadySaved({ urlParams: { siret } })
+        .getSiretEstablishmentDto({ urlParams: { siret } })
         .then(handleSiretResponses),
     );
   }
@@ -67,8 +58,7 @@ export class HttpFormCompletionGateway implements FormCompletionGateway {
 
 const handleSiretResponses = (
   response: ResponsesToHttpResponse<
-    | FormCompletionRoutes["getSiretInfo"]["responses"]
-    | FormCompletionRoutes["getSiretInfoIfNotAlreadySaved"]["responses"]
+    FormCompletionRoutes["getSiretEstablishmentDto"]["responses"]
   >,
 ) =>
   match(response)
@@ -79,7 +69,7 @@ const handleSiretResponses = (
       return errorMessageByCode[status];
     })
     .with(
-      { status: P.union(403, 404, 409, 429, 503) },
+      { status: P.union(403, 404, 429) },
       ({ status }) => errorMessageByCode[status],
     )
     .otherwise(otherwiseThrow);
@@ -96,8 +86,6 @@ const getBodyIfStatus200ElseThrow = <R extends HttpResponse<number, unknown>>(
 const errorMessageByCode = {
   403: "L'entreprise avec ce siret est bannie",
   429: tooManySirenRequestsSiretErrorMessage,
-  503: siretApiUnavailableSiretErrorMessage,
   404: siretApiMissingEstablishmentMessage,
   400: "Erreur sur le siret fourni",
-  409: "Establishment with this siret is already in our DB",
 } satisfies Record<number, GetSiretInfoError>;

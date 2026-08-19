@@ -64,7 +64,7 @@ export const AgencyFormCommonFields = ({
     isFetchingSiret,
     establishmentInfos,
   } = useSiretFetcher({
-    shouldFetchEvenIfAlreadySaved: true,
+    shouldThrowErrorOnAlreadySaved: false,
     addressAutocompleteLocator: "agency-address",
   });
 

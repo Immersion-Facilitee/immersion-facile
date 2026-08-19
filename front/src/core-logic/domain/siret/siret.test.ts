@@ -1,11 +1,12 @@
 import {
-  type GetSiretInfo,
+  type GetSiretEstablishmentDtoResponse,
   type SiretEstablishmentDto,
   type SupportedCountryCode,
   tooManySirenRequestsSiretErrorMessage,
 } from "shared";
 import { siretSelectors } from "src/core-logic/domain/siret/siret.selectors";
 import {
+  type SiretSliceError,
   type SiretState,
   siretSlice,
 } from "src/core-logic/domain/siret/siret.slice";
@@ -16,6 +17,24 @@ import {
 import type { ReduxStore } from "src/core-logic/storeConfig/store";
 
 describe("Siret validation and fetching", () => {
+  const establishmentFetched: SiretEstablishmentDto = {
+    siret: "11110000111100",
+    businessName: "Existing open business on Sirene Corp.",
+    businessAddress: "2 avenue Karl Marx, 75018 Paris",
+    isOpen: true,
+    numberEmployeesRange: "",
+    isAlreadySaved: false,
+  };
+
+  const foreignEstablishmentFetched: SiretEstablishmentDto = {
+    siret: "94127100900016",
+    businessName: "Kevin SIEMENS (SIEMENS)",
+    businessAddress: "20 A KRONENSTRASSE, 30161 HANNOVER, ALLEMAGNE",
+    isOpen: true,
+    numberEmployeesRange: "",
+    isAlreadySaved: false,
+  };
+
   let store: ReduxStore;
   let dependencies: TestDependencies;
 
@@ -26,90 +45,72 @@ describe("Siret validation and fetching", () => {
   describe("Siret validation", () => {
     it("updates current siret", () => {
       dispatchSiretModified("1111");
-      expectCurrentSiretToBe("1111");
-      expectIsSearchingToBe(false);
+      expectCurrentSiretSelectorToBe("1111");
+      expectIsSearchingSelectorToBe(false);
     });
 
     it("does not trigger search if some characters are not digit", () => {
       dispatchSiretModified("1111000011110A");
-      expectIsSearchingToBe(false);
+      expectIsSearchingSelectorToBe(false);
     });
 
     it("reflects error when siret contains letters", () => {
       dispatchSiretModified("111AAAA");
-      expectSiretErrorToBe("Le SIRET doit être composé de 14 chiffres");
-      expectIsSearchingToBe(false);
+      expectSiretErrorSelectorToBe("SIRET must be 14 digits");
+      expectIsSearchingSelectorToBe(false);
     });
 
     it("reflects error when siret is not the correct length", () => {
       dispatchSiretModified("11110000");
-      expectIsSearchingToBe(false);
-      expectSiretErrorToBe("Le SIRET doit être composé de 14 chiffres");
+      expectIsSearchingSelectorToBe(false);
+      expectSiretErrorSelectorToBe("SIRET must be 14 digits");
     });
 
     it("triggers search when siret reaches 14 digit", () => {
       dispatchSiretModified("11110000111100");
-      expectIsSearchingToBe(true);
+      expectIsSearchingSelectorToBe(true);
     });
 
     it("triggers search when siret reaches 14 digits, even if there are white spaces", () => {
       dispatchSiretModified("1  111 0003 1111 00  ");
-      expectIsSearchingToBe(true);
+      expectIsSearchingSelectorToBe(true);
     });
 
     it("when the current siret is modified the establishments and api errors are dropped", () => {
       setStoreWithInitialSiretState({
-        establishment: {
-          siret: "11110000111100",
-        } as SiretEstablishmentDto,
+        establishment: establishmentFetched,
         error: "Missing establishment on SIRENE API.",
       });
 
       dispatchSiretModified("111100001111");
-      expectEstablishmentToEqual(null);
-      expectSiretErrorToBe("Le SIRET doit être composé de 14 chiffres");
+      expectEstablishmentSelectorToEqual(null);
+      expectSiretErrorSelectorToBe("SIRET must be 14 digits");
     });
   });
-
-  const establishmentFetched: SiretEstablishmentDto = {
-    siret: "11110000111100",
-    businessName: "Existing open business on Sirene Corp.",
-    businessAddress: "2 avenue Karl Marx, 75018 Paris",
-    isOpen: true,
-    numberEmployeesRange: "",
-  };
-
-  const foreignEstablishmentFetched: SiretEstablishmentDto = {
-    siret: "94127100900016",
-    businessName: "Kevin SIEMENS (SIEMENS)",
-    businessAddress: "20 A KRONENSTRASSE, 30161 HANNOVER, ALLEMAGNE",
-    isOpen: true,
-    numberEmployeesRange: "",
-  };
 
   describe("Siret fetching when a 14 digit siret is provided", () => {
     it("fetches correctly and keeps the returned establishment", () => {
       setStoreWithInitialSiretState({
-        shouldFetchEvenIfAlreadySaved: false,
+        shouldThrowErrorOnAlreadySaved: true,
       });
       dispatchSiretModified("11110000111100");
       feedSirenGatewayThroughBackWith(establishmentFetched);
-      expectEstablishmentToEqual(establishmentFetched);
-      expectCountryCodeToBe("FR");
-      expectOnly_getSirenInfoIfNotAlreadySaved_toHaveBeenCalled();
-      expectCurrentSiretToBe("11110000111100");
+      expectEstablishmentSelectorToEqual(establishmentFetched);
+      expectCountryCodeSelectorToBe("FR");
+      expectOnly_getSiretEstablishmentDtoResponse_toHaveBeenCalled();
+      expectCurrentSiretSelectorToBe("11110000111100");
     });
 
     it("fetches correctly foreign establishment and keeps the returned establishment and country code", () => {
       setStoreWithInitialSiretState({
-        shouldFetchEvenIfAlreadySaved: false,
+        shouldThrowErrorOnAlreadySaved: true,
       });
       dispatchSiretModified("94127100900016");
       feedSirenGatewayThroughBackWith(foreignEstablishmentFetched);
-      expectEstablishmentToEqual(foreignEstablishmentFetched);
-      expectCountryCodeToBe("DE");
-      expectOnly_getSirenInfoIfNotAlreadySaved_toHaveBeenCalled();
-      expectCurrentSiretToBe("94127100900016");
+      expectEstablishmentSelectorToEqual(foreignEstablishmentFetched);
+      expectCountryCodeSelectorToBe("DE");
+      expectOnly_getSiretEstablishmentDtoResponse_toHaveBeenCalled();
+      expectCurrentSiretSelectorToBe("94127100900016");
     });
 
     it("fetches correctly establishment with default country code if country not found in its address", () => {
@@ -119,69 +120,121 @@ describe("Siret validation and fetching", () => {
         businessAddress: "20 Av de de la République, Rhône",
         isOpen: true,
         numberEmployeesRange: "",
+        isAlreadySaved: false,
       };
 
       setStoreWithInitialSiretState({
-        shouldFetchEvenIfAlreadySaved: false,
+        shouldThrowErrorOnAlreadySaved: true,
       });
       dispatchSiretModified("94127100900016");
       feedSirenGatewayThroughBackWith(establishmentWithoutCountryInAddress);
-      expectEstablishmentToEqual(establishmentWithoutCountryInAddress);
-      expectCountryCodeToBe("FR");
-      expectOnly_getSirenInfoIfNotAlreadySaved_toHaveBeenCalled();
-      expectCurrentSiretToBe("94127100900016");
+      expectEstablishmentSelectorToEqual(establishmentWithoutCountryInAddress);
+      expectCountryCodeSelectorToBe("FR");
+      expectOnly_getSiretEstablishmentDtoResponse_toHaveBeenCalled();
+      expectCurrentSiretSelectorToBe("94127100900016");
     });
 
     it("fetches correctly and keeps the returned error", () => {
       dispatchSiretModified("11110000111100");
       feedSirenGatewayThroughBackWith(tooManySirenRequestsSiretErrorMessage);
-      expectSiretErrorToBe(
-        "Le service de vérification du SIRET a reçu trop d'appels.",
-      );
+      expectSiretErrorSelectorToBe("Too many requests on SIRENE API.");
     });
 
     it("fetches correctly and keeps the handles unexpected error", () => {
       dispatchSiretModified("11110000111100");
       feedSirenGatewayThroughBackWithError(new Error("Oups ! Failed"));
-      expectSiretErrorToBe("Oups ! Failed");
+      expectSiretErrorSelectorToBe("Oups ! Failed");
     });
 
     it("when 'withAlreadySavedCheck' is false, fetches correctly but calls the relevant route", () => {
       dispatchSiretModified("11110000111100");
       feedSirenGatewayThroughBackWith(establishmentFetched);
-      expectEstablishmentToEqual(establishmentFetched);
-      expectCountryCodeToBe("FR");
-      expectOnly_getSirenInfoObservable_toHaveBeenCalled();
+      expectEstablishmentSelectorToEqual(establishmentFetched);
+      expectCountryCodeSelectorToBe("FR");
+      expectOnly_getSiretEstablishmentDtoResponse_toHaveBeenCalled();
     });
   });
 
-  describe("When toggling 'shouldFetchEvenIfAlreadySaved'", () => {
+  describe("shouldThrowErrorOnAlreadySaved", () => {
+    const alreadySavedEstablishment: SiretEstablishmentDto = {
+      ...establishmentFetched,
+      isAlreadySaved: true,
+    };
+
     it("clears error and establishment, and calls siretModified with new toggle mode", () => {
       setStoreWithInitialSiretState({
         currentSiret: "10002000300040",
-        error: "Establishment with this siret is already in our DB",
+        error: "Already exists",
         establishment: { siret: "yolo" } as SiretEstablishmentDto,
       });
-      expectShouldFetchEvenIfAlreadySavedToBe(true);
+      expectShouldThrowErrorOnAlreadySavedSelectorToBe(false);
       store.dispatch(
-        siretSlice.actions.setShouldFetchEvenIfAlreadySaved({
-          shouldFetchEvenIfAlreadySaved: false,
+        siretSlice.actions.setShouldThrowErrorOnAlreadySaved({
+          shouldThrowErrorOnAlreadySaved: true,
           addressAutocompleteLocator: "convention-immersion-address",
         }),
       );
-      expectShouldFetchEvenIfAlreadySavedToBe(false);
-      expectSiretErrorToBe(null);
-      expectEstablishmentToEqual(null);
-      expectCountryCodeToBe(null);
-      expectCurrentSiretToBe("10002000300040");
+      expectShouldThrowErrorOnAlreadySavedSelectorToBe(true);
+      expectSiretErrorSelectorToBe(null);
+      expectEstablishmentSelectorToEqual(null);
+      expectCountryCodeSelectorToBe(null);
+      expectCurrentSiretSelectorToBe("10002000300040");
       store.dispatch(
-        siretSlice.actions.setShouldFetchEvenIfAlreadySaved({
-          shouldFetchEvenIfAlreadySaved: true,
+        siretSlice.actions.setShouldThrowErrorOnAlreadySaved({
+          shouldThrowErrorOnAlreadySaved: false,
           addressAutocompleteLocator: "convention-immersion-address",
         }),
       );
-      expectShouldFetchEvenIfAlreadySavedToBe(true);
-      expectIsSearchingToBe(true);
+      expectShouldThrowErrorOnAlreadySavedSelectorToBe(false);
+      expectIsSearchingSelectorToBe(true);
+    });
+
+    describe("when shouldThrowErrorOnAlreadySaved is false", () => {
+      beforeEach(() => {
+        setStoreWithInitialSiretState({
+          shouldThrowErrorOnAlreadySaved: false,
+        });
+      });
+
+      it("and fetched establishment is already saved, should not have error in selector", () => {
+        expectShouldThrowErrorOnAlreadySavedSelectorToBe(false);
+        dispatchSiretModified(alreadySavedEstablishment.siret);
+        feedSirenGatewayThroughBackWith(alreadySavedEstablishment);
+
+        expectSiretErrorSelectorToBe(null);
+      });
+
+      it("and fetched establishment is not already saved, should not have error in selector", () => {
+        expectShouldThrowErrorOnAlreadySavedSelectorToBe(false);
+        dispatchSiretModified(establishmentFetched.siret);
+        feedSirenGatewayThroughBackWith(establishmentFetched);
+
+        expectSiretErrorSelectorToBe(null);
+      });
+    });
+
+    describe("when shouldThrowErrorOnAlreadySaved is true", () => {
+      beforeEach(() => {
+        setStoreWithInitialSiretState({
+          shouldThrowErrorOnAlreadySaved: true,
+        });
+      });
+
+      it("and fetched establishment is already saved, should have error in selector", () => {
+        expectShouldThrowErrorOnAlreadySavedSelectorToBe(true);
+        dispatchSiretModified(alreadySavedEstablishment.siret);
+        feedSirenGatewayThroughBackWith(alreadySavedEstablishment);
+
+        expectSiretErrorSelectorToBe("Already exists");
+      });
+
+      it("and fetched establishment is not already saved, should not have error in selector", () => {
+        expectShouldThrowErrorOnAlreadySavedSelectorToBe(true);
+        dispatchSiretModified(establishmentFetched.siret);
+        feedSirenGatewayThroughBackWith(establishmentFetched);
+
+        expectSiretErrorSelectorToBe(null);
+      });
     });
   });
 
@@ -189,15 +242,15 @@ describe("Siret validation and fetching", () => {
     it("clears siret info", () => {
       setStoreWithInitialSiretState({
         currentSiret: "10002000300040",
-        error: "Establishment with this siret is already in our DB",
+        error: "Already exist",
         establishment: { siret: "yolo" } as SiretEstablishmentDto,
       });
       store.dispatch(siretSlice.actions.siretInfoClearRequested());
-      expectCurrentSiretToBe("");
-      expectEstablishmentToEqual(null);
-      expectSiretErrorToBe(null);
-      expectCountryCodeToBe(null);
-      expectIsSearchingToBe(false);
+      expectCurrentSiretSelectorToBe("");
+      expectEstablishmentSelectorToEqual(null);
+      expectSiretErrorSelectorToBe(null);
+      expectCountryCodeSelectorToBe(null);
+      expectIsSearchingSelectorToBe(false);
     });
   });
 
@@ -210,54 +263,53 @@ describe("Siret validation and fetching", () => {
       }),
     );
 
-  const expectShouldFetchEvenIfAlreadySavedToBe = (expected: boolean) => {
-    expect(siretSelectors.shouldFetchEvenIfAlreadySaved(store.getState())).toBe(
-      expected,
-    );
+  const expectShouldThrowErrorOnAlreadySavedSelectorToBe = (
+    expected: boolean,
+  ) => {
+    expect(
+      siretSelectors.shouldThrowErrorOnAlreadySaved(store.getState()),
+    ).toBe(expected);
   };
 
-  const expectCurrentSiretToBe = (expected: string) => {
+  const expectCurrentSiretSelectorToBe = (expected: string) => {
     expect(siretSelectors.currentSiret(store.getState())).toBe(expected);
   };
 
-  const expectIsSearchingToBe = (expected: boolean) => {
+  const expectIsSearchingSelectorToBe = (expected: boolean) => {
     expect(siretSelectors.isFetching(store.getState())).toBe(expected);
   };
 
-  const expectCountryCodeToBe = (expected: SupportedCountryCode | null) => {
+  const expectCountryCodeSelectorToBe = (
+    expected: SupportedCountryCode | null,
+  ) => {
     expect(siretSelectors.countryCode(store.getState())).toBe(expected);
   };
 
-  const expectEstablishmentToEqual = (
+  const expectEstablishmentSelectorToEqual = (
     expected: SiretEstablishmentDto | null,
   ) => {
     expect(siretSelectors.establishmentInfos(store.getState())).toBe(expected);
   };
 
-  const expectSiretErrorToBe = (expected: string | null) => {
-    expect(siretSelectors.siretErrorToDisplay(store.getState())).toBe(expected);
+  const expectSiretErrorSelectorToBe = (expected: SiretSliceError | null) => {
+    expect(siretSelectors.siretRawError(store.getState())).toBe(expected);
   };
 
-  const feedSirenGatewayThroughBackWith = (response: GetSiretInfo) => {
-    dependencies.formCompletionGateway.siretInfo$.next(response);
+  const feedSirenGatewayThroughBackWith = (
+    response: GetSiretEstablishmentDtoResponse,
+  ) => {
+    dependencies.formCompletionGateway.getSiretEstablishmentDto$.next(response);
   };
 
   const feedSirenGatewayThroughBackWithError = (error: Error) => {
-    dependencies.formCompletionGateway.siretInfo$.error(error);
+    dependencies.formCompletionGateway.getSiretEstablishmentDto$.error(error);
   };
 
-  const expectOnly_getSirenInfoIfNotAlreadySaved_toHaveBeenCalled = () => {
+  const expectOnly_getSiretEstablishmentDtoResponse_toHaveBeenCalled = () => {
     expect(
-      dependencies.formCompletionGateway.getSiretInfoIfNotAlreadySavedCallCount,
+      dependencies.formCompletionGateway
+        .getSiretEstablishmentDtoResponseCallCount,
     ).toBe(1);
-    expect(dependencies.formCompletionGateway.getSiretInfoCallCount).toBe(0);
-  };
-
-  const expectOnly_getSirenInfoObservable_toHaveBeenCalled = () => {
-    expect(dependencies.formCompletionGateway.getSiretInfoCallCount).toBe(1);
-    expect(
-      dependencies.formCompletionGateway.getSiretInfoIfNotAlreadySavedCallCount,
-    ).toBe(0);
   };
 
   const setStoreWithInitialSiretState = (siretState: Partial<SiretState>) => {

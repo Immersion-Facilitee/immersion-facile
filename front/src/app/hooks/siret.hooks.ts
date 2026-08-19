@@ -33,12 +33,12 @@ export const useSiretRelatedField = <K extends keyof SiretEstablishmentDto>(
 };
 
 type SiretFetcherOptions = {
-  shouldFetchEvenIfAlreadySaved: boolean;
+  shouldThrowErrorOnAlreadySaved: boolean;
   addressAutocompleteLocator: AddressAutocompleteLocator | null;
 };
 
 export const useSiretFetcher = ({
-  shouldFetchEvenIfAlreadySaved,
+  shouldThrowErrorOnAlreadySaved,
   addressAutocompleteLocator,
 }: SiretFetcherOptions) => {
   const currentSiret = useAppSelector(siretSelectors.currentSiret);
@@ -48,30 +48,29 @@ export const useSiretFetcher = ({
   );
   const siretRawError = useAppSelector(siretSelectors.siretRawError);
   const isFetching = useAppSelector(siretSelectors.isFetching);
-  const storeShouldFetchEvenIfAlreadySaved = useAppSelector(
-    siretSelectors.shouldFetchEvenIfAlreadySaved,
+  const storeShouldThrowErrorOnAlreadySaved = useAppSelector(
+    siretSelectors.shouldThrowErrorOnAlreadySaved,
   );
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (shouldFetchEvenIfAlreadySaved !== storeShouldFetchEvenIfAlreadySaved)
-      // TODO: what should shouldFetchEvenIfAlreadySaved do?
+    if (shouldThrowErrorOnAlreadySaved !== storeShouldThrowErrorOnAlreadySaved)
       dispatch(
-        siretSlice.actions.setShouldFetchEvenIfAlreadySaved({
-          shouldFetchEvenIfAlreadySaved,
+        siretSlice.actions.setShouldThrowErrorOnAlreadySaved({
+          shouldThrowErrorOnAlreadySaved,
           addressAutocompleteLocator,
         }),
       );
     return () => {
       if (
-        shouldFetchEvenIfAlreadySaved === storeShouldFetchEvenIfAlreadySaved
+        shouldThrowErrorOnAlreadySaved === storeShouldThrowErrorOnAlreadySaved
       ) {
         dispatch(siretSlice.actions.siretInfoClearRequested());
       }
     };
   }, [
-    storeShouldFetchEvenIfAlreadySaved,
-    shouldFetchEvenIfAlreadySaved,
+    storeShouldThrowErrorOnAlreadySaved,
+    shouldThrowErrorOnAlreadySaved,
     addressAutocompleteLocator,
     dispatch,
   ]);
