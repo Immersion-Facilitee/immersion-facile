@@ -36,7 +36,7 @@ export const conventionSeed = async (
   console.log("conventionSeed start...");
 
   const uuidGenerator = new UuidV4Generator();
-  const peConvention = new ConventionDtoBuilder()
+  const ftConvention = new ConventionDtoBuilder()
     .withId(uuidGenerator.new())
     .withSiret(franceMerguez.establishment.siret)
     .withBusinessName(franceMerguez.establishment.name)
@@ -44,7 +44,7 @@ export const conventionSeed = async (
     .withDateStart(new Date("2023-03-27").toISOString())
     .withDateEnd(new Date("2023-03-28").toISOString())
     .withStatus("READY_TO_SIGN")
-    .withAgencyId(getRandomAgencyId({ kind: "pole-emploi", agencyIds }))
+    .withAgencyId(getRandomAgencyId({ kind: "france-travail", agencyIds }))
     .withSchedule(reasonableSchedule)
     .build();
 
@@ -68,7 +68,7 @@ export const conventionSeed = async (
     .withDateStart(new Date("2025-01-01").toISOString())
     .withDateEnd(new Date("2025-01-05").toISOString())
     .withStatus("ACCEPTED_BY_VALIDATOR")
-    .withAgencyId(getRandomAgencyId({ kind: "pole-emploi", agencyIds }))
+    .withAgencyId(getRandomAgencyId({ kind: "france-travail", agencyIds }))
     .withSchedule(reasonableSchedule)
     .build();
 
@@ -78,14 +78,14 @@ export const conventionSeed = async (
     3600 * 24 * 30,
   );
 
-  conventionSchema.parse(peConvention);
+  conventionSchema.parse(ftConvention);
 
   conventionSchema.parse(cciConvention);
 
   conventionSchema.parse(conventionWithAssessmentReadyToFill);
 
   await Promise.all([
-    uow.conventionRepository.save(peConvention),
+    uow.conventionRepository.save(ftConvention),
     uow.conventionRepository.save(cciConvention),
     uow.conventionRepository.save(conventionWithAssessmentReadyToFill),
   ]);

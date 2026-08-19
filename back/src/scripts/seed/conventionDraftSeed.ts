@@ -81,7 +81,7 @@ export const conventionDraftSeed = async (uow: UnitOfWork) => {
       job: "Manager",
     },
     agencyId: ftAgency.id,
-    agencyKind: "pole-emploi",
+    agencyKind: "france-travail",
     agencyDepartment: ftAgency.address.departmentCode,
     dateStart: new Date("2026-01-12").toISOString(),
     dateEnd: new Date("2026-01-14").toISOString(),
