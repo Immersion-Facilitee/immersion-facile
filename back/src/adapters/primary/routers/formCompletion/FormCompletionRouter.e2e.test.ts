@@ -10,7 +10,6 @@ import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
 import { TEST_OPEN_ESTABLISHMENT_1 } from "../../../../domains/core/sirene/adapters/InMemorySiretGateway";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
-import { EstablishmentAggregateBuilder } from "../../../../domains/establishment/helpers/EstablishmentBuilders";
 import { buildTestApp } from "../../../../utils/buildTestApp";
 
 describe("formCompletion Routes", () => {
@@ -65,9 +64,9 @@ describe("formCompletion Routes", () => {
     });
   });
 
-  describe(`${displayRouteName(formCompletionRoutes.getSiretInfo)}`, () => {
+  describe(`${displayRouteName(formCompletionRoutes.getSiretEstablishmentDto)}`, () => {
     it("200 - processes valid requests", async () => {
-      const response = await httpClient.getSiretInfo({
+      const response = await httpClient.getSiretEstablishmentDto({
         urlParams: { siret: TEST_OPEN_ESTABLISHMENT_1.siret },
       });
 
@@ -80,12 +79,13 @@ describe("formCompletion Routes", () => {
           nafDto: { code: "7112B", nomenclature: "Ref2" },
           numberEmployeesRange: "3-5",
           isOpen: true,
+          isAlreadySaved: false,
         },
       });
     });
 
     it("400 - invalid request", async () => {
-      const response = await httpClient.getSiretInfo({
+      const response = await httpClient.getSiretEstablishmentDto({
         urlParams: { siret: "not_a_valid_siret" },
       });
       expectHttpResponseToEqual(response, {
@@ -93,7 +93,7 @@ describe("formCompletion Routes", () => {
         body: {
           status: 400,
           message:
-            "Schema validation failed in usecase GetSiret for element with id not_a_valid_siret. See issues for details.",
+            "Schema validation failed in usecase GetSiretEstablishmentDto for element with id not_a_valid_siret. See issues for details.",
           issues: ["siret : SIRET doit être composé de 14 chiffres"],
         },
       });
@@ -110,7 +110,7 @@ describe("formCompletion Routes", () => {
         banEstablishmentPayload,
       ];
 
-      const response = await httpClient.getSiretInfo({
+      const response = await httpClient.getSiretEstablishmentDto({
         urlParams: { siret: banEstablishmentPayload.siret },
       });
 
@@ -125,7 +125,7 @@ describe("formCompletion Routes", () => {
 
     it("404 - unknown siret", async () => {
       const siret = "40400000000404";
-      const response = await httpClient.getSiretInfo({
+      const response = await httpClient.getSiretEstablishmentDto({
         urlParams: { siret },
       });
       expectHttpResponseToEqual(response, {
@@ -133,43 +133,6 @@ describe("formCompletion Routes", () => {
         body: {
           status: 404,
           message: errors.siretApi.notFound({ siret }).message,
-        },
-      });
-    });
-  });
-
-  describe(`${displayRouteName(
-    formCompletionRoutes.getSiretInfoIfNotAlreadySaved,
-  )}`, () => {
-    it("409 - Conflict for siret already in db", async () => {
-      const establishmentAggregate = new EstablishmentAggregateBuilder()
-        .withUserRights([
-          {
-            role: "establishment-admin",
-            status: "ACCEPTED",
-            job: "",
-            phone: "",
-            userId: "osef",
-            shouldReceiveDiscussionNotifications: true,
-            isMainContactByPhone: false,
-          },
-        ])
-        .build();
-      inMemoryUow.establishmentAggregateRepository.establishmentAggregates = [
-        establishmentAggregate,
-      ];
-
-      const response = await httpClient.getSiretInfoIfNotAlreadySaved({
-        urlParams: { siret: establishmentAggregate.establishment.siret },
-      });
-
-      expectHttpResponseToEqual(response, {
-        status: 409,
-        body: {
-          status: 409,
-          message: errors.establishment.conflictError({
-            siret: establishmentAggregate.establishment.siret,
-          }).message,
         },
       });
     });

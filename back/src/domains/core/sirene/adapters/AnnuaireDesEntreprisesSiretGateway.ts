@@ -6,7 +6,10 @@ import {
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import type { WithCache } from "../../caching-gateway/port/WithCache";
-import type { SiretGateway } from "../ports/SiretGateway";
+import type {
+  SiretEstablishmentResponseDto,
+  SiretGateway,
+} from "../ports/SiretGateway";
 import type {
   AnnuaireDesEntreprisesSiretEstablishment,
   AnnuaireDesEntreprisesSiretRoutes,
@@ -43,7 +46,7 @@ export class AnnuaireDesEntreprisesSiretGateway implements SiretGateway {
   public async getEstablishmentBySiret(
     siret: SiretDto,
     includeClosedEstablishments = false,
-  ): Promise<SiretEstablishmentDto | undefined> {
+  ): Promise<SiretEstablishmentResponseDto | undefined> {
     return this.#withCache({
       getCacheKey: (siret) =>
         `ade_siret_${siret}_${includeClosedEstablishments}`,
@@ -60,7 +63,7 @@ export class AnnuaireDesEntreprisesSiretGateway implements SiretGateway {
   async #fetchEstablishmentBySiret(
     siret: SiretDto,
     includeClosedEstablishments: boolean,
-  ): Promise<SiretEstablishmentDto | undefined> {
+  ): Promise<SiretEstablishmentResponseDto | undefined> {
     // https://api.gouv.fr/les-api/api-recherche-entreprises
     return this.#limiter
       .schedule(async () =>
@@ -104,7 +107,7 @@ export class AnnuaireDesEntreprisesSiretGateway implements SiretGateway {
 
 export const convertAdeEstablishmentToSirenEstablishmentDto = (
   adeEstablishment: AnnuaireDesEntreprisesSiretEstablishment,
-): SiretEstablishmentDto => ({
+): SiretEstablishmentResponseDto => ({
   siret: adeEstablishment.matching_etablissements[0].siret,
   businessName:
     adeEstablishment.matching_etablissements[0].nom_commercial &&

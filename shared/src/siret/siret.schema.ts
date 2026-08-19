@@ -12,9 +12,10 @@ import {
 import {
   localization,
   type ZodSchemaWithInputMatchingOutput,
+  zBoolean,
 } from "../zodUtils";
 import {
-  type GetSiretInfo,
+  type GetSiretEstablishmentDtoResponse,
   type GetSiretRequestDto,
   type NumberEmployeesRange,
   numberEmployeesRanges,
@@ -47,13 +48,14 @@ const getSiretResponseSchema: ZodSchemaWithInputMatchingOutput<SiretEstablishmen
     businessName: businessNameSchema,
     businessAddress: businessAddressSchema,
     isOpen: z.boolean(), // true if the office is currently open for business.
+    isAlreadySaved: zBoolean,
     nafDto: nafSchema.optional(),
     numberEmployeesRange: z.enum(numberEmployeesRanges, {
       error: localization.invalidEnum,
     }),
   });
 
-export const getSiretInfoSchema: ZodSchemaWithInputMatchingOutput<GetSiretInfo> =
+export const getSiretInfoSchema: ZodSchemaWithInputMatchingOutput<GetSiretEstablishmentDtoResponse> =
   z.union([
     getSiretResponseSchema,
     z.enum(siretInfoErrors, {

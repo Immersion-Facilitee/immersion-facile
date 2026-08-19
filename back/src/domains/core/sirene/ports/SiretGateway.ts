@@ -1,14 +1,19 @@
 import type { SiretDto, SiretEstablishmentDto } from "shared";
 
 export type EstablishmentsFromSiretApi = Partial<
-  Record<SiretDto, SiretEstablishmentDto>
+  Record<SiretDto, SiretEstablishmentResponseDto>
+>;
+
+export type SiretEstablishmentResponseDto = Omit<
+  SiretEstablishmentDto,
+  "isAlreadySaved"
 >;
 
 export interface SiretGateway {
   getEstablishmentBySiret(
     siret: SiretDto,
     includeClosedEstablishments?: boolean,
-  ): Promise<SiretEstablishmentDto | undefined>;
+  ): Promise<SiretEstablishmentResponseDto | undefined>;
   getEstablishmentUpdatedBetween(
     fromDate: Date,
     toDate: Date,

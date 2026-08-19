@@ -16,7 +16,7 @@ export const formCompletionRoutes = defineRoutes({
     url: "/form-already-exists/:siret",
     responses: { 200: isSiretExistResponseSchema },
   }),
-  getSiretInfo: defineRoute({
+  getSiretEstablishmentDto: defineRoute({
     method: "get",
     url: "/siret/:siret",
     responses: {
@@ -24,22 +24,7 @@ export const formCompletionRoutes = defineRoutes({
       400: httpErrorSchema,
       403: httpErrorSchema,
       404: httpErrorSchema,
-      409: httpErrorSchema,
       429: httpErrorSchema,
-      503: httpErrorSchema,
-    },
-  }),
-  getSiretInfoIfNotAlreadySaved: defineRoute({
-    method: "get",
-    url: "/siret-if-not-saved/:siret",
-    responses: {
-      200: getSiretInfoSchema,
-      400: httpErrorSchema,
-      403: httpErrorSchema,
-      404: httpErrorSchema,
-      409: httpErrorSchema,
-      429: httpErrorSchema,
-      503: httpErrorSchema,
     },
   }),
   appellation: defineRoute({

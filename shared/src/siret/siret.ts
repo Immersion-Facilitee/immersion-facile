@@ -19,12 +19,12 @@ export const siretApiUnavailableSiretErrorMessage = "SIRENE API not available.";
 export const siretApiUnexpectedErrorErrorMessage = "Unexpected Error";
 export const siretApiMissingEstablishmentMessage =
   "Missing establishment on SIRENE API.";
+
 export const siretInfoErrors = [
   "L'entreprise avec ce siret est bannie",
   tooManySirenRequestsSiretErrorMessage,
   siretApiUnavailableSiretErrorMessage,
   siretApiMissingEstablishmentMessage,
-  "Establishment with this siret is already in our DB",
   "Erreur sur le siret fourni",
 ] as const;
 
@@ -36,6 +36,7 @@ export type SiretEstablishmentDto = {
   businessAddress: BusinessAddress;
   // true if the office is currently open for business.
   isOpen: boolean;
+  isAlreadySaved: boolean;
   nafDto?: NafDto;
   numberEmployeesRange: NumberEmployeesRange;
 };
@@ -63,7 +64,9 @@ export const numberEmployeesRanges = [
 ] as const;
 
 export type GetSiretInfoError = (typeof siretInfoErrors)[number];
-export type GetSiretInfo = SiretEstablishmentDto | GetSiretInfoError;
+export type GetSiretEstablishmentDtoResponse =
+  | SiretEstablishmentDto
+  | GetSiretInfoError;
 export type GetSiretRequestDto = {
   siret: SiretDto;
   includeClosedEstablishments?: boolean;
