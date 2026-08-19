@@ -18,6 +18,7 @@ import type { RetryStrategy } from "../../retry-strategy/ports/RetryStrategy";
 import type { TimeGateway } from "../../time-gateway/ports/TimeGateway";
 import type {
   EstablishmentsFromSiretApi,
+  SiretEstablishmentResponseDto,
   SiretGateway,
 } from "../ports/SiretGateway";
 import {
@@ -79,7 +80,7 @@ export class InseeSiretGateway implements SiretGateway {
   public async getEstablishmentBySiret(
     siret: SiretDto,
     includeClosedEstablishments = false,
-  ): Promise<SiretEstablishmentDto | undefined> {
+  ): Promise<SiretEstablishmentResponseDto | undefined> {
     return this.#retryStrategy.apply(async () => {
       const response = await this.#limiter.schedule(async () =>
         this.#httpClient.getEstablishmentBySiret({
@@ -301,7 +302,7 @@ export type SirenGatewayAnswer = {
 
 export const convertSirenRawEstablishmentToSirenEstablishmentDto = (
   siretEstablishment: InseeApiRawEstablishment,
-): SiretEstablishmentDto => ({
+): SiretEstablishmentResponseDto => ({
   siret: siretEstablishment.siret,
   businessName: getBusinessName(siretEstablishment),
   businessAddress: getFormattedAddress(siretEstablishment),

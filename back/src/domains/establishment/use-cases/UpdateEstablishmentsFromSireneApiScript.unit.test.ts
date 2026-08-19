@@ -1,6 +1,7 @@
 import subDays from "date-fns/subDays";
-import { expectToEqual, type SiretEstablishmentDto } from "shared";
+import { expectToEqual } from "shared";
 import { InMemorySiretGateway } from "../../core/sirene/adapters/InMemorySiretGateway";
+import type { SiretEstablishmentResponseDto } from "../../core/sirene/ports/SiretGateway";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
@@ -168,7 +169,7 @@ describe("Update establishments from Sirene API", () => {
           businessName: "My updated Business",
           nafDto: { code: "123", nomenclature: "Yo" },
           businessAddress: "Address which should not be updated",
-        } satisfies SiretEstablishmentDto;
+        } satisfies SiretEstablishmentResponseDto;
         siretGateway.siretEstablishmentsUpdateSince = [siretEstablishmentDto];
 
         const report = await updateEstablishmentsScript.execute();
@@ -298,7 +299,7 @@ describe("Update establishments from Sirene API", () => {
           businessName: "My updated Business",
           nafDto: { code: "123", nomenclature: "Yo" },
           businessAddress: "Address which should not be updated",
-        } satisfies SiretEstablishmentDto;
+        } satisfies SiretEstablishmentResponseDto;
         siretGateway.siretEstablishmentsUpdateSince = [
           siretEstablishmentDto,
           { ...siretEstablishmentDto, siret: establishmentSiret2 },

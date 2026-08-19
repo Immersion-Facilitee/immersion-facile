@@ -10,12 +10,13 @@ import {
 import { createLogger } from "../../../../utils/logger";
 import type {
   EstablishmentsFromSiretApi,
+  SiretEstablishmentResponseDto,
   SiretGateway,
 } from "../ports/SiretGateway";
 
 const logger = createLogger(__filename);
 
-export const TEST_OPEN_ESTABLISHMENT_1: SiretEstablishmentDto = {
+export const TEST_OPEN_ESTABLISHMENT_1: SiretEstablishmentResponseDto = {
   siret: "12345678901234",
   businessName: "MA P'TITE BOITE",
   businessAddress: "20 AVENUE DE SEGUR 75007 PARIS 7",
@@ -27,7 +28,7 @@ export const TEST_OPEN_ESTABLISHMENT_1: SiretEstablishmentDto = {
   isOpen: true,
 };
 
-export const TEST_OPEN_ESTABLISHMENT_2: SiretEstablishmentDto = {
+export const TEST_OPEN_ESTABLISHMENT_2: SiretEstablishmentResponseDto = {
   siret: "77561959600155",
   businessName: "MA P'TITE BOITE 2",
   businessAddress: "20 AVENUE DE SEGUR 75007 PARIS 7",
@@ -39,7 +40,7 @@ export const TEST_OPEN_ESTABLISHMENT_2: SiretEstablishmentDto = {
   isOpen: true,
 };
 
-const TEST_OPEN_ESTABLISHMENT_3: SiretEstablishmentDto = {
+const TEST_OPEN_ESTABLISHMENT_3: SiretEstablishmentResponseDto = {
   siret: "24570135400111",
   businessName: "MA P'TITE BOITE 2",
   businessAddress: "20 AVENUE DE SEGUR 75007 PARIS 7",
@@ -51,7 +52,7 @@ const TEST_OPEN_ESTABLISHMENT_3: SiretEstablishmentDto = {
   isOpen: true,
 };
 
-const TEST_CLOSED_ESTABLISHMENT_1: SiretEstablishmentDto = {
+const TEST_CLOSED_ESTABLISHMENT_1: SiretEstablishmentResponseDto = {
   siret: "20006765000016",
   businessName: "MA P'TITE BOITE 2",
   businessAddress: "20 AVENUE DE SEGUR 75007 PARIS 7",
@@ -65,10 +66,10 @@ const TEST_CLOSED_ESTABLISHMENT_1: SiretEstablishmentDto = {
 
 const apiSirenUnexpectedError = "apiSirenUnexpectedError";
 
-type EstablishmentBySiret = { [siret: string]: SiretEstablishmentDto };
+type EstablishmentBySiret = { [siret: string]: SiretEstablishmentResponseDto };
 
 export class InMemorySiretGateway implements SiretGateway {
-  public siretEstablishmentsUpdateSince: SiretEstablishmentDto[] = [];
+  public siretEstablishmentsUpdateSince: SiretEstablishmentResponseDto[] = [];
 
   #error: any = null;
 
@@ -82,7 +83,7 @@ export class InMemorySiretGateway implements SiretGateway {
   public async getEstablishmentBySiret(
     siret: SiretDto,
     includeClosedEstablishments = false,
-  ): Promise<SiretEstablishmentDto | undefined> {
+  ): Promise<SiretEstablishmentResponseDto | undefined> {
     try {
       if (this.#error) throw this.#error;
       if (siret === apiSirenUnexpectedError)
@@ -142,12 +143,12 @@ export class InMemorySiretGateway implements SiretGateway {
   }
 
   // Visible for testing
-  public setSirenEstablishment(establishment: SiretEstablishmentDto) {
+  public setSirenEstablishment(establishment: SiretEstablishmentResponseDto) {
     this.#repo[establishment.siret] = establishment;
   }
 }
 
-const validSiretEstablishmentDto: SiretEstablishmentDto = {
+const validSiretEstablishmentDto: SiretEstablishmentResponseDto = {
   siret: "20006765000016",
   businessAddress: "20 AVENUE DE SEGUR 75007 PARIS 7",
   businessName: "MA P'TITE BOITE 2",
@@ -160,13 +161,13 @@ const validSiretEstablishmentDto: SiretEstablishmentDto = {
 };
 
 export class SiretEstablishmentDtoBuilder
-  implements Builder<SiretEstablishmentDto>
+  implements Builder<SiretEstablishmentResponseDto>
 {
   constructor(
-    private dto: SiretEstablishmentDto = validSiretEstablishmentDto,
+    private dto: SiretEstablishmentResponseDto = validSiretEstablishmentDto,
   ) {}
 
-  public build(): SiretEstablishmentDto {
+  public build(): SiretEstablishmentResponseDto {
     return this.dto;
   }
 

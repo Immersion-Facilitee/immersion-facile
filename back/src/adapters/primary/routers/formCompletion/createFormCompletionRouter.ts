@@ -18,18 +18,14 @@ export const createFormCompletionRouter = (deps: AppDependencies) => {
     ),
   );
 
-  formCompletionRouter.getSiretInfo((req, res) =>
+  formCompletionRouter.getSiretEstablishmentDto((req, res) =>
     sendHttpResponse(req, res, () =>
-      deps.useCases.getSiret.execute(req.params).then((result) => {
-        if (result) return result;
-        throw errors.siretApi.notFound({ siret: req.params.siret });
-      }),
-    ),
-  );
-
-  formCompletionRouter.getSiretInfoIfNotAlreadySaved((req, res) =>
-    sendHttpResponse(req, res, () =>
-      deps.useCases.getSiretIfNotAlreadySaved.execute(req.params),
+      deps.useCases.getSiretEstablishmentDto
+        .execute(req.params)
+        .then((result) => {
+          if (result) return result;
+          throw errors.siretApi.notFound({ siret: req.params.siret });
+        }),
     ),
   );
 
