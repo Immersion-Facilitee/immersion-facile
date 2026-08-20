@@ -1,7 +1,6 @@
 import { uniq } from "ramda";
 import {
   type AbsoluteUrl,
-  type ConventionStatus,
   errors,
   executeInSequence,
   onlyAdminUserRightsWithStatusAccepted,
@@ -16,13 +15,6 @@ import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 import type { EstablishmentAggregate } from "../../entities/EstablishmentAggregate";
-
-const conventionStatusesBeforeValidation: ConventionStatus[] = [
-  "READY_TO_SIGN",
-  "PARTIALLY_SIGNED",
-  "IN_REVIEW",
-  "ACCEPTED_BY_COUNSELLOR",
-];
 
 export type NotifyThatEstablishmentIsBanned = ReturnType<
   typeof makeNotifyThatEstablishmentIsBanned
@@ -132,35 +124,6 @@ const notifyBeneficiaries = async (
       },
       followedIds: {
         establishmentSiret: bannedEstablishment.establishment.siret,
-      },
-    }),
-  );
-
-  const conventionsBeforeValidation =
-    await uow.conventionQueries.getConventions({
-      filters: {
-        withSirets: [bannedEstablishment.establishment.siret],
-        withStatuses: conventionStatusesBeforeValidation,
-      },
-      sortBy: "dateStart",
-    });
-
-  await executeInSequence(conventionsBeforeValidation, (convention) =>
-    saveNotificationAndRelatedEvent(uow, {
-      kind: "email",
-      templatedContent: {
-        kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
-        recipients: [convention.signatories.beneficiary.email],
-        params: {
-          businessName: bannedEstablishment.establishment.name,
-          beneficiaryFirstName: convention.signatories.beneficiary.firstName,
-          beneficiaryLastName: convention.signatories.beneficiary.lastName,
-          immersionBaseUrl: immersionBaseUrl,
-        },
-      },
-      followedIds: {
-        establishmentSiret: bannedEstablishment.establishment.siret,
-        conventionId: convention.id,
       },
     }),
   );

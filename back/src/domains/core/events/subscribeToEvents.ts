@@ -228,7 +228,10 @@ const getUseCasesByTopics = (
     extractSiretFromArg(useCases.updateMarketingEstablishmentContactList),
     extractSiretFromArg(useCases.markEstablishmentLeadAsRegistrationAccepted),
   ],
-  EstablishmentBanned: [useCases.notifyThatEstablishmentIsBanned],
+  EstablishmentBanned: [
+    useCases.notifyThatEstablishmentIsBanned,
+    useCases.notifyThatEstablishmentFromConventionIsBanned,
+  ],
   EstablishmentDeleted: [],
   PendingUserRightRegisteredOnEstablishment: [
     useCases.notifyEstablishmentAdminsThatUserRightIsPending,
