@@ -27,10 +27,7 @@ import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
-import type {
-  EstablishmentAdminRight,
-  EstablishmentAggregate,
-} from "../../establishment/entities/EstablishmentAggregate";
+import type { EstablishmentAggregate } from "../../establishment/entities/EstablishmentAggregate";
 
 export const partialDeleteOptions = [
   "establishement-only",
@@ -111,6 +108,9 @@ const updateEstablishment =
   async (
     establishment: EstablishmentAggregate,
   ): Promise<EstablishmentAggregate> => {
+    const userRightToDelete = establishment.userRights.find(
+      (right) => right.userId === userId,
+    );
     const remainingRights = establishment.userRights.filter(
       (right) => userId !== right.userId,
     );
@@ -119,30 +119,40 @@ const updateEstablishment =
       remainingRights.filter(({ role }) => role === "establishment-admin")
         .length === 0;
 
-    const userIdToSetAdmin =
-      isNotEmptyArray(remainingRights) && isNoMoreEstablishmentAdmins
-        ? await getMostActiveUserId(
-            uow,
-            remainingRights.map(({ userId }) => userId),
-          )
-        : null;
+    const userRightToDeleteWasMainContactByPhone =
+      userRightToDelete?.isMainContactByPhone;
+    const userRightToDeleteWasMainContactInPerson =
+      userRightToDelete?.isMainContactInPerson;
+
+    const latestActiveUserId = isNotEmptyArray(remainingRights)
+      ? await getMostActiveUserId(
+          uow,
+          remainingRights.map(({ userId }) => userId),
+        )
+      : null;
 
     return {
       ...establishment,
-      userRights: userIdToSetAdmin
+      userRights: latestActiveUserId
         ? remainingRights.map((right) =>
-            right.userId === userIdToSetAdmin
-              ? ({
+            right.userId === latestActiveUserId
+              ? {
                   userId: right.userId,
-                  role: "establishment-admin",
+                  role: isNoMoreEstablishmentAdmins
+                    ? "establishment-admin"
+                    : right.role,
                   status: "ACCEPTED",
                   shouldReceiveDiscussionNotifications:
                     right.shouldReceiveDiscussionNotifications,
-                  isMainContactInPerson: right.isMainContactInPerson,
-                  isMainContactByPhone: right.isMainContactByPhone || null,
+                  isMainContactInPerson:
+                    userRightToDeleteWasMainContactByPhone ??
+                    right.isMainContactInPerson,
+                  isMainContactByPhone:
+                    userRightToDeleteWasMainContactInPerson ??
+                    (right.isMainContactByPhone || null),
                   job: right.job || "non-communiqué",
                   phone: right.phone || "+33600000000", // On ne peut pas deviner un numéro de téléphone : +33600000000 ??? pas dingue
-                } satisfies EstablishmentAdminRight)
+                }
               : right,
           )
         : remainingRights,
@@ -218,7 +228,7 @@ const updateAgency =
       uow,
     });
 
-    const userIdToSetAdmin = await getUserIdToSetAdmin({
+    const userIdToSetAsAdmin = await getUserIdToSetAsAdmin({
       remainingValidators,
       remainingAdmins,
       uow,
@@ -241,7 +251,7 @@ const updateAgency =
         (acc, { userId, ...agencyRight }) => ({
           ...acc,
           [userId]: updateUserAgencyRight({
-            isUserSetAdmin: userIdToSetAdmin === userId,
+            isUserSetAdmin: userIdToSetAsAdmin === userId,
             isUserSetNotifiedValidator: userIdToSetNotifiedValidator === userId,
             agencyRight,
           }),
@@ -334,7 +344,7 @@ const getUserIdToSetNotifiedValidator = async ({
   return null;
 };
 
-const getUserIdToSetAdmin = async ({
+const getUserIdToSetAsAdmin = async ({
   remainingAdmins,
   remainingValidators,
   uow,
