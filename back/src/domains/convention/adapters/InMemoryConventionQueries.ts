@@ -523,7 +523,13 @@ export class InMemoryConventionQueries implements ConventionQueries {
         }
 
         if (filters.search) {
-          if (result.id.toLowerCase() !== filters.search.toLowerCase())
+          const convention = userConventions.find(
+            (conventionDto) => conventionDto.id === result.id,
+          );
+          if (
+            !convention ||
+            !matchesConventionSearch(convention, filters.search)
+          )
             return false;
         }
 

@@ -48,6 +48,37 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
   const convention1 = new ConventionDtoBuilder()
     .withId("convention-id-1")
     .withAgencyId(agencyId1)
+    .withBeneficiaryFirstName("Camille")
+    .withBeneficiaryLastName("Desmoulins")
+    .withSiret("14915000000000")
+    .withBusinessName("France Merguez")
+    .withBeneficiaryEmail("camille.desmoulins@example.com")
+    .withEstablishmentRepresentativeEmail("christine.dupont@example.com")
+    .withEstablishmentTutorEmail("establishment.tutor@example.com")
+    .withBeneficiaryRepresentative({
+      firstName: "Jean",
+      lastName: "Dupont",
+      email: "jean.dupont@example.com",
+      role: "beneficiary-representative",
+      phone: "+33123456789",
+    })
+    .withBeneficiaryCurrentEmployer({
+      firstName: "Mon",
+      lastName: "Employeur",
+      email: "current.employer@example.com",
+      job: "Employeur",
+      role: "beneficiary-current-employer",
+      phone: "+33123456789",
+      businessSiret: "12345678901234",
+      businessName: "France Merguez",
+      businessAddress: "123 Rue de la Paix, 75000 Paris, France",
+    })
+    .withAgencyReferent({
+      firstname: "John",
+      lastname: "Doe",
+    })
+    .withStatus("READY_TO_SIGN")
+    .withDateSubmission("2025-01-02T00:00:00.000Z")
     .build();
 
   const convention2 = new ConventionDtoBuilder()
@@ -307,6 +338,81 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
       {
         pagination: { page: 1, perPage: 10 },
         filters: { search: convention1.id as SearchTextAlphaNumeric },
+      },
+      user1,
+    );
+
+    expectToEqual(result, {
+      data: [
+        {
+          id: convention1.id,
+          status: convention1.status,
+          beneficiary: {
+            firstname: convention1.signatories.beneficiary.firstName,
+            lastname: convention1.signatories.beneficiary.lastName,
+          },
+          lastBroadcastFeedback: managedErrorFeedback,
+        },
+      ],
+      pagination: {
+        totalRecords: 1,
+        currentPage: 1,
+        totalPages: 1,
+        numberPerPage: 10,
+      },
+    });
+  });
+
+  it.each([
+    {
+      searchLabel: "convention ID",
+      searchFilter: "id-1",
+    },
+    { searchLabel: "beneficiary firstname", searchFilter: "cam" },
+    { searchLabel: "beneficiary lastname", searchFilter: "moulins" },
+    { searchLabel: "fullname", searchFilter: "camille desmoulins" },
+    {
+      searchLabel: "beneficiary email",
+      searchFilter: "camil",
+    },
+    {
+      searchLabel: "business name",
+      searchFilter: "france",
+    },
+    { searchLabel: "siret", searchFilter: "1491" },
+    {
+      searchLabel: "establishment representative email",
+      searchFilter: "christine.dupont@example",
+    },
+    {
+      searchLabel: "beneficiary current employer email",
+      searchFilter: "current",
+    },
+    {
+      searchLabel: "beneficiary representative email",
+      searchFilter: "jean",
+    },
+    {
+      searchLabel: "establishment tutor email",
+      searchFilter: "tutor",
+    },
+    {
+      searchLabel: "agency referent firstname",
+      searchFilter: "john",
+    },
+    {
+      searchLabel: "agency referent lastname",
+      searchFilter: "do",
+    },
+    {
+      searchLabel: "agency referent fullname",
+      searchFilter: "john d",
+    },
+  ])("should filter by $searchLabel", async ({ searchFilter }) => {
+    const result = await useCase.execute(
+      {
+        pagination: { page: 1, perPage: 10 },
+        filters: { search: searchFilter },
       },
       user1,
     );

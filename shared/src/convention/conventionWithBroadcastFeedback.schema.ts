@@ -38,7 +38,7 @@ export const getConventionsWithErroredBroadcastFeedbackFilterSchema: ZodSchemaWi
   z.object({
     broadcastErrorKind: broadcastErrorKindSchema.optional(),
     conventionStatus: z.tuple([statusSchema], statusSchema).optional(),
-    search: searchTextAlphaNumericSchema.optional(),
+    search: z.string().optional(),
   });
 
 export const flatGetConventionsWithErroredBroadcastFeedbackParamsSchema: ZodSchemaWithInputMatchingOutput<FlatGetConventionsWithErroredBroadcastFeedbackParams> =

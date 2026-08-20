@@ -436,6 +436,14 @@ const createBroadcastFeedbackBaseBuilder = ({
           "beneficiary.id",
           "c.beneficiary_id",
         )
+        .innerJoin("actors as er", "er.id", "c.establishment_representative_id")
+        .leftJoin("actors as br", "br.id", "c.beneficiary_representative_id")
+        .innerJoin("actors as et", "et.id", "c.establishment_tutor_id")
+        .leftJoin(
+          "actors as bce",
+          "bce.id",
+          "c.beneficiary_current_employer_id",
+        )
         .innerJoin("broadcast_feedbacks as bf", (join) =>
           join.on((eb) =>
             eb(
@@ -449,8 +457,17 @@ const createBroadcastFeedbackBaseBuilder = ({
           eb.ref("c.id").as("conventionId"),
           eb.ref("c.agency_id").as("agencyId"),
           eb.ref("c.status").as("status"),
+          eb.ref("c.business_name").as("businessName"),
+          eb.ref("c.siret").as("siret"),
+          eb.ref("c.agency_referent_first_name").as("agencyReferentFirstName"),
+          eb.ref("c.agency_referent_last_name").as("agencyReferentLastName"),
           eb.ref("beneficiary.first_name").as("bFirstName"),
           eb.ref("beneficiary.last_name").as("bLastName"),
+          eb.ref("beneficiary.email").as("bEmail"),
+          eb.ref("er.email").as("erEmail"),
+          eb.ref("et.email").as("etEmail"),
+          eb.ref("br.email").as("brEmail"),
+          eb.ref("bce.email").as("bceEmail"),
           eb.ref("bf.consumer_id").as("consumerId"),
           eb.ref("bf.consumer_name").as("consumerName"),
           eb.ref("bf.service_name").as("serviceName"),
