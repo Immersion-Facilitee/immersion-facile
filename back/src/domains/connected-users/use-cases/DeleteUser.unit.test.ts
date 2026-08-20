@@ -881,7 +881,7 @@ describe("DeleteUser", () => {
             triggeredBy: { kind: "crawler" },
             partialDelete: "agency-only",
           }),
-          new Error("HYBRYD BEHAVIOR NOT IMPLEMENTED"),
+          new Error("HYBRID BEHAVIOR NOT IMPLEMENTED"),
         );
       });
 
@@ -892,7 +892,7 @@ describe("DeleteUser", () => {
             triggeredBy: { kind: "crawler" },
             partialDelete: "establishement-only",
           }),
-          new Error("HYBRYD BEHAVIOR NOT IMPLEMENTED"),
+          new Error("HYBRID BEHAVIOR NOT IMPLEMENTED"),
         );
       });
 
