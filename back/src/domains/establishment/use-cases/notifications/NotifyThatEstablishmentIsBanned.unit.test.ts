@@ -137,40 +137,6 @@ describe("NotifyEstablishmentIsBanned", () => {
     .withPotentialBeneficiaryEmail("pending-beneficiary@test.com")
     .build();
 
-  const readyToSignConvention = new ConventionDtoBuilder()
-    .withId("aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa")
-    .withSiret(bannedEstablishmentAggregate.establishment.siret)
-    .withStatus("READY_TO_SIGN")
-    .withBeneficiaryEmail("beneficiary-ready-to-sign@test.com")
-    .build();
-
-  const partiallySignedConvention = new ConventionDtoBuilder()
-    .withId("bbbbbbbb-bbbb-4bbb-abbb-bbbbbbbbbbbb")
-    .withSiret(bannedEstablishmentAggregate.establishment.siret)
-    .withStatus("PARTIALLY_SIGNED")
-    .withBeneficiaryEmail("beneficiary-partially-signed@test.com")
-    .withBeneficiaryFirstName("Pierre")
-    .withBeneficiaryLastName("Durand")
-    .build();
-
-  const inReviewConvention = new ConventionDtoBuilder()
-    .withId("cccccccc-cccc-4ccc-accc-cccccccccccc")
-    .withSiret(bannedEstablishmentAggregate.establishment.siret)
-    .withStatus("IN_REVIEW")
-    .withBeneficiaryEmail("beneficiary-in-review@test.com")
-    .withBeneficiaryFirstName("Marie")
-    .withBeneficiaryLastName("Dupont")
-    .build();
-
-  const acceptedByCounsellorConvention = new ConventionDtoBuilder()
-    .withId("dddddddd-dddd-4ddd-addd-dddddddddddd")
-    .withSiret(bannedEstablishmentAggregate.establishment.siret)
-    .withStatus("ACCEPTED_BY_COUNSELLOR")
-    .withBeneficiaryEmail("beneficiary-accepted-by-counsellor@test.com")
-    .withBeneficiaryFirstName("Julie")
-    .withBeneficiaryLastName("Bernard")
-    .build();
-
   let validatedConvention: ConventionDto;
 
   let validatedConventionWithRefersToAgency: ConventionDto;
@@ -337,120 +303,6 @@ describe("NotifyEstablishmentIsBanned", () => {
     });
 
     it("sends no discussion beneficiary email when there are no pending discussions", async () => {
-      await notifyThatEstablishmentIsBanned.execute({ siret });
-
-      expectSavedNotificationsAndEvents({
-        emails: [
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
-            recipients: [adminUser.email],
-            params: { businessName, siret },
-          },
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
-            recipients: [contactUser.email],
-            params: { businessName, siret },
-          },
-        ],
-      });
-    });
-
-    it.each([
-      {
-        convention: readyToSignConvention,
-        expectedEmail: "beneficiary-ready-to-sign@test.com",
-      },
-      {
-        convention: partiallySignedConvention,
-        expectedEmail: "beneficiary-partially-signed@test.com",
-      },
-      {
-        convention: inReviewConvention,
-        expectedEmail: "beneficiary-in-review@test.com",
-      },
-      {
-        convention: acceptedByCounsellorConvention,
-        expectedEmail: "beneficiary-accepted-by-counsellor@test.com",
-      },
-    ])("sends emails to beneficiary in affected convention statuses", async ({
-      convention,
-    }) => {
-      uow.conventionRepository.setConventions([convention]);
-
-      await notifyThatEstablishmentIsBanned.execute({
-        siret: bannedEstablishmentAggregate.establishment.siret,
-      });
-
-      expectSavedNotificationsAndEvents({
-        emails: [
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
-            recipients: [adminUser.email],
-            params: { businessName, siret },
-          },
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
-            recipients: [contactUser.email],
-            params: { businessName, siret },
-          },
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
-            recipients: [convention.signatories.beneficiary.email],
-            params: {
-              businessName: bannedEstablishmentAggregate.establishment.name,
-              beneficiaryFirstName:
-                convention.signatories.beneficiary.firstName,
-              beneficiaryLastName: convention.signatories.beneficiary.lastName,
-              immersionBaseUrl: "https://immersion-facile.beta.gouv.fr",
-            },
-          },
-        ],
-      });
-    });
-
-    it("sends emails to convention beneficiaries in affected statuses only", async () => {
-      const cancelledConvention: ConventionDto = {
-        ...validatedConvention,
-        status: "CANCELLED",
-      };
-      uow.conventionRepository.setConventions([
-        readyToSignConvention,
-        cancelledConvention,
-      ]);
-
-      await notifyThatEstablishmentIsBanned.execute({ siret });
-
-      expectSavedNotificationsAndEvents({
-        emails: [
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
-            recipients: [adminUser.email],
-            params: { businessName, siret },
-          },
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
-            recipients: [contactUser.email],
-            params: { businessName, siret },
-          },
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
-            recipients: [readyToSignConvention.signatories.beneficiary.email],
-            params: {
-              businessName,
-              beneficiaryFirstName:
-                readyToSignConvention.signatories.beneficiary.firstName,
-              beneficiaryLastName:
-                readyToSignConvention.signatories.beneficiary.lastName,
-              immersionBaseUrl,
-            },
-          },
-        ],
-      });
-    });
-
-    it("sends no convention email when there are no conventions in affected statuses", async () => {
-      uow.conventionRepository.setConventions([]);
-
       await notifyThatEstablishmentIsBanned.execute({ siret });
 
       expectSavedNotificationsAndEvents({
@@ -663,10 +515,7 @@ describe("NotifyEstablishmentIsBanned", () => {
 
     it("sends all notification types", async () => {
       uow.discussionRepository.discussions = [pendingDiscussion];
-      uow.conventionRepository.setConventions([
-        readyToSignConvention,
-        validatedConvention,
-      ]);
+      uow.conventionRepository.setConventions([validatedConvention]);
 
       await notifyThatEstablishmentIsBanned.execute({ siret });
 
@@ -691,18 +540,6 @@ describe("NotifyEstablishmentIsBanned", () => {
                 pendingDiscussion.potentialBeneficiary.firstName,
               beneficiaryLastName:
                 pendingDiscussion.potentialBeneficiary.lastName,
-              immersionBaseUrl,
-            },
-          },
-          {
-            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
-            recipients: [readyToSignConvention.signatories.beneficiary.email],
-            params: {
-              businessName,
-              beneficiaryFirstName:
-                readyToSignConvention.signatories.beneficiary.firstName,
-              beneficiaryLastName:
-                readyToSignConvention.signatories.beneficiary.lastName,
               immersionBaseUrl,
             },
           },

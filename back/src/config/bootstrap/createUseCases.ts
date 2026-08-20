@@ -171,6 +171,7 @@ import { makeNotifyConfirmationEstablishmentCreated } from "../../domains/establ
 import { makeNotifyContactRequest } from "../../domains/establishment/use-cases/notifications/NotifyContactRequest";
 import { makeNotifyEstablishmentAdminsThatUserRightIsPending } from "../../domains/establishment/use-cases/notifications/NotifyEstablishmentAdminsThatUserRightIsPending";
 import { makeNotifyPassEmploiOnNewEstablishmentAggregateInsertedFromForm } from "../../domains/establishment/use-cases/notifications/NotifyPassEmploiOnNewEstablishmentAggregateInsertedFromForm";
+import { makeNotifyThatEstablishmentFromConventionIsBanned } from "../../domains/establishment/use-cases/notifications/NotifyThatEstablishmentFromConventionIsBanned";
 import { makeNotifyThatEstablishmentIsBanned } from "../../domains/establishment/use-cases/notifications/NotifyThatEstablishmentIsBanned";
 import { makeRegisterUserOnEstablishment } from "../../domains/establishment/use-cases/RegisterUserOnEstablishment";
 import { makeRetrieveFormEstablishmentFromAggregates } from "../../domains/establishment/use-cases/RetrieveFormEstablishmentFromAggregates";
@@ -481,6 +482,15 @@ export const createUseCases = ({
         timeGateway,
       },
     }),
+    notifyThatEstablishmentFromConventionIsBanned:
+      makeNotifyThatEstablishmentFromConventionIsBanned({
+        uowPerformer,
+        deps: {
+          saveNotificationAndRelatedEvent,
+          immersionBaseUrl: config.immersionFacileBaseUrl,
+          timeGateway: gateways.timeGateway,
+        },
+      }),
     addExchangeToDiscussion: makeAddExchangeToDiscussion({
       deps: {
         createNewEvent,
