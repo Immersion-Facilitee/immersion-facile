@@ -861,6 +861,26 @@ const filterSearchForBroadcastFeedback =
     return builder.where((eb) =>
       eb.or([
         sql<any>`CAST(${eb.ref("cf.conventionId")} AS text) LIKE ${pattern}`,
+        // Search in beneficiary names
+        sql<any>`${eb.ref("cf.bLastName")} ILIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.bFirstName")} ILIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.bFirstName")} || ' ' || ${eb.ref("cf.bLastName")} ILIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.bLastName")} || ' ' || ${eb.ref("cf.bFirstName")} ILIKE ${pattern}`,
+        // Search in establishment business name
+        sql<any>`${eb.ref("cf.businessName")} ILIKE ${pattern}`,
+        // Search in establishment SIRET
+        sql<any>`${eb.ref("cf.siret")} LIKE ${pattern}`,
+        // Search in actor emails
+        sql<any>`${eb.ref("cf.bEmail")} LIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.erEmail")} LIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.etEmail")} LIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.brEmail")} IS NOT NULL AND ${eb.ref("cf.brEmail")} LIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.bceEmail")} IS NOT NULL AND ${eb.ref("cf.bceEmail")} LIKE ${pattern}`,
+        // Search agency referent names
+        sql<any>`${eb.ref("cf.agencyReferentFirstName")} ILIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.agencyReferentLastName")} ILIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.agencyReferentFirstName")} || ' ' || ${eb.ref("cf.agencyReferentLastName")} ILIKE ${pattern}`,
+        sql<any>`${eb.ref("cf.agencyReferentLastName")} || ' ' || ${eb.ref("cf.agencyReferentFirstName")} ILIKE ${pattern}`,
       ]),
     );
   };

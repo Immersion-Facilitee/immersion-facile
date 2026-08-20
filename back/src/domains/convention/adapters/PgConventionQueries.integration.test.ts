@@ -2859,6 +2859,35 @@ describe("Pg implementation of ConventionQueries", () => {
       const agency = new AgencyDtoBuilder().withId(agencyIdA).build();
       const conventionWithManagedError = new ConventionDtoBuilder()
         .withId(conventionIdA)
+        .withBeneficiaryFirstName("Camille")
+        .withBeneficiaryLastName("Desmoulins")
+        .withSiret("14915000000000")
+        .withBusinessName("France Merguez")
+        .withBeneficiaryEmail("camille.desmoulins@example.com")
+        .withEstablishmentRepresentativeEmail("christine.dupont@example.com")
+        .withEstablishmentTutorEmail("establishment.tutor@example.com")
+        .withBeneficiaryRepresentative({
+          firstName: "Jean",
+          lastName: "Dupont",
+          email: "jean.dupont@example.com",
+          role: "beneficiary-representative",
+          phone: "+33123456789",
+        })
+        .withBeneficiaryCurrentEmployer({
+          firstName: "Mon",
+          lastName: "Employeur",
+          email: "current.employer@example.com",
+          job: "Employeur",
+          role: "beneficiary-current-employer",
+          phone: "+33123456789",
+          businessSiret: "12345678901234",
+          businessName: "France Merguez",
+          businessAddress: "123 Rue de la Paix, 75000 Paris, France",
+        })
+        .withAgencyReferent({
+          firstname: "John",
+          lastname: "Doe",
+        })
         .withAgencyId(agencyIdA)
         .withStatus("READY_TO_SIGN")
         .withDateSubmission("2025-01-02T00:00:00.000Z")
@@ -3145,14 +3174,59 @@ describe("Pg implementation of ConventionQueries", () => {
         });
       });
 
-      it("should filter by search (convention ID)", async () => {
+      it.each([
+        {
+          searchLabel: "convention ID",
+          searchFilter: "aaaaac99-9c0b",
+        },
+        { searchLabel: "beneficiary firstname", searchFilter: "cam" },
+        { searchLabel: "beneficiary lastname", searchFilter: "moulins" },
+        { searchLabel: "fullname", searchFilter: "camille desmoulins" },
+        {
+          searchLabel: "beneficiary email",
+          searchFilter: "camil",
+        },
+        {
+          searchLabel: "business name",
+          searchFilter: "france",
+        },
+        { searchLabel: "siret", searchFilter: "1491" },
+        {
+          searchLabel: "establishment representative email",
+          searchFilter: "christine.d",
+        },
+        {
+          searchLabel: "beneficiary current employer email",
+          searchFilter: "current",
+        },
+        {
+          searchLabel: "beneficiary representative email",
+          searchFilter: "jean.d",
+        },
+        {
+          searchLabel: "establishment tutor email",
+          searchFilter: "establishment.tutor",
+        },
+        {
+          searchLabel: "agency referent firstname",
+          searchFilter: "john",
+        },
+        {
+          searchLabel: "agency referent lastname",
+          searchFilter: "do",
+        },
+        {
+          searchLabel: "agency referent fullname",
+          searchFilter: "john d",
+        },
+      ])("should filter by $searchLabel", async ({ searchFilter }) => {
         const result =
           await conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
             {
               userAgencyIds: [agencyIdA],
               pagination: { page: 1, perPage: 10 },
               filters: {
-                search: conventionWithManagedError.id as SearchTextAlphaNumeric,
+                search: searchFilter,
               },
             },
           );
