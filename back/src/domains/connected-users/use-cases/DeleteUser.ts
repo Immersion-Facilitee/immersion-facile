@@ -27,7 +27,10 @@ import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
-import type { EstablishmentAggregate } from "../../establishment/entities/EstablishmentAggregate";
+import type {
+  EstablishmentAggregate,
+  EstablishmentUserRight,
+} from "../../establishment/entities/EstablishmentAggregate";
 
 export const partialDeleteOptions = [
   "establishement-only",
@@ -67,7 +70,7 @@ export const makeDeleteUser = useCaseBuilder("DeleteUser")
         );
 
       if (inputParams.partialDelete)
-        throw new Error("HYBRYD BEHAVIOR NOT IMPLEMENTED");
+        throw new Error("HYBRID BEHAVIOR NOT IMPLEMENTED");
 
       const updatedAgencies = await executeInSequence(
         agenciesWithUserRight,
@@ -115,14 +118,17 @@ const updateEstablishment =
       (right) => userId !== right.userId,
     );
 
-    const isNoMoreEstablishmentAdmins =
-      remainingRights.filter(({ role }) => role === "establishment-admin")
-        .length === 0;
-
-    const userRightToDeleteWasMainContactByPhone =
-      userRightToDelete?.isMainContactByPhone;
-    const userRightToDeleteWasMainContactInPerson =
-      userRightToDelete?.isMainContactInPerson;
+    const shouldSetLatestActiveUserAsAdmin = !remainingRights.some(
+      ({ role }) => role === "establishment-admin",
+    );
+    const shouldSetLatestActiveUserAsMainContactByPhone =
+      !!userRightToDelete?.isMainContactByPhone &&
+      !remainingRights.some(({ isMainContactByPhone }) => isMainContactByPhone);
+    const shouldSetLatestActiveUserAsMainContactInPerson =
+      !!userRightToDelete?.isMainContactInPerson &&
+      !remainingRights.some(
+        ({ isMainContactInPerson }) => isMainContactInPerson,
+      );
 
     const latestActiveUserId = isNotEmptyArray(remainingRights)
       ? await getMostActiveUserId(
@@ -131,30 +137,41 @@ const updateEstablishment =
         )
       : null;
 
+    const shouldUpdateLatestActiveUser =
+      !!latestActiveUserId &&
+      (shouldSetLatestActiveUserAsAdmin ||
+        shouldSetLatestActiveUserAsMainContactByPhone ||
+        shouldSetLatestActiveUserAsMainContactInPerson);
+
     return {
       ...establishment,
-      userRights: latestActiveUserId
-        ? remainingRights.map((right) =>
-            right.userId === latestActiveUserId
-              ? {
-                  userId: right.userId,
-                  role: isNoMoreEstablishmentAdmins
-                    ? "establishment-admin"
-                    : right.role,
-                  status: "ACCEPTED",
-                  shouldReceiveDiscussionNotifications:
-                    right.shouldReceiveDiscussionNotifications,
-                  isMainContactInPerson:
-                    userRightToDeleteWasMainContactByPhone ??
-                    right.isMainContactInPerson,
-                  isMainContactByPhone:
-                    userRightToDeleteWasMainContactInPerson ??
-                    (right.isMainContactByPhone || null),
-                  job: right.job || "non-communiqué",
-                  phone: right.phone || "+33600000000", // On ne peut pas deviner un numéro de téléphone : +33600000000 ??? pas dingue
-                }
-              : right,
-          )
+      userRights: shouldUpdateLatestActiveUser
+        ? remainingRights.map((right): EstablishmentUserRight => {
+            if (right.userId !== latestActiveUserId) return right;
+
+            const withTransferredContactFlags: EstablishmentUserRight = {
+              ...right,
+              status: "ACCEPTED",
+              ...(shouldSetLatestActiveUserAsMainContactInPerson
+                ? { isMainContactInPerson: true }
+                : {}),
+              ...(shouldSetLatestActiveUserAsMainContactByPhone
+                ? { isMainContactByPhone: true }
+                : {}),
+            };
+
+            if (!shouldSetLatestActiveUserAsAdmin)
+              return withTransferredContactFlags;
+
+            return {
+              ...withTransferredContactFlags,
+              role: "establishment-admin",
+              job: withTransferredContactFlags.job || "non-communiqué",
+              phone: withTransferredContactFlags.phone || "+33600000000",
+              isMainContactByPhone:
+                withTransferredContactFlags.isMainContactByPhone ?? null,
+            };
+          })
         : remainingRights,
     };
   };
