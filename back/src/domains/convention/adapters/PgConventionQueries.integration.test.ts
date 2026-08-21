@@ -1312,6 +1312,72 @@ describe("Pg implementation of ConventionQueries", () => {
       expectToEqual(result.data, [conventionB]);
     });
 
+    it("should filter conventions by beneficiary representative email", async () => {
+      const conventionWithBeneficiaryRepresentative = new ConventionDtoBuilder(
+        conventionA,
+      )
+        .withBeneficiaryRepresentative({
+          firstName: "Jean",
+          lastName: "Repr",
+          email: "beneficiary.representative@convention-a.com",
+          role: "beneficiary-representative",
+          phone: "+33123456789",
+        })
+        .build();
+      await conventionRepository.update(
+        conventionWithBeneficiaryRepresentative,
+        anyConventionUpdatedAt,
+      );
+
+      const result = await conventionQueries.getPaginatedConventions({
+        pagination: { page: 1, perPage: 10 },
+        filters: {
+          search: "beneficiary.representative@convention-a",
+        },
+        sort: {
+          by: "dateSubmission",
+          direction: "desc",
+        },
+      });
+
+      expectToEqual(result.data, [conventionWithBeneficiaryRepresentative]);
+    });
+
+    it("should filter conventions by beneficiary current employer email", async () => {
+      const conventionWithBeneficiaryCurrentEmployer = new ConventionDtoBuilder(
+        conventionA,
+      )
+        .withBeneficiaryCurrentEmployer({
+          firstName: "Mon",
+          lastName: "Employeur",
+          email: "current.employer@convention-a.com",
+          job: "Employeur",
+          role: "beneficiary-current-employer",
+          phone: "+33123456789",
+          businessSiret: "12345678901234",
+          businessName: "Business A Employer",
+          businessAddress: "123 Rue de la Paix, 75000 Paris, France",
+        })
+        .build();
+      await conventionRepository.update(
+        conventionWithBeneficiaryCurrentEmployer,
+        anyConventionUpdatedAt,
+      );
+
+      const result = await conventionQueries.getPaginatedConventions({
+        pagination: { page: 1, perPage: 10 },
+        filters: {
+          search: "current.employer",
+        },
+        sort: {
+          by: "dateSubmission",
+          direction: "desc",
+        },
+      });
+
+      expectToEqual(result.data, [conventionWithBeneficiaryCurrentEmployer]);
+    });
+
     it("should filter conventions by date range", async () => {
       const result = await conventionQueries.getPaginatedConventions({
         pagination: { page: 1, perPage: 10 },
