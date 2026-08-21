@@ -3,6 +3,7 @@ import {
   AgencyDtoBuilder,
   type ConventionTemplate,
   expectToEqual,
+  type SiretDto,
 } from "shared";
 import { v4 as uuid } from "uuid";
 import {
@@ -14,6 +15,7 @@ import { toAgencyWithRights } from "../../../utils/agency";
 import { makeUniqueUserForTest } from "../../../utils/user";
 import { PgAgencyRepository } from "../../agency/adapters/PgAgencyRepository";
 import { PgUserRepository } from "../../core/authentication/connected-user/adapters/PgUserRepository";
+import { PgBannedEstablishmentRepository } from "../../establishment/adapters/PgBannedEstablishmentRepository";
 import { PgConventionTemplateQueries } from "./PgConventionTemplateQueries";
 
 describe("PgConventionTemplateQueries", () => {
@@ -39,6 +41,7 @@ describe("PgConventionTemplateQueries", () => {
   });
 
   beforeEach(async () => {
+    await db.deleteFrom("banned_establishments").execute();
     await db.deleteFrom("conventions").execute();
     await db.deleteFrom("convention_drafts").execute();
     await db.deleteFrom("users__agencies").execute();
@@ -61,8 +64,35 @@ describe("PgConventionTemplateQueries", () => {
 
   describe("get", () => {
     it("returns empty array when ids do not exist", async () => {
+      const unknownConventionTemplateId = uuid();
       const result = await pgConventionTemplateQueries.get({
-        ids: [uuid() as ConventionTemplate["id"]],
+        ids: [unknownConventionTemplateId],
+      });
+
+      expect(result).toHaveLength(0);
+    });
+
+    it("does not return convention templates for banned establishments", async () => {
+      const bannedEstablishmentSiret: SiretDto = "78000403200019";
+
+      await new PgBannedEstablishmentRepository(db).banEstablishment({
+        siret: bannedEstablishmentSiret,
+        establishmentBannishmentJustification: "whatever",
+      });
+      const conventionTemplateId = uuid();
+      const conventionTemplateForBannedEstablishment: ConventionTemplate = {
+        ...conventionTemplate,
+        id: conventionTemplateId,
+        name: "Template for banned establishment",
+        userId: validator.id,
+        siret: bannedEstablishmentSiret,
+      };
+      pgConventionTemplateQueries.upsert(
+        conventionTemplateForBannedEstablishment,
+        now,
+      );
+      const result = await pgConventionTemplateQueries.get({
+        ids: [conventionTemplateId],
       });
 
       expect(result).toHaveLength(0);

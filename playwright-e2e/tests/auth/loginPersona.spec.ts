@@ -35,7 +35,9 @@ test.describe("Login page persona radio button", () => {
     await expect(loginPersonaRadio(page, "beneficiary")).not.toBeChecked();
     await expect(loginPersonaRadio(page, "professional")).not.toBeChecked();
     await expect(
-      page.locator(`#${domElementIds.archivedConventionRequest.login.byEmailButton}`),
+      page.locator(
+        `#${domElementIds.archivedConventionRequest.login.byEmailButton}`,
+      ),
     ).toHaveCount(0);
     await expect(
       page.locator(
@@ -45,7 +47,9 @@ test.describe("Login page persona radio button", () => {
 
     await selectLoginPersona(page, "beneficiary");
     await expect(
-      page.locator(`#${domElementIds.archivedConventionRequest.login.byEmailButton}`),
+      page.locator(
+        `#${domElementIds.archivedConventionRequest.login.byEmailButton}`,
+      ),
     ).toBeVisible();
     await expect(
       page.locator(
@@ -55,7 +59,9 @@ test.describe("Login page persona radio button", () => {
 
     await selectLoginPersona(page, "professional");
     await expect(
-      page.locator(`#${domElementIds.archivedConventionRequest.login.byEmailButton}`),
+      page.locator(
+        `#${domElementIds.archivedConventionRequest.login.byEmailButton}`,
+      ),
     ).toBeVisible();
     await expect(
       page.locator(
