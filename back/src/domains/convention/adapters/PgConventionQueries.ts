@@ -41,6 +41,10 @@ import {
 } from "../../../config/pg/kysely/kyselyUtils";
 import type { Database } from "../../../config/pg/kysely/model/database";
 import { createLogger } from "../../../utils/logger";
+import {
+  broadcastToFtServiceName,
+  broadcastToPartnersServiceName,
+} from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type {
   ConventionQueries,
   GetConventionIdsParams,
@@ -793,7 +797,13 @@ const filterExcludeUnvalidatedConventionsWithoutPriorSuccessfulBroadcast =
               "=",
               eb.ref("cf.conventionId"),
             )
-            .where("bf_ok.subscriber_error_feedback", "is", null),
+            .where(
+              sql<boolean>`(
+                (bf_ok.service_name = ${broadcastToFtServiceName} AND bf_ok.response @> '{"httpStatus": 201}'::jsonb)
+                OR
+                (bf_ok.service_name = ${broadcastToPartnersServiceName} AND bf_ok.subscriber_error_feedback IS NULL)
+              )`,
+            ),
         ),
       ]),
     );
