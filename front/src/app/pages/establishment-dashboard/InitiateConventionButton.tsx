@@ -105,7 +105,9 @@ export const InitiateConventionButton = () => {
     establishment,
     defaultFormEstablishmentValue(),
   );
-  const currentUserEstablishments = currentUser?.establishments;
+  const currentUserEstablishments = currentUser?.establishments?.filter(
+    ({ isEstablishmentBanned }) => !isEstablishmentBanned,
+  );
   const establishmentFeedback = useFeedbackTopic("form-establishment");
 
   const initiateConventionMethods = useForm<InitiateConventionFormValues>({
@@ -347,11 +349,11 @@ export const InitiateConventionButton = () => {
                     className={fr.cx("fr-mt-2w")}
                     placeholder="Sélectionnez un établissement"
                     disabled={
-                      currentUser.establishments &&
-                      currentUser.establishments.length === 1
+                      currentUserEstablishments &&
+                      currentUserEstablishments.length === 1
                     }
                     options={
-                      currentUser?.establishments?.map((est) => ({
+                      currentUserEstablishments?.map((est) => ({
                         value: est.siret,
                         label: est.businessName,
                       })) ?? []
