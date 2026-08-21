@@ -61,7 +61,7 @@ describe("DeleteUser", () => {
     role: "establishment-admin",
     status: "ACCEPTED",
     userId: admin2.id,
-    isMainContactByPhone: true,
+    isMainContactByPhone: null,
     job: "",
     phone: "",
     shouldReceiveDiscussionNotifications: true,
@@ -87,6 +87,34 @@ describe("DeleteUser", () => {
       contactLessActiveRight,
     ])
     .build();
+
+  const establishmentWithContactInPerson = new EstablishmentAggregateBuilder()
+    .withUserRights([
+      {
+        ...admin1Right,
+        isMainContactInPerson: true,
+        isMainContactByPhone: null,
+      },
+      admin2Right,
+      contactMostActiveRight,
+      contactLessActiveRight,
+    ])
+    .build();
+
+  const admin2WithIsMainContactByPhone = {
+    ...admin2Right,
+    isMainContactByPhone: true,
+  };
+  const establishmentWithMultipleMainContacts =
+    new EstablishmentAggregateBuilder()
+      .withUserRights([
+        admin1Right,
+        admin2WithIsMainContactByPhone,
+        contactMostActiveRight,
+        contactLessActiveRight,
+      ])
+      .build();
+
   const agency = new AgencyDtoBuilder().build();
 
   let deleteUser: DeleteUser;
@@ -199,10 +227,10 @@ describe("DeleteUser", () => {
                   role: "establishment-admin",
                   status: "ACCEPTED",
                   shouldReceiveDiscussionNotifications: true,
-                  isMainContactByPhone: null,
+                  isMainContactByPhone: true,
                   job: "non-communiqué", // comment on défini le job si on ne le connait pas ?
                   phone: "+33600000000", // comment on défini le phone si on ne le connait pas ?
-                },
+                } satisfies EstablishmentAdminRight,
                 contactLessActiveRight,
               ])
               .build(),
@@ -213,7 +241,7 @@ describe("DeleteUser", () => {
         ]);
       });
 
-      it("case E2 bis - user with admin right and another user with admin right -> remove establishment right + event UserDeleted + user deleted ", async () => {
+      it("case E2 bis - user with admin right and another user with admin right -> remove establishment right + event UserDeleted + user deleted + latest active user is now main contact by phone", async () => {
         await deleteUser.execute({
           userId: admin1.id,
           triggeredBy: { kind: "crawler" },
@@ -227,6 +255,12 @@ describe("DeleteUser", () => {
           validator1,
           validator2,
         ]);
+
+        const contactMostActiveRightWithNewRole: EstablishmentContactRight = {
+          ...contactMostActiveRight,
+          isMainContactByPhone: true,
+        };
+
         expectToEqual(
           uow.establishmentAggregateRepository.establishmentAggregates,
           [
@@ -234,6 +268,91 @@ describe("DeleteUser", () => {
               .withEstablishmentUpdatedAt(timeGateway.now())
               .withUserRights([
                 admin2Right,
+                contactMostActiveRightWithNewRole,
+                contactLessActiveRight,
+              ])
+              .build(),
+          ],
+        );
+        expectArraysToMatch(uow.outboxRepository.events, [
+          {
+            topic: "UserDeleted",
+            payload: { triggeredBy: { kind: "crawler" }, userId: admin1.id },
+          },
+        ]);
+      });
+
+      it("case E2 ter - user with admin right and another user with admin right -> remove establishment right + event UserDeleted + user deleted + latest active user is now main contact in person", async () => {
+        uow.establishmentAggregateRepository.establishmentAggregates = [
+          establishmentWithContactInPerson,
+        ];
+
+        await deleteUser.execute({
+          userId: admin1.id,
+          triggeredBy: { kind: "crawler" },
+        });
+
+        expectToEqual(uow.userRepository.users, [
+          admin2,
+          contactMostActive,
+          contactLessActive,
+          readOnlyAndCounsellor,
+          validator1,
+          validator2,
+        ]);
+
+        const contactMostActiveRightWithNewRole: EstablishmentContactRight = {
+          ...contactMostActiveRight,
+          isMainContactInPerson: true,
+        };
+
+        expectToEqual(
+          uow.establishmentAggregateRepository.establishmentAggregates,
+          [
+            new EstablishmentAggregateBuilder(establishment)
+              .withEstablishmentUpdatedAt(timeGateway.now())
+              .withUserRights([
+                admin2Right,
+                contactMostActiveRightWithNewRole,
+                contactLessActiveRight,
+              ])
+              .build(),
+          ],
+        );
+        expectArraysToMatch(uow.outboxRepository.events, [
+          {
+            topic: "UserDeleted",
+            payload: { triggeredBy: { kind: "crawler" }, userId: admin1.id },
+          },
+        ]);
+      });
+
+      it("should not happen: multiple main contacts, do not set contact props on latest active user", async () => {
+        uow.establishmentAggregateRepository.establishmentAggregates = [
+          establishmentWithMultipleMainContacts,
+        ];
+
+        await deleteUser.execute({
+          userId: admin1.id,
+          triggeredBy: { kind: "crawler" },
+        });
+
+        expectToEqual(uow.userRepository.users, [
+          admin2,
+          contactMostActive,
+          contactLessActive,
+          readOnlyAndCounsellor,
+          validator1,
+          validator2,
+        ]);
+
+        expectToEqual(
+          uow.establishmentAggregateRepository.establishmentAggregates,
+          [
+            new EstablishmentAggregateBuilder(establishment)
+              .withEstablishmentUpdatedAt(timeGateway.now())
+              .withUserRights([
+                admin2WithIsMainContactByPhone,
                 contactMostActiveRight,
                 contactLessActiveRight,
               ])
