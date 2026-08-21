@@ -6,7 +6,7 @@
     "build": "node ./transpile-back-and-prepare-for-prod.js",
     "db:create": "pnpm db:migrate create",
     "db:down": "pnpm db:migrate down",
-    "db:migrate": "ts-node --compilerOptions '{\"resolveJsonModule\": true}' node_modules/node-pg-migrate/bin/node-pg-migrate -j ts -m src/config/pg/migrations",
+    "db:migrate": "ts-node --transpile-only --compilerOptions '{\"resolveJsonModule\": true}' node_modules/node-pg-migrate/bin/node-pg-migrate -j ts -m src/config/pg/migrations",
     "db:up:bun": "bun node_modules/node-pg-migrate/bin/node-pg-migrate -m src/config/pg/migrations up",
     "db:down:bun": "bun node_modules/node-pg-migrate/bin/node-pg-migrate -m src/config/pg/migrations down",
     "db:redo:bun": "bun node_modules/node-pg-migrate/bin/node-pg-migrate -m src/config/pg/migrations redo",
