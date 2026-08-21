@@ -34,7 +34,7 @@ import type {
   UpdateConventionStatusRequestDto,
   WithConventionId,
 } from "shared";
-import type { ConventionWithBroadcastFeedback } from "../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
+import type { ConventionWithBroadcastFeedbackReadDto } from "../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
 import type { FetchConventionRequestedPayload } from "../domain/convention/convention.slice";
 
 export interface ConventionGateway {
@@ -117,7 +117,7 @@ export interface ConventionGateway {
   getConventionsWithErroredBroadcastFeedback$(
     params: FlatGetConventionsWithErroredBroadcastFeedbackParams,
     jwt: string,
-  ): Observable<DataWithPagination<ConventionWithBroadcastFeedback>>;
+  ): Observable<DataWithPagination<ConventionWithBroadcastFeedbackReadDto>>;
   getConventionsWithUnfinalizedAssessment$(
     params: FlatGetConventionsWithUnfinalizedAssessmentParams,
     jwt: string,

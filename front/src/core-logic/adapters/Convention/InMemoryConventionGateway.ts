@@ -40,7 +40,7 @@ import {
 } from "shared";
 import type { FetchConventionRequestedPayload } from "src/core-logic/domain/convention/convention.slice";
 import type { ConventionGateway } from "src/core-logic/ports/ConventionGateway";
-import type { ConventionWithBroadcastFeedback } from "../../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
+import type { ConventionWithBroadcastFeedbackReadDto } from "../../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
 
 const CONVENTION_VALIDATED_TEST = new ConventionDtoBuilder()
   .withStatus("ACCEPTED_BY_VALIDATOR")
@@ -105,7 +105,7 @@ export class InMemoryConventionGateway implements ConventionGateway {
     new Subject<ConventionLastBroadcastFeedbackResponse>();
 
   public getConventionsWithErroredBroadcastFeedbackResult$ = new Subject<
-    DataWithPagination<ConventionWithBroadcastFeedback>
+    DataWithPagination<ConventionWithBroadcastFeedbackReadDto>
   >();
 
   public getConventionsWithUnfinalizedAssessmentResult$ = new Subject<
@@ -321,7 +321,7 @@ export class InMemoryConventionGateway implements ConventionGateway {
   public getConventionsWithErroredBroadcastFeedback$(
     _params: Required<PaginationQueryParams>,
     _jwt: string,
-  ): Observable<DataWithPagination<ConventionWithBroadcastFeedback>> {
+  ): Observable<DataWithPagination<ConventionWithBroadcastFeedbackReadDto>> {
     return this.getConventionsWithErroredBroadcastFeedbackResult$;
   }
 

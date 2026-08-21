@@ -1,4 +1,5 @@
 import z from "zod";
+import { agencyIdSchema } from "../agency/agency.schema";
 import { broadcastFeedbackSchema } from "../broadcast/broadcastFeedback.schema";
 import {
   createPaginatedSchema,
@@ -17,6 +18,7 @@ import type {
   BroadcastErrorKind,
   ConventionsWithErroredBroadcastFeedbackFilters,
   ConventionWithBroadcastFeedback,
+  ConventionWithBroadcastFeedbackReadDto,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   GetConventionsWithErroredBroadcastFeedbackParams,
 } from "./conventionWithBroadcastFeedback.dto";
@@ -28,10 +30,18 @@ export const conventionWithBroadcastFeedbackSchema: ZodSchemaWithInputMatchingOu
     status: statusSchema,
     lastBroadcastFeedback: broadcastFeedbackSchema,
     agencyReferent: withOptionalFirstnameAndLastnameSchema.nullable(),
+    agencyId: agencyIdSchema,
   });
 
+export const conventionWithBroadcastFeedbackSchemaDto: ZodSchemaWithInputMatchingOutput<ConventionWithBroadcastFeedbackReadDto> =
+  conventionWithBroadcastFeedbackSchema.and(
+    z.object({
+      agencyName: z.string(),
+    }),
+  );
+
 export const paginatedConventionWithBroadcastFeedbackSchema =
-  createPaginatedSchema(conventionWithBroadcastFeedbackSchema);
+  createPaginatedSchema(conventionWithBroadcastFeedbackSchemaDto);
 
 export const broadcastErrorKindSchema: ZodSchemaWithInputMatchingOutput<BroadcastErrorKind> =
   z.enum(["functional", "technical"]);

@@ -597,6 +597,7 @@ export class PgConventionQueries implements ConventionQueries {
                     lastname: row.agencyReferentLastName,
                   }
                 : null,
+            agencyId: row.agencyId,
           },
           logger,
         }),
