@@ -44,7 +44,10 @@ export class PgConventionTemplateQueries implements ConventionTemplateQueries {
           "public_appellations_data.libelle_appellation_long",
           "public_appellations_data.code_rome",
           "public_romes_data.libelle_rome",
-        ]),
+        ])
+        .where("convention_templates.siret", "not in", (eb) =>
+          eb.selectFrom("banned_establishments").select("siret"),
+        ),
       (qb) =>
         params.ids?.length
           ? qb.where("convention_templates.id", "in", params.ids)
