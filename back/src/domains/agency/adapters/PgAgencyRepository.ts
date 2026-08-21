@@ -437,7 +437,11 @@ export class PgAgencyRepository implements AgencyRepository {
   public async getUserIdWithAgencyRightsByFilters(
     filters: WithUserFilters,
   ): Promise<UserId[]> {
-    if (!filters.agencyRole && !filters.agencyIds) return [];
+    if (
+      !filters.agencyRole &&
+      (!filters.agencyIds || filters.agencyIds.length === 0)
+    )
+      return [];
 
     const results = await pipeWithValue(
       this.transaction.selectFrom("users__agencies").select("user_id"),
