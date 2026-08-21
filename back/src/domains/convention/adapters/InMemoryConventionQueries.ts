@@ -458,6 +458,17 @@ export class InMemoryConventionQueries implements ConventionQueries {
     pagination: Required<PaginationQueryParams>;
     filters?: ConventionsWithErroredBroadcastFeedbackFilters;
   }): Promise<DataWithPagination<ConventionWithBroadcastFeedback>> {
+    if (userAgencyIds.length === 0)
+      return {
+        data: [],
+        pagination: {
+          totalRecords: 0,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: pagination.perPage,
+        },
+      };
+
     const userConventions = this.conventionRepository.conventions.filter(
       (convention) => userAgencyIds.includes(convention.agencyId),
     );
@@ -477,6 +488,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
           },
           lastBroadcastFeedback,
           agencyReferent: convention.agencyReferent ?? null,
+          agencyId: convention.agencyId,
         };
       }),
     );

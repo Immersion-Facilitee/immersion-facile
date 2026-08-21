@@ -523,7 +523,7 @@ export class PgConventionQueries implements ConventionQueries {
           totalRecords: 0,
           currentPage: 1,
           totalPages: 1,
-          numberPerPage: 0,
+          numberPerPage: pagination.perPage,
         },
       };
 
