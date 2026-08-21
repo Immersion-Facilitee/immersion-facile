@@ -45,6 +45,7 @@ describe("ConnectedUserConventionsWithBroadcastFeedback", () => {
               conventionId: "1",
             },
           },
+          agencyReferent: null,
         },
       ];
     expectToEqual(
@@ -171,6 +172,7 @@ describe("ConnectedUserConventionsWithBroadcastFeedback", () => {
               conventionId: "1",
             },
           },
+          agencyReferent: null,
         },
       ];
 

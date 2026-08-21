@@ -476,6 +476,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
             lastname: convention.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback,
+          agencyReferent: convention.agencyReferent ?? null,
         };
       }),
     );

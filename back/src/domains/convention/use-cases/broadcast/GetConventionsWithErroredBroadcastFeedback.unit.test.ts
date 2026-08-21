@@ -84,6 +84,10 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
   const convention2 = new ConventionDtoBuilder()
     .withId("convention-id-2")
     .withAgencyId(agencyId1)
+    .withAgencyReferent({
+      firstname: "Anne",
+      lastname: "Tro",
+    })
     .build();
 
   const managedErrorFeedback: BroadcastFeedback = {
@@ -156,6 +160,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention1.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: managedErrorFeedback,
+          agencyReferent: convention1.agencyReferent ?? null,
         },
       ],
       pagination: {
@@ -185,6 +190,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention2.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: unmanagedErrorFeedback,
+          agencyReferent: convention2.agencyReferent ?? null,
         },
         {
           id: convention1.id,
@@ -194,6 +200,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention1.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: managedErrorFeedback,
+          agencyReferent: convention1.agencyReferent ?? null,
         },
       ],
       pagination: {
@@ -229,6 +236,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention2.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: unmanagedErrorFeedback,
+          agencyReferent: convention2.agencyReferent ?? null,
         },
       ],
       pagination: {
@@ -313,6 +321,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention2.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: unmanagedErrorFeedback,
+          agencyReferent: convention2.agencyReferent ?? null,
         },
         {
           id: convention1.id,
@@ -322,6 +331,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention1.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: managedErrorFeedback,
+          agencyReferent: convention1.agencyReferent ?? null,
         },
       ],
       pagination: {
@@ -352,6 +362,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention1.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: managedErrorFeedback,
+          agencyReferent: convention1.agencyReferent ?? null,
         },
       ],
       pagination: {
@@ -427,6 +438,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention1.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: managedErrorFeedback,
+          agencyReferent: convention1.agencyReferent ?? null,
         },
       ],
       pagination: {
@@ -460,6 +472,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             lastname: convention1.signatories.beneficiary.lastName,
           },
           lastBroadcastFeedback: managedErrorFeedback,
+          agencyReferent: convention1.agencyReferent ?? null,
         },
       ],
       pagination: {
@@ -606,6 +619,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
               lastname: cancelledConvention.signatories.beneficiary.lastName,
             },
             lastBroadcastFeedback: errorBroadcast,
+            agencyReferent: null,
           },
         ],
         pagination: {

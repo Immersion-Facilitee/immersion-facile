@@ -11,6 +11,7 @@ import {
   conventionIdSchema,
   statusSchema,
   withFirstnameAndLastnameSchema,
+  withOptionalFirstnameAndLastnameSchema,
 } from "./convention.schema";
 import type {
   BroadcastErrorKind,
@@ -26,6 +27,7 @@ export const conventionWithBroadcastFeedbackSchema: ZodSchemaWithInputMatchingOu
     beneficiary: withFirstnameAndLastnameSchema,
     status: statusSchema,
     lastBroadcastFeedback: broadcastFeedbackSchema,
+    agencyReferent: withOptionalFirstnameAndLastnameSchema.nullable(),
   });
 
 export const paginatedConventionWithBroadcastFeedbackSchema =
