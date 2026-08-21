@@ -2127,6 +2127,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
           ],
           pagination: {
@@ -2307,6 +2308,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
           ],
           pagination: {
@@ -2568,6 +2570,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
           ],
           pagination: {
@@ -2735,6 +2738,7 @@ describe("Pg implementation of ConventionQueries", () => {
                     ),
                   },
                 },
+                agencyReferent: null,
               },
             ],
             pagination: {
@@ -2765,6 +2769,7 @@ describe("Pg implementation of ConventionQueries", () => {
                     ),
                   },
                 },
+                agencyReferent: null,
               },
               {
                 id: convention2.id,
@@ -2782,6 +2787,7 @@ describe("Pg implementation of ConventionQueries", () => {
                     ),
                   },
                 },
+                agencyReferent: null,
               },
               {
                 id: convention1.id,
@@ -2799,6 +2805,7 @@ describe("Pg implementation of ConventionQueries", () => {
                     ),
                   },
                 },
+                agencyReferent: null,
               },
             ],
             pagination: {
@@ -2829,6 +2836,7 @@ describe("Pg implementation of ConventionQueries", () => {
                     ),
                   },
                 },
+                agencyReferent: null,
               },
             ],
             pagination: {
@@ -3009,6 +3017,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
             {
               id: conventionWithManagedError.id,
@@ -3029,6 +3038,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: conventionWithManagedError.agencyReferent ?? null,
             },
           ],
           pagination: {
@@ -3073,6 +3083,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
           ],
           pagination: {
@@ -3118,6 +3129,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
           ],
           pagination: {
@@ -3163,6 +3175,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: conventionWithManagedError.agencyReferent ?? null,
             },
           ],
           pagination: {
@@ -3252,6 +3265,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: conventionWithManagedError.agencyReferent ?? null,
             },
           ],
           pagination: {
@@ -3319,6 +3333,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: conventionWithManagedError.agencyReferent ?? null,
             },
           ],
           pagination: {
@@ -3421,6 +3436,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
             {
               id: conventionInReviewWithManagedError.id,
@@ -3444,6 +3460,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
             {
               id: conventionWithUnmanagedError.id,
@@ -3466,6 +3483,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
             },
             {
               id: conventionWithManagedError.id,
@@ -3486,6 +3504,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: conventionWithManagedError.agencyReferent ?? null,
             },
           ],
           pagination: {

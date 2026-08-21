@@ -8,6 +8,7 @@ import {
   type ConventionId,
   type ConventionStatus,
   conventionStatusesAllowedForModification,
+  type WithOptionalFirstnameAndLastname,
 } from "./convention.dto";
 import type { WithFirstnameAndLastname } from "./convention.schema";
 
@@ -16,6 +17,7 @@ export type ConventionWithBroadcastFeedback = {
   status: ConventionStatus;
   beneficiary: WithFirstnameAndLastname;
   lastBroadcastFeedback: ConventionLastBroadcastFeedbackResponse;
+  agencyReferent: WithOptionalFirstnameAndLastname | null;
 };
 
 export const functionalBroadcastFeedbackErrorMessage = [

@@ -590,6 +590,13 @@ export class PgConventionQueries implements ConventionQueries {
                 ? row.subscriberErrorFeedback
                 : undefined,
             },
+            agencyReferent:
+              row.agencyReferentFirstName && row.agencyReferentLastName
+                ? {
+                    firstname: row.agencyReferentFirstName,
+                    lastname: row.agencyReferentLastName,
+                  }
+                : null,
           },
           logger,
         }),
