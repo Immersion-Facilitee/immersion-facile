@@ -67,6 +67,7 @@ replaceInFileSync(
 
 // change ts-node scripts to node scripts
 replaceInFileSync(backPackageJson, /"ts-node /g, '"node ');
+replaceInFileSync(backPackageJson, /--transpile-only /g, "");
 replaceInFileSync(backPackageJson, /"node (.*)(\.ts)/g, '"node $1.js');
 replaceInFileSync(
   backPackageJson,
