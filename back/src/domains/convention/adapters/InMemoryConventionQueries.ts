@@ -35,6 +35,10 @@ import { createLogger } from "../../../utils/logger";
 import type { InMemoryAgencyRepository } from "../../agency/adapters/InMemoryAgencyRepository";
 import type { InMemoryUserRepository } from "../../core/authentication/connected-user/adapters/InMemoryUserRepository";
 import type { InMemoryBroadcastFeedbacksRepository } from "../../core/saved-errors/adapters/InMemoryBroadcastFeedbacksRepository";
+import {
+  broadcastToFtServiceName,
+  broadcastToPartnersServiceName,
+} from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type { InMemoryBannedEstablishmentRepository } from "../../establishment/adapters/InMemoryBannedEstablishmentRepository";
 import type { BannedEstablishment } from "../../establishment/ports/BannedEstablishmentRepository";
 import type { AssessmentEntity } from "../entities/AssessmentEntity";
@@ -503,7 +507,10 @@ export class InMemoryConventionQueries implements ConventionQueries {
           this.broadcastFeedbacksRepository.broadcastFeedbacks.some(
             (bf) =>
               bf.requestParams.conventionId === result.id &&
-              !bf.subscriberErrorFeedback,
+              ((bf.serviceName === broadcastToFtServiceName &&
+                bf.response?.httpStatus === 201) ||
+                (bf.serviceName === broadcastToPartnersServiceName &&
+                  !bf.subscriberErrorFeedback)),
           );
         if (
           isUnvalidatedConventionStatus(result.status) &&

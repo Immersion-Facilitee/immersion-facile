@@ -31,6 +31,10 @@ import { PgAgencyRepository } from "../../agency/adapters/PgAgencyRepository";
 import type { AgencyRepository } from "../../agency/ports/AgencyRepository";
 import { PgUserRepository } from "../../core/authentication/connected-user/adapters/PgUserRepository";
 import { PgBroadcastFeedbacksRepository } from "../../core/saved-errors/adapters/PgBroadcastFeedbacksRepository";
+import {
+  broadcastToFtServiceName,
+  broadcastToPartnersServiceName,
+} from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import { createInMemoryUow } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { createAssessmentEntity } from "../entities/AssessmentEntity";
 import type { AssessmentRepository } from "../ports/AssessmentRepository";
@@ -2059,8 +2063,7 @@ describe("Pg implementation of ConventionQueries", () => {
         consumerName: "any-consumer-name",
         conventionId: cancelledConventionId,
         agencyId: agencyIdA,
-        serviceName:
-          "FranceTravailGateway.notifyOnConventionUpdatedOrAssessmentCreated",
+        serviceName: broadcastToFtServiceName,
         occurredAt: "2024-07-01T00:00:00.000Z",
         handledByAgency: false,
         requestParams: {
@@ -2089,14 +2092,13 @@ describe("Pg implementation of ConventionQueries", () => {
         await broadcastFeedbacksRepository.save(errorBroadcast);
       });
 
-      it("includes convention in unvalidated status when a prior broadcast succeeded", async () => {
+      it("includes convention in unvalidated status when a prior FT broadcast has httpStatus 201", async () => {
         const priorSuccessBroadcast: BroadcastFeedback = {
           consumerId: null,
           consumerName: "any-consumer-name",
           conventionId: cancelledConventionId,
           agencyId: agencyIdA,
-          serviceName:
-            "FranceTravailGateway.notifyOnConventionUpdatedOrAssessmentCreated",
+          serviceName: broadcastToFtServiceName,
           occurredAt: "2024-06-01T00:00:00.000Z",
           handledByAgency: false,
           requestParams: {
@@ -2104,7 +2106,7 @@ describe("Pg implementation of ConventionQueries", () => {
             conventionStatus: "CANCELLED",
           },
           response: {
-            httpStatus: 200,
+            httpStatus: 201,
           },
         };
 
@@ -2167,6 +2169,132 @@ describe("Pg implementation of ConventionQueries", () => {
             totalPages: 1,
             numberPerPage: 10,
             totalRecords: 0,
+          },
+        });
+      });
+
+      it("excludes convention in unvalidated status when prior FT broadcast has httpStatus 200", async () => {
+        const priorBroadcastWithHttp200: BroadcastFeedback = {
+          consumerId: null,
+          consumerName: "any-consumer-name",
+          conventionId: cancelledConventionId,
+          agencyId: agencyIdA,
+          serviceName: broadcastToFtServiceName,
+          occurredAt: "2024-06-01T00:00:00.000Z",
+          handledByAgency: false,
+          requestParams: {
+            conventionId: cancelledConventionId,
+            conventionStatus: "CANCELLED",
+          },
+          response: {
+            httpStatus: 200,
+          },
+        };
+
+        await broadcastFeedbacksRepository.save(priorBroadcastWithHttp200);
+
+        const result =
+          await conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
+            {
+              userAgencyIds: [agencyIdA],
+              pagination: { page: 1, perPage: 10 },
+              filters: { broadcastErrorKind: "functional" },
+            },
+          );
+
+        expectToEqual(result, {
+          data: [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 0,
+          },
+        });
+      });
+
+      it("includes convention in unvalidated status when a prior partner broadcast has no subscriber error", async () => {
+        const partnerErrorBroadcast: BroadcastFeedback = {
+          consumerId: null,
+          consumerName: "partner-consumer",
+          conventionId: cancelledConventionId,
+          agencyId: agencyIdA,
+          serviceName: broadcastToPartnersServiceName,
+          occurredAt: "2024-07-02T00:00:00.000Z",
+          handledByAgency: false,
+          requestParams: {
+            conventionId: cancelledConventionId,
+            conventionStatus: "CANCELLED",
+          },
+          subscriberErrorFeedback: {
+            message:
+              "Aucun dossier trouvé pour les critères d'identité transmis",
+            error: { code: "ANY_FUNCTIONAL_ERROR" },
+          },
+          response: {
+            httpStatus: 500,
+            body: { error: "ANY_FUNCTIONAL_ERROR" },
+          },
+        };
+        const priorPartnerBroadcastWithoutError: BroadcastFeedback = {
+          consumerId: null,
+          consumerName: "partner-consumer",
+          conventionId: cancelledConventionId,
+          agencyId: agencyIdA,
+          serviceName: broadcastToPartnersServiceName,
+          occurredAt: "2024-06-01T00:00:00.000Z",
+          handledByAgency: false,
+          requestParams: {
+            conventionId: cancelledConventionId,
+            conventionStatus: "CANCELLED",
+          },
+          response: {
+            httpStatus: 200,
+          },
+        };
+
+        await broadcastFeedbacksRepository.save(
+          priorPartnerBroadcastWithoutError,
+        );
+        await broadcastFeedbacksRepository.save(partnerErrorBroadcast);
+
+        const result =
+          await conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
+            {
+              userAgencyIds: [agencyIdA],
+              pagination: { page: 1, perPage: 10 },
+              filters: { broadcastErrorKind: "functional" },
+            },
+          );
+
+        expectToEqual(result, {
+          data: [
+            {
+              id: cancelledConvention.id,
+              status: "CANCELLED",
+              beneficiary: {
+                firstname:
+                  cancelledConvention.signatories.beneficiary.firstName,
+                lastname: cancelledConvention.signatories.beneficiary.lastName,
+              },
+              lastBroadcastFeedback: {
+                ...partnerErrorBroadcast,
+                subscriberErrorFeedback: {
+                  message:
+                    partnerErrorBroadcast.subscriberErrorFeedback?.message ??
+                    "",
+                  error: JSON.stringify(
+                    partnerErrorBroadcast.subscriberErrorFeedback?.error,
+                  ),
+                },
+              },
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 1,
           },
         });
       });
