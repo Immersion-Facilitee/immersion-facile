@@ -852,7 +852,7 @@ describe("authenticatedConventionRoutes", () => {
           data: [],
           pagination: {
             currentPage: 1,
-            totalPages: 0,
+            totalPages: 1,
             numberPerPage: 10,
             totalRecords: 0,
           },

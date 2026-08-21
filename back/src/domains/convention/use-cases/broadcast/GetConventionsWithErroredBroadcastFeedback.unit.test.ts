@@ -139,6 +139,30 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
     ];
   });
 
+  it("should return empty result when user has no agencyRights", async () => {
+    const userWithoutAgencyRights = new ConnectedUserBuilder()
+      .withId(userId1)
+      .withAgencyRights([])
+      .build();
+
+    const result = await useCase.execute(
+      {
+        pagination: { page: 1, perPage: 10 },
+      },
+      userWithoutAgencyRights,
+    );
+
+    expectToEqual(result, {
+      data: [],
+      pagination: {
+        totalRecords: 0,
+        currentPage: 1,
+        totalPages: 1,
+        numberPerPage: 10,
+      },
+    });
+  });
+
   it("should pass through filters when provided", async () => {
     const result = await useCase.execute(
       {
@@ -161,6 +185,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: managedErrorFeedback,
           agencyReferent: convention1.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
       ],
       pagination: {
@@ -191,6 +217,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: unmanagedErrorFeedback,
           agencyReferent: convention2.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
         {
           id: convention1.id,
@@ -201,6 +229,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: managedErrorFeedback,
           agencyReferent: convention1.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
       ],
       pagination: {
@@ -237,6 +267,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: unmanagedErrorFeedback,
           agencyReferent: convention2.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
       ],
       pagination: {
@@ -322,6 +354,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: unmanagedErrorFeedback,
           agencyReferent: convention2.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
         {
           id: convention1.id,
@@ -332,6 +366,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: managedErrorFeedback,
           agencyReferent: convention1.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
       ],
       pagination: {
@@ -363,6 +399,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: managedErrorFeedback,
           agencyReferent: convention1.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
       ],
       pagination: {
@@ -439,6 +477,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: managedErrorFeedback,
           agencyReferent: convention1.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
       ],
       pagination: {
@@ -473,6 +513,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
           },
           lastBroadcastFeedback: managedErrorFeedback,
           agencyReferent: convention1.agencyReferent ?? null,
+          agencyId: agencyId1,
+          agencyName: agency1.name,
         },
       ],
       pagination: {
@@ -620,6 +662,8 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             },
             lastBroadcastFeedback: errorBroadcast,
             agencyReferent: null,
+            agencyId: agencyId1,
+            agencyName: agency1.name,
           },
         ],
         pagination: {
