@@ -2128,6 +2128,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: convention.agencyId,
             },
           ],
           pagination: {
@@ -2309,6 +2310,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: cancelledConvention.agencyId,
             },
           ],
           pagination: {
@@ -2571,6 +2573,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: conventionB.agencyId,
             },
           ],
           pagination: {
@@ -2739,6 +2742,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   },
                 },
                 agencyReferent: null,
+                agencyId: convention1.agencyId,
               },
             ],
             pagination: {
@@ -2770,6 +2774,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   },
                 },
                 agencyReferent: null,
+                agencyId: convention3.agencyId,
               },
               {
                 id: convention2.id,
@@ -2788,6 +2793,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   },
                 },
                 agencyReferent: null,
+                agencyId: convention2.agencyId,
               },
               {
                 id: convention1.id,
@@ -2806,6 +2812,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   },
                 },
                 agencyReferent: null,
+                agencyId: convention1.agencyId,
               },
             ],
             pagination: {
@@ -2837,6 +2844,7 @@ describe("Pg implementation of ConventionQueries", () => {
                   },
                 },
                 agencyReferent: null,
+                agencyId: convention1.agencyId,
               },
             ],
             pagination: {
@@ -3018,6 +3026,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: conventionInReviewWithManagedError.agencyId,
             },
             {
               id: conventionWithManagedError.id,
@@ -3039,6 +3048,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: conventionWithManagedError.agencyReferent ?? null,
+              agencyId: conventionWithManagedError.agencyId,
             },
           ],
           pagination: {
@@ -3084,6 +3094,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: conventionWithUnmanagedError.agencyId,
             },
           ],
           pagination: {
@@ -3130,6 +3141,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: conventionInReviewWithManagedError.agencyId,
             },
           ],
           pagination: {
@@ -3176,6 +3188,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: conventionWithManagedError.agencyReferent ?? null,
+              agencyId: conventionWithManagedError.agencyId,
             },
           ],
           pagination: {
@@ -3266,6 +3279,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: conventionWithManagedError.agencyReferent ?? null,
+              agencyId: conventionWithManagedError.agencyId,
             },
           ],
           pagination: {
@@ -3334,6 +3348,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: conventionWithManagedError.agencyReferent ?? null,
+              agencyId: conventionWithManagedError.agencyId,
             },
           ],
           pagination: {
@@ -3437,6 +3452,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: conventionAfter2025.agencyId,
             },
             {
               id: conventionInReviewWithManagedError.id,
@@ -3461,6 +3477,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: conventionInReviewWithManagedError.agencyId,
             },
             {
               id: conventionWithUnmanagedError.id,
@@ -3484,6 +3501,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: null,
+              agencyId: conventionWithUnmanagedError.agencyId,
             },
             {
               id: conventionWithManagedError.id,
@@ -3505,6 +3523,7 @@ describe("Pg implementation of ConventionQueries", () => {
                 },
               },
               agencyReferent: conventionWithManagedError.agencyReferent ?? null,
+              agencyId: conventionWithManagedError.agencyId,
             },
           ],
           pagination: {

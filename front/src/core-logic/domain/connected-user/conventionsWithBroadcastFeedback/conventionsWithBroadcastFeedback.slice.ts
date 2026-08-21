@@ -8,7 +8,7 @@ import type {
   PayloadActionWithFeedbackTopic,
   PayloadActionWithFeedbackTopicError,
 } from "src/core-logic/domain/feedback/feedback.slice";
-import type { ConventionWithBroadcastFeedback } from "../../../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
+import type { ConventionWithBroadcastFeedbackReadDto } from "../../../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
 
 export type FetchConventionsWithErroredBroadcastFeedbackRequestedPayload = {
   jwt: string;
@@ -17,12 +17,12 @@ export type FetchConventionsWithErroredBroadcastFeedbackRequestedPayload = {
 
 export type ConventionsWithBroadcastFeedbackState = {
   isLoading: boolean;
-  erroredBroadcastConventionsWithPagination: DataWithPagination<ConventionWithBroadcastFeedback> & {
+  erroredBroadcastConventionsWithPagination: DataWithPagination<ConventionWithBroadcastFeedbackReadDto> & {
     filters: FlatGetConventionsWithErroredBroadcastFeedbackParams;
   };
 };
 
-export const initialConventionsWithPagination: DataWithPagination<ConventionWithBroadcastFeedback> & {
+export const initialConventionsWithPagination: DataWithPagination<ConventionWithBroadcastFeedbackReadDto> & {
   filters: FlatGetConventionsWithErroredBroadcastFeedbackParams;
 } = {
   data: [],
@@ -60,7 +60,7 @@ export const conventionsWithBroadcastFeedbackSlice = createSlice({
     getConventionsWithErroredBroadcastFeedbackSucceeded: (
       state,
       action: PayloadActionWithFeedbackTopic<
-        DataWithPagination<ConventionWithBroadcastFeedback>
+        DataWithPagination<ConventionWithBroadcastFeedbackReadDto>
       >,
     ) => {
       state.isLoading = false;

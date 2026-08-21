@@ -1,3 +1,4 @@
+import type { AgencyId } from "../agency/agency.dto";
 import type { ConventionLastBroadcastFeedbackResponse } from "../broadcast/broadcastFeedback.dto";
 import type {
   PaginationQueryParams,
@@ -18,7 +19,13 @@ export type ConventionWithBroadcastFeedback = {
   beneficiary: WithFirstnameAndLastname;
   lastBroadcastFeedback: ConventionLastBroadcastFeedbackResponse;
   agencyReferent: WithOptionalFirstnameAndLastname | null;
+  agencyId: AgencyId;
 };
+
+export type ConventionWithBroadcastFeedbackReadDto =
+  ConventionWithBroadcastFeedback & {
+    agencyName: string;
+  };
 
 export const functionalBroadcastFeedbackErrorMessage = [
   "Aucun dossier trouvé pour les critères d'identité transmis",

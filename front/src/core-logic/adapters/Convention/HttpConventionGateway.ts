@@ -48,7 +48,7 @@ import {
 import type { FetchConventionRequestedPayload } from "src/core-logic/domain/convention/convention.slice";
 import type { ConventionGateway } from "src/core-logic/ports/ConventionGateway";
 import { match, P } from "ts-pattern";
-import type { ConventionWithBroadcastFeedback } from "../../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
+import type { ConventionWithBroadcastFeedbackReadDto } from "../../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
 
 export class HttpConventionGateway implements ConventionGateway {
   constructor(
@@ -555,7 +555,7 @@ export class HttpConventionGateway implements ConventionGateway {
   public getConventionsWithErroredBroadcastFeedback$(
     params: FlatGetConventionsWithErroredBroadcastFeedbackParams,
     jwt: string,
-  ): Observable<DataWithPagination<ConventionWithBroadcastFeedback>> {
+  ): Observable<DataWithPagination<ConventionWithBroadcastFeedbackReadDto>> {
     return from(
       this.authenticatedHttpClient
         .getConventionsWithErroredBroadcastFeedbackForAgencyUser({

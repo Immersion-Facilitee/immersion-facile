@@ -7,7 +7,7 @@ import {
   type TestDependencies,
 } from "src/core-logic/storeConfig/createTestStore";
 import type { ReduxStore } from "src/core-logic/storeConfig/store";
-import type { ConventionWithBroadcastFeedback } from "../../../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
+import type { ConventionWithBroadcastFeedbackReadDto } from "../../../../../../shared/src/convention/conventionWithBroadcastFeedback.dto";
 
 describe("ConnectedUserConventionsWithBroadcastFeedback", () => {
   let store: ReduxStore;
@@ -24,7 +24,7 @@ describe("ConnectedUserConventionsWithBroadcastFeedback", () => {
       totalPages: 1,
       numberPerPage: 10,
     };
-    const conventionsWithBroadcastFeedback: ConventionWithBroadcastFeedback[] =
+    const conventionsWithBroadcastFeedback: ConventionWithBroadcastFeedbackReadDto[] =
       [
         {
           id: "1",
@@ -46,6 +46,8 @@ describe("ConnectedUserConventionsWithBroadcastFeedback", () => {
             },
           },
           agencyReferent: null,
+          agencyId: "any-agency-id",
+          agencyName: "Agence de test",
         },
       ];
     expectToEqual(
@@ -151,7 +153,7 @@ describe("ConnectedUserConventionsWithBroadcastFeedback", () => {
       totalPages: 1,
       numberPerPage: 10,
     };
-    const conventionsWithBroadcastFeedback: ConventionWithBroadcastFeedback[] =
+    const conventionsWithBroadcastFeedback: ConventionWithBroadcastFeedbackReadDto[] =
       [
         {
           id: "1",
@@ -173,6 +175,8 @@ describe("ConnectedUserConventionsWithBroadcastFeedback", () => {
             },
           },
           agencyReferent: null,
+          agencyId: "any-agency-id",
+          agencyName: "Agence de test",
         },
       ];
 

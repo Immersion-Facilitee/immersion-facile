@@ -1,7 +1,8 @@
 import {
   type ConnectedUser,
-  type ConventionWithBroadcastFeedback,
+  type ConventionWithBroadcastFeedbackReadDto,
   type DataWithPagination,
+  errors,
   type GetConventionsWithErroredBroadcastFeedbackParams,
   getConventionsWithErroredBroadcastFeedbackParamsSchema,
   getPaginationParamsForWeb,
@@ -18,20 +19,43 @@ export const makeGetConventionsWithErroredBroadcastFeedback = useCaseBuilder(
   .withInput<GetConventionsWithErroredBroadcastFeedbackParams>(
     getConventionsWithErroredBroadcastFeedbackParamsSchema,
   )
-  .withOutput<DataWithPagination<ConventionWithBroadcastFeedback>>()
+  .withOutput<DataWithPagination<ConventionWithBroadcastFeedbackReadDto>>()
   .withCurrentUser<ConnectedUser>()
   .build(async ({ inputParams, uow, currentUser }) => {
     const { filters } = inputParams;
 
     const pagination = getPaginationParamsForWeb(inputParams.pagination);
 
-    return uow.conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
-      {
-        userAgencyIds: currentUser.agencyRights
-          .filter((agencyRight) => agencyRight.roles.length > 0)
-          .map((agencyRight) => agencyRight.agency.id),
-        pagination,
-        filters,
-      },
-    );
+    const result =
+      await uow.conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
+        {
+          userAgencyIds: currentUser.agencyRights
+            .filter((agencyRight) => agencyRight.roles.length > 0)
+            .map((agencyRight) => agencyRight.agency.id),
+          pagination,
+          filters,
+        },
+      );
+
+    return {
+      ...result,
+      data: result.data.map((conventionWithBroadcastFeedback) => {
+        const agencyName = currentUser.agencyRights.find(
+          (agencyRight) =>
+            agencyRight.agency.id === conventionWithBroadcastFeedback.agencyId,
+        )?.agency.name;
+
+        if (!agencyName) {
+          throw errors.user.noRightsOnAgency({
+            userId: currentUser.id,
+            agencyId: conventionWithBroadcastFeedback.agencyId,
+          });
+        }
+
+        return {
+          ...conventionWithBroadcastFeedback,
+          agencyName,
+        };
+      }),
+    };
   });
