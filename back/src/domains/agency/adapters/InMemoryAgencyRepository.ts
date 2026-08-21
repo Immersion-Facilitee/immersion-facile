@@ -233,7 +233,11 @@ export class InMemoryAgencyRepository implements AgencyRepository {
   public async getUserIdWithAgencyRightsByFilters(
     filters: WithUserFilters,
   ): Promise<UserId[]> {
-    if (!filters.agencyRole && !filters.agencyIds) return [];
+    if (
+      !filters.agencyRole &&
+      (!filters.agencyIds || filters.agencyIds.length === 0)
+    )
+      return [];
 
     return uniq(
       values(this.#agencies)

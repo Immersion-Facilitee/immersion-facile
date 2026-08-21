@@ -1765,7 +1765,7 @@ describe.each(
     });
   });
 
-  describe("getUserIdByFilters()", () => {
+  describe("getUserIdWithAgencyRightsByFilters()", () => {
     const agency1WithValidatorAndCounsellorRights = toAgencyWithRights(
       agency1builder.build(),
       {
@@ -1811,6 +1811,15 @@ describe.each(
       it("returns empty array when agencyRole and agencyIds are omitted", async () => {
         expectToEqual(
           await agencyRepository.getUserIdWithAgencyRightsByFilters({}),
+          [],
+        );
+      });
+
+      it("returns empty array when agencyRole and agencyIds are omitted", async () => {
+        expectToEqual(
+          await agencyRepository.getUserIdWithAgencyRightsByFilters({
+            agencyIds: [],
+          }),
           [],
         );
       });
