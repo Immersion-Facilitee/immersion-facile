@@ -18,6 +18,7 @@ import { connectedUsersAdminSelectors } from "src/core-logic/domain/admin/connec
 import { agenciesPreloadedState } from "src/core-logic/domain/agencies/agenciesPreloadedState";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
 import { fetchAgencyInitialState } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
+import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import {
   createTestStore,
   type TestDependencies,
@@ -731,6 +732,76 @@ describe("Agency registration for authenticated users", () => {
           on: "create",
           title: "Problème lors de la création de l'utilisateur",
         },
+      );
+    });
+  });
+
+  describe("Remove users from agency", () => {
+    it("should remove user from agency users listing", () => {
+      const prefilledAdminState = adminPreloadedState({
+        connectedUsersAdmin: {
+          ...connectedUsersAdminInitialState,
+          agencyUsers: testUserSet,
+        },
+      });
+      ({ store, dependencies } = createTestStore({
+        admin: prefilledAdminState,
+      }));
+
+      expectToEqual(
+        connectedUsersAdminSelectors.agencyUsers(store.getState()),
+        testUserSet,
+      );
+
+      store.dispatch(
+        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
+          userId: authUser2.id,
+          agencyId: agency3.id,
+          feedbackTopic: "agency-user",
+        }),
+      );
+
+      dependencies.agencyGateway.removeUserFromAgencyResponse$.next(undefined);
+
+      expectToEqual(
+        connectedUsersAdminSelectors.agencyUsers(store.getState()),
+        { [authUser1.id]: authUser1 },
+      );
+      expectToEqual(
+        feedbacksSelectors.feedbacks(store.getState())["agency-user"],
+        {
+          level: "success",
+          message: "Les données de l'utilisateur (rôles) ont été mises à jour.",
+          on: "delete",
+          title: "L'utilisateur n'est plus rattaché à cette agence",
+        },
+      );
+    });
+
+    it("should not change agency users if removed user is not in listing", () => {
+      const prefilledAdminState = adminPreloadedState({
+        connectedUsersAdmin: {
+          ...connectedUsersAdminInitialState,
+          agencyUsers: testUserSet,
+        },
+      });
+      ({ store, dependencies } = createTestStore({
+        admin: prefilledAdminState,
+      }));
+
+      store.dispatch(
+        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
+          userId: "unknown-user-id",
+          agencyId: agency2.id,
+          feedbackTopic: "agency-user",
+        }),
+      );
+
+      dependencies.agencyGateway.removeUserFromAgencyResponse$.next(undefined);
+
+      expectToEqual(
+        connectedUsersAdminSelectors.agencyUsers(store.getState()),
+        testUserSet,
       );
     });
   });
