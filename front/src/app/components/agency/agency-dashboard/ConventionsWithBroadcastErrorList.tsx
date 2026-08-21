@@ -274,9 +274,10 @@ export const ConventionsWithBroadcastErrorList = ({
         className={fr.cx("fr-grid-row", "fr-search-bar", "fr-mb-4w")}
       >
         <Input
-          label="Rechercher par ID de convention"
+          label="Rechercher"
           nativeInputProps={{
-            placeholder: "ID de convention",
+            placeholder:
+              "Rechercher une convention (ID, nom, prénom, conseiller, email, SIRET, etc.)",
             role: "search",
             name: "search",
             onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
