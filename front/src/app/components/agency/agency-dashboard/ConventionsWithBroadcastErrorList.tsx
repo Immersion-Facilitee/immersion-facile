@@ -18,6 +18,7 @@ import {
 import { useDispatch } from "react-redux";
 import {
   activeAgencyStatuses,
+  type ConventionWithBroadcastFeedbackReadDto,
   conventionStatuses,
   domElementIds,
   type FlatGetConventionsWithErroredBroadcastFeedbackParams,
@@ -433,6 +434,7 @@ export const ConventionsWithBroadcastErrorList = ({
               conventionWithBroadcastFeedback.lastBroadcastFeedback
                 ?.subscriberErrorFeedback?.message ?? "",
             )}
+            footer={getBroadcastFeedbackFooter(conventionWithBroadcastFeedback)}
             buttonsRows={[
               {
                 id: domElementIds.manageConventionConnectedUser
@@ -480,3 +482,17 @@ export const ConventionsWithBroadcastErrorList = ({
     </HeadingSection>
   );
 };
+
+const getBroadcastFeedbackFooter = ({
+  agencyName,
+  agencyReferent,
+}: Pick<
+  ConventionWithBroadcastFeedbackReadDto,
+  "agencyName" | "agencyReferent"
+>) =>
+  agencyReferent
+    ? `Conseiller : ${getFormattedFirstnameAndLastname({
+        firstname: agencyReferent.firstname,
+        lastname: agencyReferent.lastname,
+      })} (${agencyName})`
+    : agencyName;
