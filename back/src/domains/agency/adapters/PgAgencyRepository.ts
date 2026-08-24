@@ -3,7 +3,6 @@ import { sql } from "kysely";
 import { map, partition, toPairs } from "ramda";
 import {
   type AbsoluteUrl,
-  type AddressDto,
   type AgencyDto,
   type AgencyId,
   type AgencyKind,
@@ -481,28 +480,6 @@ export class PgAgencyRepository implements AgencyRepository {
       roles: rights.roles,
       isNotifiedByEmail: rights.isNotifiedByEmail,
     }));
-  }
-
-  public async alreadyHasActiveAgencyWithSameAddressAndKind({
-    idToIgnore,
-    kind,
-    address,
-  }: {
-    idToIgnore: AgencyId;
-    kind: AgencyKind;
-    address: AddressDto;
-  }) {
-    const alreadyExistingAgencies = await this.transaction
-      .selectFrom("agencies")
-      .selectAll()
-      .where("kind", "=", kind)
-      .where("status", "in", [...activeAgencyStatuses, "needsReview"])
-      .where("street_number_and_address", "=", address.streetNumberAndAddress)
-      .where("city", "=", address.city)
-      .where("id", "!=", idToIgnore)
-      .execute();
-
-    return alreadyExistingAgencies.length > 0;
   }
 
   #getAgencyWithJsonBuiltQueryBuilder() {

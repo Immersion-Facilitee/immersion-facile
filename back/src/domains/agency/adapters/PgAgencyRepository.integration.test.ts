@@ -2,7 +2,6 @@ import { subDays, subMonths } from "date-fns";
 import type { Pool } from "pg";
 import {
   AgencyDtoBuilder,
-  type AgencyStatus,
   type AgencyWithUsersRights,
   activeAgencyStatuses,
   ConnectedUserBuilder,
@@ -1967,84 +1966,6 @@ describe.each(
         await agencyRepository.getAgenciesRightsByUserId(counsellor2.id),
         [],
       );
-    });
-  });
-
-  describe("alreadyHasActiveAgencyWithSameAddressAndKind()", () => {
-    it("return false if no agency exists with given address and kind", async () => {
-      const newAgencyId = "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa";
-      const hasAlreadySimilarAgency =
-        await agencyRepository.alreadyHasActiveAgencyWithSameAddressAndKind({
-          address: {
-            streetNumberAndAddress: "24 rue des bouchers",
-            city: "Strasbourg",
-            postcode: "67000",
-            departmentCode: "67",
-          },
-          kind: "cci",
-          idToIgnore: newAgencyId,
-        });
-
-      expect(hasAlreadySimilarAgency).toBe(false);
-    });
-
-    it("return false if matched agencyId is in idToIgnore", async () => {
-      const activeAgencyAlreadyInDb = toAgencyWithRights(
-        agency1builder.build(),
-        {
-          [validator1.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        },
-      );
-      await agencyRepository.insert(activeAgencyAlreadyInDb);
-      const hasAlreadySimilarAgency =
-        await agencyRepository.alreadyHasActiveAgencyWithSameAddressAndKind({
-          address: activeAgencyAlreadyInDb.address,
-          kind: activeAgencyAlreadyInDb.kind,
-          idToIgnore: activeAgencyAlreadyInDb.id,
-        });
-
-      expect(hasAlreadySimilarAgency).toBe(false);
-    });
-
-    it("return false if matched agency has no active or needsReview status", async () => {
-      const closedAgencyAlreadyInDb = toAgencyWithRights(
-        agency1builder.withStatus("closed").build(),
-        {
-          [validator1.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        },
-      );
-      await agencyRepository.insert(closedAgencyAlreadyInDb);
-      const newAgencyId = "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa";
-
-      expect(
-        await agencyRepository.alreadyHasActiveAgencyWithSameAddressAndKind({
-          address: closedAgencyAlreadyInDb.address,
-          kind: closedAgencyAlreadyInDb.kind,
-          idToIgnore: newAgencyId,
-        }),
-      ).toBe(false);
-    });
-
-    it.each([
-      ...activeAgencyStatuses,
-      "needsReview",
-    ] as AgencyStatus[])("return true if there is an agency %s with given address and kind", async (status) => {
-      const activeAgencyAlreadyInDb = toAgencyWithRights(
-        agency1builder.withStatus(status).build(),
-        {
-          [validator1.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        },
-      );
-      await agencyRepository.insert(activeAgencyAlreadyInDb);
-      const newAgencyId = "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa";
-      const hasAlreadySimilarAgency =
-        await agencyRepository.alreadyHasActiveAgencyWithSameAddressAndKind({
-          address: activeAgencyAlreadyInDb.address,
-          kind: activeAgencyAlreadyInDb.kind,
-          idToIgnore: newAgencyId,
-        });
-
-      expect(hasAlreadySimilarAgency).toBe(true);
     });
   });
 
