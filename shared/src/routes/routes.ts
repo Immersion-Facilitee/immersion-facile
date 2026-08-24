@@ -39,6 +39,10 @@ export type AcquisitionParams = Partial<{
 
 type AcquisitionParamsKeys = keyof typeof acquisitionParams;
 
+export type WithAcquisitionQueryParams = Partial<{
+  [key in AcquisitionParamsKeys]: string;
+}>;
+
 const connectedUserParams = {
   token: param.query.optional.string,
   provider: param.query.optional.string,
