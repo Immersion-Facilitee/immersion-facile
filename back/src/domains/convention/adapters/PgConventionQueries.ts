@@ -42,7 +42,7 @@ import {
 import type { Database } from "../../../config/pg/kysely/model/database";
 import { createLogger } from "../../../utils/logger";
 import {
-  broadcastToFtServiceName,
+  broadcastToFtConsumerName,
   broadcastToPartnersServiceName,
 } from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type {
@@ -799,7 +799,7 @@ const filterExcludeUnvalidatedConventionsWithoutPriorSuccessfulBroadcast =
             )
             .where(
               sql<boolean>`(
-                (bf_ok.service_name = ${broadcastToFtServiceName} AND bf_ok.response @> '{"httpStatus": 201}'::jsonb)
+                (bf_ok.consumer_name = ${broadcastToFtConsumerName} AND bf_ok.response @> '{"httpStatus": 201}'::jsonb)
                 OR
                 (bf_ok.service_name = ${broadcastToPartnersServiceName} AND bf_ok.subscriber_error_feedback IS NULL)
               )`,

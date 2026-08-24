@@ -12,7 +12,10 @@ import {
 import z from "zod";
 import { toPartnerAgencyKind } from "../../../../utils/agency";
 import { isAxiosError } from "../../../../utils/axiosUtils";
-import { broadcastToFtServiceName } from "../../../core/saved-errors/ports/BroadcastFeedbacksRepository";
+import {
+  broadcastToFtConsumerName,
+  broadcastToFtServiceName,
+} from "../../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 import {
@@ -133,7 +136,7 @@ export const makeBroadcastToFranceTravailOnConventionUpdates = useCaseBuilder(
 
     await uow.broadcastFeedbacksRepository.save({
       consumerId: null,
-      consumerName: "France Travail",
+      consumerName: broadcastToFtConsumerName,
       conventionId: inputParams.convention.id,
       agencyId: inputParams.convention.agencyId,
       serviceName: broadcastToFtServiceName,

@@ -10,6 +10,7 @@ import {
 } from "shared";
 import { toAgencyWithRights } from "../../../../utils/agency";
 import {
+  broadcastToFtConsumerName,
   broadcastToFtServiceName,
   broadcastToPartnersServiceName,
 } from "../../../core/saved-errors/ports/BroadcastFeedbacksRepository";
@@ -399,7 +400,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
 
     const priorSuccessBroadcast: BroadcastFeedback = {
       consumerId: null,
-      consumerName: "any-consumer-name",
+      consumerName: broadcastToFtConsumerName,
       conventionId: cancelledConventionId,
       agencyId: agencyId1,
       serviceName: broadcastToFtServiceName,

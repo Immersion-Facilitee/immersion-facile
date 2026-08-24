@@ -36,7 +36,7 @@ import type { InMemoryAgencyRepository } from "../../agency/adapters/InMemoryAge
 import type { InMemoryUserRepository } from "../../core/authentication/connected-user/adapters/InMemoryUserRepository";
 import type { InMemoryBroadcastFeedbacksRepository } from "../../core/saved-errors/adapters/InMemoryBroadcastFeedbacksRepository";
 import {
-  broadcastToFtServiceName,
+  broadcastToFtConsumerName,
   broadcastToPartnersServiceName,
 } from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type { InMemoryBannedEstablishmentRepository } from "../../establishment/adapters/InMemoryBannedEstablishmentRepository";
@@ -507,7 +507,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
           this.broadcastFeedbacksRepository.broadcastFeedbacks.some(
             (bf) =>
               bf.requestParams.conventionId === result.id &&
-              ((bf.serviceName === broadcastToFtServiceName &&
+              ((bf.consumerName === broadcastToFtConsumerName &&
                 bf.response?.httpStatus === 201) ||
                 (bf.serviceName === broadcastToPartnersServiceName &&
                   !bf.subscriberErrorFeedback)),

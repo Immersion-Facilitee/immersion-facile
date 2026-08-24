@@ -19,7 +19,10 @@ import {
   toAgencyWithRights,
   toPartnerAgencyKind,
 } from "../../../../utils/agency";
-import { broadcastToFtServiceName } from "../../../core/saved-errors/ports/BroadcastFeedbacksRepository";
+import {
+  broadcastToFtConsumerName,
+  broadcastToFtServiceName,
+} from "../../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
@@ -352,7 +355,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
     expectToEqual(uow.broadcastFeedbacksRepository.broadcastFeedbacks, [
       {
         consumerId: null,
-        consumerName: "France Travail",
+        consumerName: broadcastToFtConsumerName,
         conventionId: conventionLinkedToFTWithoutFederatedIdentity.id,
         agencyId: conventionLinkedToFTWithoutFederatedIdentity.agencyId,
         serviceName: broadcastToFtServiceName,
@@ -395,7 +398,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
     expectToEqual(uow.broadcastFeedbacksRepository.broadcastFeedbacks, [
       {
         consumerId: null,
-        consumerName: "France Travail",
+        consumerName: broadcastToFtConsumerName,
         conventionId: conventionLinkedToFTWithoutFederatedIdentity.id,
         agencyId: conventionLinkedToFTWithoutFederatedIdentity.agencyId,
         serviceName: broadcastToFtServiceName,

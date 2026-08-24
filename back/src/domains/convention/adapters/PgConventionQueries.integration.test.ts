@@ -32,6 +32,7 @@ import type { AgencyRepository } from "../../agency/ports/AgencyRepository";
 import { PgUserRepository } from "../../core/authentication/connected-user/adapters/PgUserRepository";
 import { PgBroadcastFeedbacksRepository } from "../../core/saved-errors/adapters/PgBroadcastFeedbacksRepository";
 import {
+  broadcastToFtConsumerName,
   broadcastToFtServiceName,
   broadcastToPartnersServiceName,
 } from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
@@ -2095,7 +2096,7 @@ describe("Pg implementation of ConventionQueries", () => {
       it("includes convention in unvalidated status when a prior FT broadcast has httpStatus 201", async () => {
         const priorSuccessBroadcast: BroadcastFeedback = {
           consumerId: null,
-          consumerName: "any-consumer-name",
+          consumerName: broadcastToFtConsumerName,
           conventionId: cancelledConventionId,
           agencyId: agencyIdA,
           serviceName: broadcastToFtServiceName,
