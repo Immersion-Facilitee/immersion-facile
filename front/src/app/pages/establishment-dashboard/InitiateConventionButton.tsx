@@ -176,6 +176,7 @@ export const InitiateConventionButton = () => {
         .conventionImmersion({
           conventionTemplateId: selectedConventionTemplate.id,
           skipIntro: true,
+          at_campaign: "establishment-dashboard-convention-template",
         })
         .push();
     }

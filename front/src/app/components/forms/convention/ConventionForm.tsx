@@ -315,6 +315,10 @@ export const ConventionForm = ({
       remoteWorkMode: parsedEstablishmentOffer.success
         ? parsedEstablishmentOffer.data.remoteWorkMode
         : convention.remoteWorkMode,
+      acquisitionCampaign:
+        acquisitionParams.acquisitionCampaign || convention.acquisitionCampaign,
+      acquisitionKeyword:
+        acquisitionParams.acquisitionKeyword || convention.acquisitionKeyword,
     };
 
     return conventionDefaultValues;

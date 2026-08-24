@@ -210,6 +210,7 @@ export const AgencyConventionTabContent = ({
         .conventionImmersion({
           conventionTemplateId: selectedConventionTemplate.id,
           skipIntro: true,
+          at_campaign: "agency-dashboard-convention-template",
         })
         .push();
     }
