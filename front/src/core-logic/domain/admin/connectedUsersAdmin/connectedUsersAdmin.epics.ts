@@ -10,8 +10,7 @@ import type {
   WithUserFilters,
 } from "shared";
 import { getConnectedUserJwt } from "src/core-logic/domain/admin/admin.helpers";
-import type { AgencyAction } from "src/core-logic/domain/agencies/fetch-agency-options/fetchAgencyOptions.epics";
-import { updateAgencySlice } from "src/core-logic/domain/agencies/update-agency/updateAgency.slice";
+import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { catchEpicError } from "src/core-logic/storeConfig/catchEpicError";
 import type {
   ActionOfSlice,
@@ -25,7 +24,9 @@ import {
 export type ConnectedUsersAdminAction = ActionOfSlice<
   typeof connectedUsersAdminSlice
 >;
-type UpdateAgencyAction = ActionOfSlice<typeof updateAgencySlice>;
+type RemoveUserFromAgencyAction = ActionOfSlice<
+  typeof removeUserFromAgencySlice
+>;
 type ConnectedUsersAdminActionEpic = AppEpic<ConnectedUsersAdminAction>;
 
 const fetchConnectedUsersWithAgencyNeedingReviewEpic: ConnectedUsersAdminActionEpic =
@@ -197,15 +198,17 @@ const updateUserOnAgencyEpic: ConnectedUsersAdminActionEpic = (
     ),
   );
 
-const fetchConnectedUserOnAgencyUpdateEpic: AppEpic<
-  ConnectedUsersAdminAction | AgencyAction | UpdateAgencyAction
+const fetchAgencyUsersOnUserRemovedEpic: AppEpic<
+  ConnectedUsersAdminAction | RemoveUserFromAgencyAction
 > = (action$) =>
   action$.pipe(
-    filter(updateAgencySlice.actions.updateAgencySucceeded.match),
-    filter((action) => action.payload.feedbackTopic === "agency-admin"),
+    filter(
+      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded.match,
+    ),
+    filter((action) => action.payload.feedbackTopic === "agency-user"),
     map((action) =>
       connectedUsersAdminSlice.actions.fetchAgencyUsersRequested({
-        agencyId: action.payload.id,
+        agencyId: action.payload.agencyId,
       }),
     ),
   );
@@ -236,6 +239,6 @@ export const connectedUsersAdminEpics = [
   rejectAgencyToUserEpic,
   fetchConnectedUsersWithAgencyIdEpic,
   updateUserOnAgencyEpic,
-  fetchConnectedUserOnAgencyUpdateEpic,
+  fetchAgencyUsersOnUserRemovedEpic,
   createUserOnAgencyEpic,
 ];

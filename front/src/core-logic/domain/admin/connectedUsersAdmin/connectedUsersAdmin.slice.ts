@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { filter } from "ramda";
 import type {
   AgencyId,
   AgencyRight,
@@ -12,7 +11,6 @@ import type {
   WithAgencyId,
   WithUserFilters,
 } from "shared";
-import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import type { SubmitFeedBack } from "src/core-logic/domain/SubmitFeedback";
 import type { PayloadActionWithFeedbackTopic } from "../../feedback/feedback.slice";
 
@@ -223,17 +221,5 @@ export const connectedUsersAdminSlice = createSlice({
     ) => {
       state.isUpdatingConnectedUserAgency = false;
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(
-      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded,
-      (state, action) => {
-        if (!state.agencyUsers[action.payload.userId]) return;
-        state.agencyUsers = filter(
-          (agencyUser) => agencyUser.id !== action.payload.userId,
-          state.agencyUsers,
-        );
-      },
-    );
   },
 });
