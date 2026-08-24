@@ -13,7 +13,7 @@ import {
   type AgencyRight,
   type ConnectedUser,
   domElementIds,
-  frontRoutes,
+  immersionFacileAgencyRegistrationHelpFormUrl,
 } from "shared";
 import { AgencyRightsTable } from "src/app/components/agency/agencies-table/AgencyRightsTable";
 import { AgencyAdminUsersToReview } from "src/app/components/agency/agency-dashboard/AgencyAdminUsersToReview";
@@ -67,12 +67,6 @@ export const AgencyAdminTabContent = ({
       );
     };
 
-  const proConnectSiret = currentUser.proConnect?.siret;
-  const hasAgencyRoleOnProConnectSiret =
-    activeAgencyRights.filter(
-      (agencyRight) => agencyRight.agency.agencySiret === proConnectSiret,
-    ).length > 0;
-
   useEffect(() => {
     if (agencyIdsUserIsAdminOn.length === 0) return;
 
@@ -118,13 +112,7 @@ export const AgencyAdminTabContent = ({
         titleAction={
           <Button
             id={domElementIds.agencyDashboard.registerAgencies.newAgencyButton}
-            linkProps={
-              frontRoutes.addAgency({
-                siret: hasAgencyRoleOnProConnectSiret
-                  ? undefined
-                  : proConnectSiret,
-              }).link
-            }
+            linkProps={{ href: immersionFacileAgencyRegistrationHelpFormUrl }}
           >
             Inscrire un nouvel organisme
           </Button>
