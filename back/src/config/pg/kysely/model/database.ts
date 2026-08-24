@@ -280,7 +280,7 @@ interface ConventionExternalIds {
   external_id: Generated<number>;
 }
 
-interface ConventionDrafts {
+interface ConventionDrafts extends WithAcquisition {
   id: string;
   created_at: Generated<Timestamp>;
   updated_at: Timestamp | Generated<Timestamp>;
@@ -306,14 +306,13 @@ interface ConventionDrafts {
   work_conditions: string | null;
   internship_kind: InternshipKind;
   business_advantages: string | null;
-  acquisition_campaign: string | null;
-  acquisition_keyword: string | null;
   establishment_number_employees: NumberEmployeesRange | null;
   agency_referent_first_name: string | null;
   agency_referent_last_name: string | null;
   ft_connect_id: string | null;
   establishment_tutor: Json | null;
   signatories: Json | null;
+  acquisition_medium: string | null;
 }
 
 interface ConventionTemplates {
@@ -392,6 +391,7 @@ interface Conventions extends WithAcquisition {
   agency_referent_first_name: Generated<string | null>;
   agency_referent_last_name: Generated<string | null>;
   source_convention_draft_id: string | null;
+  acquisition_medium: string | null;
 }
 
 interface ConventionsToSyncWithPe {

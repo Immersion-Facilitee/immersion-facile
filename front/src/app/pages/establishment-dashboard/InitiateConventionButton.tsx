@@ -177,6 +177,7 @@ export const InitiateConventionButton = () => {
           conventionTemplateId: selectedConventionTemplate.id,
           skipIntro: true,
           at_campaign: "establishment-dashboard-convention-template",
+          at_medium: "website-if",
         })
         .push();
     }

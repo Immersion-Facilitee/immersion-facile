@@ -234,6 +234,7 @@ describe("PgConventionRepository", () => {
     const withAcquisition: WithAcquisition = {
       acquisitionKeyword: "acquisition-keyword",
       acquisitionCampaign: "acquisition-campaign",
+      acquisitionMedium: "website-if",
     };
 
     const convention = new ConventionDtoBuilder()
@@ -248,13 +249,18 @@ describe("PgConventionRepository", () => {
 
     const result = await db
       .selectFrom("conventions")
-      .select(["acquisition_campaign", "acquisition_keyword"])
+      .select([
+        "acquisition_campaign",
+        "acquisition_keyword",
+        "acquisition_medium",
+      ])
       .execute();
 
     expectToEqual(result, [
       {
         acquisition_campaign: "acquisition-campaign",
         acquisition_keyword: "acquisition-keyword",
+        acquisition_medium: "website-if",
       },
     ]);
   });

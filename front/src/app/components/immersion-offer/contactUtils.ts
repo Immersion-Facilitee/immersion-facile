@@ -25,6 +25,7 @@ type ContactInputKeys = ExcludeFromExisting<
   | "locationId"
   | "acquisitionCampaign"
   | "acquisitionKeyword"
+  | "acquisitionMedium"
 >;
 
 export const makeContactInputsLabelsByKey = (

@@ -145,6 +145,10 @@ export const formAgencyFieldsLabels: FormAgencyFieldsLabels = {
     label: "",
     id: "",
   },
+  acquisitionMedium: {
+    label: "",
+    id: "",
+  },
   phoneNumber: {
     label: "Numéro de téléphone *",
     id: domElementIds.addAgency.phoneNumberInput,
