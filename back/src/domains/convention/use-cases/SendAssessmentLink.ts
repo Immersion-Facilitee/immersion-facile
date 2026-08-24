@@ -202,7 +202,7 @@ const sendSms = async ({
   const shortLink = await makeShortMagicLink({
     targetRoute: "assessment",
     lifetime: "2Days",
-    extraQueryParams: { mtm_campaign: "sms-assessment-link" },
+    extraQueryParams: { at_campaign: "sms-assessment-link" },
   });
 
   await saveNotificationAndRelatedEvent(uow, {
@@ -248,7 +248,7 @@ const sendEmail = async ({
   const assessmentCreationLink = await makeShortMagicLink({
     targetRoute: "assessment",
     lifetime: "2Days",
-    extraQueryParams: { mtm_campaign: "email-assessment-link" },
+    extraQueryParams: { at_campaign: "email-assessment-link" },
   });
 
   await saveNotificationAndRelatedEvent(uow, {

@@ -201,7 +201,7 @@ describe("SendEstablishmentLeadReminder", () => {
         {
           id: "addEstablishmentFormShortLink",
           lastUsedAt: null,
-          url: `http://localhost/establishment?mtm_campaign=transactionnel-etablissement-rappel-inscription&fromConventionId=${newestConvention.id}`,
+          url: `http://localhost/establishment?at_campaign=transactionnel-etablissement-rappel-inscription&fromConventionId=${newestConvention.id}`,
         },
         {
           id: "addUnsubscribeToEmailShortLink",
@@ -316,7 +316,7 @@ describe("SendEstablishmentLeadReminder", () => {
         {
           id: "addEstablishmentFormShortLink",
           lastUsedAt: null,
-          url: `http://localhost/establishment?mtm_campaign=transactionnel-etablissement-rappel-inscription&fromConventionId=${convention1.id}`,
+          url: `http://localhost/establishment?at_campaign=transactionnel-etablissement-rappel-inscription&fromConventionId=${convention1.id}`,
         },
         {
           id: "addUnsubscribeToEmailShortLink",

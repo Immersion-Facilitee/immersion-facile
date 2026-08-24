@@ -266,9 +266,9 @@ describe("NotifyContactRequest", () => {
                       discussionUrl: makeRouteAbsoluteUrl({
                         route: frontRoutes.establishmentDashboardDiscussions({
                           discussionId: discussion.id,
-                          mtm_campaign:
+                          at_campaign:
                             "inbound-parsing-reponse-via-espace-entreprise",
-                          mtm_kwd:
+                          at_kwd:
                             "inbound-parsing-reponse-via-espace-entreprise",
                         }),
                         baseUrl: immersionFacileBaseUrl,
@@ -303,9 +303,9 @@ describe("NotifyContactRequest", () => {
                       discussionUrl: makeRouteAbsoluteUrl({
                         route: frontRoutes.establishmentDashboardDiscussions({
                           discussionId: discussion.id,
-                          mtm_campaign:
+                          at_campaign:
                             "inbound-parsing-reponse-via-espace-entreprise",
-                          mtm_kwd:
+                          at_kwd:
                             "inbound-parsing-reponse-via-espace-entreprise",
                         }),
                         baseUrl: immersionFacileBaseUrl,

@@ -115,12 +115,12 @@ export const makeSendExchangeToRecipient = useCaseBuilder(
                         lastExchange.sender === "establishment"
                           ? frontRoutes.beneficiaryDashboardDiscussions({
                               discussionId: discussion.id,
-                              mtm_campaign:
+                              at_campaign:
                                 "inbound-parsing-reponse-via-tableau-de-bord",
                             })
                           : frontRoutes.establishmentDashboardDiscussions({
                               discussionId: discussion.id,
-                              mtm_campaign:
+                              at_campaign:
                                 "inbound-parsing-reponse-via-tableau-de-bord",
                             }),
                       baseUrl: deps.config.immersionFacileBaseUrl,

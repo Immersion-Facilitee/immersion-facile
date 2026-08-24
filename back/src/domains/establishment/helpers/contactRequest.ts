@@ -22,8 +22,8 @@ export const makeContactByEmailRequestParams = ({
   discussionUrl: makeRouteAbsoluteUrl({
     route: frontRoutes.establishmentDashboardDiscussions({
       discussionId: discussion.id,
-      mtm_campaign: "inbound-parsing-reponse-via-espace-entreprise",
-      mtm_kwd: "inbound-parsing-reponse-via-espace-entreprise",
+      at_campaign: "inbound-parsing-reponse-via-espace-entreprise",
+      at_kwd: "inbound-parsing-reponse-via-espace-entreprise",
     }),
     baseUrl: immersionFacileBaseUrl,
   }),
