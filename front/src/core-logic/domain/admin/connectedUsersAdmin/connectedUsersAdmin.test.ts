@@ -737,7 +737,7 @@ describe("Agency registration for authenticated users", () => {
   });
 
   describe("Remove users from agency", () => {
-    it("should remove user from agency users listing", () => {
+    it("should refetch agency users listing after user is removed", () => {
       const prefilledAdminState = adminPreloadedState({
         connectedUsersAdmin: {
           ...connectedUsersAdminInitialState,
@@ -765,8 +765,9 @@ describe("Agency registration for authenticated users", () => {
 
       expectToEqual(
         connectedUsersAdminSelectors.agencyUsers(store.getState()),
-        { [authUser1.id]: authUser1 },
+        connectedUsersAdminInitialState.agencyUsers,
       );
+      expectIsFetchingAgencyUsersToBe(true);
       expectToEqual(
         feedbacksSelectors.feedbacks(store.getState())["agency-user"],
         {
@@ -776,32 +777,18 @@ describe("Agency registration for authenticated users", () => {
           title: "L'utilisateur n'est plus rattaché à cette agence",
         },
       );
-    });
 
-    it("should not change agency users if removed user is not in listing", () => {
-      const prefilledAdminState = adminPreloadedState({
-        connectedUsersAdmin: {
-          ...connectedUsersAdminInitialState,
-          agencyUsers: testUserSet,
+      dependencies.authGateway.getConnectedUsersResponse$.next([
+        {
+          ...authUser1,
+          agencyRights: values(authUser1.agencyRights),
         },
-      });
-      ({ store, dependencies } = createTestStore({
-        admin: prefilledAdminState,
-      }));
+      ]);
 
-      store.dispatch(
-        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
-          userId: "unknown-user-id",
-          agencyId: agency2.id,
-          feedbackTopic: "agency-user",
-        }),
-      );
-
-      dependencies.agencyGateway.removeUserFromAgencyResponse$.next(undefined);
-
+      expectIsFetchingAgencyUsersToBe(false);
       expectToEqual(
         connectedUsersAdminSelectors.agencyUsers(store.getState()),
-        testUserSet,
+        { [authUser1.id]: authUser1 },
       );
     });
   });
