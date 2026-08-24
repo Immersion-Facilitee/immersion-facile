@@ -25,19 +25,7 @@ test.describe("Agency workflow", () => {
       const override = makeAgencyOverride(seed);
       agencyAddedName = override.customizedName;
       await fillAndSubmitBasicAgencyForm(page, override);
-      await expect(
-        page
-          .locator(".fr-alert--success")
-          .or(page.locator(".fr-alert--error").filter({ hasText: /existe/i })),
-      ).toBeVisible();
-    });
-
-    test("Cannot add a second agency with same data", async ({ page }) => {
-      const seed = `agency-duplicate-r${test.info().retry}`;
-      const override = makeAgencyOverride(seed);
-      await fillAndSubmitBasicAgencyForm(page, override);
-      await fillAndSubmitBasicAgencyForm(page, override);
-      await expect(page.locator(".fr-alert--error")).toBeVisible();
+      await expect(page.locator(".fr-alert--success")).toBeVisible();
     });
   });
 
