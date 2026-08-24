@@ -55,6 +55,7 @@ const connectedUserParams = {
 export const acquisitionParams = {
   at_campaign: param.query.optional.string,
   at_kwd: param.query.optional.string,
+  at_medium: param.query.optional.string,
 };
 
 const agencyParamsForConventionForm = {

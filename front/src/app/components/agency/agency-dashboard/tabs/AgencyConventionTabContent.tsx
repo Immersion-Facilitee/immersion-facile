@@ -211,6 +211,7 @@ export const AgencyConventionTabContent = ({
           conventionTemplateId: selectedConventionTemplate.id,
           skipIntro: true,
           at_campaign: "agency-dashboard-convention-template",
+          at_medium: "website-if",
         })
         .push();
     }

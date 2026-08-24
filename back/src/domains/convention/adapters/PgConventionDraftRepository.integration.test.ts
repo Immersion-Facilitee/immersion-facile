@@ -35,6 +35,7 @@ describe("PgConventionDraftRepository", () => {
     businessAdvantages: "Prise en charge du panier repas",
     acquisitionCampaign: "campaign-2024",
     acquisitionKeyword: "emploi",
+    acquisitionMedium: "website-if",
     establishmentNumberEmployeesRange: "10-19",
     agencyReferent: {
       firstname: "Sophie",
@@ -137,6 +138,7 @@ describe("PgConventionDraftRepository", () => {
         businessAdvantages: "Prise en charge du panier repas",
         acquisitionCampaign: "campaign-2024",
         acquisitionKeyword: "emploi",
+        acquisitionMedium: "website-if",
         establishmentNumberEmployeesRange: "10-19",
         agencyReferent: {
           firstname: "Sophie",
@@ -212,12 +214,15 @@ describe("PgConventionDraftRepository", () => {
       });
     });
 
-    it("update a convention draft", async () => {
+    it("update a convention draft without overwriting acquisition params", async () => {
       const conventionDraft: ConventionDraftDto = {
         id: uuid(),
         internshipKind: "immersion",
         businessName: "Test Business",
         businessNameCustomized: "Enseigne Test",
+        acquisitionCampaign: "campaign-2024",
+        acquisitionKeyword: "emploi",
+        acquisitionMedium: "website-if",
       };
 
       await pgConventionDraftRepository.save(conventionDraft, now);
@@ -227,6 +232,9 @@ describe("PgConventionDraftRepository", () => {
         internshipKind: "immersion",
         businessName: "Updated Test Business",
         businessNameCustomized: "Enseigne mise à jour",
+        acquisitionCampaign: "other-campaign",
+        acquisitionKeyword: "other-keyword",
+        acquisitionMedium: "other-medium",
       };
 
       await pgConventionDraftRepository.save(updatedConventionDraft, now);
@@ -236,6 +244,9 @@ describe("PgConventionDraftRepository", () => {
       );
       expectToEqual(result, {
         ...updatedConventionDraft,
+        acquisitionCampaign: conventionDraft.acquisitionCampaign,
+        acquisitionKeyword: conventionDraft.acquisitionKeyword,
+        acquisitionMedium: conventionDraft.acquisitionMedium,
         updatedAt: now,
       });
     });

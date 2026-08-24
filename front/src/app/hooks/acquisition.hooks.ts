@@ -11,7 +11,8 @@ const routeParamsContainsAcquisitionParams = (
   routeParams: Record<string, string>,
 ): routeParams is UrlParamsWithAcquisition =>
   ("at_campaign" in routeParams && routeParams.at_campaign !== undefined) ||
-  ("at_kwd" in routeParams && routeParams.at_kwd !== undefined);
+  ("at_kwd" in routeParams && routeParams.at_kwd !== undefined) ||
+  ("at_medium" in routeParams && routeParams.at_medium !== undefined);
 
 const areRouteParamsDifferentFromAcquisitionParams = (
   acquisitionParams: WithAcquisition,
@@ -22,6 +23,7 @@ const areRouteParamsDifferentFromAcquisitionParams = (
     values({
       at_campaign: routeParams.at_campaign,
       at_kwd: routeParams.at_kwd,
+      at_medium: routeParams.at_medium,
     }).filter((param) => param !== undefined),
   );
 
@@ -44,6 +46,7 @@ export const useGetAcquisitionParams = () => {
   const initialAcquisitionParams = initialParams ?? {
     acquisitionCampaign: "",
     acquisitionKeyword: "",
+    acquisitionMedium: "",
   };
   const [acquisitionParams, setAcquisitionParams] = useState<WithAcquisition>(
     initialAcquisitionParams,
@@ -55,6 +58,7 @@ export const useGetAcquisitionParams = () => {
     setAcquisitionParams({
       acquisitionCampaign: urlParams.at_campaign,
       acquisitionKeyword: urlParams.at_kwd,
+      acquisitionMedium: urlParams.at_medium,
     });
   }
   return acquisitionParams;

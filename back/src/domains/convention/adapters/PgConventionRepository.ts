@@ -182,6 +182,7 @@ export class PgConventionRepository implements ConventionRepository {
         validators: sql`${convention.validators}`,
         acquisition_campaign: convention.acquisitionCampaign,
         acquisition_keyword: convention.acquisitionKeyword,
+        acquisition_medium: convention.acquisitionMedium,
         establishment_number_employees:
           convention.establishmentNumberEmployeesRange,
         updated_at: now ?? sql`now()`,

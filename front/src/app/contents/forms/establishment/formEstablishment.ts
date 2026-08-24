@@ -179,6 +179,10 @@ export const formEstablishmentFieldsLabels = (
     label: "",
     id: "",
   },
+  acquisitionMedium: {
+    label: "",
+    id: "",
+  },
   potentialBeneficiaryWelcomeAddress: {
     label: "Adresse d'accueil pour les candidats",
     id: domElementIds.formEstablishment[mode]

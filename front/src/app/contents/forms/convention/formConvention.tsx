@@ -743,6 +743,10 @@ const fieldsToExclude = {
     label: "",
     id: "",
   },
+  acquisitionMedium: {
+    label: "",
+    id: "",
+  },
   establishmentNumberEmployeesRange: {
     label: "",
     id: "",

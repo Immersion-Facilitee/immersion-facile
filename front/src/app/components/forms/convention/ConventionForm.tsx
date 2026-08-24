@@ -319,6 +319,8 @@ export const ConventionForm = ({
         acquisitionParams.acquisitionCampaign || convention.acquisitionCampaign,
       acquisitionKeyword:
         acquisitionParams.acquisitionKeyword || convention.acquisitionKeyword,
+      acquisitionMedium:
+        acquisitionParams.acquisitionMedium || convention.acquisitionMedium,
     };
 
     return conventionDefaultValues;
