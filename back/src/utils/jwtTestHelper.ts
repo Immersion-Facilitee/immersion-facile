@@ -6,6 +6,7 @@ import {
   frontRoutes,
   makeRouteAbsoluteUrl,
   queryParamsAsString,
+  type WithAcquisitionQueryParams,
 } from "shared";
 import type {
   ConventionMagicLinkLifetime,
@@ -32,7 +33,7 @@ export const fakeGenerateMagicLinkUrlFn: GenerateConventionMagicLinkUrl = ({
   lifetime = "1Month",
   extraQueryParams = {},
 }: CreateConventionMagicLinkPayloadProperties & {
-  extraQueryParams?: Record<string, string>;
+  extraQueryParams?: WithAcquisitionQueryParams;
   targetRoute: GenerateConventionMagicLinkRouteName;
   lifetime?: ConventionMagicLinkLifetime;
 }) => {

@@ -10,6 +10,7 @@ import {
   type OmitFromExistingKeys,
   queryParamsAsString,
   type User,
+  type WithAcquisitionQueryParams,
 } from "shared";
 import type { EmailOrProConnectOngoingAuth } from "../../domains/core/authentication/connected-user/entities/OngoingOAuth";
 import type {
@@ -53,7 +54,7 @@ export const makeGenerateConventionMagicLinkUrl =
     CreateConventionMagicLinkPayloadProperties,
     "durationDays"
   > & {
-    extraQueryParams?: Record<string, string>;
+    extraQueryParams?: WithAcquisitionQueryParams;
     targetRoute: GenerateConventionMagicLinkRouteName;
     lifetime?: ConventionMagicLinkLifetime;
   }): AbsoluteUrl => {

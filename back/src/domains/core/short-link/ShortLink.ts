@@ -1,4 +1,8 @@
-import type { AbsoluteUrl, ShortLinkId } from "shared";
+import type {
+  AbsoluteUrl,
+  ShortLinkId,
+  WithAcquisitionQueryParams,
+} from "shared";
 import type { AppConfig } from "../../../config/bootstrap/appConfig";
 import type {
   ConventionMagicLinkLifetime,
@@ -46,7 +50,7 @@ export const prepareConventionMagicShortLinkMaker =
     lifetime,
     extraQueryParams,
   }: {
-    extraQueryParams?: Record<string, string>;
+    extraQueryParams?: WithAcquisitionQueryParams;
     targetRoute: GenerateConventionMagicLinkRouteName;
     lifetime: ConventionMagicLinkLifetime;
   }): Promise<AbsoluteUrl> =>
