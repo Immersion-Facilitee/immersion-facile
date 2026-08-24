@@ -79,7 +79,7 @@ export const SearchListResults = ({
   const { enableSearchByScore } = useAppSelector(
     featureFlagSelectors.featureFlagState,
   );
-  const { getValues, register } = useFormContext<SearchPageParams>();
+  const { getValues, register, reset } = useFormContext<SearchPageParams>();
   const formValues = getValues();
   const searchParams = useAppSelector(searchSelectors.searchParams);
   const [isPanelOpened, setIsPanelOpened] = useState(false);
@@ -416,6 +416,10 @@ export const SearchListResults = ({
                       title: `Résultats de recherche, page : ${pageNumber}`,
                       onClick: (event) => {
                         event.preventDefault();
+                        reset({
+                          ...searchParams,
+                          page: pageNumber,
+                        });
                         triggerSearch(
                           {
                             ...searchParams,
