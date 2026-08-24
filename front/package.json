@@ -48,7 +48,7 @@
     "autoprefixer": "^10.4.4",
     "axios": "^1.18.1",
     "date-fns": "2.28.0",
-    "dompurify": "^3.4.12",
+    "dompurify": "^3.4.13",
     "html-templates": "workspace:*",
     "jest": "^30.2.0",
     "leaflet": "^1.9.4",
