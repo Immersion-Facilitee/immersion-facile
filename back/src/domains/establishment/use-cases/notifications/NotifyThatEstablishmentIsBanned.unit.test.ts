@@ -29,9 +29,9 @@ import { InMemoryUowPerformer } from "../../../core/unit-of-work/adapters/InMemo
 import { UuidV4Generator } from "../../../core/uuid-generator/adapters/UuidGeneratorImplementations";
 import { EstablishmentAggregateBuilder } from "../../helpers/EstablishmentBuilders";
 import {
-  makeNotifyThatEstablishmentIsBanned,
-  type NotifyThatEstablishmentIsBanned,
-} from "./NotifyThatEstablishmentIsBanned";
+  makeNotifyThatReferencedEstablishmentIsBanned,
+  type NotifyThatReferencedEstablishmentIsBanned,
+} from "./NotifyThatReferencedEstablishmentIsBanned";
 
 const immersionBaseUrl = "https://immersion-facile.beta.gouv.fr";
 
@@ -39,7 +39,7 @@ describe("NotifyEstablishmentIsBanned", () => {
   let uow: InMemoryUnitOfWork;
   let timeGateway: CustomTimeGateway;
   let saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-  let notifyThatEstablishmentIsBanned: NotifyThatEstablishmentIsBanned;
+  let notifyThatEstablishmentIsBanned: NotifyThatReferencedEstablishmentIsBanned;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
 
   const adminUser = new UserBuilder()
@@ -152,14 +152,15 @@ describe("NotifyEstablishmentIsBanned", () => {
       uow.notificationRepository,
       uow.outboxRepository,
     );
-    notifyThatEstablishmentIsBanned = makeNotifyThatEstablishmentIsBanned({
-      uowPerformer: new InMemoryUowPerformer(uow),
-      deps: {
-        saveNotificationAndRelatedEvent,
-        immersionBaseUrl,
-        timeGateway,
-      },
-    });
+    notifyThatEstablishmentIsBanned =
+      makeNotifyThatReferencedEstablishmentIsBanned({
+        uowPerformer: new InMemoryUowPerformer(uow),
+        deps: {
+          saveNotificationAndRelatedEvent,
+          immersionBaseUrl,
+          timeGateway,
+        },
+      });
 
     validatedConvention = new ConventionDtoBuilder()
       .withId("eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee")
