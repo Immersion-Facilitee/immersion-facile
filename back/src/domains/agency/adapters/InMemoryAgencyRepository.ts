@@ -1,7 +1,6 @@
 import { isSameDay, parseISO } from "date-fns";
 import { keys, toPairs, uniq, values } from "ramda";
 import {
-  type AddressDto,
   type AgencyId,
   type AgencyKind,
   type AgencyOption,
@@ -276,26 +275,6 @@ export class InMemoryAgencyRepository implements AgencyRepository {
           : []),
       ];
     }, []);
-  }
-
-  public async alreadyHasActiveAgencyWithSameAddressAndKind({
-    address,
-    kind,
-    idToIgnore,
-  }: {
-    address: AddressDto;
-    kind: AgencyKind;
-    idToIgnore: AgencyId;
-  }): Promise<boolean> {
-    return this.agencies.some(
-      (agency) =>
-        agency.kind === kind &&
-        agency.address.streetNumberAndAddress ===
-          address.streetNumberAndAddress &&
-        agency.address.city === address.city &&
-        [...activeAgencyStatuses, "needsReview"].includes(agency.status) &&
-        agency.id !== idToIgnore,
-    );
   }
 
   public async getExistingActiveSirets(

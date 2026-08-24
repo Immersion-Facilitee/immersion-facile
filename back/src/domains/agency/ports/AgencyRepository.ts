@@ -1,6 +1,5 @@
 import { values } from "ramda";
 import {
-  type AddressDto,
   type AgencyDto,
   type AgencyId,
   type AgencyKind,
@@ -91,11 +90,6 @@ export interface AgencyRepository {
     filters: WithUserFilters,
   ): Promise<UserId[]>;
   getAgenciesRightsByUserId(id: UserId): Promise<AgencyRightOfUser[]>;
-  alreadyHasActiveAgencyWithSameAddressAndKind(params: {
-    address: AddressDto;
-    kind: AgencyKind;
-    idToIgnore: AgencyId;
-  }): Promise<boolean>;
   getExistingActiveSirets(sirets: SiretDto[]): Promise<SiretDto[]>;
   deleteOldClosedAgenciesWithoutConventions(params: {
     updatedBefore: Date;
