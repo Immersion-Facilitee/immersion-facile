@@ -10,6 +10,7 @@ import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
 import { TEST_OPEN_ESTABLISHMENT_1 } from "../../../../domains/core/sirene/adapters/InMemorySiretGateway";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
+import { EstablishmentAggregateBuilder } from "../../../../domains/establishment/helpers/EstablishmentBuilders";
 import { buildTestApp } from "../../../../utils/buildTestApp";
 
 describe("formCompletion Routes", () => {
@@ -80,6 +81,31 @@ describe("formCompletion Routes", () => {
           numberEmployeesRange: "3-5",
           isOpen: true,
           isAlreadySaved: false,
+        },
+      });
+    });
+
+    it("200 - processes valid requests with already saved", async () => {
+      inMemoryUow.establishmentAggregateRepository.establishmentAggregates = [
+        new EstablishmentAggregateBuilder()
+          .withEstablishmentSiret(TEST_OPEN_ESTABLISHMENT_1.siret)
+          .build(),
+      ];
+
+      const response = await httpClient.getSiretEstablishmentDto({
+        urlParams: { siret: TEST_OPEN_ESTABLISHMENT_1.siret },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          siret: TEST_OPEN_ESTABLISHMENT_1.siret,
+          businessName: "MA P'TITE BOITE",
+          businessAddress: "20 AVENUE DE SEGUR 75007 PARIS 7",
+          nafDto: { code: "7112B", nomenclature: "Ref2" },
+          numberEmployeesRange: "3-5",
+          isOpen: true,
+          isAlreadySaved: true,
         },
       });
     });

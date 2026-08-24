@@ -202,6 +202,7 @@ describe("Siret validation and fetching", () => {
         feedSirenGatewayThroughBackWith(alreadySavedEstablishment);
 
         expectSiretErrorSelectorToBe(null);
+        expectIsSiretAlreadySavedToBe(true);
       });
 
       it("and fetched establishment is not already saved, should not have error in selector", () => {
@@ -210,6 +211,7 @@ describe("Siret validation and fetching", () => {
         feedSirenGatewayThroughBackWith(establishmentFetched);
 
         expectSiretErrorSelectorToBe(null);
+        expectIsSiretAlreadySavedToBe(false);
       });
     });
 
@@ -226,6 +228,7 @@ describe("Siret validation and fetching", () => {
         feedSirenGatewayThroughBackWith(alreadySavedEstablishment);
 
         expectSiretErrorSelectorToBe("Already exists");
+        expectIsSiretAlreadySavedToBe(true);
       });
 
       it("and fetched establishment is not already saved, should not have error in selector", () => {
@@ -234,6 +237,7 @@ describe("Siret validation and fetching", () => {
         feedSirenGatewayThroughBackWith(establishmentFetched);
 
         expectSiretErrorSelectorToBe(null);
+        expectIsSiretAlreadySavedToBe(false);
       });
     });
   });
@@ -293,6 +297,9 @@ describe("Siret validation and fetching", () => {
 
   const expectSiretErrorSelectorToBe = (expected: SiretSliceError | null) => {
     expect(siretSelectors.siretRawError(store.getState())).toBe(expected);
+  };
+  const expectIsSiretAlreadySavedToBe = (expected: boolean) => {
+    expect(siretSelectors.isSiretAlreadySaved(store.getState())).toBe(expected);
   };
 
   const feedSirenGatewayThroughBackWith = (
