@@ -33,3 +33,6 @@ export const toAbsoluteUrl = (url: string): AbsoluteUrl =>
 
 export const immersionFacileHelpdeskRootUrl: AbsoluteUrl =
   "https://aide.immersion-facile.beta.gouv.fr/fr";
+
+export const immersionFacileAgencyRegistrationHelpFormUrl: AbsoluteUrl =
+  "https://tally.so/r/RGe7q4";

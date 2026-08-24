@@ -17,7 +17,7 @@ import {
   agencyKindToLabelIncludingIFAndPrepa,
   type ConnectedUser,
   domElementIds,
-  frontRoutes,
+  immersionFacileAgencyRegistrationHelpFormUrl,
   looksLikeSiret,
   type SiretDto,
 } from "shared";
@@ -134,7 +134,7 @@ export const RegisterAgenciesForm = ({
                 domElementIds.agencyDashboard.registerAgencies.newAgencyButton
               }
               linkProps={{
-                href: `${frontRoutes.addAgency().href}`,
+                href: immersionFacileAgencyRegistrationHelpFormUrl,
               }}
             >
               Créer un nouvel organisme sur Immersion Facilitée
