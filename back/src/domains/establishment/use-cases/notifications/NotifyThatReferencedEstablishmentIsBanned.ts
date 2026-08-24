@@ -1,4 +1,3 @@
-import { uniq } from "ramda";
 import {
   type AbsoluteUrl,
   errors,
@@ -8,20 +7,19 @@ import {
   type WithSiretDto,
   withSiretSchema,
 } from "shared";
-import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
-import type { ConventionFtUserAdvisorEntity } from "../../../core/authentication/ft-connect/dto/FtConnect.dto";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 import type { EstablishmentAggregate } from "../../entities/EstablishmentAggregate";
+import { notifyValidatorAndCounsellor } from "./notifications.utils";
 
-export type NotifyThatEstablishmentIsBanned = ReturnType<
-  typeof makeNotifyThatEstablishmentIsBanned
+export type NotifyThatReferencedEstablishmentIsBanned = ReturnType<
+  typeof makeNotifyThatReferencedEstablishmentIsBanned
 >;
 
-export const makeNotifyThatEstablishmentIsBanned = useCaseBuilder(
-  "NotifyThatEstablishmentIsBanned",
+export const makeNotifyThatReferencedEstablishmentIsBanned = useCaseBuilder(
+  "NotifyThatReferencedEstablishmentIsBanned",
 )
   .withInput<WithSiretDto>(withSiretSchema)
   .withDeps<{
@@ -145,62 +143,13 @@ const notifyValidatorsAndCounsellors = async (
     sortBy: "dateStart",
   });
 
-  await executeInSequence(validatedConventions, async (convention) => {
-    const agency = await uow.agencyRepository.getById(convention.agencyId);
-    if (!agency)
-      throw errors.agency.notFound({ agencyId: convention.agencyId });
-
-    const ftUserAdvisor: ConventionFtUserAdvisorEntity | undefined =
-      await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-        convention.id,
-      );
-
-    if (ftUserAdvisor?.advisor) {
-      await saveNotificationAndRelatedEvent(uow, {
-        kind: "email",
-        templatedContent: {
-          kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_VALIDATOR_AND_PREVALIDATOR",
-          recipients: [ftUserAdvisor.advisor.email],
-          params: {
-            businessName: bannedEstablishment.establishment.name,
-            beneficiaryFirstName: convention.signatories.beneficiary.firstName,
-            beneficiaryLastName: convention.signatories.beneficiary.lastName,
-            immersionBaseUrl: immersionBaseUrl,
-            conventionId: convention.id,
-          },
-        },
-        followedIds: {
-          establishmentSiret: bannedEstablishment.establishment.siret,
-          conventionId: convention.id,
-        },
-      });
-
-      return;
-    }
-
-    const agencyWithUserEmailNotificationActivated =
-      await agencyWithRightToAgencyDto(uow, agency);
-
-    await saveNotificationAndRelatedEvent(uow, {
-      kind: "email",
-      templatedContent: {
-        kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_VALIDATOR_AND_PREVALIDATOR",
-        recipients: uniq([
-          ...agencyWithUserEmailNotificationActivated.validatorEmails,
-          ...agencyWithUserEmailNotificationActivated.counsellorEmails,
-        ]),
-        params: {
-          businessName: bannedEstablishment.establishment.name,
-          beneficiaryFirstName: convention.signatories.beneficiary.firstName,
-          beneficiaryLastName: convention.signatories.beneficiary.lastName,
-          immersionBaseUrl: immersionBaseUrl,
-          conventionId: convention.id,
-        },
-      },
-      followedIds: {
-        establishmentSiret: bannedEstablishment.establishment.siret,
-        conventionId: convention.id,
-      },
-    });
-  });
+  await executeInSequence(validatedConventions, (convention) =>
+    notifyValidatorAndCounsellor(
+      uow,
+      saveNotificationAndRelatedEvent,
+      immersionBaseUrl,
+      convention,
+      bannedEstablishment.establishment.name,
+    ),
+  );
 };

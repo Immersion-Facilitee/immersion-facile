@@ -22,6 +22,7 @@ import {
 } from "../../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { UuidV4Generator } from "../../../core/uuid-generator/adapters/UuidGeneratorImplementations";
+import { EstablishmentAggregateBuilder } from "../../helpers/EstablishmentBuilders";
 import {
   makeNotifyThatEstablishmentFromConventionIsBanned,
   type NotifyThatEstablishmentFromConventionIsBanned,
@@ -185,12 +186,88 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
     });
   });
 
+  it("notifies all convention actors except registered establishment respresentative when a validated convention has not ended", async () => {
+    const dateStart = addDays(timeGateway.now(), -1);
+    const dateEnd = addDays(timeGateway.now(), 1);
+    const validator = new UserBuilder()
+      .withId("validator-id")
+      .withEmail("validator@example.com")
+      .build();
+    const counsellor = new UserBuilder()
+      .withId("counsellor-id")
+      .withEmail("counsellor@example.com")
+      .build();
+    const agency = new AgencyDtoBuilder().withId("agency-id").build();
+    const convention = new ConventionDtoBuilder()
+      .withSiret(siret)
+      .withStatus("ACCEPTED_BY_VALIDATOR")
+      .withAgencyId(agency.id)
+      .withDateStart(dateStart.toISOString())
+      .withDateEnd(dateEnd.toISOString())
+      .withSchedule(reasonableSchedule)
+      .withBusinessName("Banned establishment")
+      .withBeneficiaryEmail("beneficiary@example.com")
+      .withBeneficiaryFirstName("Jean")
+      .withBeneficiaryLastName("Dupont")
+      .withEstablishmentRepresentativeEmail("representative@example.com")
+      .build();
+
+    const establishment = new EstablishmentAggregateBuilder()
+      .withEstablishmentSiret(convention.siret)
+      .build();
+    uow.establishmentAggregateRepository.establishmentAggregates = [
+      establishment,
+    ];
+    uow.conventionRepository.setConventions([convention]);
+    uow.userRepository.users = [validator, counsellor];
+    uow.agencyRepository.agencies = [
+      toAgencyWithRights(agency, {
+        [validator.id]: {
+          roles: ["validator"],
+          isNotifiedByEmail: true,
+        },
+        [counsellor.id]: {
+          roles: ["counsellor"],
+          isNotifiedByEmail: true,
+        },
+      }),
+    ];
+
+    await notifyThatEstablishmentFromConventionIsBanned.execute({ siret });
+
+    expectSavedNotificationsAndEvents({
+      emails: [
+        {
+          kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
+          recipients: [convention.signatories.beneficiary.email],
+          params: {
+            businessName: convention.businessName,
+            beneficiaryFirstName: convention.signatories.beneficiary.firstName,
+            beneficiaryLastName: convention.signatories.beneficiary.lastName,
+            immersionBaseUrl,
+          },
+        },
+        {
+          kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_VALIDATOR_AND_PREVALIDATOR",
+          recipients: [validator.email, counsellor.email],
+          params: {
+            businessName: convention.businessName,
+            beneficiaryFirstName: convention.signatories.beneficiary.firstName,
+            beneficiaryLastName: convention.signatories.beneficiary.lastName,
+            immersionBaseUrl,
+            conventionId: convention.id,
+          },
+        },
+      ],
+    });
+  });
+
   it.each<ConventionStatus>([
     "READY_TO_SIGN",
     "PARTIALLY_SIGNED",
     "IN_REVIEW",
     "ACCEPTED_BY_COUNSELLOR",
-  ])("notifies the beneficiary and establishment representative for a convention with status %s", async (status) => {
+  ])("notifies the beneficiary and (not already registered) establishment representative for a convention with status %s", async (status) => {
     const convention = new ConventionDtoBuilder()
       .withSiret(siret)
       .withStatus(status)

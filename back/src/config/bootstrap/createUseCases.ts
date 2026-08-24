@@ -172,7 +172,7 @@ import { makeNotifyContactRequest } from "../../domains/establishment/use-cases/
 import { makeNotifyEstablishmentAdminsThatUserRightIsPending } from "../../domains/establishment/use-cases/notifications/NotifyEstablishmentAdminsThatUserRightIsPending";
 import { makeNotifyPassEmploiOnNewEstablishmentAggregateInsertedFromForm } from "../../domains/establishment/use-cases/notifications/NotifyPassEmploiOnNewEstablishmentAggregateInsertedFromForm";
 import { makeNotifyThatEstablishmentFromConventionIsBanned } from "../../domains/establishment/use-cases/notifications/NotifyThatEstablishmentFromConventionIsBanned";
-import { makeNotifyThatEstablishmentIsBanned } from "../../domains/establishment/use-cases/notifications/NotifyThatEstablishmentIsBanned";
+import { makeNotifyThatReferencedEstablishmentIsBanned } from "../../domains/establishment/use-cases/notifications/NotifyThatReferencedEstablishmentIsBanned";
 import { makeRegisterUserOnEstablishment } from "../../domains/establishment/use-cases/RegisterUserOnEstablishment";
 import { makeRetrieveFormEstablishmentFromAggregates } from "../../domains/establishment/use-cases/RetrieveFormEstablishmentFromAggregates";
 import { makeUpdateEstablishmentAggregateFromForm } from "../../domains/establishment/use-cases/UpdateEstablishmentAggregateFromFormEstablishement";
@@ -474,14 +474,15 @@ export const createUseCases = ({
           config,
         },
       }),
-    notifyThatEstablishmentIsBanned: makeNotifyThatEstablishmentIsBanned({
-      uowPerformer,
-      deps: {
-        saveNotificationAndRelatedEvent,
-        immersionBaseUrl: config.immersionFacileBaseUrl,
-        timeGateway,
-      },
-    }),
+    notifyThatEstablishmentIsBanned:
+      makeNotifyThatReferencedEstablishmentIsBanned({
+        uowPerformer,
+        deps: {
+          saveNotificationAndRelatedEvent,
+          immersionBaseUrl: config.immersionFacileBaseUrl,
+          timeGateway: gateways.timeGateway,
+        },
+      }),
     notifyThatEstablishmentFromConventionIsBanned:
       makeNotifyThatEstablishmentFromConventionIsBanned({
         uowPerformer,
