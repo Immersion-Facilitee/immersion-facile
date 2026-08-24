@@ -60,7 +60,8 @@ const errorTranslations: Partial<Record<SiretSliceError, ReactNode>> = {
 
 const isSiretAlreadySaved = createSelector(
   siretState,
-  ({ establishment }) => establishment?.isAlreadySaved,
+  ({ establishment, error }) =>
+    establishment ? establishment.isAlreadySaved : error === "Already exists",
 );
 
 export const siretSelectors = {
