@@ -20,7 +20,11 @@ import {
 } from "react-design-system";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import { domElementIds, type ValueOf } from "shared";
+import {
+  defaultPerPageInWebPagination,
+  domElementIds,
+  type ValueOf,
+} from "shared";
 import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { AppellationAutocomplete } from "src/app/components/forms/autocomplete/AppellationAutocomplete";
 import { PlaceAutocomplete } from "src/app/components/forms/autocomplete/PlaceAutocomplete";
@@ -157,6 +161,8 @@ export const SearchPage = ({
     fitForDisabledWorkers: undefined,
     nafCodes: undefined,
     nafLabel: undefined,
+    page: 1,
+    perPage: defaultPerPageInWebPagination,
     appellations: isExternal
       ? defaultValuesForExternalSearch.appellations
       : undefined,

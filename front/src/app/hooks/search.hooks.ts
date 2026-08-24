@@ -47,6 +47,7 @@ const filterUrlsParamsAndUpdateUrl = ({
     },
     matchingParams: searchParams,
   });
+
   const encodedUrlParams = {
     ...filteredUrlParams,
     ...encodedSearchUriParams.reduce((acc, currentKey) => {
