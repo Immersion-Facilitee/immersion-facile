@@ -10,8 +10,8 @@ type UrlParamsWithAcquisition = Record<string, string> & AcquisitionParams;
 const routeParamsContainsAcquisitionParams = (
   routeParams: Record<string, string>,
 ): routeParams is UrlParamsWithAcquisition =>
-  ("mtm_campaign" in routeParams && routeParams.mtm_campaign !== undefined) ||
-  ("mtm_kwd" in routeParams && routeParams.mtm_kwd !== undefined);
+  ("at_campaign" in routeParams && routeParams.at_campaign !== undefined) ||
+  ("at_kwd" in routeParams && routeParams.at_kwd !== undefined);
 
 const areRouteParamsDifferentFromAcquisitionParams = (
   acquisitionParams: WithAcquisition,
@@ -20,8 +20,8 @@ const areRouteParamsDifferentFromAcquisitionParams = (
   !equals(
     values(acquisitionParams).filter((param) => param !== undefined),
     values({
-      mtm_campaign: routeParams.mtm_campaign,
-      mtm_kwd: routeParams.mtm_kwd,
+      at_campaign: routeParams.at_campaign,
+      at_kwd: routeParams.at_kwd,
     }).filter((param) => param !== undefined),
   );
 
@@ -53,8 +53,8 @@ export const useGetAcquisitionParams = () => {
     areRouteParamsDifferentFromAcquisitionParams(acquisitionParams, urlParams)
   ) {
     setAcquisitionParams({
-      acquisitionCampaign: urlParams.mtm_campaign,
-      acquisitionKeyword: urlParams.mtm_kwd,
+      acquisitionCampaign: urlParams.at_campaign,
+      acquisitionKeyword: urlParams.at_kwd,
     });
   }
   return acquisitionParams;

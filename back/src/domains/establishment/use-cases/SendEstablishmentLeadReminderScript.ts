@@ -193,7 +193,7 @@ const generateAddEstablishmentFormLink = ({
   makeRouteAbsoluteUrl({
     route: frontRoutes.formEstablishment({
       fromConventionId: convention.id,
-      mtm_campaign: acquisitionCampaign,
+      at_campaign: acquisitionCampaign,
     }),
     baseUrl: config.immersionFacileBaseUrl,
   });

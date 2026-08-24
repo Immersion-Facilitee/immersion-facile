@@ -207,7 +207,7 @@ describe("SendExchangeToRecipient", () => {
                   <li>Entreprise : My default business name - 1 rue de la Paix 75001 Paris</li>
                   </ul><br />
                   
-    <a href="http://localhost/mon-compte/tableau-de-bord-beneficiaire/discussions/${discussion.id}?mtm_campaign=inbound-parsing-reponse-via-tableau-de-bord" style="display: inline-flex; align-items: center; margin: 1.5rem 0; font-weight: 500; font-size: 0.875rem; line-height: 1.5rem; min-height: 2rem; padding: 0.25rem 0.75rem; background-color: #000091; color: #f5f5fe; text-decoration: none;">Répondre depuis mon espace</a>
+    <a href="http://localhost/mon-compte/tableau-de-bord-beneficiaire/discussions/${discussion.id}?at_campaign=inbound-parsing-reponse-via-tableau-de-bord" style="display: inline-flex; align-items: center; margin: 1.5rem 0; font-weight: 500; font-size: 0.875rem; line-height: 1.5rem; min-height: 2rem; padding: 0.25rem 0.75rem; background-color: #000091; color: #f5f5fe; text-decoration: none;">Répondre depuis mon espace</a>
   
                   </div>
             ${lastEstablishmentExchange.message}`,
@@ -297,7 +297,7 @@ describe("SendExchangeToRecipient", () => {
                   <li>Entreprise : My default business name - 1 rue de la Paix 75001 Paris</li>
                   </ul><br />
                   
-    <a href="http://localhost/mon-compte/tableau-de-bord-etablissement/discussions/${discussion.id}?mtm_campaign=inbound-parsing-reponse-via-tableau-de-bord" style="display: inline-flex; align-items: center; margin: 1.5rem 0; font-weight: 500; font-size: 0.875rem; line-height: 1.5rem; min-height: 2rem; padding: 0.25rem 0.75rem; background-color: #000091; color: #f5f5fe; text-decoration: none;">Répondre depuis mon espace</a>
+    <a href="http://localhost/mon-compte/tableau-de-bord-etablissement/discussions/${discussion.id}?at_campaign=inbound-parsing-reponse-via-tableau-de-bord" style="display: inline-flex; align-items: center; margin: 1.5rem 0; font-weight: 500; font-size: 0.875rem; line-height: 1.5rem; min-height: 2rem; padding: 0.25rem 0.75rem; background-color: #000091; color: #f5f5fe; text-decoration: none;">Répondre depuis mon espace</a>
   
                   </div>
             ${lastBeneficiaryExchange.message}`,
@@ -371,7 +371,7 @@ describe("SendExchangeToRecipient", () => {
                   <li>Entreprise : My default business name - 1 rue de la Paix 75001 Paris</li>
                   </ul><br />
                   
-    <a href="http://localhost/mon-compte/tableau-de-bord-beneficiaire/discussions/${discussion.id}?mtm_campaign=inbound-parsing-reponse-via-tableau-de-bord" style="display: inline-flex; align-items: center; margin: 1.5rem 0; font-weight: 500; font-size: 0.875rem; line-height: 1.5rem; min-height: 2rem; padding: 0.25rem 0.75rem; background-color: #000091; color: #f5f5fe; text-decoration: none;">Répondre depuis mon espace</a>
+    <a href="http://localhost/mon-compte/tableau-de-bord-beneficiaire/discussions/${discussion.id}?at_campaign=inbound-parsing-reponse-via-tableau-de-bord" style="display: inline-flex; align-items: center; margin: 1.5rem 0; font-weight: 500; font-size: 0.875rem; line-height: 1.5rem; min-height: 2rem; padding: 0.25rem 0.75rem; background-color: #000091; color: #f5f5fe; text-decoration: none;">Répondre depuis mon espace</a>
   
                   </div>
             ${"--- pas de message ---"}`,
@@ -429,7 +429,7 @@ describe("SendExchangeToRecipient", () => {
                   <li>Entreprise : My default business name - 1 rue de la Paix 75001 Paris</li>
                   </ul><br />
                   
-    <a href="http://localhost/mon-compte/tableau-de-bord-beneficiaire/discussions/${discussion.id}?mtm_campaign=inbound-parsing-reponse-via-tableau-de-bord" style="display: inline-flex; align-items: center; margin: 1.5rem 0; font-weight: 500; font-size: 0.875rem; line-height: 1.5rem; min-height: 2rem; padding: 0.25rem 0.75rem; background-color: #000091; color: #f5f5fe; text-decoration: none;">Répondre depuis mon espace</a>
+    <a href="http://localhost/mon-compte/tableau-de-bord-beneficiaire/discussions/${discussion.id}?at_campaign=inbound-parsing-reponse-via-tableau-de-bord" style="display: inline-flex; align-items: center; margin: 1.5rem 0; font-weight: 500; font-size: 0.875rem; line-height: 1.5rem; min-height: 2rem; padding: 0.25rem 0.75rem; background-color: #000091; color: #f5f5fe; text-decoration: none;">Répondre depuis mon espace</a>
   
                   </div>
             ${lastExchange.message}`,

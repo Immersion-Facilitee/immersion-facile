@@ -251,7 +251,7 @@ describe("RenewExpiredJwt use case", () => {
         await useCase.execute({
           kind: "convention",
           originalUrl: encodeURIComponent(
-            "http://immersionfacile.fr/verifier-et-signer?mtm_campaign=test&jwt=toto",
+            "http://immersionfacile.fr/verifier-et-signer?at_campaign=test&jwt=toto",
           ),
           expiredJwt: generateConventionJwt(expiredPayload),
         });

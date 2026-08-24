@@ -206,7 +206,7 @@ const getActivateDraftConventionButtonProps = ({
           skipIntro: true,
           conventionDraftId: conventionDraft.id,
           discussionId: discussion.id,
-          mtm_campaign: "mise_en_relation_activation_convention",
+          at_campaign: "mise_en_relation_activation_convention",
         }).href
       : frontRoutes.conventionMiniStage({
           conventionDraftId: conventionDraft.id,

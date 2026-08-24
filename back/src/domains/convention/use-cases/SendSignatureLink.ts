@@ -191,7 +191,7 @@ const sendSms = async ({
   const shortLink = await makeShortMagicLink({
     targetRoute: "conventionToSign",
     lifetime: "2Days",
-    extraQueryParams: { mtm_campaign: "sms-signature-link" },
+    extraQueryParams: { at_campaign: "sms-signature-link" },
   });
 
   await saveNotificationAndRelatedEvent(uow, {
@@ -289,7 +289,7 @@ const sendEmail = async ({
         conventionSignShortlink: await makeShortMagicLink({
           targetRoute: "conventionToSign",
           lifetime: "2Days",
-          extraQueryParams: { mtm_campaign: "email-signature-link" },
+          extraQueryParams: { at_campaign: "email-signature-link" },
         }),
         businessName: convention.businessName,
         agencyLogoUrl: undefined,

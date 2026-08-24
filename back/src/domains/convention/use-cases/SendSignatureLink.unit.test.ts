@@ -644,7 +644,7 @@ describe("Send signature link", () => {
               now: timeGateway.now(),
               targetRoute: "conventionToSign",
               lifetime: "2Days",
-              extraQueryParams: { mtm_campaign: "sms-signature-link" },
+              extraQueryParams: { at_campaign: "sms-signature-link" },
             }),
             lastUsedAt: null,
           },

@@ -60,8 +60,8 @@ export const ConventionImmersionPage = ({
     useMemo(() => {
       const {
         jwt: _,
-        mtm_campaign: __,
-        mtm_kwd: ___,
+        at_campaign: __,
+        at_kwd: ___,
         skipIntro: ____,
         conventionDraftId,
         ...routeParamsWithoutJwtAndTrackers
@@ -124,8 +124,8 @@ const PageContent = ({ route }: ConventionImmersionPageProps) => {
     useMemo(() => {
       const {
         jwt: _,
-        mtm_campaign: __,
-        mtm_kwd: ____,
+        at_kwd: __,
+        at_campaign: ____,
         conventionDraftId,
         ...routeParamsWithoutJwtAndTrackers
       } = initialRouteParams;

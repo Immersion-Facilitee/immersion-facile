@@ -105,7 +105,7 @@ const makeEmail = async (
       targetRoute: "conventionToSign",
       lifetime: "2Days",
       extraQueryParams: {
-        mtm_campaign: "email-signature-link-after-modification",
+        at_campaign: "email-signature-link-after-modification",
       },
     }),
     justification: convention.statusJustification ?? NO_JUSTIFICATION,

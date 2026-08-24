@@ -98,7 +98,7 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
             targetRoute: "conventionToSign",
             lifetime: "2Days",
             extraQueryParams: {
-              mtm_campaign: "email-signature-link-after-modification",
+              at_campaign: "email-signature-link-after-modification",
             },
           }),
           lastUsedAt: null,
@@ -113,7 +113,7 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
             targetRoute: "conventionToSign",
             lifetime: "2Days",
             extraQueryParams: {
-              mtm_campaign: "email-signature-link-after-modification",
+              at_campaign: "email-signature-link-after-modification",
             },
           }),
           lastUsedAt: null,

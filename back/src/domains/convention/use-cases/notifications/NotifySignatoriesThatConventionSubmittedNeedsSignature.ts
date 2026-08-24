@@ -152,7 +152,7 @@ const makeEmail = async (
         targetRoute: "conventionToSign",
         lifetime: "2Days",
         extraQueryParams: {
-          mtm_campaign: "email-signature-link",
+          at_campaign: "email-signature-link",
         },
       }),
       businessName,

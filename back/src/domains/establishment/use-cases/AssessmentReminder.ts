@@ -273,7 +273,7 @@ const sendTutorAssessmentReminder = async ({
   const assessmentCreationLink = await makeShortMagicLink({
     targetRoute: "assessment",
     lifetime: "2Days",
-    extraQueryParams: { mtm_campaign: "assessment-reminder" },
+    extraQueryParams: { at_campaign: "assessment-reminder" },
   });
 
   const notification = createTutorNotification({

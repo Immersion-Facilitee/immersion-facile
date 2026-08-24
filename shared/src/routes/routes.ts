@@ -53,8 +53,8 @@ const connectedUserParams = {
 >;
 
 export const acquisitionParams = {
-  mtm_campaign: param.query.optional.string,
-  mtm_kwd: param.query.optional.string,
+  at_campaign: param.query.optional.string,
+  at_kwd: param.query.optional.string,
 };
 
 const agencyParamsForConventionForm = {

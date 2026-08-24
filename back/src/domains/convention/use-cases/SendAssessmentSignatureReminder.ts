@@ -257,7 +257,7 @@ const sendAssessmentSignatureReminderSms = async ({
   const shortLink = await makeShortMagicLink({
     targetRoute: "assessmentDocument",
     lifetime: "2Days",
-    extraQueryParams: { mtm_campaign: "sms-assessment-signature-reminder" },
+    extraQueryParams: { at_campaign: "sms-assessment-signature-reminder" },
   });
 
   await saveNotificationAndRelatedEvent(uow, {
