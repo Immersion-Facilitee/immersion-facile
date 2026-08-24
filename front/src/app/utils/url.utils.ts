@@ -16,8 +16,9 @@ export const filterParamsForRoute = <T>({
 }) =>
   Object.fromEntries(
     Object.entries(urlParams).filter(
-      ([key, value]) =>
-        key in matchingParams && value && !forceExcludeParams?.includes(key),
+      ([key]) =>
+        isKeyInObjectAndValueNotUndefinedNorEmpty(key, matchingParams) &&
+        !forceExcludeParams?.includes(key),
     ),
   );
 
@@ -26,3 +27,15 @@ const replaceNewLineInValueBySlash = (value: unknown) =>
 
 export const cleanParamsValues = (obj: Record<string, unknown>) =>
   mapObjIndexed(replaceNewLineInValueBySlash, obj);
+
+export const isKeyInObjectAndValueNotUndefinedNorEmpty = <
+  T extends object,
+  K extends keyof T,
+>(
+  key: K,
+  values: T,
+): values is T & Record<K, NonNullable<T[K]>> =>
+  key in values && !isValueUndefinedOrEmpty(values[key]);
+
+export const isValueUndefinedOrEmpty = (value: unknown) =>
+  value === undefined || value === "";

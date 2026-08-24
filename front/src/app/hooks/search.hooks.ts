@@ -10,6 +10,7 @@ import {
 import {
   filterParamsForRoute,
   getUrlParameters,
+  isKeyInObjectAndValueNotUndefinedNorEmpty,
 } from "src/app/utils/url.utils";
 import {
   type SearchPageParams,
@@ -51,9 +52,8 @@ const filterUrlsParamsAndUpdateUrl = ({
   const encodedUrlParams = {
     ...filteredUrlParams,
     ...encodedSearchUriParams.reduce((acc, currentKey) => {
-      const value = values[currentKey];
-      if (value) {
-        acc[currentKey] = encodeURIComponent(value);
+      if (isKeyInObjectAndValueNotUndefinedNorEmpty(currentKey, values)) {
+        acc[currentKey] = encodeURIComponent(values[currentKey]);
       }
       return acc;
     }, filteredUrlParams),

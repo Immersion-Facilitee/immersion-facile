@@ -50,6 +50,10 @@ import { searchSelectors } from "src/core-logic/domain/search/search.selectors";
 import type { SearchPageParams } from "src/core-logic/domain/search/search.slice";
 import { useStyles } from "tss-react/dsfr";
 import "./SearchPage.scss";
+import {
+  isKeyInObjectAndValueNotUndefinedNorEmpty,
+  isValueUndefinedOrEmpty,
+} from "src/app/utils/url.utils";
 import Styles from "./SearchPage.styles";
 
 export const radiusOptions = ["1", "2", "5", "10", "20", "50", "100"].map(
@@ -62,15 +66,15 @@ export const DEFAULT_DISTANCE_KM = 10;
 
 const getSearchRouteParam = (
   currentKey: keyof SearchPageParams,
-  routeParam: ValueOf<SearchPageParams>,
+  currentValue: ValueOf<SearchPageParams>,
   defaultValue: unknown,
 ) => {
-  if (!routeParam) {
+  if (isValueUndefinedOrEmpty(currentValue)) {
     return defaultValue;
   }
   return includes(currentKey, encodedSearchUriParams)
-    ? decodeURIComponent(`${routeParam}`)
-    : routeParam;
+    ? decodeURIComponent(`${currentValue}`)
+    : currentValue;
 };
 
 const parisLatLon = {
@@ -180,10 +184,10 @@ export const SearchPage = ({
   const [tempValue, setTempValue] = useState<SearchPageParams>(initialValues);
   const filterFormValues = useCallback((values: SearchPageParams) => {
     return keys(values).reduce((acc, key) => {
-      const shouldKeepValue =
-        key in values &&
-        typeof values[key] !== "undefined" &&
-        values[key] !== "";
+      const shouldKeepValue = isKeyInObjectAndValueNotUndefinedNorEmpty(
+        key,
+        values,
+      );
       return {
         ...acc,
         ...(shouldKeepValue ? { [key]: values[key] } : {}),
