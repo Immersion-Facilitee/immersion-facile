@@ -2,7 +2,6 @@ import {
   type AgencyDto,
   AgencyDtoBuilder,
   BadRequestError,
-  ConflictError,
   ConnectedUserBuilder,
   type CreateAgencyDto,
   errors,
@@ -341,6 +340,63 @@ describe("AddAgency use case", () => {
         ),
       ]);
     });
+
+    it("saves the agency even if another with the same address and kind already exists", async () => {
+      const existingAgency = new AgencyDtoBuilder().build();
+      const newAgency = new AgencyDtoBuilder()
+        .withId("agency-to-create-id")
+        .withStatus("needsReview")
+        .withAddress(existingAgency.address)
+        .withKind(existingAgency.kind)
+        .withAgencySiret(TEST_OPEN_ESTABLISHMENT_1.siret)
+        .build();
+
+      uow.agencyRepository.agencies = [toAgencyWithRights(existingAgency)];
+
+      await addAgency.execute({
+        ...newAgency,
+        validatorEmails: [validator.email],
+      });
+
+      const newValidator: User = {
+        id: uuids[0],
+        email: validator.email,
+        createdAt: timeGateway.now().toISOString(),
+        firstName: emptyName,
+        lastName: emptyName,
+        proConnect: null,
+      };
+
+      expectToEqual(uow.agencyRepository.agencies, [
+        toAgencyWithRights(existingAgency),
+        toAgencyWithRights(
+          {
+            ...newAgency,
+            status: "needsReview",
+            statusJustification: null,
+            codeSafir: null,
+            counsellorEmails: [],
+            validatorEmails: [],
+          },
+          {
+            [newValidator.id]: {
+              isNotifiedByEmail: true,
+              roles: ["validator"],
+            },
+          },
+        ),
+      ]);
+      expectArraysToMatch(uow.outboxRepository.events, [
+        {
+          id: uuids[1],
+          topic: "NewAgencyAdded",
+          payload: {
+            agencyId: newAgency.id,
+            triggeredBy: null,
+          },
+        },
+      ]);
+    });
   });
 
   describe("wrong paths", () => {
@@ -395,26 +451,6 @@ describe("AddAgency use case", () => {
       await expectPromiseToFailWithError(
         addAgency.execute(createAgencyWithRefersToParams),
         errors.agency.notFound({ agencyId: createParisMissionLocaleParams.id }),
-      );
-    });
-
-    it("fails to create if the has the same address and kind than an existing one", async () => {
-      const existingAgency = new AgencyDtoBuilder().build();
-      const newAgency = new AgencyDtoBuilder()
-        .withId("agency-to-create-id")
-        .withStatus("needsReview")
-        .withAddress(existingAgency.address)
-        .withKind(existingAgency.kind)
-        .withAgencySiret("11110000111100")
-        .build();
-
-      uow.agencyRepository.agencies = [toAgencyWithRights(existingAgency)];
-
-      await expectPromiseToFailWithError(
-        addAgency.execute({ ...newAgency, validatorEmails: ["mail@mail.com"] }),
-        new ConflictError(
-          "Une autre agence du même type existe avec la même adresse",
-        ),
       );
     });
 

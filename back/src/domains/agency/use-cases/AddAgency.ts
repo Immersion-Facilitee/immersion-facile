@@ -16,7 +16,6 @@ import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { UuidGenerator } from "../../core/uuid-generator/ports/UuidGenerator";
-import { throwConflictErrorOnSimilarAgencyFound } from "../entities/Agency";
 
 type WithUserIdAndIsNotified = {
   userId: UserId;
@@ -69,8 +68,6 @@ export const makeAddAgency = useCaseBuilder("AddAgency")
         counsellorUserIdsForAgency,
       ),
     };
-
-    await throwConflictErrorOnSimilarAgencyFound({ uow, agency });
 
     const siretEstablishmentDto =
       agency.agencySiret &&
