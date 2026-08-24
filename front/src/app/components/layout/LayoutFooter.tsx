@@ -239,7 +239,8 @@ const makeNavTopGroupLinks = (
     links: [
       {
         label: "Référencer mon organisme",
-        ...frontRoutes.addAgency().link,
+        ...frontRoutes.agencyDashboardAgencies({ isAgencyRegistration: true })
+          .link,
         id: navTopGroupLinksIds.addAgencyForm,
       },
       {
