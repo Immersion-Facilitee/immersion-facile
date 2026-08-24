@@ -404,11 +404,12 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                         currentSearchResult.position.lat,
                         currentSearchResult.position.lon,
                       ],
-                      icon: getIconMarker(
-                        miniMapMarkerKey,
+                      icon: getIconMarker({
+                        activeMarkerKey: miniMapMarkerKey,
+                        isAvailable: true,
                         isExternal,
-                        miniMapMarkerKey,
-                      ),
+                        key: miniMapMarkerKey,
+                      }),
                     }}
                   />
                 </div>

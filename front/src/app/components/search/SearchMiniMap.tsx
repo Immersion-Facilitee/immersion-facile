@@ -15,6 +15,7 @@ import {
   domElementIds,
   frontRoutes,
   type GeoPositionDto,
+  isInternalOfferDto,
   type OfferDto,
 } from "shared";
 import { SearchResult } from "src/app/components/search/SearchResult";
@@ -47,6 +48,14 @@ const defaultMarkerIcon = L.icon({
   shadowSize: [41, 41],
 });
 
+const disabledMarkerIcon = L.icon({
+  iconUrl: "/marker-icon-2x--disabled.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 const lbbMarkerIcon = L.icon({
   iconUrl: "/marker-icon-2x--purple.png",
   iconSize: [25, 41],
@@ -63,13 +72,22 @@ const activeMarkerIcon = L.icon({
   shadowSize: [41, 41],
 });
 
-export const getIconMarker = (
-  activeMarkerKey: string | undefined | null,
-  isExternal: boolean,
-  key: string,
-) => {
+export const getIconMarker = ({
+  activeMarkerKey,
+  isExternal,
+  isAvailable,
+  key,
+}: {
+  activeMarkerKey: string | undefined | null;
+  isExternal: boolean;
+  isAvailable: boolean;
+  key: string;
+}) => {
   if (activeMarkerKey === key) {
     return activeMarkerIcon;
+  }
+  if (!isAvailable) {
+    return disabledMarkerIcon;
   }
   return isExternal ? lbbMarkerIcon : defaultMarkerIcon;
 };
@@ -179,7 +197,13 @@ export const SearchMiniMap = ({
             <Marker
               key={key}
               position={[searchResult.position.lat, searchResult.position.lon]}
-              icon={getIconMarker(activeMarkerKey, isExternal, key)}
+              icon={getIconMarker({
+                activeMarkerKey,
+                isExternal,
+                key,
+                isAvailable:
+                  isInternalOfferDto(searchResult) && searchResult.isAvailable,
+              })}
               eventHandlers={{
                 click: () => {
                   if (setActiveMarkerKey) {
