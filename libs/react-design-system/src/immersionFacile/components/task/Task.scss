@@ -1,13 +1,25 @@
 @use "../../../config/responsive" as *;
 
 .im-task {
-  &__buttons {
+  display: block;
+
+  @include for-screen-min($bp-md) {
     display: flex;
+    align-items: center;
+  }
+
+  &__content {
+    flex: 1 1 content;
+  }
+
+  &__buttons {
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 0.5rem;
+    flex: 1 1 content;
 
     @include for-screen-min($bp-md) {
+      flex-direction: row;
       align-items: flex-end;
     }
   }
@@ -15,12 +27,16 @@
   &__buttons-row {
     display: flex;
     gap: 0.5rem;
+
+    @include for-screen-min($bp-md) {
+      justify-content: flex-end;
+    }
   }
-  
+
   &__footer {
     color: var(--grey-425-625);
   }
-  
+
   &--with-background-color.fr-card {
     border-color: var(--grey-975-100);
     background-color: var(--grey-975-100);

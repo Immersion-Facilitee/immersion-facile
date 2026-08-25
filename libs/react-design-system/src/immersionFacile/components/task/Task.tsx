@@ -45,11 +45,11 @@ export const Task = ({
         className ? className : "",
       )}
     >
-      <div className={fr.cx("fr-grid-row")}>
-        <div className={fr.cx("fr-col-12", "fr-col-md-7")}>
+      <section className={cx(taskStyles.root)}>
+        <div className={cx(taskStyles.content)}>
           <Title
             className={cx(
-              fr.cx("fr-grid-row", "fr-mb-1w", "fr-grid-row--middle"),
+              fr.cx("fr-mb-1w"),
               dashboardTitleToClassName[titleAs],
             )}
           >
@@ -65,20 +65,18 @@ export const Task = ({
           )}
         </div>
         {buttonsRows && buttonsRows.length > 0 && (
-          <div
-            className={cx(
-              fr.cx("fr-col-12", "fr-col-md-5"),
-              taskStyles.buttons,
-            )}
-          >
+          <div className={cx(fr.cx("fr-ml-md-auto"), taskStyles.buttons)}>
             {buttonsRows.map((row) => (
-              <div key={row.id} className={taskStyles.buttonsRow}>
+              <div
+                key={row.id}
+                className={cx(fr.cx("fr-ml-md-1w"), taskStyles.buttonsRow)}
+              >
                 {row.content}
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </article>
   );
 };
