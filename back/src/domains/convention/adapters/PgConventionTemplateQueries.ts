@@ -38,16 +38,19 @@ export class PgConventionTemplateQueries implements ConventionTemplateQueries {
           "public_romes_data.code_rome",
           "public_appellations_data.code_rome",
         )
+        .leftJoin(
+          "banned_establishments",
+          "banned_establishments.siret",
+          "convention_templates.siret",
+        )
         .selectAll("convention_templates")
         .select([
           "public_appellations_data.ogr_appellation",
           "public_appellations_data.libelle_appellation_long",
           "public_appellations_data.code_rome",
           "public_romes_data.libelle_rome",
-        ])
-        .where("convention_templates.siret", "not in", (eb) =>
-          eb.selectFrom("banned_establishments").select("siret"),
-        ),
+        ]),
+      (qb) => qb.where("banned_establishments.siret", "is", null),
       (qb) =>
         params.ids?.length
           ? qb.where("convention_templates.id", "in", params.ids)

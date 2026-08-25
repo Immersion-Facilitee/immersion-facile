@@ -87,7 +87,7 @@ describe("PgConventionTemplateQueries", () => {
         userId: validator.id,
         siret: bannedEstablishmentSiret,
       };
-      pgConventionTemplateQueries.upsert(
+      await pgConventionTemplateQueries.upsert(
         conventionTemplateForBannedEstablishment,
         now,
       );
@@ -104,6 +104,31 @@ describe("PgConventionTemplateQueries", () => {
       });
 
       expectToEqual(result, []);
+    });
+
+    it("returns convention templates even if no siret on convention", async () => {
+      const bannedEstablishmentSiret: SiretDto = "78000403200019";
+
+      await new PgBannedEstablishmentRepository(db).banEstablishment({
+        siret: bannedEstablishmentSiret,
+        establishmentBannishmentJustification: "whatever",
+      });
+      const conventionTemplateId = uuid();
+      const conventionTemplateWithoutSiret: ConventionTemplate = {
+        id: conventionTemplateId,
+        name: "Template without siret",
+        userId: validator.id,
+        internshipKind: "immersion",
+      };
+      await pgConventionTemplateQueries.upsert(
+        conventionTemplateWithoutSiret,
+        now,
+      );
+      const result = await pgConventionTemplateQueries.get({
+        ids: [conventionTemplateId],
+      });
+
+      expect(result).toHaveLength(1);
     });
 
     it("returns only templates for the given ids", async () => {
