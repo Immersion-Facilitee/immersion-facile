@@ -18,6 +18,7 @@ export class InMemoryConventionRepository implements ConventionRepository {
 
   public async deprecateConventionsWithoutDefinitiveStatusEndedSince(
     endedSince: Date,
+    statusJustification: string,
   ): Promise<ConventionId[]> {
     const conventionsToDeprecate = await Promise.all(
       values(this.#conventions)
@@ -35,7 +36,7 @@ export class InMemoryConventionRepository implements ConventionRepository {
           this.update({
             ...convention,
             status: "DEPRECATED",
-            statusJustification: `Devenu obsolète car le statut était ${convention.status} alors que la date de fin est dépassée depuis longtemps`,
+            statusJustification,
           }),
         ),
     );

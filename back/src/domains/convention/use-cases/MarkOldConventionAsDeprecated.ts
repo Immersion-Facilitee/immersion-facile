@@ -23,6 +23,7 @@ export const makeMarkOldConventionAsDeprecated = useCaseBuilder(
     const updatedConventionsIds =
       await uow.conventionRepository.deprecateConventionsWithoutDefinitiveStatusEndedSince(
         inputParams.deprecateSince,
+        "La convention n'a jamais été validée, et la date de fin d'immersion indiquée est dépassée depuis un mois.",
       );
 
     const conventions = await uow.conventionQueries.getConventions({
