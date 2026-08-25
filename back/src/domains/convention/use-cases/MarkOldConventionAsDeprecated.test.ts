@@ -64,7 +64,7 @@ describe("MarkOldConventionAsDeprecated", () => {
       ...conventionToDeprecate,
       status: "DEPRECATED" as const,
       statusJustification:
-        "Devenu obsolète car le statut était PARTIALLY_SIGNED alors que la date de fin est dépassée depuis longtemps",
+        "La convention n'a jamais été validée, et la date de fin d'immersion indiquée est dépassée depuis un mois.",
     };
 
     expectToEqual(uow.conventionRepository.conventions, [

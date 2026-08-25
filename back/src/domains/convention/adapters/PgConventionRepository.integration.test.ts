@@ -1202,11 +1202,13 @@ describe("PgConventionRepository", () => {
         ),
       ]);
 
+      const statusJustification = "test-deprecation-justification";
       const updatedAt = timeGateway.now().toISOString();
 
       const numberOfUpdatedConventions =
         await conventionRepository.deprecateConventionsWithoutDefinitiveStatusEndedSince(
           dateSince,
+          statusJustification,
           updatedAt,
         );
 
@@ -1220,18 +1222,22 @@ describe("PgConventionRepository", () => {
       await expectConventionInRepoToBeDeprecated(
         convention1ToMarkAsDeprecated,
         updatedAt,
+        statusJustification,
       );
       await expectConventionInRepoToBeDeprecated(
         convention7ToMarkAsDeprecated,
         updatedAt,
+        statusJustification,
       );
       await expectConventionInRepoToBeDeprecated(
         convention8ToMarkAsDeprecated,
         updatedAt,
+        statusJustification,
       );
       await expectConventionInRepoToBeDeprecated(
         convention9ToMarkAsDeprecated,
         updatedAt,
+        statusJustification,
       );
       await expectConventionInRepoToEqual(convention2ToKeepAsIs);
       await expectConventionInRepoToEqual(convention3ToKeepAsIs);
@@ -1421,11 +1427,12 @@ describe("PgConventionRepository", () => {
   const expectConventionInRepoToBeDeprecated = async (
     convention: ConventionDto,
     updatedAt: DateString,
+    statusJustification: string,
   ) => {
     expectToEqual(await conventionRepository.getById(convention.id), {
       ...convention,
       status: "DEPRECATED",
-      statusJustification: `Devenu obsolète car le statut était ${convention.status} alors que la date de fin est dépassée depuis longtemps`,
+      statusJustification,
       updatedAt,
     });
   };

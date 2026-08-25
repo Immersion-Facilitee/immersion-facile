@@ -9,6 +9,7 @@ export interface ConventionRepository {
   ) => Promise<ConventionId | undefined>;
   deprecateConventionsWithoutDefinitiveStatusEndedSince: (
     endedSince: Date,
+    statusJustification: string,
     now?: DateString,
   ) => Promise<ConventionId[]>;
   deleteOldConventions: (params: {
