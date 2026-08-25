@@ -52,6 +52,7 @@ import type {
   GetConventionsParams,
   GetConventionsSortBy,
   GetPaginatedConventionsParams,
+  OmitStatusesForAgenciesFilter,
 } from "../ports/ConventionQueries";
 import {
   type BroadcastFeedbackBaseQueryBuilder,
@@ -285,6 +286,7 @@ export class PgConventionQueries implements ConventionQueries {
       search,
       statuses,
       agencyIds,
+      omitStatusesForAgencies,
       dateStart,
       dateEnd,
       dateSubmission,
@@ -310,6 +312,7 @@ export class PgConventionQueries implements ConventionQueries {
         transaction: this.transaction,
       }),
       filterByAgencyIds(agencyIds),
+      filterOmitStatusesForAgencies(omitStatusesForAgencies),
       filterSearch(trimmedSearch),
       filterDate("date_start", dateStart),
       filterDate("date_end", dateEnd),
@@ -638,6 +641,26 @@ const filterByAgencyIds =
           sql<boolean>`conventions.agency_id = ANY(${agencyIds}::uuid[])`,
         )
       : builder;
+
+const filterOmitStatusesForAgencies =
+  (omitStatusesForAgencies: OmitStatusesForAgenciesFilter | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder => {
+    if (
+      !omitStatusesForAgencies ||
+      omitStatusesForAgencies.agencyIds.length === 0 ||
+      omitStatusesForAgencies.statuses.length === 0
+    )
+      return builder;
+
+    return builder.where((eb) =>
+      eb.not(
+        eb.and([
+          sql<boolean>`conventions.agency_id = ANY(${omitStatusesForAgencies.agencyIds}::uuid[])`,
+          eb("conventions.status", "in", omitStatusesForAgencies.statuses),
+        ]),
+      ),
+    );
+  };
 
 const filterByAssessmentCompletionStatus =
   (
