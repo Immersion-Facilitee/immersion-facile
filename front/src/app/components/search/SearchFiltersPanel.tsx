@@ -86,7 +86,7 @@ export const SearchFiltersPanel = ({
     <aside
       aria-labelledby="search-filters-panel-title"
       className={cx(
-        fr.cx("fr-p-2w", "fr-p-md-0"),
+        fr.cx("fr-p-2w", "fr-p-md-0", "fr-pr-md-3w"),
         "im-search-filters-panel",
         isPanelOpened && "im-search-filters-panel--opened",
       )}
