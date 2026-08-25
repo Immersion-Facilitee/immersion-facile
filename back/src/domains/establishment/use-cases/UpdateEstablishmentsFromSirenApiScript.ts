@@ -33,6 +33,7 @@ type Deps = {
   siretGateway: SiretGateway;
   timeGateway: TimeGateway;
   numberOfDaysAgoToCheckForInseeUpdates: number;
+  numberOfDaysToRetrieveInseeUpdates: number;
   maxEstablishmentsPerBatch: number;
   maxEstablishmentsPerFullRun: number;
 };
@@ -46,7 +47,14 @@ export const makeUpdateEstablishmentsFromSirenApiScript = useCaseBuilder(
   .build(async ({ deps }) => {
     let callsToInseeApi = 0;
     const now = deps.timeGateway.now();
-    const since = subDays(now, deps.numberOfDaysAgoToCheckForInseeUpdates);
+    const sinceLastCheck = subDays(
+      now,
+      deps.numberOfDaysAgoToCheckForInseeUpdates,
+    );
+    const sinceInseeUpdates = subDays(
+      now,
+      deps.numberOfDaysToRetrieveInseeUpdates,
+    );
 
     let offset = 0;
     let numberOfEstablishmentsToUpdate = 0;
@@ -57,7 +65,7 @@ export const makeUpdateEstablishmentsFromSirenApiScript = useCaseBuilder(
         numberOfEstablishmentsToUpdateInBatch,
         establishmentWithNewDataInBatch,
         isInseeApiCalled: isCallToInseeApi,
-      } = await processOneBatch(deps, now, since);
+      } = await processOneBatch(deps, now, sinceLastCheck, sinceInseeUpdates);
 
       if (isCallToInseeApi) callsToInseeApi++;
 
@@ -83,12 +91,13 @@ export const makeUpdateEstablishmentsFromSirenApiScript = useCaseBuilder(
 const processOneBatch = async (
   deps: Deps,
   now: Date,
-  since: Date,
+  sinceLastCheck: Date,
+  sinceInseeUpdates: Date,
 ): Promise<BatchReport & { isInseeApiCalled: boolean }> => {
   const establishmentSiretsToUpdate: SiretDto[] =
     await deps.uowPerformer.perform(async (uow: UnitOfWork) =>
       uow.establishmentAggregateRepository.getSiretsOfEstablishmentsNotCheckedAtInseeSince(
-        since,
+        sinceLastCheck,
         deps.maxEstablishmentsPerBatch,
       ),
     );
@@ -109,7 +118,7 @@ const processOneBatch = async (
   const siretEstablishmentsWithChanges =
     establishmentSiretsToUpdate.length > 0
       ? await deps.siretGateway.getEstablishmentUpdatedBetween(
-          since,
+          sinceInseeUpdates,
           now,
           establishmentSiretsToUpdate,
         )
