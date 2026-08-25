@@ -1,31 +1,27 @@
-import { subMonths } from "date-fns";
 import { AppConfig } from "../../config/bootstrap/appConfig";
-import { makeKyselyDb } from "../../config/pg/kysely/kyselyUtils";
-import { createMakeScriptPgPool } from "../../config/pg/pgPool";
-import { PgAgencyRepository } from "../../domains/agency/adapters/PgAgencyRepository";
+import { createMakeProductionPgPool } from "../../config/pg/pgPool";
+import {
+  makeDeleteOldClosedAgenciesWithoutConventions,
+  numberOfMonthsBeforeDeletion,
+} from "../../domains/agency/use-cases/DeleteOldClosedAgenciesWithoutConventions";
+import { RealTimeGateway } from "../../domains/core/time-gateway/adapters/RealTimeGateway";
+import { createDbRelatedSystems } from "../../domains/core/unit-of-work/adapters/createDbRelatedSystems";
 import { createLogger } from "../../utils/logger";
 import { handleCRONScript } from "../handleCRONScript";
-import { monitoredAsUseCase } from "../utils";
 
 const logger = createLogger(__filename);
 const config = AppConfig.createFromEnv();
-const numberOfMonthsBeforeDeletion = 3;
 
 const deleteOldClosedAgenciesWithoutConventions = async () => {
-  const pool = createMakeScriptPgPool(config)();
-  const db = makeKyselyDb(pool);
-  const agencyRepository = new PgAgencyRepository(db);
+  const { uowPerformer } = createDbRelatedSystems(
+    config,
+    createMakeProductionPgPool(config),
+  );
 
-  const updatedBefore = subMonths(new Date(), numberOfMonthsBeforeDeletion);
-
-  const deletedAgencyIds =
-    await agencyRepository.deleteOldClosedAgenciesWithoutConventions({
-      updatedBefore,
-    });
-
-  const numberOfAgenciesDeleted = deletedAgencyIds.length;
-
-  return { numberOfAgenciesDeleted };
+  return makeDeleteOldClosedAgenciesWithoutConventions({
+    uowPerformer,
+    deps: { timeGateway: new RealTimeGateway() },
+  }).execute();
 };
 
 export const triggerDeleteOldClosedAgenciesWithoutConventions = ({
@@ -36,12 +32,9 @@ export const triggerDeleteOldClosedAgenciesWithoutConventions = ({
   handleCRONScript({
     name: "triggerDeleteOldClosedAgenciesWithoutConventions",
     config,
-    script: monitoredAsUseCase({
-      name: "DeleteOldClosedAgenciesWithoutConventions",
-      cb: deleteOldClosedAgenciesWithoutConventions,
-    }),
-    handleResults: ({ numberOfAgenciesDeleted }) =>
-      `${numberOfAgenciesDeleted} agencies were deleted, because they were more than ${numberOfMonthsBeforeDeletion} months old, had status closed or rejected, and had no conventions`,
+    script: deleteOldClosedAgenciesWithoutConventions,
+    handleResults: ({ deletedAgencies }) =>
+      `${deletedAgencies.length} agencies were deleted, because they were more than ${numberOfMonthsBeforeDeletion} months old, had status closed or rejected, and had no conventions`,
     logger,
     exitOnFinish,
   });

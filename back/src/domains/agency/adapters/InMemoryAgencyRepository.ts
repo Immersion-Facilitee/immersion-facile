@@ -1,5 +1,5 @@
 import { isSameDay, parseISO } from "date-fns";
-import { keys, toPairs, uniq, values } from "ramda";
+import { keys, partition, toPairs, uniq, values } from "ramda";
 import {
   type AgencyId,
   type AgencyKind,
@@ -83,6 +83,26 @@ export class InMemoryAgencyRepository implements AgencyRepository {
     if (agency.usersRights !== undefined)
       throwIfAgencyHasNoUsersWhileNotClosedOrRejected(updatedAgency);
     this.#agencies[agency.id] = updatedAgency;
+  }
+
+  public async deleteByIds(ids: AgencyId[]): Promise<AgencyId[]> {
+    const [deleted, toKeep] = partition(
+      (agency) => ids.includes(agency.id),
+      values(this.#agencies).filter(isTruthy),
+    );
+
+    const deletedIds = deleted.map((agency) => agency.id);
+
+    const [presentAgencyIds, missingAgencyIds] = partition(
+      (idToDelete) => deletedIds.includes(idToDelete),
+      ids,
+    );
+
+    if (missingAgencyIds.length)
+      throw errors.agencies.notFound({ missingAgencyIds, presentAgencyIds });
+
+    this.agencies = toKeep;
+    return deletedIds;
   }
 
   public async getById(
@@ -183,12 +203,19 @@ export class InMemoryAgencyRepository implements AgencyRepository {
   public async getAgencyIdsByFilters(
     filters: GetAgencyIdsFilters,
   ): Promise<AgencyId[]> {
+    const { kinds, statuses, updateDate, ...rest } = filters;
+    rest satisfies Record<string, never>;
+
     return Object.values(this.#agencies)
       .filter(isTruthy)
       .filter(
         (agency) =>
-          agencyIsOfKind(agency, filters.kinds) &&
-          agencyIsOfStatus(agency, filters.statuses),
+          ![
+            agencyIsOfKind(agency, kinds),
+            agencyIsOfStatus(agency, statuses),
+            agencyUpdatedAtBefore(agency, updateDate?.to),
+            agencyUpdatedAtAfter(agency, updateDate?.from),
+          ].includes(false),
       )
       .map(({ id }) => id)
       .sort((a, b) => a.localeCompare(b));
@@ -284,12 +311,6 @@ export class InMemoryAgencyRepository implements AgencyRepository {
           sirets.includes(agency.agencySiret),
       )
       .map((agency) => agency.agencySiret);
-  }
-
-  public async deleteOldClosedAgenciesWithoutConventions(_params: {
-    updatedBefore: Date;
-  }): Promise<AgencyId[]> {
-    throw errors.generic.fakeError("Not implemented");
   }
 }
 
@@ -388,6 +409,18 @@ const agencyCreatedAtBefore = (
   if (createdAtBefore === undefined) return true;
   return new Date(agency.createdAt) <= createdAtBefore;
 };
+
+const agencyUpdatedAtBefore = (
+  agency: AgencyWithUsersRights,
+  updatedAtBefore: Date | undefined,
+): boolean =>
+  updatedAtBefore ? new Date(agency.updatedAt) <= updatedAtBefore : true;
+
+const agencyUpdatedAtAfter = (
+  agency: AgencyWithUsersRights,
+  updatedAtAfter: Date | undefined,
+): boolean =>
+  updatedAtAfter ? new Date(agency.updatedAt) >= updatedAtAfter : true;
 
 const agencyDelegationConventionEndsOnDate = (
   agency: AgencyWithUsersRights,
