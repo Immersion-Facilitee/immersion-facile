@@ -10,6 +10,7 @@
 
   &__value-container {
     display: block !important;
+    overflow: visible !important;
   }
 
   &__input {
@@ -18,6 +19,13 @@
 
   &__input-container {
     display: block;
+  }
+
+  .fr-input:focus-within {
+    outline-offset: 2px;
+    outline-width: 2px;
+    outline-color: #0a76f6;
+    outline-style: solid;
   }
 
   &__placeholder,
