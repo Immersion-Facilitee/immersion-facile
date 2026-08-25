@@ -126,6 +126,7 @@ export class AppConfig {
   public get brevoEstablishmentContactListId(): number {
     return Number.parseInt(
       this.#throwIfNotDefinedOrDefault("BREVO_ESTABLISHMENT_CONTACT_LIST_ID"),
+      10,
     );
   }
 
@@ -263,6 +264,7 @@ export class AppConfig {
   public get externalAxiosTimeout(): number {
     return Number.parseInt(
       this.#throwIfNotDefinedOrDefault("EXTERNAL_AXIOS_TIMEOUT", "10000"),
+      10,
     );
   }
 
@@ -272,6 +274,7 @@ export class AppConfig {
         "EXTERNAL_AXIOS_TIMEOUT_FOR_FRANCE_TRAVAIL",
         "10000",
       ),
+      10,
     );
   }
 
@@ -404,6 +407,7 @@ export class AppConfig {
   public get maxConventionsToSyncWithPe() {
     return Number.parseInt(
       this.#throwIfNotDefinedOrDefault("MAX_CONVENTIONS_TO_SYNC_WITH_PE", "50"),
+      10,
     );
   }
 
@@ -432,6 +436,7 @@ export class AppConfig {
         "MINIMUM_NUMBER_OF_DAYS_BETWEEN_SIMILAR_CONTACT_REQUESTS",
         "7",
       ),
+      10,
     );
   }
 
@@ -445,6 +450,7 @@ export class AppConfig {
   public get nodeProcessReportInterval(): number {
     return Number.parseInt(
       this.#throwIfNotDefinedOrDefault("NODE_PROCESS_REPORT_INTERVAL", "30000"),
+      10,
     );
   }
 
@@ -515,6 +521,7 @@ export class AppConfig {
   public get pgTransactionIdleTimeoutMs() {
     return Number.parseInt(
       this.#throwIfNotDefinedOrDefault("PG_TRANSACTION_IDLE_TIMEOUT_MS", "0"),
+      10,
     );
   }
 
@@ -639,24 +646,28 @@ export class AppConfig {
           "MAX_ESTABLISHMENTS_PER_BATCH",
           "1000",
         ),
+        10,
       ),
       maxEstablishmentsPerFullRun: Number.parseInt(
         this.#throwIfNotDefinedOrDefault(
           "MAX_ESTABLISHMENTS_PER_FULL_RUN",
           "5000",
         ),
+        10,
       ),
       numberOfDaysAgoToCheckForInseeUpdates: Number.parseInt(
         this.#throwIfNotDefinedOrDefault(
           "NUMBER_OF_DAYS_AGO_TO_CHECK_FOR_INSEE_UPDATES",
           "30",
         ),
+        10,
       ),
       numberOfDaysToRetrieveInseeUpdates: Number.parseInt(
         this.#throwIfNotDefinedOrDefault(
           "NUMBER_OF_DAYS_TO_RETRIEVE_INSEE_UPDATES",
           "120",
         ),
+        10,
       ),
     };
   }
@@ -672,7 +683,7 @@ export class AppConfig {
 // Parsers
 
 const parseInteger = (str: string | undefined, defaultValue: number): number =>
-  str ? Number.parseInt(str) : defaultValue;
+  str ? Number.parseInt(str, 10) : defaultValue;
 
 const parseOptionalPositiveInteger = (
   str: string | undefined,
