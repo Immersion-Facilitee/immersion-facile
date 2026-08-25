@@ -114,6 +114,30 @@ export class PgAgencyRepository implements AgencyRepository {
       });
   }
 
+  public async deleteByIds(ids: AgencyId[]): Promise<AgencyId[]> {
+    return this.transaction
+      .deleteFrom("agencies")
+      .where("id", "in", ids)
+      .returning("id")
+      .execute()
+      .then((results) => {
+        const deletedIds = results.map(({ id }) => id);
+
+        const [presentAgencyIds, missingAgencyIds] = partition(
+          (IdsToDelete) => deletedIds.includes(IdsToDelete),
+          ids,
+        );
+
+        if (missingAgencyIds.length > 0)
+          throw errors.agencies.notFound({
+            missingAgencyIds,
+            presentAgencyIds,
+          });
+
+        return deletedIds;
+      });
+  }
+
   public async update(agency: PartialAgencyWithUsersRights): Promise<void> {
     const phoneId = agency.phoneNumber
       ? (await getOrCreatePhoneIds(this.transaction, [agency.phoneNumber]))[
@@ -145,7 +169,7 @@ export class PgAgencyRepository implements AgencyRepository {
           agency.coveredDepartments &&
           JSON.stringify(agency.coveredDepartments),
         refers_to_agency_id: agency.refersToAgencyId,
-        updated_at: sql`NOW()`,
+        updated_at: agency.updatedAt,
         status_justification: agency.statusJustification,
         phone_id: phoneId,
         delegation_info:
@@ -391,13 +415,21 @@ export class PgAgencyRepository implements AgencyRepository {
   public async getAgencyIdsByFilters(
     filters: GetAgencyIdsFilters,
   ): Promise<AgencyId[]> {
-    const { kinds, statuses, ...rest } = filters;
+    const { kinds, statuses, updateDate, ...rest } = filters;
     rest satisfies Record<string, never>;
 
     const results = await pipeWithValue(
       this.transaction.selectFrom("agencies").select("agencies.id"),
       (b) => (kinds ? b.where("agencies.kind", "in", kinds) : b),
       (b) => (statuses ? b.where("agencies.status", "in", statuses) : b),
+      (b) =>
+        updateDate?.to
+          ? b.where("agencies.updated_at", "<=", updateDate.to)
+          : b,
+      (b) =>
+        updateDate?.from
+          ? b.where("agencies.updated_at", ">=", updateDate.from)
+          : b,
     )
       .orderBy("agencies.id", "asc")
       .execute();
@@ -636,100 +668,5 @@ export class PgAgencyRepository implements AgencyRepository {
       .execute();
 
     return results.map(({ agency_siret }) => agency_siret);
-  }
-
-  async deleteOldClosedAgenciesWithoutConventions(params: {
-    updatedBefore: Date;
-  }): Promise<AgencyId[]> {
-    const { updatedBefore } = params;
-    const result = await this.transaction
-      .withRecursive("deletionCandidates", (qb) =>
-        qb
-          .selectFrom("agencies")
-          .select("agencies.id")
-          .where("status", "in", ["closed", "rejected"])
-          .where("updated_at", "<=", updatedBefore)
-          .where(({ eb }) =>
-            eb.not(
-              eb.exists(
-                eb
-                  .selectFrom("conventions")
-                  .select("id")
-                  .whereRef("conventions.agency_id", "=", "agencies.id"),
-              ),
-            ),
-          ),
-      )
-      .withRecursive("candidateSubtree", (qb) =>
-        qb
-          .selectFrom("deletionCandidates")
-          .select(({ ref }) => [
-            ref("deletionCandidates.id").as("root_id"),
-            ref("deletionCandidates.id").as("id"),
-          ])
-          .unionAll(
-            qb
-              .selectFrom("agencies")
-              .innerJoin(
-                "candidateSubtree",
-                "agencies.refers_to_agency_id",
-                "candidateSubtree.id",
-              )
-              .select(({ ref }) => [
-                ref("candidateSubtree.root_id").as("root_id"),
-                ref("agencies.id").as("id"),
-              ]),
-          ),
-      )
-      .withRecursive("agenciesToDelete", (qb) =>
-        qb
-          .selectFrom("deletionCandidates")
-          .select("deletionCandidates.id")
-          .where(({ eb }) =>
-            eb.not(
-              eb.exists(
-                eb
-                  .selectFrom("candidateSubtree")
-                  .innerJoin(
-                    "conventions",
-                    "conventions.agency_id",
-                    "candidateSubtree.id",
-                  )
-                  .select("conventions.id")
-                  .whereRef(
-                    "candidateSubtree.root_id",
-                    "=",
-                    "deletionCandidates.id",
-                  ),
-              ),
-            ),
-          )
-          .unionAll(
-            qb
-              .selectFrom("agencies")
-              .select("agencies.id")
-              .innerJoin(
-                "agenciesToDelete",
-                "agencies.refers_to_agency_id",
-                "agenciesToDelete.id",
-              )
-              .where(({ eb }) =>
-                eb.not(
-                  eb.exists(
-                    eb
-                      .selectFrom("conventions")
-                      .select("id")
-                      .whereRef("conventions.agency_id", "=", "agencies.id"),
-                  ),
-                ),
-              ),
-          ),
-      )
-      .deleteFrom("agencies")
-      .where("id", "in", (eb) => eb.selectFrom("agenciesToDelete").select("id"))
-      .returning("id")
-      .execute();
-
-    return result.map(({ id }) => id);
   }
 }

@@ -13,6 +13,7 @@ import {
   type DepartmentCode,
   errors,
   type OmitFromExistingKeys,
+  type OptionalDateRange,
   type PaginationQueryParams,
   type SiretDto,
   type UserId,
@@ -36,6 +37,7 @@ export type GetAgenciesFilters = {
 export type GetAgencyIdsFilters = {
   kinds?: AgencyKind[];
   statuses?: AgencyStatus[];
+  updateDate?: OptionalDateRange;
 };
 
 export type AgencyWithoutRights = Omit<
@@ -71,6 +73,7 @@ export const throwIfAgencyHasNoUsersWhileNotClosedOrRejected = ({
 export interface AgencyRepository {
   insert(agency: AgencyWithUsersRights): Promise<void>;
   update(partialAgency: PartialAgencyWithUsersRights): Promise<void>;
+  deleteByIds(ids: AgencyId[]): Promise<AgencyId[]>;
 
   getById(id: AgencyId): Promise<AgencyWithUsersRights | undefined>;
   getBySafirAndActiveStatus(
@@ -91,9 +94,6 @@ export interface AgencyRepository {
   ): Promise<UserId[]>;
   getAgenciesRightsByUserId(id: UserId): Promise<AgencyRightOfUser[]>;
   getExistingActiveSirets(sirets: SiretDto[]): Promise<SiretDto[]>;
-  deleteOldClosedAgenciesWithoutConventions(params: {
-    updatedBefore: Date;
-  }): Promise<AgencyId[]>;
 }
 
 export const updateAgencyRightsForUser = async (
