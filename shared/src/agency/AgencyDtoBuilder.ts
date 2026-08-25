@@ -32,6 +32,7 @@ const emptyAgency: AgencyDto = {
   id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
   name: "empty-name",
   createdAt: DATE_CREATION,
+  updatedAt: DATE_CREATION,
   status: "active",
   kind: "autre",
   counsellorEmails: [],
@@ -94,6 +95,13 @@ export class AgencyDtoBuilder implements Builder<AgencyDto> {
     return new AgencyDtoBuilder({
       ...this.#agency,
       createdAt,
+    });
+  }
+
+  public withUpdatedAt(updatedAt: Date) {
+    return new AgencyDtoBuilder({
+      ...this.#agency,
+      updatedAt: updatedAt.toISOString(),
     });
   }
 

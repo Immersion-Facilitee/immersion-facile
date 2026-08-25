@@ -292,9 +292,12 @@ describe("auth router", () => {
         const userId = user!.id;
 
         expectToEqual(inMemoryUow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [userId]: { roles: ["validator"], isNotifiedByEmail: false },
-          }),
+          toAgencyWithRights(
+            { ...agency, updatedAt: gateways.timeGateway.now().toISOString() },
+            {
+              [userId]: { roles: ["validator"], isNotifiedByEmail: false },
+            },
+          ),
         ]);
       });
     });

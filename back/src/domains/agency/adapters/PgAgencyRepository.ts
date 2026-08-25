@@ -15,6 +15,7 @@ import {
   calculatePaginationResult,
   type DataWithPagination,
   type DateString,
+  type DateTimeIsoString,
   type DelegationAgencyInfo,
   type DepartmentCode,
   errors,
@@ -58,18 +59,12 @@ const isUuid = (value: string) => guidSchema.safeParse(value.trim()).success;
 export class PgAgencyRepository implements AgencyRepository {
   constructor(private transaction: KyselyDb) {}
 
-  public async insert(
-    agency: AgencyWithUsersRights,
-    updatedAt?: DateString,
-  ): Promise<void> {
-    await this.insertAgency(agency, updatedAt);
+  public async insert(agency: AgencyWithUsersRights): Promise<void> {
+    await this.insertAgency(agency);
     await this.#saveAgencyRights(agency);
   }
 
-  private async insertAgency(
-    agency: AgencyWithUsersRights,
-    updatedAt?: DateString,
-  ) {
+  private async insertAgency(agency: AgencyWithUsersRights) {
     const phoneId = (
       await getOrCreatePhoneIds(this.transaction, [agency.phoneNumber])
     )[agency.phoneNumber];
@@ -105,7 +100,7 @@ export class PgAgencyRepository implements AgencyRepository {
         created_at: agency.createdAt
           ? sql<Date>`${agency.createdAt}::timestamp`
           : sql`now()`,
-        updated_at: updatedAt ?? sql`now()`,
+        updated_at: agency.updatedAt,
       }))
       .execute()
       .catch((error) => {
@@ -531,6 +526,7 @@ export class PgAgencyRepository implements AgencyRepository {
             ref("agencies.delegation_info"),
           ),
           createdAt: sql<DateString>`date_to_iso(agencies.created_at)`,
+          updatedAt: sql<DateTimeIsoString>`date_to_iso(agencies.updated_at)`,
           usersRights: fn.coalesce(
             fn
               .jsonAgg(

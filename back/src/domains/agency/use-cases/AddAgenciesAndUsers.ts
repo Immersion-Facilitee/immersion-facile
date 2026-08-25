@@ -2,7 +2,6 @@ import { flatten, keys, splitEvery, uniq, values } from "ramda";
 import {
   type AgencyRole,
   type AgencyUsersRights,
-  type AgencyWithUsersRights,
   type DepartmentCode,
   type Email,
   emailSchema,
@@ -120,6 +119,7 @@ export const makeAddAgenciesAndUsers = useCaseBuilder("AddAgenciesAndUsers")
       agencyRepository: uow.agencyRepository,
       userRepository: uow.userRepository,
       usecaseErrors,
+      now: deps.timeGateway.now(),
     });
 
     await createNewAgencies({
@@ -128,6 +128,7 @@ export const makeAddAgenciesAndUsers = useCaseBuilder("AddAgenciesAndUsers")
       userRepository: uow.userRepository,
       deps,
       usecaseErrors,
+      now: deps.timeGateway.now(),
     });
 
     await createNewAgenciesWithSuffix({
@@ -154,12 +155,14 @@ const linkUsersToExistingAgency = async ({
   agencyRepository,
   userRepository,
   usecaseErrors,
+  now,
 }: {
   siretsInIF: SiretDto[];
   importedAgencyAndUserRows: ImportedAgencyAndUserRow[];
   agencyRepository: AgencyRepository;
   userRepository: UserRepository;
   usecaseErrors: Record<string, Error>;
+  now: Date;
 }): Promise<void> => {
   const rowsWithSiretAlreadyInIF = importedAgencyAndUserRows.filter((row) =>
     siretsInIF.includes(row.SIRET),
@@ -228,6 +231,7 @@ const linkUsersToExistingAgency = async ({
       await agencyRepository.update({
         id: agencyIF.id,
         status: agencyIF.status,
+        updatedAt: now.toISOString(),
         usersRights: {
           ...agencyIF.usersRights,
           ...agencyUsersRights.reduce((acc, curr) => {
@@ -269,13 +273,14 @@ const createNewAgencies = async ({
   userRepository,
   deps,
   usecaseErrors,
+  now,
 }: {
   importedAgencyAndUserRows: ImportedAgencyAndUserRow[];
   agencyRepository: AgencyRepository;
   userRepository: UserRepository;
+  now: Date;
   deps: {
     uuidGenerator: UuidGenerator;
-    timeGateway: TimeGateway;
     addressGateway: AddressGateway;
   };
   usecaseErrors: Record<string, Error>;
@@ -295,9 +300,11 @@ const createNewAgencies = async ({
       row,
       addressGateway: deps.addressGateway,
     });
-    const agency: AgencyWithUsersRights = {
+
+    await agencyRepository.insert({
       id: deps.uuidGenerator.new(),
-      createdAt: deps.timeGateway.now().toISOString(),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
       status: "active",
       agencySiret: row.SIRET,
       name: row["Nom structure"],
@@ -329,9 +336,7 @@ const createNewAgencies = async ({
       },
       codeSafir: null,
       statusJustification: null,
-    };
-
-    await agencyRepository.insert(agency);
+    });
   });
 };
 
@@ -459,6 +464,7 @@ const createNewAgenciesWithSuffix = async ({
     userRepository,
     deps,
     usecaseErrors,
+    now: deps.timeGateway.now(),
   });
 };
 

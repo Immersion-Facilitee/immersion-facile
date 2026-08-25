@@ -3,6 +3,7 @@ import type { UserId } from "shared";
 import { AppConfig } from "../config/bootstrap/appConfig";
 import { createMakeProductionPgPool } from "../config/pg/pgPool";
 import { makeAssignAgencyViewerRole } from "../domains/agency/use-cases/AssignAgencyViewerRoleToUsers";
+import { RealTimeGateway } from "../domains/core/time-gateway/adapters/RealTimeGateway";
 import { createDbRelatedSystems } from "../domains/core/unit-of-work/adapters/createDbRelatedSystems";
 import { createLogger } from "../utils/logger";
 import { handleCRONScript } from "./handleCRONScript";
@@ -49,6 +50,7 @@ const executeAssignAgencyViewerRole = async () => {
 
   const assignAgencyViewerRoleUseCase = makeAssignAgencyViewerRole({
     uowPerformer,
+    deps: { timeGateway: new RealTimeGateway() },
   });
 
   return assignAgencyViewerRoleUseCase.execute({

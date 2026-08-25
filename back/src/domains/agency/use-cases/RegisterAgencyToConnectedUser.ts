@@ -5,6 +5,7 @@ import {
   executeInSequence,
 } from "shared";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import { isFTUser } from "../entities/Agency";
 
@@ -16,7 +17,7 @@ export const makeRegisterAgencyToConnectedUser = useCaseBuilder(
 )
   .withInput(agencyIdsSchema)
   .withCurrentUser<ConnectedUser>()
-  .withDeps<{ createNewEvent: CreateNewEvent }>()
+  .withDeps<{ createNewEvent: CreateNewEvent; timeGateway: TimeGateway }>()
   .build(async ({ uow, currentUser, deps, inputParams: agencyIds }) => {
     const agencyRights = await uow.agencyRepository.getAgenciesRightsByUserId(
       currentUser.id,
@@ -52,6 +53,7 @@ export const makeRegisterAgencyToConnectedUser = useCaseBuilder(
             roles: ["to-review"],
           },
         },
+        updatedAt: deps.timeGateway.now().toISOString(),
       }),
     );
     await uow.outboxRepository.save(

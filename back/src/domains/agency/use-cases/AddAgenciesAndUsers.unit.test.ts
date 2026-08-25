@@ -108,8 +108,7 @@ describe("AddAgenciesAndUsers", () => {
       );
 
       await uow.userRepository.save(user1);
-      await uow.agencyRepository.insert(agency1);
-      await uow.agencyRepository.insert(agency2);
+      uow.agencyRepository.agencies = [agency1, agency2];
 
       const newUserId = "10000000-0000-0000-0000-000000000022";
       uuidGenerator.setNextUuids([newUserId, newUserId]);
@@ -126,6 +125,7 @@ describe("AddAgenciesAndUsers", () => {
       expect(uow.agencyRepository.agencies).toEqual([
         {
           ...agency1,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             [user1.id]: {
               isNotifiedByEmail: false,
@@ -135,6 +135,7 @@ describe("AddAgenciesAndUsers", () => {
         },
         {
           ...agency2,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             ...agency2.usersRights,
             [newUserId]: {
@@ -175,7 +176,7 @@ describe("AddAgenciesAndUsers", () => {
         },
       );
       await uow.userRepository.save(userAlreadyInDB);
-      await uow.agencyRepository.insert(agencyAlreadyInDB);
+      uow.agencyRepository.agencies = [agencyAlreadyInDB];
 
       const newUserId1 = "10000000-0000-0000-0000-000000000022";
       const newUserId2 = "10000000-0000-0000-0000-000000000023";
@@ -265,6 +266,7 @@ describe("AddAgenciesAndUsers", () => {
             .withName(row["Nom structure"])
             .withSignature("L'équipe")
             .withCreatedAt(timeGateway.now().toISOString())
+            .withUpdatedAt(timeGateway.now())
             .withAgencyContactEmail(row["Contact structure"])
             .build(),
           {
@@ -348,10 +350,12 @@ describe("AddAgenciesAndUsers", () => {
       expectArraysToMatch(uow.agencyRepository.agencies, [
         {
           ...agency1,
+          updatedAt: timeGateway.now().toISOString(),
           name: `${row["Nom structure"]} - ACI`,
         },
         {
           ...agency1,
+          updatedAt: timeGateway.now().toISOString(),
           id: newAgencyId2,
           name: `${row["Nom structure"]} - EI`,
           phoneNumber: rows[1].Téléphone,

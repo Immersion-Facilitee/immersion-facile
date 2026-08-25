@@ -801,11 +801,11 @@ describe("Magic link router", () => {
     it("403 when non-admin sends beneficiary update", async () => {
       inMemoryUow.conventionRepository.setConventions([convention]);
       inMemoryUow.userRepository.users = [validator];
-      inMemoryUow.agencyRepository.insert(
+      inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
-      );
+      ];
 
       const response = await httpClient.editConventionWithFinalStatus({
         headers: { authorization: validatorToken() },
@@ -860,11 +860,11 @@ describe("Magic link router", () => {
         .build();
       inMemoryUow.conventionRepository.setConventions([conventionInReview]);
       inMemoryUow.userRepository.users = [adminUser];
-      inMemoryUow.agencyRepository.insert(
+      inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
-      );
+      ];
 
       const response = await httpClient.editConventionWithFinalStatus({
         headers: {
@@ -934,11 +934,11 @@ describe("Magic link router", () => {
     it("200 updates establishment tutor when validator has agency rights", async () => {
       inMemoryUow.conventionRepository.setConventions([convention]);
       inMemoryUow.userRepository.users = [validator];
-      inMemoryUow.agencyRepository.insert(
+      inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
-      );
+      ];
 
       const response = await httpClient.editConventionWithFinalStatus({
         headers: { authorization: validatorToken() },
@@ -963,11 +963,11 @@ describe("Magic link router", () => {
     it("200 updates beneficiary and saves ConventionWithFinalStatusEdited event", async () => {
       inMemoryUow.conventionRepository.setConventions([convention]);
       inMemoryUow.userRepository.users = [adminUser];
-      inMemoryUow.agencyRepository.insert(
+      inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [adminUser.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
-      );
+      ];
 
       const adminToken = generateConnectedUserJwt({
         userId: adminUser.id,

@@ -75,6 +75,7 @@ describe("UpdateUserForAgency", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         createNewEvent,
+        timeGateway,
       },
     });
   });
@@ -468,14 +469,20 @@ describe("UpdateUserForAgency", () => {
         counsellor,
       ]);
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [notAdminUser.id]: {
-            roles: userRoleForAgency.roles,
-            isNotifiedByEmail: userRoleForAgency.isNotifiedByEmail,
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [notAdminUser.id]: {
+              roles: userRoleForAgency.roles,
+              isNotifiedByEmail: userRoleForAgency.isNotifiedByEmail,
+            },
+            [validator.id]: { roles: ["validator"], isNotifiedByEmail: true },
+            [counsellor.id]: {
+              roles: ["counsellor"],
+              isNotifiedByEmail: false,
+            },
           },
-          [validator.id]: { roles: ["validator"], isNotifiedByEmail: true },
-          [counsellor.id]: { roles: ["counsellor"], isNotifiedByEmail: false },
-        }),
+        ),
       ]);
       expectToEqual(uow.outboxRepository.events, [
         createNewEvent({
@@ -576,14 +583,20 @@ describe("UpdateUserForAgency", () => {
         notAdminUser,
       ]);
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [notAdminUser.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
-          [userWithNotif.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [notAdminUser.id]: {
+              isNotifiedByEmail: true,
+              roles: ["counsellor"],
+            },
+            [userWithNotif.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: true,
+            },
+            [userToUpdate.id]: { roles: [newRole], isNotifiedByEmail: false },
           },
-          [userToUpdate.id]: { roles: [newRole], isNotifiedByEmail: false },
-        }),
+        ),
       ]);
     });
 
@@ -634,16 +647,19 @@ describe("UpdateUserForAgency", () => {
         agencyAdminUser,
       ]);
       expectArraysToEqualIgnoringOrder(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [userToUpdate.id]: {
-            roles: [newRole, "validator"],
-            isNotifiedByEmail: true,
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [userToUpdate.id]: {
+              roles: [newRole, "validator"],
+              isNotifiedByEmail: true,
+            },
+            [agencyAdminUser.id]: {
+              roles: ["agency-admin"],
+              isNotifiedByEmail: false,
+            },
           },
-          [agencyAdminUser.id]: {
-            roles: ["agency-admin"],
-            isNotifiedByEmail: false,
-          },
-        }),
+        ),
       ]);
     });
 
@@ -865,14 +881,22 @@ describe("UpdateUserForAgency", () => {
           );
 
           expectToEqual(uow.agencyRepository.agencies, [
-            toAgencyWithRights(agency, {
-              [user.id]: { roles: ["counsellor"], isNotifiedByEmail: false },
-              [counsellor.id]: {
-                roles: ["counsellor"],
-                isNotifiedByEmail: true,
+            toAgencyWithRights(
+              new AgencyDtoBuilder(agency)
+                .withUpdatedAt(timeGateway.now())
+                .build(),
+              {
+                [user.id]: { roles: ["counsellor"], isNotifiedByEmail: false },
+                [counsellor.id]: {
+                  roles: ["counsellor"],
+                  isNotifiedByEmail: true,
+                },
+                [validator.id]: {
+                  roles: ["validator"],
+                  isNotifiedByEmail: true,
+                },
               },
-              [validator.id]: { roles: ["validator"], isNotifiedByEmail: true },
-            }),
+            ),
           ]);
         });
       });
@@ -900,10 +924,21 @@ describe("UpdateUserForAgency", () => {
           );
 
           expectToEqual(uow.agencyRepository.agencies, [
-            toAgencyWithRights(agency, {
-              [user.id]: { roles: ["agency-viewer"], isNotifiedByEmail: false },
-              [validator.id]: { roles: ["validator"], isNotifiedByEmail: true },
-            }),
+            toAgencyWithRights(
+              new AgencyDtoBuilder(agency)
+                .withUpdatedAt(timeGateway.now())
+                .build(),
+              {
+                [user.id]: {
+                  roles: ["agency-viewer"],
+                  isNotifiedByEmail: false,
+                },
+                [validator.id]: {
+                  roles: ["validator"],
+                  isNotifiedByEmail: true,
+                },
+              },
+            ),
           ]);
         });
 
@@ -1102,10 +1137,13 @@ describe("UpdateUserForAgency", () => {
       );
 
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [nonIcUser.id]: { roles: ["validator"], isNotifiedByEmail: false },
-          [admin.id]: { roles: ["validator"], isNotifiedByEmail: true },
-        }),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [nonIcUser.id]: { roles: ["validator"], isNotifiedByEmail: false },
+            [admin.id]: { roles: ["validator"], isNotifiedByEmail: true },
+          },
+        ),
       ]);
     });
 
@@ -1146,13 +1184,16 @@ describe("UpdateUserForAgency", () => {
       );
 
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [nonIcUser.id]: { roles: ["validator"], isNotifiedByEmail: false },
-          [agencyAdmin.id]: {
-            roles: ["agency-admin", "validator"],
-            isNotifiedByEmail: true,
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [nonIcUser.id]: { roles: ["validator"], isNotifiedByEmail: false },
+            [agencyAdmin.id]: {
+              roles: ["agency-admin", "validator"],
+              isNotifiedByEmail: true,
+            },
           },
-        }),
+        ),
       ]);
     });
 
@@ -1189,13 +1230,16 @@ describe("UpdateUserForAgency", () => {
       );
 
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [notAdmin.id]: { roles: ["validator"], isNotifiedByEmail: false },
-          [agencyAdmin.id]: {
-            roles: ["agency-admin", "validator"],
-            isNotifiedByEmail: true,
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [notAdmin.id]: { roles: ["validator"], isNotifiedByEmail: false },
+            [agencyAdmin.id]: {
+              roles: ["agency-admin", "validator"],
+              isNotifiedByEmail: true,
+            },
           },
-        }),
+        ),
       ]);
     });
   });

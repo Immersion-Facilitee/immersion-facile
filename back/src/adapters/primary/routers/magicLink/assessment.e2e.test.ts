@@ -87,11 +87,12 @@ describe("Assessment routes", () => {
     );
 
     inMemoryUow.conventionRepository.setConventions([convention]);
-    inMemoryUow.agencyRepository.insert(
+    inMemoryUow.agencyRepository.agencies = [
       toAgencyWithRights(agency, {
         [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
       }),
-    );
+    ];
+
     inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
   });
 

@@ -323,6 +323,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
           expectToEqual(uow.agencyRepository.agencies, [
             {
               ...agency1,
+              updatedAt: timeGateway.now().toISOString(),
               usersRights: {
                 [initialUser.id]: {
                   isNotifiedByEmail: true,
@@ -332,6 +333,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
             },
             {
               ...agency2,
+              updatedAt: timeGateway.now().toISOString(),
               usersRights: {
                 [initialUser.id]: {
                   isNotifiedByEmail: true,

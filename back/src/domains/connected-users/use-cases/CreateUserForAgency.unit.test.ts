@@ -305,17 +305,22 @@ describe("CreateUserForAgency", () => {
       },
     ]);
     expectToEqual(uow.agencyRepository.agencies, [
-      toAgencyWithRights(agencyWithCounsellor, {
-        [validator.id]: {
-          isNotifiedByEmail: true,
-          roles: ["validator"],
+      toAgencyWithRights(
+        new AgencyDtoBuilder(agencyWithCounsellor)
+          .withUpdatedAt(timeGateway.now())
+          .build(),
+        {
+          [validator.id]: {
+            isNotifiedByEmail: true,
+            roles: ["validator"],
+          },
+          [counsellor.id]: {
+            isNotifiedByEmail: true,
+            roles: ["counsellor"],
+          },
+          [newUserId]: { isNotifiedByEmail: false, roles: ["counsellor"] },
         },
-        [counsellor.id]: {
-          isNotifiedByEmail: true,
-          roles: ["counsellor"],
-        },
-        [newUserId]: { isNotifiedByEmail: false, roles: ["counsellor"] },
-      }),
+      ),
     ]);
 
     expectToEqual(uow.outboxRepository.events, [
@@ -390,17 +395,22 @@ describe("CreateUserForAgency", () => {
     await createUserForAgency.execute(userForAgency, triggeredByUser);
 
     expectToEqual(uow.agencyRepository.agencies, [
-      toAgencyWithRights(agencyWithCounsellor, {
-        [counsellor.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
-        [connectedAgencyAdminUser.id]: {
-          isNotifiedByEmail: true,
-          roles: ["agency-admin", "validator"],
+      toAgencyWithRights(
+        new AgencyDtoBuilder(agencyWithCounsellor)
+          .withUpdatedAt(timeGateway.now())
+          .build(),
+        {
+          [counsellor.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
+          [connectedAgencyAdminUser.id]: {
+            isNotifiedByEmail: true,
+            roles: ["agency-admin", "validator"],
+          },
+          [validator.id]: {
+            isNotifiedByEmail: userForAgency.isNotifiedByEmail,
+            roles: userForAgency.roles,
+          },
         },
-        [validator.id]: {
-          isNotifiedByEmail: userForAgency.isNotifiedByEmail,
-          roles: userForAgency.roles,
-        },
-      }),
+      ),
       toAgencyWithRights(anotherAgency, {
         [counsellor.id]: { isNotifiedByEmail: false, roles: ["counsellor"] },
         [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },

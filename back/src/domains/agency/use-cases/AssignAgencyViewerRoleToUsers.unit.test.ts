@@ -6,6 +6,7 @@ import {
   expectToEqual,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
+import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -17,9 +18,6 @@ import {
 } from "./AssignAgencyViewerRoleToUsers";
 
 describe("AssignAgencyViewerRoleToUsers", () => {
-  let uow: InMemoryUnitOfWork;
-  let assignAgencyViewerRole: AssignAgencyViewerRole;
-
   const user1 = new ConnectedUserBuilder()
     .withId("user1")
     .withEmail("user1@example.com")
@@ -133,10 +131,16 @@ describe("AssignAgencyViewerRoleToUsers", () => {
     },
   };
 
+  let uow: InMemoryUnitOfWork;
+  let assignAgencyViewerRole: AssignAgencyViewerRole;
+  let timeGateway: CustomTimeGateway;
+
   beforeEach(() => {
     uow = createInMemoryUow();
+    timeGateway = new CustomTimeGateway();
     assignAgencyViewerRole = makeAssignAgencyViewerRole({
       uowPerformer: new InMemoryUowPerformer(uow),
+      deps: { timeGateway: timeGateway },
     });
 
     uow.agencyRepository.agencies = [
@@ -170,6 +174,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
       expectToEqual(uow.agencyRepository.agencies, [
         {
           ...ftAgency1,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             ...user1ViewerRights,
             ...user2ViewerRights,
@@ -177,6 +182,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         },
         {
           ...ftAgency2,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             ...user1ViewerRights,
             ...user2ViewerRights,
@@ -184,6 +190,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         },
         {
           ...capEmploiAgency,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             ...user1ViewerRights,
             ...user2ViewerRights,
@@ -193,6 +200,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         inactiveAgency,
         {
           ...fromApiPEAgency,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             ...user1ViewerRights,
             ...user2ViewerRights,
@@ -200,6 +208,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         },
         {
           ...ftAgencyWithUser1ViewerRole,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             ...user1ViewerRights,
             ...user2ViewerRights,
@@ -207,6 +216,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         },
         {
           ...ftAgencyWithUser1AdminRole,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -233,10 +243,12 @@ describe("AssignAgencyViewerRoleToUsers", () => {
       expectToEqual(uow.agencyRepository.agencies, [
         {
           ...ftAgency1,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
           ...ftAgency2,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         capEmploiAgency,
@@ -244,6 +256,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         inactiveAgency,
         {
           ...fromApiPEAgency,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
@@ -252,6 +265,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         },
         {
           ...ftAgencyWithUser1AdminRole,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -277,10 +291,12 @@ describe("AssignAgencyViewerRoleToUsers", () => {
       expectToEqual(uow.agencyRepository.agencies, [
         {
           ...ftAgency1,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
           ...ftAgency2,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         capEmploiAgency,
@@ -288,6 +304,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         inactiveAgency,
         {
           ...fromApiPEAgency,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
@@ -296,6 +313,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         },
         {
           ...ftAgencyWithUser1AdminRole,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -321,10 +339,12 @@ describe("AssignAgencyViewerRoleToUsers", () => {
       expectToEqual(uow.agencyRepository.agencies, [
         {
           ...ftAgency1,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
           ...ftAgency2,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         capEmploiAgency,
@@ -332,6 +352,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         inactiveAgency,
         {
           ...fromApiPEAgency,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
@@ -340,6 +361,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         },
         {
           ...ftAgencyWithUser1AdminRole,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],
@@ -365,23 +387,28 @@ describe("AssignAgencyViewerRoleToUsers", () => {
       expectToEqual(uow.agencyRepository.agencies, [
         {
           ...ftAgency1,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
           ...ftAgency2,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
           ...capEmploiAgency,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
           ...conseilDepartementalAgency,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         inactiveAgency,
         {
           ...fromApiPEAgency,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: user1ViewerRights,
         },
         {
@@ -390,6 +417,7 @@ describe("AssignAgencyViewerRoleToUsers", () => {
         },
         {
           ...ftAgencyWithUser1AdminRole,
+          updatedAt: timeGateway.now().toISOString(),
           usersRights: {
             [user1.id]: {
               roles: ["agency-admin", "agency-viewer"],

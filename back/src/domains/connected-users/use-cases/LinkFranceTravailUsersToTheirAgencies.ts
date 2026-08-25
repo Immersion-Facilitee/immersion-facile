@@ -16,6 +16,7 @@ import {
   updateRightsOnMultipleAgenciesForUser,
 } from "../../../utils/agency";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import { getUserWithRights } from "../helpers/userRights.helper";
@@ -41,6 +42,7 @@ export const makeLinkFranceTravailUsersToTheirAgencies = useCaseBuilder(
   .withOutput<void>()
   .withDeps<{
     createNewEvent: CreateNewEvent;
+    timeGateway: TimeGateway;
   }>()
   .build(async ({ uow, deps, inputParams: { userId, codeSafir } }) => {
     if (!codeSafir) return;
@@ -49,6 +51,7 @@ export const makeLinkFranceTravailUsersToTheirAgencies = useCaseBuilder(
 
     const agenciesWithSafir =
       await uow.agencyRepository.getBySafirAndActiveStatus(codeSafir);
+    const now = deps.timeGateway.now();
 
     if (agenciesWithSafir.length) {
       await executeInSequence(agenciesWithSafir, (agencyWithSafir) =>
@@ -57,6 +60,7 @@ export const makeLinkFranceTravailUsersToTheirAgencies = useCaseBuilder(
           agencyWithSafir,
           userId,
           deps.createNewEvent,
+          now,
         ),
       );
       return;
@@ -64,7 +68,8 @@ export const makeLinkFranceTravailUsersToTheirAgencies = useCaseBuilder(
 
     const groupWithSafir =
       await uow.agencyGroupRepository.getByCodeSafir(codeSafir);
-    if (groupWithSafir) return updateAgenciesOfGroup(uow, groupWithSafir, user);
+    if (groupWithSafir)
+      return updateAgenciesOfGroup(uow, groupWithSafir, user, now);
   });
 
 const isIcUserAlreadyHasValidRight = (
@@ -81,6 +86,7 @@ const updateActiveAgencyWithSafir = async (
   agencyWithSafir: AgencyWithUsersRights,
   userId: string,
   createNewEvent: CreateNewEvent,
+  now: Date,
 ): Promise<void> => {
   await uow.agencyRepository.update({
     id: agencyWithSafir.id,
@@ -89,6 +95,7 @@ const updateActiveAgencyWithSafir = async (
       ...agencyWithSafir.usersRights,
       [userId]: { roles: ["validator"], isNotifiedByEmail: false },
     },
+    updatedAt: now.toISOString(),
   });
   await uow.outboxRepository.save(
     createNewEvent({
@@ -107,6 +114,7 @@ const updateAgenciesOfGroup = async (
   uow: UnitOfWork,
   agencyGroupWithSafir: AgencyGroup,
   user: UserWithRights,
+  now: Date,
 ): Promise<void> => {
   const agenciesRelatedToGroup = await uow.agencyRepository.getByIds(
     agencyGroupWithSafir.agencyIds,
@@ -156,5 +164,6 @@ const updateAgenciesOfGroup = async (
     uow,
     userId: user.id,
     agenciesRightForUser: agencyRightsForUser,
+    now,
   });
 };

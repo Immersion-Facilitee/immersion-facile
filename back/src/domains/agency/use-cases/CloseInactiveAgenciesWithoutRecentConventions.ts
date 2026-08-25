@@ -106,6 +106,7 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
             status: "closed",
             statusJustification:
               "Agence fermée automatiquement pour inactivité",
+            updatedAt: now.toISOString(),
           }),
         );
 

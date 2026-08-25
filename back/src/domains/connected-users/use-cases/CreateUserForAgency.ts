@@ -80,6 +80,7 @@ export const makeCreateUserForAgency = useCaseBuilder("CreateUserForAgency")
       id: agency.id,
       status: agency.status,
       usersRights: updatedAgencyRights,
+      updatedAt: deps.timeGateway.now().toISOString(),
     });
     await uow.outboxRepository.save(
       deps.createNewEvent({

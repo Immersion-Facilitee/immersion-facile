@@ -1,6 +1,7 @@
 import type { AgencyKind, UserId } from "shared";
 import { agencyKindSchema, executeInSequence, userIdSchema } from "shared";
 import { z } from "zod";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 
 type AssignAgencyViewerRoleInput = {
@@ -28,7 +29,8 @@ export const makeAssignAgencyViewerRole = useCaseBuilder(
 )
   .withInput<AssignAgencyViewerRoleInput>(assignAgencyViewerRoleInputSchema)
   .withOutput<AssignAgencyViewerRoleOutput>()
-  .build(async ({ inputParams: { agencyKinds, userIds }, uow }) => {
+  .withDeps<{ timeGateway: TimeGateway }>()
+  .build(async ({ inputParams: { agencyKinds, userIds }, uow, deps }) => {
     const users = await uow.userRepository.getByIds(userIds);
 
     if (users.length === 0) {
@@ -80,6 +82,7 @@ export const makeAssignAgencyViewerRole = useCaseBuilder(
             id: agency.id,
             status: agency.status,
             usersRights: updatedUsersRights,
+            updatedAt: deps.timeGateway.now().toISOString(),
           })
           .then(() => {
             agenciesSuccessfullyUpdated++;

@@ -440,7 +440,7 @@ describe("Admin router", () => {
         .withId("two-steps-validation-agency")
         .build();
 
-      inMemoryUow.agencyRepository.insert(
+      inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validatorInAgency.id]: {
             roles: ["validator"],
@@ -452,7 +452,8 @@ describe("Admin router", () => {
           },
           [toReviewUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
         }),
-      );
+      ];
+
       inMemoryUow.userRepository.users = [
         toReviewUser,
         validatorInAgency,
@@ -479,17 +480,23 @@ describe("Admin router", () => {
       });
 
       expectToEqual(inMemoryUow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [validatorInAgency.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
+        toAgencyWithRights(
+          { ...agency, updatedAt: gateways.timeGateway.now().toISOString() },
+          {
+            [validatorInAgency.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: true,
+            },
+            [counsellorInAgency.id]: {
+              isNotifiedByEmail: false,
+              roles: ["counsellor"],
+            },
+            [toReviewUser.id]: {
+              roles: [updatedRole],
+              isNotifiedByEmail: true,
+            },
           },
-          [counsellorInAgency.id]: {
-            isNotifiedByEmail: false,
-            roles: ["counsellor"],
-          },
-          [toReviewUser.id]: { roles: [updatedRole], isNotifiedByEmail: true },
-        }),
+        ),
       ]);
     });
 
@@ -510,7 +517,7 @@ describe("Admin router", () => {
       ];
 
       const agencyWithOneStep = new AgencyDtoBuilder().build();
-      inMemoryUow.agencyRepository.insert(
+      inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agencyWithOneStep, {
           [validatorInAgency.id]: {
             roles: ["validator"],
@@ -518,7 +525,7 @@ describe("Admin router", () => {
           },
           [toReviewUser.id]: { roles: ["to-review"], isNotifiedByEmail: true },
         }),
-      );
+      ];
 
       const updatedRole: AgencyRole = "counsellor";
 
@@ -656,9 +663,12 @@ describe("Admin router", () => {
       });
 
       expectObjectsToMatch(inMemoryUow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          validator: { roles: ["validator"], isNotifiedByEmail: true },
-        }),
+        toAgencyWithRights(
+          { ...agency, updatedAt: gateways.timeGateway.now().toISOString() },
+          {
+            validator: { roles: ["validator"], isNotifiedByEmail: true },
+          },
+        ),
       ]);
 
       await processEventsForEmailToBeSent(eventCrawler);

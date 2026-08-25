@@ -63,15 +63,18 @@ describe("RemoveUserFromAgency", () => {
 
   let uow: InMemoryUnitOfWork;
   let removeUserFromAgency: RemoveUserFromAgency;
+  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
     uow = createInMemoryUow();
+    timeGateway = new CustomTimeGateway();
     removeUserFromAgency = makeRemoveUserFromAgency({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
+        timeGateway,
         createNewEvent: makeCreateNewEvent({
           uuidGenerator: new TestUuidGenerator(),
-          timeGateway: new CustomTimeGateway(),
+          timeGateway,
         }),
       },
     });
@@ -327,12 +330,17 @@ describe("RemoveUserFromAgency", () => {
         await removeUserFromAgency.execute(inputParams, notAdmin);
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [otherUserWithRightOnAgencies.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [otherUserWithRightOnAgencies.id]: {
+                roles: ["validator"],
+                isNotifiedByEmail: true,
+              },
             },
-          }),
+          ),
           toAgencyWithRights(agency2, {
             [notAdminUser.id]: {
               roles: ["validator"],
@@ -410,12 +418,17 @@ describe("RemoveUserFromAgency", () => {
         await removeUserFromAgency.execute(inputParams, user);
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [otherUserWithRightOnAgencies.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [otherUserWithRightOnAgencies.id]: {
+                roles: ["validator"],
+                isNotifiedByEmail: true,
+              },
             },
-          }),
+          ),
           toAgencyWithRights(agency2, {
             [notAdminUser.id]: {
               roles: ["validator"],

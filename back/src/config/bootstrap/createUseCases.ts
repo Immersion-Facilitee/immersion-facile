@@ -213,8 +213,10 @@ export const createUseCases = ({
     verifyEmailAuthCodeJwt,
   },
 }: CreateUsecasesParams) => {
+  const timeGateway = gateways.timeGateway;
+
   const createNewEvent = makeCreateNewEvent({
-    timeGateway: gateways.timeGateway,
+    timeGateway,
     uuidGenerator,
     quarantinedTopics: config.quarantinedTopics,
   });
@@ -238,7 +240,7 @@ export const createUseCases = ({
         addressGateway: gateways.addressApi,
         createNewEvent,
         siretGateway: gateways.siret,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         uuidGenerator,
       },
     });
@@ -266,7 +268,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         franceTravailGateway: gateways.franceTravailGateway,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         options: { resyncMode: false },
       },
     });
@@ -278,7 +280,7 @@ export const createUseCases = ({
       deps: {
         createNewEvent,
         notificationGateway: gateways.notification,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
 
@@ -287,7 +289,7 @@ export const createUseCases = ({
         uowPerformer,
         deps: {
           createNewEvent,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
         },
       }),
     deleteSubscription: makeDeleteSubscription({ uowPerformer }),
@@ -301,21 +303,21 @@ export const createUseCases = ({
     getConvention: makeGetConvention({ uowPerformer }),
     getBeneficiaryConventionList: makeGetBeneficiaryConventionList({
       uowPerformer,
-      deps: { timeGateway: gateways.timeGateway },
+      deps: { timeGateway },
     }),
 
     saveConventionDraft: makeSaveConventionDraft({
       uowPerformer,
       deps: {
         createNewEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     createArchivedConventionRequest: makeCreateArchivedConventionRequest({
       uowPerformer,
       deps: {
         createNewEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     fetchArchivedConventionRequestToReviewList:
@@ -335,7 +337,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         createNewEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
 
@@ -347,14 +349,14 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         createNewEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     updateConventionStatus: makeUpdateConventionStatus({
       uowPerformer,
       deps: {
         createNewEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
 
@@ -427,7 +429,7 @@ export const createUseCases = ({
         deps: {
           addressGateway: gateways.addressApi,
           uuidGenerator,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
           createNewEvent,
           immersionBaseUrl: config.immersionFacileBaseUrl,
           saveNotificationAndRelatedEvent,
@@ -436,7 +438,7 @@ export const createUseCases = ({
       }),
     addEstablishmentLead: makeAddEstablishmentLead({
       uowPerformer,
-      deps: { timeGateway: gateways.timeGateway },
+      deps: { timeGateway },
     }),
 
     // notifications
@@ -476,14 +478,14 @@ export const createUseCases = ({
       deps: {
         saveNotificationAndRelatedEvent,
         immersionBaseUrl: config.immersionFacileBaseUrl,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     addExchangeToDiscussion: makeAddExchangeToDiscussion({
       deps: {
         createNewEvent,
         saveNotificationAndRelatedEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         immersionFacileBaseUrl: config.immersionFacileBaseUrl,
       },
       uowPerformer,
@@ -493,21 +495,21 @@ export const createUseCases = ({
       makeMarkEstablishmentLeadAsRegistrationAccepted({
         uowPerformer,
         deps: {
-          timeGateway: gateways.timeGateway,
+          timeGateway,
         },
       }),
     markEstablishmentLeadAsRegistrationRejected:
       makeMarkEstablishmentLeadAsRegistrationRejected({
         uowPerformer,
         deps: {
-          timeGateway: gateways.timeGateway,
+          timeGateway,
         },
       }),
 
     deleteEstablishment: makeDeleteEstablishment({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         saveNotificationAndRelatedEvent,
         createNewEvent,
       },
@@ -521,7 +523,7 @@ export const createUseCases = ({
     registerUserOnEstablishment: makeRegisterUserOnEstablishment({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         createNewEvent,
       },
     }),
@@ -549,7 +551,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         createNewEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
 
@@ -558,7 +560,7 @@ export const createUseCases = ({
       deps: {
         createNewEvent,
         generateApiConsumerJwt,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
 
@@ -588,7 +590,7 @@ export const createUseCases = ({
     getLink: makeGetLink({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
 
@@ -704,7 +706,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         uuidGenerator,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         addressGateway: gateways.addressApi,
       },
     }),
@@ -713,6 +715,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         createNewEvent,
+        timeGateway,
       },
     }),
 
@@ -720,6 +723,7 @@ export const createUseCases = ({
       makeLinkFranceTravailUsersToTheirAgencies({
         uowPerformer,
         deps: {
+          timeGateway,
           createNewEvent,
         },
       }),
@@ -728,7 +732,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         dashboardGateway: gateways.dashboardGateway,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
 
@@ -738,7 +742,7 @@ export const createUseCases = ({
 
     deleteUser: makeDeleteUser({
       uowPerformer,
-      deps: { timeGateway: gateways.timeGateway, createNewEvent },
+      deps: { timeGateway, createNewEvent },
     }),
 
     getLastBroadcastFeedback: makeGetLastBroadcastFeedback({
@@ -754,18 +758,20 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         createNewEvent,
+        timeGateway,
       },
     }),
 
     closeAgencyAndTransfertConventions: makeCloseAgencyAndTransferConventions({
       uowPerformer,
-      deps: { createNewEvent },
+      deps: { createNewEvent, timeGateway },
     }),
 
     updateAgencyReferringToUpdatedAgency:
       makeUpdateAgencyReferringToUpdatedAgency({
         uowPerformer,
         deps: {
+          timeGateway,
           createNewEvent,
         },
       }),
@@ -774,6 +780,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         createNewEvent,
+        timeGateway,
       },
     }),
 
@@ -788,7 +795,7 @@ export const createUseCases = ({
       deps: {
         createNewEvent,
         siretGateway: gateways.siret,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         uuidGenerator,
       },
     }),
@@ -797,6 +804,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         createNewEvent,
+        timeGateway,
       },
     }),
 
@@ -819,7 +827,7 @@ export const createUseCases = ({
         uowPerformer,
         deps: {
           subscribersGateway: gateways.subscribersGateway,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
           consumerNamesUsingRomeV3: config.apiConsumerNamesUsingRomeV3,
         },
       }),
@@ -829,7 +837,7 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           generateLink: generateConventionMagicLinkUrl,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
         },
       }),
     getAgencyById: makeGetAgencyById({
@@ -839,7 +847,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         config,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         generateConnectedUserLoginUrl,
         generateConventionMagicLinkUrl,
@@ -868,7 +876,7 @@ export const createUseCases = ({
         generateConnectedUserLoginUrl,
         verifyEmailAuthCodeJwt,
         immersionFacileBaseUrl: config.immersionFacileBaseUrl,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     getOAuthLogoutUrl: makeGetOAuthLogoutUrl({
@@ -891,7 +899,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         createNewEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     getAssessmentByConventionId: makeGetAssessmentByConventionId({
@@ -903,7 +911,7 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           generateConventionMagicLinkUrl,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
         },
       }),
     notifyBeneficiaryThatAssessmentNeedsSignature:
@@ -912,7 +920,7 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           generateConventionMagicLinkUrl,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
           shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
           config,
         },
@@ -922,7 +930,7 @@ export const createUseCases = ({
       deps: {
         saveNotificationAndRelatedEvent,
         generateConventionMagicLinkUrl,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         config,
       },
@@ -933,7 +941,7 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           generateConventionMagicLinkUrl,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
           shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
           config,
         },
@@ -944,18 +952,18 @@ export const createUseCases = ({
     createUserForAgency: makeCreateUserForAgency({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         createNewEvent,
         dashboardGateway: gateways.dashboardGateway,
       },
     }),
     removeUserFromAgency: makeRemoveUserFromAgency({
       uowPerformer,
-      deps: { createNewEvent },
+      deps: { createNewEvent, timeGateway },
     }),
     broadcastConventionAgain: makeBroadcastConventionAgain({
       uowPerformer,
-      deps: { createNewEvent, timeGateway: gateways.timeGateway },
+      deps: { createNewEvent, timeGateway },
     }),
     getApiConsumersByConvention: makeGetApiConsumersByConvention({
       uowPerformer,
@@ -963,14 +971,14 @@ export const createUseCases = ({
     markDiscussionLinkedToConvention: makeMarkDiscussionLinkedToConvention({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     contactRequestReminder: makeContactRequestReminder({
       deps: {
         domain: config.immersionFacileDomain,
         saveNotificationAndRelatedEvent,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
       uowPerformer,
     }),
@@ -989,7 +997,7 @@ export const createUseCases = ({
     updateDiscussionStatus: makeUpdateDiscussionStatus({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         createNewEvent,
       },
     }),
@@ -997,7 +1005,7 @@ export const createUseCases = ({
       makeUpdateMarketingEstablishmentContactList({
         deps: {
           establishmentMarketingGateway: gateways.establishmentMarketingGateway,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
           siretGateway: gateways.siret,
         },
         uowPerformer,
@@ -1025,7 +1033,7 @@ export const createUseCases = ({
         createNewEvent,
         uuidGenerator,
         immersionFacileBaseUrl: config.immersionFacileBaseUrl,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         minimumNumberOfDaysBetweenSimilarContactRequests:
           config.minimumNumberOfDaysBetweenSimilarContactRequests,
       },
@@ -1048,7 +1056,7 @@ export const createUseCases = ({
     sendSignatureLink: makeSendSignatureLink({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         config,
         saveNotificationAndRelatedEvent,
         generateConventionMagicLinkUrl,
@@ -1059,7 +1067,7 @@ export const createUseCases = ({
     sendAssessmentLink: makeSendAssessmentLink({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         config,
         saveNotificationAndRelatedEvent,
         generateConventionMagicLinkUrl,
@@ -1070,7 +1078,7 @@ export const createUseCases = ({
     sendAssessmentSignatureReminder: makeSendAssessmentSignatureReminder({
       uowPerformer,
       deps: {
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         config,
         saveNotificationAndRelatedEvent,
         generateConventionMagicLinkUrl,
@@ -1080,12 +1088,12 @@ export const createUseCases = ({
     }),
     getConventionsForAgencyUser: makeGetConventionsForAgencyUser({
       uowPerformer,
-      deps: { timeGateway: gateways.timeGateway },
+      deps: { timeGateway },
     }),
     getConventionsWithUnfinalizedAssessment:
       makeGetConventionsWithUnfinalizedAssessment({
         uowPerformer,
-        deps: { timeGateway: gateways.timeGateway },
+        deps: { timeGateway },
       }),
     transferConventionToAgency: makeTransferConventionToAgency({
       uowPerformer,
@@ -1105,7 +1113,7 @@ export const createUseCases = ({
     }),
     createOrUpdateConventionTemplate: makeCreateOrUpdateConventionTemplate({
       uowPerformer,
-      deps: { timeGateway: gateways.timeGateway, createNewEvent },
+      deps: { timeGateway, createNewEvent },
     }),
     deleteConventionTemplate: makeDeleteConventionTemplate({
       uowPerformer,
@@ -1122,7 +1130,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         config,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
         uuidGenerator,
         saveNotificationAndRelatedEvent,
         generateEmailAuthCodeUrl,
@@ -1136,7 +1144,7 @@ export const createUseCases = ({
       deps: {
         saveNotificationsBatchAndRelatedEvent,
         config,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     notifyBeneficiaryToFollowUpContactRequest:
@@ -1149,7 +1157,7 @@ export const createUseCases = ({
     makeRequestOldConventionDraftsDeletion:
       makeRequestOldConventionDraftsDeletion({
         uowPerformer,
-        deps: { createNewEvent, timeGateway: gateways.timeGateway },
+        deps: { createNewEvent, timeGateway },
       }),
     updateInvalidPhone: makeUpdateInvalidPhone({
       uowPerformer,
@@ -1181,7 +1189,7 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           generateConventionMagicLinkUrl,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
           config,
           shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         },
@@ -1223,7 +1231,7 @@ export const createUseCases = ({
         generateConventionMagicLinkUrl,
         saveNotificationsBatchAndRelatedEvent,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     notifyLastSigneeThatConventionHasBeenSigned:
@@ -1232,7 +1240,7 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           generateConventionMagicLinkUrl,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
         },
       }),
     notifyNewConventionNeedsReview: makeNotifyNewConventionNeedsReview({
@@ -1250,7 +1258,7 @@ export const createUseCases = ({
           generateConventionMagicLinkUrl,
           saveNotificationAndRelatedEvent,
           shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
-          timeGateway: gateways.timeGateway,
+          timeGateway,
         },
       }),
     notifySignatoriesThatConventionSubmittedNeedsSignatureAfterNotification:
@@ -1258,7 +1266,7 @@ export const createUseCases = ({
         {
           uowPerformer,
           deps: {
-            timeGateway: gateways.timeGateway,
+            timeGateway,
             shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
             config,
             saveNotificationAndRelatedEvent,
@@ -1304,7 +1312,7 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         uuidGenerator,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
     saveApiConsumer: makeSaveApiConsumer({
@@ -1312,7 +1320,7 @@ export const createUseCases = ({
       deps: {
         createNewEvent,
         generateApiConsumerJwt,
-        timeGateway: gateways.timeGateway,
+        timeGateway,
       },
     }),
   } satisfies Record<string, InstantiatedUseCase<any, any, any>>;

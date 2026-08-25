@@ -69,7 +69,7 @@ export const throwIfAgencyHasNoUsersWhileNotClosedOrRejected = ({
 };
 
 export interface AgencyRepository {
-  insert(agency: AgencyWithUsersRights, updatedAt?: DateString): Promise<void>;
+  insert(agency: AgencyWithUsersRights): Promise<void>;
   update(partialAgency: PartialAgencyWithUsersRights): Promise<void>;
 
   getById(id: AgencyId): Promise<AgencyWithUsersRights | undefined>;
@@ -100,12 +100,14 @@ export const updateAgencyRightsForUser = async (
   uow: UnitOfWork,
   userId: UserId,
   { agencyId, isNotifiedByEmail, roles }: AgencyRightOfUser,
+  now: Date,
 ): Promise<void> => {
   const agencyWithRights = await uow.agencyRepository.getById(agencyId);
   if (!agencyWithRights) throw errors.agency.notFound({ agencyId });
   return uow.agencyRepository.update({
     id: agencyId,
     status: agencyWithRights.status,
+    updatedAt: now.toISOString(),
     usersRights: {
       ...agencyWithRights.usersRights,
       [userId]: { isNotifiedByEmail, roles },
@@ -117,6 +119,7 @@ export const removeAgencyRightsForUser = async (
   uow: UnitOfWork,
   userId: UserId,
   { agencyId }: AgencyRightOfUser,
+  now: Date,
 ): Promise<void> => {
   const agencyWithRights = await uow.agencyRepository.getById(agencyId);
   if (!agencyWithRights) throw errors.agency.notFound({ agencyId });
@@ -125,5 +128,6 @@ export const removeAgencyRightsForUser = async (
     id: agencyId,
     status: agencyWithRights.status,
     usersRights: rightsToKeep,
+    updatedAt: now.toISOString(),
   });
 };

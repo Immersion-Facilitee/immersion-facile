@@ -116,7 +116,7 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow", () => {
         .withId("validator2")
         .buildUser();
       uow.userRepository.users = [validator, validator2];
-      await uow.agencyRepository.insert(
+      uow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: {
             isNotifiedByEmail: true,
@@ -124,7 +124,8 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow", () => {
           },
           [validator2.id]: { isNotifiedByEmail: false, roles: ["validator"] },
         }),
-      );
+      ];
+
       await uow.conventionRepository.save(convention);
 
       await notifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow.execute({
@@ -160,11 +161,12 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow", () => {
 
     it("Do not send an email when assessment status is not DID_NOT_SHOW", async () => {
       uow.userRepository.users = [validator];
-      await uow.agencyRepository.insert(
+      uow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
-      );
+      ];
+
       await uow.conventionRepository.save(convention);
 
       await notifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow.execute({
@@ -209,11 +211,12 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow", () => {
 
       it("Send an email to the advisor (and not to other agency users)", async () => {
         uow.userRepository.users = [validator];
-        await uow.agencyRepository.insert(
+        uow.agencyRepository.agencies = [
           toAgencyWithRights(agency, {
             [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
           }),
-        );
+        ];
+
         await uow.conventionRepository.save(convention);
 
         await notifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow.execute({
