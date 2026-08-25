@@ -720,6 +720,7 @@ const makeApplyPaginatedFiltersToConventions =
     search,
     statuses,
     agencyIds,
+    omitStatusesForAgencies,
     dateStart,
     dateEnd,
     dateSubmission,
@@ -744,6 +745,15 @@ const makeApplyPaginatedFiltersToConventions =
         ({ agencyId }) =>
           agencyIds && agencyIds.length > 0
             ? agencyIds.includes(agencyId)
+            : true,
+        ({ agencyId, status }) =>
+          omitStatusesForAgencies &&
+          omitStatusesForAgencies.agencyIds.length > 0 &&
+          omitStatusesForAgencies.statuses.length > 0
+            ? !(
+                omitStatusesForAgencies.agencyIds.includes(agencyId) &&
+                omitStatusesForAgencies.statuses.includes(status)
+              )
             : true,
       ] satisfies Array<(convention: ConventionDto) => boolean>
     ).every((filter) => filter(convention));

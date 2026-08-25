@@ -979,7 +979,6 @@ describe("Pg implementation of ConventionQueries", () => {
         streetNumberAndAddress: "Rue de la République",
       })
       .build();
-
     const conventionA = new ConventionDtoBuilder()
       .withId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
       .withSiret("12345678901235")
@@ -1849,6 +1848,172 @@ describe("Pg implementation of ConventionQueries", () => {
       });
 
       expectToEqual(result.data, [conventionA]);
+    });
+
+    describe("when omitting statuses for some agencies", () => {
+      const omittedStatuses = [
+        "READY_TO_SIGN",
+        "PARTIALLY_SIGNED",
+        "IN_REVIEW",
+      ] as const;
+      const conventionInReview = new ConventionDtoBuilder()
+        .withId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
+        .withAgencyId(differentAgencyId)
+        .withStatus("IN_REVIEW")
+        .withDateStart(new Date("2023-05-15").toISOString())
+        .withDateEnd(new Date("2023-05-20").toISOString())
+        .withDateSubmission(new Date("2023-05-10").toISOString())
+        .withUpdatedAt(anyConventionUpdatedAt)
+        .build();
+      const conventionAcceptedByCounsellor = new ConventionDtoBuilder()
+        .withId("ffffffff-ffff-4fff-8fff-ffffffffffff")
+        .withAgencyId(differentAgencyId)
+        .withStatus("ACCEPTED_BY_COUNSELLOR")
+        .withDateStart(new Date("2023-06-15").toISOString())
+        .withDateEnd(new Date("2023-06-20").toISOString())
+        .withDateSubmission(new Date("2023-06-10").toISOString())
+        .withUpdatedAt(anyConventionUpdatedAt)
+        .build();
+
+      it("should keep all statuses for agencies not in omit and hide omitted statuses for omitted agencies", async () => {
+        await Promise.all([
+          conventionRepository.save(conventionInReview, anyConventionUpdatedAt),
+          conventionRepository.save(
+            conventionAcceptedByCounsellor,
+            anyConventionUpdatedAt,
+          ),
+        ]);
+
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            agencyIds: [agencyId, differentAgencyId],
+            omitStatusesForAgencies: {
+              agencyIds: [differentAgencyId],
+              statuses: [...omittedStatuses],
+            },
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [
+          conventionAcceptedByCounsellor,
+          conventionC,
+          conventionB,
+          conventionA,
+        ]);
+        expectToEqual(result.pagination.totalRecords, 4);
+      });
+
+      it("should hide omitted statuses when the agency is both in agencyIds and omit", async () => {
+        const conventionPartiallySigned = new ConventionDtoBuilder()
+          .withId("99999999-9999-4999-8999-999999999999")
+          .withAgencyId(agencyId)
+          .withStatus("PARTIALLY_SIGNED")
+          .withDateStart(new Date("2023-05-15").toISOString())
+          .withDateEnd(new Date("2023-05-20").toISOString())
+          .withDateSubmission(new Date("2023-05-10").toISOString())
+          .withUpdatedAt(anyConventionUpdatedAt)
+          .build();
+
+        await conventionRepository.save(
+          conventionPartiallySigned,
+          anyConventionUpdatedAt,
+        );
+
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            agencyIds: [agencyId],
+            omitStatusesForAgencies: {
+              agencyIds: [agencyId],
+              statuses: [...omittedStatuses],
+            },
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionC]);
+      });
+
+      it("should return IN_REVIEW only from agencies that are not omitted", async () => {
+        await conventionRepository.save(
+          conventionInReview,
+          anyConventionUpdatedAt,
+        );
+
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            agencyIds: [agencyId, differentAgencyId],
+            omitStatusesForAgencies: {
+              agencyIds: [differentAgencyId],
+              statuses: [...omittedStatuses],
+            },
+            statuses: ["IN_REVIEW"],
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionB]);
+      });
+
+      it("should paginate with totalRecords that ignore omitted conventions", async () => {
+        const resultPage1 = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 2 },
+          filters: {
+            agencyIds: [agencyId, differentAgencyId],
+            omitStatusesForAgencies: {
+              agencyIds: [differentAgencyId],
+              statuses: [...omittedStatuses],
+            },
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(resultPage1.data, [conventionC, conventionB]);
+        expectToEqual(resultPage1.pagination, {
+          currentPage: 1,
+          totalPages: 2,
+          numberPerPage: 2,
+          totalRecords: 3,
+        });
+
+        const resultPage2 = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 2, perPage: 2 },
+          filters: {
+            agencyIds: [agencyId, differentAgencyId],
+            omitStatusesForAgencies: {
+              agencyIds: [differentAgencyId],
+              statuses: [...omittedStatuses],
+            },
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(resultPage2.data, [conventionA]);
+        expectToEqual(resultPage2.pagination, {
+          currentPage: 2,
+          totalPages: 2,
+          numberPerPage: 2,
+          totalRecords: 3,
+        });
+      });
     });
   });
 

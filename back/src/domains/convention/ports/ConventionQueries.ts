@@ -48,10 +48,16 @@ export type GetConventionsParams = {
   limit?: number;
 };
 
+export type OmitStatusesForAgenciesFilter = {
+  agencyIds: AgencyId[];
+  statuses: ConventionStatus[];
+};
+
 export type GetPaginatedConventionsFilters = {
   search?: string;
   statuses?: ConventionStatus[];
   agencyIds?: AgencyId[];
+  omitStatusesForAgencies?: OmitStatusesForAgenciesFilter;
   dateStart?: DateFilter;
   dateEnd?: DateFilter;
   dateSubmission?: DateFilter;
