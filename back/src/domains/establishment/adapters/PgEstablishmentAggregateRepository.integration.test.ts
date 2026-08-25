@@ -3533,4 +3533,56 @@ describe("PgEstablishmentAggregateRepository", () => {
       );
     });
   });
+
+  describe("updateEstablishmentsWithInseeData", () => {
+    const siret = "91523634300017";
+    const inseeCheckDate = new Date("2026-08-25T10:00:00.000Z");
+
+    beforeEach(async () => {
+      await pgEstablishmentAggregateRepository.insertEstablishmentAggregate(
+        new EstablishmentAggregateBuilder()
+          .withEstablishment(
+            new EstablishmentEntityBuilder()
+              .withSiret(siret)
+              .withName("LE BASILIC")
+              .withIsOpen(true)
+              .withLastInseeCheck(subDays(inseeCheckDate, 31))
+              .build(),
+          )
+          .withUserRights([osefUserRight])
+          .build(),
+      );
+    });
+
+    it("updates is_open to false when insee returns a closed establishment", async () => {
+      await pgEstablishmentAggregateRepository.updateEstablishmentsWithInseeData(
+        inseeCheckDate,
+        {
+          [siret]: {
+            isOpen: false,
+            name: "LE BASILIC",
+            nafDto: { code: "4761Z", nomenclature: "NAFRev2" },
+            numberEmployeesRange: "1-2",
+          },
+        },
+      );
+
+      const aggregate =
+        await pgEstablishmentAggregateRepository.getEstablishmentAggregateBySiret(
+          siret,
+        );
+
+      expectToEqual(aggregate?.establishment.isOpen, false);
+      expectToEqual(aggregate?.establishment.name, "LE BASILIC");
+      expectToEqual(aggregate?.establishment.nafDto, {
+        code: "4761Z",
+        nomenclature: "NAFRev2",
+      });
+      expectToEqual(aggregate?.establishment.numberEmployeesRange, "1-2");
+      expectToEqual(
+        aggregate?.establishment.lastInseeCheckDate,
+        inseeCheckDate,
+      );
+    });
+  });
 });

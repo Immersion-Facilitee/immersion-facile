@@ -22,6 +22,7 @@ import {
 const maxEstablishmentsPerBatch = 1;
 const maxEstablishmentsPerFullRun = 2;
 const numberOfDaysAgoToCheckForInseeUpdates = 30;
+const numberOfDaysToRetrieveInseeUpdates = 120;
 const now = new Date("2023-06-16");
 
 describe("Update establishments from Sirene API", () => {
@@ -42,6 +43,7 @@ describe("Update establishments from Sirene API", () => {
         timeGateway,
         uowPerformer,
         numberOfDaysAgoToCheckForInseeUpdates,
+        numberOfDaysToRetrieveInseeUpdates,
         maxEstablishmentsPerBatch,
         maxEstablishmentsPerFullRun,
       },

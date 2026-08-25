@@ -652,6 +652,12 @@ export class AppConfig {
           "30",
         ),
       ),
+      numberOfDaysToRetrieveInseeUpdates: Number.parseInt(
+        this.#throwIfNotDefinedOrDefault(
+          "NUMBER_OF_DAYS_TO_RETRIEVE_INSEE_UPDATES",
+          "120",
+        ),
+      ),
     };
   }
 
