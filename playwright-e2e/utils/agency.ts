@@ -1,6 +1,11 @@
 import { faker } from "@faker-js/faker";
 import { expect, type Page } from "@playwright/test";
-import { type AgencyId, addressRoutes, domElementIds } from "shared";
+import {
+  type AgencyId,
+  addressRoutes,
+  domElementIds,
+  frontRoutes,
+} from "shared";
 import { goToAdminTab } from "./admin";
 import { fillAutocomplete } from "./utils";
 
@@ -153,20 +158,5 @@ export const addUserToAgency = async (page: Page, agencyName: string) => {
 };
 
 export const goToAddAgencyFormThroughAgencyLandingPage = async (page: Page) => {
-  await page.goto("/");
-  await page.click(`#${domElementIds.home.heroHeader.agency}`);
-  await page.click(`#${domElementIds.homeAgencies.heroHeader.addAgencyForm}`);
-
-  const newAgencyButton = page.locator(
-    `#${domElementIds.agencyDashboard.registerAgencies.newAgencyButton}`,
-  );
-  const showRegistrationFormButton = page.locator(
-    `#${domElementIds.agencyDashboard.registerAgencies.showRegistrationFormButton}`,
-  );
-
-  await expect(newAgencyButton.or(showRegistrationFormButton)).toBeVisible();
-  if (await showRegistrationFormButton.isVisible())
-    await showRegistrationFormButton.click();
-
-  await newAgencyButton.click();
+  await page.goto(frontRoutes.addAgency().href);
 };
