@@ -18,6 +18,7 @@
   @include for-screen-min($bp-md) {
     position: static;
     display: block;
+    border-right: 1px solid var(--border-default-grey);
   }
 
   &__close-button {
