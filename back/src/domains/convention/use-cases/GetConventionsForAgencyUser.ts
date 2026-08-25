@@ -1,5 +1,6 @@
 import { subMonths } from "date-fns";
 import {
+  type AgencyRight,
   type AgencyRole,
   type AgencyUserConventionListDto,
   type ConnectedUser,
@@ -49,7 +50,7 @@ export const makeGetConventionsForAgencyUser = useCaseBuilder(
 
     const user = await getUserWithRights(uow, currentUser.id);
 
-    const agencyIdsUserHasValidRightsOn = user.agencyRights
+    const agencyRightsInScope = user.agencyRights
       .filter(({ roles }) =>
         roles.some((role) => agencyRolesWithConventionAccess.includes(role)),
       )
@@ -58,19 +59,29 @@ export const makeGetConventionsForAgencyUser = useCaseBuilder(
           !departmentCodesFilter?.length ||
           departmentCodesFilter.includes(agency.address.departmentCode),
       )
-      .map(({ agency }) => agency.id);
+      .filter(
+        ({ agency }) =>
+          !agencyIdsFilter?.length || agencyIdsFilter.includes(agency.id),
+      );
 
-    const agencyIds = agencyIdsFilter?.length
-      ? agencyIdsUserHasValidRightsOn.filter((id) =>
-          agencyIdsFilter.includes(id),
-        )
-      : agencyIdsUserHasValidRightsOn;
+    const agencyIds = agencyRightsInScope.map(({ agency }) => agency.id);
+    const agencyIdsWithRefersToUserIsValidatorOn = agencyRightsInScope
+      .filter(isValidatorOfAgencyRefersTo)
+      .map(({ agency }) => agency.id);
 
     const paginated = await uow.conventionQueries.getPaginatedConventions({
       ...withSort,
       filters: {
         ...restFilters,
         agencyIds,
+        ...(agencyIdsWithRefersToUserIsValidatorOn.length > 0
+          ? {
+              omitStatusesForAgencies: {
+                agencyIds: agencyIdsWithRefersToUserIsValidatorOn,
+                statuses: ["READY_TO_SIGN", "PARTIALLY_SIGNED", "IN_REVIEW"],
+              },
+            }
+          : {}),
         dateEnd: {
           ...restFilters.dateEnd,
           from: shouldUseDefaultDateEndFrom(restFilters.dateEnd?.from, now)
@@ -101,6 +112,12 @@ const agencyRolesWithConventionAccess: AgencyRole[] = [
   "agency-admin",
   "agency-viewer",
 ];
+
+const isValidatorOfAgencyRefersTo = ({ agency, roles }: AgencyRight) =>
+  !!agency.refersToAgencyId &&
+  !roles.includes("counsellor") &&
+  !roles.includes("agency-admin") &&
+  !roles.includes("agency-viewer");
 
 const shouldUseDefaultDateEndFrom = (
   dateEndFrom: DateString | undefined,

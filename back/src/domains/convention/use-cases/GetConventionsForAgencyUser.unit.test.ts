@@ -430,4 +430,164 @@ describe("GetConventionsForAgencyUser", () => {
       );
     });
   });
+
+  describe("Agency with refersTo", () => {
+    const agencyWithRefersTo = toAgencyWithRights(
+      new AgencyDtoBuilder()
+        .withId("dddddddd-dddd-dddd-dddd-dddddddddddd")
+        .withName("Structure d'accompagnement")
+        .withRefersToAgencyInfo({
+          refersToAgencyId: agency.id,
+          refersToAgencyName: agency.name,
+          refersToAgencyContactEmail: agency.contactEmail,
+        })
+        .build(),
+      {
+        [agencyUserId]: { isNotifiedByEmail: true, roles: ["validator"] },
+      },
+    );
+
+    const conventionInReviewOnAgency = new ConventionDtoBuilder()
+      .withId("convention-in-review-on-agency")
+      .withAgencyId(agency.id)
+      .withStatus("IN_REVIEW")
+      .build();
+    const conventionInReviewOnAgencyWithRefersTo = new ConventionDtoBuilder()
+      .withId("convention-in-review-on-agency-with-refers-to")
+      .withAgencyId(agencyWithRefersTo.id)
+      .withStatus("IN_REVIEW")
+      .build();
+    const conventionReadyToSignOnAgencyWithRefersTo = new ConventionDtoBuilder()
+      .withId("convention-ready-to-sign-on-agency-with-refers-to")
+      .withAgencyId(agencyWithRefersTo.id)
+      .withStatus("READY_TO_SIGN")
+      .build();
+    const conventionPartiallySignedOnAgencyWithRefersTo =
+      new ConventionDtoBuilder()
+        .withId("convention-partially-signed-on-agency-with-refers-to")
+        .withAgencyId(agencyWithRefersTo.id)
+        .withStatus("PARTIALLY_SIGNED")
+        .build();
+    const conventionAcceptedByCounsellorOnAgencyWithRefersTo =
+      new ConventionDtoBuilder()
+        .withId("convention-accepted-by-counsellor-on-agency-with-refers-to")
+        .withAgencyId(agencyWithRefersTo.id)
+        .withStatus("ACCEPTED_BY_COUNSELLOR")
+        .build();
+    const conventionRejectedOnAgencyWithRefersTo = new ConventionDtoBuilder()
+      .withId("convention-rejected-on-agency-with-refers-to")
+      .withAgencyId(agencyWithRefersTo.id)
+      .withStatus("REJECTED")
+      .build();
+    const conventionDeprecatedOnAgencyWithRefersTo = new ConventionDtoBuilder()
+      .withId("convention-deprecated-on-agency-with-refers-to")
+      .withAgencyId(agencyWithRefersTo.id)
+      .withStatus("DEPRECATED")
+      .build();
+
+    beforeEach(() => {
+      uow.agencyRepository.agencies = [agency, agencyWithRefersTo];
+      uow.conventionRepository.setConventions([
+        conventionInReviewOnAgency,
+        conventionInReviewOnAgencyWithRefersTo,
+        conventionReadyToSignOnAgencyWithRefersTo,
+        conventionPartiallySignedOnAgencyWithRefersTo,
+        conventionAcceptedByCounsellorOnAgencyWithRefersTo,
+        conventionRejectedOnAgencyWithRefersTo,
+        conventionDeprecatedOnAgencyWithRefersTo,
+      ]);
+    });
+
+    it("should not return READY_TO_SIGN, PARTIALLY_SIGNED or IN_REVIEW of an agency with refersTo when user is validator, and still return IN_REVIEW of the agency without refersTo", async () => {
+      const result = await getConventionsForAgencyUser.execute(
+        { pagination: { page: 1, perPage: 10 } },
+        currentUser,
+      );
+
+      expectArraysToEqualIgnoringOrder(
+        result.data.map(({ id }) => id),
+        [
+          conventionInReviewOnAgency.id,
+          conventionAcceptedByCounsellorOnAgencyWithRefersTo.id,
+          conventionRejectedOnAgencyWithRefersTo.id,
+          conventionDeprecatedOnAgencyWithRefersTo.id,
+        ],
+      );
+    });
+
+    it.each([
+      {
+        roles: ["counsellor"] satisfies AgencyRole[],
+        case: "counsellor",
+      },
+      {
+        roles: ["counsellor", "validator"] satisfies AgencyRole[],
+        case: "counsellor and validator",
+      },
+    ])("should return READY_TO_SIGN, PARTIALLY_SIGNED and IN_REVIEW of an agency with refersTo when user is $case", async ({
+      roles,
+    }) => {
+      uow.agencyRepository.agencies = [
+        agency,
+        {
+          ...agencyWithRefersTo,
+          usersRights: {
+            [agencyUserId]: { isNotifiedByEmail: true, roles },
+          },
+        },
+      ];
+
+      const result = await getConventionsForAgencyUser.execute(
+        { pagination: { page: 1, perPage: 10 } },
+        currentUser,
+      );
+
+      expectArraysToEqualIgnoringOrder(
+        result.data.map(({ id }) => id),
+        [
+          conventionInReviewOnAgency.id,
+          conventionInReviewOnAgencyWithRefersTo.id,
+          conventionReadyToSignOnAgencyWithRefersTo.id,
+          conventionPartiallySignedOnAgencyWithRefersTo.id,
+          conventionAcceptedByCounsellorOnAgencyWithRefersTo.id,
+          conventionRejectedOnAgencyWithRefersTo.id,
+          conventionDeprecatedOnAgencyWithRefersTo.id,
+        ],
+      );
+    });
+
+    it("should not return IN_REVIEW of an agency with refersTo when filtering by status IN_REVIEW", async () => {
+      const result = await getConventionsForAgencyUser.execute(
+        {
+          filters: { statuses: ["IN_REVIEW"] },
+          pagination: { page: 1, perPage: 10 },
+        },
+        currentUser,
+      );
+
+      expectToEqual(
+        result.data.map(({ id }) => id),
+        [conventionInReviewOnAgency.id],
+      );
+    });
+
+    it("should not return IN_REVIEW of an agency with refersTo when filtering by that agency id", async () => {
+      const result = await getConventionsForAgencyUser.execute(
+        {
+          filters: { agencyIds: [agencyWithRefersTo.id] },
+          pagination: { page: 1, perPage: 10 },
+        },
+        currentUser,
+      );
+
+      expectArraysToEqualIgnoringOrder(
+        result.data.map(({ id }) => id),
+        [
+          conventionAcceptedByCounsellorOnAgencyWithRefersTo.id,
+          conventionRejectedOnAgencyWithRefersTo.id,
+          conventionDeprecatedOnAgencyWithRefersTo.id,
+        ],
+      );
+    });
+  });
 });
