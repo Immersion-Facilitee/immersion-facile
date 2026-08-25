@@ -2,14 +2,12 @@ import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
   errors,
+  expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
-import {
-  type CreateNewEvent,
-  makeCreateNewEvent,
-} from "../../core/events/ports/EventBus";
+import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
@@ -70,21 +68,22 @@ describe("UpdateAgencyReferingToUpdatedAgency", () => {
 
   let uow: InMemoryUnitOfWork;
   let updateAgencyReferringToUpdatedAgency: UpdateAgencyReferringToUpdatedAgency;
-  let createNewEvent: CreateNewEvent;
   let uuidGenerator: TestUuidGenerator;
+  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
     uow = createInMemoryUow();
     uuidGenerator = new TestUuidGenerator();
-    createNewEvent = makeCreateNewEvent({
-      timeGateway: new CustomTimeGateway(),
-      uuidGenerator,
-    });
+    timeGateway = new CustomTimeGateway();
     updateAgencyReferringToUpdatedAgency =
       makeUpdateAgencyReferringToUpdatedAgency({
         uowPerformer: new InMemoryUowPerformer(uow),
         deps: {
-          createNewEvent,
+          timeGateway,
+          createNewEvent: makeCreateNewEvent({
+            timeGateway,
+            uuidGenerator,
+          }),
         },
       });
   });
@@ -143,45 +142,53 @@ describe("UpdateAgencyReferingToUpdatedAgency", () => {
             isNotifiedByEmail: false,
           },
         }),
-        toAgencyWithRights(agency2RefersToUpdatedAgency, {
-          [updatedUser.id]: { roles: ["validator"], isNotifiedByEmail: true },
-          [notUpdatedUser.id]: {
-            roles: ["counsellor", "validator"],
-            isNotifiedByEmail: false,
+        toAgencyWithRights(
+          {
+            ...agency2RefersToUpdatedAgency,
+            updatedAt: timeGateway.now().toISOString(),
           },
-        }),
-        toAgencyWithRights(agency3RefersToUpdatedAgency, {
-          [updatedUser.id]: { roles: ["validator"], isNotifiedByEmail: true },
-          [notUpdatedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: false,
+          {
+            [updatedUser.id]: { roles: ["validator"], isNotifiedByEmail: true },
+            [notUpdatedUser.id]: {
+              roles: ["counsellor", "validator"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
+        ),
+        toAgencyWithRights(
+          {
+            ...agency3RefersToUpdatedAgency,
+            updatedAt: timeGateway.now().toISOString(),
+          },
+          {
+            [updatedUser.id]: { roles: ["validator"], isNotifiedByEmail: true },
+            [notUpdatedUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+          },
+        ),
       ]);
 
-      expectToEqual(uow.outboxRepository.events, [
+      expectObjectInArrayToMatch(uow.outboxRepository.events, [
         {
-          ...createNewEvent({
-            topic: "AgencyUpdated",
-            payload: {
-              agencyId: agency2RefersToUpdatedAgency.id,
-              triggeredBy: {
-                kind: "crawler",
-              },
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: agency2RefersToUpdatedAgency.id,
+            triggeredBy: {
+              kind: "crawler",
             },
-          }),
+          },
           id: "event1",
         },
         {
-          ...createNewEvent({
-            topic: "AgencyUpdated",
-            payload: {
-              agencyId: agency3RefersToUpdatedAgency.id,
-              triggeredBy: {
-                kind: "crawler",
-              },
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: agency3RefersToUpdatedAgency.id,
+            triggeredBy: {
+              kind: "crawler",
             },
-          }),
+          },
           id: "event2",
         },
       ]);
@@ -225,49 +232,60 @@ describe("UpdateAgencyReferingToUpdatedAgency", () => {
           [updatedUser.id]: { roles: ["validator"], isNotifiedByEmail: false },
         }),
         toAgencyWithRights(updatedAgency, {
-          [updatedUser.id]: { roles: ["counsellor"], isNotifiedByEmail: true },
+          [updatedUser.id]: {
+            roles: ["counsellor"],
+            isNotifiedByEmail: true,
+          },
           [notUpdatedUser.id]: {
             roles: ["validator"],
             isNotifiedByEmail: false,
           },
         }),
-        toAgencyWithRights(agency2RefersToUpdatedAgency, {
-          [notUpdatedUser.id]: {
-            roles: ["counsellor", "validator"],
-            isNotifiedByEmail: false,
+        toAgencyWithRights(
+          {
+            ...agency2RefersToUpdatedAgency,
+            updatedAt: timeGateway.now().toISOString(),
           },
-        }),
-        toAgencyWithRights(agency3RefersToUpdatedAgency, {
-          [notUpdatedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: false,
+          {
+            [notUpdatedUser.id]: {
+              roles: ["counsellor", "validator"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
+        ),
+        toAgencyWithRights(
+          {
+            ...agency3RefersToUpdatedAgency,
+            updatedAt: timeGateway.now().toISOString(),
+          },
+          {
+            [notUpdatedUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+          },
+        ),
       ]);
 
-      expectToEqual(uow.outboxRepository.events, [
+      expectObjectInArrayToMatch(uow.outboxRepository.events, [
         {
-          ...createNewEvent({
-            topic: "AgencyUpdated",
-            payload: {
-              agencyId: agency2RefersToUpdatedAgency.id,
-              triggeredBy: {
-                kind: "crawler",
-              },
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: agency2RefersToUpdatedAgency.id,
+            triggeredBy: {
+              kind: "crawler",
             },
-          }),
+          },
           id: "event1",
         },
         {
-          ...createNewEvent({
-            topic: "AgencyUpdated",
-            payload: {
-              agencyId: agency3RefersToUpdatedAgency.id,
-              triggeredBy: {
-                kind: "crawler",
-              },
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: agency3RefersToUpdatedAgency.id,
+            triggeredBy: {
+              kind: "crawler",
             },
-          }),
+          },
           id: "event2",
         },
       ]);

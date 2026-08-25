@@ -9,7 +9,7 @@ import { phoneNumberSchema } from "../phone/phone.schema";
 import { allAgencyRoles } from "../role/role.dto";
 import { searchTextAlphaNumericSchema } from "../search/searchText.schema";
 import { siretSchema } from "../siret/siret.schema";
-import { makeDateStringSchema } from "../utils/date";
+import { dateTimeIsoStringSchema, makeDateStringSchema } from "../utils/date";
 import {
   stringWithMaxLength255,
   zStringMinLength1Max1024,
@@ -241,6 +241,7 @@ export const editAgencySchema: ZodSchemaWithInputMatchingOutput<AgencyDto> = z
   .and(withCounsellorsAndValidatorsEmailsSchema)
   .and(
     z.object({
+      updatedAt: dateTimeIsoStringSchema,
       status: agencyStatusSchema,
       codeSafir: zStringMinLength1Max1024.or(z.null()),
       refersToAgencyId: refersToAgencyIdSchema.or(z.null()),
@@ -272,6 +273,7 @@ export const agencyDtoForAgencyUsersAndAdminsSchema: ZodSchemaWithInputMatchingO
     .merge(
       z.object({
         agencySiret: siretSchema,
+        updatedAt: dateTimeIsoStringSchema,
         status: agencyStatusSchema,
         codeSafir: zStringMinLength1Max1024.or(z.null()),
         refersToAgencyId: refersToAgencyIdSchema.or(z.null()),
@@ -289,6 +291,7 @@ export const agencySchema: ZodSchemaWithInputMatchingOutput<AgencyDto> = z
   .extend({
     agencySiret: siretSchema,
     status: agencyStatusSchema,
+    updatedAt: dateTimeIsoStringSchema,
     codeSafir: zStringMinLength1Max1024.or(z.null()),
     refersToAgencyId: refersToAgencyIdSchema.or(z.null()),
     refersToAgencyName: zStringMinLength1Max1024.or(z.null()),

@@ -129,10 +129,12 @@ export const updateRightsOnMultipleAgenciesForUser = async ({
   uow,
   userId,
   agenciesRightForUser,
+  now,
 }: {
   uow: UnitOfWork;
   userId: UserId;
   agenciesRightForUser: AgencyRight[];
+  now: Date;
 }): Promise<void> => {
   await Promise.all(
     agenciesRightForUser.map(
@@ -141,6 +143,7 @@ export const updateRightsOnMultipleAgenciesForUser = async ({
         if (!agency) throw errors.agency.notFound({ agencyId: id });
         return uow.agencyRepository.update({
           id: agency.id,
+          updatedAt: now.toISOString(),
           status,
           usersRights: {
             ...agency.usersRights,

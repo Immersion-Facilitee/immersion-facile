@@ -8,6 +8,7 @@ import {
   withAgencyIdSchema,
 } from "shared";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 
 export type UpdateAgencyReferringToUpdatedAgency = ReturnType<
@@ -17,7 +18,7 @@ export const makeUpdateAgencyReferringToUpdatedAgency = useCaseBuilder(
   "UpdateAgencyReferringToUpdatedAgency",
 )
   .withInput(withAgencyIdSchema)
-  .withDeps<{ createNewEvent: CreateNewEvent }>()
+  .withDeps<{ createNewEvent: CreateNewEvent; timeGateway: TimeGateway }>()
   .build(async ({ uow, deps, inputParams }) => {
     const updatedAgency = await uow.agencyRepository.getById(
       inputParams.agencyId,
@@ -35,6 +36,7 @@ export const makeUpdateAgencyReferringToUpdatedAgency = useCaseBuilder(
           id,
           status,
           usersRights: updateRights(usersRights, updatedAgency),
+          updatedAt: deps.timeGateway.now().toISOString(),
         });
         await uow.outboxRepository.save(
           deps.createNewEvent({

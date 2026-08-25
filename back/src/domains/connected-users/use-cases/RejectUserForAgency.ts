@@ -4,6 +4,7 @@ import {
   rejectIcUserRoleForAgencyParamsSchema,
 } from "shared";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import { throwIfNotAgencyAdminOrBackofficeAdmin } from "../helpers/authorization.helper";
 
@@ -14,6 +15,7 @@ export const makeRejectUserForAgency = useCaseBuilder("RejectUserForAgency")
   .withCurrentUser<ConnectedUser>()
   .withDeps<{
     createNewEvent: CreateNewEvent;
+    timeGateway: TimeGateway;
   }>()
   .build(async ({ uow, currentUser, deps, inputParams }) => {
     throwIfNotAgencyAdminOrBackofficeAdmin({
@@ -36,6 +38,7 @@ export const makeRejectUserForAgency = useCaseBuilder("RejectUserForAgency")
       id: agency.id,
       status: agency.status,
       usersRights: updatedUserRights,
+      updatedAt: deps.timeGateway.now().toISOString(),
     });
     await uow.outboxRepository.save(
       deps.createNewEvent({

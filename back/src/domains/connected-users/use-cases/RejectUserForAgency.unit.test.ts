@@ -83,6 +83,7 @@ describe("RejectUserForAgency", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         createNewEvent: makeCreateNewEvent({ timeGateway, uuidGenerator }),
+        timeGateway,
       },
     });
 
@@ -196,9 +197,6 @@ describe("RejectUserForAgency", () => {
     currentUser,
     usersInRepo,
   }) => {
-    const now = new Date("2023-11-07");
-    timeGateway.setNextDate(now);
-
     uow.agencyRepository.agencies = [
       toAgencyWithRights(agency1, {
         [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
@@ -221,9 +219,12 @@ describe("RejectUserForAgency", () => {
     );
 
     expectToEqual(uow.agencyRepository.agencies, [
-      toAgencyWithRights(agency1, {
-        [notAdmin.id]: { roles: ["validator"], isNotifiedByEmail: false },
-      }),
+      toAgencyWithRights(
+        new AgencyDtoBuilder(agency1).withUpdatedAt(timeGateway.now()).build(),
+        {
+          [notAdmin.id]: { roles: ["validator"], isNotifiedByEmail: false },
+        },
+      ),
       toAgencyWithRights(agency2, {
         [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
       }),
@@ -232,7 +233,7 @@ describe("RejectUserForAgency", () => {
     expectToEqual(uow.outboxRepository.events, [
       {
         id: uuidGenerator.new(),
-        occurredAt: now.toISOString(),
+        occurredAt: timeGateway.now().toISOString(),
         topic: "ConnectedUserAgencyRightRejected",
         payload: {
           userId: user.id,

@@ -55,15 +55,17 @@ describe("Update agency", () => {
 
   let uow: InMemoryUnitOfWork;
   let updateAgency: UpdateAgency;
+  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
+    timeGateway = new CustomTimeGateway();
     uow = createInMemoryUow();
-    uow.userRepository.users = [admin, notAdmin];
     updateAgency = makeUpdateAgency({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
+        timeGateway,
         createNewEvent: makeCreateNewEvent({
-          timeGateway: new CustomTimeGateway(),
+          timeGateway,
           uuidGenerator: new TestUuidGenerator([
             "event-uuid-1",
             "event-uuid-2",
@@ -72,6 +74,8 @@ describe("Update agency", () => {
         }),
       },
     });
+
+    uow.userRepository.users = [admin, notAdmin];
   });
 
   describe("Wrong path", () => {
@@ -185,6 +189,7 @@ describe("Update agency", () => {
       toAgencyWithRights(
         new AgencyDtoBuilder(initialAgencyInRepo)
           .withName("L'agence modifié")
+          .withUpdatedAt(timeGateway.now())
           .build(),
         {},
       ),
@@ -348,7 +353,10 @@ describe("Update agency", () => {
       );
 
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(closedAgency, usersRightsWithAdmin),
+        toAgencyWithRights(
+          { ...closedAgency, updatedAt: timeGateway.now().toISOString() },
+          usersRightsWithAdmin,
+        ),
       ]);
       expectArraysToMatch(uow.outboxRepository.events, [
         {
@@ -468,7 +476,10 @@ describe("Update agency", () => {
     );
 
     expectToEqual(uow.agencyRepository.agencies, [
-      toAgencyWithRights(updatedAgency, {}),
+      toAgencyWithRights(
+        { ...updatedAgency, updatedAt: timeGateway.now().toISOString() },
+        {},
+      ),
     ]);
   });
 });

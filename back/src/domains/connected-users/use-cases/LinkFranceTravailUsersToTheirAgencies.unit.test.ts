@@ -2,14 +2,12 @@ import {
   AgencyDtoBuilder,
   type AgencyGroup,
   defaultProConnectInfos,
+  expectObjectInArrayToMatch,
   expectToEqual,
   type User,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
-import {
-  type CreateNewEvent,
-  makeCreateNewEvent,
-} from "../../core/events/ports/EventBus";
+import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
@@ -63,23 +61,24 @@ describe("LinkFranceTravailUsersToTheirAgencies", () => {
     createdAt: new Date().toISOString(),
   };
 
-  let createNewEvent: CreateNewEvent;
   let uow: InMemoryUnitOfWork;
   let linkFranceTravailUsersToTheirAgencies: LinkFranceTravailUsersToTheirAgencies;
+  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
     uow = createInMemoryUow();
+    timeGateway = new CustomTimeGateway();
     const uuidGenerator = new TestUuidGenerator();
     uuidGenerator.setNextUuids(["event-uuid-1", "event-uuid-2"]);
-    createNewEvent = makeCreateNewEvent({
-      timeGateway: new CustomTimeGateway(),
-      uuidGenerator,
-    });
     linkFranceTravailUsersToTheirAgencies =
       makeLinkFranceTravailUsersToTheirAgencies({
         uowPerformer: new InMemoryUowPerformer(uow),
         deps: {
-          createNewEvent,
+          createNewEvent: makeCreateNewEvent({
+            timeGateway: timeGateway,
+            uuidGenerator: uuidGenerator,
+          }),
+          timeGateway,
         },
       });
     uow.userRepository.users = [defaultUser];
@@ -111,40 +110,48 @@ describe("LinkFranceTravailUsersToTheirAgencies", () => {
       });
 
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [defaultUser.id]: { roles: ["validator"], isNotifiedByEmail: false },
-        }),
-        toAgencyWithRights(agencyWithSameSafir, {
-          [defaultUser.id]: { roles: ["validator"], isNotifiedByEmail: false },
-        }),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [defaultUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+          },
+        ),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agencyWithSameSafir)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [defaultUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+          },
+        ),
         toAgencyWithRights(agency1InGroup),
         toAgencyWithRights(agency2InGroup),
         toAgencyWithRights(agency3InGroup),
       ]);
-      expectToEqual(uow.outboxRepository.events, [
+      expectObjectInArrayToMatch(uow.outboxRepository.events, [
         {
-          ...createNewEvent({
-            topic: "AgencyUpdated",
-            payload: {
-              agencyId: agency.id,
-              triggeredBy: {
-                kind: "crawler",
-              },
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: agency.id,
+            triggeredBy: {
+              kind: "crawler",
             },
-          }),
-          id: "event-uuid-1",
+          },
         },
         {
-          ...createNewEvent({
-            topic: "AgencyUpdated",
-            payload: {
-              agencyId: agencyWithSameSafir.id,
-              triggeredBy: {
-                kind: "crawler",
-              },
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: agencyWithSameSafir.id,
+            triggeredBy: {
+              kind: "crawler",
             },
-          }),
-          id: "event-uuid-2",
+          },
         },
       ]);
     });
@@ -221,46 +228,48 @@ describe("LinkFranceTravailUsersToTheirAgencies", () => {
 
       expectToEqual(uow.userRepository.users, [defaultUser]);
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency, {
-          [defaultUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: false,
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [defaultUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
-        toAgencyWithRights(agencyWithSameSafir, {
-          [defaultUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: false,
+        ),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agencyWithSameSafir)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [defaultUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
+        ),
         toAgencyWithRights(agency1InGroup),
         toAgencyWithRights(agency2InGroup),
         toAgencyWithRights(agency3InGroup),
       ]);
-      expectToEqual(uow.outboxRepository.events, [
+      expectObjectInArrayToMatch(uow.outboxRepository.events, [
         {
-          ...createNewEvent({
-            topic: "AgencyUpdated",
-            payload: {
-              agencyId: agency.id,
-              triggeredBy: {
-                kind: "crawler",
-              },
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: agency.id,
+            triggeredBy: {
+              kind: "crawler",
             },
-          }),
-          id: "event-uuid-1",
+          },
         },
         {
-          ...createNewEvent({
-            topic: "AgencyUpdated",
-            payload: {
-              agencyId: agencyWithSameSafir.id,
-              triggeredBy: {
-                kind: "crawler",
-              },
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: agencyWithSameSafir.id,
+            triggeredBy: {
+              kind: "crawler",
             },
-          }),
-          id: "event-uuid-2",
+          },
         },
       ]);
     });
@@ -342,24 +351,39 @@ describe("LinkFranceTravailUsersToTheirAgencies", () => {
       expectToEqual(uow.agencyRepository.agencies, [
         toAgencyWithRights(agency),
         toAgencyWithRights(agencyWithSameSafir),
-        toAgencyWithRights(agency1InGroup, {
-          [defaultUser.id]: {
-            roles: ["agency-viewer"],
-            isNotifiedByEmail: false,
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency1InGroup)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [defaultUser.id]: {
+              roles: ["agency-viewer"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
-        toAgencyWithRights(agency2InGroup, {
-          [defaultUser.id]: {
-            roles: ["agency-viewer"],
-            isNotifiedByEmail: false,
+        ),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency2InGroup)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [defaultUser.id]: {
+              roles: ["agency-viewer"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
-        toAgencyWithRights(agency3InGroup, {
-          [defaultUser.id]: {
-            roles: ["agency-viewer"],
-            isNotifiedByEmail: false,
+        ),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency3InGroup)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [defaultUser.id]: {
+              roles: ["agency-viewer"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
+        ),
       ]);
     });
 
@@ -390,24 +414,39 @@ describe("LinkFranceTravailUsersToTheirAgencies", () => {
 
       expectToEqual(uow.agencyRepository.agencies, [
         toAgencyWithRights(agency),
-        toAgencyWithRights(agency1InGroup, {
-          [defaultUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: false,
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency1InGroup)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [defaultUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
-        toAgencyWithRights(agency2InGroup, {
-          [defaultUser.id]: {
-            roles: ["agency-viewer"],
-            isNotifiedByEmail: false,
+        ),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency2InGroup)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [defaultUser.id]: {
+              roles: ["agency-viewer"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
-        toAgencyWithRights(agency3InGroup, {
-          [defaultUser.id]: {
-            roles: ["agency-viewer"],
-            isNotifiedByEmail: false,
+        ),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency3InGroup)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [defaultUser.id]: {
+              roles: ["agency-viewer"],
+              isNotifiedByEmail: false,
+            },
           },
-        }),
+        ),
       ]);
     });
 

@@ -256,6 +256,7 @@ describe("Agency routes", () => {
           toAgencyWithRights(
             {
               ...parisMissionLocaleParamsWithoutRefersToAgencyId,
+              updatedAt: gateways.timeGateway.now().toISOString(),
               status: "needsReview",
               refersToAgencyId: null,
               codeSafir: null,
@@ -336,12 +337,17 @@ describe("Agency routes", () => {
 
         expectToEqual(inMemoryUow.userRepository.users, [agencyFtUser]);
         expectToEqual(inMemoryUow.agencyRepository.agencies, [
-          toAgencyWithRights(agencyFt, {
-            [agencyFtUser.id]: {
-              isNotifiedByEmail: false,
-              roles: ["to-review"],
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agencyFt)
+              .withUpdatedAt(gateways.timeGateway.now())
+              .build(),
+            {
+              [agencyFtUser.id]: {
+                isNotifiedByEmail: false,
+                roles: ["to-review"],
+              },
             },
-          }),
+          ),
         ]);
       });
 
@@ -737,6 +743,7 @@ describe("Agency routes", () => {
               .withId(agency4NeedsReview.id)
               .withStatus("needsReview")
               .withCodeSafir("1234")
+              .withUpdatedAt(gateways.timeGateway.now())
               .build(),
             {
               [validator.id]: {

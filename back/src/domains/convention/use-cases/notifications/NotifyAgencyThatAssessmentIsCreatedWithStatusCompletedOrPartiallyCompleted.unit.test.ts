@@ -133,7 +133,7 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompl
       .withId("validator2")
       .buildUser();
     uow.userRepository.users = [validator, validator2];
-    await uow.agencyRepository.insert(
+    uow.agencyRepository.agencies = [
       toAgencyWithRights(agency, {
         [validator.id]: {
           isNotifiedByEmail: true,
@@ -141,7 +141,8 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompl
         },
         [validator2.id]: { isNotifiedByEmail: true, roles: ["validator"] },
       }),
-    );
+    ];
+
     await uow.conventionRepository.save(convention);
     await uow.assessmentRepository.save(
       createAssessmentEntity(signedAssessment, convention),
@@ -220,11 +221,12 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompl
   it("Do not send an email when assessment is not signed", async () => {
     uow.userRepository.users = [validator];
     await uow.conventionRepository.save(convention);
-    await uow.agencyRepository.insert(
+    uow.agencyRepository.agencies = [
       toAgencyWithRights(agency, {
         [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
       }),
-    );
+    ];
+
     const assessmentNotSigned: AssessmentDto = {
       ...signedAssessment,
       signedAt: null,
@@ -241,11 +243,11 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompl
   it("Do not send an email when assessment status is DID_NOT_SHOW", async () => {
     uow.userRepository.users = [validator];
     await uow.conventionRepository.save(convention);
-    await uow.agencyRepository.insert(
+    uow.agencyRepository.agencies = [
       toAgencyWithRights(agency, {
         [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
       }),
-    );
+    ];
     const assessmentDidNotShow: AssessmentDto = {
       conventionId: convention.id,
       status: "DID_NOT_SHOW",
@@ -295,11 +297,12 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompl
 
     it("When beneficiary did the immersion, send an email to the advisor (and not to other agency users)", async () => {
       uow.userRepository.users = [validator];
-      await uow.agencyRepository.insert(
+      uow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
-      );
+      ];
+
       await uow.conventionRepository.save(convention);
       await uow.assessmentRepository.save(
         createAssessmentEntity(signedAssessment, convention),

@@ -14,7 +14,9 @@ import {
   throwIfNotAgencyAdminOrBackofficeAdmin,
 } from "../../connected-users/helpers/authorization.helper";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
+import type { PartialAgencyWithUsersRights } from "../ports/AgencyRepository";
 
 const hasAgencyAdmin = (usersRights: AgencyUsersRights): boolean =>
   Object.values(usersRights).some((right) =>
@@ -37,7 +39,10 @@ const getStatusChangedEventTopic = (
     ? undefined
     : statusChangedEventTopicByStatus[nextStatus];
 
-const toAgencyForRepositoryUpdate = (agency: AgencyDto) => {
+const toAgencyForRepositoryUpdate = (
+  agency: AgencyDto,
+  now: Date,
+): PartialAgencyWithUsersRights => {
   const {
     validatorEmails: _,
     counsellorEmails: __,
@@ -49,6 +54,7 @@ const toAgencyForRepositoryUpdate = (agency: AgencyDto) => {
     statusJustification: closedOrRejectedAgencyStatuses.includes(agency.status)
       ? agency.statusJustification
       : null,
+    updatedAt: now.toISOString(),
   };
 };
 
@@ -56,7 +62,7 @@ export type UpdateAgency = ReturnType<typeof makeUpdateAgency>;
 export const makeUpdateAgency = useCaseBuilder("UpdateAgency")
   .withInput(agencySchema)
   .withCurrentUser<ConnectedUser>()
-  .withDeps<{ createNewEvent: CreateNewEvent }>()
+  .withDeps<{ createNewEvent: CreateNewEvent; timeGateway: TimeGateway }>()
   .build(async ({ uow, currentUser, deps, inputParams: agency }) => {
     const existingAgency = await uow.agencyRepository.getById(agency.id);
     if (!existingAgency) throw errors.agency.notFound({ agencyId: agency.id });
@@ -94,7 +100,9 @@ export const makeUpdateAgency = useCaseBuilder("UpdateAgency")
       );
     }
 
-    await uow.agencyRepository.update(toAgencyForRepositoryUpdate(agency));
+    await uow.agencyRepository.update(
+      toAgencyForRepositoryUpdate(agency, deps.timeGateway.now()),
+    );
 
     const triggeredBy = {
       kind: "connected-user" as const,

@@ -67,10 +67,7 @@ export class InMemoryAgencyRepository implements AgencyRepository {
     );
   }
 
-  public async insert(
-    agency: AgencyWithUsersRights,
-    _updatedAt?: DateString,
-  ): Promise<void> {
+  public async insert(agency: AgencyWithUsersRights): Promise<void> {
     if (this.#agencies[agency.id]) throw errors.agency.alreadyExist(agency.id);
     throwIfAgencyHasNoUsersWhileNotClosedOrRejected(agency);
     this.#agencies[agency.id] = agency;
@@ -440,6 +437,7 @@ const agency3: AgencyWithUsersRights = {
   statusJustification: null,
   phoneNumber: "+33600000003",
   createdAt: defaultCreatedAt,
+  updatedAt: defaultCreatedAt,
   delegationAgencyInfo: null,
 };
 
@@ -474,6 +472,7 @@ const agency1: AgencyWithUsersRights = {
   statusJustification: null,
   phoneNumber: "+33600000001",
   createdAt: defaultCreatedAt,
+  updatedAt: defaultCreatedAt,
   delegationAgencyInfo: null,
 };
 
@@ -509,6 +508,7 @@ const testAgencies: AgencyWithUsersRights[] = [
     statusJustification: null,
     phoneNumber: "+33600000000",
     createdAt: defaultCreatedAt,
+    updatedAt: defaultCreatedAt,
     delegationAgencyInfo: null,
   },
   agency1,
@@ -545,6 +545,7 @@ const testAgencies: AgencyWithUsersRights[] = [
     codeSafir: null,
     phoneNumber: "+33600000002",
     createdAt: defaultCreatedAt,
+    updatedAt: defaultCreatedAt,
     delegationAgencyInfo: null,
   },
   agency3,
@@ -579,6 +580,7 @@ const testAgencies: AgencyWithUsersRights[] = [
     codeSafir: null,
     phoneNumber: "+33600000004",
     createdAt: defaultCreatedAt,
+    updatedAt: defaultCreatedAt,
     delegationAgencyInfo: {
       delegationEndDate: new Date("2029-01-01").toISOString(),
       delegationAgencyName: "Delegation Agency 1",
@@ -616,6 +618,7 @@ const testAgencies: AgencyWithUsersRights[] = [
     codeSafir: null,
     phoneNumber: "+33600000005",
     createdAt: defaultCreatedAt,
+    updatedAt: defaultCreatedAt,
     delegationAgencyInfo: {
       delegationEndDate: new Date("2028-01-01").toISOString(),
       delegationAgencyName: "Delegation Agency 2",

@@ -211,11 +211,13 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           ...agency1WithRights,
           status: "closed",
           statusJustification: "Agence fermée automatiquement pour inactivité",
+          updatedAt: timeGateway.now().toISOString(),
         },
         {
           ...agency2WithRights,
           status: "closed",
           statusJustification: "Agence fermée automatiquement pour inactivité",
+          updatedAt: timeGateway.now().toISOString(),
         },
       ]);
 
@@ -280,6 +282,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         agency1WithRights,
         {
           ...agency2WithRights,
+          updatedAt: timeGateway.now().toISOString(),
           status: "closed",
           statusJustification: "Agence fermée automatiquement pour inactivité",
         },
@@ -365,6 +368,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         referringAgencyWithRights,
         {
           ...agency3WithRights,
+          updatedAt: timeGateway.now().toISOString(),
           status: "closed",
           statusJustification: "Agence fermée automatiquement pour inactivité",
         },
@@ -469,6 +473,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         recentlyCreatedAgencyWithRights,
         {
           ...oldAgencyWithRights,
+          updatedAt: timeGateway.now().toISOString(),
           status: "closed",
           statusJustification: "Agence fermée automatiquement pour inactivité",
         },
@@ -550,11 +555,13 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         agency1WithRights,
         {
           ...agencyToClose1,
+          updatedAt: timeGateway.now().toISOString(),
           status: "closed",
           statusJustification: "Agence fermée automatiquement pour inactivité",
         },
         {
           ...agencyToClose2,
+          updatedAt: timeGateway.now().toISOString(),
           status: "closed",
           statusJustification: "Agence fermée automatiquement pour inactivité",
         },
@@ -622,6 +629,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         poleEmploiAgencyWithRights,
         {
           ...agency1WithRights,
+          updatedAt: timeGateway.now().toISOString(),
           status: "closed",
           statusJustification: "Agence fermée automatiquement pour inactivité",
         },

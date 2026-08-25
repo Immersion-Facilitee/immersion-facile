@@ -62,14 +62,16 @@ describe("RegisterAgencyToConnectedUser use case", () => {
 
   let registerAgencyToConnectedUser: RegisterAgencyToConnectedUser;
   let uow: InMemoryUnitOfWork;
-
+  let timeGateway: CustomTimeGateway;
   beforeEach(() => {
     uow = createInMemoryUow();
+    timeGateway = new CustomTimeGateway();
     registerAgencyToConnectedUser = makeRegisterAgencyToConnectedUser({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
+        timeGateway,
         createNewEvent: makeCreateNewEvent({
-          timeGateway: new CustomTimeGateway(),
+          timeGateway,
           uuidGenerator: new TestUuidGenerator(),
         }),
       },
@@ -126,9 +128,14 @@ describe("RegisterAgencyToConnectedUser use case", () => {
 
       expectToEqual(uow.userRepository.users, [notFtUser, ftUser]);
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency1, {
-          [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
-        }),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency1)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+          },
+        ),
         toAgencyWithRights(agency2, {}),
         toAgencyWithRights(agencyFt, {}),
       ]);
@@ -159,9 +166,14 @@ describe("RegisterAgencyToConnectedUser use case", () => {
         toAgencyWithRights(agency1, {
           [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
         }),
-        toAgencyWithRights(agency2, {
-          [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
-        }),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency2)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+          },
+        ),
       ]);
       expectArraysToMatch(uow.outboxRepository.events, [
         {
@@ -183,12 +195,22 @@ describe("RegisterAgencyToConnectedUser use case", () => {
 
       expectToEqual(uow.userRepository.users, [notFtUser, ftUser]);
       expectToEqual(uow.agencyRepository.agencies, [
-        toAgencyWithRights(agency1, {
-          [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
-        }),
-        toAgencyWithRights(agency2, {
-          [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
-        }),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency1)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+          },
+        ),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency2)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [notFtUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+          },
+        ),
         toAgencyWithRights(agencyFt, {}),
       ]);
       expectObjectInArrayToMatch(uow.outboxRepository.events, [
@@ -210,9 +232,14 @@ describe("RegisterAgencyToConnectedUser use case", () => {
       expectToEqual(uow.agencyRepository.agencies, [
         toAgencyWithRights(agency1, {}),
         toAgencyWithRights(agency2, {}),
-        toAgencyWithRights(agencyFt, {
-          [ftUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
-        }),
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agencyFt)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [ftUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+          },
+        ),
       ]);
       expectArraysToMatch(uow.outboxRepository.events, [
         {

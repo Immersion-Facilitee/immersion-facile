@@ -264,7 +264,8 @@ describe("UpdateConventionStatus", () => {
           .build();
 
         uow.userRepository.users = [user];
-        await uow.agencyRepository.insert(agency);
+        uow.agencyRepository.agencies = [agency];
+
         uow.conventionRepository.setConventions([convention]);
 
         const validatorJwtPayload = createConventionMagicLinkPayload({

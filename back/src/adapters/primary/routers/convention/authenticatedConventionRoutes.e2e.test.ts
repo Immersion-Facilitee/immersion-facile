@@ -253,11 +253,11 @@ describe("authenticatedConventionRoutes", () => {
     it("save the event to Broadcast Convention again, than it event triggers calling partners", async () => {
       const convention = new ConventionDtoBuilder().build();
       inMemoryUow.conventionRepository.setConventions([convention]);
-      inMemoryUow.agencyRepository.insert(
+      inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
-      );
+      ];
 
       const response = await httpClient.broadcastConventionAgain({
         headers: { authorization: validToken },

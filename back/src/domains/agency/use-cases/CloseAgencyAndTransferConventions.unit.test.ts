@@ -67,17 +67,20 @@ describe("CloseAgencyAndTransfertConventions", () => {
 
   let uow: InMemoryUnitOfWork;
   let useCase: CloseAgencyAndTransferConventions;
+  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    const uuidGenerator = new TestUuidGenerator(["event-id-1", "event-id-2"]);
-    const createNewEvent = makeCreateNewEvent({
-      timeGateway: new CustomTimeGateway(),
-      uuidGenerator,
-    });
+    timeGateway = new CustomTimeGateway();
     useCase = makeCloseAgencyAndTransferConventions({
       uowPerformer: new InMemoryUowPerformer(uow),
-      deps: { createNewEvent },
+      deps: {
+        timeGateway,
+        createNewEvent: makeCreateNewEvent({
+          timeGateway,
+          uuidGenerator: new TestUuidGenerator(["event-id-1", "event-id-2"]),
+        }),
+      },
     });
   });
 
@@ -220,6 +223,7 @@ describe("CloseAgencyAndTransfertConventions", () => {
     const closedAgency = await uow.agencyRepository.getById(agencyToClose.id);
     expectToEqual(closedAgency, {
       ...agencyToClose,
+      updatedAt: timeGateway.now().toISOString(),
       status: "closed",
       statusJustification: "Agence fermée suite à un transfert de convention",
     });
@@ -229,6 +233,7 @@ describe("CloseAgencyAndTransfertConventions", () => {
     );
     expectToEqual(updatedReferringAgency, {
       ...referringAgency,
+      updatedAt: timeGateway.now().toISOString(),
       refersToAgencyId: agencyToTransferTo.id,
       refersToAgencyName: agencyToTransferTo.name,
       refersToAgencyContactEmail: agencyToTransferTo.contactEmail,

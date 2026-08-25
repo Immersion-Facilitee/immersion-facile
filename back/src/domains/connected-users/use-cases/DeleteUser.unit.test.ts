@@ -442,10 +442,21 @@ describe("DeleteUser", () => {
         ]);
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [admin1.id]: { isNotifiedByEmail: false, roles: ["agency-admin"] },
-            [validator1.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-          }),
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [admin1.id]: {
+                isNotifiedByEmail: false,
+                roles: ["agency-admin"],
+              },
+              [validator1.id]: {
+                isNotifiedByEmail: true,
+                roles: ["validator"],
+              },
+            },
+          ),
         ]);
 
         expectArraysToMatch(uow.outboxRepository.events, [
@@ -489,13 +500,21 @@ describe("DeleteUser", () => {
         ]);
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [admin1.id]: { isNotifiedByEmail: false, roles: ["agency-admin"] },
-            [validator2.id]: {
-              isNotifiedByEmail: true,
-              roles: ["validator"],
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [admin1.id]: {
+                isNotifiedByEmail: false,
+                roles: ["agency-admin"],
+              },
+              [validator2.id]: {
+                isNotifiedByEmail: true,
+                roles: ["validator"],
+              },
             },
-          }),
+          ),
         ]);
 
         expectArraysToMatch(uow.outboxRepository.events, [
@@ -539,13 +558,21 @@ describe("DeleteUser", () => {
         ]);
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [admin1.id]: { isNotifiedByEmail: false, roles: ["agency-admin"] },
-            [validator2.id]: {
-              isNotifiedByEmail: true,
-              roles: ["validator"],
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [admin1.id]: {
+                isNotifiedByEmail: false,
+                roles: ["agency-admin"],
+              },
+              [validator2.id]: {
+                isNotifiedByEmail: true,
+                roles: ["validator"],
+              },
             },
-          }),
+          ),
         ]);
 
         expectArraysToMatch(uow.outboxRepository.events, [
@@ -585,12 +612,17 @@ describe("DeleteUser", () => {
         ]);
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [admin1.id]: {
-              isNotifiedByEmail: true,
-              roles: ["agency-admin", "validator"],
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [admin1.id]: {
+                isNotifiedByEmail: true,
+                roles: ["agency-admin", "validator"],
+              },
             },
-          }),
+          ),
         ]);
 
         expectArraysToMatch(uow.outboxRepository.events, [
@@ -637,6 +669,7 @@ describe("DeleteUser", () => {
             new AgencyDtoBuilder(agency)
               .withStatus("rejected")
               .withStatusJustification("Aucun utilisateur actif")
+              .withUpdatedAt(timeGateway.now())
               .build(),
             {
               [readOnlyAndCounsellor.id]: {
@@ -698,16 +731,21 @@ describe("DeleteUser", () => {
         ]);
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [admin2.id]: {
-              isNotifiedByEmail: false,
-              roles: ["agency-admin"],
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [admin2.id]: {
+                isNotifiedByEmail: false,
+                roles: ["agency-admin"],
+              },
+              [validator1.id]: {
+                isNotifiedByEmail: true,
+                roles: ["validator"],
+              },
             },
-            [validator1.id]: {
-              isNotifiedByEmail: true,
-              roles: ["validator"],
-            },
-          }),
+          ),
         ]);
 
         expectArraysToMatch(uow.outboxRepository.events, [
@@ -750,12 +788,17 @@ describe("DeleteUser", () => {
         ]);
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [validator1.id]: {
-              isNotifiedByEmail: true,
-              roles: ["validator", "agency-admin"],
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [validator1.id]: {
+                isNotifiedByEmail: true,
+                roles: ["validator", "agency-admin"],
+              },
             },
-          }),
+          ),
         ]);
 
         expectArraysToMatch(uow.outboxRepository.events, [
@@ -801,6 +844,7 @@ describe("DeleteUser", () => {
             new AgencyDtoBuilder(agency)
               .withStatus("rejected")
               .withStatusJustification("Aucun utilisateur actif")
+              .withUpdatedAt(timeGateway.now())
               .build(),
             {
               [readOnlyAndCounsellor.id]: {
@@ -858,6 +902,7 @@ describe("DeleteUser", () => {
             new AgencyDtoBuilder(agency)
               .withStatus("closed")
               .withStatusJustification("Aucun utilisateur actif")
+              .withUpdatedAt(timeGateway.now())
               .build(),
             {},
           ),
@@ -913,6 +958,7 @@ describe("DeleteUser", () => {
             new AgencyDtoBuilder(agency)
               .withStatus("closed")
               .withStatusJustification("Aucun utilisateur actif")
+              .withUpdatedAt(timeGateway.now())
               .build(),
             {
               [readOnlyAndCounsellor.id]: {
@@ -974,6 +1020,7 @@ describe("DeleteUser", () => {
           toAgencyWithRights(
             {
               ...rejectedAgency,
+              updatedAt: timeGateway.now().toISOString(),
               statusJustification: "Aucun utilisateur actif",
             },
             {},
@@ -1062,12 +1109,17 @@ describe("DeleteUser", () => {
         );
 
         expectToEqual(uow.agencyRepository.agencies, [
-          toAgencyWithRights(agency, {
-            [admin1.id]: {
-              isNotifiedByEmail: true,
-              roles: ["agency-admin", "validator"],
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {
+              [admin1.id]: {
+                isNotifiedByEmail: true,
+                roles: ["agency-admin", "validator"],
+              },
             },
-          }),
+          ),
         ]);
 
         expectArraysToMatch(uow.outboxRepository.events, [

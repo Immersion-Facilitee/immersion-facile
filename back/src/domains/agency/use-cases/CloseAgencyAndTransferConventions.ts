@@ -10,6 +10,7 @@ import { throwErrorIfAgencyNotFound } from "../../../utils/agency";
 import { throwIfNotAdmin } from "../../connected-users/helpers/authorization.helper";
 import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 
 export type CloseAgencyAndTransferConventions = ReturnType<
@@ -21,7 +22,7 @@ export const makeCloseAgencyAndTransferConventions = useCaseBuilder(
 )
   .withInput(closeAgencyAndTransferConventionsRequestSchema)
   .withCurrentUser<ConnectedUser>()
-  .withDeps<{ createNewEvent: CreateNewEvent }>()
+  .withDeps<{ createNewEvent: CreateNewEvent; timeGateway: TimeGateway }>()
   .build(async ({ uow, deps, inputParams, currentUser }) => {
     throwIfNotAdmin(currentUser);
 
@@ -84,6 +85,8 @@ export const makeCloseAgencyAndTransferConventions = useCaseBuilder(
       );
     });
 
+    const now = deps.timeGateway.now().toISOString();
+
     await executeInSequence(
       await uow.agencyRepository.getAgenciesRelatedToAgency(
         inputParams.agencyToCloseId,
@@ -95,6 +98,7 @@ export const makeCloseAgencyAndTransferConventions = useCaseBuilder(
           refersToAgencyId: inputParams.agencyToTransferConventionsToId,
           refersToAgencyName: agencyToTransferTo.name,
           refersToAgencyContactEmail: agencyToTransferTo.contactEmail,
+          updatedAt: now,
         }),
     );
 
@@ -102,5 +106,6 @@ export const makeCloseAgencyAndTransferConventions = useCaseBuilder(
       id: inputParams.agencyToCloseId,
       status: "closed",
       statusJustification: "Agence fermée suite à un transfert de convention",
+      updatedAt: now,
     });
   });

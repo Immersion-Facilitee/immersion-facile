@@ -12,10 +12,7 @@ import {
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { emptyName } from "../../core/authentication/connected-user/entities/user.helper";
-import {
-  type CreateNewEvent,
-  makeCreateNewEvent,
-} from "../../core/events/ports/EventBus";
+import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import {
   InMemorySiretGateway,
   TEST_OPEN_ESTABLISHMENT_1,
@@ -97,7 +94,6 @@ describe("AddAgency use case", () => {
 
   let uow: InMemoryUnitOfWork;
   let addAgency: AddAgency;
-  let createNewEvent: CreateNewEvent;
   let siretGateway: InMemorySiretGateway;
   let timeGateway: CustomTimeGateway;
 
@@ -106,14 +102,13 @@ describe("AddAgency use case", () => {
     const uuidGenerator = new TestUuidGenerator();
     timeGateway = new CustomTimeGateway();
     siretGateway = new InMemorySiretGateway();
-    createNewEvent = makeCreateNewEvent({
-      timeGateway: timeGateway,
-      uuidGenerator: uuidGenerator,
-    });
     addAgency = makeAddAgency({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
-        createNewEvent,
+        createNewEvent: makeCreateNewEvent({
+          timeGateway: timeGateway,
+          uuidGenerator: uuidGenerator,
+        }),
         siretGateway,
         timeGateway,
         uuidGenerator,
@@ -156,6 +151,7 @@ describe("AddAgency use case", () => {
           {
             ...createParisMissionLocaleParams,
             status: "needsReview",
+            updatedAt: timeGateway.now().toISOString(),
             statusJustification: null,
             codeSafir: null,
             counsellorEmails: [],
@@ -203,6 +199,7 @@ describe("AddAgency use case", () => {
         toAgencyWithRights(
           {
             ...createParisMissionLocaleParams,
+            updatedAt: timeGateway.now().toISOString(),
             status: "needsReview",
             statusJustification: null,
             codeSafir: null,
@@ -234,6 +231,7 @@ describe("AddAgency use case", () => {
         toAgencyWithRights(
           {
             ...createParisMissionLocaleParams,
+            updatedAt: timeGateway.now().toISOString(),
             status: "needsReview",
             statusJustification: null,
             codeSafir: null,
@@ -275,6 +273,7 @@ describe("AddAgency use case", () => {
         .withEmail("validator2@mail.com")
         .buildUser();
       const existingMiloAgency: AgencyDto = {
+        updatedAt: timeGateway.now().toISOString(),
         ...createParisMissionLocaleParams,
         counsellorEmails: [],
         validatorEmails: [],
@@ -323,6 +322,7 @@ describe("AddAgency use case", () => {
         toAgencyWithRights(
           {
             ...createAgencyWithRefersToParams,
+            updatedAt: timeGateway.now().toISOString(),
             status: "needsReview",
             codeSafir: null,
             statusJustification: null,
@@ -372,6 +372,7 @@ describe("AddAgency use case", () => {
         toAgencyWithRights(
           {
             ...newAgency,
+            updatedAt: timeGateway.now().toISOString(),
             status: "needsReview",
             statusJustification: null,
             codeSafir: null,

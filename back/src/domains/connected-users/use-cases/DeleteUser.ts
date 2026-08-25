@@ -54,6 +54,8 @@ export const makeDeleteUser = useCaseBuilder("DeleteUser")
   .withInput(deleteUserInputSchema)
   .build(
     async ({ uow, deps: { createNewEvent, timeGateway }, inputParams }) => {
+      const now = timeGateway.now();
+
       if (inputParams.triggeredBy?.kind !== "crawler")
         throw errors.user.forbiddenNotTriggeredByCrawler();
 
@@ -85,11 +87,14 @@ export const makeDeleteUser = useCaseBuilder("DeleteUser")
       await executeInSequence(updatedEstablishments, (establishment) =>
         uow.establishmentAggregateRepository.updateEstablishmentAggregate(
           establishment,
-          timeGateway.now(),
+          now,
         ),
       );
       await executeInSequence(updatedAgencies, (agency) =>
-        uow.agencyRepository.update(agency),
+        uow.agencyRepository.update({
+          ...agency,
+          updatedAt: now.toISOString(),
+        }),
       );
       await uow.userRepository.delete(userToDelete.id);
       await uow.outboxRepository.saveNewEventsBatch(

@@ -408,6 +408,7 @@ const makeNewOrUpdatedProConnectedUser = async ({
   if (conflictingUserFound) {
     await resolveConflictingUsers({
       uow,
+      now: deps.timeGateway.now(),
       userToKeepId: existingUserByExternalId.id,
       userToDeleteId: existingUserByEmail.id,
     });
@@ -436,10 +437,12 @@ const resolveConflictingUsers = async ({
   uow,
   userToKeepId,
   userToDeleteId,
+  now,
 }: {
   uow: UnitOfWork;
   userToKeepId: UserId;
   userToDeleteId: UserId;
+  now: Date;
 }): Promise<void> => {
   const userToDeleteAgencyRights =
     await uow.agencyRepository.getAgenciesRightsByUserId(userToDeleteId);
@@ -470,11 +473,11 @@ const resolveConflictingUsers = async ({
   }, []);
 
   await executeInSequence(newAgenciesRightForUser, (agencyRightsForUser) =>
-    updateAgencyRightsForUser(uow, userToKeepId, agencyRightsForUser),
+    updateAgencyRightsForUser(uow, userToKeepId, agencyRightsForUser, now),
   );
 
   await executeInSequence(userToDeleteAgencyRights, (agencyRightsForUser) =>
-    removeAgencyRightsForUser(uow, userToDeleteId, agencyRightsForUser),
+    removeAgencyRightsForUser(uow, userToDeleteId, agencyRightsForUser, now),
   );
 
   await uow.userRepository.delete(userToDeleteId);

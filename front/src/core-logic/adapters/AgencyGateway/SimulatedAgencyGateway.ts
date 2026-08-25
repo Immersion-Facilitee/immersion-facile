@@ -95,6 +95,7 @@ export class SimulatedAgencyGateway implements AgencyGateway {
   public async addAgency(createAgencyDto: CreateAgencyDto) {
     this.#agencies[createAgencyDto.id] = {
       ...createAgencyDto,
+      updatedAt: new Date().toISOString(),
       status: "needsReview",
       codeSafir: null,
       statusJustification: null,

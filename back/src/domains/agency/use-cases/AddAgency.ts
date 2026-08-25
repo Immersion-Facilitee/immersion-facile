@@ -63,6 +63,7 @@ export const makeAddAgency = useCaseBuilder("AddAgency")
       status: "needsReview",
       codeSafir: null,
       statusJustification: null,
+      updatedAt: deps.timeGateway.now().toISOString(),
       usersRights: makeUserRights(
         validatorUserIdsForAgency,
         counsellorUserIdsForAgency,

@@ -12,6 +12,7 @@ import {
 import { throwErrorIfAttemptToAddCounsellorRoleToFTAgency } from "../../../utils/agency";
 import type { UserRepository } from "../../core/authentication/connected-user/port/UserRepository";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
@@ -25,7 +26,7 @@ export type UpdateUserForAgency = ReturnType<typeof makeUpdateUserForAgency>;
 export const makeUpdateUserForAgency = useCaseBuilder("UpdateUserForAgency")
   .withInput(userParamsForAgencySchema)
   .withCurrentUser<ConnectedUser>()
-  .withDeps<{ createNewEvent: CreateNewEvent }>()
+  .withDeps<{ createNewEvent: CreateNewEvent; timeGateway: TimeGateway }>()
   .build(async ({ uow, currentUser, deps, inputParams }) => {
     const { isBackOfficeOrAgencyAdmin } = throwIfUserHasNoRightOnAgency(
       currentUser,
@@ -91,6 +92,7 @@ export const makeUpdateUserForAgency = useCaseBuilder("UpdateUserForAgency")
       id: agency.id,
       status: agency.status,
       usersRights: updatedRights,
+      updatedAt: deps.timeGateway.now().toISOString(),
     });
     await updateIfUserEmailChanged(
       userToUpdate,
