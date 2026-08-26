@@ -39,6 +39,7 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
     .withId("convention1")
     .withAgencyId(agency.id)
     .withStatus("ACCEPTED_BY_VALIDATOR")
+    .withAgencyReferent({ firstname: "Marie", lastname: "Curie" })
     .build();
 
   const assessment = new AssessmentDtoBuilder()
@@ -125,6 +126,9 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
             },
             dateEnd: validatedConvention.dateEnd,
             id: validatedConvention.id,
+            agencyId: validatedConvention.agencyId,
+            agencyReferent: validatedConvention.agencyReferent ?? null,
+            agencyName: agency.name,
           },
           {
             assessment: {
@@ -139,6 +143,9 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
             },
             dateEnd: validatedConvention2.dateEnd,
             id: validatedConvention2.id,
+            agencyId: validatedConvention2.agencyId,
+            agencyReferent: validatedConvention2.agencyReferent ?? null,
+            agencyName: agency2.name,
           },
           {
             assessment: null,
@@ -148,6 +155,9 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
             },
             dateEnd: validatedConvention3.dateEnd,
             id: validatedConvention3.id,
+            agencyId: validatedConvention3.agencyId,
+            agencyReferent: validatedConvention3.agencyReferent ?? null,
+            agencyName: agency.name,
           },
         ],
         pagination: {
@@ -179,6 +189,9 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
             },
             dateEnd: validatedConvention3.dateEnd,
             id: validatedConvention3.id,
+            agencyId: validatedConvention3.agencyId,
+            agencyReferent: validatedConvention3.agencyReferent ?? null,
+            agencyName: agency.name,
           },
         ],
         pagination: {
@@ -215,6 +228,9 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
             },
             dateEnd: validatedConvention.dateEnd,
             id: validatedConvention.id,
+            agencyId: validatedConvention.agencyId,
+            agencyReferent: validatedConvention.agencyReferent ?? null,
+            agencyName: agency.name,
           },
           {
             assessment: {
@@ -229,6 +245,9 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
             },
             dateEnd: validatedConvention2.dateEnd,
             id: validatedConvention2.id,
+            agencyId: validatedConvention2.agencyId,
+            agencyReferent: validatedConvention2.agencyReferent ?? null,
+            agencyName: agency2.name,
           },
         ],
         pagination: {
@@ -238,6 +257,43 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
           totalRecords: 2,
         },
       },
+    );
+  });
+
+  it("throws when convention agency is not in user rights", async () => {
+    const unknownAgencyId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+    uow.conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser =
+      async () => ({
+        data: [
+          {
+            id: validatedConvention.id,
+            dateEnd: validatedConvention.dateEnd,
+            beneficiary: {
+              firstname: validatedConvention.signatories.beneficiary.firstName,
+              lastname: validatedConvention.signatories.beneficiary.lastName,
+            },
+            assessment: null,
+            agencyId: unknownAgencyId,
+            agencyReferent: null,
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          numberPerPage: 10,
+          totalPages: 1,
+          totalRecords: 1,
+        },
+      });
+
+    await expectPromiseToFailWithError(
+      getConventionsWithUnfinalizedAssessment.execute(
+        { pagination: { page: 1, perPage: 10 } },
+        currentUserWithValidAgencyRight,
+      ),
+      errors.user.noRightsOnAgency({
+        userId: currentUserWithValidAgencyRight.id,
+        agencyId: unknownAgencyId,
+      }),
     );
   });
 

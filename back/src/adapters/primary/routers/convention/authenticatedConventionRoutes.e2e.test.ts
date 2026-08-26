@@ -603,6 +603,7 @@ describe("authenticatedConventionRoutes", () => {
       .withDateEnd(new Date("2026-06-10").toISOString())
       .withBeneficiaryFirstName("Alice")
       .withBeneficiaryLastName("Dupont")
+      .withAgencyReferent({ firstname: "Marie", lastname: "Curie" })
       .build();
 
     const convention2 = new ConventionDtoBuilder()
@@ -695,6 +696,9 @@ describe("authenticatedConventionRoutes", () => {
                 signedAt: null,
                 createdAt: toSignAssessmentCreatedAt,
               },
+              agencyId: ftAgency.id,
+              agencyReferent: convention2.agencyReferent ?? null,
+              agencyName: ftAgency.name,
             },
             {
               id: convention1.id,
@@ -704,6 +708,9 @@ describe("authenticatedConventionRoutes", () => {
                 lastname: convention1.signatories.beneficiary.lastName,
               },
               assessment: null,
+              agencyId: ftAgency.id,
+              agencyReferent: convention1.agencyReferent ?? null,
+              agencyName: ftAgency.name,
             },
           ],
           pagination: {
@@ -745,6 +752,9 @@ describe("authenticatedConventionRoutes", () => {
                 lastname: convention1.signatories.beneficiary.lastName,
               },
               assessment: null,
+              agencyId: ftAgency.id,
+              agencyReferent: convention1.agencyReferent ?? null,
+              agencyName: ftAgency.name,
             },
           ],
           pagination: {
@@ -791,6 +801,9 @@ describe("authenticatedConventionRoutes", () => {
                 signedAt: null,
                 createdAt: toSignAssessmentCreatedAt,
               },
+              agencyId: ftAgency.id,
+              agencyReferent: convention2.agencyReferent ?? null,
+              agencyName: ftAgency.name,
             },
           ],
           pagination: {

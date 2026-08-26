@@ -1,7 +1,7 @@
 import {
   type AgencyRole,
   type ConnectedUser,
-  type ConventionWithUnfinalizedAssessment,
+  type ConventionWithUnfinalizedAssessmentReadDto,
   type DataWithPagination,
   errors,
   type GetConventionsWithUnfinalizedAssessmentParams,
@@ -21,7 +21,7 @@ export const makeGetConventionsWithUnfinalizedAssessment = useCaseBuilder(
   .withInput<GetConventionsWithUnfinalizedAssessmentParams>(
     getConventionsWithUnfinalizedAssessmentParamsSchema,
   )
-  .withOutput<DataWithPagination<ConventionWithUnfinalizedAssessment>>()
+  .withOutput<DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto>>()
   .withCurrentUser<ConnectedUser>()
   .withDeps<{ timeGateway: TimeGateway }>()
   .build(async ({ inputParams, uow, currentUser, deps }) => {
@@ -43,12 +43,34 @@ export const makeGetConventionsWithUnfinalizedAssessment = useCaseBuilder(
       (agencyRight) => agencyRight.agency.id,
     );
 
-    return uow.conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser(
-      {
-        userAgencyIds,
-        pagination: getPaginationParamsForWeb(inputParams.pagination),
-        now: deps.timeGateway.now(),
-        filters: inputParams.filters,
-      },
-    );
+    const result =
+      await uow.conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser(
+        {
+          userAgencyIds,
+          pagination: getPaginationParamsForWeb(inputParams.pagination),
+          now: deps.timeGateway.now(),
+          filters: inputParams.filters,
+        },
+      );
+
+    return {
+      ...result,
+      data: result.data.map((conventionWithUnfinalizedAssessment) => {
+        const agencyName = currentUser.agencyRights.find(
+          (agencyRight) =>
+            agencyRight.agency.id ===
+            conventionWithUnfinalizedAssessment.agencyId,
+        )?.agency.name;
+        if (!agencyName)
+          throw errors.user.noRightsOnAgency({
+            userId: currentUser.id,
+            agencyId: conventionWithUnfinalizedAssessment.agencyId,
+          });
+
+        return {
+          ...conventionWithUnfinalizedAssessment,
+          agencyName,
+        };
+      }),
+    };
   });
