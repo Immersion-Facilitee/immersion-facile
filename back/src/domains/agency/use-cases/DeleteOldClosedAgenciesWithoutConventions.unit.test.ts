@@ -101,6 +101,28 @@ describe("DeleteOldClosedAgenciesWithoutConventions", () => {
     },
   );
 
+  it("do nothing on recent closed agencies and old rejected agencies with conventions", async () => {
+    uow.agencyRepository.agencies = [rejectedAgency_old, closedAgency2_recent];
+
+    const convention = new ConventionDtoBuilder()
+      .withId("cccccccc-cccc-4ccc-9ccc-cccccccccccc")
+      .withAgencyId(rejectedAgency_old.id)
+      .build();
+
+    uow.conventionRepository.setConventions([convention]);
+
+    const result = await deleteOldClosedAgenciesWithoutConventions.execute();
+
+    expectToEqual(result, {
+      deletedAgencies: [],
+    });
+
+    expectToEqual(uow.agencyRepository.agencies, [
+      rejectedAgency_old,
+      closedAgency2_recent,
+    ]);
+  });
+
   it("deletes agencies with status closed or rejected, updated_at older than given date, and without conventions", async () => {
     uow.agencyRepository.agencies = [
       closedAgency1_old,
@@ -231,8 +253,7 @@ describe("DeleteOldClosedAgenciesWithoutConventions", () => {
     ]);
   });
 
-  // Doublon ?
-  it("deletes both agencies when a deletion candidate is referenced by another deletion candidate", async () => {
+  it("deletes both closed agencies when one refers to the other", async () => {
     const oldClosedAgencyReferrer = toAgencyWithRights(
       new AgencyDtoBuilder()
         .withId("eeeeeeee-eeee-4eee-9eee-eeeeeeeeeeee")
