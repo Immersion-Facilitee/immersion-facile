@@ -108,6 +108,8 @@ export const InitiateConventionButton = () => {
   const currentUserEstablishments = currentUser?.establishments?.filter(
     ({ isEstablishmentBanned }) => !isEstablishmentBanned,
   );
+  const hasEstablishments = (currentUserEstablishments?.length ?? 0) > 0;
+  const hasTemplates = conventionTemplates.length > 0;
   const establishmentFeedback = useFeedbackTopic("form-establishment");
 
   const initiateConventionMethods = useForm<InitiateConventionFormValues>({
@@ -229,10 +231,15 @@ export const InitiateConventionButton = () => {
     [conventionTemplates, selectedConventionTemplateId, setValue],
   );
 
-  const makeResetFormValues = (siret: SiretDto) => {
-    reset(defaultFormValues);
-    setValue("siret", siret);
-  };
+  const makeResetFormValues = (siret: SiretDto) =>
+    reset(
+      hasEstablishments
+        ? { ...defaultFormValues, siret }
+        : {
+            initiateConventionSource: "template",
+            conventionTemplateId: "",
+          },
+    );
 
   const fetchEstablishment = (siret: SiretDto) => {
     if (!connectedUserJwt) return;
@@ -248,6 +255,8 @@ export const InitiateConventionButton = () => {
   };
 
   const onOpenModal = () => {
+    if (!hasEstablishments && !hasTemplates)
+      return frontRoutes.conventionImmersion({ skipIntro: true }).push();
     const firstSiret = currentUserEstablishments?.[0]?.siret ?? "";
     if (firstSiret) fetchEstablishment(firstSiret);
     makeResetFormValues(firstSiret);
@@ -316,7 +325,7 @@ export const InitiateConventionButton = () => {
               Créer une convention depuis votre espace vous permet de la
               pré-remplir avec vos informations ou à partir d'un modèle.
             </p>
-            {conventionTemplates.length > 0 && (
+            {hasEstablishments && hasTemplates && (
               <RadioButtons
                 id={
                   domElementIds.establishmentDashboard.initiateConvention
@@ -329,7 +338,7 @@ export const InitiateConventionButton = () => {
               />
             )}
             <SectionHighlight>
-              {initiateConventionSource === "template" ? (
+              {initiateConventionSource === "template" || !hasEstablishments ? (
                 <RadioButtons
                   id={
                     domElementIds.establishmentDashboard.initiateConvention
