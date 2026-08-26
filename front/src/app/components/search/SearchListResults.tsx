@@ -70,7 +70,7 @@ export const SearchListResults = ({
   ) => void;
   useNaturalLanguageForAppellations?: boolean;
 }) => {
-  const { triggerSearch } = useSearch(route);
+  const { navigateToSearch } = useSearch(route);
   const { data: searchResults, pagination } = useAppSelector(
     searchSelectors.searchResultsWithPagination,
   );
@@ -79,7 +79,7 @@ export const SearchListResults = ({
   const { enableSearchByScore } = useAppSelector(
     featureFlagSelectors.featureFlagState,
   );
-  const { getValues, register, reset } = useFormContext<SearchPageParams>();
+  const { getValues, register } = useFormContext<SearchPageParams>();
   const formValues = getValues();
   const searchParams = useAppSelector(searchSelectors.searchParams);
   const [isPanelOpened, setIsPanelOpened] = useState(false);
@@ -416,17 +416,10 @@ export const SearchListResults = ({
                       title: `Résultats de recherche, page : ${pageNumber}`,
                       onClick: (event) => {
                         event.preventDefault();
-                        reset({
+                        navigateToSearch({
                           ...searchParams,
                           page: pageNumber,
                         });
-                        triggerSearch(
-                          {
-                            ...searchParams,
-                            page: pageNumber,
-                          },
-                          isExternal,
-                        );
                       },
                       href: "#", // TODO : PR vers react-dsfr pour gérer pagination full front
                       key: `pagination-link-${pageNumber}`,
@@ -453,13 +446,10 @@ export const SearchListResults = ({
                       id: domElementIds.search.resultPerPageDropdown,
                       onChange: (event) => {
                         const value = event.currentTarget.value;
-                        triggerSearch(
-                          {
-                            ...searchParams,
-                            perPage: Number.parseInt(value, 10),
-                          },
-                          isExternal,
-                        );
+                        navigateToSearch({
+                          ...searchParams,
+                          perPage: Number.parseInt(value, 10),
+                        });
                       },
                       value: numberPerPage.toString() as ResultsPerPageOption,
                       "aria-label": "Nombre de résultats par page",
