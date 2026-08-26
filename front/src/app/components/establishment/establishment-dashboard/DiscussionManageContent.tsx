@@ -439,19 +439,23 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
             <p
               {...contactModeToBadgeOptions[discussion.contactMode]}
-              className={`${contactModeToBadgeOptions[discussion.contactMode].className} ${fr.cx("fr-mr-2w")}`}
+              className={`${contactModeToBadgeOptions[discussion.contactMode].className} ${fr.cx("fr-mr-2w", "fr-mb-1w")}`}
             />
-            <DiscussionStatusBadge discussion={discussion} viewer={viewer} />
-            <DiscussionFollowUpBadge
-              key={discussion.id}
-              discussion={discussion}
-              isEstablishmentReachableByPhoneAfter15Days={
-                discussionEstablishmentContactInfo?.isEstablishmentReachableByPhoneAfter15Days ??
-                false
-              }
-              className={fr.cx("fr-ml-1w")}
-              viewer={viewer}
-            />
+            <span className={fr.cx("fr-mb-1w")}>
+              <DiscussionStatusBadge discussion={discussion} viewer={viewer} />
+            </span>
+            <span className={fr.cx("fr-mb-1w")}>
+              <DiscussionFollowUpBadge
+                key={discussion.id}
+                discussion={discussion}
+                isEstablishmentReachableByPhoneAfter15Days={
+                  discussionEstablishmentContactInfo?.isEstablishmentReachableByPhoneAfter15Days ??
+                  false
+                }
+                className={fr.cx("fr-ml-1w")}
+                viewer={viewer}
+              />
+            </span>
           </div>
         </SectionHighlight>
         {viewer === "establishment" &&

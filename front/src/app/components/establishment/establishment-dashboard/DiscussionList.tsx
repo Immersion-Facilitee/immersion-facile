@@ -507,6 +507,7 @@ const DiscussionListBadges = ({
       isEstablishmentReachableByPhoneAfter15Days={
         discussion.isEstablishmentReachableByPhoneAfter15Days
       }
+      className={fr.cx("fr-ml-1w")}
       id={`${domElementIds.establishmentDashboard.discussion.followUpBadge}--${discussion.id}`}
     />
   </>
