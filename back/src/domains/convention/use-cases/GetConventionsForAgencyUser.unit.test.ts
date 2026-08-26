@@ -524,6 +524,14 @@ describe("GetConventionsForAgencyUser", () => {
         roles: ["counsellor", "validator"] satisfies AgencyRole[],
         case: "counsellor and validator",
       },
+      {
+        roles: ["agency-admin"] satisfies AgencyRole[],
+        case: "agency-admin",
+      },
+      {
+        roles: ["agency-viewer"] satisfies AgencyRole[],
+        case: "agency-viewer",
+      },
     ])("should return READY_TO_SIGN, PARTIALLY_SIGNED and IN_REVIEW of an agency with refersTo when user is $case", async ({
       roles,
     }) => {
