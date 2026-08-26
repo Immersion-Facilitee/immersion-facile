@@ -744,6 +744,9 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
               lastname: cancelledConvention.signatories.beneficiary.lastName,
             },
             lastBroadcastFeedback: partnerErrorBroadcast,
+            agencyReferent: null,
+            agencyId: agencyId1,
+            agencyName: agency1.name,
           },
         ],
         pagination: {

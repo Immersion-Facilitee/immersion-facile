@@ -2524,6 +2524,8 @@ describe("Pg implementation of ConventionQueries", () => {
                   ),
                 },
               },
+              agencyReferent: null,
+              agencyId: cancelledConvention.agencyId,
             },
           ],
           pagination: {
