@@ -816,6 +816,50 @@ describe("authenticatedConventionRoutes", () => {
       });
     });
 
+    it("200 - filters by search query param", async () => {
+      const response = await httpClient.getConventionsWithUnfinalizedAssessment(
+        {
+          headers: {
+            authorization: generateConnectedUserJwt({
+              userId: validator.id,
+              version: currentJwtVersions.connectedUser,
+            }),
+          },
+          queryParams: {
+            page: 1,
+            perPage: 10,
+            search: "Alice",
+          },
+        },
+      );
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          data: [
+            {
+              id: convention1.id,
+              dateEnd: convention1.dateEnd,
+              beneficiary: {
+                firstname: convention1.signatories.beneficiary.firstName,
+                lastname: convention1.signatories.beneficiary.lastName,
+              },
+              assessment: null,
+              agencyId: ftAgency.id,
+              agencyReferent: convention1.agencyReferent ?? null,
+              agencyName: ftAgency.name,
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 1,
+          },
+        },
+      });
+    });
+
     it("400 - rejects invalid assessmentCompletionStatus", async () => {
       const response = await httpClient.getConventionsWithUnfinalizedAssessment(
         {

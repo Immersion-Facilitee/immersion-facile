@@ -333,7 +333,8 @@ export class InMemoryConventionQueries implements ConventionQueries {
         },
       };
 
-    const { assessmentCompletionStatus } = filters;
+    const { assessmentCompletionStatus, search } = filters;
+    const trimmedSearch = search?.trim();
 
     const threeMonthsAgo = subMonths(now, 3);
     const twoDaysAgo = subDays(now, 2);
@@ -344,7 +345,12 @@ export class InMemoryConventionQueries implements ConventionQueries {
 
     const conventionsForUser = this.conventionRepository.conventions
       .filter((convention) => userAgencyIds.includes(convention.agencyId))
-      .filter((convention) => convention.status === "ACCEPTED_BY_VALIDATOR");
+      .filter((convention) => convention.status === "ACCEPTED_BY_VALIDATOR")
+      .filter((convention) =>
+        trimmedSearch
+          ? matchesConventionSearch(convention, trimmedSearch)
+          : true,
+      );
 
     const matched =
       conventionsForUser.flatMap<ConventionWithUnfinalizedAssessment>(

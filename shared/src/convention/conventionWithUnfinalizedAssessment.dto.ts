@@ -34,6 +34,7 @@ export type UnfinalizedAssessmentCompletionStatus =
 
 export type ConventionsWithUnfinalizedAssessmentFilters = {
   assessmentCompletionStatus?: UnfinalizedAssessmentCompletionStatus;
+  search?: string;
 };
 
 export type FlatGetConventionsWithUnfinalizedAssessmentParams =
@@ -47,7 +48,8 @@ export type GetConventionsWithUnfinalizedAssessmentParams =
 export const flatParamsToGetConventionsWithUnfinalizedAssessmentParams = (
   flatParams: FlatGetConventionsWithUnfinalizedAssessmentParams,
 ): GetConventionsWithUnfinalizedAssessmentParams => {
-  const { page, perPage, assessmentCompletionStatus, ...rest } = flatParams;
+  const { page, perPage, assessmentCompletionStatus, search, ...rest } =
+    flatParams;
 
   rest satisfies Record<string, never>;
 
@@ -58,6 +60,7 @@ export const flatParamsToGetConventionsWithUnfinalizedAssessmentParams = (
     },
     filters: {
       assessmentCompletionStatus,
+      search,
     },
   };
 };
