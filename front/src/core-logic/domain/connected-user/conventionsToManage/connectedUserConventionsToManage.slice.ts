@@ -80,8 +80,14 @@ export const connectedUserConventionsToManageSlice = createSlice({
       action: PayloadActionWithFeedbackTopic<FetchConventionsWithUnfinalizedAssessmentRequestedPayload>,
     ) => {
       state.isLoadingConventionsWithUnfinalizedAssessment = true;
-      state.conventionsWithUnfinalizedAssessmentFilters =
+      const { page, perPage, assessmentCompletionStatus, search } =
         action.payload.filters;
+      state.conventionsWithUnfinalizedAssessmentFilters = {
+        page,
+        perPage,
+        ...(assessmentCompletionStatus && { assessmentCompletionStatus }),
+        ...(search && { search }),
+      };
     },
     getConventionsWithUnfinalizedAssessmentSucceeded: (
       state,
