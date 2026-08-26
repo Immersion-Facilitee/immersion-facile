@@ -313,6 +313,7 @@ describe("Agency routes", () => {
         lastName: "Doe",
         proConnect: defaultProConnectInfos,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
       it(`${displayRouteName(
         agencyRoutes.registerAgenciesToUser,
@@ -405,6 +406,7 @@ describe("Agency routes", () => {
         lastName: "User",
         proConnect: null,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
 
       const attacker: User = {
@@ -414,6 +416,7 @@ describe("Agency routes", () => {
         lastName: "User",
         proConnect: null,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
 
       inMemoryUow.userRepository.users = [victim, attacker];
@@ -462,6 +465,7 @@ describe("Agency routes", () => {
         lastName: "ToUpdate",
         proConnect: null,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
 
       inMemoryUow.userRepository.users = [backofficeAdminUser, userToUpdate];

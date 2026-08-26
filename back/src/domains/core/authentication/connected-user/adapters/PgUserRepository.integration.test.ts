@@ -39,6 +39,7 @@ describe.each(adapters)("%s UserRepository", (adapter) => {
       siret: fakeProConnectSiret,
     },
     createdAt: createdAt,
+    preventToDelete: false,
   };
 
   const user1: User = {
@@ -51,6 +52,7 @@ describe.each(adapters)("%s UserRepository", (adapter) => {
       siret: fakeProConnectSiret,
     },
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
 
   const user2: User = {
@@ -63,6 +65,7 @@ describe.each(adapters)("%s UserRepository", (adapter) => {
       siret: fakeProConnectSiret,
     },
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
 
   let pool: Pool;
@@ -112,6 +115,7 @@ describe.each(adapters)("%s UserRepository", (adapter) => {
             siret: fakeProConnectSiret,
           },
           createdAt,
+          preventToDelete: false,
         };
         await userRepository.save(updatedUser);
 
@@ -423,7 +427,7 @@ describe.each(adapters)("%s UserRepository", (adapter) => {
         overrides.createdAt ??
         new Date("2024-04-28T12:00:00.000Z").toISOString(),
       proConnect: null,
-      preventToDelete: overrides.preventToDelete ?? undefined,
+      preventToDelete: overrides.preventToDelete ?? false,
       lastLoginAt: overrides.lastLoginAt,
     });
 

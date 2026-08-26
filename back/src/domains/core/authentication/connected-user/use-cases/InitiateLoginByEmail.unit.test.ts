@@ -49,6 +49,7 @@ describe("InitiateLoginByEmail usecase", () => {
     lastName: "L'éponge",
     email: "email@mail.com",
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
     proConnect: null,
   };
 

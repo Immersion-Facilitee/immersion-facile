@@ -56,6 +56,7 @@ const user1: ConnectedUserWithNormalizedAgencyRights = {
     siret: "00000000001111",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 
 const user2: ConnectedUserWithNormalizedAgencyRights = {
@@ -79,6 +80,7 @@ const user2: ConnectedUserWithNormalizedAgencyRights = {
     siret: "00000000000000",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 
 const fakeAgencyUsers: ConnectedUsersWithNormalizedAgencyRightsById = {
@@ -329,6 +331,7 @@ describe("fetchAgency", () => {
           lastName: "fake-last-name",
           proConnect: null,
           createdAt: new Date().toISOString(),
+          preventToDelete: false,
           agencyRights: {
             [agencyDto.id]: agencyRight,
           },
@@ -396,6 +399,7 @@ describe("fetchAgency", () => {
           lastName: "fake-last-name",
           proConnect: null,
           createdAt: new Date().toISOString(),
+          preventToDelete: false,
           agencyRights: {
             [agencyDto.id]: agencyRight,
           },

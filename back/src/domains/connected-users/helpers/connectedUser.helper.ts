@@ -343,6 +343,7 @@ export const getUserByEmailAndCreateIfMissing = async ({
     firstName: emptyName,
     lastName: emptyName,
     proConnect: null,
+    preventToDelete: false,
   }));
 
 const saveAndProvideNewUser = async (

@@ -153,6 +153,7 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
     expectToEqual(uow.userRepository.users, [
       {
         createdAt: "2021-09-01T10:10:00.000Z",
+        preventToDelete: false,
         email: "amil@mail.com",
         proConnect: null,
         firstName: "",
@@ -161,6 +162,7 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
       },
       {
         createdAt: "2021-09-01T10:10:00.000Z",
+        preventToDelete: false,
         email: "copy1@mail.com",
         proConnect: null,
         firstName: "",
@@ -169,6 +171,7 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
       },
       {
         createdAt: "2021-09-01T10:10:00.000Z",
+        preventToDelete: false,
         email: "copy2@mail.com",
         proConnect: null,
         firstName: "",

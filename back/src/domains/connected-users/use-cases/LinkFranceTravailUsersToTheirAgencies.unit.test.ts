@@ -59,6 +59,7 @@ describe("LinkFranceTravailUsersToTheirAgencies", () => {
     proConnect: defaultProConnectInfos,
     email: "john.doe@mail.com",
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
 
   let uow: InMemoryUnitOfWork;

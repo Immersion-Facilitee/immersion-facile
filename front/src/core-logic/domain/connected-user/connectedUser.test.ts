@@ -73,6 +73,7 @@ describe("InclusionConnected", () => {
       siret: "12312312301234",
     },
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
 
   const inclusionConnectedFederatedIdentity: FederatedIdentity = {

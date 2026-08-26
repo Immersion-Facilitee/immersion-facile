@@ -395,6 +395,7 @@ describe("auth router", () => {
             {
               id: generatedUserId,
               createdAt: gateways.timeGateway.now().toISOString(),
+              preventToDelete: false,
               email,
               firstName: "",
               lastName: "",
@@ -757,6 +758,7 @@ describe("auth router", () => {
       lastName: "Doe",
       proConnect: defaultProConnectInfos,
       createdAt: new Date().toISOString(),
+      preventToDelete: false,
     };
     const agency = new AgencyDtoBuilder().withKind("france-travail").build();
 

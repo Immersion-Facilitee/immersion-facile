@@ -271,6 +271,7 @@ describe("CreateUserForAgency", () => {
         siret: fakeProConnectSiret,
       },
       createdAt: timeGateway.now().toISOString(),
+      preventToDelete: false,
     };
     uow.userRepository.users = [counsellor, validator];
 
@@ -299,6 +300,7 @@ describe("CreateUserForAgency", () => {
         id: newUserForAgency.userId,
         email: newUserForAgency.email,
         createdAt: timeGateway.now().toISOString(),
+        preventToDelete: false,
         firstName: emptyName,
         lastName: emptyName,
         proConnect: null,
@@ -360,6 +362,7 @@ describe("CreateUserForAgency", () => {
         siret: fakeProConnectSiret,
       },
       createdAt: timeGateway.now().toISOString(),
+      preventToDelete: false,
     };
     uow.userRepository.users = [
       validator,
@@ -438,6 +441,7 @@ describe("CreateUserForAgency", () => {
       firstName: "John",
       lastName: "Doe",
       createdAt: timeGateway.now().toISOString(),
+      preventToDelete: false,
       proConnect: null,
     };
     uow.userRepository.users = [validator, counsellor];

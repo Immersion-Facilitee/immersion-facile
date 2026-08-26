@@ -123,6 +123,7 @@ export class SimulatedAgencyGateway implements AgencyGateway {
             siret: "00000000002222",
           },
           createdAt: new Date().toISOString(),
+          preventToDelete: false,
         });
   }
 

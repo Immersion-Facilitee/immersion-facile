@@ -146,6 +146,7 @@ describe("authenticatedConventionRoutes", () => {
         lastName: "Doe",
         proConnect: defaultProConnectInfos,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
       const token = generateConnectedUserJwt({
         userId: user.id,
