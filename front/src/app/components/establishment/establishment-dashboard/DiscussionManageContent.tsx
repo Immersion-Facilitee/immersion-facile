@@ -1,7 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Accordion from "@codegouvfr/react-dsfr/Accordion";
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button, { type ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
@@ -840,58 +839,24 @@ const DiscussionExchangesList = ({
             key={exchange.sentAt}
             viewer={viewer}
             sender={exchange.sender}
+            title={
+              exchange.sender === "establishment"
+                ? `${exchange.firstname} ${exchange.lastname}`
+                : getFormattedFirstnameAndLastname({
+                    firstname: discussion.potentialBeneficiary.firstName,
+                    lastname: discussion.potentialBeneficiary.lastName,
+                  })
+            }
+            sentAt={toDisplayedDate({
+              date: new Date(exchange.sentAt),
+              withHours: true,
+            })}
           >
-            <header
-              className={fr.cx(
-                "fr-grid-row",
-                "fr-grid-row--middle",
-                "fr-mb-2w",
-              )}
-            >
-              <div>
-                <h2 className={fr.cx("fr-mb-0", "fr-mb-1v")}>
-                  {exchange.sender === "establishment"
-                    ? `${exchange.firstname} ${exchange.lastname}`
-                    : getFormattedFirstnameAndLastname({
-                        firstname: discussion.potentialBeneficiary.firstName,
-                        lastname: discussion.potentialBeneficiary.lastName,
-                      })}
-                </h2>
-              </div>
-              <div className={fr.cx("fr-ml-auto")}>
-                <div className={fr.cx("fr-mb-2w")}>
-                  <Badge
-                    className={fr.cx(
-                      "fr-badge",
-                      `fr-badge--${
-                        exchange.sender === "establishment"
-                          ? "blue-cumulus"
-                          : "green-archipel"
-                      }`,
-                    )}
-                  >
-                    {exchange.sender === "establishment"
-                      ? "Entreprise"
-                      : "Candidat"}
-                  </Badge>
-                </div>
-
-                <span className={fr.cx("fr-hint-text")}>
-                  {toDisplayedDate({
-                    date: new Date(exchange.sentAt),
-                    withHours: true,
-                  })}
-                </span>
-              </div>
-            </header>
-            <hr className={fr.cx("fr-hr")} />
-            <section>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(messageToDisplay[0]),
-                }}
-              />
-            </section>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(messageToDisplay[0]),
+              }}
+            />
           </ExchangeMessage>
         );
       })}
