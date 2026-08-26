@@ -823,11 +823,7 @@ const filterExcludeUnvalidatedConventionsWithoutPriorSuccessfulBroadcast =
           eb
             .selectFrom("broadcast_feedbacks as bf_ok")
             .select(sql`1`.as("__"))
-            .where(
-              sql`(bf_ok.request_params->>'conventionId')::uuid`,
-              "=",
-              eb.ref("cf.conventionId"),
-            )
+            .where("bf_ok.convention_id", "=", eb.ref("cf.conventionId"))
             .where(
               sql<boolean>`(
                 (bf_ok.consumer_name = ${broadcastToFtConsumerName} AND bf_ok.response @> '{"httpStatus": 201}'::jsonb)

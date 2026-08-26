@@ -6,6 +6,7 @@ import {
   paginationRequiredQueryParamsSchema,
 } from "../pagination/pagination.schema";
 import { searchTextAlphaNumericSchema } from "../search/searchText.schema";
+import { zStringCanBeEmpty } from "../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
 import { zToNumber } from "../zodUtils";
 import {
@@ -50,7 +51,7 @@ export const getConventionsWithErroredBroadcastFeedbackFilterSchema: ZodSchemaWi
   z.object({
     broadcastErrorKind: broadcastErrorKindSchema.optional(),
     conventionStatus: z.tuple([statusSchema], statusSchema).optional(),
-    search: z.string().optional(),
+    search: zStringCanBeEmpty.optional(),
   });
 
 export const flatGetConventionsWithErroredBroadcastFeedbackParamsSchema: ZodSchemaWithInputMatchingOutput<FlatGetConventionsWithErroredBroadcastFeedbackParams> =
