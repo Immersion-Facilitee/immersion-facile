@@ -1,6 +1,6 @@
 import { subMonths } from "date-fns";
 import { uniq } from "ramda";
-import { type AgencyId, errors, executeInSequence, isTruthy } from "shared";
+import { type AgencyId, executeInSequence, isTruthy } from "shared";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 
@@ -32,23 +32,23 @@ export const makeDeleteOldClosedAgenciesWithoutConventions = useCaseBuilder(
       AgencyId,
       AgencyId[] | null
     >(candidateAgencyIds, async (agencyId) => {
-      const agency = await uow.agencyRepository.getById(agencyId);
-      if (!agency) throw errors.agency.notFound({ agencyId });
-
       const relatedAgencies =
         await uow.agencyRepository.getAgenciesRelatedToAgency(agencyId);
 
-      const agencyIds = [agency?.id, ...relatedAgencies.map(({ id }) => id)];
-      // Quid si on a une relatedAgency qui n'est pas closed/rejected ?
+      const candidateAndRelatedAgencyIds = [
+        agencyId,
+        ...relatedAgencies.map(({ id }) => id),
+      ];
 
       const conventionIds =
         await uow.conventionQueries.getConventionIdsByFilters({
           filters: {
-            withAgencyIds: agencyIds,
+            withAgencyIds: candidateAndRelatedAgencyIds,
           },
+          limit: 1,
         });
 
-      return conventionIds.length === 0 ? agencyIds : null;
+      return conventionIds.length === 0 ? candidateAndRelatedAgencyIds : null;
     }).then((results) => uniq(results.filter(isTruthy).flat()));
 
     const deletedAgencies =

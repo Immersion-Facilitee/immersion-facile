@@ -100,7 +100,7 @@ export class PgAgencyRepository implements AgencyRepository {
         created_at: agency.createdAt
           ? sql<Date>`${agency.createdAt}::timestamp`
           : sql`now()`,
-        updated_at: agency.updatedAt,
+        updated_at: sql<Date>`${agency.updatedAt}::timestamp`,
       }))
       .execute()
       .catch((error) => {
@@ -115,6 +115,7 @@ export class PgAgencyRepository implements AgencyRepository {
   }
 
   public async deleteByIds(ids: AgencyId[]): Promise<AgencyId[]> {
+    if (ids.length === 0) return ids;
     return this.transaction
       .deleteFrom("agencies")
       .where("id", "in", ids)

@@ -572,6 +572,23 @@ describe.each(
       [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
     });
 
+    it("do nothing when no id provided", async () => {
+      await agencyRepository.insert(agency1);
+      await agencyRepository.insert(agency2);
+
+      expectToEqual((await agencyRepository.getAgencies({})).data, [
+        agency1,
+        agency2,
+      ]);
+
+      await agencyRepository.deleteByIds([]);
+
+      expectToEqual((await agencyRepository.getAgencies({})).data, [
+        agency1,
+        agency2,
+      ]);
+    });
+
     it("delete agencies if exist by ids", async () => {
       await agencyRepository.insert(agency1);
       await agencyRepository.insert(agency2);
