@@ -13,6 +13,7 @@ import {
   fetchUserInitialState,
   fetchUserSlice,
 } from "src/core-logic/domain/admin/fetchUser/fetchUser.slice";
+import { updateUserPreventToDeleteSlice } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.slice";
 import { removeUserFromAgencySelectors } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.selectors";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateUserOnAgencySelectors } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.selectors";
@@ -257,6 +258,79 @@ describe("Admin Users slice", () => {
         removeUserFromAgencySelectors.isLoading(store.getState()),
         false,
       );
+      expectAdminFetchUserSelectors({
+        isFetching: false,
+        user,
+      });
+    });
+  });
+
+  describe("when current user has successfully requested an update of preventToDelete", () => {
+    it("if this other user is in the state, update preventToDelete successfully", () => {
+      const user: ConnectedUser = new ConnectedUserBuilder()
+        .withId("user-id")
+        .withPreventToDelete(false)
+        .build();
+
+      ({ store, dependencies } = createTestStore({
+        admin: adminPreloadedState({
+          fetchUser: {
+            user,
+            isFetching: false,
+          },
+        }),
+      }));
+
+      store.dispatch(
+        updateUserPreventToDeleteSlice.actions.updateUserPreventToDeleteRequested(
+          {
+            userId: user.id,
+            preventToDelete: true,
+            feedbackTopic: "user-prevent-to-delete",
+          },
+        ),
+      );
+      dependencies.adminGateway.updateUserPreventToDeleteResponse$.next(
+        undefined,
+      );
+
+      expectAdminFetchUserSelectors({
+        isFetching: false,
+        user: {
+          ...user,
+          preventToDelete: true,
+        },
+      });
+    });
+
+    it("if it is not user in state, do nothing", () => {
+      const user: ConnectedUser = new ConnectedUserBuilder()
+        .withId("user-id")
+        .withPreventToDelete(false)
+        .build();
+
+      ({ store, dependencies } = createTestStore({
+        admin: adminPreloadedState({
+          fetchUser: {
+            user,
+            isFetching: false,
+          },
+        }),
+      }));
+
+      store.dispatch(
+        updateUserPreventToDeleteSlice.actions.updateUserPreventToDeleteRequested(
+          {
+            userId: "another-user-id",
+            preventToDelete: true,
+            feedbackTopic: "user-prevent-to-delete",
+          },
+        ),
+      );
+      dependencies.adminGateway.updateUserPreventToDeleteResponse$.next(
+        undefined,
+      );
+
       expectAdminFetchUserSelectors({
         isFetching: false,
         user,

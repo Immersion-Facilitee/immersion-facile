@@ -922,6 +922,9 @@ export const domElementIds = {
     usersTab: {
       usersTable: "im-users__users-table",
     },
+    userDetail: {
+      preventToDeleteToggle: "im-user-detail__prevent-to-delete-toggle",
+    },
     emailPreviewTab: {
       emailTemplateNameSelect: "selectTemplateName",
       internshipKindSelect: "email-preview-internshipKind-select",

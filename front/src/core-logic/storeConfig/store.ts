@@ -15,6 +15,8 @@ import { listUsersEpics } from "src/core-logic/domain/admin/listUsers/listUsers.
 import { listUsersSlice } from "src/core-logic/domain/admin/listUsers/listUsers.slice";
 import { notificationsEpics } from "src/core-logic/domain/admin/notifications/notifications.epics";
 import { notificationsSlice } from "src/core-logic/domain/admin/notifications/notificationsSlice";
+import { updateUserPreventToDeleteEpics } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.epic";
+import { updateUserPreventToDeleteSlice } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.slice";
 import { closeAgencyAndTransfertConventionsEpics } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.epics";
 import { closeAgencyAndTransferConventionsSlice } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.slice";
 import { createUserOnAgencyEpics } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.epics";
@@ -136,6 +138,7 @@ const allEpics: AppEpic<any>[] = [
   ...siretEpics,
   ...updateAgencyEpics,
   ...updateUserOnAgencyEpics,
+  ...updateUserPreventToDeleteEpics,
   ...usersInReviewEpics,
 ];
 
@@ -148,6 +151,8 @@ const appReducer = combineReducers({
     [apiConsumerSlice.name]: apiConsumerSlice.reducer,
     [listUsersSlice.name]: listUsersSlice.reducer,
     [fetchUserSlice.name]: fetchUserSlice.reducer,
+    [updateUserPreventToDeleteSlice.name]:
+      updateUserPreventToDeleteSlice.reducer,
   }),
   agency: combineReducers({
     [closeAgencyAndTransferConventionsSlice.name]:

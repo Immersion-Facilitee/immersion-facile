@@ -1,6 +1,7 @@
 import type { ActionCreatorWithPayload } from "@reduxjs/toolkit";
 
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import { updateUserPreventToDeleteSlice } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.slice";
 import { closeAgencyAndTransferConventionsSlice } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.slice";
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
@@ -47,6 +48,7 @@ const topics = [
   "agency-users-to-review",
   "agency-user",
   "agency-user-right-self",
+  "user-prevent-to-delete",
   "api-consumer-global",
   "api-consumer-names",
   "api-consumer-renew",
@@ -579,6 +581,22 @@ export const feedbacks: Record<
         "Problème lors de l'annulation de la demande d’accès de l'utilisateur à cette agence",
       message:
         "Une erreur est survenue lors de l'annulation de la demande d'accès de l'utilisateur.",
+    },
+  },
+  "user-prevent-to-delete": {
+    "update.success": {
+      action:
+        updateUserPreventToDeleteSlice.actions
+          .updateUserPreventToDeleteSucceeded,
+      title: "L'utilisateur a été mis à jour",
+      message: "La modification a bien été prise en compte.",
+    },
+    "update.error": {
+      action:
+        updateUserPreventToDeleteSlice.actions.updateUserPreventToDeleteFailed,
+      title: "Problème lors de la mise à jour de l'utilisateur",
+      message:
+        "Une erreur est survenue lors de la mise à jour de l'utilisateur.",
     },
   },
   "search-result": {

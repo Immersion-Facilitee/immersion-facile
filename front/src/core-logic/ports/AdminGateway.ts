@@ -16,6 +16,8 @@ import type {
   SetFeatureFlagParam,
   UserParamsForAgency,
   UserWithNumberOfAgenciesAndEstablishments,
+  WithPreventToDelete,
+  WithUserId,
 } from "shared";
 
 export interface AdminGateway {
@@ -78,5 +80,10 @@ export interface AdminGateway {
   banEstablishment$(
     banEstablishmentPayload: BanEstablishmentPayload,
     jwt: ConnectedUserJwt,
+  ): Observable<void>;
+
+  updateUserPreventToDelete$(
+    params: WithUserId & WithPreventToDelete,
+    token: ConnectedUserJwt,
   ): Observable<void>;
 }
