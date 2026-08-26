@@ -1,3 +1,4 @@
+import type { AgencyId } from "../agency/agency.dto";
 import type {
   PaginationQueryParams,
   WithRequiredPagination,
@@ -6,6 +7,7 @@ import type { DateString } from "../utils/date";
 import type {
   ConventionAssessmentFields,
   ConventionId,
+  WithOptionalFirstnameAndLastname,
 } from "./convention.dto";
 import type { WithFirstnameAndLastname } from "./convention.schema";
 
@@ -14,7 +16,14 @@ export type ConventionWithUnfinalizedAssessment = {
   dateEnd: DateString;
   beneficiary: WithFirstnameAndLastname;
   assessment: ConventionAssessmentFields["assessment"];
+  agencyId: AgencyId;
+  agencyReferent: WithOptionalFirstnameAndLastname | null;
 };
+
+export type ConventionWithUnfinalizedAssessmentReadDto =
+  ConventionWithUnfinalizedAssessment & {
+    agencyName: string;
+  };
 
 export const unfinalizedAssessmentCompletionStatuses = [
   "to-complete",

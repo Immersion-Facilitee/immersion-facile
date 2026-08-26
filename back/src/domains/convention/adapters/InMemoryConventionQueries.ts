@@ -365,6 +365,8 @@ export class InMemoryConventionQueries implements ConventionQueries {
                     lastname: convention.signatories.beneficiary.lastName,
                   },
                   assessment: null,
+                  agencyId: convention.agencyId,
+                  agencyReferent: convention.agencyReferent ?? null,
                 },
               ];
             return [];
@@ -410,6 +412,8 @@ export class InMemoryConventionQueries implements ConventionQueries {
                 signedAt: assessment.signedAt ?? null,
                 createdAt: assessment.createdAt,
               },
+              agencyId: convention.agencyId,
+              agencyReferent: convention.agencyReferent ?? null,
             },
           ];
         },

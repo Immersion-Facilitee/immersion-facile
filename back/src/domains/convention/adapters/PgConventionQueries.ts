@@ -493,6 +493,14 @@ export class PgConventionQueries implements ConventionQueries {
                   signedAt: row.assessmentSignedAt,
                   createdAt: row.assessmentCreatedAt,
                 },
+          agencyId: row.agencyId,
+          agencyReferent:
+            row.agencyReferentFirstName && row.agencyReferentLastName
+              ? {
+                  firstname: row.agencyReferentFirstName,
+                  lastname: row.agencyReferentLastName,
+                }
+              : null,
         },
         logger,
       }),
@@ -1099,6 +1107,13 @@ const selectUnfinalizedAssessmentFields = (
     eb.ref("conventions.date_end").as("dateEndRaw"),
     eb.ref("beneficiary.first_name").as("firstname"),
     eb.ref("beneficiary.last_name").as("lastname"),
+    eb.ref("conventions.agency_id").as("agencyId"),
+    eb
+      .ref("conventions.agency_referent_first_name")
+      .as("agencyReferentFirstName"),
+    eb
+      .ref("conventions.agency_referent_last_name")
+      .as("agencyReferentLastName"),
     eb
       .ref("ia.status")
       .$castTo<AssessmentStatus | null>()
