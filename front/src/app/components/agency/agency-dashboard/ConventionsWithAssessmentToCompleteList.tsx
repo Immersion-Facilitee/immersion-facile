@@ -14,6 +14,7 @@ import {
   type ConventionWithUnfinalizedAssessmentReadDto,
   domElementIds,
   frontRoutes,
+  getFormattedFirstnameAndLastname,
   NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
   toDisplayedDate,
 } from "shared";
@@ -268,9 +269,22 @@ const AssessmentToCompleteTaskItem = ({
       </Badge>
     </>
   );
-  const footer = convention.assessment
+  const formattedAgencyReferent = getFormattedFirstnameAndLastname(
+    convention.agencyReferent ?? {},
+  );
+  const agencyLine = formattedAgencyReferent
+    ? `${formattedAgencyReferent} (${convention.agencyName})`
+    : convention.agencyName;
+  const dateLine = convention.assessment
     ? `Date de complétion du bilan : ${toDisplayedDate({ date: new Date(convention.assessment.createdAt) })}`
     : `Date de fin d'immersion : ${toDisplayedDate({ date: new Date(convention.dateEnd) })}`;
+  const footer = (
+    <>
+      {agencyLine}
+      <br />
+      {dateLine}
+    </>
+  );
 
   return (
     <Task
