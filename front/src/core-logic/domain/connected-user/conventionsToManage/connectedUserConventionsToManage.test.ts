@@ -279,6 +279,81 @@ describe("ConnectedUserConventionsToManage", () => {
       );
     });
 
+    it("stores search filter on request and keeps it after success", () => {
+      store.dispatch(
+        connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
+          {
+            filters: {
+              page: 1,
+              perPage: 10,
+              search: "Dupont",
+              assessmentCompletionStatus: "to-sign",
+            },
+            jwt: "my-jwt",
+            feedbackTopic: "conventions-with-unfinalized-assessment",
+          },
+        ),
+      );
+
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        {
+          page: 1,
+          perPage: 10,
+          search: "Dupont",
+          assessmentCompletionStatus: "to-sign",
+        },
+      );
+
+      const convention = new ConventionDtoBuilder().build();
+      const result: DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto> =
+        {
+          data: [
+            {
+              id: convention.id,
+              dateEnd: convention.dateEnd,
+              beneficiary: {
+                firstname: convention.signatories.beneficiary.firstName,
+                lastname: convention.signatories.beneficiary.lastName,
+              },
+              assessment: null,
+              agencyId: convention.agencyId,
+              agencyReferent: convention.agencyReferent ?? null,
+              agencyName: "Agency Name",
+            },
+          ],
+          pagination: {
+            totalRecords: 1,
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+          },
+        };
+      dependencies.conventionGateway.getConventionsWithUnfinalizedAssessmentResult$.next(
+        result,
+      );
+
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        {
+          page: 1,
+          perPage: 10,
+          search: "Dupont",
+          assessmentCompletionStatus: "to-sign",
+        },
+      );
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessment(
+          store.getState(),
+        ),
+        result.data,
+      );
+    });
+
     it("failed to get the conventions with unfinalized assessment", () => {
       expectToEqual(
         connectedUserConventionsToManageSelectors.isLoadingConventionsWithUnfinalizedAssessment(
@@ -356,6 +431,7 @@ describe("ConnectedUserConventionsToManage", () => {
             filters: {
               page: 2,
               perPage: 10,
+              search: "Dupont",
               assessmentCompletionStatus: "to-complete",
             },
             jwt: "my-jwt",
@@ -374,6 +450,7 @@ describe("ConnectedUserConventionsToManage", () => {
         {
           page: 2,
           perPage: 10,
+          search: "Dupont",
           assessmentCompletionStatus: "to-complete",
         },
       );

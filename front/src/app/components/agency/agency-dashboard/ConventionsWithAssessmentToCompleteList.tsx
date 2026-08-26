@@ -1,13 +1,19 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
+import { Input } from "@codegouvfr/react-dsfr/Input";
 import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import RadioButtons, {
   type RadioButtonsProps,
 } from "@codegouvfr/react-dsfr/RadioButtons";
 import { equals } from "ramda";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { HeadingSection, RichDropdown, Task } from "react-design-system";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  HeadingSection,
+  RichDropdown,
+  Task,
+  useDebounce,
+} from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type ConventionsWithUnfinalizedAssessmentFilters,
@@ -52,6 +58,8 @@ export const ConventionsWithAssessmentToCompleteList = () => {
     useState<ConventionsWithUnfinalizedAssessmentFilters>(() => ({
       assessmentCompletionStatus: filters.assessmentCompletionStatus,
     }));
+  const [searchValue, setSearchValue] = useState("");
+  const debouncedSearchValue = useDebounce(searchValue, 500);
 
   useEffect(() => {
     setTempFilters({
@@ -94,8 +102,13 @@ export const ConventionsWithAssessmentToCompleteList = () => {
   );
 
   const onSubmit = useCallback(
-    (filtersToUse = tempFilters) => {
+    (
+      filtersToUse = tempFilters,
+      searchQuery: string | undefined = searchValue,
+    ) => {
       if (!connectedUserJwt) return;
+
+      const search = searchQuery?.trim() || undefined;
 
       dispatch(
         connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
@@ -105,6 +118,7 @@ export const ConventionsWithAssessmentToCompleteList = () => {
               perPage: NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
               assessmentCompletionStatus:
                 filtersToUse.assessmentCompletionStatus,
+              ...(search && { search }),
             },
             jwt: connectedUserJwt,
             feedbackTopic: "conventions-with-unfinalized-assessment",
@@ -112,8 +126,26 @@ export const ConventionsWithAssessmentToCompleteList = () => {
         ),
       );
     },
-    [connectedUserJwt, dispatch, tempFilters],
+    [connectedUserJwt, dispatch, tempFilters, searchValue],
   );
+
+  const searchBarOnSubmitRef = useRef((query: string) => {
+    onSubmit(tempFilters, query);
+  });
+
+  useEffect(() => {
+    searchBarOnSubmitRef.current = (query: string) => {
+      onSubmit(tempFilters, query);
+    };
+  }, [onSubmit, tempFilters]);
+
+  const previousDebouncedSearchValue = useRef(debouncedSearchValue);
+
+  useEffect(() => {
+    if (previousDebouncedSearchValue.current === debouncedSearchValue) return;
+    previousDebouncedSearchValue.current = debouncedSearchValue;
+    searchBarOnSubmitRef.current(debouncedSearchValue);
+  }, [debouncedSearchValue]);
 
   const fetchConventions = useCallback(
     ({ page }: { page: number }) => {
@@ -183,6 +215,37 @@ export const ConventionsWithAssessmentToCompleteList = () => {
       <form
         onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          const query = formData.get("search");
+          if (query && typeof query === "string")
+            searchBarOnSubmitRef.current(query);
+        }}
+        className={fr.cx("fr-grid-row", "fr-search-bar", "fr-mb-4w")}
+      >
+        <div className={fr.cx("fr-col-lg-7")}>
+          <Input
+            label="Rechercher"
+            nativeInputProps={{
+              placeholder:
+                "Rechercher une convention (ID, nom, prénom, conseiller, email, SIRET, etc.)",
+              role: "search",
+              name: "search",
+              onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+                setSearchValue(event.target.value);
+              },
+            }}
+            className={fr.cx("fr-mb-0")}
+          />
+          <span className={fr.cx("fr-hint-text", "fr-mt-1w")}>
+            Astuce : saisir un nom de conseiller dans la recherche permet
+            d’afficher uniquement ses conventions.
+          </span>
+        </div>
+        <Button type="submit">Rechercher</Button>
+      </form>
+      <form
+        onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
+          event.preventDefault();
           onSubmit();
         }}
         className={fr.cx("fr-grid-row", "fr-grid-row--middle", "fr-mb-4w")}
@@ -202,7 +265,7 @@ export const ConventionsWithAssessmentToCompleteList = () => {
               assessmentCompletionStatus: undefined,
             };
             setTempFilters(newFilters);
-            onSubmit(newFilters);
+            onSubmit(newFilters, searchValue);
           }}
           as="Tag"
         />

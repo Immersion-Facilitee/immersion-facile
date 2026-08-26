@@ -5,6 +5,7 @@ import {
   paginationRequiredQueryParamsSchema,
 } from "../pagination/pagination.schema";
 import { makeDateStringSchema } from "../utils/date";
+import { zStringCanBeEmpty } from "../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
 import { zToNumber } from "../zodUtils";
 import {
@@ -22,7 +23,6 @@ import {
   type UnfinalizedAssessmentCompletionStatus,
   unfinalizedAssessmentCompletionStatuses,
 } from "./conventionWithUnfinalizedAssessment.dto";
-import { zStringCanBeEmpty } from "../utils/string.schema";
 
 export const conventionWithUnfinalizedAssessmentSchema: ZodSchemaWithInputMatchingOutput<ConventionWithUnfinalizedAssessment> =
   z.object({
