@@ -129,6 +129,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
                 siret: defaultExpectedProConnectIcIdTokenPayload.siret,
               },
               createdAt: timeGateway.now().toISOString(),
+              preventToDelete: false,
               lastLoginAt: timeGateway.now().toISOString(),
             },
           ]);
@@ -237,6 +238,40 @@ describe("AfterOAuthSuccessRedirection use case", () => {
                 siret: defaultExpectedProConnectIcIdTokenPayload.siret,
               },
               createdAt: alreadyExistingUser.createdAt,
+              preventToDelete: false,
+              lastLoginAt: timeGateway.now().toISOString(),
+            },
+          ]);
+        });
+
+        it("keeps preventToDelete when existing user", async () => {
+          const { alreadyExistingUser } =
+            addAlreadyExistingAuthenticatedUserInRepo({
+              externalId: null,
+              preventToDelete: true,
+            });
+          const { initialOngoingOAuth } =
+            makeSuccessfulAuthenticationConditions("agencyDashboard", {
+              email: alreadyExistingUser.email,
+            });
+
+          await afterOAuthSuccessRedirection.execute({
+            code: "my-code",
+            state: initialOngoingOAuth.state,
+          });
+
+          expectToEqual(uow.userRepository.users, [
+            {
+              id: alreadyExistingUser.id,
+              email: alreadyExistingUser.email,
+              firstName: defaultExpectedProConnectIcIdTokenPayload.firstName,
+              lastName: defaultExpectedProConnectIcIdTokenPayload.lastName,
+              proConnect: {
+                externalId: defaultExpectedProConnectIcIdTokenPayload.sub,
+                siret: defaultExpectedProConnectIcIdTokenPayload.siret,
+              },
+              createdAt: alreadyExistingUser.createdAt,
+              preventToDelete: true,
               lastLoginAt: timeGateway.now().toISOString(),
             },
           ]);
@@ -255,6 +290,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
             firstName: "Billy",
             lastName: "Idol",
             createdAt: new Date().toISOString(),
+            preventToDelete: false,
           };
 
           const previousMigrationUserWithUpdatedEmail: UserWithAdminRights = {
@@ -264,6 +300,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
             firstName: "",
             lastName: "",
             createdAt: new Date().toISOString(),
+            preventToDelete: false,
           };
 
           uow.userRepository.users = [
@@ -306,6 +343,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
               siret: defaultExpectedProConnectIcIdTokenPayload.siret,
             },
             createdAt: initialUser.createdAt,
+            preventToDelete: false,
             lastLoginAt: timeGateway.now().toISOString(),
           };
 
@@ -356,6 +394,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
             firstName: "Billy",
             lastName: "Idol",
             createdAt: new Date().toISOString(),
+            preventToDelete: false,
           };
 
           uow.userRepository.users = [initialUser];
@@ -906,6 +945,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
             id: userId,
             email,
             createdAt: timeGateway.now().toISOString(),
+            preventToDelete: false,
             firstName: "",
             lastName: "",
             proConnect: null,
@@ -1023,7 +1063,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
   };
 
   const addAlreadyExistingAuthenticatedUserInRepo = (
-    options: { externalId?: string | null } = {},
+    options: { externalId?: string | null; preventToDelete?: boolean } = {},
   ) => {
     const alreadyExistingUser: UserWithAdminRights = {
       id: "already-existing-id",
@@ -1041,6 +1081,7 @@ describe("AfterOAuthSuccessRedirection use case", () => {
             }
           : null,
       createdAt: new Date().toISOString(),
+      preventToDelete: options.preventToDelete ?? false,
     };
     uow.userRepository.users = [alreadyExistingUser];
     return { alreadyExistingUser };

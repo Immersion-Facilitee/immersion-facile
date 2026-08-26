@@ -152,7 +152,7 @@ describe("updateUserPreventToDelete", () => {
         inMemoryUow.userRepository.users.find(
           (user) => user.id === targetUser.id,
         )?.preventToDelete,
-        undefined,
+        false,
       );
     });
   });

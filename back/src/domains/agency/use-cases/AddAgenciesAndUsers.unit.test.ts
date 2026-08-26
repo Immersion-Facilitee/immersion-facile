@@ -154,6 +154,7 @@ describe("AddAgenciesAndUsers", () => {
           email: user2Email,
           createdAt: timeGateway.now().toISOString(),
           proConnect: null,
+          preventToDelete: false,
         },
       ]);
     });
@@ -247,6 +248,7 @@ describe("AddAgenciesAndUsers", () => {
           email: user1Email,
           createdAt: timeGateway.now().toISOString(),
           proConnect: null,
+          preventToDelete: false,
         },
       ]);
       expectArraysToMatch(uow.agencyRepository.agencies, [

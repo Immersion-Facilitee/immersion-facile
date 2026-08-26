@@ -71,6 +71,7 @@ describe("convention e2e", () => {
     lastName: "Doe",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
   const convention = new ConventionDtoBuilder()
     .withAgencyId(ftAgency.id)

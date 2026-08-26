@@ -76,6 +76,7 @@ const authUser1: ConnectedUserWithNormalizedAgencyRights = {
   firstName: "user-first-name",
   lastName: "user-last-name",
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
   agencyRights: user1AgencyRights,
   dashboards: {
     agencies: noAgencyDashboards,
@@ -93,6 +94,7 @@ const authUser2: ConnectedUserWithNormalizedAgencyRights = {
   firstName: "user-first-name-2",
   lastName: "user-last-name-2",
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
   agencyRights: user2AgencyRights,
   dashboards: {
     agencies: noAgencyDashboards,
@@ -199,6 +201,7 @@ describe("Agency registration for authenticated users", () => {
             proConnect: authUser1.proConnect,
             id: authUser1.id,
             createdAt: authUser1.createdAt,
+            preventToDelete: false,
           },
         ],
       );
@@ -242,6 +245,7 @@ describe("Agency registration for authenticated users", () => {
             proConnect: authUser1.proConnect,
             id: authUser1.id,
             createdAt: authUser1.createdAt,
+            preventToDelete: false,
           },
           {
             firstName: authUser2.firstName,
@@ -250,6 +254,7 @@ describe("Agency registration for authenticated users", () => {
             proConnect: authUser2.proConnect,
             id: authUser2.id,
             createdAt: authUser2.createdAt,
+            preventToDelete: false,
           },
         ],
       );
@@ -646,6 +651,7 @@ describe("Agency registration for authenticated users", () => {
         firstName: "fake-first-name",
         lastName: "fake-last-name",
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
         proConnect: null,
         agencyRights: {},
         dashboards: {
@@ -720,6 +726,7 @@ describe("Agency registration for authenticated users", () => {
         lastName: "fake-last-name",
         proConnect: null,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
         agencyRights: {},
         dashboards: {
           agencies: noAgencyDashboards,

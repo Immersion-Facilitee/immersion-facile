@@ -337,6 +337,7 @@ describe("Auth slice", () => {
         siret: "12345678901234",
       },
       createdAt: new Date().toISOString(),
+      preventToDelete: false,
     };
     dependencies.authGateway.getConnectedUserResponse$.next(user);
     expectToEqual(connectedUserSelectors.currentUser(store.getState()), user);

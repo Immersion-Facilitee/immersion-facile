@@ -433,6 +433,7 @@ describe("Admin router", () => {
       lastName: "Doe",
       proConnect: defaultProConnectInfos,
       createdAt: new Date().toISOString(),
+      preventToDelete: false,
     };
 
     it("201 - Updates role of user from 'to-review' to 'counsellor' with notification for given agency", async () => {
@@ -508,6 +509,7 @@ describe("Admin router", () => {
         lastName: "Doe",
         proConnect: defaultProConnectInfos,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
 
       inMemoryUow.userRepository.users = [
@@ -600,6 +602,7 @@ describe("Admin router", () => {
         },
         proConnect: defaultProConnectInfos,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
 
       const updatedRole: AgencyRole = "counsellor";
@@ -638,6 +641,7 @@ describe("Admin router", () => {
         lastName: "Doe",
         proConnect: defaultProConnectInfos,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
 
       inMemoryUow.userRepository.users = [user, backOfficeAdminUser];

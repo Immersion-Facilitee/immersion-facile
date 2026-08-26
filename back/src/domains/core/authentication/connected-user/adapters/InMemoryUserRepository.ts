@@ -54,8 +54,7 @@ export class InMemoryUserRepository implements UserRepository {
       existingUser.email === user.email &&
       existingUser.proConnect?.externalId === user.proConnect?.externalId &&
       existingUser.proConnect?.siret === user.proConnect?.siret &&
-      (existingUser.preventToDelete ?? false) ===
-        (user.preventToDelete ?? false)
+      existingUser.preventToDelete === user.preventToDelete
     ) {
       if (user.lastLoginAt) {
         this.#usersById[user.id] = {

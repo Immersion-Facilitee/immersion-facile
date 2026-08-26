@@ -20,6 +20,7 @@ const someUser: UserWithNumberOfAgenciesAndEstablishments = {
     siret: "00000000005555",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
   numberOfAgencies: 2,
   numberOfEstablishments: 1,
 };

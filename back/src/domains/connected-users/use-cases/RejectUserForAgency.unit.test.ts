@@ -40,6 +40,7 @@ describe("RejectUserForAgency", () => {
     firstName: "John",
     lastName: "Lennon",
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
     proConnect,
   };
 

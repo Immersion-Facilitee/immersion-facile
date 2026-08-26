@@ -38,6 +38,7 @@ describe("CreateUserOnAgency", () => {
     lastName: "fake-last-name",
     proConnect: null,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
     agencyRights: {},
     dashboards: {
       agencies: noAgencyDashboards,

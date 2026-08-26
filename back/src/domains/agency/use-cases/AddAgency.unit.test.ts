@@ -126,6 +126,7 @@ describe("AddAgency use case", () => {
         id: uuids[0],
         email: createParisMissionLocaleParams.validatorEmails[0],
         createdAt: timeGateway.now().toISOString(),
+        preventToDelete: false,
         firstName: emptyName,
         lastName: emptyName,
         proConnect: null,
@@ -134,6 +135,7 @@ describe("AddAgency use case", () => {
         id: uuids[1],
         email: createParisMissionLocaleParams.counsellorEmails[0],
         createdAt: timeGateway.now().toISOString(),
+        preventToDelete: false,
         firstName: emptyName,
         lastName: emptyName,
         proConnect: null,
@@ -181,6 +183,7 @@ describe("AddAgency use case", () => {
         id: uuids[0],
         email: createParisMissionLocaleParams.validatorEmails[0],
         createdAt: timeGateway.now().toISOString(),
+        preventToDelete: false,
         firstName: emptyName,
         lastName: emptyName,
         proConnect: null,
@@ -189,6 +192,7 @@ describe("AddAgency use case", () => {
         id: uuids[1],
         email: createParisMissionLocaleParams.counsellorEmails[0],
         createdAt: timeGateway.now().toISOString(),
+        preventToDelete: false,
         firstName: emptyName,
         lastName: emptyName,
         proConnect: null,
@@ -296,6 +300,7 @@ describe("AddAgency use case", () => {
         id: uuids[0],
         email: createAgencyWithRefersToParams.counsellorEmails[0],
         createdAt: timeGateway.now().toISOString(),
+        preventToDelete: false,
         firstName: emptyName,
         lastName: emptyName,
         proConnect: null,
@@ -365,6 +370,7 @@ describe("AddAgency use case", () => {
         firstName: emptyName,
         lastName: emptyName,
         proConnect: null,
+        preventToDelete: false,
       };
 
       expectToEqual(uow.agencyRepository.agencies, [

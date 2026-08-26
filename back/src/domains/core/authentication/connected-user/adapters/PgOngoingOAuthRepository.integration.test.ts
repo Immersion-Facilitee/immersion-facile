@@ -42,6 +42,7 @@ describe("PgOngoingOAuthRepository", () => {
       siret: fakeProConnectSiret,
     },
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
 
   beforeEach(async () => {

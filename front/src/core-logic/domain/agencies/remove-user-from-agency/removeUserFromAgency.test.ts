@@ -34,6 +34,7 @@ describe("RemoveUserFromAgency", () => {
     firstName: "fake-first-name",
     lastName: "fake-last-name",
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
     proConnect: null,
     agencyRights: [],
     dashboards: {

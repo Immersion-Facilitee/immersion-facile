@@ -20,6 +20,7 @@ const defaultUser: User = {
   firstName: "Default",
   lastName: "User",
   createdAt: new Date("2024-04-28T12:00:00.000Z").toISOString(),
+  preventToDelete: false,
   proConnect: null,
 };
 
@@ -35,6 +36,7 @@ const defaultConnectedUser: ConnectedUser = {
   lastName: "User",
   proConnect: defaultProConnectInfos,
   createdAt: new Date("2024-04-28T12:00:00.000Z").toISOString(),
+  preventToDelete: false,
   agencyRights: [],
   dashboards: {
     agencies: noAgencyDashboards,
@@ -117,9 +119,7 @@ export class ConnectedUserBuilder implements Builder<ConnectedUser> {
   withPreventToDelete(preventToDelete: boolean) {
     return new ConnectedUserBuilder({
       ...this.#dto,
-      ...(preventToDelete
-        ? { preventToDelete: true }
-        : { preventToDelete: undefined }),
+      preventToDelete,
     });
   }
 

@@ -32,6 +32,7 @@ describe("RegisterAgencyToConnectedUser use case", () => {
     lastName: "Doe",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
     agencyRights: [],
     dashboards: {
       agencies: noAgencyDashboards,
@@ -46,6 +47,7 @@ describe("RegisterAgencyToConnectedUser use case", () => {
     lastName: "valideur",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
     agencyRights: [],
     dashboards: {
       agencies: noAgencyDashboards,

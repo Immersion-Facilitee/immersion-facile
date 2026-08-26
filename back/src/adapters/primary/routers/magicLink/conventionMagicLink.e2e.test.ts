@@ -399,6 +399,7 @@ describe("Magic link router", () => {
         lastName: "Doe",
         proConnect: defaultProConnectInfos,
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       };
 
       inMemoryUow.userRepository.users = [validator];
@@ -1049,6 +1050,7 @@ describe("Magic link router", () => {
       id: "1",
       proConnect: defaultProConnectInfos,
       createdAt: new Date().toISOString(),
+      preventToDelete: false,
     };
 
     beforeEach(() => {

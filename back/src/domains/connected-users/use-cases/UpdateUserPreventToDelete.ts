@@ -28,6 +28,6 @@ export const makeUpdateUserPreventToDelete = useCaseBuilder(
 
     await uow.userRepository.save({
       ...user,
-      preventToDelete: inputParams.preventToDelete ? true : undefined,
+      preventToDelete: inputParams.preventToDelete,
     });
   });

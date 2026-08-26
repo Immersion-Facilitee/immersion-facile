@@ -47,6 +47,7 @@ const createUser = async (
     proConnect: null,
     firstName: userInfo.firstName ?? emptyName,
     lastName: userInfo.lastName ?? emptyName,
+    preventToDelete: false,
   });
 
   return userId;

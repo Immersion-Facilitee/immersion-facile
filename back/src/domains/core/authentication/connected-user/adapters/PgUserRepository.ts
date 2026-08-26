@@ -82,7 +82,7 @@ export class PgUserRepository implements UserRepository {
           pro_connect_siret: proConnect?.siret,
           created_at: createdAt,
           last_login_at: lastLoginAt ? sql`${lastLoginAt}` : sql`NULL`,
-          prevent_to_delete: preventToDelete ?? false,
+          prevent_to_delete: preventToDelete,
         })
         .execute();
       return;
@@ -94,7 +94,7 @@ export class PgUserRepository implements UserRepository {
       existingUser.email === email &&
       existingUser.proConnect?.externalId === proConnect?.externalId &&
       existingUser.proConnect?.siret === proConnect?.siret &&
-      (existingUser.preventToDelete ?? false) === (preventToDelete ?? false)
+      existingUser.preventToDelete === preventToDelete
     ) {
       if (lastLoginAt) {
         await this.transaction
@@ -116,7 +116,7 @@ export class PgUserRepository implements UserRepository {
         pro_connect_siret: proConnect?.siret,
         updated_at: sql`now()`,
         ...(lastLoginAt ? { last_login_at: sql`${lastLoginAt}` } : {}),
-        prevent_to_delete: preventToDelete ?? false,
+        prevent_to_delete: preventToDelete,
       })
       .where("id", "=", id)
       .execute();
@@ -185,6 +185,9 @@ export class PgUserRepository implements UserRepository {
             ELSE NULL
           END
         `.as("proConnect"),
+        sql<boolean>`${eb.ref("users.prevent_to_delete")}`.as(
+          "preventToDelete",
+        ),
         sql<number>`COUNT(DISTINCT ${eb.ref("users__agencies.agency_id")})::int`.as(
           "numberOfAgencies",
         ),
@@ -300,7 +303,7 @@ export class PgUserRepository implements UserRepository {
         lastLoginAt: raw.last_login_at
           ? new Date(raw.last_login_at).toISOString()
           : undefined,
-        ...(raw.prevent_to_delete ? { preventToDelete: true } : {}),
+        preventToDelete: raw.prevent_to_delete,
       }
     );
   }

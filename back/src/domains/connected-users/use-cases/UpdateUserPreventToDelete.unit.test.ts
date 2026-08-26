@@ -25,11 +25,6 @@ describe("UpdateUserPreventToDelete", () => {
     .withIsAdmin(true)
     .build();
 
-  const targetUser = new ConnectedUserBuilder()
-    .withId("target-id")
-    .withEmail("target@mail.com")
-    .build();
-
   let updateUserPreventToDelete: UpdateUserPreventToDelete;
   let uow: InMemoryUnitOfWork;
 
@@ -39,10 +34,15 @@ describe("UpdateUserPreventToDelete", () => {
     updateUserPreventToDelete = makeUpdateUserPreventToDelete({
       uowPerformer,
     });
-    uow.userRepository.users = [targetUser];
   });
 
   it("throws if user is not admin", async () => {
+    const targetUser = new ConnectedUserBuilder()
+      .withId("target-id")
+      .withEmail("target@mail.com")
+      .build();
+    uow.userRepository.users = [targetUser];
+
     await expectPromiseToFailWithError(
       updateUserPreventToDelete.execute(
         { userId: targetUser.id, preventToDelete: true },
@@ -62,29 +62,26 @@ describe("UpdateUserPreventToDelete", () => {
     );
   });
 
-  it("sets preventToDelete to true", async () => {
+  it.each([
+    { preventToDelete: true },
+    { preventToDelete: false },
+  ])("sets preventToDelete to $preventToDelete", async ({
+    preventToDelete,
+  }) => {
+    const targetUser = new ConnectedUserBuilder()
+      .withId("target-id")
+      .withEmail("target@mail.com")
+      .withPreventToDelete(!preventToDelete)
+      .build();
+    uow.userRepository.users = [targetUser];
+
     await updateUserPreventToDelete.execute(
-      { userId: targetUser.id, preventToDelete: true },
+      { userId: targetUser.id, preventToDelete: preventToDelete },
       adminUser,
     );
 
     expectToEqual(uow.userRepository.users, [
-      { ...targetUser, preventToDelete: true },
-    ]);
-  });
-
-  it("unsets preventToDelete", async () => {
-    uow.userRepository.users = [
-      new ConnectedUserBuilder(targetUser).withPreventToDelete(true).build(),
-    ];
-
-    await updateUserPreventToDelete.execute(
-      { userId: targetUser.id, preventToDelete: false },
-      adminUser,
-    );
-
-    expectToEqual(uow.userRepository.users, [
-      { ...targetUser, preventToDelete: undefined },
+      { ...targetUser, preventToDelete: preventToDelete },
     ]);
   });
 });

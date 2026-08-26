@@ -49,6 +49,7 @@ export class SimulatedAuthGateway implements AuthGateway {
               siret: "00000000000000",
             },
             createdAt: new Date().toISOString(),
+            preventToDelete: false,
             isBackofficeAdmin: true,
           }
         : simulatedUserConnected,
@@ -72,6 +73,7 @@ export class SimulatedAuthGateway implements AuthGateway {
           siret: "00000000002222",
         },
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       },
       {
         id: "fake-user-id-2",
@@ -88,6 +90,7 @@ export class SimulatedAuthGateway implements AuthGateway {
           siret: "00000000001111",
         },
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       },
       {
         id: "user-in-error",
@@ -116,6 +119,7 @@ export class SimulatedAuthGateway implements AuthGateway {
           siret: "00000000003333",
         },
         createdAt: new Date().toISOString(),
+        preventToDelete: false,
       },
     ] satisfies ConnectedUser[]);
   }
@@ -159,6 +163,7 @@ const simulatedUserConnected: ConnectedUser = {
     siret: "00000000000000",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
   isBackofficeAdmin: true,
 };
 

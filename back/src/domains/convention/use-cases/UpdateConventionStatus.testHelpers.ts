@@ -68,6 +68,7 @@ const userWithRoleBackofficeAdmin: UserWithAdminRights = {
     siret: "000001111122222",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
   isBackofficeAdmin: true,
 };
 
@@ -81,6 +82,7 @@ const userWithRoleToReview: UserWithAdminRights = {
     siret: "000001111122222",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 const userWithRoleCounsellor: UserWithAdminRights = {
   email: "userWithRoleCounsellor@mail.com",
@@ -92,6 +94,7 @@ const userWithRoleCounsellor: UserWithAdminRights = {
     siret: "000001111122222",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 
 const userWithRoleValidator: UserWithAdminRights = {
@@ -104,6 +107,7 @@ const userWithRoleValidator: UserWithAdminRights = {
     siret: "000001111122222",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 
 const userWithRoleBackofficeAdminAndValidator: UserWithAdminRights = {
@@ -116,6 +120,7 @@ const userWithRoleBackofficeAdminAndValidator: UserWithAdminRights = {
     siret: "000001111122222",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 const userWithRoleAgencyAdmin: UserWithAdminRights = {
   email: "userWithRoleAgencyAdmin@mail.com",
@@ -127,6 +132,7 @@ const userWithRoleAgencyAdmin: UserWithAdminRights = {
     siret: "000001111122222",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 const userWithRoleEstablishmentRepresentative: UserWithAdminRights = {
   email: establishmentRepEmail,
@@ -138,6 +144,7 @@ const userWithRoleEstablishmentRepresentative: UserWithAdminRights = {
     siret: "000001111122222",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 const userWithRoleBeneficiary: UserWithAdminRights = {
   email: beneficiaryEmail,
@@ -149,6 +156,7 @@ const userWithRoleBeneficiary: UserWithAdminRights = {
     siret: "000001111122222",
   },
   createdAt: new Date().toISOString(),
+  preventToDelete: false,
 };
 const makeUserIdMapConnectedUser: Record<
   ConnectedTestUser,

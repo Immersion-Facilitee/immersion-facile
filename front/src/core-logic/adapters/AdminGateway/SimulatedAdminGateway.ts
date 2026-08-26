@@ -68,6 +68,7 @@ export class SimulatedAdminGateway implements AdminGateway {
             siret: "00000000001234",
           },
           createdAt: new Date().toISOString(),
+          preventToDelete: false,
         });
   }
 
@@ -160,6 +161,7 @@ const simulatedUsers: UserWithNumberOfAgenciesAndEstablishments[] = [
     firstName: "Jerome",
     lastName: "Yolo",
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
     numberOfAgencies: 10,
     numberOfEstablishments: 5,
     proConnect: {
@@ -173,6 +175,7 @@ const simulatedUsers: UserWithNumberOfAgenciesAndEstablishments[] = [
     firstName: "john",
     lastName: "Lala",
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
     numberOfAgencies: 3,
     numberOfEstablishments: 2,
     proConnect: {

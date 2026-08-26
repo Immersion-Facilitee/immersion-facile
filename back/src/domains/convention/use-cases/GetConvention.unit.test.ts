@@ -48,6 +48,7 @@ describe("Get Convention", () => {
     lastName: "Doe",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
   const pendingUser: User = {
     id: "pendinguser",
@@ -56,6 +57,7 @@ describe("Get Convention", () => {
     lastName: "User",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
   const establishmentRep: User = {
     id: "estabrep",
@@ -64,6 +66,7 @@ describe("Get Convention", () => {
     lastName: "Doe",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
   const beneficiary: User = {
     id: "beneficiary",
@@ -72,6 +75,7 @@ describe("Get Convention", () => {
     lastName: "Benef",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
   const userWithNoRight: User = {
     id: "user-with-no-right",
@@ -80,6 +84,7 @@ describe("Get Convention", () => {
     lastName: "With No Right",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
   const tutor: User = {
     id: "my-tutor-user-id",
@@ -88,6 +93,7 @@ describe("Get Convention", () => {
     lastName: "Doe",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
 
   const backofficeAdminUser = new ConnectedUserBuilder()

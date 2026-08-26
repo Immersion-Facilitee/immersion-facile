@@ -33,6 +33,7 @@ describe("NotifyUserAgencyRightRejected", () => {
     lastName: "Lennon",
     proConnect: defaultProConnectInfos,
     createdAt: new Date().toISOString(),
+    preventToDelete: false,
   };
 
   let uow: InMemoryUnitOfWork;

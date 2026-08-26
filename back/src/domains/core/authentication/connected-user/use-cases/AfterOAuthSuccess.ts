@@ -370,6 +370,7 @@ const onEmailProvider = async ({
     firstName: "",
     lastName: "",
     proConnect: null,
+    preventToDelete: false,
   };
 
   return {
@@ -430,6 +431,10 @@ const makeNewOrUpdatedProConnectedUser = async ({
       existingUserByExternalId?.createdAt ||
       existingUserByEmail?.createdAt ||
       deps.timeGateway.now().toISOString(),
+    preventToDelete:
+      existingUserByExternalId?.preventToDelete ||
+      existingUserByEmail?.preventToDelete ||
+      false,
   };
 };
 
