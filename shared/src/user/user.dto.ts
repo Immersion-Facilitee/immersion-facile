@@ -21,6 +21,10 @@ export type WithUserId = {
 
 export type WithOptionalUserId = Partial<WithUserId>;
 
+export type WithPreventToDelete = {
+  preventToDelete: boolean;
+};
+
 export type Lastname = Flavor<string, "Lastname">;
 export type Firstname = Flavor<string, "Firstname">;
 

@@ -27,6 +27,7 @@ import { makeGetUsers } from "../../domains/connected-users/use-cases/GetUsers";
 import { makeLinkFranceTravailUsersToTheirAgencies } from "../../domains/connected-users/use-cases/LinkFranceTravailUsersToTheirAgencies";
 import { makeRejectUserForAgency } from "../../domains/connected-users/use-cases/RejectUserForAgency";
 import { makeUpdateUserForAgency } from "../../domains/connected-users/use-cases/UpdateUserForAgency";
+import { makeUpdateUserPreventToDelete } from "../../domains/connected-users/use-cases/UpdateUserPreventToDelete";
 import { makeAddConvention } from "../../domains/convention/use-cases/AddConvention";
 import { makeAddValidatedConventionNps } from "../../domains/convention/use-cases/AddValidatedConventionNps";
 import { makeBroadcastConventionAgain } from "../../domains/convention/use-cases/broadcast/BroadcastConventionAgain";
@@ -1027,6 +1028,9 @@ export const createUseCases = ({
       deps: { createNewEvent },
     }),
     getUsers: makeGetUsers({
+      uowPerformer,
+    }),
+    updateUserPreventToDelete: makeUpdateUserPreventToDelete({
       uowPerformer,
     }),
     getExternalSearchResult: makeGetExternalSearchResult({

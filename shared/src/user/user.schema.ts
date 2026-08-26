@@ -34,6 +34,7 @@ import type {
   UserId,
   UserWithNumberOfAgenciesAndEstablishments,
   WithOptionalUserId,
+  WithPreventToDelete,
   WithUserId,
 } from "./user.dto";
 
@@ -48,6 +49,11 @@ export const withUserIdSchema: ZodSchemaWithInputMatchingOutput<WithUserId> =
 export const withOptionalUserIdSchema: ZodSchemaWithInputMatchingOutput<WithOptionalUserId> =
   z.object({
     userId: userIdSchema.optional(),
+  });
+
+export const withPreventToDeleteSchema: ZodSchemaWithInputMatchingOutput<WithPreventToDelete> =
+  z.object({
+    preventToDelete: z.boolean(),
   });
 
 const userSchema: ZodSchemaWithInputMatchingOutput<User> = z.object({

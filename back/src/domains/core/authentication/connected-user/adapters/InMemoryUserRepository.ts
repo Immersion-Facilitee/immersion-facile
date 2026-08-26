@@ -53,7 +53,9 @@ export class InMemoryUserRepository implements UserRepository {
       existingUser.lastName === user.lastName &&
       existingUser.email === user.email &&
       existingUser.proConnect?.externalId === user.proConnect?.externalId &&
-      existingUser.proConnect?.siret === user.proConnect?.siret
+      existingUser.proConnect?.siret === user.proConnect?.siret &&
+      (existingUser.preventToDelete ?? false) ===
+        (user.preventToDelete ?? false)
     ) {
       if (user.lastLoginAt) {
         this.#usersById[user.id] = {
@@ -76,6 +78,7 @@ export class InMemoryUserRepository implements UserRepository {
           }
         : null,
       lastLoginAt: user.lastLoginAt,
+      preventToDelete: user.preventToDelete,
     };
 
     return usersIntegrityCheck(values(this.#usersById), user);
