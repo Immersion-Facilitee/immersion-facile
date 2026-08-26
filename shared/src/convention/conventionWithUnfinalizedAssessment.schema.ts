@@ -22,6 +22,7 @@ import {
   type UnfinalizedAssessmentCompletionStatus,
   unfinalizedAssessmentCompletionStatuses,
 } from "./conventionWithUnfinalizedAssessment.dto";
+import { zStringCanBeEmpty } from "../utils/string.schema";
 
 export const conventionWithUnfinalizedAssessmentSchema: ZodSchemaWithInputMatchingOutput<ConventionWithUnfinalizedAssessment> =
   z.object({
@@ -50,6 +51,7 @@ export const getConventionsWithUnfinalizedAssessmentFilterSchema: ZodSchemaWithI
   z.object({
     assessmentCompletionStatus:
       unfinalizedAssessmentCompletionStatusSchema.optional(),
+    search: zStringCanBeEmpty.optional(),
   });
 
 export const flatGetConventionsWithUnfinalizedAssessmentParamsSchema: ZodSchemaWithInputMatchingOutput<FlatGetConventionsWithUnfinalizedAssessmentParams> =
@@ -58,6 +60,7 @@ export const flatGetConventionsWithUnfinalizedAssessmentParamsSchema: ZodSchemaW
     perPage: zToNumber,
     assessmentCompletionStatus:
       unfinalizedAssessmentCompletionStatusSchema.optional(),
+    search: zStringCanBeEmpty.optional(),
   });
 
 export const getConventionsWithUnfinalizedAssessmentParamsSchema: ZodSchemaWithInputMatchingOutput<GetConventionsWithUnfinalizedAssessmentParams> =

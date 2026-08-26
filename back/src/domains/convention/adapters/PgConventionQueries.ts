@@ -373,7 +373,9 @@ export class PgConventionQueries implements ConventionQueries {
         },
       };
 
-    const { assessmentCompletionStatus } = filters;
+    const { assessmentCompletionStatus, search, ...rest } = filters;
+    rest satisfies Record<string, never>;
+    const trimmedSearch = search?.trim();
 
     const threeMonthsAgo = subMonths(now, 3);
     const twoDaysAgo = subDays(now, 2);
@@ -382,43 +384,41 @@ export class PgConventionQueries implements ConventionQueries {
       1,
     );
 
-    const conventionsWithoutAssessmentRows = this.transaction
-      .selectFrom("conventions")
-      .innerJoin(
-        "actors as beneficiary",
-        "beneficiary.id",
-        "conventions.beneficiary_id",
-      )
-      .leftJoin(
-        "immersion_assessments as ia",
-        "ia.convention_id",
-        "conventions.id",
-      )
-      .where((eb) => isInArray(eb, "conventions.agency_id", userAgencyIds))
-      .where("conventions.status", "=", "ACCEPTED_BY_VALIDATOR")
-      .where("ia.convention_id", "is", null)
-      .where("conventions.date_end", ">=", threeMonthsAgo)
-      .where("conventions.date_end", "<=", now);
+    const conventionsWithoutAssessmentRows = pipeWithValue(
+      createPaginatedConventionsBaseBuilder({
+        transaction: this.transaction,
+      })
+        .leftJoin(
+          "immersion_assessments as ia",
+          "ia.convention_id",
+          "conventions.id",
+        )
+        .where((eb) => isInArray(eb, "conventions.agency_id", userAgencyIds))
+        .where("conventions.status", "=", "ACCEPTED_BY_VALIDATOR")
+        .where("ia.convention_id", "is", null)
+        .where("conventions.date_end", ">=", threeMonthsAgo)
+        .where("conventions.date_end", "<=", now),
+      filterSearch(trimmedSearch),
+    );
 
-    const conventionsWithAssessmentToSignRows = this.transaction
-      .selectFrom("conventions")
-      .innerJoin(
-        "actors as beneficiary",
-        "beneficiary.id",
-        "conventions.beneficiary_id",
-      )
-      .innerJoin(
-        "immersion_assessments as ia",
-        "ia.convention_id",
-        "conventions.id",
-      )
-      .where((eb) => isInArray(eb, "conventions.agency_id", userAgencyIds))
-      .where("conventions.status", "=", "ACCEPTED_BY_VALIDATOR")
-      .where("ia.signed_at", "is", null)
-      .where("ia.status", "!=", "DID_NOT_SHOW")
-      .where("ia.created_at", ">", signatureReleaseThreshold)
-      .where("ia.created_at", ">=", threeMonthsAgo)
-      .where("ia.created_at", "<", twoDaysAgo);
+    const conventionsWithAssessmentToSignRows = pipeWithValue(
+      createPaginatedConventionsBaseBuilder({
+        transaction: this.transaction,
+      })
+        .innerJoin(
+          "immersion_assessments as ia",
+          "ia.convention_id",
+          "conventions.id",
+        )
+        .where((eb) => isInArray(eb, "conventions.agency_id", userAgencyIds))
+        .where("conventions.status", "=", "ACCEPTED_BY_VALIDATOR")
+        .where("ia.signed_at", "is", null)
+        .where("ia.status", "!=", "DID_NOT_SHOW")
+        .where("ia.created_at", ">", signatureReleaseThreshold)
+        .where("ia.created_at", ">=", threeMonthsAgo)
+        .where("ia.created_at", "<", twoDaysAgo),
+      filterSearch(trimmedSearch),
+    );
 
     const toCompleteSelect = selectUnfinalizedAssessmentFields(
       conventionsWithoutAssessmentRows,
@@ -916,7 +916,7 @@ const applyPaginationToBroadcastFeedback =
 
 const filterSearch =
   (search: string | undefined) =>
-  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder => {
+  <T extends ConventionBaseQueryBuilder>(builder: T): T => {
     if (!search) return builder;
     const pattern = `%${search.toLowerCase()}%`;
 
@@ -945,7 +945,7 @@ const filterSearch =
         sql<any>`${eb.ref("agency_referent_first_name")} || ' ' || ${eb.ref("agency_referent_last_name")} ILIKE ${pattern}`,
         sql<any>`${eb.ref("agency_referent_last_name")} || ' ' || ${eb.ref("agency_referent_first_name")} ILIKE ${pattern}`,
       ]),
-    );
+    ) as T;
   };
 
 const addFiltersToBuilder =
@@ -1090,7 +1090,11 @@ export const validateConventionResults = (
   );
 
 type UnfinalizedAssessmentQueryDb = Database & {
-  beneficiary: Database["actors"];
+  b: Database["actors"];
+  er: Database["actors"];
+  et: Database["actors"];
+  br: Database["actors"];
+  bce: Database["actors"];
   ia: Database["immersion_assessments"];
 };
 
@@ -1105,8 +1109,8 @@ const selectUnfinalizedAssessmentFields = (
     eb.ref("conventions.id").as("id"),
     sql<DateString>`date_to_iso(conventions.date_end)`.as("dateEnd"),
     eb.ref("conventions.date_end").as("dateEndRaw"),
-    eb.ref("beneficiary.first_name").as("firstname"),
-    eb.ref("beneficiary.last_name").as("lastname"),
+    eb.ref("b.first_name").as("firstname"),
+    eb.ref("b.last_name").as("lastname"),
     eb.ref("conventions.agency_id").as("agencyId"),
     eb
       .ref("conventions.agency_referent_first_name")

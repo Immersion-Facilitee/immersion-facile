@@ -260,6 +260,91 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
     );
   });
 
+  describe("search", () => {
+    it("filters conventions by search", async () => {
+      expectToEqual(
+        await getConventionsWithUnfinalizedAssessment.execute(
+          {
+            pagination: { page: 1, perPage: 10 },
+            filters: { search: "Marie" },
+          },
+          currentUserWithValidAgencyRight,
+        ),
+        {
+          data: [
+            {
+              assessment: {
+                createdAt: assessment.createdAt,
+                endedWithAJob: assessment.endedWithAJob,
+                signedAt: assessment.signedAt,
+                status: assessment.status,
+              },
+              beneficiary: {
+                firstname:
+                  validatedConvention.signatories.beneficiary.firstName,
+                lastname: validatedConvention.signatories.beneficiary.lastName,
+              },
+              dateEnd: validatedConvention.dateEnd,
+              id: validatedConvention.id,
+              agencyId: validatedConvention.agencyId,
+              agencyReferent: validatedConvention.agencyReferent ?? null,
+              agencyName: agency.name,
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            numberPerPage: 10,
+            totalPages: 1,
+            totalRecords: 1,
+          },
+        },
+      );
+    });
+
+    it("combines search with assessmentCompletionStatus", async () => {
+      expectToEqual(
+        await getConventionsWithUnfinalizedAssessment.execute(
+          {
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              search: "Marie",
+              assessmentCompletionStatus: "to-sign",
+            },
+          },
+          currentUserWithValidAgencyRight,
+        ),
+        {
+          data: [
+            {
+              assessment: {
+                createdAt: assessment.createdAt,
+                endedWithAJob: assessment.endedWithAJob,
+                signedAt: assessment.signedAt,
+                status: assessment.status,
+              },
+              beneficiary: {
+                firstname:
+                  validatedConvention.signatories.beneficiary.firstName,
+                lastname: validatedConvention.signatories.beneficiary.lastName,
+              },
+              dateEnd: validatedConvention.dateEnd,
+              id: validatedConvention.id,
+              agencyId: validatedConvention.agencyId,
+              agencyReferent: validatedConvention.agencyReferent ?? null,
+              agencyName: agency.name,
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            numberPerPage: 10,
+            totalPages: 1,
+            totalRecords: 1,
+          },
+        },
+      );
+    });
+  });
+
   it("throws when convention agency is not in user rights", async () => {
     const unknownAgencyId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
     uow.conventionQueries.getConventionsWithUnfinalizedAssessmentForAgencyUser =
