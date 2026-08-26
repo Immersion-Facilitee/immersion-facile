@@ -279,6 +279,30 @@ describe("ConnectedUserConventionsToManage", () => {
       );
     });
 
+    it("drops undefined optional filters so they match empty filters", () => {
+      store.dispatch(
+        connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(
+          {
+            filters: {
+              page: 1,
+              perPage: 10,
+              search: undefined,
+              assessmentCompletionStatus: undefined,
+            },
+            jwt: "my-jwt",
+            feedbackTopic: "conventions-with-unfinalized-assessment",
+          },
+        ),
+      );
+
+      expectToEqual(
+        connectedUserConventionsToManageSelectors.conventionsWithUnfinalizedAssessmentFilters(
+          store.getState(),
+        ),
+        initialConventionsWithUnfinalizedAssessmentFilters,
+      );
+    });
+
     it("stores search filter on request and keeps it after success", () => {
       store.dispatch(
         connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(

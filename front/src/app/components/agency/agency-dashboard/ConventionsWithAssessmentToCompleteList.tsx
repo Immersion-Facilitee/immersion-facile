@@ -116,8 +116,10 @@ export const ConventionsWithAssessmentToCompleteList = () => {
             filters: {
               page: 1,
               perPage: NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
-              assessmentCompletionStatus:
-                filtersToUse.assessmentCompletionStatus,
+              ...(filtersToUse.assessmentCompletionStatus && {
+                assessmentCompletionStatus:
+                  filtersToUse.assessmentCompletionStatus,
+              }),
               ...(search && { search }),
             },
             jwt: connectedUserJwt,
