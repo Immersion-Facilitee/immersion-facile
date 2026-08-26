@@ -2,19 +2,25 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Highlight from "@codegouvfr/react-dsfr/Highlight";
 import Tabs from "@codegouvfr/react-dsfr/Tabs";
+import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import type { ReactNode } from "react";
-import { useScrollTo } from "react-design-system";
+import { Loader, useScrollTo } from "react-design-system";
+import { useDispatch } from "react-redux";
 import {
   type ConnectedUser,
   domElementIds,
   frontRoutes,
   type UserId,
 } from "shared";
+import { Feedback } from "src/app/components/feedback/Feedback";
 import { ressourcesAndWebinarsUrl } from "src/app/contents/home/content";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { commonIllustrations } from "src/assets/img/illustrations";
+import { updateUserPreventToDeleteSelectors } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.selectors";
+import { updateUserPreventToDeleteSlice } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
+import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { match } from "ts-pattern";
 import type { Route } from "type-route";
 import { AgenciesTablesSection } from "../agency/agencies-table/AgenciesTablesSection";
@@ -106,7 +112,11 @@ export const UserProfile = ({
   editInformationsLink,
   routeName,
 }: UserProfileProps) => {
+  const dispatch = useDispatch();
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
+  const isUpdatingPreventToDelete = useAppSelector(
+    updateUserPreventToDeleteSelectors.isLoading,
+  );
 
   useScrollTo(!!useFeedbackTopic("agency-user-right-self"));
 
@@ -218,16 +228,54 @@ export const UserProfile = ({
     },
   ];
 
+  const showPreventToDeleteToggle =
+    (routeName === "adminUserDetailAgencies" ||
+      routeName === "adminUserDetailEstablishments") &&
+    !!currentUser?.isBackofficeAdmin;
+
   return (
     <div>
+      {isUpdatingPreventToDelete && <Loader />}
       <div className={fr.cx("fr-grid-row")}>
         <h1 className={fr.cx("fr-col-12", "fr-col-md")}>{title}</h1>
       </div>
+      {showPreventToDeleteToggle && (
+        <div className={fr.cx("fr-my-2w")}>
+          <Feedback
+            topics={["user-prevent-to-delete"]}
+            className="fr-my-2w"
+            closable
+          />
+          <ToggleSwitch
+            id={domElementIds.admin.userDetail.preventToDeleteToggle}
+            label="Exclure de la suppression automatique"
+            helperText="Empêche le traitement RGPD de ce compte après 2 ans d'inactivité. À utiliser pour les adresses génériques."
+            checked={userWithRights.preventToDelete}
+            disabled={isUpdatingPreventToDelete}
+            onChange={(preventToDelete) => {
+              dispatch(
+                feedbackSlice.actions.clearFeedbackTopics([
+                  "user-prevent-to-delete",
+                ]),
+              );
+              dispatch(
+                updateUserPreventToDeleteSlice.actions.updateUserPreventToDeleteRequested(
+                  {
+                    userId: userWithRights.id,
+                    preventToDelete,
+                    feedbackTopic: "user-prevent-to-delete",
+                  },
+                ),
+              );
+            }}
+          />
+        </div>
+      )}
       <PersonnalInformationsSection
         user={userWithRights}
         editInformationsLink={editInformationsLink}
       />
-      <h2 className={fr.cx("fr-h4", "fr-mt-2w")}>Mes rattachements</h2>
+      <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>Mes rattachements</h2>
       <Tabs
         onTabChange={(tabId) => onTabChange(tabId as UserProfileTabId)}
         selectedTabId={currentTab}

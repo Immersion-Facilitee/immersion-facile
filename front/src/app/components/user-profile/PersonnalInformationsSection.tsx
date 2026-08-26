@@ -10,7 +10,7 @@ export const PersonnalInformationsSection = ({
   editInformationsLink?: string;
 }) => (
   <>
-    <h2 className={fr.cx("fr-h4", "fr-mt-2w")}>Informations personnelles</h2>
+    <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>Informations personnelles</h2>
 
     <p>
       Pour modifier vos informations personnelles, vous devez passer par votre
