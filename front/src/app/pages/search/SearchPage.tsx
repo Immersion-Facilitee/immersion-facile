@@ -6,6 +6,7 @@ import {
   type ElementRef,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -47,7 +48,10 @@ import { featureFlagSelectors } from "src/core-logic/domain/featureFlags/feature
 import { geosearchSlice } from "src/core-logic/domain/geosearch/geosearch.slice";
 import { nafSlice } from "src/core-logic/domain/naf/naf.slice";
 import { searchSelectors } from "src/core-logic/domain/search/search.selectors";
-import type { SearchPageParams } from "src/core-logic/domain/search/search.slice";
+import {
+  type SearchPageParams,
+  searchSlice,
+} from "src/core-logic/domain/search/search.slice";
 import { useStyles } from "tss-react/dsfr";
 import "./SearchPage.scss";
 import {
@@ -144,7 +148,7 @@ export const SearchPage = ({
     searchSelectors.searchResultsWithPagination,
   );
   const isLoading = useAppSelector(searchSelectors.isLoading);
-  const { triggerSearch } = useSearch(route);
+  const { navigateToSearch } = useSearch(route);
   const [searchMade, setSearchMade] = useState<SearchPageParams | null>(null);
   const searchResultsWrapper = useRef<ElementRef<"div">>(null);
   const innerSearchResultWrapper = useRef<ElementRef<"div">>(null);
@@ -152,34 +156,39 @@ export const SearchPage = ({
   const { enableSearchByScore } = useAppSelector(
     featureFlagSelectors.featureFlagState,
   );
-  const initialValues: SearchPageParams = {
-    sortBy: enableSearchByScore ? "score" : "date",
-    sortOrder: "desc",
-    distanceKm: isExternal
-      ? defaultValuesForExternalSearch.distanceKm
-      : undefined,
-    latitude: isExternal ? defaultValuesForExternalSearch.latitude : undefined,
-    longitude: isExternal
-      ? defaultValuesForExternalSearch.longitude
-      : undefined,
-    fitForDisabledWorkers: undefined,
-    nafCodes: undefined,
-    nafLabel: undefined,
-    page: 1,
-    perPage: defaultPerPageInWebPagination,
-    appellations: isExternal
-      ? defaultValuesForExternalSearch.appellations
-      : undefined,
-    place: isExternal ? defaultValuesForExternalSearch.place : undefined,
-    appellationCodes: isExternal
-      ? defaultValuesForExternalSearch.appellations.map(
-          (appellation) => appellation.appellationCode,
-        )
-      : undefined,
-    remoteWorkModes: undefined,
-    showOnlyAvailableOffers: true,
-    ...acquisitionParams,
-  };
+  const initialValues: SearchPageParams = useMemo(
+    () => ({
+      sortBy: enableSearchByScore ? "score" : "date",
+      sortOrder: "desc",
+      distanceKm: isExternal
+        ? defaultValuesForExternalSearch.distanceKm
+        : undefined,
+      latitude: isExternal
+        ? defaultValuesForExternalSearch.latitude
+        : undefined,
+      longitude: isExternal
+        ? defaultValuesForExternalSearch.longitude
+        : undefined,
+      fitForDisabledWorkers: undefined,
+      nafCodes: undefined,
+      nafLabel: undefined,
+      page: 1,
+      perPage: defaultPerPageInWebPagination,
+      appellations: isExternal
+        ? defaultValuesForExternalSearch.appellations
+        : undefined,
+      place: isExternal ? defaultValuesForExternalSearch.place : undefined,
+      appellationCodes: isExternal
+        ? defaultValuesForExternalSearch.appellations.map(
+            (appellation) => appellation.appellationCode,
+          )
+        : undefined,
+      remoteWorkModes: undefined,
+      showOnlyAvailableOffers: true,
+      ...acquisitionParams,
+    }),
+    [enableSearchByScore, isExternal, acquisitionParams],
+  );
 
   const [tempValue, setTempValue] = useState<SearchPageParams>(initialValues);
   const filterFormValues = useCallback((values: SearchPageParams) => {
@@ -195,18 +204,23 @@ export const SearchPage = ({
     }, {} as SearchPageParams);
   }, []);
   const routeParams = route.params as Partial<SearchPageParams>;
+  const buildValuesFromRouteParams = useCallback(
+    (paramsFromRoute: Partial<SearchPageParams>): SearchPageParams =>
+      keys(initialValues).reduce(
+        (acc, currentKey) => ({
+          ...acc,
+          [currentKey]: getSearchRouteParam(
+            currentKey,
+            paramsFromRoute[currentKey],
+            initialValues[currentKey],
+          ),
+        }),
+        initialValues,
+      ),
+    [initialValues],
+  );
   const methods = useForm<SearchPageParams>({
-    defaultValues: keys(initialValues).reduce(
-      (acc, currentKey) => ({
-        ...acc,
-        [currentKey]: getSearchRouteParam(
-          currentKey,
-          routeParams[currentKey],
-          initialValues[currentKey],
-        ),
-      }),
-      {},
-    ),
+    defaultValues: buildValuesFromRouteParams(routeParams),
     mode: "onTouched",
   });
   const { handleSubmit, setValue, control, getValues, reset } = methods;
@@ -218,46 +232,34 @@ export const SearchPage = ({
 
   const searchHasBeenMade = searchMade !== null;
 
-  const internalSearchIsAvailableForInitialSearchRequest =
-    !isExternal &&
-    !searchHasBeenMade &&
-    keys(routeParams).length &&
-    lat !== 0 &&
-    lon !== 0;
-
-  const externalSearchIsAvailableForInitialSearchRequest =
-    isExternal &&
-    !searchHasBeenMade &&
-    keys(routeParams).length &&
-    lat !== 0 &&
-    lon !== 0 &&
-    distanceKm !== 0;
-  routeParams.appellationCodes && routeParams.appellationCodes.length > 0;
-
   const onSearchFormSubmit = useCallback(
     (updatedValues: SearchPageParams) => {
-      setSearchMade(updatedValues);
-      reset(updatedValues);
-      triggerSearch(filterFormValues(updatedValues), isExternal);
+      navigateToSearch(filterFormValues(updatedValues));
     },
-    [triggerSearch, filterFormValues, isExternal],
+    [navigateToSearch, filterFormValues],
   );
 
   useScrollTo(pagination?.currentPage ?? 1);
 
   useEffect(() => {
-    if (
-      internalSearchIsAvailableForInitialSearchRequest ||
-      externalSearchIsAvailableForInitialSearchRequest
-    ) {
-      onSearchFormSubmit(filterFormValues(formValues));
-    }
+    if (keys(routeParams).length === 0) return;
+    const valuesFromUrl = buildValuesFromRouteParams(routeParams);
+    if (!canSubmitSearch(valuesFromUrl)) return;
+    setSearchMade(valuesFromUrl);
+    reset(valuesFromUrl);
+    dispatch(
+      searchSlice.actions.getOffersRequested({
+        ...filterFormValues(valuesFromUrl),
+        isExternal,
+      }),
+    );
   }, [
-    internalSearchIsAvailableForInitialSearchRequest,
-    externalSearchIsAvailableForInitialSearchRequest,
-    onSearchFormSubmit,
+    routeParams,
+    buildValuesFromRouteParams,
     filterFormValues,
-    formValues,
+    reset,
+    dispatch,
+    isExternal,
   ]);
 
   useEffect(() => {

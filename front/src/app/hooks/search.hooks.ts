@@ -1,4 +1,3 @@
-import { useDispatch } from "react-redux";
 import {
   type AcquisitionParams,
   acquisitionParams,
@@ -12,10 +11,7 @@ import {
   getUrlParameters,
   isKeyInObjectAndValueNotUndefinedNorEmpty,
 } from "src/app/utils/url.utils";
-import {
-  type SearchPageParams,
-  searchSlice,
-} from "src/core-logic/domain/search/search.slice";
+import type { SearchPageParams } from "src/core-logic/domain/search/search.slice";
 import type { Route } from "type-route";
 
 export const encodedSearchUriParams = [
@@ -58,31 +54,15 @@ const filterUrlsParamsAndUpdateUrl = ({
       return acc;
     }, filteredUrlParams),
   };
-  frontRoutes[routeName](encodedUrlParams).replace();
+  frontRoutes[routeName](encodedUrlParams).push();
 };
 
-export const useSearch = ({ name }: SearchRoute) => {
-  const dispatch = useDispatch();
-  return {
-    triggerSearch: (params: SearchPageParams, isExternal: boolean) => {
-      dispatch(
-        searchSlice.actions.getOffersRequested({
-          ...params,
-          isExternal,
-        }),
-      );
-      filterUrlsParamsAndUpdateUrl({
-        values: params,
-        urlParams: getUrlParameters(window.location),
-        routeName: name,
-      });
-    },
-    changeCurrentPage: (values: SearchPageParams) => {
-      filterUrlsParamsAndUpdateUrl({
-        values,
-        urlParams: getUrlParameters(window.location),
-        routeName: name,
-      });
-    },
-  };
-};
+export const useSearch = ({ name }: SearchRoute) => ({
+  navigateToSearch: (params: SearchPageParams) => {
+    filterUrlsParamsAndUpdateUrl({
+      values: params,
+      urlParams: getUrlParameters(window.location),
+      routeName: name,
+    });
+  },
+});
