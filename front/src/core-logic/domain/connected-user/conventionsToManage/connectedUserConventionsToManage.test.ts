@@ -1,7 +1,7 @@
 import {
   type AgencyUserConventionListDto,
   ConventionDtoBuilder,
-  type ConventionWithUnfinalizedAssessment,
+  type ConventionWithUnfinalizedAssessmentReadDto,
   type DataWithPagination,
   expectToEqual,
 } from "shared";
@@ -159,7 +159,7 @@ describe("ConnectedUserConventionsToManage", () => {
 
       const convention = new ConventionDtoBuilder().build();
 
-      const conventionWithUnfinalizedAssessment: ConventionWithUnfinalizedAssessment =
+      const conventionWithUnfinalizedAssessment: ConventionWithUnfinalizedAssessmentReadDto =
         {
           id: convention.id,
           dateEnd: convention.dateEnd,
@@ -168,17 +168,21 @@ describe("ConnectedUserConventionsToManage", () => {
             lastname: convention.signatories.beneficiary.lastName,
           },
           assessment: null,
+          agencyId: convention.agencyId,
+          agencyReferent: convention.agencyReferent ?? null,
+          agencyName: "Agency Name",
         };
 
-      const result: DataWithPagination<ConventionWithUnfinalizedAssessment> = {
-        data: [conventionWithUnfinalizedAssessment],
-        pagination: {
-          totalRecords: 5,
-          currentPage: 1,
-          totalPages: 1,
-          numberPerPage: 10,
-        },
-      };
+      const result: DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto> =
+        {
+          data: [conventionWithUnfinalizedAssessment],
+          pagination: {
+            totalRecords: 5,
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+          },
+        };
       dependencies.conventionGateway.getConventionsWithUnfinalizedAssessmentResult$.next(
         result,
       );
@@ -230,25 +234,29 @@ describe("ConnectedUserConventionsToManage", () => {
       );
 
       const convention = new ConventionDtoBuilder().build();
-      const result: DataWithPagination<ConventionWithUnfinalizedAssessment> = {
-        data: [
-          {
-            id: convention.id,
-            dateEnd: convention.dateEnd,
-            beneficiary: {
-              firstname: convention.signatories.beneficiary.firstName,
-              lastname: convention.signatories.beneficiary.lastName,
+      const result: DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto> =
+        {
+          data: [
+            {
+              id: convention.id,
+              dateEnd: convention.dateEnd,
+              beneficiary: {
+                firstname: convention.signatories.beneficiary.firstName,
+                lastname: convention.signatories.beneficiary.lastName,
+              },
+              assessment: null,
+              agencyId: convention.agencyId,
+              agencyReferent: convention.agencyReferent ?? null,
+              agencyName: "Agency Name",
             },
-            assessment: null,
+          ],
+          pagination: {
+            totalRecords: 1,
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
           },
-        ],
-        pagination: {
-          totalRecords: 1,
-          currentPage: 1,
-          totalPages: 1,
-          numberPerPage: 10,
-        },
-      };
+        };
       dependencies.conventionGateway.getConventionsWithUnfinalizedAssessmentResult$.next(
         result,
       );
@@ -318,25 +326,29 @@ describe("ConnectedUserConventionsToManage", () => {
 
     it("should clear state when clearConventionsWithUnfinalizedAssessment is dispatched", () => {
       const convention = new ConventionDtoBuilder().build();
-      const result: DataWithPagination<ConventionWithUnfinalizedAssessment> = {
-        data: [
-          {
-            id: convention.id,
-            dateEnd: convention.dateEnd,
-            beneficiary: {
-              firstname: convention.signatories.beneficiary.firstName,
-              lastname: convention.signatories.beneficiary.lastName,
+      const result: DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto> =
+        {
+          data: [
+            {
+              id: convention.id,
+              dateEnd: convention.dateEnd,
+              beneficiary: {
+                firstname: convention.signatories.beneficiary.firstName,
+                lastname: convention.signatories.beneficiary.lastName,
+              },
+              assessment: null,
+              agencyId: convention.agencyId,
+              agencyReferent: convention.agencyReferent ?? null,
+              agencyName: "Agency Name",
             },
-            assessment: null,
+          ],
+          pagination: {
+            totalRecords: 1,
+            currentPage: 2,
+            totalPages: 1,
+            numberPerPage: 10,
           },
-        ],
-        pagination: {
-          totalRecords: 1,
-          currentPage: 2,
-          totalPages: 1,
-          numberPerPage: 10,
-        },
-      };
+        };
 
       store.dispatch(
         connectedUserConventionsToManageSlice.actions.getConventionsWithUnfinalizedAssessmentRequested(

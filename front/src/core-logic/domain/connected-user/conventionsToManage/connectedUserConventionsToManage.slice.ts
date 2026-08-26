@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   type AgencyUserConventionListDto,
-  type ConventionWithUnfinalizedAssessment,
+  type ConventionWithUnfinalizedAssessmentReadDto,
   type DataWithPagination,
   type FlatGetConventionsForAgencyUserParams,
   type FlatGetConventionsWithUnfinalizedAssessmentParams,
@@ -22,7 +22,7 @@ type ConnectedUserConventionsToManageState = {
   conventions: AgencyUserConventionListDto[];
   isLoading: boolean;
   pagination: Pagination | undefined;
-  conventionsWithUnfinalizedAssessment: ConventionWithUnfinalizedAssessment[];
+  conventionsWithUnfinalizedAssessment: ConventionWithUnfinalizedAssessmentReadDto[];
   conventionsWithUnfinalizedAssessmentPagination: Pagination | undefined;
   conventionsWithUnfinalizedAssessmentFilters: FlatGetConventionsWithUnfinalizedAssessmentParams;
   isLoadingConventionsWithUnfinalizedAssessment: boolean;
@@ -86,7 +86,7 @@ export const connectedUserConventionsToManageSlice = createSlice({
     getConventionsWithUnfinalizedAssessmentSucceeded: (
       state,
       action: PayloadActionWithFeedbackTopic<
-        DataWithPagination<ConventionWithUnfinalizedAssessment>
+        DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto>
       >,
     ) => {
       state.isLoadingConventionsWithUnfinalizedAssessment = false;

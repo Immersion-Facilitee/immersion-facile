@@ -16,7 +16,7 @@ import type {
   ConventionSupportedJwt,
   ConventionTemplate,
   ConventionTemplateId,
-  ConventionWithUnfinalizedAssessment,
+  ConventionWithUnfinalizedAssessmentReadDto,
   DashboardUrlAndName,
   DataWithPagination,
   DiscussionId,
@@ -121,7 +121,7 @@ export interface ConventionGateway {
   getConventionsWithUnfinalizedAssessment$(
     params: FlatGetConventionsWithUnfinalizedAssessmentParams,
     jwt: string,
-  ): Observable<DataWithPagination<ConventionWithUnfinalizedAssessment>>;
+  ): Observable<DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto>>;
   getConventionDraftById$(
     conventionDraftId: ConventionDraftId,
   ): Observable<ConventionDraftDto | undefined>;

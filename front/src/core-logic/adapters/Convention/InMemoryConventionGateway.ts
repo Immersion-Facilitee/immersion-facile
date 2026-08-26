@@ -19,7 +19,7 @@ import {
   type ConventionSupportedJwt,
   type ConventionTemplate,
   type ConventionTemplateId,
-  type ConventionWithUnfinalizedAssessment,
+  type ConventionWithUnfinalizedAssessmentReadDto,
   type DashboardUrlAndName,
   type DataWithPagination,
   type EditConventionCounsellorNameRequestDto,
@@ -109,7 +109,7 @@ export class InMemoryConventionGateway implements ConventionGateway {
   >();
 
   public getConventionsWithUnfinalizedAssessmentResult$ = new Subject<
-    DataWithPagination<ConventionWithUnfinalizedAssessment>
+    DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto>
   >();
 
   public fetchArchivedConventionRequestToReviewListResult$ =
@@ -328,7 +328,9 @@ export class InMemoryConventionGateway implements ConventionGateway {
   public getConventionsWithUnfinalizedAssessment$(
     _params: FlatGetConventionsWithUnfinalizedAssessmentParams,
     _jwt: string,
-  ): Observable<DataWithPagination<ConventionWithUnfinalizedAssessment>> {
+  ): Observable<
+    DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto>
+  > {
     return this.getConventionsWithUnfinalizedAssessmentResult$;
   }
 }
