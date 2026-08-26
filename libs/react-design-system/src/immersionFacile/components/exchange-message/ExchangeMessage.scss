@@ -1,12 +1,51 @@
+@use "../../../config/responsive" as *;
+
 .im-exchange-message {
   background: var(--background-default-grey-hover);
+  padding: 1rem;
+
+  @include for-screen-min($bp-lg) {
+    padding: 2rem;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .fr-badge {
+      padding-right: 0.125rem;
+
+      @include for-screen-min($bp-lg) {
+        display: none;
+      }
+    }
+  }
+
+  &__header-meta {
+    margin-left: 0;
+    flex-basis: 100%;
+
+    @include for-screen-min($bp-lg) {
+      margin-left: auto;
+      flex-basis: auto;
+    }
+  }
+
+  &__badge {
+    display: none;
+
+    @include for-screen-min($bp-lg) {
+      display: block;
+    }
+  }
 
   &--potentialBeneficiary {
     border-right: 6px solid var(--green-archipel-main-557);
   }
 
   &--establishment {
-    border-left: 6px solid var(--blue-cumulus-main-526)
+    border-left: 6px solid var(--blue-cumulus-main-526);
   }
 
   &--for-potential-beneficiary {
