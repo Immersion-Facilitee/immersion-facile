@@ -15,6 +15,8 @@ import type {
   SetFeatureFlagParam,
   UserParamsForAgency,
   UserWithNumberOfAgenciesAndEstablishments,
+  WithPreventToDelete,
+  WithUserId,
 } from "shared";
 import type { AdminGateway } from "src/core-logic/ports/AdminGateway";
 
@@ -50,6 +52,8 @@ export class TestAdminGateway implements AdminGateway {
   public listUsersResponse$ = new Subject<
     UserWithNumberOfAgenciesAndEstablishments[]
   >();
+
+  public updateUserPreventToDeleteResponse$ = new Subject<void>();
 
   public updateFeatureFlags$ = (
     params: SetFeatureFlagParam,
@@ -133,5 +137,12 @@ export class TestAdminGateway implements AdminGateway {
     _payload: BanEstablishmentPayload,
   ): Observable<void> {
     return this.banEstablishmentResponse$;
+  }
+
+  public updateUserPreventToDelete$(
+    _params: WithUserId & WithPreventToDelete,
+    _token: ConnectedUserJwt,
+  ): Observable<void> {
+    return this.updateUserPreventToDeleteResponse$;
   }
 }

@@ -17,6 +17,8 @@ import {
   type RejectConnectedUserRoleForAgencyParams,
   type UserParamsForAgency,
   type UserWithNumberOfAgenciesAndEstablishments,
+  type WithPreventToDelete,
+  type WithUserId,
 } from "shared";
 import type { AdminGateway } from "src/core-logic/ports/AdminGateway";
 
@@ -149,6 +151,13 @@ export class SimulatedAdminGateway implements AdminGateway {
 
   public banEstablishment$(
     _payload: BanEstablishmentPayload,
+  ): Observable<void> {
+    return of(undefined);
+  }
+
+  public updateUserPreventToDelete$(
+    _params: WithUserId & WithPreventToDelete,
+    _token: ConnectedUserJwt,
   ): Observable<void> {
     return of(undefined);
   }

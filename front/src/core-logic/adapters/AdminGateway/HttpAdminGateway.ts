@@ -17,6 +17,8 @@ import {
   type SetFeatureFlagParam,
   type UserParamsForAgency,
   type UserWithNumberOfAgenciesAndEstablishments,
+  type WithPreventToDelete,
+  type WithUserId,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import {
@@ -256,6 +258,27 @@ export class HttpAdminGateway implements AdminGateway {
           match(response)
             .with({ status: 200 }, ({ body }) => body)
             .with({ status: P.union(401, 403, 404, 409) }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public updateUserPreventToDelete$(
+    params: WithUserId & WithPreventToDelete,
+    token: ConnectedUserJwt,
+  ): Observable<void> {
+    return from(
+      this.httpClient
+        .updateUserPreventToDelete({
+          headers: { authorization: token },
+          urlParams: { userId: params.userId },
+          body: { preventToDelete: params.preventToDelete },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, () => undefined)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403, 404) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );
