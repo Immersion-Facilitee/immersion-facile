@@ -155,6 +155,20 @@ export const createAdminRouter = (deps: AppDependencies): Router => {
     ),
   );
 
+  sharedAdminRouter.updateUserPreventToDelete(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.updateUserPreventToDelete.execute(
+          {
+            userId: req.params.userId,
+            preventToDelete: req.body.preventToDelete,
+          },
+          getGenericAuthOrThrow(req.payloads?.currentUser),
+        ),
+      ),
+  );
+
   sharedAdminRouter.banEstablishment(
     deps.connectedUserAuthMiddleware,
     (req, res) =>

@@ -16,7 +16,11 @@ import {
 import { withAuthorizationHeaders } from "../headers";
 import { httpErrorSchema } from "../httpClient/httpErrors.schema";
 import { notificationsByKindSchema } from "../notifications/notifications.schema";
-import { connectedUserSchema, userInListSchema } from "../user/user.schema";
+import {
+  connectedUserSchema,
+  userInListSchema,
+  withPreventToDeleteSchema,
+} from "../user/user.schema";
 import { expressEmptyResponseBody } from "../zodUtils";
 import {
   getUsersFiltersSchema,
@@ -163,6 +167,19 @@ export const adminRoutes = defineRoutes({
       200: z.array(userInListSchema),
       401: httpErrorSchema,
       403: httpErrorSchema,
+    },
+  }),
+  updateUserPreventToDelete: defineRoute({
+    method: "patch",
+    url: "/admin/users/:userId",
+    requestBodySchema: withPreventToDeleteSchema,
+    ...withAuthorizationHeaders,
+    responses: {
+      200: expressEmptyResponseBody,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
     },
   }),
   banEstablishment: defineRoute({
