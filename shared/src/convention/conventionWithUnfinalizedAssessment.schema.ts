@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { agencyIdSchema } from "../agency/agency.schema";
 import {
   createPaginatedSchema,
   paginationRequiredQueryParamsSchema,
@@ -10,10 +11,12 @@ import {
   conventionAssessmentFieldsSchema,
   conventionIdSchema,
   withFirstnameAndLastnameSchema,
+  withOptionalFirstnameAndLastnameSchema,
 } from "./convention.schema";
 import {
   type ConventionsWithUnfinalizedAssessmentFilters,
   type ConventionWithUnfinalizedAssessment,
+  type ConventionWithUnfinalizedAssessmentReadDto,
   type FlatGetConventionsWithUnfinalizedAssessmentParams,
   type GetConventionsWithUnfinalizedAssessmentParams,
   type UnfinalizedAssessmentCompletionStatus,
@@ -26,10 +29,19 @@ export const conventionWithUnfinalizedAssessmentSchema: ZodSchemaWithInputMatchi
     dateEnd: makeDateStringSchema(),
     beneficiary: withFirstnameAndLastnameSchema,
     assessment: conventionAssessmentFieldsSchema,
+    agencyId: agencyIdSchema,
+    agencyReferent: withOptionalFirstnameAndLastnameSchema.nullable(),
   });
 
+export const conventionWithUnfinalizedAssessmentReadDtoSchema: ZodSchemaWithInputMatchingOutput<ConventionWithUnfinalizedAssessmentReadDto> =
+  conventionWithUnfinalizedAssessmentSchema.and(
+    z.object({
+      agencyName: z.string(),
+    }),
+  );
+
 export const paginatedConventionWithUnfinalizedAssessmentSchema =
-  createPaginatedSchema(conventionWithUnfinalizedAssessmentSchema);
+  createPaginatedSchema(conventionWithUnfinalizedAssessmentReadDtoSchema);
 
 export const unfinalizedAssessmentCompletionStatusSchema: ZodSchemaWithInputMatchingOutput<UnfinalizedAssessmentCompletionStatus> =
   z.enum(unfinalizedAssessmentCompletionStatuses);

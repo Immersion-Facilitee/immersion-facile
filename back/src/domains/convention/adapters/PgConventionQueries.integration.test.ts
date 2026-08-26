@@ -3679,6 +3679,8 @@ describe("Pg implementation of ConventionQueries", () => {
                   .lastName,
             },
             assessment: null,
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
         ],
         pagination: {
@@ -3689,7 +3691,6 @@ describe("Pg implementation of ConventionQueries", () => {
         },
       });
     });
-
     it("excludes to-complete conventions ended more than 3 months ago", async () => {
       await conventionRepository.save(
         validatedConventionEndedMoreThanThreeMonthsAgo,
@@ -3782,6 +3783,8 @@ describe("Pg implementation of ConventionQueries", () => {
               signedAt: null,
               createdAt: assessment.createdAt,
             },
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
         ],
         pagination: {
@@ -3911,6 +3914,8 @@ describe("Pg implementation of ConventionQueries", () => {
           },
           dateEnd: validatedConventionEnded5DaysAgo.dateEnd,
           id: validatedConventionEnded5DaysAgo.id,
+          agencyId: agencyIdA,
+          agencyReferent: null,
         },
       ]);
     });
@@ -4057,6 +4062,8 @@ describe("Pg implementation of ConventionQueries", () => {
               lastname: conventionEarliest.signatories.beneficiary.lastName,
             },
             assessment: null,
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
           {
             id: conventionMiddle.id,
@@ -4066,6 +4073,8 @@ describe("Pg implementation of ConventionQueries", () => {
               lastname: conventionMiddle.signatories.beneficiary.lastName,
             },
             assessment: null,
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
         ],
         pagination: {
@@ -4086,6 +4095,8 @@ describe("Pg implementation of ConventionQueries", () => {
               lastname: conventionLatest.signatories.beneficiary.lastName,
             },
             assessment: null,
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
         ],
         pagination: {
@@ -4137,6 +4148,8 @@ describe("Pg implementation of ConventionQueries", () => {
                   .lastName,
             },
             assessment: null,
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
         ],
         pagination: {
@@ -4193,6 +4206,8 @@ describe("Pg implementation of ConventionQueries", () => {
               signedAt: null,
               createdAt: assessment.createdAt,
             },
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
         ],
         pagination: {
@@ -4249,6 +4264,8 @@ describe("Pg implementation of ConventionQueries", () => {
               signedAt: null,
               createdAt: assessment.createdAt,
             },
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
           {
             id: validatedConventionEnded5DaysAgo.id,
@@ -4262,6 +4279,8 @@ describe("Pg implementation of ConventionQueries", () => {
                   .lastName,
             },
             assessment: null,
+            agencyId: agencyIdA,
+            agencyReferent: null,
           },
         ],
         pagination: {
@@ -4344,6 +4363,8 @@ describe("Pg implementation of ConventionQueries", () => {
                 signedAt: null,
                 createdAt: assessmentOldest.createdAt,
               },
+              agencyId: agencyIdA,
+              agencyReferent: null,
             },
             {
               id: validatedConventionEnded5DaysAgo.id,
@@ -4362,6 +4383,8 @@ describe("Pg implementation of ConventionQueries", () => {
                 signedAt: null,
                 createdAt: assessmentMiddle.createdAt,
               },
+              agencyId: agencyIdA,
+              agencyReferent: null,
             },
           ],
           pagination: {
@@ -4401,6 +4424,8 @@ describe("Pg implementation of ConventionQueries", () => {
                 signedAt: null,
                 createdAt: assessmentLatest.createdAt,
               },
+              agencyId: agencyIdA,
+              agencyReferent: null,
             },
           ],
           pagination: {
