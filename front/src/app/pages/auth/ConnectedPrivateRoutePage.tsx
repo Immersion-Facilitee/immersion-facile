@@ -243,7 +243,9 @@ export const ConnectedPrivateRoutePage = ({
                   <RadioButtons
                     id={domElementIds.loginPersona.radioButtons}
                     className={fr.cx("fr-mb-2w")}
-                    classes={{ inputGroup: fr.cx("fr-col-4") }}
+                    classes={{
+                      inputGroup: fr.cx("fr-col-12", "fr-col-lg-4"),
+                    }}
                     name="loginPersona"
                     orientation="horizontal"
                     options={[
