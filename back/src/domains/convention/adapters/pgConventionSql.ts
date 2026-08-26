@@ -444,15 +444,7 @@ const createBroadcastFeedbackBaseBuilder = ({
           "bce.id",
           "c.beneficiary_current_employer_id",
         )
-        .innerJoin("broadcast_feedbacks as bf", (join) =>
-          join.on((eb) =>
-            eb(
-              sql`(bf.request_params ->> 'conventionId')::uuid`,
-              "=",
-              eb.ref("c.id"),
-            ),
-          ),
-        )
+        .innerJoin("broadcast_feedbacks as bf", "bf.convention_id", "c.id")
         .select((eb) => [
           eb.ref("c.id").as("conventionId"),
           eb.ref("c.agency_id").as("agencyId"),
