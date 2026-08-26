@@ -11,7 +11,7 @@ import { HeadingSection, RichDropdown, Task } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type ConventionsWithUnfinalizedAssessmentFilters,
-  type ConventionWithUnfinalizedAssessment,
+  type ConventionWithUnfinalizedAssessmentReadDto,
   domElementIds,
   frontRoutes,
   NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
@@ -243,7 +243,7 @@ export const ConventionsWithAssessmentToCompleteList = () => {
 const AssessmentToCompleteTaskItem = ({
   convention,
 }: {
-  convention: ConventionWithUnfinalizedAssessment;
+  convention: ConventionWithUnfinalizedAssessmentReadDto;
 }) => {
   const assessmentCompletionStatus = getAssessmentCompletionStatus(
     convention.assessment,

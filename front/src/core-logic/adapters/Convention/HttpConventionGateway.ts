@@ -19,7 +19,7 @@ import type {
   ConventionSupportedJwt,
   ConventionTemplate,
   ConventionTemplateId,
-  ConventionWithUnfinalizedAssessment,
+  ConventionWithUnfinalizedAssessmentReadDto,
   DashboardUrlAndName,
   DataWithPagination,
   EditConventionCounsellorNameRequestDto,
@@ -575,7 +575,9 @@ export class HttpConventionGateway implements ConventionGateway {
   public getConventionsWithUnfinalizedAssessment$(
     params: FlatGetConventionsWithUnfinalizedAssessmentParams,
     jwt: string,
-  ): Observable<DataWithPagination<ConventionWithUnfinalizedAssessment>> {
+  ): Observable<
+    DataWithPagination<ConventionWithUnfinalizedAssessmentReadDto>
+  > {
     return from(
       this.authenticatedHttpClient
         .getConventionsWithUnfinalizedAssessment({
