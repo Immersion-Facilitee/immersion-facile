@@ -205,6 +205,7 @@ describe("convention e2e", () => {
 
         const response = await unauthenticatedRequest.saveConventionDraft({
           body: {
+            mode: "share",
             senderEmail: "any@email.fr",
             conventionDraft: {
               id: conventionDraftId,
@@ -242,6 +243,7 @@ describe("convention e2e", () => {
         expectToEqual(inMemoryUow.conventionRepository.conventions, []);
         const response = await unauthenticatedRequest.saveConventionDraft({
           body: {
+            mode: "share",
             details: "any@email.fr",
             senderEmail: "invalid-email",
             conventionDraft: {

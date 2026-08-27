@@ -1,5 +1,6 @@
 import { subDays } from "date-fns";
 import {
+  type Beneficiary,
   type ConventionDraftDto,
   errors,
   expectObjectInArrayToMatch,
@@ -58,6 +59,7 @@ describe("SaveConventionDraft", () => {
 
     await usecase.execute({
       conventionDraft,
+      mode: "share",
       senderEmail: email,
     });
 
@@ -90,6 +92,7 @@ describe("SaveConventionDraft", () => {
 
     await usecase.execute({
       conventionDraft,
+      mode: "share",
       senderEmail: email,
       recipientEmail,
       details: messageContent,
@@ -130,6 +133,7 @@ describe("SaveConventionDraft", () => {
 
     await usecase.execute({
       conventionDraft,
+      mode: "share",
       senderEmail: email,
       details: messageContent,
     });
@@ -154,6 +158,104 @@ describe("SaveConventionDraft", () => {
     ]);
   });
 
+  it("save draft without FT Connect infos on duplicate", async () => {
+    const beneficiaryBasicInfos: Beneficiary<"immersion"> = {
+      role: "beneficiary",
+      firstName: "Billy",
+      lastName: "Idol",
+      birthdate: new Date().toISOString(),
+      email: "mail@mail.com",
+      phone: "+33600000000",
+    };
+
+    const conventionDraftWithFtConnectInfos: ConventionDraftDto = {
+      id: uuid(),
+      internshipKind,
+      signatories: {
+        beneficiary: {
+          ...beneficiaryBasicInfos,
+          federatedIdentity: {
+            payload: {
+              advisor: {
+                email: "conseiller@mail.com",
+                firstName: "Jean",
+                lastName: "Conseiller",
+                type: "PLACEMENT",
+              },
+            },
+            provider: "ftConnect",
+            token: "token",
+          },
+        },
+      },
+    };
+
+    await usecase.execute({
+      mode: "duplicate",
+      conventionDraft: conventionDraftWithFtConnectInfos,
+      senderEmail: email,
+      details: messageContent,
+    });
+
+    expectToEqual(uow.conventionDraftRepository.conventionDrafts, [
+      {
+        ...conventionDraftWithFtConnectInfos,
+        signatories: {
+          ...conventionDraftWithFtConnectInfos.signatories,
+          beneficiary: beneficiaryBasicInfos,
+        },
+        updatedAt: timeGateway.now().toISOString(),
+      },
+    ]);
+  });
+
+  it("save draft with FT Connect infos on share", async () => {
+    const beneficiaryBasicInfos: Beneficiary<"immersion"> = {
+      role: "beneficiary",
+      firstName: "Billy",
+      lastName: "Idol",
+      birthdate: new Date().toISOString(),
+      email: "mail@mail.com",
+      phone: "+33600000000",
+    };
+
+    const conventionDraftWithFtConnectInfos: ConventionDraftDto = {
+      id: uuid(),
+      internshipKind,
+      signatories: {
+        beneficiary: {
+          ...beneficiaryBasicInfos,
+          federatedIdentity: {
+            payload: {
+              advisor: {
+                email: "conseiller@mail.com",
+                firstName: "Jean",
+                lastName: "Conseiller",
+                type: "PLACEMENT",
+              },
+            },
+            provider: "ftConnect",
+            token: "token",
+          },
+        },
+      },
+    };
+
+    await usecase.execute({
+      mode: "share",
+      conventionDraft: conventionDraftWithFtConnectInfos,
+      senderEmail: email,
+      details: messageContent,
+    });
+
+    expectToEqual(uow.conventionDraftRepository.conventionDrafts, [
+      {
+        ...conventionDraftWithFtConnectInfos,
+        updatedAt: timeGateway.now().toISOString(),
+      },
+    ]);
+  });
+
   it("throw a conflict error if the convention draft has been updated since the last save", async () => {
     const conventionDraft: ConventionDraftDto = {
       id: uuid(),
@@ -169,6 +271,7 @@ describe("SaveConventionDraft", () => {
 
     await expectPromiseToFailWithError(
       usecase.execute({
+        mode: "share",
         conventionDraft: {
           ...conventionDraft,
           updatedAt: "2024-10-08T00:00:00.000Z",

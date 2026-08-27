@@ -11,12 +11,13 @@ import {
   immersionConventionSchema,
   miniStageConventionSchema,
 } from "./convention.schema";
-import type {
-  ConventionDraftDto,
-  ConventionDraftId,
-  SaveConventionDraftDto,
-  SaveConventionDraftFromConventionDto,
-  SaveConventionDraftFromConventionTemplateDto,
+import {
+  type ConventionDraftDto,
+  type ConventionDraftId,
+  type SaveConventionDraftDto,
+  type SaveConventionDraftFromConventionDto,
+  type SaveConventionDraftFromConventionTemplateDto,
+  saveConventionDraftModes,
 } from "./saveConventionDraft.dto";
 
 export const makeConventionDeepPartialSchema = (
@@ -136,6 +137,7 @@ export const saveConventionDraftFromConventionSchema: ZodSchemaWithInputMatching
     recipientEmail: emailSchema.optional(),
     details: conventionDraftDetailSchema.optional(),
     conventionDraft: conventionDraftSchema,
+    mode: z.enum(saveConventionDraftModes),
   });
 
 export const saveConventionDraftFromConventionTemplateSchema: ZodSchemaWithInputMatchingOutput<SaveConventionDraftFromConventionTemplateDto> =
@@ -143,6 +145,7 @@ export const saveConventionDraftFromConventionTemplateSchema: ZodSchemaWithInput
     recipientEmail: emailSchema,
     details: conventionDraftDetailSchema.optional(),
     conventionDraft: conventionDraftSchema,
+    mode: z.enum(saveConventionDraftModes),
   });
 
 export const saveConventionDraftSchema: ZodSchemaWithInputMatchingOutput<SaveConventionDraftDto> =
@@ -152,6 +155,7 @@ export const saveConventionDraftSchema: ZodSchemaWithInputMatchingOutput<SaveCon
       z
         .object({
           conventionDraft: conventionDraftSchema,
+          mode: z.enum(saveConventionDraftModes),
         })
         .strict(),
     );

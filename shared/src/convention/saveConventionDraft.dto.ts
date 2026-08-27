@@ -43,20 +43,25 @@ type WithConventionDraft = {
 
 export type SaveConventionDraftFromConventionDto = WithConventionDraft & {
   senderEmail: Email;
+  mode: SaveConventionDraftMode;
   recipientEmail?: Email;
   details?: string;
 };
 
 export type SaveConventionDraftFromConventionTemplateDto =
   WithConventionDraft & {
+    mode: SaveConventionDraftMode;
     recipientEmail: Email;
     details?: string;
   };
 
+export type SaveConventionDraftMode = (typeof saveConventionDraftModes)[number];
+export const saveConventionDraftModes = ["duplicate", "share"] as const;
+
 export type SaveConventionDraftDto =
   | SaveConventionDraftFromConventionDto
   | SaveConventionDraftFromConventionTemplateDto
-  | WithConventionDraft;
+  | (WithConventionDraft & { mode: SaveConventionDraftMode });
 
 export const toConventionDraftDto = ({
   convention,

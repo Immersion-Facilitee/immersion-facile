@@ -339,6 +339,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
       conventionDraftSlice.actions.saveConventionDraftThenRedirectRequested({
         conventionDraft,
         redirectUrl,
+        mode: "share",
         feedbackTopic: "convention-draft",
       }),
     );
