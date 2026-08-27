@@ -15,21 +15,22 @@ import {
 
 describe("saveConventionDraftSchema schema validation", () => {
   it("can have no senderEmail nor recipientEmail", () => {
-    expectToEqual(
-      saveConventionDraftSchema.safeParse({
-        conventionDraft: {
-          id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
-          internshipKind: "immersion",
-        },
-      }).success,
-      true,
-    );
+    const safeParse = saveConventionDraftSchema.safeParse({
+      mode: "duplicate",
+      conventionDraft: {
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "immersion",
+      },
+    });
+    expectToEqual(safeParse.error, undefined);
+    expectToEqual(safeParse.success, true);
   });
 });
 
 describe("saveConventionDraftFromConventionSchema schema validation", () => {
   it.each<SaveConventionDraftFromConventionDto>([
     {
+      mode: "duplicate",
       senderEmail: "test@test.com",
       conventionDraft: {
         id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
@@ -37,6 +38,7 @@ describe("saveConventionDraftFromConventionSchema schema validation", () => {
       },
     },
     {
+      mode: "duplicate",
       senderEmail: "sender@example.com",
       recipientEmail: "recipient@example.com",
       details: "Some details",
@@ -75,6 +77,7 @@ describe("saveConventionDraftFromConventionSchema schema validation", () => {
 describe("saveConventionDraftFromConventionTemplateSchema schema validation", () => {
   it.each<SaveConventionDraftFromConventionTemplateDto>([
     {
+      mode: "duplicate",
       recipientEmail: "test@test.com",
       conventionDraft: {
         id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
@@ -82,6 +85,7 @@ describe("saveConventionDraftFromConventionTemplateSchema schema validation", ()
       },
     },
     {
+      mode: "duplicate",
       recipientEmail: "test@example.com",
       details: "Some details",
       conventionDraft: {

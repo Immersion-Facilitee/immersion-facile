@@ -99,7 +99,7 @@ export const ConventionTemplatesList = ({
 
   const shareForm = useForm<SaveConventionDraftFromConventionTemplateDto>({
     mode: "onTouched",
-    defaultValues: { recipientEmail: "" },
+    defaultValues: { recipientEmail: "", mode: "share" },
     resolver: zodResolver(saveConventionDraftFromConventionTemplateSchema),
   });
   const { register, handleSubmit, formState, reset } = shareForm;
@@ -114,6 +114,7 @@ export const ConventionTemplatesList = ({
     reset({
       recipientEmail: "",
       details: "",
+      mode: "share",
       conventionDraft:
         makeConventionDraftDtoFromConventionTemplate(conventionTemplate),
     });

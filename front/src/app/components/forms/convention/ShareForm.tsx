@@ -33,6 +33,7 @@ const makeInitialValues = ({
   conventionFormData: CreateConventionPresentationInitialValues;
 }): SaveConventionDraftFromConventionDto => ({
   senderEmail: "",
+  mode: "share",
   conventionDraft: toConventionDraftDto({ convention: conventionFormData }),
   details:
     "Je vous invite à prendre connaissance de cette demande de convention d’immersion déjà partiellement remplie afin que vous la complétiez.  Merci !",

@@ -455,6 +455,7 @@ const createButtonPropsByVerificationAction = (
             conventionDraftSlice.actions.saveConventionDraftThenRedirectRequested(
               {
                 ...conventionDraftWithRedirectUrl,
+                mode: "duplicate",
                 feedbackTopic: "convention-draft",
               },
             ),

@@ -24,7 +24,14 @@ export const makeSaveConventionDraft = useCaseBuilder("SaveConventionDraft")
       conventionDraftUpdated: inputParams.conventionDraft,
     });
 
-    await uow.conventionDraftRepository.save(inputParams.conventionDraft, now);
+    await uow.conventionDraftRepository.save(
+      inputParams.mode === "duplicate"
+        ? removeBeneficiaryFtConnectFederatedIdentityFromConvention(
+            inputParams.conventionDraft,
+          )
+        : inputParams.conventionDraft,
+      now,
+    );
 
     await uow.outboxRepository.save(
       deps.createNewEvent({
@@ -68,3 +75,24 @@ const throwConflictErrorWhenConventionDraftHasBeenUpdatedSinceLastSave =
       });
     }
   };
+
+const removeBeneficiaryFtConnectFederatedIdentityFromConvention = (
+  conventionDraft: ConventionDraftDto,
+): ConventionDraftDto => {
+  if (
+    conventionDraft.signatories?.beneficiary?.federatedIdentity?.provider !==
+    "ftConnect"
+  )
+    return conventionDraft;
+
+  const { federatedIdentity: _, ...beneficiaryWithoutFederatedIdentity } =
+    conventionDraft.signatories.beneficiary;
+
+  return {
+    ...conventionDraft,
+    signatories: {
+      ...conventionDraft.signatories,
+      beneficiary: beneficiaryWithoutFederatedIdentity,
+    },
+  };
+};

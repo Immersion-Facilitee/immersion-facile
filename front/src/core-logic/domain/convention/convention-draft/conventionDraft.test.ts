@@ -125,6 +125,7 @@ describe("ConventionDraft slice", () => {
         conventionDraftSlice.actions.saveConventionDraftThenRedirectRequested({
           senderEmail: "sender@example.com",
           recipientEmail: "recipient@example.com",
+          mode: "share",
           conventionDraft,
           feedbackTopic: "convention-draft",
         }),
@@ -158,6 +159,7 @@ describe("ConventionDraft slice", () => {
         conventionDraftSlice.actions.saveConventionDraftThenRedirectRequested({
           senderEmail: "sender@example.com",
           recipientEmail: "recipient@example.com",
+          mode: "share",
           conventionDraft,
           feedbackTopic: "convention-draft",
         }),
@@ -193,6 +195,7 @@ describe("ConventionDraft slice", () => {
           senderEmail: "sender@example.com",
           recipientEmail: "recipient@example.com",
           conventionDraft,
+          mode: "share",
           redirectUrl,
           feedbackTopic: "convention-draft",
         }),
@@ -212,6 +215,7 @@ describe("ConventionDraft slice", () => {
         conventionDraftSlice.actions.saveConventionDraftThenRedirectRequested({
           senderEmail: "sender@example.com",
           recipientEmail: "recipient@example.com",
+          mode: "share",
           conventionDraft,
           feedbackTopic: "convention-draft",
         }),
@@ -233,6 +237,7 @@ describe("ConventionDraft slice", () => {
         conventionDraftSlice.actions.saveConventionDraftThenRedirectRequested({
           senderEmail: "sender@example.com",
           recipientEmail: "recipient@example.com",
+          mode: "share",
           conventionDraft,
           redirectUrl,
           feedbackTopic: "convention-draft",
