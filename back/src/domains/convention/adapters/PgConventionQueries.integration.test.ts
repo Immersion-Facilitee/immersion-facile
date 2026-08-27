@@ -13,12 +13,10 @@ import {
   type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
-  type ConventionStatus,
   expectToEqual,
   reasonableSchedule,
   type SearchTextAlphaNumeric,
   type SiretDto,
-  type UserWithAdminRights,
 } from "shared";
 import { v4 as uuid } from "uuid";
 import {
@@ -640,6 +638,96 @@ describe("Pg implementation of ConventionQueries", () => {
           conventionMatchingIdB,
           conventionMatchingIdA,
         ]);
+      });
+    });
+
+    describe("withEmail Filter", () => {
+      const email = "match@mail.com";
+
+      const conventionWithoutEmail = new ConventionDtoBuilder()
+        .withId(uuid())
+        .build();
+
+      const conventionWithEstablishmentRepEmail = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withEstablishmentRepresentativeEmail(email)
+        .build();
+
+      const conventionWithTutorEmail = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withEstablishmentTutorEmail(email)
+        .build();
+
+      const conventionWithBeneficiaryEmail = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withBeneficiaryEmail(email)
+        .build();
+
+      const conventionWithBeneficiaryRepEmail = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withEstablishmentRepresentativeEmail(email)
+        .build();
+
+      const conventionWithBeneficiaryCurrentEmployerEmail =
+        new ConventionDtoBuilder()
+          .withId(uuid())
+          .withBeneficiaryCurrentEmployer({
+            role: "beneficiary-current-employer",
+            firstName: "Billy",
+            lastName: "Idol",
+            job: "Gestionnaire des plintes à coller",
+            phone: "+33600000000",
+            email,
+            businessAddress: "osef",
+            businessName: "osef",
+            businessSiret: "osef",
+          })
+          .build();
+
+      beforeEach(async () => {
+        await Promise.all(
+          [
+            conventionWithEstablishmentRepEmail,
+            conventionWithTutorEmail,
+            conventionWithBeneficiaryEmail,
+            conventionWithBeneficiaryRepEmail,
+            conventionWithBeneficiaryCurrentEmployerEmail,
+            conventionWithoutEmail,
+          ].map((convention) =>
+            conventionRepository.save(convention, anyConventionUpdatedAt),
+          ),
+        );
+      });
+      it("Match conventions with email", async () => {
+        expectToEqual(
+          await conventionQueries.getConventionIdsByFilters({
+            filters: {
+              withEmail: email,
+            },
+          }),
+          [
+            conventionWithEstablishmentRepEmail,
+            conventionWithTutorEmail,
+            conventionWithBeneficiaryEmail,
+            conventionWithBeneficiaryRepEmail,
+            conventionWithBeneficiaryCurrentEmployerEmail,
+          ]
+            .map(({ id }) => id)
+            .sort(),
+        );
+      });
+
+      it("Without convention with email", async () => {
+        expectToEqual(
+          await conventionQueries.getConventionIdsByFilters({
+            filters: {
+              withEstablishmentRepresentative: {
+                email: "notEmail@email.ciom",
+              },
+            },
+          }),
+          [],
+        );
       });
     });
 
@@ -4649,162 +4737,6 @@ describe("Pg implementation of ConventionQueries", () => {
           expectToEqual(result.pagination.totalRecords, 0);
         });
       });
-    });
-  });
-
-  describe("getUserIdsWithNoActiveConvention", () => {
-    it("returns empty array when given no users", async () => {
-      expectToEqual(
-        await conventionQueries.getUserIdsWithNoActiveConvention({
-          userIds: [],
-          since: new Date("2024-01-01"),
-        }),
-        [],
-      );
-    });
-
-    it("returns only users with no active convention since the given date", async () => {
-      const since = new Date("2025-01-01");
-
-      const userA = new ConnectedUserBuilder()
-        .withId("aaaa0000-0000-4000-a000-000000000001")
-        .withEmail("userA@test.com")
-        .buildUser();
-      const userB = new ConnectedUserBuilder()
-        .withId("aaaa0000-0000-4000-a000-000000000002")
-        .withEmail("userB@test.com")
-        .buildUser();
-      const userC = new ConnectedUserBuilder()
-        .withId("aaaa0000-0000-4000-a000-000000000003")
-        .withEmail("userC@test.com")
-        .buildUser();
-
-      const userRepo = new PgUserRepository(db);
-      await Promise.all([
-        userRepo.save(userA),
-        userRepo.save(userB),
-        userRepo.save(userC),
-      ]);
-
-      const agency = AgencyDtoBuilder.create(agencyIdA).build();
-      await agencyRepo.insert(
-        toAgencyWithRights(agency, {
-          [validator.id]: { roles: ["validator"], isNotifiedByEmail: false },
-        }),
-      );
-
-      const activeConvention = new ConventionDtoBuilder()
-        .withId("11111111-1111-4111-a111-111111111111")
-        .withAgencyId(agencyIdA)
-        .withBeneficiaryEmail(userA.email)
-        .withDateStart(new Date("2025-03-01").toISOString())
-        .withDateEnd(new Date("2025-03-10").toISOString())
-        .withSchedule(reasonableSchedule)
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .build();
-      await conventionRepository.save(activeConvention);
-
-      const expiredConvention = new ConventionDtoBuilder()
-        .withId("22222222-2222-4222-a222-222222222222")
-        .withAgencyId(agencyIdA)
-        .withSiret("11111111111112")
-        .withBeneficiaryEmail(userB.email)
-        .withDateStart(new Date("2024-06-01").toISOString())
-        .withDateEnd(new Date("2024-06-10").toISOString())
-        .withSchedule(reasonableSchedule)
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .build();
-      await conventionRepository.save(expiredConvention);
-
-      const result = await conventionQueries.getUserIdsWithNoActiveConvention({
-        userIds: [userA.id, userB.id, userC.id],
-        since,
-      });
-
-      expectToEqual(result.sort(), [userB.id, userC.id]);
-    });
-
-    it("ignores conventions whose status does not demonstrate user activity", async () => {
-      const since = new Date("2025-01-01");
-
-      const makeStatusUser = (idx: number, slug: string) =>
-        new ConnectedUserBuilder()
-          .withId(`bbbb0000-0000-4000-a000-${String(idx).padStart(12, "0")}`)
-          .withEmail(`status-${slug}@test.com`)
-          .buildUser();
-
-      const userReadyToSign = makeStatusUser(0, "ready-to-sign");
-      const userPartiallySigned = makeStatusUser(1, "partially-signed");
-      const userRejected = makeStatusUser(2, "rejected");
-      const userDeprecated = makeStatusUser(3, "deprecated");
-      const userInReview = makeStatusUser(4, "in-review");
-      const userCancelled = makeStatusUser(5, "cancelled");
-      const userAcceptedByCounsellor = makeStatusUser(
-        6,
-        "accepted-by-counsellor",
-      );
-      const userAcceptedByValidator = makeStatusUser(
-        7,
-        "accepted-by-validator",
-      );
-
-      const usersWithStatus: {
-        user: UserWithAdminRights;
-        status: ConventionStatus;
-      }[] = [
-        { user: userReadyToSign, status: "READY_TO_SIGN" },
-        { user: userPartiallySigned, status: "PARTIALLY_SIGNED" },
-        { user: userRejected, status: "REJECTED" },
-        { user: userDeprecated, status: "DEPRECATED" },
-        { user: userInReview, status: "IN_REVIEW" },
-        { user: userCancelled, status: "CANCELLED" },
-        { user: userAcceptedByCounsellor, status: "ACCEPTED_BY_COUNSELLOR" },
-        { user: userAcceptedByValidator, status: "ACCEPTED_BY_VALIDATOR" },
-      ];
-
-      const userRepo = new PgUserRepository(db);
-      await Promise.all(usersWithStatus.map(({ user }) => userRepo.save(user)));
-
-      const agency = AgencyDtoBuilder.create(agencyIdA).build();
-      await agencyRepo.insert(
-        toAgencyWithRights(agency, {
-          [validator.id]: { roles: ["validator"], isNotifiedByEmail: false },
-        }),
-      );
-
-      await Promise.all(
-        usersWithStatus.map(({ user, status }, idx) =>
-          conventionRepository.save(
-            new ConventionDtoBuilder()
-              .withId(
-                `cccc0000-0000-4000-a000-${String(idx).padStart(12, "0")}`,
-              )
-              .withAgencyId(agencyIdA)
-              .withSiret(`1234567890${String(idx).padStart(4, "0")}`)
-              .withBeneficiaryEmail(user.email)
-              .withDateStart(new Date("2025-03-01").toISOString())
-              .withDateEnd(new Date("2025-03-10").toISOString())
-              .withSchedule(reasonableSchedule)
-              .withStatus(status)
-              .build(),
-          ),
-        ),
-      );
-
-      const result = await conventionQueries.getUserIdsWithNoActiveConvention({
-        userIds: usersWithStatus.map(({ user }) => user.id),
-        since,
-      });
-
-      expectToEqual(
-        result.sort(),
-        [
-          userReadyToSign.id,
-          userPartiallySigned.id,
-          userRejected.id,
-          userDeprecated.id,
-        ].sort(),
-      );
     });
   });
 });

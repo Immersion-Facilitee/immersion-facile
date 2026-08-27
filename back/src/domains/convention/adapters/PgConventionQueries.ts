@@ -18,7 +18,6 @@ import {
   type ConventionWithUnfinalizedAssessment,
   calculatePaginationResult,
   conventionSchema,
-  conventionStatusesDemonstratingUserActivity,
   conventionWithBroadcastFeedbackSchema,
   conventionWithUnfinalizedAssessmentSchema,
   type DataWithPagination,
@@ -29,7 +28,6 @@ import {
   type GetPaginatedConventionsSortBy,
   type PaginationQueryParams,
   pipeWithValue,
-  type UserId,
   unvalidatedConventionStatuses,
   type WithSort,
 } from "shared";
@@ -73,71 +71,6 @@ const logger = createLogger(__filename);
 export class PgConventionQueries implements ConventionQueries {
   constructor(private transaction: KyselyDb) {}
 
-  public async getUserIdsWithNoActiveConvention({
-    userIds,
-    since,
-  }: {
-    userIds: UserId[];
-    since: Date;
-  }): Promise<UserId[]> {
-    if (userIds.length === 0) return [];
-
-    const inactiveRows = await this.transaction
-      .selectFrom("users")
-      .select("users.id")
-      .where((eb) => isInArray(eb, "users.id", userIds))
-      .where((eb) =>
-        eb.not(
-          eb.exists(
-            eb
-              .selectFrom("actors")
-              .innerJoin("conventions", (join) =>
-                join.on((joinEb) =>
-                  joinEb.or([
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.beneficiary_id"),
-                    ),
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.establishment_tutor_id"),
-                    ),
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.establishment_representative_id"),
-                    ),
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.beneficiary_representative_id"),
-                    ),
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.beneficiary_current_employer_id"),
-                    ),
-                  ]),
-                ),
-              )
-              .whereRef("actors.email", "=", "users.email")
-              .where("conventions.date_end", ">=", since)
-              .where(
-                "conventions.status",
-                "in",
-                conventionStatusesDemonstratingUserActivity,
-              )
-              .select(sql`1`.as("__")),
-          ),
-        ),
-      )
-      .execute();
-
-    return inactiveRows.map((r) => r.id);
-  }
-
   public async getConventionIdsByFilters({
     filters: {
       withAgencyIds,
@@ -151,6 +84,7 @@ export class PgConventionQueries implements ConventionQueries {
       withEstablishmentTutor,
       withSirets,
       withStatuses,
+      withEmail,
     },
     limit,
   }: GetConventionIdsParams): Promise<ConventionId[]> {
@@ -181,6 +115,42 @@ export class PgConventionQueries implements ConventionQueries {
         withSirets ? qb.where("conventions.siret", "in", withSirets) : qb,
       (qb) =>
         withStatuses ? qb.where("conventions.status", "in", withStatuses) : qb,
+      (qb) =>
+        withEmail
+          ? qb
+              .innerJoin("actors", (join) =>
+                join.on((joinEb) =>
+                  joinEb.or([
+                    joinEb(
+                      "actors.id",
+                      "=",
+                      joinEb.ref("conventions.beneficiary_id"),
+                    ),
+                    joinEb(
+                      "actors.id",
+                      "=",
+                      joinEb.ref("conventions.establishment_tutor_id"),
+                    ),
+                    joinEb(
+                      "actors.id",
+                      "=",
+                      joinEb.ref("conventions.establishment_representative_id"),
+                    ),
+                    joinEb(
+                      "actors.id",
+                      "=",
+                      joinEb.ref("conventions.beneficiary_representative_id"),
+                    ),
+                    joinEb(
+                      "actors.id",
+                      "=",
+                      joinEb.ref("conventions.beneficiary_current_employer_id"),
+                    ),
+                  ]),
+                ),
+              )
+              .where("actors.email", "=", withEmail)
+          : qb,
       (qb) =>
         withEstablishmentRepresentative?.email
           ? qb
@@ -235,7 +205,7 @@ export class PgConventionQueries implements ConventionQueries {
                   : qb,
             )
           : qb,
-      (qb) => qb.orderBy("conventions.date_start", "desc"),
+      (qb) => qb.orderBy("conventions.date_start", "desc").orderBy("id", "asc"),
       (qb) => (limit ? qb.limit(limit) : qb),
     ).execute();
 

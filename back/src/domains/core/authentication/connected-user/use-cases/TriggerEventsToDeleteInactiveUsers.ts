@@ -5,6 +5,7 @@ import type { CreateNewEvent } from "../../../events/ports/EventBus";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../../unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../../useCaseBuilder";
+import { getUserIdsWithoutActiveConvention } from "../entities/user.helper";
 import {
   accountInactivityDelayInYears,
   deletionWarningDedupInDays,
@@ -79,7 +80,8 @@ export const makeTriggerEventsToDeleteInactiveUsers = useCaseBuilder(
           );
 
         const candidateUserIdsWithoutActiveConvention =
-          await uow.conventionQueries.getUserIdsWithNoActiveConvention({
+          await getUserIdsWithoutActiveConvention({
+            uow,
             userIds: candidateUserIds,
             since: twoYearsAgo,
           });
