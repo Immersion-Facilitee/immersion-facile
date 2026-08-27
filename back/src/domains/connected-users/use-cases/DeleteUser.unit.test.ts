@@ -1193,5 +1193,20 @@ describe("DeleteUser", () => {
         errors.user.forbiddenNotTriggeredByCrawler(),
       );
     });
+
+    it("forbidden when user has preventToDelete", async () => {
+      const userWithPreventToDelete = { ...admin1, preventToDelete: true };
+      uow.userRepository.users = [userWithPreventToDelete];
+
+      expectPromiseToFailWithError(
+        deleteUser.execute({
+          userId: userWithPreventToDelete.id,
+          triggeredBy: { kind: "crawler" },
+        }),
+        errors.user.deleteForbiddenPreventToDelete({
+          userId: userWithPreventToDelete.id,
+        }),
+      );
+    });
   });
 });

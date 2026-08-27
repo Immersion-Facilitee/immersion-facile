@@ -1074,6 +1074,10 @@ export const errors = {
       new ForbiddenError(
         `Il n'est pas possible de supprimer l'utilisateur '${userId}' car il a des droits sur des agences prescriptrices.`,
       ),
+    deleteForbiddenPreventToDelete: ({ userId }: { userId: UserId }) =>
+      new ForbiddenError(
+        `Il n'est pas possible de supprimer l'utilisateur '${userId}' car il est exclu de la suppression automatique.`,
+      ),
     forbidden: ({ userId }: { userId: UserId }) =>
       new ForbiddenError(
         `L'utilisateur qui a l'identifiant "${userId}" n'a pas le droit d'accéder à cette ressource.`,

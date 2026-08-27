@@ -61,6 +61,10 @@ export const makeDeleteUser = useCaseBuilder("DeleteUser")
 
       const userToDelete = await uow.userRepository.getById(inputParams.userId);
       if (!userToDelete) throw errors.user.notFound(inputParams);
+      if (userToDelete.preventToDelete)
+        throw errors.user.deleteForbiddenPreventToDelete({
+          userId: userToDelete.id,
+        });
 
       const { data: agenciesWithUserRight } =
         await uow.agencyRepository.getAgencies({
