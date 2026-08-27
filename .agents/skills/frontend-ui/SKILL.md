@@ -9,7 +9,7 @@ Build the requested interface within the existing React, DSFR, state-management,
 
 Before editing TypeScript, read [the repository TypeScript style](../../references/typescript-code-style.md). Read [architecture](references/architecture.md) before changing a page, component, form, content module, or frontend state. Read [styling](references/styling.md) only when adding or modifying styles.
 
-Inspect nearby components serving the same journey before introducing a new abstraction. Prefer existing DSFR or `react-design-system` components and keep user-facing text with the relevant content modules.
+Inspect nearby components serving the same journey before introducing a new abstraction. Prefer existing [React-DSFR](https://github.com/codegouvfr/react-dsfr) or `react-design-system` components and keep user-facing text with the relevant content modules.
 
 When adding or changing a shared DOM ID, DTO, schema, or route, also follow the `shared-contracts` skill.
 
