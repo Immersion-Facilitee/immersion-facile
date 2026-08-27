@@ -1158,6 +1158,14 @@ const getPaginatedDiscussionsForEstablishmentUser = async ({
                   ORDER BY e.sent_at DESC
                   LIMIT 1
                 )`,
+          hasEstablishmentAnswered: sql<boolean>`(
+            SELECT EXISTS (
+              SELECT 1
+              FROM exchanges e
+              WHERE e.discussion_id = ${ref("discussions.id")}
+                AND e.sender = 'establishment'
+            )
+          )`,
         }).as("exchangesData"),
       ])
       .execute(),
@@ -1301,6 +1309,14 @@ const getPaginatedDiscussionsForPotentialBeneficiaryUser = async ({
                   ORDER BY e.sent_at DESC
                   LIMIT 1
                 )`,
+          hasEstablishmentAnswered: sql<boolean>`(
+            SELECT EXISTS (
+              SELECT 1
+              FROM exchanges e
+              WHERE e.discussion_id = ${ref("discussions.id")}
+                AND e.sender = 'establishment'
+            )
+          )`,
         }).as("exchangesData"),
       ])
       .execute(),

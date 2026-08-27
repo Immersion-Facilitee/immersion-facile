@@ -3,18 +3,22 @@ import { expectToEqual } from "../test.helpers";
 import { DiscussionBuilder } from "./DiscussionBuilder";
 import type {
   DiscussionDisplayStatus,
+  DiscussionFollowUp,
   DiscussionReadDto,
   Exchange,
   SpecificExchangeSender,
 } from "./discussion.dto";
-import { getDiscussionDisplayStatus } from "./discussion.helpers";
+import {
+  getDiscussionDisplayStatus,
+  getDiscussionFollowUp,
+} from "./discussion.helpers";
 import {
   discussionReadSchema,
   makeExchangeEmailSchema,
 } from "./discussion.schema";
 
 describe("Discussions", () => {
-  describe("getDiscussionDisplayStatus", () => {
+  describe("getDiscussionDisplayStatus & getDiscussionFollowUp", () => {
     type TestCase = {
       message: string;
       discussion: DiscussionReadDto;
@@ -22,7 +26,8 @@ describe("Discussions", () => {
         "establishment" | "potentialBeneficiary"
       >["sender"];
       expectedDisplayStatus: DiscussionDisplayStatus;
-      shouldEstablishmentBeReminded: boolean;
+      expectedFollowUp?: DiscussionFollowUp;
+      hasEstablishmentAnswered: boolean;
     };
 
     const createExchange = ({
@@ -54,7 +59,7 @@ describe("Discussions", () => {
             rejectionKind: "UNABLE_TO_HELP",
           })
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: false,
       },
       {
         message: "status is ACCEPTED",
@@ -63,7 +68,7 @@ describe("Discussions", () => {
         discussion: new DiscussionBuilder()
           .withStatus({ status: "ACCEPTED", candidateWarnedMethod: null })
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: false,
       },
       {
         message: "candidate has sent the first message without being answered",
@@ -80,13 +85,43 @@ describe("Discussions", () => {
             }),
           ])
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: false,
+      },
+      {
+        message: "candidate has sent multiple messages without being answered",
+        viewer: "establishment",
+        expectedDisplayStatus: "new",
+        discussion: new DiscussionBuilder()
+          .withStatus({ status: "PENDING" })
+          .withExchanges([
+            createExchange({
+              sentAt: subDays(now, 3),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+            createExchange({
+              sentAt: subDays(now, 2),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+            createExchange({
+              sentAt: subDays(now, 1),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+          ])
+          .buildRead(),
+        hasEstablishmentAnswered: false,
       },
       {
         message:
           "candidate has sent the first message without being answered since 15 days",
         viewer: "establishment",
-        expectedDisplayStatus: "needs-urgent-answer",
+        expectedDisplayStatus: "new",
+        expectedFollowUp: "needs-answer",
         discussion: new DiscussionBuilder()
           .withStatus({ status: "PENDING" })
           .withExchanges([
@@ -98,7 +133,7 @@ describe("Discussions", () => {
             }),
           ])
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: false,
       },
       {
         message:
@@ -116,13 +151,13 @@ describe("Discussions", () => {
             }),
           ])
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: false,
       },
       {
         message:
           "candidate has sent the last message without being answered (but it is not the first message)",
         viewer: "establishment",
-        expectedDisplayStatus: "needs-answer",
+        expectedDisplayStatus: "pending",
         discussion: new DiscussionBuilder()
           .withStatus({ status: "PENDING" })
           .withExchanges([
@@ -149,12 +184,12 @@ describe("Discussions", () => {
             }),
           ])
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: true,
       },
       {
         message: "last message is sent by establishment",
         viewer: "establishment",
-        expectedDisplayStatus: "answered",
+        expectedDisplayStatus: "pending",
         discussion: new DiscussionBuilder()
           .withStatus({ status: "PENDING" })
           .withExchanges([
@@ -175,14 +210,75 @@ describe("Discussions", () => {
             }),
           ])
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: true,
       },
       {
         message:
           "last message is from beneficiary and has had no answer for more than 15 days",
         viewer: "establishment",
-        expectedDisplayStatus: "needs-urgent-answer",
+        expectedFollowUp: "needs-answer",
+        expectedDisplayStatus: "pending",
         discussion: new DiscussionBuilder()
+          .withStatus({ status: "PENDING" })
+          .withExchanges([
+            createExchange({
+              sentAt: subDays(now, 17),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+            createExchange({
+              sentAt: subDays(now, 16),
+              specificExchangeSender: {
+                sender: "establishment",
+                email: "establishment@mail.com",
+                firstname: "billy",
+                lastname: "idol",
+              },
+            }),
+            createExchange({
+              sentAt: subDays(now, 15),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+          ])
+          .buildRead(),
+        hasEstablishmentAnswered: true,
+      },
+      {
+        message: "discussion is recent and contact method not email",
+        viewer: "establishment",
+        expectedDisplayStatus: "new",
+        discussion: new DiscussionBuilder()
+          .withCreatedAt(subDays(now, 14))
+          .withStatus({ status: "PENDING" })
+          .withContactMode("PHONE")
+          .withExchanges([])
+          .buildRead(),
+        hasEstablishmentAnswered: false,
+      },
+      {
+        message:
+          "discussion is older than 15 days and contact method not email",
+        viewer: "establishment",
+        expectedDisplayStatus: "new",
+        discussion: new DiscussionBuilder()
+          .withCreatedAt(subDays(now, 15))
+          .withStatus({ status: "PENDING" })
+          .withContactMode("PHONE")
+          .withExchanges([])
+          .buildRead(),
+        hasEstablishmentAnswered: false,
+      },
+      {
+        message:
+          "discussion is older than 15 days and establishment has not answered for long time",
+        viewer: "potentialBeneficiary",
+        expectedDisplayStatus: "new",
+        expectedFollowUp: "to-remind",
+        discussion: new DiscussionBuilder()
+          .withCreatedAt(subDays(now, 15))
           .withStatus({ status: "PENDING" })
           .withExchanges([
             createExchange({
@@ -193,40 +289,47 @@ describe("Discussions", () => {
             }),
           ])
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
-      },
-      {
-        message: "discussion contact method is recent and not email",
-        viewer: "establishment",
-        expectedDisplayStatus: "new",
-        discussion: new DiscussionBuilder()
-          .withCreatedAt(subDays(now, 14))
-          .withStatus({ status: "PENDING" })
-          .withContactMode("PHONE")
-          .withExchanges([])
-          .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: false,
       },
       {
         message:
-          "discussion contact method is older than 15 days and not email",
-        viewer: "establishment",
-        expectedDisplayStatus: "needs-urgent-answer",
+          "candidate has sent multiple messages without being answered for long time",
+        viewer: "potentialBeneficiary",
+        expectedDisplayStatus: "new",
+        expectedFollowUp: "to-remind",
         discussion: new DiscussionBuilder()
-          .withCreatedAt(subDays(now, 15))
           .withStatus({ status: "PENDING" })
-          .withContactMode("PHONE")
-          .withExchanges([])
+          .withExchanges([
+            createExchange({
+              sentAt: subDays(now, 17),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+            createExchange({
+              sentAt: subDays(now, 16),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+            createExchange({
+              sentAt: subDays(now, 15),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+          ])
           .buildRead(),
-        shouldEstablishmentBeReminded: false,
+        hasEstablishmentAnswered: false,
       },
     ];
 
     it.each(testCases)("returns $expectedDisplayStatus when $message", ({
       discussion,
       expectedDisplayStatus,
+      expectedFollowUp,
       viewer,
-      shouldEstablishmentBeReminded,
+      hasEstablishmentAnswered,
     }) => {
       expectToEqual(
         getDiscussionDisplayStatus({
@@ -235,166 +338,31 @@ describe("Discussions", () => {
             status: discussion.status,
             exchangesData: {
               count: discussion.exchanges.length,
+              hasEstablishmentAnswered,
               lastExchange:
                 discussion.exchanges[discussion.exchanges.length - 1],
             },
           },
-          shouldEstablishmentBeReminded,
-          now,
-          viewer,
         }),
         expectedDisplayStatus,
       );
-    });
-
-    it("returns a different display status for potentialBeneficiary viewer than establishment on same discussion", () => {
-      const discussionWithLastExchangeFromEstablishment =
-        new DiscussionBuilder()
-          .withStatus({ status: "PENDING" })
-          .withExchanges([
-            createExchange({
-              sentAt: subDays(now, 3),
-              specificExchangeSender: {
-                sender: "potentialBeneficiary",
-              },
-            }),
-            createExchange({
-              sentAt: subDays(now, 1),
-              specificExchangeSender: {
-                sender: "establishment",
-                email: "establishment@mail.com",
-                firstname: "billy",
-                lastname: "idol",
-              },
-            }),
-          ])
-          .buildRead();
-
-      const discussionWithLastExchangeFromPotentialBeneficiary =
-        new DiscussionBuilder()
-          .withStatus({ status: "PENDING" })
-          .withExchanges([
-            createExchange({
-              sentAt: subDays(now, 3),
-              specificExchangeSender: {
-                sender: "potentialBeneficiary",
-              },
-            }),
-            createExchange({
-              sentAt: subDays(now, 1),
-              specificExchangeSender: {
-                sender: "establishment",
-                email: "establishment@mail.com",
-                firstname: "billy",
-                lastname: "idol",
-              },
-            }),
-            createExchange({
-              sentAt: subDays(now, 1),
-              specificExchangeSender: {
-                sender: "potentialBeneficiary",
-              },
-            }),
-          ])
-          .buildRead();
-
-      const establishmentStatusForLastExchangeFromEstablishment =
-        getDiscussionDisplayStatus({
+      expectToEqual(
+        getDiscussionFollowUp({
           discussion: {
-            createdAt: discussionWithLastExchangeFromEstablishment.createdAt,
-            status: discussionWithLastExchangeFromEstablishment.status,
+            createdAt: discussion.createdAt,
+            status: discussion.status,
             exchangesData: {
-              count:
-                discussionWithLastExchangeFromEstablishment.exchanges.length,
+              count: discussion.exchanges.length,
+              hasEstablishmentAnswered,
               lastExchange:
-                discussionWithLastExchangeFromEstablishment.exchanges[
-                  discussionWithLastExchangeFromEstablishment.exchanges.length -
-                    1
-                ],
+                discussion.exchanges[discussion.exchanges.length - 1],
             },
           },
-          shouldEstablishmentBeReminded: false,
           now,
-          viewer: "establishment",
-        });
-
-      const potentialBeneficiaryStatusForLastExchangeFromEstablishment =
-        getDiscussionDisplayStatus({
-          discussion: {
-            createdAt: discussionWithLastExchangeFromEstablishment.createdAt,
-            status: discussionWithLastExchangeFromEstablishment.status,
-            exchangesData: {
-              count:
-                discussionWithLastExchangeFromEstablishment.exchanges.length,
-              lastExchange:
-                discussionWithLastExchangeFromEstablishment.exchanges[
-                  discussionWithLastExchangeFromEstablishment.exchanges.length -
-                    1
-                ],
-            },
-          },
-          shouldEstablishmentBeReminded: false,
-          now,
-          viewer: "potentialBeneficiary",
-        });
-
-      const establishmentStatusForLastExchangeFromPotentialBeneficiary =
-        getDiscussionDisplayStatus({
-          discussion: {
-            createdAt:
-              discussionWithLastExchangeFromPotentialBeneficiary.createdAt,
-            status: discussionWithLastExchangeFromPotentialBeneficiary.status,
-            exchangesData: {
-              count:
-                discussionWithLastExchangeFromPotentialBeneficiary.exchanges
-                  .length,
-              lastExchange:
-                discussionWithLastExchangeFromPotentialBeneficiary.exchanges[
-                  discussionWithLastExchangeFromPotentialBeneficiary.exchanges
-                    .length - 1
-                ],
-            },
-          },
-          shouldEstablishmentBeReminded: false,
-          now,
-          viewer: "establishment",
-        });
-
-      const potentialBeneficiaryStatusForLastExchangeFromPotentialBeneficiary =
-        getDiscussionDisplayStatus({
-          discussion: {
-            createdAt:
-              discussionWithLastExchangeFromPotentialBeneficiary.createdAt,
-            status: discussionWithLastExchangeFromPotentialBeneficiary.status,
-            exchangesData: {
-              count:
-                discussionWithLastExchangeFromPotentialBeneficiary.exchanges
-                  .length,
-              lastExchange:
-                discussionWithLastExchangeFromPotentialBeneficiary.exchanges[
-                  discussionWithLastExchangeFromPotentialBeneficiary.exchanges
-                    .length - 1
-                ],
-            },
-          },
-          shouldEstablishmentBeReminded: false,
-          now,
-          viewer: "potentialBeneficiary",
-        });
-
-      expect(establishmentStatusForLastExchangeFromEstablishment).toBe(
-        "answered",
+          viewer,
+        }),
+        expectedFollowUp,
       );
-      expect(potentialBeneficiaryStatusForLastExchangeFromEstablishment).toBe(
-        "needs-answer",
-      );
-
-      expect(establishmentStatusForLastExchangeFromPotentialBeneficiary).toBe(
-        "needs-answer",
-      );
-      expect(
-        potentialBeneficiaryStatusForLastExchangeFromPotentialBeneficiary,
-      ).toBe("answered");
     });
   });
 

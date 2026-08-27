@@ -23,6 +23,7 @@ import {
   toDisplayedDate,
   toDisplayedPhoneNumber,
 } from "shared";
+import { DiscussionFollowUpBadge } from "src/app/components/establishment/establishment-dashboard/DiscussionFollowUpBadge";
 import { DiscussionStatusBadge } from "src/app/components/establishment/establishment-dashboard/DiscussionStatusBadge";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { MetabaseFullScreenButton } from "src/app/components/MetabaseFullScreenButton";
@@ -282,15 +283,26 @@ const EstablishmentDiscussionTable = ({
           date: new Date(discussion.createdAt),
           withHours: false,
         }),
-        <DiscussionStatusBadge
-          key={discussion.id}
-          discussion={discussion}
-          isEstablishmentReachableByPhoneAfter15Days={
-            discussion.isEstablishmentReachableByPhoneAfter15Days
-          }
-          viewer={"establishment"}
-          small
-        />,
+        <>
+          <DiscussionStatusBadge
+            key={discussion.id}
+            discussion={discussion}
+            isEstablishmentReachableByPhoneAfter15Days={
+              discussion.isEstablishmentReachableByPhoneAfter15Days
+            }
+            viewer={"establishment"}
+            small
+          />
+          <DiscussionFollowUpBadge
+            key={discussion.id}
+            discussion={discussion}
+            isEstablishmentReachableByPhoneAfter15Days={
+              discussion.isEstablishmentReachableByPhoneAfter15Days
+            }
+            viewer={"establishment"}
+            small
+          />
+        </>,
         <Button
           key={discussion.id}
           id={`${domElementIds.establishmentDashboard.manageDiscussion.goToDiscussionButton}--${discussion.id}`}
