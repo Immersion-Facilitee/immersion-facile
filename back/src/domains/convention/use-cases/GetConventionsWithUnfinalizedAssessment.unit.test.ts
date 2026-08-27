@@ -170,124 +170,29 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
     );
   });
 
-  it("filters conventions with assessment to complete", async () => {
-    expectToEqual(
-      await getConventionsWithUnfinalizedAssessment.execute(
-        {
-          pagination: { page: 1, perPage: 10 },
-          filters: { assessmentCompletionStatus: "to-complete" },
-        },
-        currentUserWithValidAgencyRight,
-      ),
-      {
-        data: [
-          {
-            assessment: null,
-            beneficiary: {
-              firstname: validatedConvention3.signatories.beneficiary.firstName,
-              lastname: validatedConvention3.signatories.beneficiary.lastName,
-            },
-            dateEnd: validatedConvention3.dateEnd,
-            id: validatedConvention3.id,
-            agencyId: validatedConvention3.agencyId,
-            agencyReferent: validatedConvention3.agencyReferent ?? null,
-            agencyName: agency.name,
-          },
-        ],
-        pagination: {
-          currentPage: 1,
-          numberPerPage: 10,
-          totalPages: 1,
-          totalRecords: 1,
-        },
-      },
-    );
-  });
-
-  it("filters conventions with assessment to sign", async () => {
-    expectToEqual(
-      await getConventionsWithUnfinalizedAssessment.execute(
-        {
-          pagination: { page: 1, perPage: 10 },
-          filters: { assessmentCompletionStatus: "to-sign" },
-        },
-        currentUserWithValidAgencyRight,
-      ),
-      {
-        data: [
-          {
-            assessment: {
-              createdAt: assessment.createdAt,
-              endedWithAJob: assessment.endedWithAJob,
-              signedAt: assessment.signedAt,
-              status: assessment.status,
-            },
-            beneficiary: {
-              firstname: validatedConvention.signatories.beneficiary.firstName,
-              lastname: validatedConvention.signatories.beneficiary.lastName,
-            },
-            dateEnd: validatedConvention.dateEnd,
-            id: validatedConvention.id,
-            agencyId: validatedConvention.agencyId,
-            agencyReferent: validatedConvention.agencyReferent ?? null,
-            agencyName: agency.name,
-          },
-          {
-            assessment: {
-              createdAt: assessment2.createdAt,
-              endedWithAJob: assessment2.endedWithAJob,
-              signedAt: assessment2.signedAt,
-              status: assessment2.status,
-            },
-            beneficiary: {
-              firstname: validatedConvention2.signatories.beneficiary.firstName,
-              lastname: validatedConvention2.signatories.beneficiary.lastName,
-            },
-            dateEnd: validatedConvention2.dateEnd,
-            id: validatedConvention2.id,
-            agencyId: validatedConvention2.agencyId,
-            agencyReferent: validatedConvention2.agencyReferent ?? null,
-            agencyName: agency2.name,
-          },
-        ],
-        pagination: {
-          currentPage: 1,
-          numberPerPage: 10,
-          totalPages: 1,
-          totalRecords: 2,
-        },
-      },
-    );
-  });
-
-  describe("search", () => {
-    it("filters conventions by search", async () => {
+  describe("filters", () => {
+    it("filters conventions with assessment to complete", async () => {
       expectToEqual(
         await getConventionsWithUnfinalizedAssessment.execute(
           {
             pagination: { page: 1, perPage: 10 },
-            filters: { search: "Marie" },
+            filters: { assessmentCompletionStatus: "to-complete" },
           },
           currentUserWithValidAgencyRight,
         ),
         {
           data: [
             {
-              assessment: {
-                createdAt: assessment.createdAt,
-                endedWithAJob: assessment.endedWithAJob,
-                signedAt: assessment.signedAt,
-                status: assessment.status,
-              },
+              assessment: null,
               beneficiary: {
                 firstname:
-                  validatedConvention.signatories.beneficiary.firstName,
-                lastname: validatedConvention.signatories.beneficiary.lastName,
+                  validatedConvention3.signatories.beneficiary.firstName,
+                lastname: validatedConvention3.signatories.beneficiary.lastName,
               },
-              dateEnd: validatedConvention.dateEnd,
-              id: validatedConvention.id,
-              agencyId: validatedConvention.agencyId,
-              agencyReferent: validatedConvention.agencyReferent ?? null,
+              dateEnd: validatedConvention3.dateEnd,
+              id: validatedConvention3.id,
+              agencyId: validatedConvention3.agencyId,
+              agencyReferent: validatedConvention3.agencyReferent ?? null,
               agencyName: agency.name,
             },
           ],
@@ -301,15 +206,12 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
       );
     });
 
-    it("combines search with assessmentCompletionStatus", async () => {
+    it("filters conventions with assessment to sign", async () => {
       expectToEqual(
         await getConventionsWithUnfinalizedAssessment.execute(
           {
             pagination: { page: 1, perPage: 10 },
-            filters: {
-              search: "Marie",
-              assessmentCompletionStatus: "to-sign",
-            },
+            filters: { assessmentCompletionStatus: "to-sign" },
           },
           currentUserWithValidAgencyRight,
         ),
@@ -333,15 +235,141 @@ describe("GetConventionsWithUnfinalizedAssessment", () => {
               agencyReferent: validatedConvention.agencyReferent ?? null,
               agencyName: agency.name,
             },
+            {
+              assessment: {
+                createdAt: assessment2.createdAt,
+                endedWithAJob: assessment2.endedWithAJob,
+                signedAt: assessment2.signedAt,
+                status: assessment2.status,
+              },
+              beneficiary: {
+                firstname:
+                  validatedConvention2.signatories.beneficiary.firstName,
+                lastname: validatedConvention2.signatories.beneficiary.lastName,
+              },
+              dateEnd: validatedConvention2.dateEnd,
+              id: validatedConvention2.id,
+              agencyId: validatedConvention2.agencyId,
+              agencyReferent: validatedConvention2.agencyReferent ?? null,
+              agencyName: agency2.name,
+            },
           ],
           pagination: {
             currentPage: 1,
             numberPerPage: 10,
             totalPages: 1,
-            totalRecords: 1,
+            totalRecords: 2,
           },
         },
       );
+    });
+
+    describe("search", () => {
+      it("filters conventions by search", async () => {
+        expectToEqual(
+          await getConventionsWithUnfinalizedAssessment.execute(
+            {
+              pagination: { page: 1, perPage: 10 },
+              filters: { search: "Marie" },
+            },
+            currentUserWithValidAgencyRight,
+          ),
+          {
+            data: [
+              {
+                assessment: {
+                  createdAt: assessment.createdAt,
+                  endedWithAJob: assessment.endedWithAJob,
+                  signedAt: assessment.signedAt,
+                  status: assessment.status,
+                },
+                beneficiary: {
+                  firstname:
+                    validatedConvention.signatories.beneficiary.firstName,
+                  lastname:
+                    validatedConvention.signatories.beneficiary.lastName,
+                },
+                dateEnd: validatedConvention.dateEnd,
+                id: validatedConvention.id,
+                agencyId: validatedConvention.agencyId,
+                agencyReferent: validatedConvention.agencyReferent ?? null,
+                agencyName: agency.name,
+              },
+            ],
+            pagination: {
+              currentPage: 1,
+              numberPerPage: 10,
+              totalPages: 1,
+              totalRecords: 1,
+            },
+          },
+        );
+      });
+
+      it("combines search with assessmentCompletionStatus", async () => {
+        expectToEqual(
+          await getConventionsWithUnfinalizedAssessment.execute(
+            {
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                search: "Marie",
+                assessmentCompletionStatus: "to-sign",
+              },
+            },
+            currentUserWithValidAgencyRight,
+          ),
+          {
+            data: [
+              {
+                assessment: {
+                  createdAt: assessment.createdAt,
+                  endedWithAJob: assessment.endedWithAJob,
+                  signedAt: assessment.signedAt,
+                  status: assessment.status,
+                },
+                beneficiary: {
+                  firstname:
+                    validatedConvention.signatories.beneficiary.firstName,
+                  lastname:
+                    validatedConvention.signatories.beneficiary.lastName,
+                },
+                dateEnd: validatedConvention.dateEnd,
+                id: validatedConvention.id,
+                agencyId: validatedConvention.agencyId,
+                agencyReferent: validatedConvention.agencyReferent ?? null,
+                agencyName: agency.name,
+              },
+            ],
+            pagination: {
+              currentPage: 1,
+              numberPerPage: 10,
+              totalPages: 1,
+              totalRecords: 1,
+            },
+          },
+        );
+      });
+
+      it("returns empty array when filters match nothing", async () => {
+        expectToEqual(
+          await getConventionsWithUnfinalizedAssessment.execute(
+            {
+              pagination: { page: 1, perPage: 10 },
+              filters: { search: "unknown-search-term" },
+            },
+            currentUserWithValidAgencyRight,
+          ),
+          {
+            data: [],
+            pagination: {
+              currentPage: 1,
+              numberPerPage: 10,
+              totalPages: 1,
+              totalRecords: 0,
+            },
+          },
+        );
+      });
     });
   });
 

@@ -345,9 +345,8 @@ const AssessmentToCompleteTaskItem = ({
     : `Date de fin d'immersion : ${toDisplayedDate({ date: new Date(convention.dateEnd) })}`;
   const footer = (
     <>
-      {agencyLine}
-      <br />
-      {dateLine}
+      <p className={fr.cx("fr-mb-0")}>{agencyLine}</p>
+      <p className={fr.cx("fr-mt-1w", "fr-mb-0")}>{dateLine}</p>
     </>
   );
 
