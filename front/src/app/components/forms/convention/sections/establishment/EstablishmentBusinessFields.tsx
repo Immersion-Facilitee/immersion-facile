@@ -23,12 +23,15 @@ export const EstablishmentBusinessFields = ({
   const values = getValues();
   const siretValueOnForm = useWatch({ control, name: "siret" });
   const initialSiret = useRef(values.siret);
+  const initialBusinessNameCustomized = useRef(values.businessNameCustomized);
   const currentSiret = useAppSelector(siretSelectors.currentSiret);
   const isSiretUpdated =
     (currentSiret ?? siretValueOnForm) !== initialSiret.current;
   const shouldUpdateImmersionAddress =
     (values.status === "READY_TO_SIGN" && values.immersionAddress === "") ||
     isSiretUpdated;
+  const shouldPrefillBusinessNameCustomizedFromSiret =
+    isSiretUpdated || !initialBusinessNameCustomized.current;
   const {
     updateSiret,
     siretErrorToDisplay,
@@ -42,6 +45,9 @@ export const EstablishmentBusinessFields = ({
 
   useSiretRelatedField("businessName", {
     disabled: false, // the input is always disabled, so we can safely update businessName from siret
+  });
+  useSiretRelatedField("businessNameCustomized", {
+    disabled: !shouldPrefillBusinessNameCustomizedFromSiret,
   });
   useSiretRelatedField("businessAddress", {
     fieldToUpdate: "immersionAddress",

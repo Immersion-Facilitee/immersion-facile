@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   businessAddressSchema,
+  businessCustomizedNameSchema,
   businessNameSchema,
 } from "../establishment/businessComponents.schema";
 import { nafSchema } from "../naf/naf.schema";
@@ -46,6 +47,7 @@ const getSiretResponseSchema: ZodSchemaWithInputMatchingOutput<SiretEstablishmen
   z.object({
     siret: siretSchema,
     businessName: businessNameSchema,
+    businessNameCustomized: businessCustomizedNameSchema.optional(),
     businessAddress: businessAddressSchema,
     isOpen: z.boolean(), // true if the office is currently open for business.
     isAlreadySaved: zBoolean,

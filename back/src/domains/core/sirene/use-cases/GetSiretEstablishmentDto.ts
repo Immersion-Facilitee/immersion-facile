@@ -36,13 +36,18 @@ export const makeGetSiretEstablishmentDto = useCaseBuilder(
 
     if (!establishmentFromApi) return null;
 
-    const isAlreadySaved =
-      await uow.establishmentAggregateRepository.hasEstablishmentAggregateWithSiret(
+    const establishmentAggregate =
+      await uow.establishmentAggregateRepository.getEstablishmentAggregateBySiret(
         inputParams.siret,
       );
 
+    const isAlreadySaved = !!establishmentAggregate;
+    const businessNameCustomized =
+      establishmentAggregate?.establishment.customizedName;
+
     return {
       ...establishmentFromApi,
+      ...(businessNameCustomized && { businessNameCustomized }),
       isAlreadySaved,
     };
   });
