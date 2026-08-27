@@ -100,6 +100,36 @@ describe("GetSiretEstablishmentDto", () => {
 
       expectToEqual(await getSiretEstablishmentDto.execute({ siret }), null);
     });
+
+    it("return siret dto with businessNameCustomized when saved establishment has businessNameCustomized", async () => {
+      uow.establishmentAggregateRepository.establishmentAggregates = [
+        new EstablishmentAggregateBuilder()
+          .withEstablishmentSiret(validAndAlreadySavedEstablishment.siret)
+          .withEstablishmentCustomizedName("Enseigne Test")
+          .withUserRights([
+            {
+              role: "establishment-admin",
+              status: "ACCEPTED",
+              job: "",
+              phone: "",
+              userId: "osef",
+              shouldReceiveDiscussionNotifications: true,
+              isMainContactByPhone: false,
+            },
+          ])
+          .build(),
+      ];
+
+      expectToEqual(
+        await getSiretEstablishmentDto.execute({
+          siret: validAndAlreadySavedEstablishment.siret,
+        }),
+        {
+          ...validAndAlreadySavedEstablishment,
+          businessNameCustomized: "Enseigne Test",
+        },
+      );
+    });
   });
 
   describe("wrong paths", () => {

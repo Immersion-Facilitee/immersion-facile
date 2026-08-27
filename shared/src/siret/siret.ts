@@ -1,6 +1,7 @@
 import type {
   BusinessAddress,
   BusinessName,
+  BusinessNameCustomized,
 } from "../establishment/establishment.dto";
 import type { NafDto } from "../naf/naf.dto";
 import type { Flavor } from "../typeFlavors";
@@ -31,6 +32,7 @@ export type SiretEstablishmentDto = {
   siret: SiretDto;
   businessName: BusinessName;
   businessAddress: BusinessAddress;
+  businessNameCustomized?: BusinessNameCustomized;
   // true if the office is currently open for business.
   isOpen: boolean;
   isAlreadySaved: boolean;
