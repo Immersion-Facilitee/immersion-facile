@@ -249,6 +249,8 @@ sources:
             description: "Marketing campaign that led to the convention"
           - name: acquisition_keyword
             description: "Marketing keyword that led to the convention"
+          - name: from_convention_draft_id
+            description: "Optionnal convention draft id"
 
       - name: convention_external_ids
         description: "External IDs for conventions"
