@@ -7,15 +7,12 @@ import {
   domElementIds,
   type ExchangeRole,
   getDiscussionDisplayStatus,
-  getLastExchange,
   isDiscussionInList,
-  shouldEstablishmentBeReminded,
 } from "shared";
 
 export const DiscussionStatusBadge = ({
   discussion,
   viewer,
-  isEstablishmentReachableByPhoneAfter15Days,
   id = domElementIds.establishmentDashboard.discussion.statusBadge,
   small = false,
 }: {
@@ -35,16 +32,6 @@ export const DiscussionStatusBadge = ({
           ? discussion.exchangesData
           : discussionToExchangesData(discussion),
       },
-      now: new Date(),
-      viewer,
-      shouldEstablishmentBeReminded: shouldEstablishmentBeReminded({
-        contactMode: discussion.contactMode,
-        discussionUpdatedAt: discussion.updatedAt,
-        isEstablishmentReachableByPhoneAfter15Days,
-        lastExchangeSender: isDiscussionInList(discussion)
-          ? discussion.exchangesData.lastExchange?.sender
-          : getLastExchange(discussion.exchanges)?.sender,
-      }),
     }),
   );
 
@@ -55,7 +42,7 @@ export const DiscussionStatusBadge = ({
   );
 };
 
-type StatusBadgeData = {
+export type DiscussionBadgeData = {
   severity: BadgeProps["severity"];
   label: string;
 };
@@ -63,7 +50,7 @@ type StatusBadgeData = {
 const getStatusBadgeData = <Role extends ExchangeRole>(
   viewer: Role,
   status: DiscussionDisplayStatusByRole[Role],
-): StatusBadgeData => {
+): DiscussionBadgeData => {
   const badgeDataForRole = statusBadgeData[viewer];
   return badgeDataForRole[status];
 };
@@ -71,25 +58,17 @@ const getStatusBadgeData = <Role extends ExchangeRole>(
 const statusBadgeData: {
   [Role in ExchangeRole]: Record<
     DiscussionDisplayStatusByRole[Role],
-    StatusBadgeData
+    DiscussionBadgeData
   >;
 } = {
   establishment: {
     new: {
       severity: "info",
-      label: "En cours - Nouveau",
+      label: "Nouveau",
     },
-    "needs-answer": {
-      severity: "warning",
-      label: "En cours - À répondre",
-    },
-    "needs-urgent-answer": {
-      severity: "error",
-      label: "En cours - Urgent",
-    },
-    answered: {
+    pending: {
       severity: "new",
-      label: "En cours - Répondu",
+      label: "En cours",
     },
     accepted: {
       severity: "success",
@@ -105,21 +84,9 @@ const statusBadgeData: {
       severity: "info",
       label: "Envoyée",
     },
-    "needs-answer": {
-      severity: "warning",
-      label: "En cours - À répondre",
-    },
-    "to-remind": {
-      severity: "warning",
-      label: "À relancer",
-    },
-    "needs-urgent-answer": {
-      severity: "error",
-      label: "En cours - Urgent",
-    },
-    answered: {
+    pending: {
       severity: "new",
-      label: "En cours - Répondu",
+      label: "En cours",
     },
     accepted: {
       severity: "success",

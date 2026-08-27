@@ -319,16 +319,19 @@ export type ExchangeFromDashboard = ExchangeMessageFromDashboard &
 export type DiscussionDisplayStatus =
   | "accepted"
   | "rejected"
-  | "to-remind"
-  | "new"
-  | "needs-answer"
-  | "needs-urgent-answer"
-  | "answered";
+  | "pending"
+  | "new";
 
 export type DiscussionDisplayStatusByRole = {
+  [R in ExchangeRole]: DiscussionDisplayStatus;
+};
+
+export type DiscussionFollowUp = "needs-answer" | "to-remind";
+
+export type DiscussionFollowUpByRole = {
   [R in ExchangeRole]: R extends "establishment"
-    ? Exclude<DiscussionDisplayStatus, "to-remind">
-    : DiscussionDisplayStatus;
+    ? Exclude<DiscussionFollowUp, "to-remind">
+    : DiscussionFollowUp;
 };
 
 export type DiscussionInList = Pick<
@@ -354,6 +357,7 @@ export type DiscussionInList = Pick<
   exchangesData: {
     count: number;
     lastExchange: Pick<ExchangeRead, "sender" | "sentAt"> | null;
+    hasEstablishmentAnswered: boolean;
   };
 } & WithPhoneContactAdditionalCondition;
 
@@ -389,8 +393,12 @@ export const discussionToExchangesData = (
   discussion: DiscussionDto | DiscussionReadDto,
 ): DiscussionInList["exchangesData"] => {
   const lastExchange = discussion.exchanges[discussion.exchanges.length - 1];
+  const hasEstablishmentAnswered = discussion.exchanges.some(
+    (exchange) => exchange.sender === "establishment",
+  );
   return {
     count: discussion.exchanges.length,
+    hasEstablishmentAnswered,
     lastExchange: lastExchange
       ? { sender: lastExchange.sender, sentAt: lastExchange.sentAt }
       : null,

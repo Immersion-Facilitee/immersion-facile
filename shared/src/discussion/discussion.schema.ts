@@ -36,6 +36,7 @@ import { zUuidLike } from "../utils/uuid";
 import {
   localization,
   type ZodSchemaWithInputMatchingOutput,
+  zBoolean,
   zToNumber,
 } from "../zodUtils";
 import {
@@ -350,6 +351,7 @@ export const discussionInListSchema: ZodSchemaWithInputMatchingOutput<Discussion
       city: zStringMinLength1Max1024,
       exchangesData: z.object({
         count: z.number(),
+        hasEstablishmentAnswered: zBoolean,
         lastExchange: z
           .object({
             sender: exchangeRoleSchema,

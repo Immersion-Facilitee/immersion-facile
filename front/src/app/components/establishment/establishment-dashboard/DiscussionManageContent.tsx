@@ -53,6 +53,7 @@ import {
   openRejectDiscussionModal,
   RejectDiscussionModal,
 } from "src/app/components/admin/establishments/RejectDiscussionModal";
+import { DiscussionFollowUpBadge } from "src/app/components/establishment/establishment-dashboard/DiscussionFollowUpBadge";
 import { DiscussionStatusBadge } from "src/app/components/establishment/establishment-dashboard/DiscussionStatusBadge";
 import { useDiscussion } from "src/app/hooks/discussion.hooks";
 import { useFeedbackEventCallback } from "src/app/hooks/feedback.hooks";
@@ -391,7 +392,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
             {"  "}•{"  "}
             {discussion.potentialBeneficiary.immersionObjective}
           </p>
-          <div className={fr.cx("fr-grid-row")}>
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
             <p
               {...contactModeToBadgeOptions[discussion.contactMode]}
               className={`${contactModeToBadgeOptions[discussion.contactMode].className} ${fr.cx("fr-mr-2w")}`}
@@ -403,6 +404,16 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
                 discussionEstablishmentContactInfo?.isEstablishmentReachableByPhoneAfter15Days ??
                 false
               }
+            />
+            <DiscussionFollowUpBadge
+              key={discussion.id}
+              discussion={discussion}
+              isEstablishmentReachableByPhoneAfter15Days={
+                discussionEstablishmentContactInfo?.isEstablishmentReachableByPhoneAfter15Days ??
+                false
+              }
+              className={fr.cx("fr-ml-1w")}
+              viewer={viewer}
             />
           </div>
         </SectionHighlight>

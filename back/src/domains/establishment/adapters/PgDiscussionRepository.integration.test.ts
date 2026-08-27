@@ -2705,6 +2705,223 @@ describe("PgDiscussionRepository", () => {
         });
       });
 
+      it("returns hasEstablishmentAnswered: true when discussion has an exchange with a sender establishment", async () => {
+        const createdAt = new Date("2024-06-23T12:00:00.000");
+        const discussionWithEstablishmentExchange = new DiscussionBuilder()
+          .withId(uuid())
+          .withSiret("00000000000009")
+          .withContactMode("EMAIL")
+          .withAppellationCode(styliste.appellationCode)
+          .withCreatedAt(new Date("2025-05-22"))
+          .withStatus({ status: "PENDING" })
+          .withExchanges([
+            {
+              subject: "Sujet de discussion",
+              sentAt: createdAt.toISOString(),
+              sender: "potentialBeneficiary",
+              message: "default message",
+              attachments: [],
+            },
+            {
+              subject: "Sujet de discussion",
+              sentAt: addDays(createdAt, 1).toISOString(),
+              sender: "establishment",
+              message: "default message",
+              email: "fake@mail.com",
+              firstname: "Fake",
+              lastname: "Person",
+              attachments: [],
+            },
+          ])
+          .build();
+
+        await pgDiscussionRepository.insert(
+          discussionWithEstablishmentExchange,
+        );
+
+        await establishmentAggregateRepo.insertEstablishmentAggregate(
+          new EstablishmentAggregateBuilder()
+            .withEstablishmentSiret(discussionWithEstablishmentExchange.siret)
+            .withLocationId(uuid())
+            .withUserRights([
+              {
+                role: "establishment-admin",
+                status: "ACCEPTED",
+                userId: user.id,
+                job: "",
+                phone: "+33600000000",
+                shouldReceiveDiscussionNotifications: true,
+                isMainContactByPhone: true,
+              },
+            ])
+            .withOffers([stylisteOffer])
+            .build(),
+        );
+
+        const discussionWithEstablishmentExchangeInList: DiscussionInList = {
+          id: discussionWithEstablishmentExchange.id,
+          siret: discussionWithEstablishmentExchange.siret,
+          status: discussionWithEstablishmentExchange.status,
+          appellation: styliste,
+          businessName: discussionWithEstablishmentExchange.businessName,
+          createdAt: discussionWithEstablishmentExchange.createdAt,
+          updatedAt: discussionWithEstablishmentExchange.updatedAt,
+          contactMode: discussionWithEstablishmentExchange.contactMode,
+          kind: discussionWithEstablishmentExchange.kind,
+          isEstablishmentBanned: false,
+          isEstablishmentReachableByPhoneAfter15Days: true,
+          potentialBeneficiary: {
+            firstName:
+              discussionWithEstablishmentExchange.potentialBeneficiary
+                .firstName,
+            lastName:
+              discussionWithEstablishmentExchange.potentialBeneficiary.lastName,
+            phone:
+              discussionWithEstablishmentExchange.potentialBeneficiary.phone,
+          },
+          city: discussionWithEstablishmentExchange.address.city,
+          immersionObjective:
+            discussionWithEstablishmentExchange.potentialBeneficiary
+              .immersionObjective,
+          exchangesData: {
+            ...discussionToExchangesData(discussionWithEstablishmentExchange),
+            hasEstablishmentAnswered: true,
+          },
+        };
+
+        const result =
+          await pgDiscussionRepository.getPaginatedDiscussionsForUser({
+            pagination: {
+              page: 1,
+              perPage: 10,
+            },
+            sort: { by: "createdAt", direction: "desc" },
+            userId: user.id,
+            userRole: "establishment",
+          });
+
+        expectToEqual(result, {
+          data: [
+            discussionWithEstablishmentExchangeInList,
+            discussion3InList,
+            discussion2InList,
+          ],
+          pagination: {
+            currentPage: 1,
+            numberPerPage: 10,
+            totalPages: 1,
+            totalRecords: 3,
+          },
+        });
+      });
+
+      it("returns hasEstablishmentAnswered: true when discussion has an exchange with a sender establishment", async () => {
+        const createdAt = new Date("2024-06-23T12:00:00.000");
+        const discussionWithEstablishmentExchange = new DiscussionBuilder()
+          .withId(uuid())
+          .withSiret("00000000000009")
+          .withContactMode("EMAIL")
+          .withAppellationCode(styliste.appellationCode)
+          .withCreatedAt(new Date("2025-05-22"))
+          .withStatus({ status: "PENDING" })
+          .withExchanges([
+            {
+              subject: "Sujet de discussion",
+              sentAt: createdAt.toISOString(),
+              sender: "potentialBeneficiary",
+              message: "default message",
+              attachments: [],
+            },
+            {
+              subject: "Sujet de discussion",
+              sentAt: addDays(createdAt, 1).toISOString(),
+              sender: "potentialBeneficiary",
+              message: "default message",
+              attachments: [],
+            },
+          ])
+          .build();
+
+        await pgDiscussionRepository.insert(
+          discussionWithEstablishmentExchange,
+        );
+
+        await establishmentAggregateRepo.insertEstablishmentAggregate(
+          new EstablishmentAggregateBuilder()
+            .withEstablishmentSiret(discussionWithEstablishmentExchange.siret)
+            .withLocationId(uuid())
+            .withUserRights([
+              {
+                role: "establishment-admin",
+                status: "ACCEPTED",
+                userId: user.id,
+                job: "",
+                phone: "+33600000000",
+                shouldReceiveDiscussionNotifications: true,
+                isMainContactByPhone: true,
+              },
+            ])
+            .withOffers([stylisteOffer])
+            .build(),
+        );
+
+        const discussionWithEstablishmentExchangeInList: DiscussionInList = {
+          id: discussionWithEstablishmentExchange.id,
+          siret: discussionWithEstablishmentExchange.siret,
+          status: discussionWithEstablishmentExchange.status,
+          appellation: styliste,
+          businessName: discussionWithEstablishmentExchange.businessName,
+          createdAt: discussionWithEstablishmentExchange.createdAt,
+          updatedAt: discussionWithEstablishmentExchange.updatedAt,
+          contactMode: discussionWithEstablishmentExchange.contactMode,
+          kind: discussionWithEstablishmentExchange.kind,
+          isEstablishmentBanned: false,
+          isEstablishmentReachableByPhoneAfter15Days: true,
+          potentialBeneficiary: {
+            firstName:
+              discussionWithEstablishmentExchange.potentialBeneficiary
+                .firstName,
+            lastName:
+              discussionWithEstablishmentExchange.potentialBeneficiary.lastName,
+            phone:
+              discussionWithEstablishmentExchange.potentialBeneficiary.phone,
+          },
+          city: discussionWithEstablishmentExchange.address.city,
+          immersionObjective:
+            discussionWithEstablishmentExchange.potentialBeneficiary
+              .immersionObjective,
+          exchangesData: {
+            ...discussionToExchangesData(discussionWithEstablishmentExchange),
+            hasEstablishmentAnswered: false,
+          },
+        };
+
+        const result =
+          await pgDiscussionRepository.getPaginatedDiscussionsForUser({
+            pagination: {
+              page: 1,
+              perPage: 10,
+            },
+            sort: { by: "createdAt", direction: "desc" },
+            userId: user.id,
+            userRole: "establishment",
+          });
+
+        expectToEqual(result, {
+          data: [
+            discussionWithEstablishmentExchangeInList,
+            discussion3InList,
+            discussion2InList,
+          ],
+          pagination: {
+            currentPage: 1,
+            numberPerPage: 10,
+            totalPages: 1,
+            totalRecords: 3,
+          },
+        });
+      });
+
       it("returns isEstablishmentReachableByPhoneAfter15Days: true when establishment contact mode is EMAIL and a user right is main contact by phone", async () => {
         const discussion5 = new DiscussionBuilder()
           .withId(uuid())
