@@ -1,1 +1,0 @@
-../../.claude/commands/document-issue.md
