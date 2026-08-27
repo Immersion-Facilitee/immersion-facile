@@ -154,6 +154,12 @@ const conventionSection = ({
     id: conventionSectionIds.businessName,
     required: !isConventionTemplate,
   },
+  businessNameCustomized: {
+    label: "Nom d'enseigne",
+    hintText:
+      "Indiquez le nom sous lequel l'entreprise souhaite apparaître s'il diffère de la raison sociale",
+    id: conventionSectionIds.businessNameCustomized,
+  },
   workConditions: {
     label:
       internshipKind === "immersion"
@@ -958,6 +964,7 @@ export const makeFormUiSections = ({
     ),
     "siret",
     "businessName",
+    "businessNameCustomized",
   ],
   ["dateStart", "dateEnd", "schedule", "immersionAddress", "remoteWorkMode"],
   [

@@ -1,5 +1,6 @@
 import {
   zStringCanBeEmpty,
+  zStringCanBeEmptyMax255,
   zStringMinLength1Max255,
 } from "../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
@@ -13,7 +14,7 @@ export const businessAddressSchema: ZodSchemaWithInputMatchingOutput<BusinessAdd
   zStringCanBeEmpty;
 
 export const businessCustomizedNameSchema: ZodSchemaWithInputMatchingOutput<BusinessNameCustomized> =
-  zStringCanBeEmpty;
+  zStringCanBeEmptyMax255;
 
 export const businessNameSchema: ZodSchemaWithInputMatchingOutput<BusinessName> =
   zStringMinLength1Max255;

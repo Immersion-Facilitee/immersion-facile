@@ -609,6 +609,7 @@ describe("PgConventionRepository", () => {
       .withId(idA)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withEstablishmentNumberOfEmployeesRange("20-49")
+      .withBusinessNameCustomized("Enseigne Test")
       .build();
     await conventionRepository.save(convention);
 
@@ -620,6 +621,7 @@ describe("PgConventionRepository", () => {
       .withDateStart(new Date("2024-10-20").toISOString())
       .withDateEnd(new Date("2024-10-24").toISOString())
       .withEstablishmentNumberOfEmployeesRange("200-249")
+      .withBusinessNameCustomized("Enseigne mise à jour")
       .build();
 
     await conventionRepository.update(

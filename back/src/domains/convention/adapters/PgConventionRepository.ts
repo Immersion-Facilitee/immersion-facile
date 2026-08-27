@@ -100,6 +100,7 @@ export class PgConventionRepository implements ConventionRepository {
       dateValidation,
       siret,
       businessName,
+      businessNameCustomized,
       schedule,
       individualProtection,
       individualProtectionDescription,
@@ -154,6 +155,7 @@ export class PgConventionRepository implements ConventionRepository {
         date_validation: dateValidation,
         siret,
         business_name: businessName,
+        business_name_customized: businessNameCustomized,
         schedule: sql`${JSON.stringify(schedule)}`,
         individual_protection: individualProtection,
         individual_protection_description: individualProtectionDescription,
@@ -609,6 +611,7 @@ export class PgConventionRepository implements ConventionRepository {
         date_approval: convention.dateApproval ?? null,
         siret: convention.siret,
         business_name: convention.businessName,
+        business_name_customized: convention.businessNameCustomized,
         schedule: sql`${JSON.stringify(convention.schedule)}`,
         individual_protection: convention.individualProtection,
         individual_protection_description:

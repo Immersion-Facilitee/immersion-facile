@@ -61,6 +61,7 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
       dateEnd: row.date_end?.toISOString() ?? undefined,
       siret: row.siret ?? undefined,
       businessName: row.business_name ?? undefined,
+      businessNameCustomized: row.business_name_customized ?? undefined,
       schedule: (row.schedule as ScheduleDto) ?? undefined,
       individualProtection: row.individual_protection ?? undefined,
       individualProtectionDescription:
@@ -165,6 +166,7 @@ const mapToEntity = (
     date_end: conventionDraft.dateEnd,
     siret: conventionDraft.siret,
     business_name: conventionDraft.businessName,
+    business_name_customized: conventionDraft.businessNameCustomized,
     schedule: conventionDraft.schedule
       ? sql`${JSON.stringify(conventionDraft.schedule)}`
       : null,

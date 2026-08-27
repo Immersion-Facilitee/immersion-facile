@@ -74,6 +74,7 @@ export class PgConventionTemplateQueries implements ConventionTemplateQueries {
         dateEnd: row.date_end?.toISOString() ?? undefined,
         siret: row.siret ?? undefined,
         businessName: row.business_name ?? undefined,
+        businessNameCustomized: row.business_name_customized ?? undefined,
         schedule: (row.schedule as ScheduleDto) ?? undefined,
         individualProtection: row.individual_protection ?? undefined,
         individualProtectionDescription:
@@ -165,6 +166,7 @@ const mapConventionTemplateToEntity = (
   date_end: template.dateEnd,
   siret: template.siret,
   business_name: template.businessName,
+  business_name_customized: template.businessNameCustomized,
   schedule: template.schedule
     ? sql`${JSON.stringify(template.schedule)}`
     : null,

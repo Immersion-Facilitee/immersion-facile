@@ -321,6 +321,7 @@ export const domElementIds = {
       addHoursButton: "im-convention-form__add-hours-button",
       siret: "im-convention-form__siret",
       businessName: "im-convention-form__businessName",
+      businessNameCustomized: "im-convention-form__businessNameCustomized",
       workConditions: "im-convention-form__workConditions",
       individualProtection: "im-convention-form__individualProtection",
       individualProtectionDescription:
