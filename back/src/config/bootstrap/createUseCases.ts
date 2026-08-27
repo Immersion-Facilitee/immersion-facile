@@ -474,7 +474,7 @@ export const createUseCases = ({
           config,
         },
       }),
-    notifyThatEstablishmentIsBanned:
+    notifyThatReferencedEstablishmentIsBanned:
       makeNotifyThatReferencedEstablishmentIsBanned({
         uowPerformer,
         deps: {
