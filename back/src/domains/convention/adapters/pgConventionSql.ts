@@ -287,6 +287,7 @@ const createConventionSelection = (
           .then(ref("banned_establishments.bannishment_justification"))
           .else(null)
           .end(),
+        fromConventionDraftId: ref("from_convention_draft_id"),
         renewed: eb
           .case()
           .when("renewed_from", "is not", null)

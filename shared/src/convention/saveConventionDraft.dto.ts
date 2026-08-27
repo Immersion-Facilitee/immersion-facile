@@ -1,11 +1,11 @@
 import { v4 as uuidV4 } from "uuid";
 import type { Email } from "../email/email.dto";
-import type { Flavor } from "../typeFlavors";
 import {
   type OmitFromExistingKeys,
   replaceEmptyValuesByUndefinedFromObject,
 } from "../utils";
 import type { InternshipKind } from "./convention.dto";
+import type { ConventionDraftId } from "./conventionDraftId";
 import type { CreateConventionPresentationInitialValues } from "./conventionPresentation.dto";
 
 type ConventionDeepPartial<T> = T extends
@@ -24,17 +24,11 @@ type ConventionDeepPartial<T> = T extends
       }
     : T;
 
-export type ConventionDraftId = Flavor<string, "ConventionDraftId">;
-
 export type ConventionDraftDto = ConventionDeepPartial<
   OmitFromExistingKeys<CreateConventionPresentationInitialValues, "id">
 > & {
   id: ConventionDraftId;
   internshipKind: InternshipKind;
-};
-
-export type WithConventionDraftId = {
-  conventionDraftId: ConventionDraftId;
 };
 
 type WithConventionDraft = {

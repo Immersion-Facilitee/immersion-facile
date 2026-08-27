@@ -597,6 +597,11 @@ const fieldsToExclude = {
     label: "",
     id: "",
   },
+  fromConventionDraftId: {
+    // to exclude
+    label: "",
+    id: "",
+  },
   "signatories.beneficiary.signedAt": {
     // to exclude
     label: "",

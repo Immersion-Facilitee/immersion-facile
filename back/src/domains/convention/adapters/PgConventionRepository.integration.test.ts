@@ -147,6 +147,7 @@ describe("PgConventionRepository", () => {
       .withId("aaaaac99-9c0b-1bbb-bb6d-6bb9bd38aaaa")
       .withEstablishmentNumberOfEmployeesRange("20-49")
       .withAgencyId(agency.id)
+      .withConventionDraftId(uuid())
       .build();
 
     expect(await conventionRepository.getById(convention.id)).toBeUndefined();
@@ -203,6 +204,7 @@ describe("PgConventionRepository", () => {
       .withEstablishmentNumberOfEmployeesRange("20-49")
       .withUpdatedAt(anyConventionUpdatedAt)
       .withRemoteWorkMode("HYBRID")
+      .withConventionDraftId(uuid())
       .build();
 
     await conventionRepository.update(

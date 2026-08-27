@@ -391,6 +391,7 @@ interface Conventions extends WithAcquisition {
   individual_protection_description: Generated<string>;
   agency_referent_first_name: Generated<string | null>;
   agency_referent_last_name: Generated<string | null>;
+  from_convention_draft_id: string | null;
 }
 
 interface ConventionsToSyncWithPe {

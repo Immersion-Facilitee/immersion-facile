@@ -18,8 +18,8 @@ import type {
   ImmersionObjective,
   ReminderKind,
 } from "../convention/convention.dto";
+import type { ConventionDraftId } from "../convention/conventionDraftId";
 import type { ConventionTemplateId } from "../convention/conventionTemplate.dto";
-import type { ConventionDraftId } from "../convention/saveConventionDraft.dto";
 import type {
   DiscussionId,
   DiscussionKind,

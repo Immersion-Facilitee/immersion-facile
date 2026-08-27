@@ -138,6 +138,7 @@ import {
   type WithConventionIdLegacy,
   type WithOptionalFirstnameAndLastname,
 } from "./convention.dto";
+import { conventionDraftIdSchema } from "./conventionDraftId";
 import {
   getConventionTooLongMessageAndPath,
   getOverMaxWorkedDaysMessageAndPath,
@@ -362,6 +363,7 @@ export const conventionCommonSchema = z
     agencyReferent: withOptionalFirstnameAndLastnameSchema.optional(),
     renewed: renewedSchema.optional(),
     establishmentNumberEmployeesRange: numberOfEmployeesRangeSchema.optional(),
+    fromConventionDraftId: conventionDraftIdSchema.optional(),
   })
   .extend(
     withAcquisitionShape,
