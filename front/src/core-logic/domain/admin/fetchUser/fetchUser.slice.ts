@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { ConnectedUser, UserId } from "shared";
-import { updateUserPreventToDeleteSlice } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.slice";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { updateUserAgencyRights } from "src/core-logic/domain/agencies/agencies.helpers";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
@@ -46,7 +46,7 @@ export const fetchUserSlice = createSlice({
       },
     );
     builder.addCase(
-      updateUserPreventToDeleteSlice.actions.updateUserPreventToDeleteSucceeded,
+      connectedUsersAdminSlice.actions.updateUserPreventToDeleteSucceeded,
       (state, action) => {
         if (!state.user || state.user.id !== action.payload.userId) return;
         state.user.preventToDelete = action.payload.preventToDelete;

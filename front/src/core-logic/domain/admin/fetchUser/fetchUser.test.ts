@@ -7,13 +7,13 @@ import {
   toAgencyDtoForAgencyUsersAndAdmins,
 } from "shared";
 import { adminPreloadedState } from "src/core-logic/domain/admin/adminPreloadedState";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { adminFetchUserSelectors } from "src/core-logic/domain/admin/fetchUser/fetchUser.selectors";
 import {
   type FetchUserState,
   fetchUserInitialState,
   fetchUserSlice,
 } from "src/core-logic/domain/admin/fetchUser/fetchUser.slice";
-import { updateUserPreventToDeleteSlice } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.slice";
 import { removeUserFromAgencySelectors } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.selectors";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateUserOnAgencySelectors } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.selectors";
@@ -282,13 +282,11 @@ describe("Admin Users slice", () => {
       }));
 
       store.dispatch(
-        updateUserPreventToDeleteSlice.actions.updateUserPreventToDeleteRequested(
-          {
-            userId: user.id,
-            preventToDelete: true,
-            feedbackTopic: "user-prevent-to-delete",
-          },
-        ),
+        connectedUsersAdminSlice.actions.updateUserPreventToDeleteRequested({
+          userId: user.id,
+          preventToDelete: true,
+          feedbackTopic: "user-prevent-to-delete",
+        }),
       );
       dependencies.adminGateway.updateUserPreventToDeleteResponse$.next(
         undefined,
@@ -319,13 +317,11 @@ describe("Admin Users slice", () => {
       }));
 
       store.dispatch(
-        updateUserPreventToDeleteSlice.actions.updateUserPreventToDeleteRequested(
-          {
-            userId: "another-user-id",
-            preventToDelete: true,
-            feedbackTopic: "user-prevent-to-delete",
-          },
-        ),
+        connectedUsersAdminSlice.actions.updateUserPreventToDeleteRequested({
+          userId: "another-user-id",
+          preventToDelete: true,
+          feedbackTopic: "user-prevent-to-delete",
+        }),
       );
       dependencies.adminGateway.updateUserPreventToDeleteResponse$.next(
         undefined,

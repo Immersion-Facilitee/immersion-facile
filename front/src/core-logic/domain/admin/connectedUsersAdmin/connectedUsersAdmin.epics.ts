@@ -226,6 +226,40 @@ const fetchAgencyUsersOnUserRemovedEpic: AppEpic<
     ),
   );
 
+const updateUserPreventToDeleteEpic: ConnectedUsersAdminActionEpic = (
+  action$,
+  state$,
+  { adminGateway },
+) =>
+  action$.pipe(
+    filter(
+      connectedUsersAdminSlice.actions.updateUserPreventToDeleteRequested.match,
+    ),
+    switchMap((action) =>
+      adminGateway
+        .updateUserPreventToDelete$(
+          {
+            userId: action.payload.userId,
+            preventToDelete: action.payload.preventToDelete,
+          },
+          getConnectedUserJwt(state$.value),
+        )
+        .pipe(
+          map(() =>
+            connectedUsersAdminSlice.actions.updateUserPreventToDeleteSucceeded(
+              action.payload,
+            ),
+          ),
+          catchEpicError((error) =>
+            connectedUsersAdminSlice.actions.updateUserPreventToDeleteFailed({
+              errorMessage: error.message,
+              feedbackTopic: action.payload.feedbackTopic,
+            }),
+          ),
+        ),
+    ),
+  );
+
 export const normalizeUsers = (
   users: ConnectedUser[],
 ): ConnectedUsersWithNormalizedAgencyRightsById =>
@@ -254,4 +288,5 @@ export const connectedUsersAdminEpics = [
   updateUserOnAgencyEpic,
   fetchAgencyUsersOnUserRemovedEpic,
   createUserOnAgencyEpic,
+  updateUserPreventToDeleteEpic,
 ];

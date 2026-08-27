@@ -9,7 +9,9 @@ import type {
   UserId,
   UserParamsForAgency,
   WithAgencyId,
+  WithPreventToDelete,
   WithUserFilters,
+  WithUserId,
 } from "shared";
 import type { SubmitFeedBack } from "src/core-logic/domain/SubmitFeedback";
 import type { PayloadActionWithFeedbackTopic } from "../../feedback/feedback.slice";
@@ -42,6 +44,7 @@ export type ConnectedUsersAdminState = {
   isUpdatingConnectedUserAgency: boolean;
   isFetchingAgenciesNeedingReviewForIcUser: boolean;
   isFetchingAgencyUsers: boolean;
+  isUpdatingUserPreventToDelete: boolean;
   feedback: ConnectedUsersAdminFeedback;
 };
 
@@ -52,6 +55,7 @@ export const connectedUsersAdminInitialState: ConnectedUsersAdminState = {
   isUpdatingConnectedUserAgency: false,
   isFetchingAgenciesNeedingReviewForIcUser: false,
   isFetchingAgencyUsers: false,
+  isUpdatingUserPreventToDelete: false,
   feedback: { kind: "idle" },
 };
 
@@ -233,6 +237,25 @@ export const connectedUsersAdminSlice = createSlice({
       _action: PayloadActionWithFeedbackTopic<{ errorMessage: string }>,
     ) => {
       state.isUpdatingConnectedUserAgency = false;
+    },
+
+    updateUserPreventToDeleteRequested: (
+      state,
+      _action: PayloadActionWithFeedbackTopic<WithUserId & WithPreventToDelete>,
+    ) => {
+      state.isUpdatingUserPreventToDelete = true;
+    },
+    updateUserPreventToDeleteSucceeded: (
+      state,
+      _action: PayloadActionWithFeedbackTopic<WithUserId & WithPreventToDelete>,
+    ) => {
+      state.isUpdatingUserPreventToDelete = false;
+    },
+    updateUserPreventToDeleteFailed: (
+      state,
+      _action: PayloadActionWithFeedbackTopic<{ errorMessage: string }>,
+    ) => {
+      state.isUpdatingUserPreventToDelete = false;
     },
   },
 });

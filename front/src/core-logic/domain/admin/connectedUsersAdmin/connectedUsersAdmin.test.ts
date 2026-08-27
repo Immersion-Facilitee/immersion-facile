@@ -826,9 +826,80 @@ describe("Agency registration for authenticated users", () => {
     });
   });
 
+  describe("Update user preventToDelete", () => {
+    const errorMessage =
+      "Une erreur est survenue lors de la mise à jour de l'utilisateur.";
+
+    it("updates preventToDelete successfully and stores the feedback", () => {
+      store.dispatch(
+        connectedUsersAdminSlice.actions.updateUserPreventToDeleteRequested({
+          userId: authUser1.id,
+          preventToDelete: true,
+          feedbackTopic: "user-prevent-to-delete",
+        }),
+      );
+
+      expectIsUpdatingUserPreventToDeleteToBe(true);
+
+      dependencies.adminGateway.updateUserPreventToDeleteResponse$.next(
+        undefined,
+      );
+
+      expectIsUpdatingUserPreventToDeleteToBe(false);
+      expectToEqual(
+        feedbacksSelectors.feedbacks(store.getState())[
+          "user-prevent-to-delete"
+        ],
+        {
+          level: "success",
+          title: "L'utilisateur a été mis à jour",
+          message: "La modification a bien été prise en compte.",
+          on: "update",
+        },
+      );
+    });
+
+    it("does not update preventToDelete if error, and stores the feedback", () => {
+      store.dispatch(
+        connectedUsersAdminSlice.actions.updateUserPreventToDeleteRequested({
+          userId: authUser1.id,
+          preventToDelete: true,
+          feedbackTopic: "user-prevent-to-delete",
+        }),
+      );
+
+      expectIsUpdatingUserPreventToDeleteToBe(true);
+
+      dependencies.adminGateway.updateUserPreventToDeleteResponse$.error(
+        new Error(errorMessage),
+      );
+
+      expectIsUpdatingUserPreventToDeleteToBe(false);
+      expectToEqual(
+        feedbacksSelectors.feedbacks(store.getState())[
+          "user-prevent-to-delete"
+        ],
+        {
+          level: "error",
+          message: errorMessage,
+          on: "update",
+          title: "Problème lors de la mise à jour de l'utilisateur",
+        },
+      );
+    });
+  });
+
   const expectIsUpdatingUserAgencyToBe = (expected: boolean) => {
     expect(
       connectedUsersAdminSelectors.isUpdatingConnectedUserAgency(
+        store.getState(),
+      ),
+    ).toBe(expected);
+  };
+
+  const expectIsUpdatingUserPreventToDeleteToBe = (expected: boolean) => {
+    expect(
+      connectedUsersAdminSelectors.isUpdatingUserPreventToDelete(
         store.getState(),
       ),
     ).toBe(expected);

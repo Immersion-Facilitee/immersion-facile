@@ -17,8 +17,8 @@ import { ressourcesAndWebinarsUrl } from "src/app/contents/home/content";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { commonIllustrations } from "src/assets/img/illustrations";
-import { updateUserPreventToDeleteSelectors } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.selectors";
-import { updateUserPreventToDeleteSlice } from "src/core-logic/domain/admin/updateUserPreventToDelete/updateUserPreventToDelete.slice";
+import { connectedUsersAdminSelectors } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.selectors";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { match } from "ts-pattern";
@@ -115,7 +115,7 @@ export const UserProfile = ({
   const dispatch = useDispatch();
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isUpdatingPreventToDelete = useAppSelector(
-    updateUserPreventToDeleteSelectors.isLoading,
+    connectedUsersAdminSelectors.isUpdatingUserPreventToDelete,
   );
 
   useScrollTo(!!useFeedbackTopic("agency-user-right-self"));
@@ -259,7 +259,7 @@ export const UserProfile = ({
                 ]),
               );
               dispatch(
-                updateUserPreventToDeleteSlice.actions.updateUserPreventToDeleteRequested(
+                connectedUsersAdminSlice.actions.updateUserPreventToDeleteRequested(
                   {
                     userId: userWithRights.id,
                     preventToDelete,
