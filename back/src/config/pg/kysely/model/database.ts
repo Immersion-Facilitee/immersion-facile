@@ -291,6 +291,7 @@ interface ConventionDrafts {
   date_end: Timestamp | null;
   siret: string | null;
   business_name: string | null;
+  business_name_customized: string | null;
   schedule: Json | null;
   individual_protection: boolean | null;
   individual_protection_description: string | null;
@@ -328,6 +329,7 @@ interface ConventionTemplates {
   date_end: Timestamp | null;
   siret: string | null;
   business_name: string | null;
+  business_name_customized: string | null;
   schedule: Json | null;
   individual_protection: boolean | null;
   individual_protection_description: string | null;
@@ -360,6 +362,7 @@ interface Conventions extends WithAcquisition {
   date_end: Timestamp;
   siret: string;
   business_name: string;
+  business_name_customized: string | null;
   schedule: Json;
   individual_protection: boolean;
   sanitary_prevention: boolean;

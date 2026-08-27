@@ -221,6 +221,7 @@ const createConventionSelection = (
         siret: ref("conventions.siret"),
         schedule: cast<ScheduleDto>(ref("conventions.schedule")),
         businessName: ref("conventions.business_name"),
+        businessNameCustomized: ref("conventions.business_name_customized"),
         workConditions: ref("conventions.work_conditions"),
         agencyId: ref("conventions.agency_id"),
         agencyReferent: eb

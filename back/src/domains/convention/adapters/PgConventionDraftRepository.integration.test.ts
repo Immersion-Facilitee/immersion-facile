@@ -123,6 +123,7 @@ describe("PgConventionDraftRepository", () => {
         dateEnd: "2024-10-17T00:00:00.000Z",
         siret: "12345678901234",
         businessName: "Test Business",
+        businessNameCustomized: "Enseigne Test",
         individualProtection: true,
         individualProtectionDescription: "casque et lunettes",
         sanitaryPrevention: true,
@@ -216,6 +217,7 @@ describe("PgConventionDraftRepository", () => {
         id: uuid(),
         internshipKind: "immersion",
         businessName: "Test Business",
+        businessNameCustomized: "Enseigne Test",
       };
 
       await pgConventionDraftRepository.save(conventionDraft, now);
@@ -224,6 +226,7 @@ describe("PgConventionDraftRepository", () => {
         id: conventionDraft.id,
         internshipKind: "immersion",
         businessName: "Updated Test Business",
+        businessNameCustomized: "Enseigne mise à jour",
       };
 
       await pgConventionDraftRepository.save(updatedConventionDraft, now);

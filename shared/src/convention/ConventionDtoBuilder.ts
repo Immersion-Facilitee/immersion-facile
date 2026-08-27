@@ -1,7 +1,10 @@
 import type { WithAcquisition } from "../acquisition.dto";
 import type { AgencyId } from "../agency/agency.dto";
 import type { Builder } from "../Builder";
-import type { BusinessName } from "../establishment/establishment.dto";
+import type {
+  BusinessName,
+  BusinessNameCustomized,
+} from "../establishment/establishment.dto";
 import type { FtConnectIdentity } from "../federatedIdentities/federatedIdentity.dto";
 import type { RemoteWorkMode } from "../remoteWorkMode/remoteWorkMode.dto";
 import type { AppellationAndRomeDto } from "../romeAndAppellationDtos/romeAndAppellation.dto";
@@ -440,6 +443,12 @@ export class ConventionDtoBuilder implements Builder<ConventionDto> {
 
   public withBusinessName(businessName: BusinessName): ConventionDtoBuilder {
     return new ConventionDtoBuilder({ ...this.dto, businessName });
+  }
+
+  public withBusinessNameCustomized(
+    businessNameCustomized: BusinessNameCustomized,
+  ): ConventionDtoBuilder {
+    return new ConventionDtoBuilder({ ...this.dto, businessNameCustomized });
   }
 
   public withDateApproval(

@@ -636,18 +636,25 @@ const makeEstablishmentSubSections = (
               children: "ENTREPRISE BANNIE",
             } satisfies BadgeProps),
       },
-      fields: [
-        {
-          key: "businessName",
-          label: "Nom (raison sociale)",
-          value: convention.businessName,
-        },
+      fields: removeEmptyValue([
         {
           key: "siret",
           label: "SIRET",
           value: renderSiret(convention.siret),
         },
-      ],
+        {
+          key: "businessName",
+          label: "Nom (raison sociale)",
+          value: convention.businessName,
+        },
+        convention.businessNameCustomized
+          ? {
+              key: "businessNameCustomized",
+              label: "Nom d'enseigne",
+              value: convention.businessNameCustomized,
+            }
+          : null,
+      ]),
     },
     {
       key: "establishmentTutor",

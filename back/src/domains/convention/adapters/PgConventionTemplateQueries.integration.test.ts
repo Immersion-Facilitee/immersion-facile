@@ -227,6 +227,7 @@ describe("PgConventionTemplateQueries", () => {
       const updatedConventionTemplate: ConventionTemplate = {
         ...conventionTemplate,
         name: "Updated name",
+        businessNameCustomized: "Enseigne mise à jour",
         signatories: {
           beneficiary: {
             role: "beneficiary",

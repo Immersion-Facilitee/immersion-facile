@@ -17,6 +17,7 @@ import { emailPossiblyEmptySchema, emailSchema } from "../email/email.schema";
 import { withBannedEstablishmentInformationSchema } from "../establishment/bannedEstablishmentInformations.schema";
 import {
   businessAddressSchema,
+  businessCustomizedNameSchema,
   businessNameSchema,
 } from "../establishment/businessComponents.schema";
 import { ftConnectIdentitySchema } from "../federatedIdentities/federatedIdentity.schema";
@@ -342,6 +343,7 @@ export const conventionCommonSchema = z
     ).optional(),
     siret: siretSchema,
     businessName: businessNameSchema,
+    businessNameCustomized: businessCustomizedNameSchema.optional(),
     schedule: scheduleSchema,
     workConditions: zStringCanBeEmptyMax6000.optional(),
     businessAdvantages: zStringCanBeEmptyMax3000.optional(),

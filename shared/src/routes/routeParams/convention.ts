@@ -376,6 +376,7 @@ export const conventionPresentationFromConventionDraft = (
   // Enterprise
   siret: conventionDraft.siret ?? "",
   businessName: conventionDraft.businessName ?? "",
+  businessNameCustomized: conventionDraft.businessNameCustomized ?? "",
   immersionAddress: conventionDraft.immersionAddress ?? "",
   workConditions: conventionDraft.workConditions ?? "",
   businessAdvantages: conventionDraft.businessAdvantages ?? "",

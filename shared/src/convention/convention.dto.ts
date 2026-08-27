@@ -18,7 +18,10 @@ import type {
 } from "../assessment/assessment.dto";
 import type { Email } from "../email/email.dto";
 import type { WithBannedEstablishmentInformations } from "../establishment/bannedEstablishmentInformations.dto";
-import type { BusinessName } from "../establishment/establishment.dto";
+import type {
+  BusinessName,
+  BusinessNameCustomized,
+} from "../establishment/establishment.dto";
 import type { FtConnectIdentity } from "../federatedIdentities/federatedIdentity.dto";
 import type { DateFilter } from "../filters";
 import type {
@@ -333,6 +336,7 @@ export type ConventionCommon = {
   updatedAt?: DateString;
   siret: SiretDto;
   businessName: BusinessName;
+  businessNameCustomized?: BusinessNameCustomized;
   schedule: ScheduleDto;
   workConditions?: string;
   businessAdvantages?: string;

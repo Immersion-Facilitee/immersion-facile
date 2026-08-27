@@ -121,6 +121,17 @@ export const EstablishmentBusinessFields = ({
         disabled={true}
         className={fr.cx("fr-mt-3w")}
       />
+      <Input
+        label={formContents.businessNameCustomized.label}
+        hintText={formContents.businessNameCustomized.hintText}
+        nativeInputProps={{
+          ...formContents.businessNameCustomized,
+          ...register("businessNameCustomized", {
+            setValueAs: (value) => (value ? value : undefined),
+          }),
+        }}
+        className={fr.cx("fr-mt-2w")}
+      />
     </>
   );
 };
