@@ -33,6 +33,7 @@ import {
   type Renewed,
   type WithOptionalFirstnameAndLastname,
 } from "./convention.dto";
+import type { ConventionDraftId } from "./conventionDraftId";
 
 export const DEMANDE_IMMERSION_ID = "a99eaca1-ee70-4c90-b3f4-668d492f7392";
 
@@ -145,6 +146,15 @@ export class ConventionDtoBuilder implements Builder<ConventionDto> {
 
   public build() {
     return this.dto;
+  }
+
+  public withConventionDraftId(
+    fromConventionDraftId?: ConventionDraftId,
+  ): ConventionDtoBuilder {
+    return new ConventionDtoBuilder({
+      ...this.dto,
+      fromConventionDraftId,
+    });
   }
 
   public notSigned(): ConventionDtoBuilder {

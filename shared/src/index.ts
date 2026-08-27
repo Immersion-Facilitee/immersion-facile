@@ -41,6 +41,7 @@ export * from "./convention/convention";
 export * from "./convention/convention.dto";
 export * from "./convention/convention.schema";
 export * from "./convention/conventionBeneficiaryList";
+export * from "./convention/conventionDraftId";
 export * from "./convention/conventionPresentation.dto";
 export * from "./convention/conventionPresentation.schema";
 export * from "./convention/conventionStatusTransitions";

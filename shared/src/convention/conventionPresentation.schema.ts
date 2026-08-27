@@ -12,15 +12,13 @@ import {
 } from "../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
 import { conventionIdSchema, conventionSchema } from "./convention.schema";
+import { conventionDraftIdSchema } from "./conventionDraftId";
 import type {
   ConventionFormInitialValues,
   WithStatusJustification,
 } from "./conventionPresentation.dto";
 import { conventionTemplateIdSchema } from "./conventionTemplate.schema";
-import {
-  conventionDraftIdSchema,
-  conventionDraftSchema,
-} from "./saveConventionDraft.schema";
+import { conventionDraftSchema } from "./saveConventionDraft.schema";
 
 const makeConventionPresentationSchema = (
   isTemplateForm: boolean,

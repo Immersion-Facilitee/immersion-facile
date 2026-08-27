@@ -29,7 +29,10 @@ export const makeAddConvention = useCaseBuilder("AddConvention")
 
       await rejectsSiretIfNotAnOpenCompany(deps.siretGateway, convention.siret);
 
-      await uow.conventionRepository.save(convention);
+      await uow.conventionRepository.save({
+        ...convention,
+        fromConventionDraftId,
+      });
       await uow.conventionExternalIdRepository.save(convention.id);
 
       const event = deps.createNewEvent({

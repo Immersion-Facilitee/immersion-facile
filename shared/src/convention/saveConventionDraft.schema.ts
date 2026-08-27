@@ -3,17 +3,14 @@ import { agencyKindSchema } from "../agency/agency.schema";
 import { emailSchema } from "../email/email.schema";
 import { getNestedValue, isObject } from "../utils";
 import { zStringMinLength1Max1024 } from "../utils/string.schema";
-import {
-  localization,
-  type ZodSchemaWithInputMatchingOutput,
-} from "../zodUtils";
+import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
 import {
   immersionConventionSchema,
   miniStageConventionSchema,
 } from "./convention.schema";
+import { conventionDraftIdSchema } from "./conventionDraftId";
 import {
   type ConventionDraftDto,
-  type ConventionDraftId,
   type SaveConventionDraftDto,
   type SaveConventionDraftFromConventionDto,
   type SaveConventionDraftFromConventionTemplateDto,
@@ -77,9 +74,6 @@ export const makeConventionDeepPartialSchema = (
 
   return schema;
 };
-
-export const conventionDraftIdSchema: ZodSchemaWithInputMatchingOutput<ConventionDraftId> =
-  z.uuid(localization.invalidUuid);
 
 const miniStageBeneficiaryFields = [
   "levelOfEducation",

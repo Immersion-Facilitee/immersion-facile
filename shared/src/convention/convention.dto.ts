@@ -62,6 +62,7 @@ import {
   type OptionalDateRange,
 } from "../utils/date";
 import type { WithFirstnameAndLastname } from "./convention.schema";
+import type { ConventionDraftId } from "./conventionDraftId";
 
 export type ConventionStatus = (typeof conventionStatuses)[number];
 
@@ -354,6 +355,7 @@ export type ConventionCommon = {
   establishmentTutor: EstablishmentTutor;
   validators?: ConventionValidatorInputNames;
   agencyReferent?: WithOptionalFirstnameAndLastname;
+  fromConventionDraftId?: ConventionDraftId;
 } & Partial<WithRenewed> &
   WithAcquisition;
 

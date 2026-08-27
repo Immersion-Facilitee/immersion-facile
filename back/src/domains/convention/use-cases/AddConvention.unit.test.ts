@@ -4,6 +4,7 @@ import {
   DiscussionBuilder,
   errors,
   expectPromiseToFailWithError,
+  expectToEqual,
 } from "shared";
 import type { DomainEvent } from "../../core/events/events";
 import {
@@ -121,21 +122,22 @@ describe("Add Convention", () => {
     ]);
   });
 
-  it("sends conventionDraftId in the event when the convention was created from a draft", async () => {
+  it("sends conventionDraftId in the event and add it to the convention when the convention was created from a draft", async () => {
     const fromConventionDraftId = "550e8400-e29b-41d4-a716-446655440000";
     const occurredAt = new Date("2021-10-15T15:00");
     const id = "eventId";
     timeGateway.setNextDate(occurredAt);
     uuidGenerator.setNextUuid(id);
 
-    expect(
+    expectToEqual(
       await addConvention.execute({
         convention: validConvention,
         fromConventionDraftId,
       }),
-    ).toEqual({
-      id: validConvention.id,
-    });
+      {
+        id: validConvention.id,
+      },
+    );
 
     expectDomainEventsToBeInOutbox([
       {
@@ -152,6 +154,9 @@ describe("Add Convention", () => {
         wasQuarantined: false,
         priority: defaultPriority,
       },
+    ]);
+    expectToEqual(uow.conventionRepository.conventions, [
+      { ...validConvention, fromConventionDraftId },
     ]);
   });
 

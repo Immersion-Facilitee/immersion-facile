@@ -119,6 +119,7 @@ export class PgConventionRepository implements ConventionRepository {
       agencyReferent,
       renewed,
       remoteWorkMode,
+      fromConventionDraftId,
     } = convention;
 
     // Insert signatories and remember their id
@@ -184,6 +185,7 @@ export class PgConventionRepository implements ConventionRepository {
         establishment_number_employees:
           convention.establishmentNumberEmployeesRange,
         updated_at: now ?? sql`now()`,
+        from_convention_draft_id: fromConventionDraftId,
       })
       .execute();
   }
@@ -636,6 +638,7 @@ export class PgConventionRepository implements ConventionRepository {
         validators: sql`${convention.validators}`,
         establishment_number_employees:
           convention.establishmentNumberEmployeesRange,
+        from_convention_draft_id: convention.fromConventionDraftId,
       })
       .where("id", "=", convention.id)
       .execute();

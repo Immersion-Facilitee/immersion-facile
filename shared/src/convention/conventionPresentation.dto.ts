@@ -5,11 +5,9 @@ import type {
   InternshipKind,
   Signatories,
 } from "./convention.dto";
+import type { ConventionDraftId } from "./conventionDraftId";
 import type { ConventionTemplateId } from "./conventionTemplate.dto";
-import type {
-  ConventionDraftDto,
-  ConventionDraftId,
-} from "./saveConventionDraft.dto";
+import type { ConventionDraftDto } from "./saveConventionDraft.dto";
 
 export const undefinedIfEmptyString = (text?: string): string | undefined =>
   text || undefined;
