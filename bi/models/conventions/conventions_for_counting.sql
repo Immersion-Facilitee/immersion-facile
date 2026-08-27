@@ -71,7 +71,8 @@ select
     b.extra_fields ->> 'levelOfEducation' as beneficiary_level_of_education,
     b.extra_fields ->> 'schoolName' as beneficiary_school_name,
     b.extra_fields ->> 'isRqth' as beneficiary_is_rqth,
-    estab.fit_for_disabled_workers as establishment_fit_for_disabled_workers
+    estab.fit_for_disabled_workers as establishment_fit_for_disabled_workers,
+    c.from_convention_draft_id
 from {{ source('immersion', 'conventions') }} as c
 inner join {{ source('immersion', 'agencies') }} as a
     on a.id = c.agency_id

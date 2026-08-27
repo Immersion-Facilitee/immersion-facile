@@ -59,6 +59,7 @@ select
     c.individual_protection_description,
     c.acquisition_campaign as convention_acquisition_campaign,
     c.acquisition_keyword as convention_acquisition_keyword,
+    c.from_convention_draft_id,
 
 -- Status translation
 cst.translation as status_french,
@@ -82,7 +83,16 @@ a.id as agency_id,
 a.name as agency_name,
 a.status as agency_status,
 a.agency_siret::text as agency_siret,
-nullif(trim(concat(c.agency_referent_first_name, ' ', c.agency_referent_last_name)), '') as agency_referent_name,
+nullif(
+    trim(
+        concat(
+            c.agency_referent_first_name,
+            ' ',
+            c.agency_referent_last_name
+        )
+    ),
+    ''
+) as agency_referent_name,
 refer_a.name as referring_agency_name,
 a.kind as agency_kind,
 pdr.department_name as agency_department_name,
@@ -293,6 +303,8 @@ left join {{ source('immersion', 'phone_numbers') }} as pn_bce
     on pn_bce.id = bce.phone_id
 
 -- Status translation
+
+
 inner join {{ source('immersion', 'convention_status_translations') }} as cst
     on c.status = cst.status
 
