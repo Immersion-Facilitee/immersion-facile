@@ -145,7 +145,7 @@ describe("Pg implementation of ConventionQueries", () => {
         .withId(conventionIdA)
         .withAgencyId(agency.id)
         .withUpdatedAt(anyConventionUpdatedAt)
-        .withConventionDraftId(uuid())
+        .withFromConventionDraftId(uuid())
         .build();
       await conventionRepository.save(convention, anyConventionUpdatedAt);
 

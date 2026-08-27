@@ -148,7 +148,7 @@ export class ConventionDtoBuilder implements Builder<ConventionDto> {
     return this.dto;
   }
 
-  public withConventionDraftId(
+  public withFromConventionDraftId(
     fromConventionDraftId?: ConventionDraftId,
   ): ConventionDtoBuilder {
     return new ConventionDtoBuilder({

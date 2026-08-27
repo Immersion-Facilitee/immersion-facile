@@ -6,7 +6,7 @@ const columnName = "from_convention_draft_id";
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
   pgm.addColumn(tableName, {
-    [columnName]: { type: "text", notNull: false },
+    [columnName]: { type: "uuid", notNull: false },
   });
 }
 
