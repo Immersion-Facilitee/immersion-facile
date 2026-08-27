@@ -26,6 +26,11 @@ const isUpdatingConnectedUserAgency = createSelector(
   ({ isUpdatingConnectedUserAgency }) => isUpdatingConnectedUserAgency,
 );
 
+const isUpdatingUserPreventToDelete = createSelector(
+  connectedUsersAdminState,
+  ({ isUpdatingUserPreventToDelete }) => isUpdatingUserPreventToDelete,
+);
+
 const agenciesNeedingReviewForSelectedUser = createSelector(
   connectedUsersNeedingReviewSelector,
   selectedUser,
@@ -69,4 +74,5 @@ export const connectedUsersAdminSelectors = {
   ),
   agencyUsers,
   isUpdatingConnectedUserAgency,
+  isUpdatingUserPreventToDelete,
 };
