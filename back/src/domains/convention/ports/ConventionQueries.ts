@@ -17,7 +17,6 @@ import type {
   OptionalDateRange,
   PaginationQueryParams,
   SiretDto,
-  UserId,
   WithSort,
 } from "shared";
 
@@ -80,6 +79,7 @@ export type GetConventionIdsParams = {
     withUpdateDate?: OptionalDateRange;
     withSirets?: SiretDto[];
     withStatuses?: ConventionStatus[];
+    withEmail?: Email;
     withBeneficiary?: {
       birthdate?: DateString;
       email?: Email;
@@ -96,11 +96,6 @@ export type GetConventionIdsParams = {
 };
 
 export interface ConventionQueries {
-  getUserIdsWithNoActiveConvention(params: {
-    userIds: UserId[];
-    since: Date;
-  }): Promise<UserId[]>;
-
   getConventionIdsByFilters(
     params: GetConventionIdsParams,
   ): Promise<ConventionId[]>;

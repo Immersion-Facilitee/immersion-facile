@@ -3,8 +3,11 @@ import {
   type ConnectedUser,
   type ConnectedUserJwtPayload,
   type ConventionJwtPayload,
+  conventionStatusesDemonstratingUserActivity,
   type Email,
   errors,
+  executeInSequence,
+  isTruthy,
   type UserId,
 } from "shared";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
@@ -61,3 +64,32 @@ export const getGenericAuthOrThrow = <
   if (!genericAuth) throw errors.user.unauthorized();
   return genericAuth;
 };
+
+export const getUserIdsWithoutActiveConvention = async ({
+  uow,
+  userIds,
+  since,
+}: {
+  uow: UnitOfWork;
+  userIds: UserId[];
+  since: Date;
+}): Promise<UserId[]> =>
+  executeInSequence(userIds, async (userId) =>
+    uow.userRepository
+      .getById(userId)
+      .then((user) => {
+        if (user)
+          return uow.conventionQueries.getConventionIdsByFilters({
+            filters: {
+              withStatuses: conventionStatusesDemonstratingUserActivity,
+              withEndDate: { from: since },
+              withEmail: user.email,
+            },
+            limit: 1,
+          });
+        throw errors.user.notFound({ userId });
+      })
+      .then((conventionIds) => (conventionIds.length === 0 ? userId : null)),
+  ).then((userIdsWithoutActiveConvention) =>
+    userIdsWithoutActiveConvention.filter(isTruthy),
+  );

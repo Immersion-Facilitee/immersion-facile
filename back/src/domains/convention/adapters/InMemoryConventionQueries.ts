@@ -12,18 +12,17 @@ import {
   type ConventionWithUnfinalizedAssessment,
   calculatePaginationResult,
   conventionSchema,
-  conventionStatusesDemonstratingUserActivity,
   type DataWithPagination,
   type DateFilter,
   errors,
   type GetPaginatedConventionsSortBy,
   isConventionEndingInOneDayOrMore,
   isFunctionalBroadcastFeedbackError,
+  isTruthy,
   isUnvalidatedConventionStatus,
   makeEmptyLastReminders,
   type PaginationQueryParams,
   type SiretDto,
-  type UserId,
   type WithBannedEstablishmentInformations,
   type WithSort,
 } from "shared";
@@ -65,43 +64,6 @@ export class InMemoryConventionQueries implements ConventionQueries {
     private readonly broadcastFeedbacksRepository: InMemoryBroadcastFeedbacksRepository,
     private readonly bannedEstablishmentRepository: InMemoryBannedEstablishmentRepository,
   ) {}
-
-  public async getUserIdsWithNoActiveConvention({
-    userIds,
-    since,
-  }: {
-    userIds: UserId[];
-    since: Date;
-  }): Promise<UserId[]> {
-    if (userIds.length === 0) return [];
-
-    const users = this.userRepository.users.filter((user) =>
-      userIds.includes(user.id),
-    );
-
-    return users
-      .filter(
-        (user) =>
-          !this.conventionRepository.conventions.some((convention) => {
-            if (new Date(convention.dateEnd) < since) return false;
-            if (
-              !conventionStatusesDemonstratingUserActivity.includes(
-                convention.status,
-              )
-            )
-              return false;
-            const conventionEmails = [
-              convention.signatories.beneficiary.email,
-              convention.establishmentTutor.email,
-              convention.signatories.establishmentRepresentative.email,
-              convention.signatories.beneficiaryRepresentative?.email,
-              convention.signatories.beneficiaryCurrentEmployer?.email,
-            ].filter(Boolean);
-            return conventionEmails.includes(user.email);
-          }),
-      )
-      .map((u) => u.id);
-  }
 
   public async getConventionIdsByFilters(
     params: GetConventionIdsParams,
@@ -593,6 +555,7 @@ const makeApplyFiltersToGetConventionIds =
     withEstablishmentTutor,
     withSirets,
     withStatuses,
+    withEmail,
   }: GetConventionIdsParams["filters"]) =>
   (convention: ConventionDto) =>
     (
@@ -624,6 +587,26 @@ const makeApplyFiltersToGetConventionIds =
         ({ updatedAt }) =>
           withUpdateDate?.from && updatedAt
             ? new Date(updatedAt) >= withUpdateDate.from
+            : true,
+        ({
+          establishmentTutor,
+          signatories: {
+            beneficiary,
+            establishmentRepresentative,
+            beneficiaryCurrentEmployer,
+            beneficiaryRepresentative,
+          },
+        }) =>
+          withEmail
+            ? [
+                establishmentTutor.email,
+                beneficiary.email,
+                establishmentRepresentative.email,
+                beneficiaryCurrentEmployer?.email,
+                beneficiaryRepresentative?.email,
+              ]
+                .filter(isTruthy)
+                .includes(withEmail)
             : true,
         ({ establishmentTutor }) =>
           withEstablishmentTutor?.email
