@@ -638,7 +638,6 @@ export class PgConventionRepository implements ConventionRepository {
         validators: sql`${convention.validators}`,
         establishment_number_employees:
           convention.establishmentNumberEmployeesRange,
-        from_convention_draft_id: convention.fromConventionDraftId,
       })
       .where("id", "=", convention.id)
       .execute();

@@ -147,7 +147,7 @@ describe("PgConventionRepository", () => {
       .withId("aaaaac99-9c0b-1bbb-bb6d-6bb9bd38aaaa")
       .withEstablishmentNumberOfEmployeesRange("20-49")
       .withAgencyId(agency.id)
-      .withConventionDraftId(uuid())
+      .withFromConventionDraftId(uuid())
       .build();
 
     expect(await conventionRepository.getById(convention.id)).toBeUndefined();
@@ -182,7 +182,7 @@ describe("PgConventionRepository", () => {
     );
   });
 
-  it("Adds/Update a new CCI convention", async () => {
+  it("Adds/Update a new CCI convention, fromConventionDraftId is not updated", async () => {
     const convention = conventionStylisteBuilder
       .withInternshipKind("mini-stage-cci")
       .withId("aaaaac99-9c0b-1bbb-bb6d-6bb9bd38aaaa")
@@ -204,7 +204,7 @@ describe("PgConventionRepository", () => {
       .withEstablishmentNumberOfEmployeesRange("20-49")
       .withUpdatedAt(anyConventionUpdatedAt)
       .withRemoteWorkMode("HYBRID")
-      .withConventionDraftId(uuid())
+      .withFromConventionDraftId(uuid())
       .build();
 
     await conventionRepository.update(
@@ -212,10 +212,10 @@ describe("PgConventionRepository", () => {
       anyConventionUpdatedAt,
     );
 
-    expectToEqual(
-      await conventionRepository.getById(updatedConvention.id),
-      updatedConvention,
-    );
+    expectToEqual(await conventionRepository.getById(updatedConvention.id), {
+      ...updatedConvention,
+      fromConventionDraftId: undefined,
+    });
   });
 
   it("Adds a new convention with field workConditions undefined and no signatories", async () => {
