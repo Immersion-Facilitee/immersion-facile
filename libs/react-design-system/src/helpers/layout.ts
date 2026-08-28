@@ -1,26 +1,22 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import type { BreakpointKeys } from "@codegouvfr/react-dsfr/useBreakpointsValuesPx";
 import { useLayoutEffect, useState } from "react";
 
-type Breakpoint = Exclude<BreakpointKeys, "xs">;
+export const isDesktop = () =>
+  window.matchMedia(fr.breakpoints.up("lg").replace("@media ", "")).matches;
 
-const getBreakpointMediaQuery = (breakpoint: Breakpoint) =>
-  fr.breakpoints.up(breakpoint).replace("@media ", "");
-
-const isAboveBreakpoint = (breakpoint: Breakpoint) =>
-  window.matchMedia(getBreakpointMediaQuery(breakpoint)).matches;
-
-export const useBreakpoint = (breakpoint: Breakpoint) => {
-  const [isAbove, setIsAbove] = useState(isAboveBreakpoint(breakpoint));
-
+export const useLayout = () => {
+  const [isLayoutDesktop, setIsLayoutDesktop] = useState(isDesktop());
   useLayoutEffect(() => {
-    const mediaQuery = window.matchMedia(getBreakpointMediaQuery(breakpoint));
-    const updateIsAbove = () => setIsAbove(mediaQuery.matches);
-
-    mediaQuery.addEventListener("change", updateIsAbove);
-
-    return () => mediaQuery.removeEventListener("change", updateIsAbove);
-  }, [breakpoint]);
-
-  return isAbove;
+    const mediaQuery = window.matchMedia(
+      fr.breakpoints.up("lg").replace("@media ", ""),
+    );
+    mediaQuery.addEventListener("change", () =>
+      setIsLayoutDesktop(mediaQuery.matches),
+    );
+    return () =>
+      mediaQuery.removeEventListener("change", () =>
+        setIsLayoutDesktop(mediaQuery.matches),
+      );
+  }, []);
+  return { isLayoutDesktop };
 };

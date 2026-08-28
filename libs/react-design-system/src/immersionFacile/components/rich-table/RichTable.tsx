@@ -8,7 +8,7 @@ import {
 import { Table, type TableProps } from "@codegouvfr/react-dsfr/Table";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStyles } from "tss-react/dsfr";
-import { useBreakpoint } from "../../../helpers/layout";
+import { useLayout } from "../../../helpers/layout";
 import { useDebounce, useScrollTo } from "../../hooks";
 import { Loader } from "../loader";
 import { RichDropdown, type RichDropdownProps } from "../rich-dropdown";
@@ -42,7 +42,7 @@ export const RichTable = ({
   className,
 }: RichTableProps) => {
   const { cx } = useStyles();
-  const isFixedOnDesktop = useBreakpoint("lg");
+  const { isLayoutDesktop } = useLayout();
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearchValue = useDebounce(searchValue, 500);
   const searchBarRefOnSubmitRef = useRef(searchBar?.onSubmit).current;
@@ -128,7 +128,7 @@ export const RichTable = ({
         headers={headers}
         data={data}
         bordered={false}
-        fixed={isFixedOnDesktop}
+        fixed={isLayoutDesktop}
       />
       <Pagination {...pagination} />
     </section>

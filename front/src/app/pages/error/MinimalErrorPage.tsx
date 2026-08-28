@@ -1,6 +1,6 @@
 import Header from "@codegouvfr/react-dsfr/Header";
 import { useIsDark } from "@codegouvfr/react-dsfr/useIsDark";
-import { MainWrapper, useBreakpoint } from "react-design-system";
+import { MainWrapper, useLayout } from "react-design-system";
 import { LayoutFooter } from "src/app/components/layout/LayoutFooter";
 import { LayoutHeader } from "src/app/components/layout/LayoutHeader";
 import { ErrorPageContent } from "src/app/pages/error/ErrorPageContent";
@@ -11,7 +11,7 @@ import immersionFacileDarkLogo from "/assets/img/logo-if-dark.svg";
 
 export const MinimalErrorPage = ({ error }: { error: Error }) => {
   const darkModeState = useIsDark();
-  const isLayoutDesktop = useBreakpoint("md");
+  const { isLayoutDesktop } = useLayout();
 
   const { classes } = makeStyles({ name: LayoutHeader.displayName })(() => ({
     operator: {
