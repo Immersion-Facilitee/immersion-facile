@@ -388,7 +388,11 @@ export const createConventionQueryBuilder = (
   createConventionSelection(
     withAppellationsAndPartnerPeJoinAndPhoneNumber(
       withActorJoins(transaction.selectFrom("conventions")),
-    ),
+    ) as unknown as SelectQueryBuilder<
+      ConventionQueryBuilderDb,
+      keyof ConventionQueryBuilderDb,
+      any
+    >,
   ).$if(withAgencyJoin, (qb) =>
     qb.leftJoin("agencies", "agencies.id", "conventions.agency_id"),
   );
@@ -398,7 +402,9 @@ export const createPaginatedConventionsBaseBuilder = ({
 }: {
   transaction: KyselyDb;
 }): ConventionBaseQueryBuilder =>
-  withActorJoins(transaction.selectFrom("conventions"));
+  withActorJoins(
+    transaction.selectFrom("conventions"),
+  ) as unknown as ConventionBaseQueryBuilder;
 
 export const wrapInMaterializedCteWithEnrichment = ({
   transaction,
@@ -414,10 +420,16 @@ export const wrapInMaterializedCteWithEnrichment = ({
         () => filteredBuilder.selectAll("conventions"),
       )
       .selectFrom("user_conventions as conventions"),
-    withActorJoins,
+    withActorJoins as (
+      builder: SelectQueryBuilder<any, any, any>,
+    ) => SelectQueryBuilder<
+      ConventionQueryBuilderDb,
+      keyof ConventionQueryBuilderDb,
+      any
+    >,
     withAppellationsAndPartnerPeJoinAndPhoneNumber,
     createConventionSelection,
-  );
+  ) as unknown as ConventionQueryBuilder;
 
 const createBroadcastFeedbackBaseBuilder = ({
   transaction,

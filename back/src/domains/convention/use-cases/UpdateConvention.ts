@@ -6,7 +6,6 @@ import {
   type ConventionStatus,
   errors,
   isSignatoryRole,
-  type Signatories,
   statusTransitionConfigs,
   updateConventionRequestSchema,
   type WithConventionIdLegacy,
@@ -86,12 +85,11 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
         );
 
       const signatoryRole = userRolesOnConvention.find(isSignatoryRole);
-      const conventionWithSignatoriesSignedAtAndDateApprovalCleared: ConventionDto =
-        {
-          ...convention,
-          dateApproval: undefined,
-          signatories: clearSignedAtForAllSignatories(convention),
-        };
+      const conventionWithSignatoriesSignedAtAndDateApprovalCleared = {
+        ...convention,
+        dateApproval: undefined,
+        signatories: clearSignedAtForAllSignatories(convention),
+      } as ConventionDto;
 
       const triggeredBy: TriggeredBy =
         "userId" in jwtPayload
@@ -144,7 +142,7 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
 
 const clearSignedAtForAllSignatories = (
   convention: ConventionDto,
-): Signatories => {
+): ConventionDto["signatories"] => {
   return {
     beneficiary: {
       ...convention.signatories.beneficiary,

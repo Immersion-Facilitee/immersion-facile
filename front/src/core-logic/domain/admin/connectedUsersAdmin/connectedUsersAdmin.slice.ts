@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   AgencyId,
   AgencyRight,
+  AgencyRole,
   ConnectedUser,
   OmitFromExistingKeys,
   RejectConnectedUserRoleForAgencyParams,
@@ -126,8 +127,8 @@ export const connectedUsersAdminSlice = createSlice({
       if (!userNeedingReview) return;
 
       if (
-        !userNeedingReview.agencyRights[agencyId].roles.some((role) =>
-          newRoles.includes(role),
+        !userNeedingReview.agencyRights[agencyId].roles.some(
+          (role: AgencyRole) => newRoles.includes(role),
         )
       )
         userNeedingReview.agencyRights[agencyId].roles = newRoles;

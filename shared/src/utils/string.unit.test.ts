@@ -1,5 +1,5 @@
 import { ZodError } from "zod";
-import type { $ZodIssue } from "zod/v4/core/errors.cjs";
+import type { $ZodIssue } from "zod/v4/core";
 import { emailExchangeSplitters } from "../discussion/discussion.helpers";
 import { expectToEqual } from "../test.helpers";
 import { localization } from "../zodUtils";

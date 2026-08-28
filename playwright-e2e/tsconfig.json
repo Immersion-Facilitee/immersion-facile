@@ -3,17 +3,17 @@
     "target": "ES2018",
     "lib": ["DOM", "DOM.Iterable", "ESNext", "ES2015"],
     "allowJs": false,
-    "skipLibCheck": false,
-    "esModuleInterop": false,
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noImplicitOverride": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["*"]
   },
   "include": [
     "*.ts",
