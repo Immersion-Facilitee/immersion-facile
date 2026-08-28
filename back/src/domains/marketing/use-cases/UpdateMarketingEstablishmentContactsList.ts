@@ -13,6 +13,7 @@ import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { EstablishmentAggregate } from "../../establishment/entities/EstablishmentAggregate";
 import type { MarketingContact } from "../entities/MarketingContact";
+import { deleteEstablishmentMarketingContact } from "../helpers/establishmentMarketingContact.helpers";
 import type {
   ConventionInfos,
   EstablishmentMarketingGateway,
@@ -101,11 +102,12 @@ const onMissingEstablishment = async ({
   const { lastConvention } = marketingConventionsData;
 
   if (!lastConvention) {
-    return deleteMarketingContactEntity(
-      siret,
+    return deleteEstablishmentMarketingContact({
       uow,
       establishmentMarketingGateway,
-    );
+      siret,
+      throwIfMissing: true,
+    });
   }
 
   const marketingContact: MarketingContact = {
@@ -293,22 +295,6 @@ const saveMarketingContactEntity = async ({
         (await siretGateway.getEstablishmentBySiret(siret))?.nafDto?.code ??
         null,
     });
-};
-
-const deleteMarketingContactEntity = async (
-  siret: SiretDto,
-  uow: UnitOfWork,
-  establishmentMarketingGateway: EstablishmentMarketingGateway,
-): Promise<void> => {
-  const establishmentMarketingContactEntity =
-    await uow.establishmentMarketingRepository.getBySiret(siret);
-  if (!establishmentMarketingContactEntity)
-    throw errors.establishmentMarketing.notFound({ siret });
-
-  await uow.establishmentMarketingRepository.delete(siret);
-  await establishmentMarketingGateway.delete(
-    establishmentMarketingContactEntity.contactEmail,
-  );
 };
 
 const makeEstablishmentMarketingSearchableBy = (
