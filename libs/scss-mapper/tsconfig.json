@@ -13,8 +13,5 @@
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
     "typeRoots": ["./src/types", "./node_modules/@types"],
     "types": ["*"]
-  },
-  "ts-node": {
-    "esm": true
   }
 }

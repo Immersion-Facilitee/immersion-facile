@@ -11,7 +11,6 @@ import {
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import {
   type AutocompleteItem,
-  type AutocompleteState,
   initialAutocompleteItem,
 } from "src/core-logic/domain/autocomplete.utils";
 import { makeGeocodingLocatorSelector } from "src/core-logic/domain/geocoding/geocoding.selectors";
@@ -63,66 +62,75 @@ describe("Geocoding epic", () => {
     expect(store.getState().geocoding.data[locator]?.suggestions).toEqual([]);
   });
 
+  const buildAddressValue = (
+    address: AddressWithCountryCodeAndPosition["address"],
+    position: AddressWithCountryCodeAndPosition["position"],
+  ): AddressAndPositionWithFormattedAddress => ({
+    address,
+    position,
+    formattedAddress: addressDtoToString(address),
+  });
+
   const multipleAddressData: Record<
     MultipleAddressAutocompleteLocator,
-    AutocompleteItem<AddressWithCountryCodeAndPosition>
+    AutocompleteItem<AddressAndPositionWithFormattedAddress>
   > = {
     "multiple-address-0": {
       ...initialAutocompleteItem,
-      value: {
-        address: {
+      value: buildAddressValue(
+        {
           city: "Paris",
           departmentCode: "75",
           postcode: "75018",
           streetNumberAndAddress: "254 Avenue Maxime Gorki",
           countryCode: defaultCountryCode,
         },
-        position: { lat: 48.8566, lon: 2.3522 },
-      },
+        { lat: 48.8566, lon: 2.3522 },
+      ),
     },
     "multiple-address-1": {
       ...initialAutocompleteItem,
-      value: {
-        address: {
+      value: buildAddressValue(
+        {
           city: "Poitiers",
           departmentCode: "86",
           postcode: "86000",
           streetNumberAndAddress: "254 Rue de la Paix",
           countryCode: defaultCountryCode,
         },
-        position: { lat: 46.5833, lon: 0.3333 },
-      },
+        { lat: 46.5833, lon: 0.3333 },
+      ),
     },
     "multiple-address-2": {
       ...initialAutocompleteItem,
-      value: {
-        address: {
+      value: buildAddressValue(
+        {
           city: "Bordeaux",
           departmentCode: "33",
           postcode: "33000",
           streetNumberAndAddress: "25 rue des Chartrons",
           countryCode: defaultCountryCode,
         },
-        position: { lat: 44.8378, lon: -0.5795 },
-      },
+        { lat: 44.8378, lon: -0.5795 },
+      ),
     },
     "multiple-address-3": {
       ...initialAutocompleteItem,
-      value: {
-        address: {
+      value: buildAddressValue(
+        {
           city: "Paris",
           departmentCode: "75",
           postcode: "75000",
           streetNumberAndAddress: "123 Rue de la Paix",
           countryCode: defaultCountryCode,
         },
-        position: { lat: 48.8566, lon: 2.3522 },
-      },
+        { lat: 48.8566, lon: 2.3522 },
+      ),
     },
   };
   const expectedData1: Record<
     MultipleAddressAutocompleteLocator,
-    AutocompleteItem<AddressWithCountryCodeAndPosition>
+    AutocompleteItem<AddressAndPositionWithFormattedAddress>
   > = {
     "multiple-address-0": multipleAddressData["multiple-address-0"],
     "multiple-address-1": multipleAddressData["multiple-address-2"],
@@ -130,7 +138,7 @@ describe("Geocoding epic", () => {
   };
   const expectedData2: Record<
     MultipleAddressAutocompleteLocator,
-    AutocompleteItem<AddressWithCountryCodeAndPosition>
+    AutocompleteItem<AddressAndPositionWithFormattedAddress>
   > = {
     "multiple-address-0": multipleAddressData["multiple-address-1"],
     "multiple-address-1": multipleAddressData["multiple-address-2"],
@@ -138,17 +146,20 @@ describe("Geocoding epic", () => {
   };
   const expectedData3: Record<
     MultipleAddressAutocompleteLocator,
-    AutocompleteItem<AddressWithCountryCodeAndPosition>
+    AutocompleteItem<AddressAndPositionWithFormattedAddress>
   > = {
     "multiple-address-0": multipleAddressData["multiple-address-0"],
     "multiple-address-1": multipleAddressData["multiple-address-1"],
     "multiple-address-2": multipleAddressData["multiple-address-2"],
   };
-  const multipleAddressGeocodingData = multipleAddressData as AutocompleteState<
-    AddressAutocompleteLocator,
-    AddressAndPositionWithFormattedAddress
-  >["data"];
-  it.each([
+  it.each<{
+    description: string;
+    locatorToRemove: MultipleAddressAutocompleteLocator;
+    expectedData: Record<
+      MultipleAddressAutocompleteLocator,
+      AutocompleteItem<AddressAndPositionWithFormattedAddress>
+    >;
+  }>([
     {
       description: "removing a middle element (locator1)",
       locatorToRemove: "multiple-address-1",
@@ -166,20 +177,17 @@ describe("Geocoding epic", () => {
     },
   ])("should handle $description", ({ locatorToRemove, expectedData }) => {
     const { store } = createTestStore({
-      geocoding: { data: multipleAddressGeocodingData },
+      geocoding: { data: multipleAddressData },
     });
 
     store.dispatch(
       geocodingSlice.actions.clearLocatorDataRequested({
-        locator: locatorToRemove as MultipleAddressAutocompleteLocator,
+        locator: locatorToRemove,
         multiple: true,
       }),
     );
 
-    expectToEqual(
-      store.getState().geocoding.data,
-      expectedData as typeof multipleAddressGeocodingData,
-    );
+    expectToEqual(store.getState().geocoding.data, expectedData);
   });
 
   it("should update the searched query and reset the state", () => {

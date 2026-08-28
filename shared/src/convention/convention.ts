@@ -92,11 +92,19 @@ export const signConventionDtoWithRole = (
     signedAt,
   );
 
-  return {
-    ...convention,
-    signatories: updatedSignatories,
-    status: getNewStatus(updatedSignatories),
-  };
+  const status = getNewStatus(updatedSignatories);
+
+  return convention.internshipKind === "immersion"
+    ? {
+        ...convention,
+        signatories: updatedSignatories,
+        status,
+      }
+    : {
+        ...convention,
+        signatories: updatedSignatories,
+        status,
+      };
 };
 
 export const isSignatory = (role: Role): role is SignatoryRole =>
