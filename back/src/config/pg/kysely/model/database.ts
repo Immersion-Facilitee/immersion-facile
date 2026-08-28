@@ -2,6 +2,7 @@ import type { ColumnType, Generated, JSONColumnType } from "kysely";
 import type {
   AbsoluteUrl,
   AgencyKind,
+  ArchivedConventionRequestStatus,
   Attachment,
   BroadcastFeedbackResponse,
   ContactLevelOfEducation,
@@ -228,7 +229,8 @@ interface ArchivedConventionRequests {
   id: string;
   user_id: string;
   created_at: Timestamp;
-  handled_at: Timestamp | null;
+  status: ArchivedConventionRequestStatus;
+  updated_at: Timestamp;
   convention_id: string | null;
   beneficiary_first_name: string | null;
   beneficiary_last_name: string | null;

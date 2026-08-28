@@ -1,4 +1,8 @@
-import type { ArchivedConventionRequestId } from "shared";
+import type {
+  ArchivedConventionRequestId,
+  ArchivedConventionRequestStatus,
+  DateString,
+} from "shared";
 import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
 import {
   type ArchivedConventionRequestEntity,
@@ -32,9 +36,8 @@ export class PgArchivedConventionRequestRepository
         id: archivedConventionRequest.id,
         user_id: archivedConventionRequest.userId,
         created_at: new Date(archivedConventionRequest.createdAt),
-        handled_at: archivedConventionRequest.handledAt
-          ? new Date(archivedConventionRequest.handledAt)
-          : null,
+        updated_at: new Date(archivedConventionRequest.updatedAt),
+        status: archivedConventionRequest.status,
         reason: archivedConventionRequest.reason,
         other_reason: archivedConventionRequest.otherReason,
         ...(archivedConventionRequest.conventionSearchMethod ===
@@ -55,6 +58,21 @@ export class PgArchivedConventionRequestRepository
               ),
             }),
       })
+      .execute();
+  }
+
+  public async update(params: {
+    id: ArchivedConventionRequestId;
+    status: ArchivedConventionRequestStatus;
+    updatedAt: DateString;
+  }): Promise<void> {
+    await this.transaction
+      .updateTable("archived_convention_requests")
+      .set({
+        status: params.status,
+        updated_at: new Date(params.updatedAt),
+      })
+      .where("id", "=", params.id)
       .execute();
   }
 }
