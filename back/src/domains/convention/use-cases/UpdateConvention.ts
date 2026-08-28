@@ -5,7 +5,9 @@ import {
   type ConventionDto,
   type ConventionStatus,
   errors,
+  type InternshipKind,
   isSignatoryRole,
+  type Signatories,
   statusTransitionConfigs,
   updateConventionRequestSchema,
   type WithConventionIdLegacy,
@@ -85,11 +87,22 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
         );
 
       const signatoryRole = userRolesOnConvention.find(isSignatoryRole);
-      const conventionWithSignatoriesSignedAtAndDateApprovalCleared = {
-        ...convention,
-        dateApproval: undefined,
-        signatories: clearSignedAtForAllSignatories(convention),
-      } as ConventionDto;
+      const conventionWithSignatoriesSignedAtAndDateApprovalCleared: ConventionDto =
+        convention.internshipKind === "immersion"
+          ? {
+              ...convention,
+              dateApproval: undefined,
+              signatories: clearSignedAtForAllSignatories(
+                convention.signatories,
+              ),
+            }
+          : {
+              ...convention,
+              dateApproval: undefined,
+              signatories: clearSignedAtForAllSignatories(
+                convention.signatories,
+              ),
+            };
 
       const triggeredBy: TriggeredBy =
         "userId" in jwtPayload
@@ -140,27 +153,23 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
     },
   );
 
-const clearSignedAtForAllSignatories = (
-  convention: ConventionDto,
-): ConventionDto["signatories"] => {
-  return {
-    beneficiary: {
-      ...convention.signatories.beneficiary,
-      signedAt: undefined,
-    },
-    beneficiaryCurrentEmployer: convention.signatories
-      .beneficiaryCurrentEmployer && {
-      ...convention.signatories.beneficiaryCurrentEmployer,
-      signedAt: undefined,
-    },
-    establishmentRepresentative: {
-      ...convention.signatories.establishmentRepresentative,
-      signedAt: undefined,
-    },
-    beneficiaryRepresentative: convention.signatories
-      .beneficiaryRepresentative && {
-      ...convention.signatories.beneficiaryRepresentative,
-      signedAt: undefined,
-    },
-  };
-};
+const clearSignedAtForAllSignatories = <T extends InternshipKind>(
+  signatories: Signatories<T>,
+): Signatories<T> => ({
+  beneficiary: {
+    ...signatories.beneficiary,
+    signedAt: undefined,
+  },
+  beneficiaryCurrentEmployer: signatories.beneficiaryCurrentEmployer && {
+    ...signatories.beneficiaryCurrentEmployer,
+    signedAt: undefined,
+  },
+  establishmentRepresentative: {
+    ...signatories.establishmentRepresentative,
+    signedAt: undefined,
+  },
+  beneficiaryRepresentative: signatories.beneficiaryRepresentative && {
+    ...signatories.beneficiaryRepresentative,
+    signedAt: undefined,
+  },
+});

@@ -401,14 +401,10 @@ export class PgConventionQueries implements ConventionQueries {
     );
 
     const toCompleteSelect = selectUnfinalizedAssessmentFields(
-      conventionsWithoutAssessmentRows as Parameters<
-        typeof selectUnfinalizedAssessmentFields
-      >[0],
+      conventionsWithoutAssessmentRows,
     );
     const toSignSelect = selectUnfinalizedAssessmentFields(
-      conventionsWithAssessmentToSignRows as Parameters<
-        typeof selectUnfinalizedAssessmentFields
-      >[0],
+      conventionsWithAssessmentToSignRows,
     );
 
     const unfinalizedAssessmentRows = match(assessmentCompletionStatus)
@@ -1082,12 +1078,10 @@ type UnfinalizedAssessmentQueryDb = Database & {
   ia: Database["immersion_assessments"];
 };
 
-const selectUnfinalizedAssessmentFields = (
-  builder: SelectQueryBuilder<
-    UnfinalizedAssessmentQueryDb,
-    keyof UnfinalizedAssessmentQueryDb,
-    any
-  >,
+const selectUnfinalizedAssessmentFields = <
+  DB extends UnfinalizedAssessmentQueryDb,
+>(
+  builder: SelectQueryBuilder<DB, any, any>,
 ) =>
   builder.select((eb) => [
     eb.ref("conventions.id").as("id"),

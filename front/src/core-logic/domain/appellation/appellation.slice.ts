@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { keys } from "ramda";
-import type { AppellationAndRomeDto } from "shared";
+import { type AppellationAndRomeDto, keys } from "shared";
 import {
   type AutocompleteItem,
   type AutocompleteState,
@@ -38,9 +37,11 @@ export const appellationSlice = createSlice({
     ) => {
       const { locator, multiple } = action.payload;
       if (multiple) {
-        const multipleLocators = keys(state.data)
+        const multipleLocators = keys<AppellationAutocompleteLocator>(
+          state.data,
+        )
           .filter((key): key is MultipleAppellationAutocompleteLocator =>
-            String(key).startsWith("multiple-appellation-"),
+            key.startsWith("multiple-appellation-"),
           )
           .sort((a, b) => {
             const aIndex = getMultipleAppellationLocatorIndex(a);
@@ -71,15 +72,18 @@ export const appellationSlice = createSlice({
           return acc;
         }, {});
 
-        const nonMultipleData = keys(state.data).reduce<
-          Record<string, AutocompleteItem<AppellationAndRomeDto>>
-        >((acc, key) => {
-          if (!String(key).startsWith("multiple-appellation-")) {
-            const value = state.data[key as AppellationAutocompleteLocator];
-            if (value) acc[String(key)] = value;
-          }
-          return acc;
-        }, {});
+        const nonMultipleData = keys<AppellationAutocompleteLocator>(
+          state.data,
+        ).reduce<Record<string, AutocompleteItem<AppellationAndRomeDto>>>(
+          (acc, key) => {
+            if (!key.startsWith("multiple-appellation-")) {
+              const value = state.data[key];
+              if (value) acc[key] = value;
+            }
+            return acc;
+          },
+          {},
+        );
 
         return {
           ...state,
