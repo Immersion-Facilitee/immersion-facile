@@ -29,6 +29,7 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
     .withId("11111111-1111-4111-8111-111111111111")
     .buildUser();
   const createdAt = "2024-06-01T12:00:00.000Z";
+  const updatedAt = createdAt;
   const immersionAppellation = {
     appellationCode: "11573",
     appellationLabel: "Boulanger / Boulangère",
@@ -46,13 +47,14 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
   });
 
   beforeEach(async () => {
-    repository = new InMemoryArchivedConventionRequestRepository();
-    adapter === "Pg"
-      ? new PgArchivedConventionRequestRepository(db)
-      : new InMemoryArchivedConventionRequestRepository();
+    repository =
+      adapter === "Pg"
+        ? new PgArchivedConventionRequestRepository(db)
+        : new InMemoryArchivedConventionRequestRepository();
 
     if (adapter === "Pg") {
       await db.deleteFrom("archived_convention_requests").execute();
+      await db.deleteFrom("convention_templates").execute();
       await db.deleteFrom("users").execute();
       await new PgUserRepository(db).save(user);
     }
@@ -64,7 +66,8 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
         id: "11111111-1111-4111-8111-111111111111",
         userId: user.id,
         createdAt,
-        handledAt: null,
+        updatedAt,
+        status: "PENDING",
         conventionSearchMethod: "withConventionId",
         conventionId: "22222222-2222-4222-8222-222222222222",
         reason: "legalDispute",
@@ -79,7 +82,8 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
       const request: ArchivedConventionRequestEntity = {
         userId: user.id,
         createdAt,
-        handledAt: null,
+        updatedAt,
+        status: "PENDING",
         id: "33333333-3333-4333-8333-333333333333",
         conventionSearchMethod: "withConventionDetails",
         beneficiaryFirstName: "Jean",
@@ -111,6 +115,8 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
       const request: ArchivedConventionRequestEntity = {
         userId: user.id,
         createdAt,
+        updatedAt,
+        status: "PENDING",
         id,
         conventionSearchMethod: "withConventionDetails",
         immersionAppellationCode: immersionAppellation.appellationCode,
@@ -132,7 +138,8 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
       const request: ArchivedConventionRequestEntity = {
         userId: user.id,
         createdAt,
-        handledAt: null,
+        updatedAt,
+        status: "PENDING",
         id,
         conventionSearchMethod: "withConventionDetails",
         beneficiaryFirstName: "Jean",
@@ -151,6 +158,36 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
           reason: unknownReason,
         }),
       );
+    });
+  });
+
+  describe("update", () => {
+    it("updates status and updatedAt", async () => {
+      const request: ArchivedConventionRequestEntity = {
+        id: "11111111-1111-4111-8111-111111111111",
+        userId: user.id,
+        createdAt,
+        updatedAt,
+        status: "PENDING",
+        conventionSearchMethod: "withConventionId",
+        conventionId: "22222222-2222-4222-8222-222222222222",
+        reason: "legalDispute",
+      };
+
+      await repository.save(request);
+
+      const nextUpdatedAt = "2024-07-01T08:00:00.000Z";
+      await repository.update({
+        id: request.id,
+        status: "TREATED",
+        updatedAt: nextUpdatedAt,
+      });
+
+      expectToEqual(await repository.getById(request.id), {
+        ...request,
+        status: "TREATED",
+        updatedAt: nextUpdatedAt,
+      });
     });
   });
 });

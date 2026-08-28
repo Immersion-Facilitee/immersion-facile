@@ -40,6 +40,7 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
 
     if (adapter === "Pg") {
       await db.deleteFrom("archived_convention_requests").execute();
+      await db.deleteFrom("convention_templates").execute();
       await db.deleteFrom("users").execute();
       await new PgUserRepository(db).save(user);
     }
@@ -51,7 +52,8 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
         id: uuid(),
         userId: user.id,
         createdAt: new Date("2022-01-01").toISOString(),
-        handledAt: null,
+        updatedAt: new Date("2022-01-01").toISOString(),
+        status: "PENDING",
         conventionSearchMethod: "withConventionId",
         conventionId: uuid(),
         reason: "legalDispute",
@@ -61,7 +63,8 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
         id: uuid(),
         userId: user.id,
         createdAt: new Date("2026-01-01").toISOString(),
-        handledAt: null,
+        updatedAt: new Date("2026-01-01").toISOString(),
+        status: "PENDING",
         conventionSearchMethod: "withConventionId",
         conventionId: uuid(),
         reason: "legalDispute",
@@ -92,21 +95,55 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
       );
     });
 
-    it("do not get entities already handled", async () => {
-      const oldRequestAlreadyHandled: ArchivedConventionRequestEntity = {
+    it("does not return TREATED or REFUSED requests", async () => {
+      const pendingRequest: ArchivedConventionRequestEntity = {
         id: uuid(),
         userId: user.id,
         createdAt: new Date("2022-01-01").toISOString(),
-        handledAt: new Date("2026-01-01").toISOString(),
+        updatedAt: new Date("2022-01-01").toISOString(),
+        status: "PENDING",
         conventionSearchMethod: "withConventionId",
         conventionId: uuid(),
         reason: "legalDispute",
       };
 
-      const expectedResults: ArchivedConventionRequestToReviewList = [];
+      const treatedRequest: ArchivedConventionRequestEntity = {
+        id: uuid(),
+        userId: user.id,
+        createdAt: new Date("2023-01-01").toISOString(),
+        updatedAt: new Date("2026-01-01").toISOString(),
+        status: "TREATED",
+        conventionSearchMethod: "withConventionId",
+        conventionId: uuid(),
+        reason: "legalDispute",
+      };
+
+      const refusedRequest: ArchivedConventionRequestEntity = {
+        id: uuid(),
+        userId: user.id,
+        createdAt: new Date("2024-01-01").toISOString(),
+        updatedAt: new Date("2026-01-01").toISOString(),
+        status: "REFUSED",
+        conventionSearchMethod: "withConventionId",
+        conventionId: uuid(),
+        reason: "legalDispute",
+      };
+
+      const expectedResults: ArchivedConventionRequestToReviewList = [
+        {
+          id: pendingRequest.id,
+          reason: pendingRequest.reason,
+          userId: pendingRequest.userId,
+          createdAt: pendingRequest.createdAt,
+        },
+      ];
 
       if (queries instanceof PgArchivedConventionRequestQueries) {
-        await saveEntitiesInRepo(db, [oldRequestAlreadyHandled]);
+        await saveEntitiesInRepo(db, [
+          pendingRequest,
+          treatedRequest,
+          refusedRequest,
+        ]);
       } else {
         queries.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
           expectedResults;

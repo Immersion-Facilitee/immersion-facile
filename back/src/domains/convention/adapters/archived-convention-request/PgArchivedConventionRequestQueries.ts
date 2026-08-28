@@ -14,7 +14,7 @@ export class PgArchivedConventionRequestQueries
     return this.transaction
       .selectFrom("archived_convention_requests")
       .select(["id", "reason", "user_id", "created_at"])
-      .where("handled_at", "is", null)
+      .where("status", "=", "PENDING")
       .orderBy("created_at", "asc")
       .limit(100)
       .execute()

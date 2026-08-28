@@ -1,4 +1,8 @@
-import type { ArchivedConventionRequestId } from "shared";
+import type {
+  ArchivedConventionRequestId,
+  ArchivedConventionRequestStatus,
+  DateString,
+} from "shared";
 import {
   type ArchivedConventionRequestEntity,
   toArchivedConventionRequestEntity,
@@ -23,7 +27,8 @@ export class InMemoryArchivedConventionRequestRepository
       id: request.id,
       user_id: request.userId,
       created_at: new Date(request.createdAt),
-      handled_at: request.handledAt ? new Date(request.handledAt) : null,
+      updated_at: new Date(request.updatedAt),
+      status: request.status,
       ...(request.conventionSearchMethod === "withConventionDetails"
         ? {
             convention_id: null,
@@ -53,5 +58,20 @@ export class InMemoryArchivedConventionRequestRepository
   ): Promise<void> {
     this.archivedConventionRequests[archivedConventionRequest.id] =
       archivedConventionRequest;
+  }
+
+  public async update(params: {
+    id: ArchivedConventionRequestId;
+    status: ArchivedConventionRequestStatus;
+    updatedAt: DateString;
+  }): Promise<void> {
+    const existing = this.archivedConventionRequests[params.id];
+    if (!existing) return;
+
+    this.archivedConventionRequests[params.id] = {
+      ...existing,
+      status: params.status,
+      updatedAt: params.updatedAt,
+    };
   }
 }

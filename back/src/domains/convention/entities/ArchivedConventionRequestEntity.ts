@@ -2,6 +2,7 @@ import type {
   AppellationCode,
   ArchivedConventionRequestReason,
   ArchivedConventionRequestReasonFields,
+  ArchivedConventionRequestStatus,
   ArchivedConventionRequestWithConventionDetailsDto,
   ArchivedConventionRequestWithConventionIdDto,
   DateString,
@@ -30,14 +31,16 @@ export type ArchivedConventionRequestEntity = (
 ) & {
   userId: UserId;
   createdAt: DateString;
-  handledAt: DateString | null;
+  updatedAt: DateString;
+  status: ArchivedConventionRequestStatus;
 };
 
 type ArchivedConventionRequestRow = {
   id: string;
   user_id: string;
   created_at: Date;
-  handled_at: Date | null;
+  updated_at: Date;
+  status: ArchivedConventionRequestStatus;
   convention_id: string | null;
   beneficiary_first_name: string | null;
   beneficiary_last_name: string | null;
@@ -88,7 +91,8 @@ export const toArchivedConventionRequestEntity = (
     id: row.id,
     userId: row.user_id,
     createdAt: row.created_at.toISOString(),
-    handledAt: row.handled_at?.toISOString() ?? null,
+    updatedAt: row.updated_at.toISOString(),
+    status: row.status,
     ...reasonFields,
   };
 
