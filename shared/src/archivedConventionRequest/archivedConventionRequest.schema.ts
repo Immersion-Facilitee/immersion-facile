@@ -21,11 +21,15 @@ import {
 } from "../zodUtils";
 import {
   type ArchivedConventionRequestDto,
+  type ArchivedConventionRequestHandledStatus,
   type ArchivedConventionRequestId,
   type ArchivedConventionRequestReason,
   type ArchivedConventionRequestReasonFields,
+  type ArchivedConventionRequestStatus,
   type ArchivedConventionRequestToReviewListDto,
+  archivedConventionRequestHandledStatuses,
   archivedConventionRequestReasons,
+  archivedConventionRequestStatuses,
 } from "./archivedConventionRequest.dto";
 
 const archivedConventionRequestIdSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestId> =
@@ -83,6 +87,16 @@ export const archivedConventionRequestSchema: ZodSchemaWithInputMatchingOutput<A
 
 export const archivedConventionRequestReasonSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestReason> =
   z.enum(archivedConventionRequestReasons);
+
+export const archivedConventionRequestStatusSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestStatus> =
+  z.enum(archivedConventionRequestStatuses, {
+    error: localization.invalidEnum,
+  });
+
+export const archivedConventionRequestHandledStatusSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestHandledStatus> =
+  z.enum(archivedConventionRequestHandledStatuses, {
+    error: localization.invalidEnum,
+  });
 
 export const archivedConventionRequestToReviewListDtoSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestToReviewListDto> =
   z.array(
