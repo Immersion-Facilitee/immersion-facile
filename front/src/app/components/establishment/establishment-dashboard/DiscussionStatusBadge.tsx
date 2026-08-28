@@ -18,7 +18,6 @@ export const DiscussionStatusBadge = ({
 }: {
   discussion: DiscussionReadDto | DiscussionInList;
   viewer: ExchangeRole;
-  isEstablishmentReachableByPhoneAfter15Days: boolean;
   id?: string;
   small?: BadgeProps["small"];
 }) => {

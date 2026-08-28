@@ -283,26 +283,11 @@ const EstablishmentDiscussionTable = ({
           date: new Date(discussion.createdAt),
           withHours: false,
         }),
-        <>
-          <DiscussionStatusBadge
-            key={discussion.id}
-            discussion={discussion}
-            isEstablishmentReachableByPhoneAfter15Days={
-              discussion.isEstablishmentReachableByPhoneAfter15Days
-            }
-            viewer={"establishment"}
-            small
-          />
-          <DiscussionFollowUpBadge
-            key={discussion.id}
-            discussion={discussion}
-            isEstablishmentReachableByPhoneAfter15Days={
-              discussion.isEstablishmentReachableByPhoneAfter15Days
-            }
-            viewer={"establishment"}
-            small
-          />
-        </>,
+        <DiscussionListBadges
+          key={discussion.id}
+          discussion={discussion}
+          viewer="establishment"
+        />,
         <Button
           key={discussion.id}
           id={`${domElementIds.establishmentDashboard.manageDiscussion.goToDiscussionButton}--${discussion.id}`}
@@ -458,14 +443,10 @@ const BeneficiaryDiscussionTable = ({
           date: new Date(discussion.createdAt),
           withHours: false,
         }),
-        <DiscussionStatusBadge
+        <DiscussionListBadges
           key={discussion.id}
           discussion={discussion}
-          viewer={"potentialBeneficiary"}
-          isEstablishmentReachableByPhoneAfter15Days={
-            discussion.isEstablishmentReachableByPhoneAfter15Days
-          }
-          small
+          viewer="potentialBeneficiary"
         />,
         <Button
           key={discussion.id}
@@ -504,3 +485,29 @@ const BeneficiaryDiscussionTable = ({
     />
   );
 };
+
+const DiscussionListBadges = ({
+  discussion,
+  viewer,
+}: {
+  discussion: DiscussionInList;
+  viewer: ExchangeRole;
+}) => (
+  <>
+    <DiscussionStatusBadge
+      discussion={discussion}
+      viewer={viewer}
+      small
+      id={`${domElementIds.establishmentDashboard.discussion.statusBadge}--${discussion.id}`}
+    />
+    <DiscussionFollowUpBadge
+      discussion={discussion}
+      viewer={viewer}
+      small
+      isEstablishmentReachableByPhoneAfter15Days={
+        discussion.isEstablishmentReachableByPhoneAfter15Days
+      }
+      id={`${domElementIds.establishmentDashboard.discussion.followUpBadge}--${discussion.id}`}
+    />
+  </>
+);

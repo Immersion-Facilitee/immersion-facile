@@ -1164,6 +1164,7 @@ export const domElementIds = {
       rejectDiscussionCancelButton:
         "im-manage-establishment__reject-discussion-cancel-button",
       statusBadge: "im-manage-establishment__discussion-status-badge",
+      followUpBadge: "im-manage-establishment__discussion-follow-up-badge",
       merBadge: "im-manage-establishment__discussion-mer-badge",
       copyEmailButton: "im-manage-establishment__discussion-copy-email-button",
       sendMessageInput:
