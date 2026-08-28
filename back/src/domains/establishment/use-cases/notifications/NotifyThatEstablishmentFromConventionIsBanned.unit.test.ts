@@ -3,6 +3,8 @@ import {
   AgencyDtoBuilder,
   ConventionDtoBuilder,
   type ConventionStatus,
+  errors,
+  expectPromiseToFailWithError,
   reasonableSchedule,
   UserBuilder,
 } from "shared";
@@ -28,16 +30,16 @@ import {
   type NotifyThatEstablishmentFromConventionIsBanned,
 } from "./NotifyThatEstablishmentFromConventionIsBanned";
 
-const immersionBaseUrl = "https://immersion-facile.beta.gouv.fr";
-const siret = "12345678901234";
-
 describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
   let uow: InMemoryUnitOfWork;
   let timeGateway: CustomTimeGateway;
   let notifyThatEstablishmentFromConventionIsBanned: NotifyThatEstablishmentFromConventionIsBanned;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
 
-  beforeEach(() => {
+  const immersionBaseUrl = "https://immersion-facile.beta.gouv.fr";
+  const bannedSiret = "12345678901234";
+
+  beforeEach(async () => {
     uow = createInMemoryUow();
     timeGateway = new CustomTimeGateway(new Date("2024-10-15"));
     const saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent =
@@ -55,6 +57,23 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       uow.notificationRepository,
       uow.outboxRepository,
     );
+    await uow.bannedEstablishmentRepository.banEstablishment({
+      siret: bannedSiret,
+      establishmentBannishmentJustification: "test",
+    });
+  });
+
+  it("throws when establishment is not banned", async () => {
+    const notBannedSiret = "78886997200034";
+
+    await expectPromiseToFailWithError(
+      notifyThatEstablishmentFromConventionIsBanned.execute({
+        siret: notBannedSiret,
+      }),
+      errors.establishment.establishmentNotBanned({
+        siret: notBannedSiret,
+      }),
+    );
   });
 
   it.each<ConventionStatus>([
@@ -63,12 +82,14 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
     "DEPRECATED",
   ])("does not notify convention actors for status %s", async (status) => {
     const convention = new ConventionDtoBuilder()
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus(status)
       .build();
     uow.conventionRepository.setConventions([convention]);
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({ siret });
+    await notifyThatEstablishmentFromConventionIsBanned.execute({
+      siret: bannedSiret,
+    });
 
     expectSavedNotificationsAndEvents({ emails: [] });
   });
@@ -77,7 +98,7 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
     const dateStart = addDays(timeGateway.now(), -2);
     const dateEnd = addDays(timeGateway.now(), 0);
     const convention = new ConventionDtoBuilder()
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withDateStart(dateStart.toISOString())
       .withDateEnd(dateEnd.toISOString())
@@ -85,7 +106,9 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       .build();
     uow.conventionRepository.setConventions([convention]);
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({ siret });
+    await notifyThatEstablishmentFromConventionIsBanned.execute({
+      siret: bannedSiret,
+    });
 
     expectSavedNotificationsAndEvents({ emails: [] });
   });
@@ -94,7 +117,7 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
     const dateStart = addDays(timeGateway.now(), -2);
     const dateEnd = addDays(timeGateway.now(), -1);
     const convention = new ConventionDtoBuilder()
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withDateStart(dateStart.toISOString())
       .withDateEnd(dateEnd.toISOString())
@@ -102,7 +125,9 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       .build();
     uow.conventionRepository.setConventions([convention]);
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({ siret });
+    await notifyThatEstablishmentFromConventionIsBanned.execute({
+      siret: bannedSiret,
+    });
 
     expectSavedNotificationsAndEvents({ emails: [] });
   });
@@ -120,7 +145,7 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       .build();
     const agency = new AgencyDtoBuilder().withId("agency-id").build();
     const convention = new ConventionDtoBuilder()
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withAgencyId(agency.id)
       .withDateStart(dateStart.toISOString())
@@ -147,7 +172,9 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       }),
     ];
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({ siret });
+    await notifyThatEstablishmentFromConventionIsBanned.execute({
+      siret: bannedSiret,
+    });
 
     expectSavedNotificationsAndEvents({
       emails: [
@@ -199,7 +226,7 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       .build();
     const agency = new AgencyDtoBuilder().withId("agency-id").build();
     const convention = new ConventionDtoBuilder()
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withAgencyId(agency.id)
       .withDateStart(dateStart.toISOString())
@@ -233,7 +260,9 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       }),
     ];
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({ siret });
+    await notifyThatEstablishmentFromConventionIsBanned.execute({
+      siret: bannedSiret,
+    });
 
     expectSavedNotificationsAndEvents({
       emails: [
@@ -269,7 +298,7 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
     "ACCEPTED_BY_COUNSELLOR",
   ])("notifies the beneficiary and (not already registered) establishment representative for a convention with status %s", async (status) => {
     const convention = new ConventionDtoBuilder()
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus(status)
       .withBusinessName("Entreprise interdite")
       .withBeneficiaryEmail("beneficiary@example.com")
@@ -279,7 +308,9 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       .build();
     uow.conventionRepository.setConventions([convention]);
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({ siret });
+    await notifyThatEstablishmentFromConventionIsBanned.execute({
+      siret: bannedSiret,
+    });
 
     expectSavedNotificationsAndEvents({
       emails: [
@@ -320,12 +351,12 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       .build();
     const conventionWithIneligibleStatus = new ConventionDtoBuilder()
       .withId("00000000-0000-4000-8000-000000000002")
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus("REJECTED")
       .build();
     const endedValidatedConvention = new ConventionDtoBuilder()
       .withId("00000000-0000-4000-8000-000000000003")
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withDateStart(addDays(timeGateway.now(), -2).toISOString())
       .withDateEnd(addDays(timeGateway.now(), -1).toISOString())
@@ -333,7 +364,7 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       .build();
     const directNotificationConvention = new ConventionDtoBuilder()
       .withId("00000000-0000-4000-8000-000000000004")
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus("READY_TO_SIGN")
       .withDateStart(addDays(timeGateway.now(), -2).toISOString())
       .withDateEnd(addDays(timeGateway.now(), -1).toISOString())
@@ -346,7 +377,7 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       .build();
     const ongoingValidatedConvention = new ConventionDtoBuilder()
       .withId("00000000-0000-4000-8000-000000000005")
-      .withSiret(siret)
+      .withSiret(bannedSiret)
       .withStatus("ACCEPTED_BY_VALIDATOR")
       .withAgencyId(agency.id)
       .withDateStart(addDays(timeGateway.now(), -1).toISOString())
@@ -377,7 +408,9 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
       }),
     ];
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({ siret });
+    await notifyThatEstablishmentFromConventionIsBanned.execute({
+      siret: bannedSiret,
+    });
 
     expectSavedNotificationsAndEvents({
       emails: [
