@@ -14,7 +14,7 @@ import type { DiscussionBadgeData } from "src/app/components/establishment/estab
 export const DiscussionFollowUpBadge = ({
   discussion,
   viewer,
-  id = domElementIds.establishmentDashboard.discussion.statusBadge,
+  id = domElementIds.establishmentDashboard.discussion.followUpBadge,
   isEstablishmentReachableByPhoneAfter15Days,
   small = false,
   className,

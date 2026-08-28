@@ -397,14 +397,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
               {...contactModeToBadgeOptions[discussion.contactMode]}
               className={`${contactModeToBadgeOptions[discussion.contactMode].className} ${fr.cx("fr-mr-2w")}`}
             />
-            <DiscussionStatusBadge
-              discussion={discussion}
-              viewer={viewer}
-              isEstablishmentReachableByPhoneAfter15Days={
-                discussionEstablishmentContactInfo?.isEstablishmentReachableByPhoneAfter15Days ??
-                false
-              }
-            />
+            <DiscussionStatusBadge discussion={discussion} viewer={viewer} />
             <DiscussionFollowUpBadge
               key={discussion.id}
               discussion={discussion}

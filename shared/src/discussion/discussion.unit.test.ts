@@ -214,6 +214,34 @@ describe("Discussions", () => {
       },
       {
         message:
+          "last message is from establishment and has had no answer for more than 15 days",
+        viewer: "potentialBeneficiary",
+        expectedFollowUp: "needs-answer",
+        expectedDisplayStatus: "pending",
+        discussion: new DiscussionBuilder()
+          .withStatus({ status: "PENDING" })
+          .withExchanges([
+            createExchange({
+              sentAt: subDays(now, 16),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+            createExchange({
+              sentAt: subDays(now, 15),
+              specificExchangeSender: {
+                sender: "establishment",
+                email: "establishment@mail.com",
+                firstname: "billy",
+                lastname: "idol",
+              },
+            }),
+          ])
+          .buildRead(),
+        hasEstablishmentAnswered: true,
+      },
+      {
+        message:
           "last message is from beneficiary and has had no answer for more than 15 days",
         viewer: "establishment",
         expectedFollowUp: "needs-answer",
