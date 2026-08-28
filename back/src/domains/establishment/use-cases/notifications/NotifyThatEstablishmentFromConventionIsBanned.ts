@@ -2,6 +2,7 @@ import {
   type AbsoluteUrl,
   type ConventionDto,
   type ConventionStatus,
+  errors,
   executeInSequence,
   type WithSiretDto,
   withSiretSchema,
@@ -33,13 +34,23 @@ export const makeNotifyThatEstablishmentFromConventionIsBanned = useCaseBuilder(
     timeGateway: TimeGateway;
   }>()
   .build(async ({ uow, inputParams, deps }) => {
+    const { siret } = inputParams;
     const conventionsBeforeValidation =
       await uow.conventionQueries.getConventions({
         filters: {
-          withSirets: [inputParams.siret],
+          withSirets: [siret],
           withStatuses: conventionStatusesBeforeValidation,
         },
         sortBy: "dateStart",
+      });
+
+    const isEstablishmentBanned =
+      await uow.bannedEstablishmentRepository.getBannedEstablishmentBySiret(
+        siret,
+      );
+    if (!isEstablishmentBanned)
+      throw errors.establishment.establishmentNotBanned({
+        siret,
       });
 
     await executeInSequence(conventionsBeforeValidation, (convention) =>
@@ -55,7 +66,7 @@ export const makeNotifyThatEstablishmentFromConventionIsBanned = useCaseBuilder(
     const ongoingValidatedConventions = (
       await uow.conventionQueries.getConventions({
         filters: {
-          withSirets: [inputParams.siret],
+          withSirets: [siret],
           withStatuses: ["ACCEPTED_BY_VALIDATOR"],
           endDate: { from: now },
         },

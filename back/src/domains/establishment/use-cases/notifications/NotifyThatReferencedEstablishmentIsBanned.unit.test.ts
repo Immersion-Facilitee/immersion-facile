@@ -211,15 +211,6 @@ describe("NotifyThatReferencedEstablishmentIsBanned", () => {
   });
 
   describe("Wrong path", () => {
-    it("throws when establishment is not found", async () => {
-      await expectPromiseToFailWithError(
-        notifyThatReferencedEstablishmentIsBanned.execute({
-          siret: "00000000000000",
-        }),
-        errors.establishment.notFound({ siret: "00000000000000" }),
-      );
-    });
-
     it("throws when establishment is not banned", async () => {
       const notBannedEstablishment = new EstablishmentAggregateBuilder(
         bannedEstablishmentAggregate,
@@ -243,6 +234,19 @@ describe("NotifyThatReferencedEstablishmentIsBanned", () => {
   });
 
   describe("Right path", () => {
+    it("returns nothing if establishment is not registered", async () => {
+      expect(() =>
+        notifyThatReferencedEstablishmentIsBanned.execute({
+          siret: "00000000000000",
+        }),
+      ).not.toThrow();
+
+      expectSavedNotificationsAndEvents({
+        emails: [],
+        sms: [],
+      });
+    });
+
     it("sends emails to accepted admin and contact users only", async () => {
       await notifyThatReferencedEstablishmentIsBanned.execute({ siret });
 

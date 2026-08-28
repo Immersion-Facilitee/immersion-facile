@@ -35,7 +35,7 @@ export const makeNotifyThatReferencedEstablishmentIsBanned = useCaseBuilder(
         siret,
       );
 
-    if (!establishment) throw errors.establishment.notFound({ siret });
+    if (!establishment) return;
     if (!establishment.establishment.isEstablishmentBanned)
       throw errors.establishment.establishmentNotBanned({ siret });
 
