@@ -80,11 +80,19 @@ export const SchedulePicker = ({
           {value}
         </div>
       ))}
-      {values[name].isSimple ? (
-        <RegularSchedulePicker interval={interval} disabled={disabled} />
-      ) : (
-        <ComplexSchedulePicker disabled={disabled} />
-      )}
+      <div>
+        <p className={fr.cx("fr-sr-only")}>
+          L’emploi du temps (SchedulePicker) n’est pas accessible aux
+          technologies d’assistance.
+        </p>
+        <div aria-hidden={true}>
+          {values[name].isSimple ? (
+            <RegularSchedulePicker interval={interval} disabled={disabled} />
+          ) : (
+            <ComplexSchedulePicker disabled={disabled} />
+          )}
+        </div>
+      </div>
     </>
   );
 };
