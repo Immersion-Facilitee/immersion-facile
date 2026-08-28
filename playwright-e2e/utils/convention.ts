@@ -17,6 +17,7 @@ import {
   openConnectedConventionAsRecipient,
 } from "./admin";
 import { getRandomizedData } from "./data";
+import { defaultE2eSiret } from "./siret";
 import {
   acceptCookiesIfBannerVisible,
   expectElementToBeVisible,
@@ -94,7 +95,7 @@ export const fillConventionForm = async (page: Page) => {
     `#${domElementIds.conventionImmersion.conventionSection.siret}`,
   );
   await siretInput.clear();
-  await siretInput.pressSequentially(getRandomSiret());
+  await siretInput.pressSequentially(defaultE2eSiret);
 
   const establishmentFirstName = page.locator(
     `#${domElementIds.conventionImmersion.establishmentRepresentativeSection.firstName}`,
@@ -517,11 +518,6 @@ export const confirmCreateConventionFormSubmit = async (
     `#${domElementIds.conventionImmersion.conventionConfirmation.copyConventionIdButton}`,
   );
 };
-
-const getRandomSiret = () =>
-  ["722 003 936 02320", "94937244500013", "130 005 481 00010"][
-    Math.floor(Math.random() * 3)
-  ];
 
 export const shareConventionDraftByEmail = async (page: Page) => {
   await page.click(

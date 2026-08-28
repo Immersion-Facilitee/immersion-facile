@@ -4,6 +4,7 @@ import { domElementIds, FormEstablishmentDtoBuilder } from "shared";
 import { testConfig } from "../../custom.config";
 import { goToAdminTab } from "../../utils/admin";
 import { getFormEstablishmentApiPath } from "../../utils/apiRoutes";
+import { e2eSiretEstablishments } from "../../utils/siret";
 import { test, validPhonesData } from "../../utils/utils";
 import { createEstablishmentForm } from "./createNewEstablishment";
 import type { MakeFormEstablishmentFromRetryNumber } from "./establishmentForm.utils";
@@ -22,23 +23,7 @@ import { searchEstablishmentAndExpectResultToHaveLength } from "./searchEstablis
 
 test.describe("Establishment creation and modification workflow", () => {
   test.describe.configure({ mode: "serial" });
-  const testEstablishments = [
-    {
-      siret: "13003013300016",
-      businessName: "Plateforme de l'inclusion",
-      expectedAddress: "127 Rue de Grenelle 75007 Paris",
-    },
-    {
-      siret: "21590350100017",
-      businessName: "COMMUNE DE LILLE",
-      expectedAddress: "Place Augustin Laurent 59000 Lille",
-    },
-    {
-      siret: "21310555400017",
-      businessName: "COMMUNE DE TOULOUSE",
-      expectedAddress: "1 Place du Capitole 31000 Toulouse",
-    },
-  ];
+  const testEstablishments = e2eSiretEstablishments;
 
   const makeInitialEstablishmentInformations: MakeFormEstablishmentFromRetryNumber =
     (retryIndex) => {
