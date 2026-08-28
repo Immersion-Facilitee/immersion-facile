@@ -25,6 +25,23 @@ export const archivedConventionRequestReasons = [
 export type ArchivedConventionRequestReason =
   (typeof archivedConventionRequestReasons)[number];
 
+export const archivedConventionRequestStatuses = [
+  "PENDING",
+  "TREATED",
+  "REFUSED",
+] as const;
+
+export type ArchivedConventionRequestStatus =
+  (typeof archivedConventionRequestStatuses)[number];
+
+export const archivedConventionRequestHandledStatuses = [
+  "TREATED",
+  "REFUSED",
+] as const;
+
+export type ArchivedConventionRequestHandledStatus =
+  (typeof archivedConventionRequestHandledStatuses)[number];
+
 export type ArchivedConventionRequestReasonFields =
   | {
       reason: Exclude<ArchivedConventionRequestReason, "other">;
