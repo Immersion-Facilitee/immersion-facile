@@ -58,7 +58,13 @@ export class PgApiConsumerRepository implements ApiConsumerRepository {
   public async getByFilters(
     filters: GetApiConsumerFilters,
   ): Promise<ApiConsumer[]> {
-    const applyFilters = <QB extends SelectQueryBuilder<any, any, any>>(
+    const applyFilters = <
+      QB extends SelectQueryBuilder<
+        ApiConsumerQueryDb,
+        ApiConsumerFromTables,
+        any
+      >,
+    >(
       b: QB,
     ) => {
       const { agencyIds, agencyKinds } = filters;
@@ -300,3 +306,10 @@ type PgRawConsumerData = {
   contact: ApiConsumerContact;
   subscriptions: WebhookSubscription[];
 };
+
+type ApiConsumerQueryDb = Database & {
+  c: Database["api_consumers"];
+  s: Database["api_consumers_subscriptions"];
+};
+
+type ApiConsumerFromTables = "c" | "s" | "phone_numbers";

@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { keys } from "ramda";
 import {
   type AddressAndPositionWithFormattedAddress,
   type AddressWithCountryCodeAndPosition,
   addressDtoToString,
   defaultCountryCode,
+  keys,
   type LookupAddress,
   type SupportedCountryCode,
 } from "shared";
@@ -47,9 +47,9 @@ export const geocodingSlice = createSlice({
     ) => {
       const { locator, multiple } = action.payload;
       if (multiple) {
-        const multipleLocators = keys(state.data)
+        const multipleLocators = keys<AddressAutocompleteLocator>(state.data)
           .filter((key): key is MultipleAddressAutocompleteLocator =>
-            String(key).startsWith("multiple-address-"),
+            key.startsWith("multiple-address-"),
           )
           .sort((a, b) => {
             const aIndex = getMultipleAddressLocatorIndex(a);
@@ -83,11 +83,13 @@ export const geocodingSlice = createSlice({
             AutocompleteItem<AddressWithCountryCodeAndPosition>
           >,
         );
-        const nonMultipleData = keys(state.data).reduce(
+        const nonMultipleData = keys<AddressAutocompleteLocator>(
+          state.data,
+        ).reduce(
           (acc, key) => {
-            if (!String(key).startsWith("multiple-address-")) {
-              const value = state.data[key as AddressAutocompleteLocator];
-              if (value) acc[String(key)] = value;
+            if (!key.startsWith("multiple-address-")) {
+              const value = state.data[key];
+              if (value) acc[key] = value;
             }
             return acc;
           },
