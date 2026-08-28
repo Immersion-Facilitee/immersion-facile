@@ -11,9 +11,6 @@ import type {
   ExchangeRole,
 } from "./discussion.dto";
 
-// const isNowUrgent = ({ now, from }: { now: Date; from: DateString }) =>
-//   new Date(from) <= subDays(now, 15);
-
 export const getLastExchange = (
   exchanges: ExchangeRead[],
 ): ExchangeRead | undefined =>
