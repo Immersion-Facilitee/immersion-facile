@@ -4,7 +4,6 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext", "ES2015"],
     "allowJs": false,
     "skipLibCheck": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -13,11 +12,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noImplicitOverride": true,
+    "noUncheckedSideEffectImports": false,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "./src",
+    "types": ["*"],
     "paths": {
-      "src/*": ["./*"],
+      "src/*": ["./src/*"],
       "shared": ["../../shared/src/index.ts"]
     }
   },

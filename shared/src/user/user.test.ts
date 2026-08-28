@@ -1,5 +1,5 @@
 import { ZodError } from "zod";
-import type { $ZodIssue } from "zod/v4/core/errors.cjs";
+import type { $ZodIssue } from "zod/v4/core";
 import { ConnectedUserBuilder } from "./user.builder";
 import {
   connectedUserSchema,

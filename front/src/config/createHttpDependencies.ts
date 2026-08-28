@@ -14,8 +14,8 @@ import {
   technicalRoutes,
   unauthenticatedConventionRoutes,
 } from "shared";
+import type { UnknownSharedRoute } from "shared-routes";
 import { createAxiosSharedClient } from "shared-routes/axios";
-import type { UnknownSharedRoute } from "shared-routes/src";
 import { createCommonDependencies } from "src/config/createCommonDependencies";
 import type { Dependencies } from "src/config/dependencies";
 import { HttpAddressGateway } from "src/core-logic/adapters/AddressGateway/HttpAddressGateway";

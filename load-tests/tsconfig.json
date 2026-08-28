@@ -4,14 +4,15 @@
     "lib": ["esNext"],
     "module": "esnext",
     "outDir": "dist",
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
     "noImplicitOverride": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["./src/types", "./node_modules/@types"]
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "types": ["*"]
   },
   "include": ["src/**/*.ts"]
 }

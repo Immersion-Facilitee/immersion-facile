@@ -3,8 +3,10 @@
     "target": "ES2018",
     "lib": ["esNext", "ES2015"],
     "module": "CommonJS",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "outDir": "build",
+    "rootDir": "..",
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
@@ -12,9 +14,16 @@
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
     "typeRoots": ["./src/types", "./node_modules/@types"],
+    "types": ["*"],
     "paths": {
       "shared": ["../shared/src/index.ts"],
-      "html-templates": ["../libs/html-templates/src/index.ts"]
+      "html-templates": ["../libs/html-templates/src/index.ts"],
+      "shared-routes/validations": [
+        "./node_modules/shared-routes/validations.d.ts"
+      ],
+      "kysely/dist/cjs/parser/insert-values-parser": [
+        "./node_modules/kysely/dist/cjs/parser/insert-values-parser.d.ts"
+      ]
     }
   }
 }

@@ -10,6 +10,6 @@
   "devDependencies": {
     "@gatling.io/cli": "3.15.1",
     "@types/k6": "^1.6.0",
-    "typescript": "^5.8.3"
+    "typescript": "^7.0.2"
   }
 }

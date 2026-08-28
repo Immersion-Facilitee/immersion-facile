@@ -48,7 +48,9 @@ export const feedbackSlice = createSlice({
     },
     clearFeedbackTopics: (state, { payload }: PayloadAction<FeedbackTopic[]>) =>
       keys(state).reduce<Feedbacks>((acc, topic) => {
-        if (!payload.includes(topic)) acc[topic] = state[topic];
+        const feedbackTopic = topic as FeedbackTopic;
+        if (!payload.includes(feedbackTopic))
+          acc[feedbackTopic] = state[feedbackTopic];
         return acc;
       }, {}),
   },
