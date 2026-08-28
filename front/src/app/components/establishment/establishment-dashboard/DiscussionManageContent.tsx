@@ -14,7 +14,7 @@ import {
   ExchangeMessage,
   Loader,
   SectionHighlight,
-  useBreakpoint,
+  useLayout,
 } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
@@ -354,7 +354,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
   const relatedOffer = useAppSelector(searchSelectors.currentSearchResult);
   const [shouldShowContactInfo, setShouldShowContactInfo] =
     useState<boolean>(false);
-  const isDesktop = useBreakpoint("lg");
+  const { isLayoutDesktop } = useLayout();
 
   const saveConventionDraftThenRedirectRequested = ({
     conventionDraft,
@@ -547,7 +547,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           />
         )}
 
-      {!isDesktop && shouldShowDiscussionActions && (
+      {!isLayoutDesktop && shouldShowDiscussionActions && (
         <div className={fr.cx("fr-grid-row", "fr-grid-row--right", "fr-mt-2w")}>
           <ButtonWithSubMenu
             navItems={discussionActionsButtons}
@@ -670,7 +670,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
                 )}
               </BorderedSection>
             )}
-            {isDesktop && discussion.kind === "IF" && (
+            {isLayoutDesktop && discussion.kind === "IF" && (
               <>
                 {viewer === "establishment" && shouldShowDiscussionActions && (
                   <BorderedSection>

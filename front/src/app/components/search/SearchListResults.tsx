@@ -10,7 +10,7 @@ import {
   Tag as ImTag,
   RichDropdown,
   SearchResultIllustration,
-  useBreakpoint,
+  useLayout,
   useStyleUtils,
 } from "react-design-system";
 import { useFormContext } from "react-hook-form";
@@ -74,7 +74,7 @@ export const SearchListResults = ({
   const { data: searchResults, pagination } = useAppSelector(
     searchSelectors.searchResultsWithPagination,
   );
-  const isLayoutDesktop = useBreakpoint("md");
+  const { isLayoutDesktop } = useLayout();
 
   const { enableSearchByScore } = useAppSelector(
     featureFlagSelectors.featureFlagState,
