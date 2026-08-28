@@ -18,21 +18,24 @@ export const makeCreateArchivedConventionRequest = useCaseBuilder(
     timeGateway: TimeGateway;
   }>()
   .build(async ({ uow, inputParams, currentUser, deps }) => {
+    const now = deps.timeGateway.now().toISOString();
     const archivedConventionRequestEntity: ArchivedConventionRequestEntity =
       inputParams.conventionSearchMethod === "withConventionId"
         ? {
             ...inputParams,
             userId: currentUser.id,
-            createdAt: deps.timeGateway.now().toISOString(),
-            handledAt: null,
+            createdAt: now,
+            updatedAt: now,
+            status: "PENDING",
           }
         : {
             ...inputParams,
             immersionAppellationCode:
               inputParams.immersionAppellation.appellationCode,
             userId: currentUser.id,
-            createdAt: deps.timeGateway.now().toISOString(),
-            handledAt: null,
+            createdAt: now,
+            updatedAt: now,
+            status: "PENDING",
           };
 
     await uow.archivedConventionRequestRepository.save(
