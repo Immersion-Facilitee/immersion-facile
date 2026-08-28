@@ -547,8 +547,21 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           />
         )}
 
+      {!isDesktop && shouldShowDiscussionActions && (
+        <div className={fr.cx("fr-grid-row", "fr-grid-row--right", "fr-mt-2w")}>
+          <ButtonWithSubMenu
+            navItems={discussionActionsButtons}
+            priority="primary"
+            buttonLabel={"Actions"}
+            buttonIconId={"fr-icon-more-fill"}
+            iconPosition="right"
+            position="bottom-right"
+            floatingMenuOnMobile
+          />
+        </div>
+      )}
+
       <DiscussionContentContainer
-        className={fr.cx("fr-my-2w")}
         content={match(discussion.contactMode)
           .with("EMAIL", () => (
             <>
@@ -598,77 +611,64 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
         aside={
           <>
             {discussion.kind === "IF" && (
-              <>
-                {!isDesktop && shouldShowDiscussionActions && (
-                  <ButtonWithSubMenu
-                    navItems={discussionActionsButtons}
-                    priority="primary"
-                    buttonLabel={"Actions"}
-                    buttonIconId={"fr-icon-more-fill"}
-                    iconPosition="right"
-                    className={fr.cx("fr-mb-2w")}
-                  />
-                )}
+              <BorderedSection className={fr.cx("fr-p-2w", "fr-mb-2w")}>
+                {viewer === "potentialBeneficiary" ? (
+                  <>
+                    <h3 className={fr.cx("fr-h6")}>Entreprise</h3>
 
-                <BorderedSection className={fr.cx("fr-p-2w", "fr-mb-2w")}>
-                  {viewer === "potentialBeneficiary" ? (
-                    <>
-                      <h3 className={fr.cx("fr-h6")}>Entreprise</h3>
-
-                      <ul className={fr.cx("fr-raw-list")}>
-                        {relatedOffer?.website && (
-                          <li className={fr.cx("fr-mb-1w")}>
-                            <a
-                              href={relatedOffer.website}
-                              title="Site web de l'entreprise"
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Site web de l'entreprise
-                            </a>
-                          </li>
-                        )}
-
-                        <li>{discussion.businessName}</li>
-
-                        <li className={fr.cx("fr-mt-1w")}>
+                    <ul className={fr.cx("fr-raw-list")}>
+                      {relatedOffer?.website && (
+                        <li className={fr.cx("fr-mb-1w")}>
                           <a
-                            title="Offre d'immersion"
+                            href={relatedOffer.website}
+                            title="Site web de l'entreprise"
                             target="_blank"
                             rel="noreferrer"
-                            href={
-                              frontRoutes.searchResult({
-                                appellationCode: [
-                                  discussion.appellation.appellationCode,
-                                ],
-                                siret: discussion.siret,
-                                location: discussion.locationId,
-                              }).href
-                            }
                           >
-                            Voir l'offre
+                            Site web de l'entreprise
                           </a>
                         </li>
-                      </ul>
-                    </>
-                  ) : (
-                    discussion.potentialBeneficiary.resumeLink && (
-                      <>
-                        <h3 className={fr.cx("fr-h6")}>Profil du candidat</h3>
+                      )}
 
+                      <li>{discussion.businessName}</li>
+
+                      <li className={fr.cx("fr-mt-1w")}>
                         <a
-                          href={discussion.potentialBeneficiary.resumeLink}
-                          title="CV du candidat"
+                          title="Offre d'immersion"
                           target="_blank"
                           rel="noreferrer"
+                          href={
+                            frontRoutes.searchResult({
+                              appellationCode: [
+                                discussion.appellation.appellationCode,
+                              ],
+                              siret: discussion.siret,
+                              location: discussion.locationId,
+                            }).href
+                          }
                         >
-                          CV
+                          Voir l'offre
                         </a>
-                      </>
-                    )
-                  )}
-                </BorderedSection>
-              </>
+                      </li>
+                    </ul>
+                  </>
+                ) : (
+                  discussion.potentialBeneficiary.resumeLink && (
+                    <>
+                      <h3 className={fr.cx("fr-h6")}>Profil du candidat</h3>
+
+                      <a
+                        href={discussion.potentialBeneficiary.resumeLink}
+                        title="CV du candidat"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        CV
+                      </a>
+                    </>
+                  )
+                )}
+              </BorderedSection>
             )}
             {isDesktop && discussion.kind === "IF" && (
               <>
@@ -689,6 +689,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
             )}
           </>
         }
+        className={fr.cx("fr-mt-2w")}
       />
 
       {createPortal(

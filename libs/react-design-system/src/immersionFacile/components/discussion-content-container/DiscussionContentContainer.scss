@@ -3,12 +3,15 @@
 .im-discussion-content-container {
   &__content {
     order: 2;
+
     @include for-screen-min($bp-lg) {
       order: 1;
     }
   }
+
   &__aside {
     order: 1;
+
     @include for-screen-min($bp-lg) {
       order: 2;
     }
