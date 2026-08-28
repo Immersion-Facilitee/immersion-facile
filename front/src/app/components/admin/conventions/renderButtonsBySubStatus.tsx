@@ -281,7 +281,7 @@ export const renderButtonsBySubStatus = ({
 
   const rightButtonsResults = rightAreas
     .filter((area) => areasConfig[area].length > 0)
-    .map((area) => renderButtonsForArea(areasConfig[area], area, "top-right"));
+    .map((area) => renderButtonsForArea(areasConfig[area], area, "top-left"));
 
   const leftButtons = leftButtonsResults.flatMap((result) => result.buttons);
   const rightButtons = rightButtonsResults.flatMap((result) => result.buttons);

@@ -9,7 +9,8 @@ export type ButtonWithSubMenuProps = {
   buttonLabel: string;
   buttonIconId: Exclude<ButtonProps["iconId"], undefined>;
   id?: string;
-  position?: "top-left" | "top-right";
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  floatingMenuOnMobile?: boolean;
   className?: string;
   priority?: ButtonProps["priority"];
   iconPosition?: ButtonProps["iconPosition"];
@@ -21,6 +22,7 @@ export const ButtonWithSubMenu = ({
   buttonIconId,
   id,
   position,
+  floatingMenuOnMobile,
   className,
   priority,
   iconPosition,
@@ -40,9 +42,10 @@ export const ButtonWithSubMenu = ({
         setIsOpen(false);
     });
     window.addEventListener("resize", () => {
-      const shouldOpenSubMenu = window.matchMedia(
-        fr.breakpoints.down("lg").replace("@media ", ""),
-      ).matches;
+      const shouldOpenSubMenu =
+        !floatingMenuOnMobile &&
+        window.matchMedia(fr.breakpoints.down("lg").replace("@media ", ""))
+          .matches;
       setIsOpen(shouldOpenSubMenu);
     });
     return () => {
@@ -58,8 +61,11 @@ export const ButtonWithSubMenu = ({
       className={cx(
         Styles.root,
         isOpen && Styles.isOpened,
+        floatingMenuOnMobile && Styles.floating,
         position === "top-right" && Styles.openedTopRight,
         position === "top-left" && Styles.openedTopLeft,
+        position === "bottom-right" && Styles.openedBottomRight,
+        position === "bottom-left" && Styles.openedBottomLeft,
       )}
     >
       <Button

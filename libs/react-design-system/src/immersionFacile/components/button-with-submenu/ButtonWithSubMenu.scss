@@ -1,15 +1,21 @@
 .im-button-with-sub-menu {
   $component: &;
   position: relative;
+  display: inline-block;
   --underline-img: none;
 
   &__menu {
     max-height: 999px;
     overflow: auto;
-    top: 100%;
-    right: 0;
     max-width: fit-content(18rem, 22rem);
     display: none;
+
+    &.fr-menu {
+      top: 100%;
+      bottom: auto;
+      right: 0;
+      left: auto;
+    }
   }
 
   &__list {
@@ -27,18 +33,37 @@
     }
   }
 
-  &--opened-top-right {
-    #{$component}__menu {
-      top: auto;
-      bottom: 100%;
-    }
+  &--floating #{$component}__menu.fr-menu {
+    position: absolute;
+    background-color: var(--background-default-grey);
+    box-shadow: var(--raised-shadow);
   }
-  &--opened-top-left {
-    #{$component}__menu {
-      top: auto; 
-      bottom: 100%;
-      left: 0;
-      right: auto;
-    }
+
+  &--opened-bottom-right #{$component}__menu.fr-menu {
+    top: 100%;
+    bottom: auto;
+    right: 0;
+    left: auto;
+  }
+
+  &--opened-bottom-left #{$component}__menu.fr-menu {
+    top: 100%;
+    bottom: auto;
+    left: 0;
+    right: auto;
+  }
+
+  &--opened-top-right #{$component}__menu.fr-menu {
+    top: auto;
+    bottom: 100%;
+    right: 0;
+    left: auto;
+  }
+
+  &--opened-top-left #{$component}__menu.fr-menu {
+    top: auto;
+    bottom: 100%;
+    left: 0;
+    right: auto;
   }
 }
