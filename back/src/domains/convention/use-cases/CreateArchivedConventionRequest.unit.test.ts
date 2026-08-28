@@ -60,7 +60,8 @@ describe("CreateArchivedConventionRequest", () => {
           ...input,
           userId: connectedUser.id,
           createdAt: now.toISOString(),
-          handledAt: null,
+          updatedAt: now.toISOString(),
+          status: "PENDING",
         },
       },
     );
@@ -108,7 +109,8 @@ describe("CreateArchivedConventionRequest", () => {
         immersionAppellationCode: input.immersionAppellation.appellationCode,
         userId: connectedUser.id,
         createdAt: now.toISOString(),
-        handledAt: null,
+        updatedAt: now.toISOString(),
+        status: "PENDING",
       },
     );
   });
