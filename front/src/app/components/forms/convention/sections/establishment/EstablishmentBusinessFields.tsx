@@ -4,7 +4,10 @@ import { useRef } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import type { ConventionReadDto } from "shared";
 import { formConventionFieldsLabels } from "src/app/contents/forms/convention/formConvention";
-import { getFormContents } from "src/app/hooks/formContents.hooks";
+import {
+  getFormContents,
+  makeFieldError,
+} from "src/app/hooks/formContents.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import {
   useSiretFetcher,
@@ -18,7 +21,7 @@ export const EstablishmentBusinessFields = ({
 }: {
   isConventionTemplate: boolean;
 }): JSX.Element => {
-  const { getValues, register, control, setValue } =
+  const { getValues, register, control, setValue, formState } =
     useFormContext<ConventionReadDto>();
   const values = getValues();
   const siretValueOnForm = useWatch({ control, name: "siret" });
@@ -61,7 +64,7 @@ export const EstablishmentBusinessFields = ({
     }),
   );
   const formContents = getFormFields();
-
+  const getFieldError = makeFieldError(formState);
   return (
     <>
       <Input
@@ -136,6 +139,7 @@ export const EstablishmentBusinessFields = ({
             setValueAs: (value) => (value ? value : undefined),
           }),
         }}
+        {...getFieldError("businessNameCustomized")}
         className={fr.cx("fr-mt-2w")}
       />
     </>
