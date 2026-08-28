@@ -5,22 +5,26 @@ import {
   beneficiaryDashboardTabsList,
   domElementIds,
   type EstablishmentDashboardTab,
-  establishmentDashboardTabsList,
   frontRoutes,
 } from "shared";
 import { getTabIndexByTabName } from "./admin";
 import { fillConventionForm } from "./convention";
 
+const establishmentDashboardTabUrls: Record<EstablishmentDashboardTab, string> =
+  {
+    conventions: frontRoutes.establishmentDashboardConventions().href,
+    discussions: frontRoutes.establishmentDashboardDiscussions().href,
+    "fiche-entreprise": frontRoutes.establishmentDashboardFormEstablishment({})
+      .href,
+  };
+
 export const goToEstablishmentDashboardTab = async (
   page: Page,
   tab: EstablishmentDashboardTab,
 ) => {
-  await page.waitForSelector(".fr-tabs__list li");
-  const tabLocator = await page
-    .locator(".fr-tabs__list li")
-    .nth(getTabIndexByTabName(establishmentDashboardTabsList, tab))
-    .locator(".fr-tabs__tab");
-  await tabLocator.click({ force: true });
+  const tabUrl = establishmentDashboardTabUrls[tab];
+  await page.goto(tabUrl);
+  await page.waitForURL(tabUrl);
 };
 
 export const goToBeneficiaryDashboardTab = async (

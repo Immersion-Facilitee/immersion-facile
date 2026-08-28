@@ -10,18 +10,20 @@ import {
   goToDashboard,
   initiateConvention,
 } from "../../utils/dashboard";
+import { e2eSiretEstablishments } from "../../utils/siret";
 import { fillAutocomplete, test } from "../../utils/utils";
 
 test.describe.configure({ mode: "serial" });
 
 test.describe("Agency dashboard workflow", () => {
   let agencyId: AgencyId | null = null;
+  const agencySiret = e2eSiretEstablishments[1].siret;
 
   test.describe("Agency creation", () => {
     test.use({ storageState: testConfig.agencyAuthFile });
     test("creates a new agency", async ({ page }) => {
       agencyId = await fillAndSubmitBasicAgencyForm(page, {
-        siret: "34792240300030",
+        siret: agencySiret,
         customizedName: "Handicap emploi !",
         rawAddress: "1 Avenue Jean-Marie Verne 01000 Bourg-en-Bresse",
       });
@@ -42,7 +44,7 @@ test.describe("Agency dashboard workflow", () => {
       await fillAutocomplete({
         page,
         locator: `#${domElementIds.admin.agencyTab.editAgencyAutocompleteInput}`,
-        value: "34792240300030",
+        value: agencySiret,
       });
 
       await page
