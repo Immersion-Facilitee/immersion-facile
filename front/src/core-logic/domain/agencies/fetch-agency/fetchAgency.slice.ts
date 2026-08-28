@@ -1,7 +1,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { filter } from "ramda";
 import type { AgencyDto, WithAgencyId } from "shared";
-import type { ConnectedUsersWithNormalizedAgencyRightsById } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import type {
+  ConnectedUsersWithNormalizedAgencyRightsById,
+  ConnectedUserWithNormalizedAgencyRights,
+} from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateAgencySlice } from "src/core-logic/domain/agencies/update-agency/updateAgency.slice";
@@ -100,7 +103,8 @@ export const fetchAgencySlice = createSlice({
         if (!state.agencyUsers || !state.agencyUsers[action.payload.userId])
           return;
         state.agencyUsers = filter(
-          (agencyUser) => agencyUser.id !== action.payload.userId,
+          (agencyUser: ConnectedUserWithNormalizedAgencyRights) =>
+            agencyUser.id !== action.payload.userId,
           state.agencyUsers,
         );
       },

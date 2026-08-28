@@ -19,7 +19,7 @@
     "@types/ramda": "^0.30.2",
     "@types/uuid": "^8.3.4",
     "jest": "^30.2.0",
-    "typescript": "^5.7.3"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "axios": "^1.18.1",

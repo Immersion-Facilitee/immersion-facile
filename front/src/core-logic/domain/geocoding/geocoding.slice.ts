@@ -49,7 +49,7 @@ export const geocodingSlice = createSlice({
       if (multiple) {
         const multipleLocators = keys(state.data)
           .filter((key): key is MultipleAddressAutocompleteLocator =>
-            key.startsWith("multiple-address-"),
+            String(key).startsWith("multiple-address-"),
           )
           .sort((a, b) => {
             const aIndex = getMultipleAddressLocatorIndex(a);
@@ -85,9 +85,9 @@ export const geocodingSlice = createSlice({
         );
         const nonMultipleData = keys(state.data).reduce(
           (acc, key) => {
-            if (!key.startsWith("multiple-address-")) {
-              const value = state.data[key];
-              if (value) acc[key] = value;
+            if (!String(key).startsWith("multiple-address-")) {
+              const value = state.data[key as AddressAutocompleteLocator];
+              if (value) acc[String(key)] = value;
             }
             return acc;
           },

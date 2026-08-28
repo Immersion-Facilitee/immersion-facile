@@ -471,7 +471,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       establishmentRepresentativeSignedAt?: string;
       beneficiarySignedAt?: string;
     },
-  ): Signatories => ({
+  ): Signatories<typeof convention.internshipKind> => ({
     beneficiary: {
       ...convention.signatories.beneficiary,
       signedAt: beneficiarySignedAt,

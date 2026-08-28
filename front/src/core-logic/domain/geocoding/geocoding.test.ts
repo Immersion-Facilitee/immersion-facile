@@ -11,6 +11,7 @@ import {
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import {
   type AutocompleteItem,
+  type AutocompleteState,
   initialAutocompleteItem,
 } from "src/core-logic/domain/autocomplete.utils";
 import { makeGeocodingLocatorSelector } from "src/core-logic/domain/geocoding/geocoding.selectors";
@@ -143,6 +144,10 @@ describe("Geocoding epic", () => {
     "multiple-address-1": multipleAddressData["multiple-address-1"],
     "multiple-address-2": multipleAddressData["multiple-address-2"],
   };
+  const multipleAddressGeocodingData = multipleAddressData as AutocompleteState<
+    AddressAutocompleteLocator,
+    AddressAndPositionWithFormattedAddress
+  >["data"];
   it.each([
     {
       description: "removing a middle element (locator1)",
@@ -161,7 +166,7 @@ describe("Geocoding epic", () => {
     },
   ])("should handle $description", ({ locatorToRemove, expectedData }) => {
     const { store } = createTestStore({
-      geocoding: { data: multipleAddressData },
+      geocoding: { data: multipleAddressGeocodingData },
     });
 
     store.dispatch(
@@ -171,7 +176,10 @@ describe("Geocoding epic", () => {
       }),
     );
 
-    expectToEqual(store.getState().geocoding.data, expectedData);
+    expectToEqual(
+      store.getState().geocoding.data,
+      expectedData as typeof multipleAddressGeocodingData,
+    );
   });
 
   it("should update the searched query and reset the state", () => {

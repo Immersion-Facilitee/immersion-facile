@@ -22,6 +22,7 @@ import type {
   ConventionStatus,
   FlatGetConventionsForAgencyUserParams,
   GetConventionsForAgencyUserParams,
+  InternshipKind,
   Signatories,
   Signatory,
 } from "./convention.dto";
@@ -34,11 +35,11 @@ const getNewStatus = (signatories: Signatories): ConventionStatus => {
   return "PARTIALLY_SIGNED";
 };
 
-const updateSignatoriesOnSignature = (
-  signatories: Signatories,
+const updateSignatoriesOnSignature = <T extends InternshipKind>(
+  signatories: Signatories<T>,
   role: SignatoryRole,
   signedAt: string,
-): Signatories => {
+): Signatories<T> => {
   switch (role) {
     case "beneficiary":
       return {

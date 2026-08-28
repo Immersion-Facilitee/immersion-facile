@@ -45,7 +45,8 @@ export const conventionTemplateSlice = createSlice({
       state.isLoading = false;
       state.conventionTemplates = [
         ...state.conventionTemplates.filter(
-          (t) => t.id !== action.payload.conventionTemplate.id,
+          (t: ConventionTemplate) =>
+            t.id !== action.payload.conventionTemplate.id,
         ),
         action.payload.conventionTemplate,
       ];
@@ -95,7 +96,7 @@ export const conventionTemplateSlice = createSlice({
     ) => {
       state.isLoading = false;
       state.conventionTemplates = state.conventionTemplates.filter(
-        (t) => t.id !== action.payload.conventionTemplateId,
+        (t: ConventionTemplate) => t.id !== action.payload.conventionTemplateId,
       );
     },
     deleteConventionTemplateFailed: (

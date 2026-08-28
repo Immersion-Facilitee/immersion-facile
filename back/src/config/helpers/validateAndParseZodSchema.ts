@@ -1,7 +1,7 @@
 import { flatten } from "ramda";
 import { errors, type ZodSchemaWithInputMatchingOutput } from "shared";
 import type { ZodError } from "zod";
-import type { $ZodIssue } from "zod/v4/core/errors.cjs";
+import type { $ZodIssue } from "zod/v4/core";
 import type { OpacifiedLogger } from "../../utils/logger";
 
 export const validateAndParseZodSchema = <T>(

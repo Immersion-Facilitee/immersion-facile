@@ -565,7 +565,7 @@ const makeSignatories = (
     beneficiaryRepresentativeSignedAt?: string;
     beneficiaryCurrentEmployerSignedAt?: string;
   },
-): Signatories => ({
+): Signatories<typeof convention.internshipKind> => ({
   ...convention.signatories,
   beneficiary: {
     ...convention.signatories.beneficiary,
