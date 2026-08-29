@@ -1773,7 +1773,7 @@ describe("Pg implementation of ConventionQueries", () => {
               .withSiret("12345678901237")
               .withAgencyId(agencyId)
               .withStatus("ACCEPTED_BY_VALIDATOR")
-              .withDateStart(subDays(now, 5).toISOString())
+              .withDateStart(subDays(now, 4).toISOString())
               .withDateEnd(addDays(now, 1).toISOString())
               .withSchedule(reasonableSchedule)
               .withUpdatedAt(anyConventionUpdatedAt)
