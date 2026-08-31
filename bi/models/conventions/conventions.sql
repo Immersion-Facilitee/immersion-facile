@@ -59,7 +59,7 @@ select
     c.individual_protection_description,
     c.acquisition_campaign as convention_acquisition_campaign,
     c.acquisition_keyword as convention_acquisition_keyword,
-    c.from_convention_draft_id,
+    c.source_convention_draft_id,
 
 -- Status translation
 cst.translation as status_french,

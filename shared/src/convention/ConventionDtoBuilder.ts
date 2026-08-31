@@ -148,12 +148,12 @@ export class ConventionDtoBuilder implements Builder<ConventionDto> {
     return this.dto;
   }
 
-  public withFromConventionDraftId(
-    fromConventionDraftId?: ConventionDraftId,
+  public withSourceConventionDraftId(
+    sourceConventionDraftId?: ConventionDraftId,
   ): ConventionDtoBuilder {
     return new ConventionDtoBuilder({
       ...this.dto,
-      fromConventionDraftId,
+      sourceConventionDraftId,
     });
   }
 

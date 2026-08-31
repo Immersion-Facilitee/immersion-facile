@@ -355,7 +355,7 @@ export type ConventionCommon = {
   establishmentTutor: EstablishmentTutor;
   validators?: ConventionValidatorInputNames;
   agencyReferent?: WithOptionalFirstnameAndLastname;
-  fromConventionDraftId?: ConventionDraftId;
+  sourceConventionDraftId?: ConventionDraftId;
 } & Partial<WithRenewed> &
   WithAcquisition;
 

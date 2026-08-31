@@ -2,7 +2,7 @@
 import type { MigrationBuilder } from "node-pg-migrate";
 
 const tableName = "conventions";
-const columnName = "from_convention_draft_id";
+const columnName = "source_convention_draft_id";
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
   pgm.addColumn(tableName, {
