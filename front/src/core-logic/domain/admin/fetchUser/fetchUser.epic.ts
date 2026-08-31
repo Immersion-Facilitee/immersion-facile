@@ -1,4 +1,6 @@
 import { filter, map, switchMap } from "rxjs";
+import type { ConnectedUsersAdminAction } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.epics";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { fetchUserSlice } from "src/core-logic/domain/admin/fetchUser/fetchUser.slice";
 import type {
   ActionOfSlice,
@@ -21,4 +23,25 @@ const fetchUserEpic: FetchUserEpic = (action$, state$, { authGateway }) =>
     map(fetchUserSlice.actions.fetchUserSucceeded),
   );
 
-export const fetchUserEpics = [fetchUserEpic];
+const fetchUserOnPreventToDeleteUpdatedEpic: AppEpic<
+  FetchUserAction | ConnectedUsersAdminAction
+> = (action$, state$) =>
+  action$.pipe(
+    filter(
+      connectedUsersAdminSlice.actions.updateUserPreventToDeleteSucceeded.match,
+    ),
+    filter(
+      (action) =>
+        state$.value.admin.fetchUser.user?.id === action.payload.userId,
+    ),
+    map((action) =>
+      fetchUserSlice.actions.fetchUserRequested({
+        userId: action.payload.userId,
+      }),
+    ),
+  );
+
+export const fetchUserEpics = [
+  fetchUserEpic,
+  fetchUserOnPreventToDeleteUpdatedEpic,
+];
