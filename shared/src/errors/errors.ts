@@ -705,6 +705,10 @@ export const errors = {
       ),
     incomplete: ({ id }: { id: string }) =>
       new Error(`La demande de convention archivée est incomplète pour ${id}`),
+    alreadyHandled: ({ id }: { id: string }) =>
+      new ConflictError(
+        `La demande de convention archivée '${id}' a déjà été traitée.`,
+      ),
   },
   establishment: {
     badPagination: ({

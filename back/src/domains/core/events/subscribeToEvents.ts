@@ -34,6 +34,7 @@ const getUseCasesByTopics = (
   ArchivedConventionRequestCreated: [
     useCases.notifyUserThatArchivedConventionRequestWasReceived,
   ],
+  ArchivedConventionRequestHandled: [],
   ConventionDraftSaved: [useCases.notifyConventionDraftSaved],
   UserDeleted: [],
   AllEstablishmentUsersDeleted: [useCases.deleteEstablishment],
