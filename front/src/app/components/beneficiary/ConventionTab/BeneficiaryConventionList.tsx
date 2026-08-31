@@ -65,7 +65,6 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
       {beneficiaryConventionList !== null &&
         beneficiaryConventionList.length > 0 && (
           <Table
-            fixed
             headers={["Entreprise", "Statut", "Bilan", "Dates", "Actions"]}
             data={conventionListToTableData(
               beneficiaryConventionList,
