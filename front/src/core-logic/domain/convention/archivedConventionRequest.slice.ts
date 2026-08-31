@@ -3,6 +3,7 @@ import type {
   ArchivedConventionRequestDto,
   ArchivedConventionRequestToReviewListDto,
   ConnectedUserJwt,
+  HandleArchivedConventionRequestDto,
 } from "shared";
 import type {
   PayloadActionWithFeedbackTopic,
@@ -74,6 +75,32 @@ export const archivedConventionRequestSlice = createSlice({
     ) => {
       state.isLoading = false;
       state.archivedConventionListToReview = null;
+    },
+    handleArchivedConventionRequestRequested: (
+      state,
+      _action: PayloadActionWithFeedbackTopic<
+        HandleArchivedConventionRequestDto & { jwt: ConnectedUserJwt }
+      >,
+    ) => {
+      state.isLoading = true;
+    },
+    handleArchivedConventionRequestTreatedSucceeded: (
+      state,
+      _action: PayloadActionWithFeedbackTopic,
+    ) => {
+      state.isLoading = false;
+    },
+    handleArchivedConventionRequestRefusedSucceeded: (
+      state,
+      _action: PayloadActionWithFeedbackTopic,
+    ) => {
+      state.isLoading = false;
+    },
+    handleArchivedConventionRequestFailed: (
+      state,
+      _action: PayloadActionWithFeedbackTopicError,
+    ) => {
+      state.isLoading = false;
     },
   },
 });

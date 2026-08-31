@@ -32,6 +32,115 @@ describe("archived convention request slice", () => {
     });
   });
 
+  describe("handle archived convention request", () => {
+    const handleFeedbackTopic: FeedbackTopic =
+      "archived-convention-request-handle";
+    const jwt = "jwt";
+    const archivedConventionRequestId = uuid();
+    const remainingList: ArchivedConventionRequestToReviewListDto = [];
+
+    it("on treated success, shows treated feedback and refetches the list", () => {
+      expectArchivedConventionRequestState(
+        initialArchivedConventionRequestState,
+      );
+
+      store.dispatch(
+        archivedConventionRequestSlice.actions.handleArchivedConventionRequestRequested(
+          {
+            archivedConventionRequestId,
+            status: "TREATED",
+            jwt,
+            feedbackTopic: handleFeedbackTopic,
+          },
+        ),
+      );
+
+      expectArchivedConventionRequestState({
+        isLoading: true,
+        archivedConventionListToReview: null,
+      });
+
+      feedGatewayWithHandleArchivedConventionRequest();
+
+      expectFeedbackTopic(handleFeedbackTopic, {
+        level: "success",
+        on: "update",
+        title: "La demande a bien été marquée comme traitée.",
+        message: "La demande a bien été marquée comme traitée.",
+      });
+
+      feedGatewayWithArchivedConventionRequestToReviewListDto(remainingList);
+
+      expectArchivedConventionRequestState({
+        isLoading: false,
+        archivedConventionListToReview: remainingList,
+      });
+    });
+
+    it("on refused success, shows refused feedback and refetches the list", () => {
+      expectArchivedConventionRequestState(
+        initialArchivedConventionRequestState,
+      );
+
+      store.dispatch(
+        archivedConventionRequestSlice.actions.handleArchivedConventionRequestRequested(
+          {
+            archivedConventionRequestId,
+            status: "REFUSED",
+            jwt,
+            feedbackTopic: handleFeedbackTopic,
+          },
+        ),
+      );
+
+      feedGatewayWithHandleArchivedConventionRequest();
+
+      expectFeedbackTopic(handleFeedbackTopic, {
+        level: "success",
+        on: "delete",
+        title: "La demande a bien été refusée.",
+        message: "La demande a bien été refusée.",
+      });
+
+      feedGatewayWithArchivedConventionRequestToReviewListDto(remainingList);
+
+      expectArchivedConventionRequestState({
+        isLoading: false,
+        archivedConventionListToReview: remainingList,
+      });
+    });
+
+    it("on failed, shows error feedback and does not change the list", () => {
+      expectArchivedConventionRequestState(
+        initialArchivedConventionRequestState,
+      );
+
+      store.dispatch(
+        archivedConventionRequestSlice.actions.handleArchivedConventionRequestRequested(
+          {
+            archivedConventionRequestId,
+            status: "TREATED",
+            jwt,
+            feedbackTopic: handleFeedbackTopic,
+          },
+        ),
+      );
+
+      const error = new Error("already handled");
+      feedGatewayWithHandleArchivedConventionRequest(error);
+
+      expectArchivedConventionRequestState(
+        initialArchivedConventionRequestState,
+      );
+      expectFeedbackTopic(handleFeedbackTopic, {
+        level: "error",
+        on: "update",
+        title: "Une erreur s'est produite lors du traitement de la demande.",
+        message: error.message,
+      });
+    });
+  });
+
   describe("fetch archived convention request list to convention", () => {
     const feedbackTopic: FeedbackTopic = "archived-convention-request-list";
 
@@ -226,6 +335,15 @@ describe("archived convention request slice", () => {
       : dependencies.conventionGateway.fetchArchivedConventionRequestToReviewListResult$.next(
           nextResult,
         );
+
+  const feedGatewayWithHandleArchivedConventionRequest = (
+    nextResult?: Error,
+  ) =>
+    nextResult
+      ? dependencies.conventionGateway.handleArchivedConventionRequestResult$.error(
+          nextResult,
+        )
+      : dependencies.conventionGateway.handleArchivedConventionRequestResult$.next();
 
   const expectFeedbackTopic = (
     feedbackTopic: FeedbackTopic,
