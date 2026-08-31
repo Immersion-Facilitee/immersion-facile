@@ -3,6 +3,7 @@ import type {
   ArchivedConventionRequestReason,
   ArchivedConventionRequestReasonFields,
   ArchivedConventionRequestStatus,
+  ArchivedConventionRequestToReviewFields,
   ArchivedConventionRequestWithConventionDetailsDto,
   ArchivedConventionRequestWithConventionIdDto,
   DateString,
@@ -71,22 +72,44 @@ const isArchivedConventionRequestReason = (
 ): reason is ArchivedConventionRequestReason =>
   archivedConventionRequestReasons.some((value) => value === reason);
 
-export const toArchivedConventionRequestEntity = (
+const toReasonFields = (
   row: ArchivedConventionRequestRow,
-): ArchivedConventionRequestEntity => {
+): ArchivedConventionRequestReasonFields => {
   if (!isArchivedConventionRequestReason(row.reason))
     throw errors.archivedConventionRequest.unknownReason({
       reason: row.reason,
     });
 
-  const reasonFields: ArchivedConventionRequestReasonFields =
-    row.reason === "other"
-      ? {
-          reason: "other",
-          otherReason: row.other_reason ?? "",
-        }
-      : { reason: row.reason };
+  if (row.reason === "other")
+    return {
+      reason: "other",
+      otherReason: row.other_reason ?? "",
+    };
 
+  return { reason: row.reason };
+};
+
+const toConventionDetailsFields = (row: ArchivedConventionRequestRow) => {
+  const parseResult = archivedConventionRequestDetailsFieldsSchema.safeParse({
+    beneficiaryFirstName: row.beneficiary_first_name,
+    beneficiaryLastName: row.beneficiary_last_name,
+    siret: row.siret,
+    immersionDate: row.immersion_date,
+    immersionAppellationCode: row.immersion_appellation_code?.toString(),
+  });
+
+  if (!parseResult.success)
+    throw errors.archivedConventionRequest.incomplete({
+      id: row.id,
+    });
+
+  return parseResult.data;
+};
+
+export const toArchivedConventionRequestEntity = (
+  row: ArchivedConventionRequestRow,
+): ArchivedConventionRequestEntity => {
+  const reasonFields = toReasonFields(row);
   const common = {
     id: row.id,
     userId: row.user_id,
@@ -103,22 +126,39 @@ export const toArchivedConventionRequestEntity = (
       conventionId: row.convention_id,
     };
 
-  const parseResult = archivedConventionRequestDetailsFieldsSchema.safeParse({
-    beneficiaryFirstName: row.beneficiary_first_name,
-    beneficiaryLastName: row.beneficiary_last_name,
-    siret: row.siret,
-    immersionDate: row.immersion_date,
-    immersionAppellationCode: row.immersion_appellation_code?.toString(),
-  });
+  return {
+    ...common,
+    conventionSearchMethod: "withConventionDetails",
+    ...toConventionDetailsFields(row),
+  };
+};
 
-  if (!parseResult.success)
-    throw errors.archivedConventionRequest.incomplete({
-      id: row.id,
-    });
+export const toArchivedConventionRequestToReviewListItem = (
+  row: ArchivedConventionRequestRow,
+): ArchivedConventionRequestToReviewFields & { userId: UserId } => {
+  const reasonFields = toReasonFields(row);
+  const common = {
+    id: row.id,
+    userId: row.user_id,
+    createdAt: row.created_at.toISOString(),
+    ...reasonFields,
+  };
+
+  if (row.convention_id)
+    return {
+      ...common,
+      conventionSearchMethod: "withConventionId",
+      conventionId: row.convention_id,
+    };
+
+  const details = toConventionDetailsFields(row);
 
   return {
     ...common,
     conventionSearchMethod: "withConventionDetails",
-    ...parseResult.data,
+    beneficiaryFirstName: details.beneficiaryFirstName,
+    beneficiaryLastName: details.beneficiaryLastName,
+    siret: details.siret,
+    immersionDate: details.immersionDate,
   };
 };

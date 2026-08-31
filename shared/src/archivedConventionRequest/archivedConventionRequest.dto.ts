@@ -80,13 +80,28 @@ export type ArchivedConventionRequestDto =
   | ArchivedConventionRequestWithConventionIdDto
   | ArchivedConventionRequestWithConventionDetailsDto;
 
-export type ArchivedConventionRequestToReviewDto = Pick<
-  ArchivedConventionRequestDto,
-  "reason" | "id"
-> & {
-  createdAt: DateString;
-  requester: { firstname: Firstname; lastname: Lastname; email: Email };
-};
+export type ArchivedConventionRequestToReviewFields =
+  ArchivedConventionRequestReasonFields & {
+    id: ArchivedConventionRequestId;
+    createdAt: DateString;
+  } & (
+      | {
+          conventionSearchMethod: "withConventionId";
+          conventionId: ConventionId;
+        }
+      | {
+          conventionSearchMethod: "withConventionDetails";
+          beneficiaryFirstName: Firstname;
+          beneficiaryLastName: Lastname;
+          siret: SiretDto;
+          immersionDate: string;
+        }
+    );
+
+export type ArchivedConventionRequestToReviewDto =
+  ArchivedConventionRequestToReviewFields & {
+    requester: { firstname: Firstname; lastname: Lastname; email: Email };
+  };
 
 export type ArchivedConventionRequestToReviewListDto =
   ArchivedConventionRequestToReviewDto[];

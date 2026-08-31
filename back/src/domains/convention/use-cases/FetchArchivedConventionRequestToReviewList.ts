@@ -53,10 +53,8 @@ const onBackOfficeAdminRights = ({
       ),
     }))
     .then(({ list, requesterUsersByUserId }) =>
-      list.map(({ id, createdAt, reason, userId }) => ({
-        id,
-        reason,
-        createdAt,
+      list.map(({ userId, ...item }) => ({
+        ...item,
         requester: {
           firstname: requesterUsersByUserId[userId].firstName,
           lastname: requesterUsersByUserId[userId].lastName,

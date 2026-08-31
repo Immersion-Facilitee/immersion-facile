@@ -10,6 +10,7 @@ import {
 } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { InMemoryArchivedConventionRequestQueries } from "../adapters/archived-convention-request/InMemoryArchivedConventionRequestQueries";
+import type { ArchivedConventionRequestToReviewListItem } from "../ports/ArchivedConventionRequestQueries";
 import {
   type FetchArchivedConventionRequestToReviewList,
   makeFetchArchivedConventionRequestToReviewList,
@@ -28,21 +29,32 @@ describe("FetchArchivedConventionRequestToReviewList", () => {
     .withLastName("Foutre")
     .withEmail("jf@mail.com")
     .buildUser();
-  const user3 = new ConnectedUserBuilder()
-    .withId("3")
-    .withFirstName("Billy")
-    .withLastName("Idol")
-    .withEmail("elfamoso@mail.com")
-    .buildUser();
-  const user4 = new ConnectedUserBuilder()
-    .withId("4")
-    .withFirstName("Martin")
-    .withLastName("Pêcheur")
-    .withEmail("inspecteur@urssaf.fr")
-    .buildUser();
   const adminConnectedUser = new ConnectedUserBuilder()
     .withIsAdmin(true)
     .build();
+
+  const requestWithConventionId: ArchivedConventionRequestToReviewListItem = {
+    id: "1",
+    reason: "legalDispute",
+    createdAt: new Date("2023-01-01").toISOString(),
+    userId: user1.id,
+    conventionSearchMethod: "withConventionId",
+    conventionId: "11111111-1111-4111-8111-111111111111",
+  };
+
+  const requestWithConventionDetails: ArchivedConventionRequestToReviewListItem =
+    {
+      id: "2",
+      reason: "other",
+      otherReason: "Motif personnalisé pour la demande",
+      createdAt: new Date("2024-01-01").toISOString(),
+      userId: user2.id,
+      conventionSearchMethod: "withConventionDetails",
+      beneficiaryFirstName: "Marie",
+      beneficiaryLastName: "Curie",
+      siret: "12345678901234",
+      immersionDate: "2024-01-15",
+    };
 
   let useCase: FetchArchivedConventionRequestToReviewList;
   let uow: InMemoryUnitOfWork;
@@ -56,79 +68,51 @@ describe("FetchArchivedConventionRequestToReviewList", () => {
       deps: { archivedConventionRequestQueries },
       uowPerformer: new InMemoryUowPerformer(uow),
     });
-
-    archivedConventionRequestQueries.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
-      [
-        {
-          id: "1",
-          reason: "legalDispute",
-          createdAt: new Date("2023-01-01").toISOString(),
-          userId: user1.id,
-        },
-        {
-          id: "2",
-          reason: "other",
-          createdAt: new Date("2024-01-01").toISOString(),
-          userId: user2.id,
-        },
-        {
-          id: "3",
-          reason: "rpeAdvisorAccessToBeneficiaryHistory",
-          createdAt: new Date("2025-01-01").toISOString(),
-          userId: user3.id,
-        },
-        {
-          id: "4",
-          reason: "urssafOrInspectionControl",
-          createdAt: new Date("2026-01-01").toISOString(),
-          userId: user4.id,
-        },
-      ];
   });
 
   describe("Happy path", () => {
-    it("Should return archived convention requests to review when user is backoffice admin", async () => {
-      uow.userRepository.users = [user1, user2, user3, user4];
+    it("returns a request with conventionSearchMethod = withConventionId", async () => {
+      uow.userRepository.users = [user1];
+      archivedConventionRequestQueries.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
+        [requestWithConventionId];
 
       expectToEqual(await useCase.execute(undefined, adminConnectedUser), [
         {
-          id: "1",
-          reason: "legalDispute",
-          createdAt: new Date("2023-01-01").toISOString(),
+          id: requestWithConventionId.id,
+          reason: requestWithConventionId.reason,
+          createdAt: requestWithConventionId.createdAt,
+          conventionSearchMethod: "withConventionId",
+          conventionId: requestWithConventionId.conventionId,
           requester: {
             firstname: user1.firstName,
             lastname: user1.lastName,
             email: user1.email,
           },
         },
+      ]);
+    });
+
+    it("returns a request with conventionSearchMethod = withConventionDetails and other reason", async () => {
+      uow.userRepository.users = [user2];
+      archivedConventionRequestQueries.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
+        [requestWithConventionDetails];
+
+      expectToEqual(await useCase.execute(undefined, adminConnectedUser), [
         {
-          id: "2",
+          id: requestWithConventionDetails.id,
           reason: "other",
-          createdAt: new Date("2024-01-01").toISOString(),
+          otherReason: "Motif personnalisé pour la demande",
+          createdAt: requestWithConventionDetails.createdAt,
+          conventionSearchMethod: "withConventionDetails",
+          beneficiaryFirstName:
+            requestWithConventionDetails.beneficiaryFirstName,
+          beneficiaryLastName: requestWithConventionDetails.beneficiaryLastName,
+          siret: requestWithConventionDetails.siret,
+          immersionDate: requestWithConventionDetails.immersionDate,
           requester: {
             firstname: user2.firstName,
             lastname: user2.lastName,
             email: user2.email,
-          },
-        },
-        {
-          id: "3",
-          reason: "rpeAdvisorAccessToBeneficiaryHistory",
-          createdAt: new Date("2025-01-01").toISOString(),
-          requester: {
-            firstname: user3.firstName,
-            lastname: user3.lastName,
-            email: user3.email,
-          },
-        },
-        {
-          id: "4",
-          reason: "urssafOrInspectionControl",
-          createdAt: new Date("2026-01-01").toISOString(),
-          requester: {
-            firstname: user4.firstName,
-            lastname: user4.lastName,
-            email: user4.email,
           },
         },
       ]);
@@ -148,10 +132,13 @@ describe("FetchArchivedConventionRequestToReviewList", () => {
     });
 
     it("Should throw not found if requesters are missing on user repo", async () => {
-      uow.userRepository.users = [user1, user2];
+      archivedConventionRequestQueries.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
+        [requestWithConventionId, requestWithConventionDetails];
+
+      uow.userRepository.users = [user1];
       await expectPromiseToFailWithError(
         useCase.execute(undefined, adminConnectedUser),
-        errors.users.notFound({ userIds: [user3.id, user4.id] }),
+        errors.users.notFound({ userIds: [user2.id] }),
       );
     });
   });

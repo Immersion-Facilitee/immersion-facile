@@ -1,8 +1,8 @@
-import { archivedConventionRequestReasonSchema } from "shared";
 import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
+import { toArchivedConventionRequestToReviewListItem } from "../../entities/ArchivedConventionRequestEntity";
 import type {
   ArchivedConventionRequestQueries,
-  ArchivedConventionRequestToReviewList,
+  ArchivedConventionRequestToReviewListItem,
 } from "../../ports/ArchivedConventionRequestQueries";
 
 export class PgArchivedConventionRequestQueries
@@ -10,21 +10,18 @@ export class PgArchivedConventionRequestQueries
 {
   constructor(private readonly transaction: KyselyDb) {}
 
-  public async getFirstOldestArchivedConventionRequestToReviewList(): Promise<ArchivedConventionRequestToReviewList> {
+  public async getFirstOldestArchivedConventionRequestToReviewList(): Promise<
+    ArchivedConventionRequestToReviewListItem[]
+  > {
     return this.transaction
       .selectFrom("archived_convention_requests")
-      .select(["id", "reason", "user_id", "created_at"])
+      .selectAll()
       .where("status", "=", "PENDING")
       .orderBy("created_at", "asc")
       .limit(100)
       .execute()
       .then((results) =>
-        results.map(({ id, reason, created_at, user_id: userId }) => ({
-          id,
-          reason: archivedConventionRequestReasonSchema.parse(reason),
-          userId,
-          createdAt: created_at.toISOString(),
-        })),
+        results.map(toArchivedConventionRequestToReviewListItem),
       );
   }
 }

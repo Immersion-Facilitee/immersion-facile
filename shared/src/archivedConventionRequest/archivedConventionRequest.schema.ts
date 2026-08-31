@@ -100,14 +100,33 @@ export const archivedConventionRequestHandledStatusSchema: ZodSchemaWithInputMat
 
 export const archivedConventionRequestToReviewListDtoSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestToReviewListDto> =
   z.array(
-    z.object({
-      id: zUuidLike,
-      reason: archivedConventionRequestReasonSchema,
-      createdAt: makeDateStringSchema(),
-      requester: z.object({
-        firstname: firstnameSchema,
-        lastname: lastnameSchema,
-        email: emailSchema,
-      }),
-    }),
+    z
+      .discriminatedUnion("conventionSearchMethod", [
+        z.object({
+          id: zUuidLike,
+          createdAt: makeDateStringSchema(),
+          requester: z.object({
+            firstname: firstnameSchema,
+            lastname: lastnameSchema,
+            email: emailSchema,
+          }),
+          conventionSearchMethod: z.literal("withConventionId"),
+          conventionId: conventionIdSchema,
+        }),
+        z.object({
+          id: zUuidLike,
+          createdAt: makeDateStringSchema(),
+          requester: z.object({
+            firstname: firstnameSchema,
+            lastname: lastnameSchema,
+            email: emailSchema,
+          }),
+          conventionSearchMethod: z.literal("withConventionDetails"),
+          beneficiaryFirstName: firstnameMandatorySchema,
+          beneficiaryLastName: lastnameMandatorySchema,
+          siret: siretSchema,
+          immersionDate: zStringMinLength1Max255,
+        }),
+      ])
+      .and(archivedConventionRequestReasonFieldsSchema),
   );

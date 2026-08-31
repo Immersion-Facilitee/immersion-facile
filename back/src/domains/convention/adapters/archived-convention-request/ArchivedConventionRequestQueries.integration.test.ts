@@ -1,5 +1,11 @@
 import type { Pool } from "pg";
-import { ConnectedUserBuilder, executeInSequence, expectToEqual } from "shared";
+import {
+  ConnectedUserBuilder,
+  errors,
+  executeInSequence,
+  expectPromiseToFailWithError,
+  expectToEqual,
+} from "shared";
 import { v4 as uuid } from "uuid";
 import {
   type KyselyDb,
@@ -8,7 +14,7 @@ import {
 import { makeTestPgPool } from "../../../../config/pg/pgPool";
 import { PgUserRepository } from "../../../core/authentication/connected-user/adapters/PgUserRepository";
 import type { ArchivedConventionRequestEntity } from "../../entities/ArchivedConventionRequestEntity";
-import type { ArchivedConventionRequestToReviewList } from "../../ports/ArchivedConventionRequestQueries";
+import type { ArchivedConventionRequestToReviewListItem } from "../../ports/ArchivedConventionRequestQueries";
 import { InMemoryArchivedConventionRequestQueries } from "./InMemoryArchivedConventionRequestQueries";
 import { PgArchivedConventionRequestQueries } from "./PgArchivedConventionRequestQueries";
 import { PgArchivedConventionRequestRepository } from "./PgArchivedConventionRequestRepository";
@@ -65,33 +71,49 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
         createdAt: new Date("2026-01-01").toISOString(),
         updatedAt: new Date("2026-01-01").toISOString(),
         status: "PENDING",
-        conventionSearchMethod: "withConventionId",
-        conventionId: uuid(),
-        reason: "legalDispute",
+        conventionSearchMethod: "withConventionDetails",
+        beneficiaryFirstName: "Jean",
+        beneficiaryLastName: "Dupont",
+        siret: "12345678901234",
+        immersionDate: "2024-01-15",
+        immersionAppellationCode: "11573",
+        reason: "other",
+        otherReason: "Motif personnalisé pour la demande",
       };
 
-      const expectedResults = [oldRequest, newRequest];
+      const expectedResults: ArchivedConventionRequestToReviewListItem[] = [
+        {
+          id: oldRequest.id,
+          userId: oldRequest.userId,
+          createdAt: oldRequest.createdAt,
+          conventionSearchMethod: "withConventionId",
+          conventionId: oldRequest.conventionId,
+          reason: "legalDispute",
+        },
+        {
+          id: newRequest.id,
+          userId: newRequest.userId,
+          createdAt: newRequest.createdAt,
+          conventionSearchMethod: "withConventionDetails",
+          beneficiaryFirstName: newRequest.beneficiaryFirstName,
+          beneficiaryLastName: newRequest.beneficiaryLastName,
+          siret: newRequest.siret,
+          immersionDate: newRequest.immersionDate,
+          reason: "other",
+          otherReason: "Motif personnalisé pour la demande",
+        },
+      ];
 
       if (queries instanceof PgArchivedConventionRequestQueries) {
-        await saveEntitiesInRepo(db, expectedResults);
+        await saveEntitiesInRepo(db, [oldRequest, newRequest]);
       } else {
         queries.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
-          expectedResults.map(({ id, reason, userId, createdAt }) => ({
-            id,
-            reason,
-            userId,
-            createdAt,
-          }));
+          expectedResults;
       }
 
       expectToEqual(
         await queries.getFirstOldestArchivedConventionRequestToReviewList(),
-        expectedResults.map(({ id, reason, userId, createdAt }) => ({
-          id,
-          reason,
-          userId,
-          createdAt,
-        })),
+        expectedResults,
       );
     });
 
@@ -129,12 +151,14 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
         reason: "legalDispute",
       };
 
-      const expectedResults: ArchivedConventionRequestToReviewList = [
+      const expectedResults: ArchivedConventionRequestToReviewListItem[] = [
         {
           id: pendingRequest.id,
-          reason: pendingRequest.reason,
           userId: pendingRequest.userId,
           createdAt: pendingRequest.createdAt,
+          conventionSearchMethod: "withConventionId",
+          conventionId: pendingRequest.conventionId,
+          reason: "legalDispute",
         },
       ];
 
@@ -154,6 +178,28 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
         expectedResults,
       );
     });
+
+    if (adapter === "Pg")
+      it("throws when request details are incomplete", async () => {
+        const id = uuid();
+
+        await db
+          .insertInto("archived_convention_requests")
+          .values({
+            id,
+            user_id: user.id,
+            created_at: new Date("2022-01-01"),
+            updated_at: new Date("2022-01-01"),
+            status: "PENDING",
+            reason: "legalDispute",
+          })
+          .execute();
+
+        await expectPromiseToFailWithError(
+          queries.getFirstOldestArchivedConventionRequestToReviewList(),
+          errors.archivedConventionRequest.incomplete({ id }),
+        );
+      });
   });
 });
 
