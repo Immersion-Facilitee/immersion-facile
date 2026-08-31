@@ -648,6 +648,13 @@ describe("Pg implementation of ConventionQueries", () => {
         .withId(uuid())
         .build();
 
+      const conventionWithEstablishmentRepEmailAndTutorEmail =
+        new ConventionDtoBuilder()
+          .withId(uuid())
+          .withEstablishmentRepresentativeEmail(email)
+          .withEstablishmentTutorEmail(email)
+          .build();
+
       const conventionWithEstablishmentRepEmail = new ConventionDtoBuilder()
         .withId(uuid())
         .withEstablishmentRepresentativeEmail(email)
@@ -665,7 +672,13 @@ describe("Pg implementation of ConventionQueries", () => {
 
       const conventionWithBeneficiaryRepEmail = new ConventionDtoBuilder()
         .withId(uuid())
-        .withBeneficiaryRepresentativeEmail(email)
+        .withBeneficiaryRepresentative({
+          firstName: "benef",
+          lastName: "rep",
+          phone: "+33600000000",
+          role: "beneficiary-representative",
+          email,
+        })
         .build();
 
       const conventionWithBeneficiaryCurrentEmployerEmail =
@@ -689,6 +702,7 @@ describe("Pg implementation of ConventionQueries", () => {
           [
             conventionWithEstablishmentRepEmail,
             conventionWithTutorEmail,
+            conventionWithEstablishmentRepEmailAndTutorEmail,
             conventionWithBeneficiaryEmail,
             conventionWithBeneficiaryRepEmail,
             conventionWithBeneficiaryCurrentEmployerEmail,
@@ -708,6 +722,7 @@ describe("Pg implementation of ConventionQueries", () => {
           [
             conventionWithEstablishmentRepEmail,
             conventionWithTutorEmail,
+            conventionWithEstablishmentRepEmailAndTutorEmail,
             conventionWithBeneficiaryEmail,
             conventionWithBeneficiaryRepEmail,
             conventionWithBeneficiaryCurrentEmployerEmail,
