@@ -27,6 +27,7 @@ import {
   type FindSimilarConventionsParams,
   type FlatGetConventionsForAgencyUserParams,
   type FlatGetConventionsWithUnfinalizedAssessmentParams,
+  type HandleArchivedConventionRequestDto,
   type MarkPartnersErroredConventionAsHandledRequest,
   makeEmptyLastReminders,
   type PaginationQueryParams,
@@ -115,6 +116,8 @@ export class InMemoryConventionGateway implements ConventionGateway {
   public fetchArchivedConventionRequestToReviewListResult$ =
     new Subject<ArchivedConventionRequestToReviewListDto>();
 
+  public handleArchivedConventionRequestResult$ = new Subject<void>();
+
   #agencies: { [id: string]: AgencyOption } = {};
 
   #conventions: { [id: string]: ConventionDto } = {
@@ -127,6 +130,13 @@ export class InMemoryConventionGateway implements ConventionGateway {
     _jwt: string,
   ): Observable<ArchivedConventionRequestToReviewListDto> {
     return this.fetchArchivedConventionRequestToReviewListResult$;
+  }
+
+  public handleArchivedConventionRequest$(
+    _params: HandleArchivedConventionRequestDto,
+    _jwt: ConnectedUserJwt,
+  ): Observable<void> {
+    return this.handleArchivedConventionRequestResult$;
   }
 
   getBeneficiaryConventionList$(

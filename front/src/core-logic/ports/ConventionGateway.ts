@@ -26,6 +26,7 @@ import type {
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   FlatGetConventionsWithUnfinalizedAssessmentParams,
+  HandleArchivedConventionRequestDto,
   MarkPartnersErroredConventionAsHandledRequest,
   RenewConventionParams,
   SaveConventionDraftDto,
@@ -143,4 +144,8 @@ export interface ConventionGateway {
   fetchArchivedConventionRequestToReviewList$(
     jwt: string,
   ): Observable<ArchivedConventionRequestToReviewListDto>;
+  handleArchivedConventionRequest$(
+    params: HandleArchivedConventionRequestDto,
+    jwt: ConnectedUserJwt,
+  ): Observable<void>;
 }

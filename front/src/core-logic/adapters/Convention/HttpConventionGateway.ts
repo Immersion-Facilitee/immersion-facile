@@ -28,6 +28,7 @@ import type {
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   FlatGetConventionsWithUnfinalizedAssessmentParams,
+  HandleArchivedConventionRequestDto,
   MarkPartnersErroredConventionAsHandledRequest,
   RenewConventionParams,
   SaveConventionDraftDto,
@@ -178,6 +179,29 @@ export class HttpConventionGateway implements ConventionGateway {
             .with({ status: 200 }, (response) => response.body)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: P.union(401, 404) }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public handleArchivedConventionRequest$(
+    params: HandleArchivedConventionRequestDto,
+    jwt: ConnectedUserJwt,
+  ): Observable<void> {
+    return from(
+      this.authenticatedHttpClient
+        .handleArchivedConventionRequest({
+          urlParams: {
+            archivedConventionRequestId: params.archivedConventionRequestId,
+          },
+          body: { status: params.status },
+          headers: { authorization: jwt },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, () => undefined)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403, 404, 409) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );
