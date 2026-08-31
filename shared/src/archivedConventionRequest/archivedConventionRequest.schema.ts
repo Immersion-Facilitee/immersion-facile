@@ -30,6 +30,7 @@ import {
   archivedConventionRequestHandledStatuses,
   archivedConventionRequestReasons,
   archivedConventionRequestStatuses,
+  type HandleArchivedConventionRequestDto,
 } from "./archivedConventionRequest.dto";
 
 const archivedConventionRequestIdSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestId> =
@@ -96,6 +97,12 @@ export const archivedConventionRequestStatusSchema: ZodSchemaWithInputMatchingOu
 export const archivedConventionRequestHandledStatusSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestHandledStatus> =
   z.enum(archivedConventionRequestHandledStatuses, {
     error: localization.invalidEnum,
+  });
+
+export const handleArchivedConventionRequestSchema: ZodSchemaWithInputMatchingOutput<HandleArchivedConventionRequestDto> =
+  z.object({
+    archivedConventionRequestId: archivedConventionRequestIdSchema,
+    status: archivedConventionRequestHandledStatusSchema,
   });
 
 export const archivedConventionRequestToReviewListDtoSchema: ZodSchemaWithInputMatchingOutput<ArchivedConventionRequestToReviewListDto> =

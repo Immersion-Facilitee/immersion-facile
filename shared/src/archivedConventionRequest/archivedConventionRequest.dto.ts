@@ -42,6 +42,11 @@ export const archivedConventionRequestHandledStatuses = [
 export type ArchivedConventionRequestHandledStatus =
   (typeof archivedConventionRequestHandledStatuses)[number];
 
+export type HandleArchivedConventionRequestDto =
+  WithArchivedConventionRequestId & {
+    status: ArchivedConventionRequestHandledStatus;
+  };
+
 export type ArchivedConventionRequestReasonFields =
   | {
       reason: Exclude<ArchivedConventionRequestReason, "other">;
