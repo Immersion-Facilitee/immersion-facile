@@ -14,12 +14,17 @@ import {
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
+import type { BasicEventCrawler } from "../../../../domains/core/events/adapters/EventCrawlerImplementations";
 import type { GenerateConnectedUserJwt } from "../../../../domains/core/jwt";
 import type { CustomTimeGateway } from "../../../../domains/core/time-gateway/adapters/CustomTimeGateway";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { EstablishmentAggregateBuilder } from "../../../../domains/establishment/helpers/EstablishmentBuilders";
-import { buildTestApp } from "../../../../utils/buildTestApp";
+import {
+  buildTestApp,
+  type InMemoryGateways,
+} from "../../../../utils/buildTestApp";
 import { createConnectedUserJwtPayload } from "../../../../utils/jwt";
+import { processEventsForEmailToBeSent } from "../../../../utils/processEventsForEmailToBeSent";
 
 describe("Delete establishment", () => {
   const backofficeAdminUser = new ConnectedUserBuilder()
@@ -52,12 +57,19 @@ describe("Delete establishment", () => {
 
   let httpClient: HttpClient<EstablishmentRoutes>;
   let uow: InMemoryUnitOfWork;
+  let gateways: InMemoryGateways;
+  let eventCrawler: BasicEventCrawler;
   let generateConnectedUserJwt: GenerateConnectedUserJwt;
   let timeGateway: CustomTimeGateway;
 
   beforeEach(async () => {
     const testAppAndDeps = await buildTestApp();
-    ({ inMemoryUow: uow, generateConnectedUserJwt } = testAppAndDeps);
+    ({
+      inMemoryUow: uow,
+      gateways,
+      eventCrawler,
+      generateConnectedUserJwt,
+    } = testAppAndDeps);
     const request = testAppAndDeps.request;
     timeGateway = testAppAndDeps.gateways.timeGateway;
     httpClient = createSupertestSharedClient(establishmentRoutes, request);
@@ -86,6 +98,63 @@ describe("Delete establishment", () => {
     });
     expectToEqual(
       uow.establishmentAggregateRepository.establishmentAggregates,
+      [],
+    );
+  });
+
+  it(`${displayRouteName(
+    establishmentRoutes.deleteEstablishment,
+  )} 204 - removes the establishment marketing contact once the EstablishmentDeleted event is processed`, async () => {
+    const contactEmail = "marketing-contact@example.com";
+    uow.establishmentAggregateRepository.establishmentAggregates = [
+      establishmentAggregate,
+    ];
+    uow.establishmentMarketingRepository.contacts = [
+      {
+        contactEmail,
+        siret: establishmentAggregate.establishment.siret,
+        nafCode: null,
+        emailContactHistory: [
+          {
+            createdAt: new Date("2024-01-01"),
+            email: contactEmail,
+            firstName: "John",
+            lastName: "Doe",
+          },
+        ],
+      },
+    ];
+    gateways.establishmentMarketingGateway.marketingEstablishments = [
+      {
+        siret: establishmentAggregate.establishment.siret,
+        email: contactEmail,
+        firstName: "John",
+        lastName: "Doe",
+        conventions: { numberOfValidatedConvention: 1 },
+        hasIcAccount: false,
+        isRegistered: false,
+      },
+    ];
+
+    const response = await httpClient.deleteEstablishment({
+      urlParams: {
+        siret: establishmentAggregate.establishment.siret,
+      },
+      headers: {
+        authorization: generateConnectedUserJwt(backofficeAdminJwtPayload),
+      },
+    });
+
+    expectHttpResponseToEqual(response, {
+      body: {},
+      status: 204,
+    });
+
+    await processEventsForEmailToBeSent(eventCrawler);
+
+    expectToEqual(uow.establishmentMarketingRepository.contacts, []);
+    expectToEqual(
+      gateways.establishmentMarketingGateway.marketingEstablishments,
       [],
     );
   });
