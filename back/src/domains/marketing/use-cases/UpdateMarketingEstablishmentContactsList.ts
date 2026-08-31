@@ -122,6 +122,7 @@ const onMissingEstablishment = async ({
     siret: lastConvention.siret,
     marketingContact,
     siretGateway,
+    establishmentMarketingGateway,
   });
 
   return establishmentMarketingGateway.save({
@@ -184,6 +185,7 @@ const onEstablishment = async ({
     siret: establishmentAggregate.establishment.siret,
     marketingContact,
     siretGateway,
+    establishmentMarketingGateway: marketingGateway,
   });
 
   const user = await uow.userRepository.findByEmail(marketingContact.email);
@@ -264,11 +266,13 @@ const saveMarketingContactEntity = async ({
   siret,
   marketingContact,
   siretGateway,
+  establishmentMarketingGateway,
 }: {
   uow: UnitOfWork;
   siret: SiretDto;
   marketingContact: MarketingContact;
   siretGateway: SiretGateway;
+  establishmentMarketingGateway: EstablishmentMarketingGateway;
 }): Promise<void> => {
   const establishmentMarketingContactEntity =
     await uow.establishmentMarketingRepository.getBySiret(siret);
@@ -279,6 +283,14 @@ const saveMarketingContactEntity = async ({
   if (establishmentMarketingContactEntity && !lastMarketingcontact)
     throw new Error(
       "Marketing contact does not have any contact history. This should not occurs.",
+    );
+
+  if (
+    establishmentMarketingContactEntity &&
+    establishmentMarketingContactEntity.contactEmail !== marketingContact.email
+  )
+    await establishmentMarketingGateway.delete(
+      establishmentMarketingContactEntity.contactEmail,
     );
 
   if (!equals(lastMarketingcontact, marketingContact))
