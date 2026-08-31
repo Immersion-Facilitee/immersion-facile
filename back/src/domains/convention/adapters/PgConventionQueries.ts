@@ -117,39 +117,49 @@ export class PgConventionQueries implements ConventionQueries {
         withStatuses ? qb.where("conventions.status", "in", withStatuses) : qb,
       (qb) =>
         withEmail
-          ? qb
-              .innerJoin("actors", (join) =>
-                join.on((joinEb) =>
-                  joinEb.or([
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.beneficiary_id"),
-                    ),
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.establishment_tutor_id"),
-                    ),
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.establishment_representative_id"),
-                    ),
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.beneficiary_representative_id"),
-                    ),
-                    joinEb(
-                      "actors.id",
-                      "=",
-                      joinEb.ref("conventions.beneficiary_current_employer_id"),
-                    ),
-                  ]),
-                ),
-              )
-              .where("actors.email", "=", withEmail)
+          ? qb.where((eb) =>
+              eb.exists(
+                eb
+                  .selectFrom("actors")
+                  .select("actors.id")
+                  .where("actors.email", "=", withEmail)
+                  .where((actorEb) =>
+                    actorEb.or([
+                      actorEb(
+                        "actors.id",
+                        "=",
+                        actorEb.ref("conventions.beneficiary_id"),
+                      ),
+                      actorEb(
+                        "actors.id",
+                        "=",
+                        actorEb.ref("conventions.establishment_tutor_id"),
+                      ),
+                      actorEb(
+                        "actors.id",
+                        "=",
+                        actorEb.ref(
+                          "conventions.establishment_representative_id",
+                        ),
+                      ),
+                      actorEb(
+                        "actors.id",
+                        "=",
+                        actorEb.ref(
+                          "conventions.beneficiary_representative_id",
+                        ),
+                      ),
+                      actorEb(
+                        "actors.id",
+                        "=",
+                        actorEb.ref(
+                          "conventions.beneficiary_current_employer_id",
+                        ),
+                      ),
+                    ]),
+                  ),
+              ),
+            )
           : qb,
       (qb) =>
         withEstablishmentRepresentative?.email
