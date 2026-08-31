@@ -1,10 +1,12 @@
-import type { ArchivedConventionRequestEntity } from "../entities/ArchivedConventionRequestEntity";
+import type { ArchivedConventionRequestToReviewFields, UserId } from "shared";
 
-export type ArchivedConventionRequestToReviewList = Pick<
-  ArchivedConventionRequestEntity,
-  "id" | "reason" | "userId" | "createdAt"
->[];
+export type ArchivedConventionRequestToReviewListItem =
+  ArchivedConventionRequestToReviewFields & {
+    userId: UserId;
+  };
 
 export interface ArchivedConventionRequestQueries {
-  getFirstOldestArchivedConventionRequestToReviewList: () => Promise<ArchivedConventionRequestToReviewList>;
+  getFirstOldestArchivedConventionRequestToReviewList: () => Promise<
+    ArchivedConventionRequestToReviewListItem[]
+  >;
 }

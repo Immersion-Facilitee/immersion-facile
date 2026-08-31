@@ -25,7 +25,7 @@ import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
 import type { SuperTest, Test } from "supertest";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
-import type { ArchivedConventionRequestEntity } from "../../../../domains/convention/entities/ArchivedConventionRequestEntity";
+import type { ArchivedConventionRequestToReviewListItem } from "../../../../domains/convention/ports/ArchivedConventionRequestQueries";
 import type { BasicEventCrawler } from "../../../../domains/core/events/adapters/EventCrawlerImplementations";
 import type { GenerateConnectedUserJwt } from "../../../../domains/core/jwt";
 import { broadcastToFtServiceName } from "../../../../domains/core/saved-errors/ports/BroadcastFeedbacksRepository";
@@ -1355,21 +1355,37 @@ describe("authenticatedConventionRoutes", () => {
       .withId("basic-user")
       .buildUser();
 
-    const archivedConventionRequestEntity: ArchivedConventionRequestEntity = {
-      id: "11111111-1111-4111-8111-111111111111",
-      conventionSearchMethod: "withConventionId",
-      conventionId: convention.id,
-      reason: "legalDispute",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: "PENDING",
-      userId: requesterUser.id,
-    };
+    const archivedConventionRequestWithConventionId: ArchivedConventionRequestToReviewListItem =
+      {
+        id: "11111111-1111-4111-8111-111111111111",
+        conventionSearchMethod: "withConventionId",
+        conventionId: convention.id,
+        reason: "legalDispute",
+        createdAt: new Date().toISOString(),
+        userId: requesterUser.id,
+      };
+
+    const archivedConventionRequestWithConventionDetails: ArchivedConventionRequestToReviewListItem =
+      {
+        id: "22222222-2222-4222-8222-222222222222",
+        conventionSearchMethod: "withConventionDetails",
+        beneficiaryFirstName: "Marie",
+        beneficiaryLastName: "Curie",
+        siret: "12345678901234",
+        immersionDate: "2024-01-15",
+        reason: "other",
+        otherReason: "Motif personnalisé pour la demande",
+        createdAt: new Date().toISOString(),
+        userId: requesterUser.id,
+      };
 
     it("200 - succeeds with a valid request", async () => {
       inMemoryUow.userRepository.users = [adminUser, requesterUser];
       queries.archivedConventionRequest.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
-        [archivedConventionRequestEntity];
+        [
+          archivedConventionRequestWithConventionId,
+          archivedConventionRequestWithConventionDetails,
+        ];
 
       const response =
         await httpClient.fetchArchivedConventionRequestToReviewList({
@@ -1388,9 +1404,31 @@ describe("authenticatedConventionRoutes", () => {
         status: 200,
         body: [
           {
-            id: archivedConventionRequestEntity.id,
-            createdAt: archivedConventionRequestEntity.createdAt,
-            reason: archivedConventionRequestEntity.reason,
+            id: archivedConventionRequestWithConventionId.id,
+            createdAt: archivedConventionRequestWithConventionId.createdAt,
+            reason: archivedConventionRequestWithConventionId.reason,
+            conventionSearchMethod: "withConventionId",
+            conventionId:
+              archivedConventionRequestWithConventionId.conventionId,
+            requester: {
+              email: requesterUser.email,
+              firstname: requesterUser.firstName,
+              lastname: requesterUser.lastName,
+            },
+          },
+          {
+            id: archivedConventionRequestWithConventionDetails.id,
+            createdAt: archivedConventionRequestWithConventionDetails.createdAt,
+            reason: "other",
+            otherReason: "Motif personnalisé pour la demande",
+            conventionSearchMethod: "withConventionDetails",
+            beneficiaryFirstName:
+              archivedConventionRequestWithConventionDetails.beneficiaryFirstName,
+            beneficiaryLastName:
+              archivedConventionRequestWithConventionDetails.beneficiaryLastName,
+            siret: archivedConventionRequestWithConventionDetails.siret,
+            immersionDate:
+              archivedConventionRequestWithConventionDetails.immersionDate,
             requester: {
               email: requesterUser.email,
               firstname: requesterUser.firstName,
@@ -1404,7 +1442,7 @@ describe("authenticatedConventionRoutes", () => {
     it("404 - users not found", async () => {
       inMemoryUow.userRepository.users = [adminUser];
       queries.archivedConventionRequest.getFirstOldestArchivedConventionRequestToReviewListNextResponse =
-        [archivedConventionRequestEntity];
+        [archivedConventionRequestWithConventionId];
 
       const response =
         await httpClient.fetchArchivedConventionRequestToReviewList({

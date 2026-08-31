@@ -59,6 +59,8 @@ describe("archived convention request slice", () => {
           id: uuid(),
           reason: "rpeAdvisorAccessToBeneficiaryHistory",
           createdAt: new Date().toISOString(),
+          conventionSearchMethod: "withConventionId",
+          conventionId: uuid(),
           requester: {
             firstname: "Moaning",
             lastname: "Malone",
@@ -69,6 +71,8 @@ describe("archived convention request slice", () => {
           id: uuid(),
           reason: "legalDispute",
           createdAt: new Date().toISOString(),
+          conventionSearchMethod: "withConventionId",
+          conventionId: uuid(),
           requester: {
             firstname: "Bubba",
             lastname: "Mudpuddle",
@@ -78,7 +82,13 @@ describe("archived convention request slice", () => {
         {
           id: uuid(),
           reason: "other",
+          otherReason: "Motif personnalisé pour la demande",
           createdAt: new Date().toISOString(),
+          conventionSearchMethod: "withConventionDetails",
+          beneficiaryFirstName: "Marie",
+          beneficiaryLastName: "Curie",
+          siret: "12345678901234",
+          immersionDate: "2024-01-15",
           requester: {
             firstname: "Lou",
             lastname: "Natic",
@@ -89,6 +99,8 @@ describe("archived convention request slice", () => {
           id: uuid(),
           reason: "urssafOrInspectionControl",
           createdAt: new Date().toISOString(),
+          conventionSearchMethod: "withConventionId",
+          conventionId: uuid(),
           requester: {
             firstname: "Blaze",
             lastname: "Thunderfist",
