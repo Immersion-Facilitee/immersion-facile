@@ -363,7 +363,7 @@ export const conventionCommonSchema = z
     agencyReferent: withOptionalFirstnameAndLastnameSchema.optional(),
     renewed: renewedSchema.optional(),
     establishmentNumberEmployeesRange: numberOfEmployeesRangeSchema.optional(),
-    fromConventionDraftId: conventionDraftIdSchema.optional(),
+    sourceConventionDraftId: conventionDraftIdSchema.optional(),
   })
   .extend(
     withAcquisitionShape,

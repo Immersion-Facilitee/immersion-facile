@@ -156,7 +156,7 @@ describe("Add Convention", () => {
       },
     ]);
     expectToEqual(uow.conventionRepository.conventions, [
-      { ...validConvention, fromConventionDraftId },
+      { ...validConvention, sourceConventionDraftId: fromConventionDraftId },
     ]);
   });
 

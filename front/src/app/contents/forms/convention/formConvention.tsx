@@ -597,7 +597,7 @@ const fieldsToExclude = {
     label: "",
     id: "",
   },
-  fromConventionDraftId: {
+  sourceConventionDraftId: {
     // to exclude
     label: "",
     id: "",

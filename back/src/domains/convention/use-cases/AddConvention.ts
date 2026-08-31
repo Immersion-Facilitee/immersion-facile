@@ -31,7 +31,7 @@ export const makeAddConvention = useCaseBuilder("AddConvention")
 
       await uow.conventionRepository.save({
         ...convention,
-        fromConventionDraftId,
+        sourceConventionDraftId: fromConventionDraftId,
       });
       await uow.conventionExternalIdRepository.save(convention.id);
 
