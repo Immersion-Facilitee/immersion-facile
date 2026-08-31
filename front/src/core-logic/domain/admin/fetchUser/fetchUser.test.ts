@@ -266,11 +266,15 @@ describe("Admin Users slice", () => {
   });
 
   describe("when current user has successfully requested an update of preventToDelete", () => {
-    it("if this other user is in the state, update preventToDelete successfully", () => {
+    it("if this other user is in the state, fetch user to update it", () => {
       const user: ConnectedUser = new ConnectedUserBuilder()
         .withId("user-id")
         .withPreventToDelete(false)
         .build();
+      const updatedUser: ConnectedUser = {
+        ...user,
+        preventToDelete: true,
+      };
 
       ({ store, dependencies } = createTestStore({
         admin: adminPreloadedState({
@@ -293,11 +297,15 @@ describe("Admin Users slice", () => {
       );
 
       expectAdminFetchUserSelectors({
+        isFetching: true,
+        user,
+      });
+
+      feedWithUsers(updatedUser);
+
+      expectAdminFetchUserSelectors({
         isFetching: false,
-        user: {
-          ...user,
-          preventToDelete: true,
-        },
+        user: updatedUser,
       });
     });
 
