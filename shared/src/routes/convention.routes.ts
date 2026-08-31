@@ -2,6 +2,7 @@ import { defineRoute, defineRoutes } from "shared-routes";
 import z from "zod";
 import { apiConsumerReadSchema } from "../apiConsumer/apiConsumer.schema";
 import {
+  archivedConventionRequestHandledStatusSchema,
   archivedConventionRequestSchema,
   archivedConventionRequestToReviewListDtoSchema,
 } from "../archivedConventionRequest/archivedConventionRequest.schema";
@@ -339,6 +340,22 @@ export const authenticatedConventionRoutes = defineRoutes({
       201: expressEmptyResponseBody,
       400: httpErrorSchema,
       401: httpErrorSchema,
+    },
+  }),
+  handleArchivedConventionRequest: defineRoute({
+    method: "patch",
+    url: "/archived-convention-requests/:archivedConventionRequestId",
+    ...withAuthorizationHeaders,
+    requestBodySchema: z.object({
+      status: archivedConventionRequestHandledStatusSchema,
+    }),
+    responses: {
+      200: expressEmptyResponseBody,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
+      409: httpErrorSchema,
     },
   }),
   getApiConsumersByConvention: defineRoute({

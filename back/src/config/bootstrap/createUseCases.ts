@@ -54,6 +54,7 @@ import { makeGetConventionsForApiConsumer } from "../../domains/convention/use-c
 import { makeGetConventionsWithUnfinalizedAssessment } from "../../domains/convention/use-cases/GetConventionsWithUnfinalizedAssessment";
 import { makeGetConventionTemplatesForCurrentUser } from "../../domains/convention/use-cases/GetConventionTemplatesForCurrentUser";
 import { makeGetLastBroadcastFeedback } from "../../domains/convention/use-cases/GetLastBroadcastFeedback";
+import { makeHandleArchivedConventionRequest } from "../../domains/convention/use-cases/HandleArchivedConventionRequest";
 import { makeNotifyActorsThatAssessmentDeleted } from "../../domains/convention/use-cases/notifications/NotifyActorsThatAssessmentDeleted";
 import { makeNotifyAgencyDelegationContact } from "../../domains/convention/use-cases/notifications/NotifyAgencyDelegationContact";
 import { makeNotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompleted } from "../../domains/convention/use-cases/notifications/NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompleted";
@@ -329,6 +330,13 @@ export const createUseCases = ({
           archivedConventionRequestQueries: queries.archivedConventionRequest,
         },
       }),
+    handleArchivedConventionRequest: makeHandleArchivedConventionRequest({
+      uowPerformer,
+      deps: {
+        createNewEvent,
+        timeGateway: gateways.timeGateway,
+      },
+    }),
     bindConventionToFederatedIdentity: makeBindConventionToFederatedIdentity({
       uowPerformer,
       deps: {

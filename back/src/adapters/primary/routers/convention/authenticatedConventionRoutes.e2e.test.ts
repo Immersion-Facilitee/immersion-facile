@@ -25,6 +25,7 @@ import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
 import type { SuperTest, Test } from "supertest";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
+import type { ArchivedConventionRequestEntity } from "../../../../domains/convention/entities/ArchivedConventionRequestEntity";
 import type { ArchivedConventionRequestToReviewListItem } from "../../../../domains/convention/ports/ArchivedConventionRequestQueries";
 import type { BasicEventCrawler } from "../../../../domains/core/events/adapters/EventCrawlerImplementations";
 import type { GenerateConnectedUserJwt } from "../../../../domains/core/jwt";
@@ -1502,6 +1503,157 @@ describe("authenticatedConventionRoutes", () => {
           message: authExpiredMessage(),
         },
       });
+    });
+  });
+
+  describe(`${displayRouteName(
+    authenticatedConventionRoutes.handleArchivedConventionRequest,
+  )} handles an archived convention request`, () => {
+    const convention = new ConventionDtoBuilder().build();
+    const adminUser = new ConnectedUserBuilder()
+      .withId("admin-user")
+      .withIsAdmin(true)
+      .buildUser();
+    const requesterUser = new ConnectedUserBuilder()
+      .withId("basic-user")
+      .buildUser();
+    const requestId = "11111111-1111-4111-8111-111111111111";
+    const createdAt = "2024-01-01T00:00:00.000Z";
+    const pendingRequest: ArchivedConventionRequestEntity = {
+      id: requestId,
+      conventionSearchMethod: "withConventionId",
+      conventionId: convention.id,
+      reason: "legalDispute",
+      userId: requesterUser.id,
+      createdAt,
+      updatedAt: createdAt,
+      status: "PENDING",
+    };
+
+    const adminAuthorization = () => ({
+      authorization: generateConnectedUserJwt({
+        version: currentJwtVersions.connectedUser,
+        userId: adminUser.id,
+      }),
+    });
+
+    it("200 - handles a PENDING request", async () => {
+      inMemoryUow.userRepository.users = [adminUser, requesterUser];
+      inMemoryUow.archivedConventionRequestRepository.archivedConventionRequests =
+        { [requestId]: pendingRequest };
+
+      const response = await httpClient.handleArchivedConventionRequest({
+        headers: adminAuthorization(),
+        urlParams: { archivedConventionRequestId: requestId },
+        body: { status: "TREATED" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: "",
+      });
+      expectToEqual(
+        inMemoryUow.archivedConventionRequestRepository
+          .archivedConventionRequests[requestId],
+        {
+          ...pendingRequest,
+          status: "TREATED",
+          updatedAt: gateways.timeGateway.now().toISOString(),
+        },
+      );
+    });
+
+
+    it("401 - Invalid JWT", async () => {
+      const response = await httpClient.handleArchivedConventionRequest({
+        headers: { authorization: "invalid-token" },
+        urlParams: { archivedConventionRequestId: requestId },
+        body: { status: "TREATED" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: invalidTokenMessage,
+        },
+      });
+    });
+
+    it("403 - non-admin user", async () => {
+      inMemoryUow.userRepository.users = [validator, requesterUser];
+      inMemoryUow.archivedConventionRequestRepository.archivedConventionRequests =
+        { [requestId]: pendingRequest };
+
+      const response = await httpClient.handleArchivedConventionRequest({
+        headers: { authorization: validToken },
+        urlParams: { archivedConventionRequestId: requestId },
+        body: { status: "TREATED" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.user.forbidden({ userId: validator.id }).message,
+        },
+      });
+      expectToEqual(
+        inMemoryUow.archivedConventionRequestRepository
+          .archivedConventionRequests[requestId],
+        pendingRequest,
+      );
+    });
+
+    it("404 - request not found", async () => {
+      inMemoryUow.userRepository.users = [adminUser];
+
+      const response = await httpClient.handleArchivedConventionRequest({
+        headers: adminAuthorization(),
+        urlParams: { archivedConventionRequestId: requestId },
+        body: { status: "TREATED" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 404,
+        body: {
+          status: 404,
+          message: errors.archivedConventionRequest.notFound({ id: requestId })
+            .message,
+        },
+      });
+    });
+
+    it("409 - request already handled", async () => {
+      inMemoryUow.userRepository.users = [adminUser, requesterUser];
+      inMemoryUow.archivedConventionRequestRepository.archivedConventionRequests =
+        {
+          [requestId]: {
+            ...pendingRequest,
+            status: "TREATED",
+          },
+        };
+
+      const response = await httpClient.handleArchivedConventionRequest({
+        headers: adminAuthorization(),
+        urlParams: { archivedConventionRequestId: requestId },
+        body: { status: "REFUSED" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 409,
+        body: {
+          status: 409,
+          message: errors.archivedConventionRequest.alreadyHandled({
+            id: requestId,
+          }).message,
+        },
+      });
+      expectToEqual(
+        inMemoryUow.archivedConventionRequestRepository
+          .archivedConventionRequests[requestId].status,
+        "TREATED",
+      );
     });
   });
 });

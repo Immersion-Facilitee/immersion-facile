@@ -72,6 +72,20 @@ export const createConventionRouter = (deps: AppDependencies) => {
       ),
   );
 
+  authenticatedConventionSharedRouter.handleArchivedConventionRequest(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.handleArchivedConventionRequest.execute(
+          {
+            archivedConventionRequestId: req.params.archivedConventionRequestId,
+            status: req.body.status,
+          },
+          getGenericAuthOrThrow(req.payloads?.currentUser),
+        ),
+      ),
+  );
+
   authenticatedConventionSharedRouter.getApiConsumersByConvention(
     deps.connectedUserAuthMiddleware,
     (req, res) =>
