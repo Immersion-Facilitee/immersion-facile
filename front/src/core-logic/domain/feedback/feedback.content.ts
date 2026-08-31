@@ -54,6 +54,7 @@ const topics = [
   "api-consumer-revoke",
   "assessment",
   "archived-convention-request",
+  "archived-convention-request-handle",
   "archived-convention-request-list",
   "delete-assessment",
   "auth-global",
@@ -961,6 +962,29 @@ export const feedbacks: Record<
       title: "Une erreur s'est produite",
       message:
         "Impossible d'enregistrer votre demande pour le moment. Veuillez réessayer ultérieurement ou contacter le support.",
+    },
+  },
+  "archived-convention-request-handle": {
+    "update.success": {
+      action:
+        archivedConventionRequestSlice.actions
+          .handleArchivedConventionRequestTreatedSucceeded,
+      title: "La demande a bien été marquée comme traitée.",
+      message: "La demande a bien été marquée comme traitée.",
+    },
+    "delete.success": {
+      action:
+        archivedConventionRequestSlice.actions
+          .handleArchivedConventionRequestRefusedSucceeded,
+      title: "La demande a bien été refusée.",
+      message: "La demande a bien été refusée.",
+    },
+    "update.error": {
+      action:
+        archivedConventionRequestSlice.actions
+          .handleArchivedConventionRequestFailed,
+      title: "Une erreur s'est produite lors du traitement de la demande.",
+      message: "Une erreur s'est produite lors du traitement de la demande.",
     },
   },
   "convention-form": {
