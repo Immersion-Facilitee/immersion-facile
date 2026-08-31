@@ -665,7 +665,7 @@ describe("Pg implementation of ConventionQueries", () => {
 
       const conventionWithBeneficiaryRepEmail = new ConventionDtoBuilder()
         .withId(uuid())
-        .withEstablishmentRepresentativeEmail(email)
+        .withBeneficiaryRepresentativeEmail(email)
         .build();
 
       const conventionWithBeneficiaryCurrentEmployerEmail =
@@ -721,9 +721,7 @@ describe("Pg implementation of ConventionQueries", () => {
         expectToEqual(
           await conventionQueries.getConventionIdsByFilters({
             filters: {
-              withEstablishmentRepresentative: {
-                email: "notEmail@email.ciom",
-              },
+              withEmail: "notEmail@email.ciom",
             },
           }),
           [],
