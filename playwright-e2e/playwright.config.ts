@@ -61,7 +61,7 @@ export default defineConfig({
         VITE_GATEWAY: "HTTP",
         VITE_ENV_TYPE: "local",
         VITE_PREFILLED_FORMS: "true",
-        VITE_CRISP_WEBSITE_ID: "test",
+        // VITE_CRISP_WEBSITE_ID: "test", --> Commenté car crisp pas actif en prod donc on désactive ici
         VITE_RELEASE_TAG: "v0",
       },
     },
