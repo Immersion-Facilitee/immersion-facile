@@ -70,7 +70,9 @@ export const ArchivedConventionListSection = () => {
     [dispatch],
   );
 
-  const handleArchivedConventionRequest = (status: ArchivedConventionRequestHandledStatus) => {
+  const handleArchivedConventionRequest = (
+    status: ArchivedConventionRequestHandledStatus,
+  ) => {
     if (!jwt || !selectedRequest) return;
     dispatch(
       archivedConventionRequestSlice.actions.handleArchivedConventionRequestRequested(

@@ -9,7 +9,9 @@ export class InMemoryArchivedConventionRequestQueries
   getFirstOldestArchivedConventionRequestToReviewListNextResponse: ArchivedConventionRequestToReviewListItem[] =
     [];
 
-  public async getFirstOldestArchivedConventionRequestToReviewList(): Promise<ArchivedConventionRequestToReviewListItem[]> {
+  public async getFirstOldestArchivedConventionRequestToReviewList(): Promise<
+    ArchivedConventionRequestToReviewListItem[]
+  > {
     return this.getFirstOldestArchivedConventionRequestToReviewListNextResponse;
   }
 }
