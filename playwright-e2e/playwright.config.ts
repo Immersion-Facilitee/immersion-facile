@@ -28,7 +28,7 @@ export default defineConfig({
       fullPage: true,
     },
     storageState: storageStatePath,
-    trace: "retain-on-failure",
+    trace: process.env.CI ? "on-first-retry" : "retain-on-failure",
   },
   timeout: process.env.CI ? 60_000 : 30_000,
   expect: {
