@@ -6,9 +6,12 @@ import { Loader, SectionHighlight } from "react-design-system";
 import { useDispatch, useSelector } from "react-redux";
 import {
   type BeneficiaryConventionListDto,
+  type ConventionId,
+  type DateString,
   domElementIds,
   frontRoutes,
   immersionFacileHelpdeskRootUrl,
+  isConventionArchived,
 } from "shared";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -131,30 +134,62 @@ const conventionListToTableData = (
         dateEnd={convention.dateEnd}
       />
     </Fragment>,
-    isBeneficiaryManageConventionEnabled ? (
-      <Button
-        key={convention.conventionId}
-        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
-        size="small"
-        priority="secondary"
-        linkProps={{
-          ...frontRoutes.manageConventionConnectedUser({
-            conventionId: convention.conventionId,
-          }).link,
-          target: "_blank",
-        }}
-      >
-        Voir la convention
-      </Button>
-    ) : (
+    <ConventionActionButton
+      key={convention.conventionId}
+      conventionId={convention.conventionId}
+      conventionDateEnd={convention.dateEnd}
+      isBeneficiaryManageConventionEnabled={
+        isBeneficiaryManageConventionEnabled
+      }
+    />,
+  ]);
+
+const ConventionActionButton = ({
+  conventionId,
+  conventionDateEnd,
+  isBeneficiaryManageConventionEnabled,
+}: {
+  conventionId: ConventionId;
+  conventionDateEnd: DateString;
+  isBeneficiaryManageConventionEnabled: boolean;
+}): React.ReactNode => {
+  if (!isBeneficiaryManageConventionEnabled)
+    return (
       <Button
         disabled
         size="small"
         priority="secondary"
-        key={convention.conventionId}
-        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
+        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${conventionId}`}
       >
         Voir la convention
       </Button>
-    ),
-  ]);
+    );
+
+  return isConventionArchived(conventionDateEnd) ? (
+    <Button
+      id={`${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${conventionId}`}
+      size="small"
+      priority="secondary"
+      linkProps={{
+        ...frontRoutes.archivedConventionRequest().link,
+        target: "_blank",
+      }}
+    >
+      Désarchiver
+    </Button>
+  ) : (
+    <Button
+      id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${conventionId}`}
+      size="small"
+      priority="secondary"
+      linkProps={{
+        ...frontRoutes.manageConventionConnectedUser({
+          conventionId,
+        }).link,
+        target: "_blank",
+      }}
+    >
+      Voir la convention
+    </Button>
+  );
+};
