@@ -1341,7 +1341,16 @@ export const domElementIds = {
     },
   },
   adminAgencies: {},
-  adminConventions: {},
+  adminConventions: {
+    handleArchivedConventionRequestButton:
+      "im-admin-conventions__handle-archived-convention-request-button",
+    handleArchivedConventionRequestModal:
+      "im-admin-conventions__handle-archived-convention-request-modal",
+    refuseArchivedConventionRequestButton:
+      "im-admin-conventions__refuse-archived-convention-request-button",
+    markArchivedConventionRequestAsTreatedButton:
+      "im-admin-conventions__mark-archived-convention-request-as-treated-button",
+  },
   adminEvents: {},
   adminUsers: {},
   adminNotifications: {},
