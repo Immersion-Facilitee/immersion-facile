@@ -171,7 +171,7 @@ const ConventionActionButton = ({
       size="small"
       priority="secondary"
       linkProps={{
-        ...frontRoutes.archivedConventionRequest().link,
+        ...frontRoutes.archivedConventionRequest({ conventionId }).link,
         target: "_blank",
       }}
     >
