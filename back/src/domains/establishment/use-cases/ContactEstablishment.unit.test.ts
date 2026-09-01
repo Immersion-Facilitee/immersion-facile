@@ -5,6 +5,7 @@ import {
   type CommonDiscussionDto,
   type CreateDiscussion1Eleve1StageDto,
   type CreateDiscussionDto,
+  type CreateDiscussionIFDto,
   DiscussionBuilder,
   type DiscussionDto,
   errors,
@@ -104,13 +105,15 @@ describe("ContactEstablishment", () => {
     .withUserRights(userRights)
     .build();
 
-  const validPhoneRequest: CreateDiscussionDto = {
+  const validPhoneRequest: CreateDiscussionIFDto = {
     appellationCode: immersionOffer.appellationCode,
     siret: establishmentEmailWithSiret.siret,
     contactMode: "PHONE",
     datePreferences: "fake date preferences",
     potentialBeneficiaryPhone: "+33654783402",
     immersionObjective: "Confirmer un projet professionnel",
+    immersionDuration: "oneWeek",
+    motivation: "Je sais faire des crêpes",
     kind: "IF",
     potentialBeneficiaryFirstName: "billy",
     potentialBeneficiaryLastName: "idol",
@@ -119,7 +122,7 @@ describe("ContactEstablishment", () => {
     experienceAdditionalInformation: "other stuff",
   };
 
-  const validEmailRequest: CreateDiscussionDto = {
+  const validEmailRequest: CreateDiscussionIFDto = {
     ...validPhoneRequest,
     contactMode: "EMAIL",
     datePreferences: "fake date preferences",
@@ -333,6 +336,8 @@ describe("ContactEstablishment", () => {
                 resumeLink: validEmailRequest.potentialBeneficiaryResumeLink,
                 experienceAdditionalInformation:
                   validEmailRequest.experienceAdditionalInformation,
+                motivation: validEmailRequest.motivation,
+                immersionDuration: validEmailRequest.immersionDuration,
                 datePreferences: validEmailRequest.datePreferences,
                 immersionObjective: "Confirmer un projet professionnel",
               },
@@ -389,6 +394,8 @@ describe("ContactEstablishment", () => {
                 resumeLink: validPhoneRequest.potentialBeneficiaryResumeLink,
                 experienceAdditionalInformation:
                   validPhoneRequest.experienceAdditionalInformation,
+                motivation: validPhoneRequest.motivation,
+                immersionDuration: validPhoneRequest.immersionDuration,
                 datePreferences: validPhoneRequest.datePreferences,
                 immersionObjective: "Confirmer un projet professionnel",
               },
@@ -440,6 +447,8 @@ describe("ContactEstablishment", () => {
                 resumeLink: validPhoneRequest.potentialBeneficiaryResumeLink,
                 experienceAdditionalInformation:
                   validPhoneRequest.experienceAdditionalInformation,
+                motivation: validPhoneRequest.motivation,
+                immersionDuration: validPhoneRequest.immersionDuration,
                 datePreferences: validPhoneRequest.datePreferences,
                 immersionObjective: "Confirmer un projet professionnel",
               },
@@ -642,6 +651,8 @@ describe("ContactEstablishment", () => {
           potentialBeneficiaryPhone: "+33654783402",
           locationId: establishmentAggregate.establishment.locations[0].id,
           datePreferences: "fake date preferences",
+          immersionDuration: "oneWeek",
+          motivation: "Je sais faire des crêpes",
           experienceAdditionalInformation:
             "fake experience additional information",
           kind: "IF",
@@ -712,6 +723,8 @@ describe("ContactEstablishment", () => {
           potentialBeneficiaryPhone: "+33654783404",
           locationId: establishmentAggregate.establishment.locations[0].id,
           datePreferences: "fake date preferences",
+          immersionDuration: "oneWeek",
+          motivation: "Je sais faire des crêpes",
           experienceAdditionalInformation:
             "fake experience additional information",
           kind: "IF",
@@ -818,6 +831,8 @@ describe("ContactEstablishment", () => {
               immersionObjective: "Confirmer un projet professionnel",
               experienceAdditionalInformation:
                 validEmailRequest.experienceAdditionalInformation,
+              motivation: validEmailRequest.motivation,
+              immersionDuration: validEmailRequest.immersionDuration,
               resumeLink: validEmailRequest.potentialBeneficiaryResumeLink,
             },
             locationId: validEmailRequest.locationId,

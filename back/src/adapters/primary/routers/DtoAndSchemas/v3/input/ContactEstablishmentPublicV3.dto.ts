@@ -46,4 +46,13 @@ export type ContactEstablishmentPublicV3Dto =
 
 export const contactEstablishmentPublicV3ToDomain = (
   contactRequest: ContactEstablishmentPublicV3Dto,
-): CreateDiscussionDto => contactRequest;
+): CreateDiscussionDto =>
+  contactRequest.kind === "IF"
+    ? {
+        ...contactRequest,
+        motivation: "Non renseigné",
+        immersionDuration: "flexible",
+        experienceAdditionalInformation:
+          contactRequest.experienceAdditionalInformation ?? "Non renseigné",
+      }
+    : contactRequest;

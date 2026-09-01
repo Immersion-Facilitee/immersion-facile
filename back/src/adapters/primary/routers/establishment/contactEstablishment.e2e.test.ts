@@ -44,6 +44,8 @@ describe("Contact establishment public v2 e2e", () => {
       potentialBeneficiaryLastName: "idol",
       potentialBeneficiaryEmail: "potential_beneficiary@email.fr",
       datePreferences: "fake date preferences",
+      immersionDuration: "oneWeek",
+      motivation: "je suis très motivé pour cette immersion",
       experienceAdditionalInformation: "experienceAdditionalInformation",
       immersionObjective: "Confirmer un projet professionnel",
       potentialBeneficiaryPhone: "+33654783402",
