@@ -28,6 +28,7 @@ describe("Discussions", () => {
       expectedDisplayStatus: DiscussionDisplayStatus;
       expectedFollowUp?: DiscussionFollowUp;
       hasEstablishmentAnswered: boolean;
+      isEstablishmentReachableByPhoneAfter15Days: boolean;
     };
 
     const createExchange = ({
@@ -60,6 +61,7 @@ describe("Discussions", () => {
           })
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message: "status is ACCEPTED",
@@ -69,6 +71,7 @@ describe("Discussions", () => {
           .withStatus({ status: "ACCEPTED", candidateWarnedMethod: null })
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message: "candidate has sent the first message without being answered",
@@ -86,6 +89,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message: "candidate has sent multiple messages without being answered",
@@ -115,6 +119,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message:
@@ -134,6 +139,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message:
@@ -152,6 +158,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message:
@@ -185,6 +192,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: true,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message: "last message is sent by establishment",
@@ -211,6 +219,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: true,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message:
@@ -239,6 +248,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: true,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message:
@@ -273,6 +283,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: true,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message: "discussion is recent and contact method not email",
@@ -285,6 +296,7 @@ describe("Discussions", () => {
           .withExchanges([])
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message:
@@ -298,10 +310,11 @@ describe("Discussions", () => {
           .withExchanges([])
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
       {
         message:
-          "discussion is older than 15 days and establishment has not answered for long time",
+          "discussion is older than 15 days and establishment has not answered for long time (and is reachable by phone)",
         viewer: "potentialBeneficiary",
         expectedDisplayStatus: "new",
         expectedFollowUp: "to-remind",
@@ -318,13 +331,54 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: true,
       },
       {
         message:
-          "candidate has sent multiple messages without being answered for long time",
+          "discussion is older than 15 days and establishment has not answered for long time (and is not reachable by phone)",
+        viewer: "potentialBeneficiary",
+        expectedDisplayStatus: "new",
+        discussion: new DiscussionBuilder()
+          .withCreatedAt(subDays(now, 15))
+          .withStatus({ status: "PENDING" })
+          .withExchanges([
+            createExchange({
+              sentAt: subDays(now, 15),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+          ])
+          .buildRead(),
+        hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
+      },
+      {
+        message:
+          "discussion is older than 15 days and establishment has not answered for long time (and is reachable by phone)",
         viewer: "potentialBeneficiary",
         expectedDisplayStatus: "new",
         expectedFollowUp: "to-remind",
+        discussion: new DiscussionBuilder()
+          .withCreatedAt(subDays(now, 15))
+          .withStatus({ status: "PENDING" })
+          .withExchanges([
+            createExchange({
+              sentAt: subDays(now, 15),
+              specificExchangeSender: {
+                sender: "potentialBeneficiary",
+              },
+            }),
+          ])
+          .buildRead(),
+        hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: true,
+      },
+      {
+        message:
+          "candidate has sent multiple messages without being answered for long time (and is not reachable by phone)",
+        viewer: "potentialBeneficiary",
+        expectedDisplayStatus: "new",
         discussion: new DiscussionBuilder()
           .withStatus({ status: "PENDING" })
           .withExchanges([
@@ -349,6 +403,7 @@ describe("Discussions", () => {
           ])
           .buildRead(),
         hasEstablishmentAnswered: false,
+        isEstablishmentReachableByPhoneAfter15Days: false,
       },
     ];
 
@@ -358,6 +413,7 @@ describe("Discussions", () => {
       expectedFollowUp,
       viewer,
       hasEstablishmentAnswered,
+      isEstablishmentReachableByPhoneAfter15Days,
     }) => {
       expectToEqual(
         getDiscussionDisplayStatus({
@@ -388,6 +444,7 @@ describe("Discussions", () => {
           },
           now,
           viewer,
+          isEstablishmentReachableByPhoneAfter15Days,
         }),
         expectedFollowUp,
       );

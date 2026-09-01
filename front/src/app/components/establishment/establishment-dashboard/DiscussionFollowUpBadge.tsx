@@ -36,14 +36,11 @@ export const DiscussionFollowUpBadge = ({
     },
     now: new Date(),
     viewer,
+    isEstablishmentReachableByPhoneAfter15Days,
   });
   const followUpBadge = getFollowUpBadgeData(viewer, followUp);
 
-  if (
-    !followUpBadge ||
-    (followUp === "to-remind" && !isEstablishmentReachableByPhoneAfter15Days)
-  )
-    return null;
+  if (!followUpBadge) return null;
 
   return (
     <Badge
