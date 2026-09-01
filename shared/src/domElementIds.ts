@@ -1230,6 +1230,8 @@ export const domElementIds = {
       "im-beneficary-convention-list__no-convention-helpdesk-hint",
     goToConventionButton:
       "im-beneficiary-convention-list__see-convention-button",
+    unarchiveConventionButton:
+      "im-beneficiary-convention-list__unarchive-convention-button",
     login: {
       proConnectButton:
         "im-login-form__inclusion-connect-button--beneficiary-dashboard-conventions",

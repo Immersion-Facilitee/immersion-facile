@@ -1,4 +1,9 @@
-import { addDays, differenceInISOWeekYears, isAfter } from "date-fns";
+import {
+  addDays,
+  differenceInISOWeekYears,
+  isAfter,
+  subMonths,
+} from "date-fns";
 import { keys, mapObjIndexed, values } from "ramda";
 import { agencyRoleIsNotToReview } from "../agency/agency.utils";
 import {
@@ -326,3 +331,7 @@ export const isConventionEndingInOneDayOrMore = (dateEnd: DateString) =>
   isAfter(new Date(dateEnd), addDays(new Date(), 1));
 
 export const defaultMonthsThresholdForConventionsListing = 25;
+
+export const isConventionArchived = (dateEnd: DateString): boolean =>
+  new Date(dateEnd) <
+  subMonths(new Date(), defaultMonthsThresholdForConventionsListing);
