@@ -2815,7 +2815,7 @@ describe("PgDiscussionRepository", () => {
         });
       });
 
-      it("returns hasEstablishmentAnswered: true when discussion has an exchange with a sender establishment", async () => {
+      it("returns hasEstablishmentAnswered: false when discussion has an exchange with a sender establishment", async () => {
         const createdAt = new Date("2024-06-23T12:00:00.000");
         const discussionWithEstablishmentExchange = new DiscussionBuilder()
           .withId(uuid())

@@ -60,10 +60,12 @@ export const getDiscussionFollowUp = <Role extends ExchangeRole>({
   discussion,
   now,
   viewer,
+  isEstablishmentReachableByPhoneAfter15Days,
 }: {
   discussion: Pick<DiscussionInList, "status" | "exchangesData" | "createdAt">;
   now: Date;
   viewer: Role;
+  isEstablishmentReachableByPhoneAfter15Days: boolean;
 }): DiscussionFollowUp | undefined => {
   if (discussion.status !== "PENDING") return;
 
@@ -89,7 +91,8 @@ export const getDiscussionFollowUp = <Role extends ExchangeRole>({
   if (
     viewer === "potentialBeneficiary" &&
     exchangesData.lastExchange?.sender === "potentialBeneficiary" &&
-    isLastExchangeOld
+    isLastExchangeOld &&
+    isEstablishmentReachableByPhoneAfter15Days
   )
     return "to-remind";
 
