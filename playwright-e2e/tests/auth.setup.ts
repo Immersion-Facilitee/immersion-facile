@@ -5,6 +5,8 @@ import { acceptCookiesIfBannerVisible } from "../utils/utils";
 
 const { adminAuthFile, establishmentAuthFile, agencyAuthFile } = testConfig;
 
+setup.describe.configure({ mode: "parallel" });
+
 setup("authenticate as admin", async ({ page }) => {
   console.time("auth-admin");
   await page.goto("/");
