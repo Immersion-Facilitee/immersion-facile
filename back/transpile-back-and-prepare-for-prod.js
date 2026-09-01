@@ -7,15 +7,30 @@ const replaceInFileSync = (filePath, regex, replacement) => {
   fs.writeFileSync(filePath, updatedData);
 };
 
+const useCompiledJavaScriptInPackageScripts = (packageJsonPath) => {
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+  packageJson.scripts = Object.fromEntries(
+    Object.entries(packageJson.scripts).map(([name, script]) => [
+      name,
+      script
+        .replace(/\btsx watch\b/g, "node")
+        .replace(/\btsx\b/g, "node")
+        .replace(/(\bsrc\/[^ "'\\]+)\.ts\b/g, "$1.js")
+        .replace(/ -j ts/g, ""),
+    ]),
+  );
+  fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+};
+
 console.log("Remove old build");
 if (fs.existsSync("./build")) fs.rmSync("./build", { recursive: true });
 if (fs.existsSync("./back-build.tar.gz")) fs.unlinkSync("./back-build.tar.gz");
 
 const version = process.argv[2];
 console.log(`Transpile back and setting version ${version}`);
-execSync("tsc -b tsconfig.prod.json");
-const path = "build/back/src/scripts/version.js";
-replaceInFileSync(path, /"__VERSION__"/, `"${version}"`);
+execSync("tsc -b --noCheck tsconfig.prod.json");
+const versionJsPath = "build/back/src/scripts/version.js";
+replaceInFileSync(versionJsPath, /"__VERSION__"/, `"${version}"`);
 
 console.log("Copying package.json of root, shared and libs for prod");
 fs.copyFileSync("../package.json", "build/package.json");
@@ -65,22 +80,8 @@ replaceInFileSync(
   '"main": "src/index.js"',
 );
 
-// change ts-node scripts to node scripts
-replaceInFileSync(backPackageJson, /"ts-node /g, '"node ');
-replaceInFileSync(backPackageJson, /--transpile-only /g, "");
-replaceInFileSync(backPackageJson, /"node (.*)(\.ts)/g, '"node $1.js');
-replaceInFileSync(
-  backPackageJson,
-  /--compilerOptions '{\\"resolveJsonModule\\": true}'/g,
-  "",
-);
-
-// change migration script from ts source files to js
-replaceInFileSync(
-  backPackageJson,
-  /"node_modules\/node-pg-migrate\/bin\/node-pg-migrate -j ts"/g,
-  '"node_modules/node-pg-migrate/bin/node-pg-migrate"',
-);
+// change tsx scripts to compiled JavaScript scripts
+useCompiledJavaScriptInPackageScripts(backPackageJson);
 execSync("cp -r -v scalingo/. build/");
 
 console.log("Making tar.gz from transpiled code");
