@@ -35,8 +35,11 @@ export const makeContactInputsLabelsByKey = (
   appellationCode: "Métier sur lequel porte la demande d'immersion *",
   datePreferences:
     kind === "IF"
-      ? "Dates d'immersion envisagées *"
+      ? "Dates ou période d'immersion envisagées *"
       : "Dates de stage envisagées *",
+  immersionDuration: "Durée souhaitée *",
+  motivation:
+    "Pourquoi avoir choisi ce métier et/ou notre entreprise en particulier ? *",
   potentialBeneficiaryFirstName: "Prénom *",
   potentialBeneficiaryLastName: "Nom *",
   potentialBeneficiaryEmail: "Email *",
@@ -44,5 +47,5 @@ export const makeContactInputsLabelsByKey = (
   potentialBeneficiaryResumeLink: "Page LinkedIn ou CV en ligne (optionnel)",
   levelOfEducation: "Je suis en classe de ... *",
   experienceAdditionalInformation:
-    "Détaillez en quelques lignes vos expériences et compétences (optionnel)",
+    "L'immersion ne nécessite pas d'expérience spécifique. Quelles connaissances, expériences ou qualités personnelles souhaitez-vous partager pour aider l'entreprise à préparer votre accueil ? *",
 });
