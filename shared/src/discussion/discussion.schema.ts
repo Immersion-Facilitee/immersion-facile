@@ -28,6 +28,7 @@ import {
 import { makeDateStringSchema } from "../utils/date";
 import {
   MAX_HTML_SIZE,
+  zStringMinLength1Max800,
   zStringMinLength1Max1024,
   zStringMinLength1Max6000,
   zStringMinLength1Max11000,
@@ -61,6 +62,8 @@ import {
   type ExchangeRead,
   type ExchangeRole,
   type FlatGetPaginatedDiscussionsParams,
+  type ImmersionDuration,
+  immersionDurations,
   type Message,
   type PotentialBeneficiaryCommonProps,
   type WithDiscussionId,
@@ -280,6 +283,11 @@ const discussionLevelOfEducationSchema = z.enum(["3ème", "2nde"], {
 
 const resumeLinkSchema = absoluteUrlCanBeEmpty.optional();
 
+const immersionDurationSchema: ZodSchemaWithInputMatchingOutput<ImmersionDuration> =
+  z.enum(immersionDurations, {
+    error: localization.invalidEnum,
+  });
+
 export const discussionReadSchema: ZodSchemaWithInputMatchingOutput<DiscussionReadDto> =
   commonDiscussionSchema
     .and(
@@ -296,6 +304,8 @@ export const discussionReadSchema: ZodSchemaWithInputMatchingOutput<DiscussionRe
           potentialBeneficiary: potentialBeneficiaryCommonSchema.extend({
             immersionObjective: immersionObjectiveSchema.or(z.null()),
             resumeLink: resumeLinkSchema,
+            motivation: zStringMinLength1Max800.optional(),
+            immersionDuration: immersionDurationSchema.optional(),
             experienceAdditionalInformation:
               zStringMinLength1Max11000.optional(),
           }),
@@ -411,7 +421,9 @@ const createDiscussionIFSchema: ZodSchemaWithInputMatchingOutput<CreateDiscussio
     z.object({
       kind: z.literal("IF"),
       immersionObjective: immersionObjectiveSchema,
-      experienceAdditionalInformation: zStringMinLength1Max1024.optional(),
+      immersionDuration: immersionDurationSchema,
+      motivation: zStringMinLength1Max800,
+      experienceAdditionalInformation: zStringMinLength1Max800,
       potentialBeneficiaryResumeLink: resumeLinkSchema,
     }),
   );
