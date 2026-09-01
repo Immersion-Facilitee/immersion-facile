@@ -85,13 +85,11 @@ export const SchedulePicker = ({
           La saisie de l'emploi du temps n'est pas accessible aux technologies
           d’assistance.
         </p>
-        <div aria-hidden={true}>
-          {values[name].isSimple ? (
-            <RegularSchedulePicker interval={interval} disabled={disabled} />
-          ) : (
-            <ComplexSchedulePicker disabled={disabled} />
-          )}
-        </div>
+        {values[name].isSimple ? (
+          <RegularSchedulePicker interval={interval} disabled={disabled} />
+        ) : (
+          <ComplexSchedulePicker disabled={disabled} />
+        )}
       </div>
     </>
   );
