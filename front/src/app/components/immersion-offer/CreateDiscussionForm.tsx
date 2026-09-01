@@ -25,7 +25,10 @@ import {
   createDiscussionSchema,
   discoverObjective,
   domElementIds,
+  type ImmersionDuration,
   type ImmersionObjective,
+  immersionDurationLabels,
+  immersionDurations,
   labelsForContactLevelOfEducation,
   labelsForImmersionObjective,
   toLowerCaseWithoutDiacritics,
@@ -103,6 +106,9 @@ export const CreateDiscussionForm = ({
         ? {
             kind: "IF",
             immersionObjective: null as any as ImmersionObjective,
+            immersionDuration: "" as any as ImmersionDuration,
+            motivation: "",
+            experienceAdditionalInformation: "",
           }
         : {
             kind: "1_ELEVE_1_STAGE",
@@ -305,7 +311,7 @@ export const CreateDiscussionForm = ({
         <Input
           label={inputsLabelsByKey.datePreferences}
           hintText={
-            "Exemple :  “du 1er au 10 juillet” ou “deux semaines en juin” ou “je suis flexible”"
+            "Exemple : “Du 1er au 10 juillet”, “Idéalement en septembre” ou “Je suis flexible”"
           }
           nativeInputProps={{
             ...register("datePreferences"),
@@ -314,6 +320,26 @@ export const CreateDiscussionForm = ({
         />
         {route.name === "searchResult" && (
           <>
+            <Select
+              label={inputsLabelsByKey.immersionDuration}
+              options={immersionDurationListOfOptions}
+              placeholder="Sélectionner la durée"
+              nativeSelectProps={{
+                ...register("immersionDuration"),
+              }}
+              {...getFieldError("immersionDuration")}
+            />
+            <Input
+              label={inputsLabelsByKey.motivation}
+              hintText={
+                "Exemple : “J'aime beaucoup le contact avec les gens. Je pense que ce métier est fait pour moi et je veux le vérifier.” ou “J'habite près de chez vous et j'aime beaucoup ce que vous faites. J'aimerais beaucoup apprendre avec votre équipe.”"
+              }
+              nativeTextAreaProps={{
+                ...register("motivation"),
+              }}
+              {...getFieldError("motivation")}
+              textArea
+            />
             <h2 className={fr.cx("fr-h6", "fr-mt-3w")}>
               Vos expériences et compétences
             </h2>
@@ -323,7 +349,9 @@ export const CreateDiscussionForm = ({
             </p>
             <Input
               label={inputsLabelsByKey.experienceAdditionalInformation}
-              hintText="Exemple : “travail en équipe”, “mise en rayon”, “babysitting”, etc."
+              hintText={
+                "Exemple : “Je suis de nature très manuelle et je bricole beaucoup chez moi (menuiserie, petites réparations). Je n'ai pas de diplôme dans ce secteur, mais j'ai une grande capacité d'adaptation et le goût du travail bien fait.”"
+              }
               state="info"
               stateRelatedMessage={
                 <span>
@@ -337,9 +365,7 @@ export const CreateDiscussionForm = ({
                 </span>
               }
               nativeTextAreaProps={{
-                ...register("experienceAdditionalInformation", {
-                  setValueAs: (value) => (value.length > 0 ? value : undefined),
-                }),
+                ...register("experienceAdditionalInformation"),
               }}
               {...getFieldError("experienceAdditionalInformation")}
               textArea
@@ -401,6 +427,12 @@ const contactLevelsOfEducationsListOfOptions: SelectProps.Option<ContactLevelOfE
   contactLevelsOfEducation.map((contactLevelOfEducation) => ({
     label: labelsForContactLevelOfEducation[contactLevelOfEducation],
     value: contactLevelOfEducation,
+  }));
+
+const immersionDurationListOfOptions: SelectProps.Option<ImmersionDuration>[] =
+  immersionDurations.map((immersionDuration) => ({
+    label: immersionDurationLabels[immersionDuration],
+    value: immersionDuration,
   }));
 
 const appellationListOfOptions = (
