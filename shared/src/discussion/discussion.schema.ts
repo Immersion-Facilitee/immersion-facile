@@ -408,43 +408,38 @@ const contactInformationsCommonSchema = z.object({
   locationId: zUuidLike,
 });
 
-const createDiscussionCommonSchema = contactInformationsCommonSchema.and(
-  z.object({
-    potentialBeneficiaryPhone: phoneNumberSchema,
-    datePreferences: zStringMinLength1Max6000,
-    contactMode: contactModeSchema,
-  }),
-);
+const createDiscussionCommonSchema = contactInformationsCommonSchema.extend({
+  potentialBeneficiaryPhone: phoneNumberSchema,
+  datePreferences: zStringMinLength1Max6000,
+  contactMode: contactModeSchema,
+});
 
-const createDiscussionIFSchema: ZodSchemaWithInputMatchingOutput<CreateDiscussionIFDto> =
-  createDiscussionCommonSchema.and(
-    z.object({
-      kind: z.literal("IF"),
-      immersionObjective: immersionObjectiveSchema,
-      immersionDuration: immersionDurationSchema,
-      motivation: zStringMinLength1Max800,
-      experienceAdditionalInformation: zStringMinLength1Max800,
-      potentialBeneficiaryResumeLink: resumeLinkSchema,
-    }),
-  );
+const createDiscussionIFSchema = createDiscussionCommonSchema.extend({
+  kind: z.literal("IF"),
+  immersionObjective: immersionObjectiveSchema,
+  immersionDuration: immersionDurationSchema,
+  motivation: zStringMinLength1Max800,
+  experienceAdditionalInformation: zStringMinLength1Max800,
+  potentialBeneficiaryResumeLink: resumeLinkSchema,
+}) satisfies ZodSchemaWithInputMatchingOutput<CreateDiscussionIFDto>;
 
 const contactLevelOfEducationSchema: ZodSchemaWithInputMatchingOutput<ContactLevelOfEducation> =
   z.enum(contactLevelsOfEducation, {
     error: localization.invalidEnum,
   });
 
-const createDiscussion1Eleve1StageSchema: ZodSchemaWithInputMatchingOutput<CreateDiscussion1Eleve1StageDto> =
-  createDiscussionCommonSchema.and(
-    z.object({
-      kind: z.literal("1_ELEVE_1_STAGE"),
-      immersionObjective: z.literal(discoverObjective),
-      levelOfEducation: contactLevelOfEducationSchema,
-    }),
-  );
+const createDiscussion1Eleve1StageSchema = createDiscussionCommonSchema.extend({
+  kind: z.literal("1_ELEVE_1_STAGE"),
+  immersionObjective: z.literal(discoverObjective),
+  levelOfEducation: contactLevelOfEducationSchema,
+}) satisfies ZodSchemaWithInputMatchingOutput<CreateDiscussion1Eleve1StageDto>;
 
 export const createDiscussionSchema: ZodSchemaWithInputMatchingOutput<CreateDiscussionDto> =
-  createDiscussionIFSchema
-    .or(createDiscussion1Eleve1StageSchema)
+  z
+    .discriminatedUnion("kind", [
+      createDiscussionIFSchema,
+      createDiscussion1Eleve1StageSchema,
+    ])
     .and(withAcquisitionSchema);
 
 export const contactEstablishmentEventPayloadSchema: ZodSchemaWithInputMatchingOutput<ContactEstablishmentEventPayload> =
