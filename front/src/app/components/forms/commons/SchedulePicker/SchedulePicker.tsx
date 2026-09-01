@@ -82,8 +82,8 @@ export const SchedulePicker = ({
       ))}
       <div>
         <p className={fr.cx("fr-sr-only")}>
-          L’emploi du temps (SchedulePicker) n’est pas accessible aux
-          technologies d’assistance.
+          La saisie de l'emploi du temps n'est pas accessible aux technologies
+          d’assistance.
         </p>
         <div aria-hidden={true}>
           {values[name].isSimple ? (
