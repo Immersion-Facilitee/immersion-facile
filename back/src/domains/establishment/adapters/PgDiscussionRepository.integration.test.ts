@@ -233,6 +233,28 @@ describe("PgDiscussionRepository", () => {
               .build(),
           },
           {
+            title:
+              "insert with kind IF with motivation and immersionDuration set",
+            discussion: new DiscussionBuilder()
+              .withDiscussionKind("IF")
+              .withContactMode("EMAIL")
+              .withMotivation(
+                "Je veux confirmer mon projet de devenir boulanger",
+              )
+              .withImmersionDuration("twoWeeksOrMore")
+              .build(),
+          },
+          {
+            title:
+              "insert with kind IF without motivation nor immersionDuration (legacy discussion)",
+            discussion: new DiscussionBuilder()
+              .withDiscussionKind("IF")
+              .withContactMode("EMAIL")
+              .withMotivation(undefined)
+              .withImmersionDuration(undefined)
+              .build(),
+          },
+          {
             title: "insert with kind 1_ELEVE_1_STAGE and contact mode EMAIL",
             discussion: new DiscussionBuilder()
               .withDiscussionKind("1_ELEVE_1_STAGE")
@@ -264,6 +286,37 @@ describe("PgDiscussionRepository", () => {
             await pgDiscussionRepository.getById(discussion.id),
             discussion,
           );
+        });
+
+        it("reads discussion without motivation and immersionDuration", async () => {
+          const discussion = new DiscussionBuilder()
+            .withDiscussionKind("IF")
+            .withContactMode("EMAIL")
+            .withMotivation(undefined)
+            .withImmersionDuration(undefined)
+            .build();
+
+          await pgDiscussionRepository.insert(discussion);
+
+          expectToEqual(
+            await db
+              .selectFrom("discussions")
+              .select([
+                "potential_beneficiary_motivation",
+                "potential_beneficiary_immersion_duration",
+              ])
+              .where("id", "=", discussion.id)
+              .executeTakeFirst(),
+            {
+              potential_beneficiary_motivation: null,
+              potential_beneficiary_immersion_duration: null,
+            },
+          );
+
+          const retrievedDiscussion = await pgDiscussionRepository.getById(
+            discussion.id,
+          );
+          expectToEqual(retrievedDiscussion, discussion);
         });
       });
 

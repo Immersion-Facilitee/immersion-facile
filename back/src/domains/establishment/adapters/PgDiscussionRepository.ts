@@ -599,6 +599,10 @@ const discussionToPgAndPhoneInsert = async (
             discussion.potentialBeneficiary.resumeLink,
           potential_beneficiary_experience_additional_information:
             discussion.potentialBeneficiary.experienceAdditionalInformation,
+          potential_beneficiary_motivation:
+            discussion.potentialBeneficiary.motivation,
+          potential_beneficiary_immersion_duration:
+            discussion.potentialBeneficiary.immersionDuration,
         }
       : {}),
     potential_beneficiary_level_of_education:
@@ -753,6 +757,8 @@ const makeDiscussionDtoFromPgDiscussion = (
           resumeLink: discussion.potentialBeneficiary.resumeLink,
           experienceAdditionalInformation:
             discussion.potentialBeneficiary.experienceAdditionalInformation,
+          motivation: discussion.potentialBeneficiary.motivation,
+          immersionDuration: discussion.potentialBeneficiary.immersionDuration,
         },
       };
     }
@@ -937,6 +943,10 @@ const executeGetDiscussions = (
             resumeLink: ref("d.potential_beneficiary_resume_link"),
             experienceAdditionalInformation: ref(
               "potential_beneficiary_experience_additional_information",
+            ),
+            motivation: ref("d.potential_beneficiary_motivation"),
+            immersionDuration: ref(
+              "d.potential_beneficiary_immersion_duration",
             ),
             datePreferences: ref("d.potential_beneficiary_date_preferences"),
             levelOfEducation: ref("d.potential_beneficiary_level_of_education"),
