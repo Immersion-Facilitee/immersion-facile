@@ -4,7 +4,6 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import { CopyButton } from "react-design-system";
 import {
   type ArchivedConventionRequestToReviewDto,
-  domElementIds,
   frontRoutes,
   getFormattedFirstnameAndLastname,
 } from "shared";

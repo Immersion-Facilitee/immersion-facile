@@ -1563,7 +1563,6 @@ describe("authenticatedConventionRoutes", () => {
       );
     });
 
-
     it("401 - Invalid JWT", async () => {
       const response = await httpClient.handleArchivedConventionRequest({
         headers: { authorization: "invalid-token" },
