@@ -16,7 +16,7 @@ export const EstablishmentCreationFormPage = ({
     route={route}
     oAuthConnectionPageHeader={
       <PageHeader
-        title="Proposer une immersion"
+        title="Inscrire une entreprise"
         breadcrumbs={<Breadcrumbs />}
       />
     }

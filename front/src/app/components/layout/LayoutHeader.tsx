@@ -177,7 +177,7 @@ export const LayoutHeader = () => {
           },
         },
         {
-          text: "Proposer une immersion",
+          text: "Inscrire une entreprise",
           isActive: currentRoute.name === frontRoutes.formEstablishment().name,
           linkProps: {
             ...frontRoutes.formEstablishment().link,
