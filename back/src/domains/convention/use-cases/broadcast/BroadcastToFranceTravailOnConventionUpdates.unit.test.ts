@@ -940,7 +940,7 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       };
     });
 
-    it("save convention to sync with france travail with status TO_PROCESS without HTTP nor feedback for france-travail agency", async () => {
+    it("save convention to sync with france travail with status TO_PROCESS without HTTP request nor feedback for france-travail agency", async () => {
       const convention = conventionReadDtoFrom({
         convention: conventionLinkedToFTWithoutFederatedIdentity,
         agency: {
