@@ -24,6 +24,7 @@ import {
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { UuidV4Generator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
 import type { EstablishmentLead } from "../entities/EstablishmentLeadEntity";
+import { EstablishmentAggregateBuilder } from "../helpers/EstablishmentBuilders";
 import {
   makeSendEstablishmentLeadReminderScript,
   type SendEstablishmentLeadReminderScript,
@@ -251,6 +252,44 @@ describe("SendEstablishmentLeadReminder", () => {
           )
         )?.lastEventKind,
       ).toBe("reminder-sent");
+    });
+
+    it("Does not send emails when the lead siret is already a registered establishment", async () => {
+      const agency = new AgencyDtoBuilder().build();
+      const convention = new ConventionDtoBuilder()
+        .withId("11111111-ee70-4c90-b3f4-668d492f7395")
+        .withSiret(establishmentLeadToBeReminded.siret)
+        .withDateValidation(subDays(now, 2).toISOString())
+        .withAgencyId(agency.id)
+        .build();
+      uow.establishmentLeadRepository.establishmentLeads = [
+        establishmentLeadToBeReminded,
+      ];
+      uow.establishmentAggregateRepository.establishmentAggregates = [
+        new EstablishmentAggregateBuilder()
+          .withEstablishmentSiret(establishmentLeadToBeReminded.siret)
+          .build(),
+      ];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      uow.conventionRepository.setConventions([convention]);
+      timeGateway.setNextDates([now, now]);
+
+      const result = await sendEstablishmentLeadReminder.execute({
+        kind: "to-be-reminded",
+      });
+
+      expectToEqual(result, {
+        establishmentsReminded: [],
+        errors: {},
+      });
+      expectSavedNotificationsAndEvents({ emails: [] });
+      expect(
+        (
+          await uow.establishmentLeadRepository.getBySiret(
+            establishmentLeadToBeReminded.siret,
+          )
+        )?.lastEventKind,
+      ).toBe("to-be-reminded");
     });
   });
 
