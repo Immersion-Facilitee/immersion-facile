@@ -70,7 +70,7 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
     route: frontRoutes.homeEstablishments(),
     children: {
       formEstablishment: {
-        label: "Proposer une immersion",
+        label: "Inscrire une entreprise",
         route: frontRoutes.formEstablishment(),
       },
       establishmentDashboard: {

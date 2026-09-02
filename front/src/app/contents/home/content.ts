@@ -119,13 +119,13 @@ export const heroHeaderNavCards: (
     ],
     establishment: [
       {
-        title: "Proposer des immersions",
+        title: "Inscrire une entreprise",
         icon: "fr-icon-award-line",
         type: "establishment",
         id: domElementIds.homeEstablishments.heroHeader.addEstablishmentForm,
         link: frontRoutes.formEstablishment().link,
         alternateTitle:
-          "Proposer une immersion : mon entreprise apparaîtra dans les résultats de recherche des candidats.",
+          "Inscrire une entreprise : mon entreprise apparaîtra dans les résultats de recherche des candidats.",
       },
       {
         title: "Remplir la demande de convention",

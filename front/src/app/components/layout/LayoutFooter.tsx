@@ -223,7 +223,7 @@ const makeNavTopGroupLinks = (
     title: "Entreprises",
     links: [
       {
-        label: "Référencer mon entreprise",
+        label: "Inscrire une entreprise",
         ...frontRoutes.formEstablishment().link,
         id: navTopGroupLinksIds.addEstablishmentForm,
       },
