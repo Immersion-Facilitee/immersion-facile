@@ -194,62 +194,64 @@ describe("RejectUserForAgency", () => {
       currentUser: connectedAgency1Admin,
       usersInRepo: [agency1Admin, user],
     },
-  ])("Remove agency right for IcUser when $currentUserLabel requests it", async ({
-    currentUser,
-    usersInRepo,
-  }) => {
-    uow.agencyRepository.agencies = [
-      toAgencyWithRights(agency1, {
-        [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
-        [notAdmin.id]: { roles: ["validator"], isNotifiedByEmail: false },
-      }),
-      toAgencyWithRights(agency2, {
-        [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
-      }),
-    ];
-
-    uow.userRepository.users = usersInRepo;
-
-    await rejectUserForAgencyUsecase.execute(
-      {
-        userId: user.id,
-        agencyId: agency1.id,
-        justification: "osef",
-      },
-      currentUser,
-    );
-
-    expectToEqual(uow.agencyRepository.agencies, [
-      toAgencyWithRights(
-        new AgencyDtoBuilder(agency1).withUpdatedAt(timeGateway.now()).build(),
-        {
+  ])(
+    "Remove agency right for IcUser when $currentUserLabel requests it",
+    async ({ currentUser, usersInRepo }) => {
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agency1, {
+          [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
           [notAdmin.id]: { roles: ["validator"], isNotifiedByEmail: false },
-        },
-      ),
-      toAgencyWithRights(agency2, {
-        [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
-      }),
-    ]);
+        }),
+        toAgencyWithRights(agency2, {
+          [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+        }),
+      ];
 
-    expectToEqual(uow.outboxRepository.events, [
-      {
-        id: uuidGenerator.new(),
-        occurredAt: timeGateway.now().toISOString(),
-        topic: "ConnectedUserAgencyRightRejected",
-        payload: {
+      uow.userRepository.users = usersInRepo;
+
+      await rejectUserForAgencyUsecase.execute(
+        {
           userId: user.id,
           agencyId: agency1.id,
           justification: "osef",
-          triggeredBy: {
-            kind: "connected-user",
-            userId: currentUser.id,
-          },
         },
-        publications: [],
-        status: "never-published",
-        wasQuarantined: false,
-        priority: defaultPriority,
-      },
-    ]);
-  });
+        currentUser,
+      );
+
+      expectToEqual(uow.agencyRepository.agencies, [
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency1)
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {
+            [notAdmin.id]: { roles: ["validator"], isNotifiedByEmail: false },
+          },
+        ),
+        toAgencyWithRights(agency2, {
+          [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+        }),
+      ]);
+
+      expectToEqual(uow.outboxRepository.events, [
+        {
+          id: uuidGenerator.new(),
+          occurredAt: timeGateway.now().toISOString(),
+          topic: "ConnectedUserAgencyRightRejected",
+          payload: {
+            userId: user.id,
+            agencyId: agency1.id,
+            justification: "osef",
+            triggeredBy: {
+              kind: "connected-user",
+              userId: currentUser.id,
+            },
+          },
+          publications: [],
+          status: "never-published",
+          wasQuarantined: false,
+          priority: defaultPriority,
+        },
+      ]);
+    },
+  );
 });

@@ -407,48 +407,51 @@ describe("Discussions", () => {
       },
     ];
 
-    it.each(testCases)("returns $expectedDisplayStatus when $message", ({
-      discussion,
-      expectedDisplayStatus,
-      expectedFollowUp,
-      viewer,
-      hasEstablishmentAnswered,
-      isEstablishmentReachableByPhoneAfter15Days,
-    }) => {
-      expectToEqual(
-        getDiscussionDisplayStatus({
-          discussion: {
-            createdAt: discussion.createdAt,
-            status: discussion.status,
-            exchangesData: {
-              count: discussion.exchanges.length,
-              hasEstablishmentAnswered,
-              lastExchange:
-                discussion.exchanges[discussion.exchanges.length - 1],
-            },
-          },
-        }),
+    it.each(testCases)(
+      "returns $expectedDisplayStatus when $message",
+      ({
+        discussion,
         expectedDisplayStatus,
-      );
-      expectToEqual(
-        getDiscussionFollowUp({
-          discussion: {
-            createdAt: discussion.createdAt,
-            status: discussion.status,
-            exchangesData: {
-              count: discussion.exchanges.length,
-              hasEstablishmentAnswered,
-              lastExchange:
-                discussion.exchanges[discussion.exchanges.length - 1],
-            },
-          },
-          now,
-          viewer,
-          isEstablishmentReachableByPhoneAfter15Days,
-        }),
         expectedFollowUp,
-      );
-    });
+        viewer,
+        hasEstablishmentAnswered,
+        isEstablishmentReachableByPhoneAfter15Days,
+      }) => {
+        expectToEqual(
+          getDiscussionDisplayStatus({
+            discussion: {
+              createdAt: discussion.createdAt,
+              status: discussion.status,
+              exchangesData: {
+                count: discussion.exchanges.length,
+                hasEstablishmentAnswered,
+                lastExchange:
+                  discussion.exchanges[discussion.exchanges.length - 1],
+              },
+            },
+          }),
+          expectedDisplayStatus,
+        );
+        expectToEqual(
+          getDiscussionFollowUp({
+            discussion: {
+              createdAt: discussion.createdAt,
+              status: discussion.status,
+              exchangesData: {
+                count: discussion.exchanges.length,
+                hasEstablishmentAnswered,
+                lastExchange:
+                  discussion.exchanges[discussion.exchanges.length - 1],
+              },
+            },
+            now,
+            viewer,
+            isEstablishmentReachableByPhoneAfter15Days,
+          }),
+          expectedFollowUp,
+        );
+      },
+    );
   });
 
   describe("Discussion schema", () => {

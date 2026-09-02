@@ -28,13 +28,13 @@ describe("searchTextSchema", () => {
       initialSearchText: "boulanger / patissier",
       expectedSearchText: "boulanger   patissier",
     },
-  ])("for $initialSearchText, replace special characters by space then trim", ({
-    initialSearchText,
-    expectedSearchText,
-  }) => {
-    const newSearchText = searchTextAlphaSchema.parse(initialSearchText);
-    expect(newSearchText).toBe(expectedSearchText);
-  });
+  ])(
+    "for $initialSearchText, replace special characters by space then trim",
+    ({ initialSearchText, expectedSearchText }) => {
+      const newSearchText = searchTextAlphaSchema.parse(initialSearchText);
+      expect(newSearchText).toBe(expectedSearchText);
+    },
+  );
 });
 
 describe("searchTextSchemaNumeric", () => {
@@ -67,11 +67,12 @@ describe("searchTextSchemaNumeric", () => {
       initialSearchText: conventionId,
       expectedSearchText: conventionId,
     },
-  ])("for $initialSearchText, replace special characters by space then trim", ({
-    initialSearchText,
-    expectedSearchText,
-  }) => {
-    const newSearchText = searchTextAlphaNumericSchema.parse(initialSearchText);
-    expect(newSearchText).toBe(expectedSearchText);
-  });
+  ])(
+    "for $initialSearchText, replace special characters by space then trim",
+    ({ initialSearchText, expectedSearchText }) => {
+      const newSearchText =
+        searchTextAlphaNumericSchema.parse(initialSearchText);
+      expect(newSearchText).toBe(expectedSearchText);
+    },
+  );
 });

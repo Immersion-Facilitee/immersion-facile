@@ -61,12 +61,15 @@ describe("makeConventionPresentationSchemaWithNormalizedInput", () => {
           beneficiary: { schoolName: "Lycée Victor Hugo" },
         },
       } satisfies CreateConventionTemplatePresentationInitialValues,
-    ])("accepts valid convention template", (conventionTemplate: CreateConventionTemplatePresentationInitialValues) => {
-      expectToEqual(
-        schema.parse(conventionTemplate),
-        replaceEmptyValuesByUndefinedFromObject(conventionTemplate),
-      );
-    });
+    ])(
+      "accepts valid convention template",
+      (conventionTemplate: CreateConventionTemplatePresentationInitialValues) => {
+        expectToEqual(
+          schema.parse(conventionTemplate),
+          replaceEmptyValuesByUndefinedFromObject(conventionTemplate),
+        );
+      },
+    );
 
     it.each([
       {
@@ -153,9 +156,12 @@ describe("makeConventionPresentationSchemaWithNormalizedInput", () => {
           })
           .build(),
       ),
-    ])("accepts valid convention form", (conventionForm: ConventionFormInitialValues) => {
-      expectToEqual(schema.parse(conventionForm), conventionForm);
-    });
+    ])(
+      "accepts valid convention form",
+      (conventionForm: ConventionFormInitialValues) => {
+        expectToEqual(schema.parse(conventionForm), conventionForm);
+      },
+    );
 
     it.each([
       buildConventionInitialValuesFromConventionDto(
@@ -204,8 +210,11 @@ describe("makeConventionPresentationSchemaWithNormalizedInput", () => {
           })
           .build(),
       ),
-    ])("throws on invalid data", (conventionForm: ConventionFormInitialValues) => {
-      expect(() => schema.parse(conventionForm)).toThrow();
-    });
+    ])(
+      "throws on invalid data",
+      (conventionForm: ConventionFormInitialValues) => {
+        expect(() => schema.parse(conventionForm)).toThrow();
+      },
+    );
   });
 });

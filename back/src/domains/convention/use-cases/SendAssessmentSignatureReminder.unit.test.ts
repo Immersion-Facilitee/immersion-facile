@@ -240,32 +240,36 @@ describe("SendAssessmentSignatureReminder", () => {
     "beneficiary",
     "beneficiary-current-employer",
     "beneficiary-representative",
-  ] satisfies ConventionRole[])("throws forbidden for %s role", async (role) => {
-    const jwt = createConventionMagicLinkPayload({
-      id: convention.id,
-      role,
-      email: convention.signatories.beneficiary.email,
-      now,
-    });
-    await expectPromiseToFailWithError(
-      usecase.execute(
+  ] satisfies ConventionRole[])(
+    "throws forbidden for %s role",
+    async (role) => {
+      const jwt = createConventionMagicLinkPayload({
+        id: convention.id,
+        role,
+        email: convention.signatories.beneficiary.email,
+        now,
+      });
+      await expectPromiseToFailWithError(
+        usecase.execute(
+          { conventionId: convention.id, notificationKind: "email" },
+          jwt,
+        ),
+        errors.assessment.sendAssessmentSignatureReminderForbidden(),
+      );
+    },
+  );
+
+  it.each(assessmentSignatureReminderAuthorizedRoles)(
+    "allows for %s role",
+    async (role) => {
+      await usecase.execute(
         { conventionId: convention.id, notificationKind: "email" },
-        jwt,
-      ),
-      errors.assessment.sendAssessmentSignatureReminderForbidden(),
-    );
-  });
+        prepareAuthorizedJwtPayload(role),
+      );
 
-  it.each(
-    assessmentSignatureReminderAuthorizedRoles,
-  )("allows for %s role", async (role) => {
-    await usecase.execute(
-      { conventionId: convention.id, notificationKind: "email" },
-      prepareAuthorizedJwtPayload(role),
-    );
-
-    expectToEqual(uow.notificationRepository.notifications.length, 1);
-  });
+      expectToEqual(uow.notificationRepository.notifications.length, 1);
+    },
+  );
 
   it("throws too many requests when email was sent less than 24h ago", async () => {
     uow.notificationRepository.notifications = [

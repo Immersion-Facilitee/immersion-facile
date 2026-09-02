@@ -48,16 +48,15 @@ describe("EmailableEmailValidationGateway", () => {
       },
     ];
 
-    it.each(
-      candidates,
-    )("Candidate email '$candidateEmail' should match expected given status", async ({
-      candidateEmail,
-      expectedStatus,
-    }) => {
-      expectToEqual(
-        await emailableEmailValidationGateway.validateEmail(candidateEmail),
-        expectedStatus,
-      );
-    }, 10000);
+    it.each(candidates)(
+      "Candidate email '$candidateEmail' should match expected given status",
+      async ({ candidateEmail, expectedStatus }) => {
+        expectToEqual(
+          await emailableEmailValidationGateway.validateEmail(candidateEmail),
+          expectedStatus,
+        );
+      },
+      10000,
+    );
   });
 });

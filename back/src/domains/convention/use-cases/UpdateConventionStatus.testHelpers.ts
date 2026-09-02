@@ -617,68 +617,71 @@ export const rejectStatusTransitionTests = ({
     });
 
     if (notAllowedRolesToUpdate.length) {
-      it.each(
-        notAllowedRolesToUpdate.map((role) => ({ role })),
-      )("Rejected from role '$role'", ({ role }) => {
-        const userId = "userWithRoleEstablishmentRepresentative";
-        return testRejectsStatusUpdate({
-          userId,
-          role: role as ConventionRole,
-          initialStatus: someValidInitialStatus,
-          expectedError: errors.convention.badRoleStatusChange({
-            roles: [role],
-            status: updateStatusParams.status,
-            conventionId: updateStatusParams.conventionId,
-          }),
-        });
-      });
+      it.each(notAllowedRolesToUpdate.map((role) => ({ role })))(
+        "Rejected from role '$role'",
+        ({ role }) => {
+          const userId = "userWithRoleEstablishmentRepresentative";
+          return testRejectsStatusUpdate({
+            userId,
+            role: role as ConventionRole,
+            initialStatus: someValidInitialStatus,
+            expectedError: errors.convention.badRoleStatusChange({
+              roles: [role],
+              status: updateStatusParams.status,
+              conventionId: updateStatusParams.conventionId,
+            }),
+          });
+        },
+      );
     }
 
     if (notAllowedConnectedUsersToUpdate.length) {
-      it.each(
-        notAllowedConnectedUsersToUpdate.map((userId) => ({ userId })),
-      )("Rejected from userId '$userId'", ({ userId }) => {
-        const roles = getConventionManageAllowedRoles(
-          conventionForRoles,
-          makeUserWithRights(userId),
-        );
-        return testRejectsStatusUpdate({
-          userId,
-          initialStatus: someValidInitialStatus,
-          expectedError: errors.convention.badRoleStatusChange({
-            roles,
-            status: updateStatusParams.status,
-            conventionId: updateStatusParams.conventionId,
-          }),
-        });
-      });
+      it.each(notAllowedConnectedUsersToUpdate.map((userId) => ({ userId })))(
+        "Rejected from userId '$userId'",
+        ({ userId }) => {
+          const roles = getConventionManageAllowedRoles(
+            conventionForRoles,
+            makeUserWithRights(userId),
+          );
+          return testRejectsStatusUpdate({
+            userId,
+            initialStatus: someValidInitialStatus,
+            expectedError: errors.convention.badRoleStatusChange({
+              roles,
+              status: updateStatusParams.status,
+              conventionId: updateStatusParams.conventionId,
+            }),
+          });
+        },
+      );
     }
 
-    it.each(
-      forbiddenInitalStatuses.map((status) => ({ status })),
-    )("Rejected from status $status", ({ status }) => {
-      // this case is handle separately cause we don't have yet another way to test refined transition config
-      // TODO refactor this to handle all refine
-      const agencyHasTwoStepsAndValidatorTriesToValidate =
-        updateStatusParams.status === "ACCEPTED_BY_VALIDATOR" &&
-        status === "IN_REVIEW";
+    it.each(forbiddenInitalStatuses.map((status) => ({ status })))(
+      "Rejected from status $status",
+      ({ status }) => {
+        // this case is handle separately cause we don't have yet another way to test refined transition config
+        // TODO refactor this to handle all refine
+        const agencyHasTwoStepsAndValidatorTriesToValidate =
+          updateStatusParams.status === "ACCEPTED_BY_VALIDATOR" &&
+          status === "IN_REVIEW";
 
-      const error = agencyHasTwoStepsAndValidatorTriesToValidate
-        ? errors.convention.twoStepsValidationBadStatus({
-            targetStatus: updateStatusParams.status,
-            conventionId: updateStatusParams.conventionId,
-          })
-        : errors.convention.badStatusTransition({
-            currentStatus: status,
-            targetStatus: updateStatusParams.status,
-          });
+        const error = agencyHasTwoStepsAndValidatorTriesToValidate
+          ? errors.convention.twoStepsValidationBadStatus({
+              targetStatus: updateStatusParams.status,
+              conventionId: updateStatusParams.conventionId,
+            })
+          : errors.convention.badStatusTransition({
+              currentStatus: status,
+              targetStatus: updateStatusParams.status,
+            });
 
-      return testRejectsStatusUpdate({
-        role: someValidRole,
-        initialStatus: status,
-        expectedError: error,
-      });
-    });
+        return testRejectsStatusUpdate({
+          role: someValidRole,
+          initialStatus: status,
+          expectedError: error,
+        });
+      },
+    );
   });
 };
 
@@ -710,29 +713,32 @@ export const acceptStatusTransitionTests = ({
       nextDate,
     });
 
-    it.each(
-      allowedMagicLinkRoles.map((role) => ({ role })),
-    )("Accepted from role '$role'", ({ role }) =>
-      testAcceptsStatusUpdate({
-        role,
-        initialStatus: someValidInitialStatus,
-      }));
+    it.each(allowedMagicLinkRoles.map((role) => ({ role })))(
+      "Accepted from role '$role'",
+      ({ role }) =>
+        testAcceptsStatusUpdate({
+          role,
+          initialStatus: someValidInitialStatus,
+        }),
+    );
 
     if (allowedConnectedUsers.length)
-      it.each(
-        allowedConnectedUsers.map((userId) => ({ userId })),
-      )("Accepted from userId '$userId'", ({ userId }) =>
-        testAcceptsStatusUpdate({
-          userId,
-          initialStatus: someValidInitialStatus,
-        }));
+      it.each(allowedConnectedUsers.map((userId) => ({ userId })))(
+        "Accepted from userId '$userId'",
+        ({ userId }) =>
+          testAcceptsStatusUpdate({
+            userId,
+            initialStatus: someValidInitialStatus,
+          }),
+      );
 
-    it.each(
-      allowedInitialStatuses.map((status) => ({ status })),
-    )("Accepted from status $status", ({ status }) =>
-      testAcceptsStatusUpdate({
-        role: someValidRole,
-        initialStatus: status,
-      }));
+    it.each(allowedInitialStatuses.map((status) => ({ status })))(
+      "Accepted from status $status",
+      ({ status }) =>
+        testAcceptsStatusUpdate({
+          role: someValidRole,
+          initialStatus: status,
+        }),
+    );
   });
 };

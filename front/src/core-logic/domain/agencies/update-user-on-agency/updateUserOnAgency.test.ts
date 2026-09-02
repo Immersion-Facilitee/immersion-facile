@@ -133,39 +133,39 @@ describe("UpdateUserOnAgency slice", () => {
     );
   });
 
-  it.each([
-    "user",
-    "agency-user-for-dashboard",
-  ] as const)("not update the user rights if error, and store the feedback in feedback topic %s", (feedbackTopic: FeedbackTopic) => {
-    store.dispatch(
-      updateUserOnAgencySlice.actions.updateUserAgencyRightRequested({
-        ...userParams,
-        feedbackTopic,
-      }),
-    );
+  it.each(["user", "agency-user-for-dashboard"] as const)(
+    "not update the user rights if error, and store the feedback in feedback topic %s",
+    (feedbackTopic: FeedbackTopic) => {
+      store.dispatch(
+        updateUserOnAgencySlice.actions.updateUserAgencyRightRequested({
+          ...userParams,
+          feedbackTopic,
+        }),
+      );
 
-    expectToEqual(
-      updateUserOnAgencySelectors.isLoading(store.getState()),
-      true,
-    );
+      expectToEqual(
+        updateUserOnAgencySelectors.isLoading(store.getState()),
+        true,
+      );
 
-    dependencies.agencyGateway.updateUserAgencyRightResponse$.error(
-      "Une erreur est survenue lors de la mise à jour de l'utilisateur",
-    );
+      dependencies.agencyGateway.updateUserAgencyRightResponse$.error(
+        "Une erreur est survenue lors de la mise à jour de l'utilisateur",
+      );
 
-    expectToEqual(
-      updateUserOnAgencySelectors.isLoading(store.getState()),
-      false,
-    );
-    expectToEqual(
-      feedbacksSelectors.feedbacks(store.getState())[feedbackTopic],
-      {
-        level: "error",
-        message:
-          "Une erreur est survenue lors de la mise à jour de l'utilisateur",
-        on: "update",
-        title: "Problème lors de la mise à jour de l'utilisateur",
-      },
-    );
-  });
+      expectToEqual(
+        updateUserOnAgencySelectors.isLoading(store.getState()),
+        false,
+      );
+      expectToEqual(
+        feedbacksSelectors.feedbacks(store.getState())[feedbackTopic],
+        {
+          level: "error",
+          message:
+            "Une erreur est survenue lors de la mise à jour de l'utilisateur",
+          on: "update",
+          title: "Problème lors de la mise à jour de l'utilisateur",
+        },
+      );
+    },
+  );
 });

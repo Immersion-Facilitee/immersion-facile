@@ -613,61 +613,57 @@ describe("conventionDtoSchema", () => {
         maxCalendarDays: maximumCalendarDayByInternshipKind[internshipKind],
       }));
 
-      it.each(
-        calendarDayAndInternShips,
-      )("for $internshipKind rejects when it is more than $maxCalendarDays", ({
-        internshipKind,
-        maxCalendarDays,
-      }) => {
-        const convention = new ConventionDtoBuilder()
-          .withInternshipKind(internshipKind)
-          .withDateStart(DATE_START)
-          .withDateEnd(
-            addDays(new Date(DATE_START), maxCalendarDays + 1).toISOString(),
-          )
-          .withSchedule(reasonableSchedule, [
-            "lundi",
-            "mercredi",
-            "vendredi",
-            "samedi",
-            "dimanche",
-          ])
-          .build();
+      it.each(calendarDayAndInternShips)(
+        "for $internshipKind rejects when it is more than $maxCalendarDays",
+        ({ internshipKind, maxCalendarDays }) => {
+          const convention = new ConventionDtoBuilder()
+            .withInternshipKind(internshipKind)
+            .withDateStart(DATE_START)
+            .withDateEnd(
+              addDays(new Date(DATE_START), maxCalendarDays + 1).toISOString(),
+            )
+            .withSchedule(reasonableSchedule, [
+              "lundi",
+              "mercredi",
+              "vendredi",
+              "samedi",
+              "dimanche",
+            ])
+            .build();
 
-        expectDtoInvalidWithIssueMessages(conventionSchema, convention, [
-          `dateEnd: ${
-            getConventionTooLongMessageAndPath({
-              internshipKind,
-            }).message
-          }`,
-        ]);
-      });
+          expectDtoInvalidWithIssueMessages(conventionSchema, convention, [
+            `dateEnd: ${
+              getConventionTooLongMessageAndPath({
+                internshipKind,
+              }).message
+            }`,
+          ]);
+        },
+      );
 
-      it.each(
-        calendarDayAndInternShips,
-      )("for $intershipKind accepts end date that are <= $maxCalendarDays calendar days after the start date", ({
-        internshipKind,
-        maxCalendarDays,
-      }) => {
-        const dateStart = DATE_START;
-        const dateEnd = addDays(
-          new Date(DATE_START),
-          maxCalendarDays,
-        ).toISOString();
-        const convention = new ConventionDtoBuilder()
-          .withInternshipKind(internshipKind)
-          .withDateStart(dateStart)
-          .withDateEnd(dateEnd)
-          .withSchedule(reasonableSchedule, [
-            "jeudi",
-            "vendredi",
-            "samedi",
-            "dimanche",
-          ])
-          .build();
+      it.each(calendarDayAndInternShips)(
+        "for $intershipKind accepts end date that are <= $maxCalendarDays calendar days after the start date",
+        ({ internshipKind, maxCalendarDays }) => {
+          const dateStart = DATE_START;
+          const dateEnd = addDays(
+            new Date(DATE_START),
+            maxCalendarDays,
+          ).toISOString();
+          const convention = new ConventionDtoBuilder()
+            .withInternshipKind(internshipKind)
+            .withDateStart(dateStart)
+            .withDateEnd(dateEnd)
+            .withSchedule(reasonableSchedule, [
+              "jeudi",
+              "vendredi",
+              "samedi",
+              "dimanche",
+            ])
+            .build();
 
-        expectDtoToBeValid(conventionSchema, convention);
-      });
+          expectDtoToBeValid(conventionSchema, convention);
+        },
+      );
     });
 
     describe("when max hours per week is exceeded", () => {
@@ -823,18 +819,19 @@ describe("conventionDtoSchema", () => {
               title: `after ${CCI_16YO_REQUIREMENT_RELEASE_DATE}`,
               submissionDate: DATES.CCI_16YO_RELEASE_AFTER,
             },
-          ])("when $title, can create convention with weekly hours < 30h", ({
-            submissionDate,
-          }) => {
-            const conventionWithLightSchedule = makeConventionDto({
-              conventionStartDate,
-              submissionDate,
-              workedDaysCount: 4,
-              beneficiaryBirthdate: beneficiaryBirthdayDate_14yo,
-            });
+          ])(
+            "when $title, can create convention with weekly hours < 30h",
+            ({ submissionDate }) => {
+              const conventionWithLightSchedule = makeConventionDto({
+                conventionStartDate,
+                submissionDate,
+                workedDaysCount: 4,
+                beneficiaryBirthdate: beneficiaryBirthdayDate_14yo,
+              });
 
-            expectDtoToBeValid(conventionSchema, conventionWithLightSchedule);
-          });
+              expectDtoToBeValid(conventionSchema, conventionWithLightSchedule);
+            },
+          );
 
           it.each([
             {
@@ -849,22 +846,23 @@ describe("conventionDtoSchema", () => {
               title: `after ${CCI_16YO_REQUIREMENT_RELEASE_DATE}`,
               submissionDate: DATES.CCI_16YO_RELEASE_AFTER,
             },
-          ])("when $title, fails when weekly hours > 30h", ({
-            submissionDate,
-          }) => {
-            expectDtoInvalidWithIssueMessages(
-              conventionSchema,
-              makeConventionDto({
-                conventionStartDate,
-                submissionDate,
-                workedDaysCount: 5,
-                beneficiaryBirthdate: beneficiaryBirthdayDate_14yo,
-              }),
-              [
-                `schedule.totalHours: La durée maximale hebdomadaire d'un mini-stage pour une personne de 14 ans est de 30h`,
-              ],
-            );
-          });
+          ])(
+            "when $title, fails when weekly hours > 30h",
+            ({ submissionDate }) => {
+              expectDtoInvalidWithIssueMessages(
+                conventionSchema,
+                makeConventionDto({
+                  conventionStartDate,
+                  submissionDate,
+                  workedDaysCount: 5,
+                  beneficiaryBirthdate: beneficiaryBirthdayDate_14yo,
+                }),
+                [
+                  `schedule.totalHours: La durée maximale hebdomadaire d'un mini-stage pour une personne de 14 ans est de 30h`,
+                ],
+              );
+            },
+          );
         });
 
         describe("when beneficiary is between 15yo and 16yo", () => {
@@ -1107,27 +1105,29 @@ describe("conventionDtoSchema", () => {
           "DEPRECATED",
         ]);
 
-      it.each(
-        allowWithoutSignature.map((status) => ({ status })),
-      )("WITHOUT signatures, a Convention CAN be $status", ({ status }) => {
-        const convention = new ConventionDtoBuilder()
-          .withStatus(status)
-          .notSigned()
-          .build();
-        expectDtoToBeValid(conventionSchema, convention);
-      });
+      it.each(allowWithoutSignature.map((status) => ({ status })))(
+        "WITHOUT signatures, a Convention CAN be $status",
+        ({ status }) => {
+          const convention = new ConventionDtoBuilder()
+            .withStatus(status)
+            .notSigned()
+            .build();
+          expectDtoToBeValid(conventionSchema, convention);
+        },
+      );
 
-      it.each(
-        failingWithoutSignature.map((status) => ({ status })),
-      )("WITHOUT signatures, a Convention CANNOT be $status", ({ status }) => {
-        const convention = new ConventionDtoBuilder()
-          .withStatus(status)
-          .notSigned()
-          .build();
-        expectDtoInvalidWithIssueMessages(conventionSchema, convention, [
-          "status: La confirmation de votre accord est obligatoire.",
-        ]);
-      });
+      it.each(failingWithoutSignature.map((status) => ({ status })))(
+        "WITHOUT signatures, a Convention CANNOT be $status",
+        ({ status }) => {
+          const convention = new ConventionDtoBuilder()
+            .withStatus(status)
+            .notSigned()
+            .build();
+          expectDtoInvalidWithIssueMessages(conventionSchema, convention, [
+            "status: La confirmation de votre accord est obligatoire.",
+          ]);
+        },
+      );
     });
   });
 

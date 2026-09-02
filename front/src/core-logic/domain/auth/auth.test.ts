@@ -85,56 +85,57 @@ describe("Auth slice", () => {
         provider: "proConnect",
         federatedIdentity: proConnectFederatedIdentity,
       },
-    ])("when provider = '$provider', deletes federatedIdentity & partialConventionInUrl stored in device and in store, then redirects to provider logout page", ({
-      federatedIdentity,
-    }) => {
-      ({ store, dependencies } = createTestStore({
-        auth: {
+    ])(
+      "when provider = '$provider', deletes federatedIdentity & partialConventionInUrl stored in device and in store, then redirects to provider logout page",
+      ({ federatedIdentity }) => {
+        ({ store, dependencies } = createTestStore({
+          auth: {
+            isRequestingLoginByEmail: false,
+            isRequestingRenewExpiredJwt: false,
+            federatedIdentity: federatedIdentity,
+            afterLoginRedirectionUrl: null,
+            isLoading: true,
+            requestedEmail: null,
+          },
+          connectedUser: {
+            currentUser: new ConnectedUserBuilder().build(),
+            isLoading: false,
+            agenciesToReview: [],
+          },
+        }));
+        dependencies.localDeviceRepository.set(
+          "federatedIdentity",
+          federatedIdentity,
+        );
+
+        store.dispatch(
+          authSlice.actions.fetchLogoutUrlRequested({
+            mode: "device-and-oauth",
+            feedbackTopic: "auth-global",
+          }),
+        );
+
+        dependencies.authGateway.getLogoutUrlResponse$.next(
+          "http://yolo-logout.com",
+        );
+
+        expectAuthStateToBe({
+          afterLoginRedirectionUrl: null,
+          federatedIdentity: null,
+          isLoading: true,
           isRequestingLoginByEmail: false,
           isRequestingRenewExpiredJwt: false,
-          federatedIdentity: federatedIdentity,
-          afterLoginRedirectionUrl: null,
-          isLoading: true,
           requestedEmail: null,
-        },
-        connectedUser: {
-          currentUser: new ConnectedUserBuilder().build(),
-          isLoading: false,
-          agenciesToReview: [],
-        },
-      }));
-      dependencies.localDeviceRepository.set(
-        "federatedIdentity",
-        federatedIdentity,
-      );
+        });
 
-      store.dispatch(
-        authSlice.actions.fetchLogoutUrlRequested({
-          mode: "device-and-oauth",
-          feedbackTopic: "auth-global",
-        }),
-      );
+        expectFederatedIdentityInDevice(undefined);
+        expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
 
-      dependencies.authGateway.getLogoutUrlResponse$.next(
-        "http://yolo-logout.com",
-      );
-
-      expectAuthStateToBe({
-        afterLoginRedirectionUrl: null,
-        federatedIdentity: null,
-        isLoading: true,
-        isRequestingLoginByEmail: false,
-        isRequestingRenewExpiredJwt: false,
-        requestedEmail: null,
-      });
-
-      expectFederatedIdentityInDevice(undefined);
-      expect(connectedUserSelectors.currentUser(store.getState())).toBe(null);
-
-      expectToEqual(dependencies.navigationGateway.wentToUrls, [
-        "http://yolo-logout.com",
-      ]);
-    });
+        expectToEqual(dependencies.navigationGateway.wentToUrls, [
+          "http://yolo-logout.com",
+        ]);
+      },
+    );
 
     it("with provider proConnect - deletes federatedIdentity & partialConventionInUrl stored in device and in store when asked for without redirects to provider logout page", () => {
       ({ store, dependencies } = createTestStore({

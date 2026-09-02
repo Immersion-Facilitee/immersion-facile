@@ -263,26 +263,30 @@ describe("HttpOpenCageDataAddressGateway", () => {
               id: "123",
             },
           },
-        ])(`Should work if searching for '$candidateQuery' query expect:
+        ])(
+          `Should work if searching for '$candidateQuery' query expect:
               - address: '$expectedResult.address'
-              - position: '$expectedResult.position'`, async ({
-          candidateQuery,
-          expectedResult,
-        }) => {
-          const resultMetropolitanFrance =
-            await httpAddressGateway.lookupStreetAddress(candidateQuery, "FR");
+              - position: '$expectedResult.position'`,
+          async ({ candidateQuery, expectedResult }) => {
+            const resultMetropolitanFrance =
+              await httpAddressGateway.lookupStreetAddress(
+                candidateQuery,
+                "FR",
+              );
 
-          const firstResult: AddressAndPosition | undefined =
-            resultMetropolitanFrance.at(0);
-          expectToEqual(firstResult?.address, expectedResult.address);
-          expect(expectedResult.position.lon).toBeCloseTo(
-            expectedResult.position.lon,
-          );
-          expect(expectedResult.position.lat).toBeCloseTo(
-            expectedResult.position.lat,
-            3,
-          );
-        }, 10000);
+            const firstResult: AddressAndPosition | undefined =
+              resultMetropolitanFrance.at(0);
+            expectToEqual(firstResult?.address, expectedResult.address);
+            expect(expectedResult.position.lon).toBeCloseTo(
+              expectedResult.position.lon,
+            );
+            expect(expectedResult.position.lat).toBeCloseTo(
+              expectedResult.position.lat,
+              3,
+            );
+          },
+          10000,
+        );
       });
       describe("with foreign addresses", () => {
         it.each<{
@@ -324,27 +328,27 @@ describe("HttpOpenCageDataAddressGateway", () => {
               id: "123",
             },
           },
-        ])(`Should work if searching for '$candidateQuery' query expect:
+        ])(
+          `Should work if searching for '$candidateQuery' query expect:
               - address: '$expectedResult.address'
-              - position: '$expectedResult.position'`, async ({
-          candidateQuery,
-          countryCode,
-          expectedResult,
-        }) => {
-          const result = await httpAddressGateway.lookupStreetAddress(
-            candidateQuery,
-            countryCode,
-          );
-          const firstResult: AddressAndPosition | undefined = result.at(0);
-          expectToEqual(firstResult?.address, expectedResult.address);
-          expect(expectedResult.position.lon).toBeCloseTo(
-            expectedResult.position.lon,
-          );
-          expect(expectedResult.position.lat).toBeCloseTo(
-            expectedResult.position.lat,
-            3,
-          );
-        }, 10000);
+              - position: '$expectedResult.position'`,
+          async ({ candidateQuery, countryCode, expectedResult }) => {
+            const result = await httpAddressGateway.lookupStreetAddress(
+              candidateQuery,
+              countryCode,
+            );
+            const firstResult: AddressAndPosition | undefined = result.at(0);
+            expectToEqual(firstResult?.address, expectedResult.address);
+            expect(expectedResult.position.lon).toBeCloseTo(
+              expectedResult.position.lon,
+            );
+            expect(expectedResult.position.lat).toBeCloseTo(
+              expectedResult.position.lat,
+              3,
+            );
+          },
+          10000,
+        );
       });
     });
 
@@ -709,17 +713,21 @@ describe("HttpOpenCageDataAddressGateway", () => {
           },
         ],
       },
-    ])("Should work if searching for '$candidateQuery' location query expect '$expectedSearchResult.length' results.", async ({
-      candidateQuery,
-      expectedSearchResult,
-    }: {
-      candidateQuery: string;
-      expectedSearchResult: LookupSearchResult[];
-    }) => {
-      const resultMetropolitanFrance =
-        await httpAddressGateway.lookupLocationName(candidateQuery);
-      expectToEqual(resultMetropolitanFrance, expectedSearchResult);
-    }, 10000);
+    ])(
+      "Should work if searching for '$candidateQuery' location query expect '$expectedSearchResult.length' results.",
+      async ({
+        candidateQuery,
+        expectedSearchResult,
+      }: {
+        candidateQuery: string;
+        expectedSearchResult: LookupSearchResult[];
+      }) => {
+        const resultMetropolitanFrance =
+          await httpAddressGateway.lookupLocationName(candidateQuery);
+        expectToEqual(resultMetropolitanFrance, expectedSearchResult);
+      },
+      10000,
+    );
   });
 
   describe("check parallel calls", () => {

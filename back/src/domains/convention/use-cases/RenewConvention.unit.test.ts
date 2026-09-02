@@ -138,36 +138,37 @@ describe("RenewConvention", () => {
     ] satisfies {
       payloadKind: string;
       payload: ConventionRelatedJwtPayload;
-    }[])("renews the convention with $payloadKind jwt payload", async ({
-      payload,
-    }) => {
-      const result = await renewConvention.execute(
-        renewConventionParams,
-        payload,
-      );
+    }[])(
+      "renews the convention with $payloadKind jwt payload",
+      async ({ payload }) => {
+        const result = await renewConvention.execute(
+          renewConventionParams,
+          payload,
+        );
 
-      expect(result).toBeUndefined();
+        expect(result).toBeUndefined();
 
-      expectToEqual(uow.conventionRepository.conventions, [
-        existingValidatedConvention,
-        {
-          ...existingValidatedConvention,
-          ...renewConventionParams,
-          signatories: {
-            beneficiary: {
-              ...existingValidatedConvention.signatories.beneficiary,
-              signedAt: undefined,
+        expectToEqual(uow.conventionRepository.conventions, [
+          existingValidatedConvention,
+          {
+            ...existingValidatedConvention,
+            ...renewConventionParams,
+            signatories: {
+              beneficiary: {
+                ...existingValidatedConvention.signatories.beneficiary,
+                signedAt: undefined,
+              },
+              establishmentRepresentative: {
+                ...existingValidatedConvention.signatories
+                  .establishmentRepresentative,
+                signedAt: undefined,
+              },
             },
-            establishmentRepresentative: {
-              ...existingValidatedConvention.signatories
-                .establishmentRepresentative,
-              signedAt: undefined,
-            },
+            status: "READY_TO_SIGN",
           },
-          status: "READY_TO_SIGN",
-        },
-      ]);
-    });
+        ]);
+      },
+    );
   });
 
   describe("Wrong paths", () => {

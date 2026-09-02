@@ -1817,18 +1817,19 @@ describe("PgDiscussionRepository", () => {
             );
           });
 
-          it.each([
-            10_001, 1.01, 0, -1,
-          ])("when limit param %s, throws an error", async (limit) => {
-            await expectPromiseToFailWithError(
-              pgDiscussionRepository.getDiscussionIds({
-                filters: {},
-                orderBy: "updatedAt",
-                limit,
-              }),
-              errors.generic.unsupportedLimit(limit),
-            );
-          });
+          it.each([10_001, 1.01, 0, -1])(
+            "when limit param %s, throws an error",
+            async (limit) => {
+              await expectPromiseToFailWithError(
+                pgDiscussionRepository.getDiscussionIds({
+                  filters: {},
+                  orderBy: "updatedAt",
+                  limit,
+                }),
+                errors.generic.unsupportedLimit(limit),
+              );
+            },
+          );
         });
       });
 
@@ -3535,19 +3536,18 @@ describe("PgDiscussionRepository", () => {
         discussionInRepo: DiscussionDto;
         params: Partial<HasDiscussionMatchingParams>;
         result: boolean;
-      }[])(`hasDiscussionMatching '$result'
-          with params: '$params'`, async ({
-        discussionInRepo,
-        params,
-        result,
-      }) => {
-        await pgDiscussionRepository.insert(discussionInRepo);
+      }[])(
+        `hasDiscussionMatching '$result'
+          with params: '$params'`,
+        async ({ discussionInRepo, params, result }) => {
+          await pgDiscussionRepository.insert(discussionInRepo);
 
-        expectToEqual(
-          await pgDiscussionRepository.hasDiscussionMatching(params),
-          result,
-        );
-      });
+          expectToEqual(
+            await pgDiscussionRepository.hasDiscussionMatching(params),
+            result,
+          );
+        },
+      );
 
       it("throws when no params provided", async () => {
         await expectPromiseToFailWithError(

@@ -545,60 +545,60 @@ describe("Magic link router", () => {
     ] satisfies {
       signatory: "establishment-representative" | "beneficiary";
       getEmail: (convention: ConventionDto) => string;
-    }[])("200 - connected $signatory can sign convention", async ({
-      signatory,
-      getEmail,
-    }) => {
-      const signedAt = new Date("2025-01-15T10:00:00.000Z");
-      gateways.timeGateway.setNextDate(signedAt);
-      const signatoryUser = new ConnectedUserBuilder()
-        .withId(`${getEmail(convention)}-user-id`)
-        .withEmail(getEmail(convention))
-        .buildUser();
+    }[])(
+      "200 - connected $signatory can sign convention",
+      async ({ signatory, getEmail }) => {
+        const signedAt = new Date("2025-01-15T10:00:00.000Z");
+        gateways.timeGateway.setNextDate(signedAt);
+        const signatoryUser = new ConnectedUserBuilder()
+          .withId(`${getEmail(convention)}-user-id`)
+          .withEmail(getEmail(convention))
+          .buildUser();
 
-      inMemoryUow.userRepository.users = [signatoryUser];
+        inMemoryUow.userRepository.users = [signatoryUser];
 
-      const response = await httpClient.signConvention({
-        urlParams: { conventionId: convention.id },
-        headers: {
-          authorization: generateConnectedUserJwt({
-            userId: signatoryUser.id,
-            version: currentJwtVersions.connectedUser,
-          }),
-        },
-      });
-
-      expectHttpResponseToEqual(response, {
-        status: 200,
-        body: { id: convention.id },
-      });
-
-      const signedAtIso = signedAt.toISOString();
-
-      expectToEqual(inMemoryUow.conventionRepository.conventions, [
-        {
-          ...convention,
-          status: "PARTIALLY_SIGNED",
-          signatories: {
-            ...convention.signatories,
-            beneficiary:
-              signatory === "beneficiary"
-                ? {
-                    ...convention.signatories.beneficiary,
-                    signedAt: signedAtIso,
-                  }
-                : convention.signatories.beneficiary,
-            establishmentRepresentative:
-              signatory === "establishment-representative"
-                ? {
-                    ...convention.signatories.establishmentRepresentative,
-                    signedAt: signedAtIso,
-                  }
-                : convention.signatories.establishmentRepresentative,
+        const response = await httpClient.signConvention({
+          urlParams: { conventionId: convention.id },
+          headers: {
+            authorization: generateConnectedUserJwt({
+              userId: signatoryUser.id,
+              version: currentJwtVersions.connectedUser,
+            }),
           },
-        },
-      ]);
-    });
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 200,
+          body: { id: convention.id },
+        });
+
+        const signedAtIso = signedAt.toISOString();
+
+        expectToEqual(inMemoryUow.conventionRepository.conventions, [
+          {
+            ...convention,
+            status: "PARTIALLY_SIGNED",
+            signatories: {
+              ...convention.signatories,
+              beneficiary:
+                signatory === "beneficiary"
+                  ? {
+                      ...convention.signatories.beneficiary,
+                      signedAt: signedAtIso,
+                    }
+                  : convention.signatories.beneficiary,
+              establishmentRepresentative:
+                signatory === "establishment-representative"
+                  ? {
+                      ...convention.signatories.establishmentRepresentative,
+                      signedAt: signedAtIso,
+                    }
+                  : convention.signatories.establishmentRepresentative,
+            },
+          },
+        ]);
+      },
+    );
 
     it("403 - cannot sign with connected user who is not a signatory", async () => {
       const userWithNoRightOnConvention = new ConnectedUserBuilder()

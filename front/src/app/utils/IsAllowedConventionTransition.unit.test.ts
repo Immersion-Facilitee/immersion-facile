@@ -55,16 +55,12 @@ const cases: TestCase[] = [
 ];
 
 describe("isAllowedTransition", () => {
-  it.each(
-    cases,
-  )(`Transition allowed should be $expected. With roles $roles, and target status: $targetStatus, from status ${convention.status}`, ({
-    convention,
-    targetStatus,
-    roles,
-    expected,
-  }) => {
-    expect(isAllowedConventionTransition(convention, targetStatus, roles)).toBe(
-      expected,
-    );
-  });
+  it.each(cases)(
+    `Transition allowed should be $expected. With roles $roles, and target status: $targetStatus, from status ${convention.status}`,
+    ({ convention, targetStatus, roles, expected }) => {
+      expect(
+        isAllowedConventionTransition(convention, targetStatus, roles),
+      ).toBe(expected);
+    },
+  );
 });

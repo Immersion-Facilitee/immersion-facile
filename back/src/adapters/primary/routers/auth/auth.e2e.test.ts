@@ -118,88 +118,91 @@ describe("auth router", () => {
 
     describe("Right path with Proconnect", () => {
       describe("handle all allowed user connection pages", () => {
-        it.each(keys(allowedLoginSources))(`${displayRouteName(
-          authRoutes.initiateLoginByOAuth,
-        )} 302 > [ProConnect]/login - 302 > ${displayRouteName(
-          authRoutes.afterEmailOrProConnectOAuthLogin,
-        )} 302 > page %s with required connected user params`, async (source) => {
-          const generatedUserId = "my-user-id";
-          const uuids = [nonce, state, generatedUserId];
-          uuidGenerator.new = () => uuids.shift() ?? "no-uuid-provided";
+        it.each(keys(allowedLoginSources))(
+          `${displayRouteName(
+            authRoutes.initiateLoginByOAuth,
+          )} 302 > [ProConnect]/login - 302 > ${displayRouteName(
+            authRoutes.afterEmailOrProConnectOAuthLogin,
+          )} 302 > page %s with required connected user params`,
+          async (source) => {
+            const generatedUserId = "my-user-id";
+            const uuids = [nonce, state, generatedUserId];
+            uuidGenerator.new = () => uuids.shift() ?? "no-uuid-provided";
 
-          const redirectUri = allowedLoginSources[source]().href;
+            const redirectUri = allowedLoginSources[source]().href;
 
-          expectHttpResponseToEqual(
-            await authRoutesClient.initiateLoginByOAuth({
-              queryParams: {
-                provider: "proConnect",
-                redirectUri,
+            expectHttpResponseToEqual(
+              await authRoutesClient.initiateLoginByOAuth({
+                queryParams: {
+                  provider: "proConnect",
+                  redirectUri,
+                },
+              }),
+              {
+                body: {},
+                status: 302,
+                headers: {
+                  location: encodeURI(
+                    `${
+                      appConfig.proConnectConfig.providerBaseUri
+                    }/login?${queryParamsAsString({
+                      nonce,
+                      state,
+                    })}`,
+                  ),
+                },
               },
-            }),
-            {
-              body: {},
-              status: 302,
-              headers: {
-                location: encodeURI(
-                  `${
-                    appConfig.proConnectConfig.providerBaseUri
-                  }/login?${queryParamsAsString({
-                    nonce,
-                    state,
-                  })}`,
-                ),
-              },
-            },
-          );
+            );
 
-          gateways.proConnectOAuthGateway.setAccessTokenResponse({
-            type: "proConnect",
-            accessToken: proConnectToken,
-            idToken,
-            expire: 1,
-            payload: {
-              email: "osef@gmail",
-              firstName: "osef",
-              lastName: "jean",
-              nonce,
-              sub,
-              siret: fakeProConnectSiret,
-            },
-          });
-
-          const response =
-            await authRoutesClient.afterEmailOrProConnectOAuthLogin({
-              queryParams: {
-                code: authCode,
-                state,
+            gateways.proConnectOAuthGateway.setAccessTokenResponse({
+              type: "proConnect",
+              accessToken: proConnectToken,
+              idToken,
+              expire: 1,
+              payload: {
+                email: "osef@gmail",
+                firstName: "osef",
+                lastName: "jean",
+                nonce,
+                sub,
+                siret: fakeProConnectSiret,
               },
             });
 
-          if (response.status !== 302)
-            throw errors.generic.testError("Response must be 302");
-          const locationHeader = response.headers.location as string;
-          const locationPrefix = `${appConfig.immersionFacileBaseUrl}${allowedLoginSources[source]({ token: "" }).href}`;
+            const response =
+              await authRoutesClient.afterEmailOrProConnectOAuthLogin({
+                queryParams: {
+                  code: authCode,
+                  state,
+                },
+              });
 
-          expect(locationHeader).toContain(locationPrefix);
-          const { params } = decodeURIWithParams(locationHeader);
-          const { userId } = decodeJwtWithoutSignatureCheck<{
-            userId: string;
-          }>(params?.token ?? "");
-          expect(userId).toBe(generatedUserId);
-          expectToEqual(inMemoryUow.ongoingOAuthRepository.ongoingOAuths, [
-            {
-              provider: "proConnect",
-              userId: generatedUserId,
-              nonce,
-              state,
-              usedAt: gateways.timeGateway.now(),
-              externalId: "osef",
-              accessToken: proConnectToken,
-              idToken,
-              fromUri: redirectUri,
-            },
-          ]);
-        });
+            if (response.status !== 302)
+              throw errors.generic.testError("Response must be 302");
+            const locationHeader = response.headers.location as string;
+            const locationPrefix = `${appConfig.immersionFacileBaseUrl}${allowedLoginSources[source]({ token: "" }).href}`;
+
+            expect(locationHeader).toContain(locationPrefix);
+            const { params } = decodeURIWithParams(locationHeader);
+            const { userId } = decodeJwtWithoutSignatureCheck<{
+              userId: string;
+            }>(params?.token ?? "");
+            expect(userId).toBe(generatedUserId);
+            expectToEqual(inMemoryUow.ongoingOAuthRepository.ongoingOAuths, [
+              {
+                provider: "proConnect",
+                userId: generatedUserId,
+                nonce,
+                state,
+                usedAt: gateways.timeGateway.now(),
+                externalId: "osef",
+                accessToken: proConnectToken,
+                idToken,
+                fromUri: redirectUri,
+              },
+            ]);
+          },
+        );
       });
 
       it("throws an error if the redirect uri is not allowed", async () => {
@@ -304,118 +307,123 @@ describe("auth router", () => {
 
     describe("Right path with email", () => {
       describe("handle all allowed user connection pages", () => {
-        it.each(keys(allowedLoginSources))(`${displayRouteName(
-          authRoutes.initiateLoginByEmail,
-        )} 200 | EMAIL with connexion link > ${displayRouteName(
-          authRoutes.afterEmailOrProConnectOAuthLogin,
-        )} 200 > page %s with required connected user params`, async (source) => {
-          const email: Email = "mail@email.com";
-          const generatedUserId = "my-user-id";
-          const uuids = [
-            nonce,
-            state,
-            "aaaaaaaaaaa",
-            "aaaaaaaaaab",
-            generatedUserId,
-          ];
-          uuidGenerator.new = () => uuids.shift() ?? "no-uuid-provided";
-
-          const redirectUri = frontRoutes[source]().href;
-
-          expectHttpResponseToEqual(
-            await authRoutesClient.initiateLoginByEmail({
-              body: { email, redirectUri },
-            }),
-            {
-              body: "",
-              status: 200,
-            },
-          );
-
-          await eventCrawler.processNewEvents();
-
-          const notifications =
-            inMemoryUow.notificationRepository.notifications;
-
-          expect(notifications.length).toBe(1);
-          const notification = notifications.at(0);
-          if (!notification) throw new Error("missing notifification");
-          if (notification.templatedContent.kind !== "LOGIN_BY_EMAIL_REQUESTED")
-            throw new Error("bads notificiation kind");
-
-          const code = decodeURIWithParams(
-            notification.templatedContent.params.loginLink,
-          ).params?.code;
-
-          if (!code)
-            throw new Error(
-              `missing code on url ${notification.templatedContent.params.loginLink}`,
-            );
-          const response =
-            await authRoutesClient.afterEmailOrProConnectOAuthLogin({
-              queryParams: {
-                code,
-                state,
-              },
-            });
-
-          if (response.status !== 200)
-            throw errors.generic.testError("Response must be 200");
-
-          expectHttpResponseToEqual(response, {
-            body: {
-              redirectUri: expect.any(String),
-              provider: "email",
-            },
-            status: 200,
-          });
-
-          const { params } = decodeURIWithParams(
-            (
-              response as {
-                status: 200;
-                body: { redirectUri: string; provider: string };
-              }
-            ).body.redirectUri,
-          );
-
-          expectToEqual(params, {
-            token: expect.any(String),
-            provider: "email",
-          });
-
-          expectToEqual(
-            decodeJwtWithoutSignatureCheck<{
-              userId: string;
-            }>(params?.token ?? "").userId,
-            generatedUserId,
-          );
-
-          expectToEqual(inMemoryUow.userRepository.users, [
-            {
-              id: generatedUserId,
-              createdAt: gateways.timeGateway.now().toISOString(),
-              preventToDelete: false,
-              email,
-              firstName: "",
-              lastName: "",
-              proConnect: null,
-              lastLoginAt: gateways.timeGateway.now().toISOString(),
-            },
-          ]);
-
-          expectToEqual(inMemoryUow.ongoingOAuthRepository.ongoingOAuths, [
-            {
-              provider: "email",
-              userId: generatedUserId,
+        it.each(keys(allowedLoginSources))(
+          `${displayRouteName(
+            authRoutes.initiateLoginByEmail,
+          )} 200 | EMAIL with connexion link > ${displayRouteName(
+            authRoutes.afterEmailOrProConnectOAuthLogin,
+          )} 200 > page %s with required connected user params`,
+          async (source) => {
+            const email: Email = "mail@email.com";
+            const generatedUserId = "my-user-id";
+            const uuids = [
               nonce,
               state,
-              usedAt: gateways.timeGateway.now(),
-              email,
-              fromUri: redirectUri,
-            },
-          ]);
-        });
+              "aaaaaaaaaaa",
+              "aaaaaaaaaab",
+              generatedUserId,
+            ];
+            uuidGenerator.new = () => uuids.shift() ?? "no-uuid-provided";
+
+            const redirectUri = frontRoutes[source]().href;
+
+            expectHttpResponseToEqual(
+              await authRoutesClient.initiateLoginByEmail({
+                body: { email, redirectUri },
+              }),
+              {
+                body: "",
+                status: 200,
+              },
+            );
+
+            await eventCrawler.processNewEvents();
+
+            const notifications =
+              inMemoryUow.notificationRepository.notifications;
+
+            expect(notifications.length).toBe(1);
+            const notification = notifications.at(0);
+            if (!notification) throw new Error("missing notifification");
+            if (
+              notification.templatedContent.kind !== "LOGIN_BY_EMAIL_REQUESTED"
+            )
+              throw new Error("bads notificiation kind");
+
+            const code = decodeURIWithParams(
+              notification.templatedContent.params.loginLink,
+            ).params?.code;
+
+            if (!code)
+              throw new Error(
+                `missing code on url ${notification.templatedContent.params.loginLink}`,
+              );
+            const response =
+              await authRoutesClient.afterEmailOrProConnectOAuthLogin({
+                queryParams: {
+                  code,
+                  state,
+                },
+              });
+
+            if (response.status !== 200)
+              throw errors.generic.testError("Response must be 200");
+
+            expectHttpResponseToEqual(response, {
+              body: {
+                redirectUri: expect.any(String),
+                provider: "email",
+              },
+              status: 200,
+            });
+
+            const { params } = decodeURIWithParams(
+              (
+                response as {
+                  status: 200;
+                  body: { redirectUri: string; provider: string };
+                }
+              ).body.redirectUri,
+            );
+
+            expectToEqual(params, {
+              token: expect.any(String),
+              provider: "email",
+            });
+
+            expectToEqual(
+              decodeJwtWithoutSignatureCheck<{
+                userId: string;
+              }>(params?.token ?? "").userId,
+              generatedUserId,
+            );
+
+            expectToEqual(inMemoryUow.userRepository.users, [
+              {
+                id: generatedUserId,
+                createdAt: gateways.timeGateway.now().toISOString(),
+                preventToDelete: false,
+                email,
+                firstName: "",
+                lastName: "",
+                proConnect: null,
+                lastLoginAt: gateways.timeGateway.now().toISOString(),
+              },
+            ]);
+
+            expectToEqual(inMemoryUow.ongoingOAuthRepository.ongoingOAuths, [
+              {
+                provider: "email",
+                userId: generatedUserId,
+                nonce,
+                state,
+                usedAt: gateways.timeGateway.now(),
+                email,
+                fromUri: redirectUri,
+              },
+            ]);
+          },
+        );
       });
     });
 

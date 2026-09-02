@@ -167,47 +167,47 @@ describe("Update agency", () => {
     triggeredByRole: string;
     triggeredByUser: ConnectedUser;
     initialUsers: UserWithAdminRights[];
-  }[])("$triggeredByRole can update agency without changes on user rights and create corresponding event", async ({
-    initialUsers,
-    triggeredByUser,
-  }) => {
-    uow.userRepository.users = initialUsers;
-    uow.agencyRepository.agencies = [
-      toAgencyWithRights(initialAgencyInRepo, {}),
-    ];
+  }[])(
+    "$triggeredByRole can update agency without changes on user rights and create corresponding event",
+    async ({ initialUsers, triggeredByUser }) => {
+      uow.userRepository.users = initialUsers;
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(initialAgencyInRepo, {}),
+      ];
 
-    const updatedAgency = new AgencyDtoBuilder(initialAgencyInRepo)
-      .withName("L'agence modifié")
-      .build();
+      const updatedAgency = new AgencyDtoBuilder(initialAgencyInRepo)
+        .withName("L'agence modifié")
+        .build();
 
-    await updateAgency.execute(
-      { ...updatedAgency, validatorEmails: ["new-validator@mail.com"] },
-      triggeredByUser,
-    );
+      await updateAgency.execute(
+        { ...updatedAgency, validatorEmails: ["new-validator@mail.com"] },
+        triggeredByUser,
+      );
 
-    expectToEqual(uow.agencyRepository.agencies, [
-      toAgencyWithRights(
-        new AgencyDtoBuilder(initialAgencyInRepo)
-          .withName("L'agence modifié")
-          .withUpdatedAt(timeGateway.now())
-          .build(),
-        {},
-      ),
-    ]);
-    expectToEqual(uow.userRepository.users, initialUsers);
-    expectArraysToMatch(uow.outboxRepository.events, [
-      {
-        topic: "AgencyUpdated",
-        payload: {
-          agencyId: updatedAgency.id,
-          triggeredBy: {
-            kind: "connected-user",
-            userId: triggeredByUser.id,
+      expectToEqual(uow.agencyRepository.agencies, [
+        toAgencyWithRights(
+          new AgencyDtoBuilder(initialAgencyInRepo)
+            .withName("L'agence modifié")
+            .withUpdatedAt(timeGateway.now())
+            .build(),
+          {},
+        ),
+      ]);
+      expectToEqual(uow.userRepository.users, initialUsers);
+      expectArraysToMatch(uow.outboxRepository.events, [
+        {
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: updatedAgency.id,
+            triggeredBy: {
+              kind: "connected-user",
+              userId: triggeredByUser.id,
+            },
           },
         },
-      },
-    ]);
-  });
+      ]);
+    },
+  );
 
   describe("Status change", () => {
     const usersRightsWithAdmin = {

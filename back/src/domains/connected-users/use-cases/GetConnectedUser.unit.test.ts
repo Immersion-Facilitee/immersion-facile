@@ -110,92 +110,94 @@ describe("GetConnectedUser", () => {
       const agency = agencyWithoutCounsellorAndValidatorBuilder.build();
 
       describe("returns agency rights with agency dashboards", () => {
-        it.each(
-          agencyRolesAllowedToGetDashboard,
-        )("when role is '%s'", async (agencyUserRole) => {
-          const agency = agencyWithoutCounsellorAndValidatorBuilder
-            .withKind("france-travail")
-            .build();
+        it.each(agencyRolesAllowedToGetDashboard)(
+          "when role is '%s'",
+          async (agencyUserRole) => {
+            const agency = agencyWithoutCounsellorAndValidatorBuilder
+              .withKind("france-travail")
+              .build();
 
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [notAdminUser.id]: {
-                roles: [agencyUserRole],
-                isNotifiedByEmail: true,
-              },
-            }),
-          ];
+            uow.agencyRepository.agencies = [
+              toAgencyWithRights(agency, {
+                [notAdminUser.id]: {
+                  roles: [agencyUserRole],
+                  isNotifiedByEmail: true,
+                },
+              }),
+            ];
 
-          const user = await getConnectedUser.execute(
-            {},
-            connectedNotAdminUser,
-          );
+            const user = await getConnectedUser.execute(
+              {},
+              connectedNotAdminUser,
+            );
 
-          expectToEqual(user, {
-            ...notAdminUser,
-            agencyRights: [
-              {
-                agency: toAgencyDtoForAgencyUsersAndAdmins(
-                  agency,
-                  agencyUserRole === "agency-admin"
-                    ? [connectedNotAdminUser.email]
-                    : [],
-                ),
-                roles: [agencyUserRole],
-                isNotifiedByEmail: true,
-              },
-            ],
-            dashboards: {
-              agencies: {
-                agencyDashboardUrl: `http://stub-metabasev1/AgencyUserDashboard/${
-                  connectedNotAdminUser.id
-                }/${timeGateway.now()}`,
-                erroredConventionsDashboardUrl: `http://stubErroredConventionDashboard/${
-                  connectedNotAdminUser.id
-                }/${timeGateway.now()}`,
-                statsEstablishmentDetailsUrl: `http://stub-metabasev1/EstablishmentDashboard/${timeGateway.now()}`,
-                agencyManagement: `http://stub-metabasev2/ManageMyAgency/${timeGateway.now()}/${agency.name}`,
-                establishmentManagement: `http://stub-metabasev2/ManageMyEstablishments/${timeGateway.now()}`,
-              },
-              establishments: noEstablishmentDashboard,
-            },
-          });
-        });
-      });
-
-      describe("gets the user without dashboard url", () => {
-        it.each(
-          agencyRolesForbiddenToGetDashboard,
-        )("for role '%s'", async (agencyUserRole) => {
-          uow.userRepository.users = [notAdminUser];
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [notAdminUser.id]: {
-                roles: [agencyUserRole],
-                isNotifiedByEmail: true,
-              },
-            }),
-          ];
-
-          expectToEqual(
-            await getConnectedUser.execute({}, connectedNotAdminUser),
-            {
+            expectToEqual(user, {
               ...notAdminUser,
-              proConnect: defaultProConnectInfos,
               agencyRights: [
                 {
-                  agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+                  agency: toAgencyDtoForAgencyUsersAndAdmins(
+                    agency,
+                    agencyUserRole === "agency-admin"
+                      ? [connectedNotAdminUser.email]
+                      : [],
+                  ),
                   roles: [agencyUserRole],
                   isNotifiedByEmail: true,
                 },
               ],
               dashboards: {
-                agencies: noAgencyDashboards,
+                agencies: {
+                  agencyDashboardUrl: `http://stub-metabasev1/AgencyUserDashboard/${
+                    connectedNotAdminUser.id
+                  }/${timeGateway.now()}`,
+                  erroredConventionsDashboardUrl: `http://stubErroredConventionDashboard/${
+                    connectedNotAdminUser.id
+                  }/${timeGateway.now()}`,
+                  statsEstablishmentDetailsUrl: `http://stub-metabasev1/EstablishmentDashboard/${timeGateway.now()}`,
+                  agencyManagement: `http://stub-metabasev2/ManageMyAgency/${timeGateway.now()}/${agency.name}`,
+                  establishmentManagement: `http://stub-metabasev2/ManageMyEstablishments/${timeGateway.now()}`,
+                },
                 establishments: noEstablishmentDashboard,
               },
-            },
-          );
-        });
+            });
+          },
+        );
+      });
+
+      describe("gets the user without dashboard url", () => {
+        it.each(agencyRolesForbiddenToGetDashboard)(
+          "for role '%s'",
+          async (agencyUserRole) => {
+            uow.userRepository.users = [notAdminUser];
+            uow.agencyRepository.agencies = [
+              toAgencyWithRights(agency, {
+                [notAdminUser.id]: {
+                  roles: [agencyUserRole],
+                  isNotifiedByEmail: true,
+                },
+              }),
+            ];
+
+            expectToEqual(
+              await getConnectedUser.execute({}, connectedNotAdminUser),
+              {
+                ...notAdminUser,
+                proConnect: defaultProConnectInfos,
+                agencyRights: [
+                  {
+                    agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+                    roles: [agencyUserRole],
+                    isNotifiedByEmail: true,
+                  },
+                ],
+                dashboards: {
+                  agencies: noAgencyDashboards,
+                  establishments: noEstablishmentDashboard,
+                },
+              },
+            );
+          },
+        );
       });
 
       it("returns the erroredConventionsDashboardUrl to undefined when agency is not of kind with synchronisation enabled", async () => {

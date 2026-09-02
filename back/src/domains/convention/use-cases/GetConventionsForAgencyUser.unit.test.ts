@@ -220,26 +220,27 @@ describe("GetConventionsForAgencyUser", () => {
       "agency-viewer",
     ];
 
-    it.each(
-      allowedRoles,
-    )("should return conventions when user has the %s role", async (role) => {
-      uow.agencyRepository.agencies = [
-        {
-          ...agency,
-          usersRights: {
-            [agencyUserId]: { isNotifiedByEmail: true, roles: [role] },
+    it.each(allowedRoles)(
+      "should return conventions when user has the %s role",
+      async (role) => {
+        uow.agencyRepository.agencies = [
+          {
+            ...agency,
+            usersRights: {
+              [agencyUserId]: { isNotifiedByEmail: true, roles: [role] },
+            },
           },
-        },
-      ];
+        ];
 
-      const result = await getConventionsForAgencyUser.execute(
-        { pagination: { page: 1, perPage: 10 } },
-        currentUser,
-      );
+        const result = await getConventionsForAgencyUser.execute(
+          { pagination: { page: 1, perPage: 10 } },
+          currentUser,
+        );
 
-      expect(result.data).toHaveLength(10);
-      expect(result.pagination.totalRecords).toBe(conventions.length);
-    });
+        expect(result.data).toHaveLength(10);
+        expect(result.pagination.totalRecords).toBe(conventions.length);
+      },
+    );
 
     it("should return no convention when user only has a non-authorized role", async () => {
       uow.agencyRepository.agencies = [
@@ -532,37 +533,38 @@ describe("GetConventionsForAgencyUser", () => {
         roles: ["agency-viewer"] satisfies AgencyRole[],
         case: "agency-viewer",
       },
-    ])("should return READY_TO_SIGN, PARTIALLY_SIGNED and IN_REVIEW of an agency with refersTo when user is $case", async ({
-      roles,
-    }) => {
-      uow.agencyRepository.agencies = [
-        agency,
-        {
-          ...agencyWithRefersTo,
-          usersRights: {
-            [agencyUserId]: { isNotifiedByEmail: true, roles },
+    ])(
+      "should return READY_TO_SIGN, PARTIALLY_SIGNED and IN_REVIEW of an agency with refersTo when user is $case",
+      async ({ roles }) => {
+        uow.agencyRepository.agencies = [
+          agency,
+          {
+            ...agencyWithRefersTo,
+            usersRights: {
+              [agencyUserId]: { isNotifiedByEmail: true, roles },
+            },
           },
-        },
-      ];
+        ];
 
-      const result = await getConventionsForAgencyUser.execute(
-        { pagination: { page: 1, perPage: 10 } },
-        currentUser,
-      );
+        const result = await getConventionsForAgencyUser.execute(
+          { pagination: { page: 1, perPage: 10 } },
+          currentUser,
+        );
 
-      expectArraysToEqualIgnoringOrder(
-        result.data.map(({ id }) => id),
-        [
-          conventionInReviewOnAgency.id,
-          conventionInReviewOnAgencyWithRefersTo.id,
-          conventionReadyToSignOnAgencyWithRefersTo.id,
-          conventionPartiallySignedOnAgencyWithRefersTo.id,
-          conventionAcceptedByCounsellorOnAgencyWithRefersTo.id,
-          conventionRejectedOnAgencyWithRefersTo.id,
-          conventionDeprecatedOnAgencyWithRefersTo.id,
-        ],
-      );
-    });
+        expectArraysToEqualIgnoringOrder(
+          result.data.map(({ id }) => id),
+          [
+            conventionInReviewOnAgency.id,
+            conventionInReviewOnAgencyWithRefersTo.id,
+            conventionReadyToSignOnAgencyWithRefersTo.id,
+            conventionPartiallySignedOnAgencyWithRefersTo.id,
+            conventionAcceptedByCounsellorOnAgencyWithRefersTo.id,
+            conventionRejectedOnAgencyWithRefersTo.id,
+            conventionDeprecatedOnAgencyWithRefersTo.id,
+          ],
+        );
+      },
+    );
 
     it("should not return IN_REVIEW of an agency with refersTo when filtering by status IN_REVIEW", async () => {
       const result = await getConventionsForAgencyUser.execute(

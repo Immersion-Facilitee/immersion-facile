@@ -180,7 +180,7 @@ FROM establishments e
              ? `LEFT JOIN establishments__immersion_contacts eic ON eic.establishment_siret = e.siret
                 LEFT JOIN immersion_contacts ic ON eic.contact_uuid = ic.uuid`
              : "LEFT JOIN establishments_contacts ec ON e.siret = ec.siret"
-         }
+}
          LEFT JOIN view_siret_with_department_region sdr ON sdr.siret = e.siret
          LEFT JOIN public_naf_classes_2008 pnc
                    ON pnc.class_id::text = regexp_replace(e.naf_code::text,'(\\d{2})(\\d{2}).*'::text, '\\1.\\2'::text

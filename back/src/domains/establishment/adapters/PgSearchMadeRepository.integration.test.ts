@@ -81,34 +81,32 @@ describe("PgSearchesMadeRepository", () => {
         lon: 55.40104947929245,
         expectedDepartmentCode: "974",
       },
-    ])("insert a search made with geo params (lat '$lat' , lon '$lon' , '$distanceKm' km) and save departement code with value '$expectedDepartmentCode'", async ({
-      distanceKm,
-      lat,
-      lon,
-      expectedDepartmentCode,
-    }) => {
-      const searchMadeWithLocation: SearchMadeEntity = {
-        ...searchMadeWithoutLocation,
-        distanceKm,
-        lat,
-        lon,
-      };
+    ])(
+      "insert a search made with geo params (lat '$lat' , lon '$lon' , '$distanceKm' km) and save departement code with value '$expectedDepartmentCode'",
+      async ({ distanceKm, lat, lon, expectedDepartmentCode }) => {
+        const searchMadeWithLocation: SearchMadeEntity = {
+          ...searchMadeWithoutLocation,
+          distanceKm,
+          lat,
+          lon,
+        };
 
-      await pgSearchesMadeRepository.insertSearchMade(searchMadeWithLocation);
+        await pgSearchesMadeRepository.insertSearchMade(searchMadeWithLocation);
 
-      expectToEqual(
-        await getSearchMadeById(db, searchMadeWithLocation.id),
-        searchMadeWithLocation,
-      );
-      expectToEqual(
-        await db
-          .selectFrom("searches_made")
-          .select("department_code")
-          .where("id", "=", searchMadeWithLocation.id)
-          .executeTakeFirst(),
-        { department_code: expectedDepartmentCode },
-      );
-    });
+        expectToEqual(
+          await getSearchMadeById(db, searchMadeWithLocation.id),
+          searchMadeWithLocation,
+        );
+        expectToEqual(
+          await db
+            .selectFrom("searches_made")
+            .select("department_code")
+            .where("id", "=", searchMadeWithLocation.id)
+            .executeTakeFirst(),
+          { department_code: expectedDepartmentCode },
+        );
+      },
+    );
   });
 
   it("with nafCodes", async () => {

@@ -31,12 +31,12 @@ describe("zodUtils", () => {
       expect(zToNumber.parse(boolean)).toBe(expectedNumber);
     });
 
-    it.each([
-      "0,1",
-      "not a number",
-    ])("boolean '%s' to be invalid", (boolean) => {
-      expect(() => zToNumber.parse(boolean)).toThrow();
-    });
+    it.each(["0,1", "not a number"])(
+      "boolean '%s' to be invalid",
+      (boolean) => {
+        expect(() => zToNumber.parse(boolean)).toThrow();
+      },
+    );
   });
 
   describe("trueSchema", () => {

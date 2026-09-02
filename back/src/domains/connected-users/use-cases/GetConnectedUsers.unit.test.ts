@@ -306,46 +306,48 @@ describe("GetConnectedUsers", () => {
           currentUserLabel: "agency admin",
           currentUser: agencyAdmin,
         },
-      ])("gets the users by agencyRole and agencyIds when $currentUserLabel requests it", async ({
-        currentUser,
-      }) => {
-        uow.userRepository.users = [
-          johnUser,
-          paulUser,
-          backOfficeUser,
-          agencyAdminUser,
-        ];
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agencyWithRefersTo, {
-            [johnUser.id]: toReviewAndNotifiedUserRight,
-            [agencyAdminUser.id]: {
-              roles: ["agency-admin"],
-              isNotifiedByEmail: true,
-            },
-          }),
-          agency2WithRights,
-        ];
-
-        const users = await getConnectedUsers.execute(
-          { agencyRole: "to-review", agencyIds: [agencyWithRefersTo.id] },
-          currentUser,
-        );
-
-        expectToEqual(users, [
-          {
-            ...connectedJohnUser,
-            agencyRights: [
-              {
-                agency: toAgencyDtoForAgencyUsersAndAdmins(agencyWithRefersTo, [
-                  agencyAdminUser.email,
-                ]),
+      ])(
+        "gets the users by agencyRole and agencyIds when $currentUserLabel requests it",
+        async ({ currentUser }) => {
+          uow.userRepository.users = [
+            johnUser,
+            paulUser,
+            backOfficeUser,
+            agencyAdminUser,
+          ];
+          uow.agencyRepository.agencies = [
+            toAgencyWithRights(agencyWithRefersTo, {
+              [johnUser.id]: toReviewAndNotifiedUserRight,
+              [agencyAdminUser.id]: {
+                roles: ["agency-admin"],
                 isNotifiedByEmail: true,
-                roles: ["to-review"],
               },
-            ],
-          },
-        ]);
-      });
+            }),
+            agency2WithRights,
+          ];
+
+          const users = await getConnectedUsers.execute(
+            { agencyRole: "to-review", agencyIds: [agencyWithRefersTo.id] },
+            currentUser,
+          );
+
+          expectToEqual(users, [
+            {
+              ...connectedJohnUser,
+              agencyRights: [
+                {
+                  agency: toAgencyDtoForAgencyUsersAndAdmins(
+                    agencyWithRefersTo,
+                    [agencyAdminUser.email],
+                  ),
+                  isNotifiedByEmail: true,
+                  roles: ["to-review"],
+                },
+              ],
+            },
+          ]);
+        },
+      );
     });
   });
 

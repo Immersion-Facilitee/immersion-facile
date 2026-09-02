@@ -2798,36 +2798,36 @@ describe("PgEstablishmentAggregateRepository", () => {
         originalEstablishment: EstablishmentAggregate;
         updatedEstablishment: EstablishmentAggregate;
         title: string;
-      }[])("$title", async ({
-        originalEstablishment,
-        updatedEstablishment,
-      }) => {
-        // Prepare
-        await pgEstablishmentAggregateRepository.insertEstablishmentAggregate(
-          originalEstablishment,
-        );
+      }[])(
+        "$title",
+        async ({ originalEstablishment, updatedEstablishment }) => {
+          // Prepare
+          await pgEstablishmentAggregateRepository.insertEstablishmentAggregate(
+            originalEstablishment,
+          );
 
-        expectToEqual(
-          await pgEstablishmentAggregateRepository.getAllEstablishmentAggregatesForTest(),
-          [originalEstablishment],
-        );
+          expectToEqual(
+            await pgEstablishmentAggregateRepository.getAllEstablishmentAggregatesForTest(),
+            [originalEstablishment],
+          );
 
-        await pgEstablishmentAggregateRepository.updateEstablishmentAggregate(
-          updatedEstablishment,
-          updatedAt,
-        );
+          await pgEstablishmentAggregateRepository.updateEstablishmentAggregate(
+            updatedEstablishment,
+            updatedAt,
+          );
 
-        expectToEqual(
-          await pgEstablishmentAggregateRepository.getAllEstablishmentAggregatesForTest(),
-          [updatedEstablishment],
-        );
+          expectToEqual(
+            await pgEstablishmentAggregateRepository.getAllEstablishmentAggregatesForTest(),
+            [updatedEstablishment],
+          );
 
-        const oldPhones = originalEstablishment.userRights
-          .map((userRight) => userRight.phone)
-          .filter((phone) => phone !== undefined);
+          const oldPhones = originalEstablishment.userRights
+            .map((userRight) => userRight.phone)
+            .filter((phone) => phone !== undefined);
 
-        expect(await phoneNumbersExist(kyselyDb, oldPhones)).toBe(true);
-      });
+          expect(await phoneNumbersExist(kyselyDb, oldPhones)).toBe(true);
+        },
+      );
     });
   });
 

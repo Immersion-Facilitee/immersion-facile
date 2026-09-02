@@ -27,7 +27,7 @@ SELECT a.id,
          mode === "up"
            ? "a.created_at"
            : `to_char(a.created_at, 'DD/MM/YYYY'::text)`
-       }                                     AS "Date de création",
+}                                     AS "Date de création",
        a.street_number_and_address                                                    AS "Adresse",
        a.post_code                                                                    AS "Code Postal",
        regexp_replace(a.counsellor_emails::text, '[\\[\\]]'::text, ''::text, 'g'::text) AS "Emails des conseillers",
