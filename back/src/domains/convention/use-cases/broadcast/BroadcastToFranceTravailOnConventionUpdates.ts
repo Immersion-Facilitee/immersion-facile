@@ -112,6 +112,14 @@ export const makeBroadcastToFranceTravailOnConventionUpdates = useCaseBuilder(
           })
         : undefined;
 
+    if (!featureFlags.enableFranceTravailConventionBroadcast.isActive) {
+      await uow.conventionsToSyncRepository.save({
+        id: inputParams.convention.id,
+        status: "TO_PROCESS",
+      });
+      return;
+    }
+
     const response = await deps.franceTravailGateway.notifyOnConventionUpdated(
       notifyFranceTravailOnConventionUpdatedParamsSchema.parse({
         ...inputParams,
