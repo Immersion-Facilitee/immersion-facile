@@ -493,22 +493,25 @@ const DiscussionListBadges = ({
   discussion: DiscussionInList;
   viewer: ExchangeRole;
 }) => (
-  <>
-    <DiscussionStatusBadge
-      discussion={discussion}
-      viewer={viewer}
-      small
-      id={`${domElementIds.establishmentDashboard.discussion.statusBadge}--${discussion.id}`}
-    />
-    <DiscussionFollowUpBadge
-      discussion={discussion}
-      viewer={viewer}
-      small
-      isEstablishmentReachableByPhoneAfter15Days={
-        discussion.isEstablishmentReachableByPhoneAfter15Days
-      }
-      className={fr.cx("fr-ml-1w")}
-      id={`${domElementIds.establishmentDashboard.discussion.followUpBadge}--${discussion.id}`}
-    />
-  </>
+  <ul className={`${fr.cx("fr-badges-group", "fr-badges-group--sm")}`}>
+    <li>
+      <DiscussionStatusBadge
+        discussion={discussion}
+        viewer={viewer}
+        small
+        id={`${domElementIds.establishmentDashboard.discussion.statusBadge}--${discussion.id}`}
+      />
+    </li>
+    <li>
+      <DiscussionFollowUpBadge
+        discussion={discussion}
+        viewer={viewer}
+        small
+        isEstablishmentReachableByPhoneAfter15Days={
+          discussion.isEstablishmentReachableByPhoneAfter15Days
+        }
+        id={`${domElementIds.establishmentDashboard.discussion.followUpBadge}--${discussion.id}`}
+      />
+    </li>
+  </ul>
 );
