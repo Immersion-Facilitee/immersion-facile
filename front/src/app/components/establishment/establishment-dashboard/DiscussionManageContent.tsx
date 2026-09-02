@@ -436,15 +436,19 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
             {"  "}•{"  "}
             {discussion.potentialBeneficiary.immersionObjective}
           </p>
-          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-            <p
-              {...contactModeToBadgeOptions[discussion.contactMode]}
-              className={`${contactModeToBadgeOptions[discussion.contactMode].className} ${fr.cx("fr-mr-2w", "fr-mb-1w")}`}
-            />
-            <span className={fr.cx("fr-mb-1w")}>
+          <ul className={fr.cx("fr-badges-group", "fr-mt-1w")}>
+            <li>
+              <p
+                {...contactModeToBadgeOptions[discussion.contactMode]}
+                className={
+                  contactModeToBadgeOptions[discussion.contactMode].className
+                }
+              />
+            </li>
+            <li>
               <DiscussionStatusBadge discussion={discussion} viewer={viewer} />
-            </span>
-            <span className={fr.cx("fr-mb-1w")}>
+            </li>
+            <li>
               <DiscussionFollowUpBadge
                 key={discussion.id}
                 discussion={discussion}
@@ -452,11 +456,10 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
                   discussionEstablishmentContactInfo?.isEstablishmentReachableByPhoneAfter15Days ??
                   false
                 }
-                className={fr.cx("fr-ml-1w")}
                 viewer={viewer}
               />
-            </span>
-          </div>
+            </li>
+          </ul>
         </SectionHighlight>
         {viewer === "establishment" &&
           (discussion.contactMode === "PHONE" ||
