@@ -29,6 +29,7 @@ import {
 
 export type ConventionSubmitted = {
   agencyId: AgencyId;
+  conventionId: ConventionId;
 };
 
 const beneficiaryBirthdate = faker.date
@@ -205,10 +206,14 @@ export const submitBasicConventionForm = async (
   const agencyId = await goToFormPageAndFillConventionForm(page);
   expect(agencyId).not.toBeFalsy();
   if (!agencyId) return;
-  await confirmCreateConventionFormSubmit(page, tomorrowDateDisplayed);
+  const conventionId = await confirmCreateConventionFormSubmit(
+    page,
+    tomorrowDateDisplayed,
+  );
 
   return {
     agencyId,
+    conventionId,
   };
 };
 
@@ -220,9 +225,11 @@ export type SignatureLinkAndRecipient = {
 export const getSignatureLinksAndRecipients = async ({
   page,
   count,
+  conventionId,
 }: {
   page: Page;
   count: number;
+  conventionId: ConventionId;
 }): Promise<SignatureLinkAndRecipient[]> => {
   await page.goto("/");
   await goToAdminTab(page, "adminNotifications");
@@ -234,6 +241,7 @@ export const getSignatureLinksAndRecipients = async ({
         emailType: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
         elementIndex: index,
         label: "conventionSignatureLink",
+        conventionId,
       });
       expect(href).toBeTruthy();
       expect(recipientEmail).toBeTruthy();
@@ -285,12 +293,14 @@ export const signConvention = async (
 export const allOtherSignatoriesSignConvention = async ({
   page,
   expectedConventionEndDate,
+  conventionId,
 }: {
+  conventionId: ConventionId;
   page: Page;
   expectedConventionEndDate: string;
 }): Promise<void> => {
   await executeInSequence(
-    await getSignatureLinksAndRecipients({ page, count: 3 }),
+    await getSignatureLinksAndRecipients({ page, count: 3, conventionId }),
     ({ href, recipientEmail }) =>
       signConvention(page, href, recipientEmail, expectedConventionEndDate),
   );
@@ -506,7 +516,7 @@ export const checkConventionSummary = async (
 export const confirmCreateConventionFormSubmit = async (
   page: Page,
   dateEndDisplayed: string,
-) => {
+): Promise<ConventionId> => {
   await page.click(`#${domElementIds.conventionImmersion.submitFormButton}`);
   await checkConventionSummary(page, dateEndDisplayed);
 
@@ -517,6 +527,11 @@ export const confirmCreateConventionFormSubmit = async (
     page,
     `#${domElementIds.conventionImmersion.conventionConfirmation.copyConventionIdButton}`,
   );
+  const conventionId = new URL(page.url()).pathname.split("/").at(-1);
+  expect(conventionId).toBeDefined();
+  if (!conventionId)
+    throw new Error("Convention id not found in confirmation URL");
+  return conventionId as ConventionId;
 };
 
 export const shareConventionDraftByEmail = async (page: Page) => {
