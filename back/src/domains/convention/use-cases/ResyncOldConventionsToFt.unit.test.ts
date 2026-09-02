@@ -71,6 +71,38 @@ describe("ResyncOldConventionsToFt use case", () => {
   });
 
   describe("Right paths", () => {
+    it("returns empty report without processing queue when france travail broadcast is suspended", async () => {
+      uow.featureFlagRepository.featureFlags = {
+        enableFranceTravailConventionBroadcast: {
+          kind: "boolean",
+          isActive: false,
+        },
+      };
+      uow.agencyRepository.agencies = [toAgencyWithRights(agencyFT)];
+      uow.conventionRepository.setConventions([conventionToSync1]);
+      uow.conventionsToSyncRepository.setForTesting([
+        {
+          id: conventionToSync1.id,
+          status: "TO_PROCESS",
+        },
+      ]);
+
+      const report = await useCase.execute();
+
+      expectToEqual(uow.conventionsToSyncRepository.conventionsToSync, [
+        {
+          id: conventionToSync1.id,
+          status: "TO_PROCESS",
+        },
+      ]);
+      expectToEqual(ftGateway.broadcastParamsCalls, []);
+      expectToEqual(report, {
+        success: 0,
+        skips: {},
+        errors: {},
+      });
+    });
+
     it("broadcast two conventions to FT", async () => {
       uow.agencyRepository.agencies = [toAgencyWithRights(agencyFT)];
       uow.conventionRepository.setConventions([

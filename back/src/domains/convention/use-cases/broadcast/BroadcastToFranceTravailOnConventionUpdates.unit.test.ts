@@ -930,6 +930,62 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
     });
   });
 
+  describe("when enableFranceTravailConventionBroadcast is off", () => {
+    beforeEach(() => {
+      uow.featureFlagRepository.featureFlags = {
+        enableFranceTravailConventionBroadcast: {
+          kind: "boolean",
+          isActive: false,
+        },
+      };
+    });
+
+    it("save convention to sync with france travail with status TO_PROCESS without HTTP nor feedback for france-travail agency", async () => {
+      const convention = conventionReadDtoFrom({
+        convention: conventionLinkedToFTWithoutFederatedIdentity,
+        agency: {
+          ...peAgencyWithoutCounsellorsAndValidators,
+          counsellorEmails: [counsellor.email],
+          validatorEmails: [validator.email],
+        },
+      });
+
+      await broadcastToFranceTravailOnConventionUpdates.execute({
+        eventType: "CONVENTION_UPDATED",
+        convention,
+      });
+
+      expectToEqual(franceTravailGateway.broadcastParamsCalls, []);
+      expectToEqual(uow.conventionsToSyncRepository.conventionsToSync, [
+        {
+          id: conventionLinkedToFTWithoutFederatedIdentity.id,
+          status: "TO_PROCESS",
+        },
+      ]);
+      expectToEqual(uow.broadcastFeedbacksRepository.broadcastFeedbacks, []);
+    });
+
+    it("does not save convention to sync when agency is not eligible for france-travail broadcast", async () => {
+      uow.agencyRepository.agencies = [agencySIAE];
+
+      await broadcastToFranceTravailOnConventionUpdates.execute({
+        eventType: "CONVENTION_UPDATED",
+        convention: conventionReadDtoFrom({
+          convention: conventionLinkedToSIAE,
+          agency: {
+            ...agencySIAE,
+            validatorEmails: [],
+            counsellorEmails: [],
+          },
+        }),
+      });
+
+      expectToEqual(franceTravailGateway.broadcastParamsCalls, []);
+      expectToEqual(uow.conventionsToSyncRepository.conventionsToSync, []);
+      expectToEqual(uow.broadcastFeedbacksRepository.broadcastFeedbacks, []);
+    });
+  });
+
   type ConvertParams = {
     convention: ConventionDto;
     agency: AgencyDto;

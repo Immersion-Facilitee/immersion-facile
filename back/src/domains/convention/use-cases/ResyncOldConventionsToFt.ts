@@ -37,6 +37,11 @@ export const makeResyncOldConventionsToFt = useCaseBuilder(
         success: 0,
       };
 
+      const featureFlags = await uow.featureFlagQueries.getAll();
+      if (!featureFlags.enableFranceTravailConventionBroadcast.isActive) {
+        return report;
+      }
+
       const conventionsToSync =
         await uow.conventionsToSyncRepository.getToProcessOrError(limit);
 
