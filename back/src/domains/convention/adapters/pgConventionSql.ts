@@ -46,13 +46,13 @@ type ConventionQueryBuilderDb = Database & {
 
 export type ConventionBaseQueryBuilder = SelectQueryBuilder<
   ConventionQueryBuilderDb,
-  any,
+  keyof ConventionQueryBuilderDb,
   any
 >;
 
 export type ConventionQueryBuilder = SelectQueryBuilder<
   ConventionQueryBuilderDb,
-  any,
+  keyof ConventionQueryBuilderDb,
   { dto: ConventionDto }
 >;
 
@@ -71,7 +71,11 @@ export type ConventionsWithErroredBroadcastFeedbackBuilder = ReturnType<
 
 // Function to create the common selection part with proper return type
 const createConventionSelection = (
-  builder: ConventionBaseQueryBuilder,
+  builder: SelectQueryBuilder<
+    ConventionQueryBuilderDb,
+    keyof ConventionQueryBuilderDb,
+    any
+  >,
 ): ConventionQueryBuilder => {
   return builder.select(({ ref, ...eb }) =>
     jsonStripNulls(
@@ -302,9 +306,9 @@ const createConventionSelection = (
   );
 };
 
-const withActorJoins = (
-  builder: SelectQueryBuilder<any, "conventions", any>,
-): ConventionBaseQueryBuilder =>
+const withActorJoins = <QB extends SelectQueryBuilder<Database, any, any>>(
+  builder: QB,
+): QB =>
   builder
     .innerJoin("actors as b", "b.id", "conventions.beneficiary_id")
     .innerJoin(
@@ -322,11 +326,13 @@ const withActorJoins = (
       "actors as bce",
       "bce.id",
       "conventions.beneficiary_current_employer_id",
-    );
+    ) as QB;
 
-const withAppellationsAndPartnerPeJoinAndPhoneNumber = (
-  builder: ConventionBaseQueryBuilder,
-): ConventionBaseQueryBuilder =>
+const withAppellationsAndPartnerPeJoinAndPhoneNumber = <
+  QB extends SelectQueryBuilder<Database, any, any>,
+>(
+  builder: QB,
+): QB =>
   builder
     .leftJoin(
       "conventions__ft_connect_users as cftu",
@@ -373,7 +379,7 @@ const withAppellationsAndPartnerPeJoinAndPhoneNumber = (
       "banned_establishments",
       "banned_establishments.siret",
       "conventions.siret",
-    );
+    ) as QB;
 
 export const createConventionQueryBuilder = (
   transaction: KyselyDb,
@@ -382,7 +388,11 @@ export const createConventionQueryBuilder = (
   createConventionSelection(
     withAppellationsAndPartnerPeJoinAndPhoneNumber(
       withActorJoins(transaction.selectFrom("conventions")),
-    ),
+    ) as unknown as SelectQueryBuilder<
+      ConventionQueryBuilderDb,
+      keyof ConventionQueryBuilderDb,
+      any
+    >,
   ).$if(withAgencyJoin, (qb) =>
     qb.leftJoin("agencies", "agencies.id", "conventions.agency_id"),
   );
@@ -392,7 +402,9 @@ export const createPaginatedConventionsBaseBuilder = ({
 }: {
   transaction: KyselyDb;
 }): ConventionBaseQueryBuilder =>
-  withActorJoins(transaction.selectFrom("conventions"));
+  withActorJoins(
+    transaction.selectFrom("conventions"),
+  ) as unknown as ConventionBaseQueryBuilder;
 
 export const wrapInMaterializedCteWithEnrichment = ({
   transaction,
@@ -408,10 +420,16 @@ export const wrapInMaterializedCteWithEnrichment = ({
         () => filteredBuilder.selectAll("conventions"),
       )
       .selectFrom("user_conventions as conventions"),
-    withActorJoins,
+    withActorJoins as (
+      builder: SelectQueryBuilder<any, any, any>,
+    ) => SelectQueryBuilder<
+      ConventionQueryBuilderDb,
+      keyof ConventionQueryBuilderDb,
+      any
+    >,
     withAppellationsAndPartnerPeJoinAndPhoneNumber,
     createConventionSelection,
-  );
+  ) as unknown as ConventionQueryBuilder;
 
 const createBroadcastFeedbackBaseBuilder = ({
   transaction,
