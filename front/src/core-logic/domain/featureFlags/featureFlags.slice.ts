@@ -45,6 +45,7 @@ const initialState: FeatureFlagsState = {
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
   enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
   enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+  enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
   isLoading: true,
 };
 

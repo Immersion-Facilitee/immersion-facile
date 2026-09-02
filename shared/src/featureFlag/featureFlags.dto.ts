@@ -19,6 +19,7 @@ export const featureFlagNames = [
   "enableInactiveUsersDeletionAutoProcessing",
   "enableRequestArchivedConvention",
   "enableBeneficiaryManageConvention",
+  "enableFranceTravailConventionBroadcast",
 ] as const;
 
 const _insureAllFeatureFlagsAreInList = (
@@ -92,6 +93,7 @@ export type FeatureFlags = {
   enableInactiveUsersDeletionAutoProcessing: FeatureFlagBoolean;
   enableRequestArchivedConvention: FeatureFlagBoolean;
   enableBeneficiaryManageConvention: FeatureFlagBoolean;
+  enableFranceTravailConventionBroadcast: FeatureFlagBoolean;
 };
 
 export type SetFeatureFlagParam = {

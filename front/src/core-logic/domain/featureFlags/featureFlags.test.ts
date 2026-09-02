@@ -62,6 +62,7 @@ const defaultFeatureFlags: FeatureFlags = {
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
   enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
   enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+  enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
 };
 
 const flagsFromApi: FeatureFlags = {
@@ -93,6 +94,7 @@ const flagsFromApi: FeatureFlags = {
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
   enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
   enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+  enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
 };
 
 describe("feature flag slice", () => {

@@ -140,6 +140,10 @@ const labelsByFeatureFlag: Record<
     title: null,
     enableLabel: "Activer les Cap-Emploi",
   },
+  enableFranceTravailConventionBroadcast: {
+    title: null,
+    enableLabel: "Activer le broadcast des conventions vers France Travail",
+  },
   enableEstablishmentDashboardHighlight: {
     title: "Promotion via les tableaux de bord",
     enableLabel: "Promotion sur le tableau de bord entreprise",

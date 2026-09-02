@@ -39,6 +39,7 @@ const defaultFlagsInFront: FeatureFlags = {
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
   enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
   enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+  enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
 };
 
 export const makeStubFeatureFlags = (

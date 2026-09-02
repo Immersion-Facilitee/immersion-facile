@@ -417,6 +417,7 @@ describe("technical router", () => {
       enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
       enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
       enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+      enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
     };
     it(`${displayRouteName(
       technicalRoutes.featureFlags,

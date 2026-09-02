@@ -41,6 +41,7 @@ const defaultFlags: FeatureFlags = {
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
   enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
   enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+  enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
 };
 
 export class InMemoryFeatureFlagRepository implements FeatureFlagRepository {
