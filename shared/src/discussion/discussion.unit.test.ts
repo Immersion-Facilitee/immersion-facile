@@ -1,4 +1,5 @@
 import { subDays } from "date-fns";
+import { omit } from "ramda";
 import { expectToEqual } from "../test.helpers";
 import { DiscussionBuilder } from "./DiscussionBuilder";
 import type {
@@ -504,6 +505,28 @@ describe("Discussions", () => {
       };
 
       expectToEqual(discussionReadSchema.parse(discussionRead), discussionRead);
+    });
+
+    it.each([
+      "motivation",
+      "immersionDuration",
+      "experienceAdditionalInformation",
+    ] as const)("discussionReadSchema rejects an IF discussion without %s", (missingField) => {
+      const { appellationCode, ...rest } = discussionEmailIF;
+      if (rest.kind !== "IF")
+        throw new Error("expected an IF discussion for this test");
+      const invalidDiscussionRead = {
+        ...rest,
+        appellation: {
+          appellationCode: appellationCode,
+          appellationLabel: "osef",
+          romeCode: "A2023",
+          romeLabel: "osef",
+        },
+        potentialBeneficiary: omit([missingField], rest.potentialBeneficiary),
+      };
+
+      expect(() => discussionReadSchema.parse(invalidDiscussionRead)).toThrow();
     });
 
     it("accept message with html sanitized - tested input sample of inbound parsing real usage", () => {
