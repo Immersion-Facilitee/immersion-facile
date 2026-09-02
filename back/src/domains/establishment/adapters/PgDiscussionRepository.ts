@@ -740,6 +740,17 @@ const makeDiscussionDtoFromPgDiscussion = (
     };
 
     if (discussion.kind === "IF") {
+      if (
+        discussion.potentialBeneficiary.motivation === undefined ||
+        discussion.potentialBeneficiary.immersionDuration === undefined ||
+        discussion.potentialBeneficiary.experienceAdditionalInformation ===
+          undefined
+      )
+        throw errors.discussion.missingRequiredIfFields({
+          discussionId: discussion.id,
+          discussionKind: discussion.kind,
+        });
+
       return {
         ...common,
         appellationCode: discussion.appellationCode,
