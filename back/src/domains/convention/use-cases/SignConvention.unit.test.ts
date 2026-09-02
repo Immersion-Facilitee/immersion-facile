@@ -113,26 +113,27 @@ describe("Sign convention", () => {
     });
 
     describe("forbidden roles with convention jwt", () => {
-      it.each(
-        forbiddenToSignRoles.map((role) => ({ role })),
-      )("$role is not allowed to sign", async ({ role }) => {
-        const { convention, agency } =
-          prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
-        uow.conventionRepository.setConventions([convention]);
-        uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      it.each(forbiddenToSignRoles.map((role) => ({ role })))(
+        "$role is not allowed to sign",
+        async ({ role }) => {
+          const { convention, agency } =
+            prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
+          uow.conventionRepository.setConventions([convention]);
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
 
-        await expectPromiseToFailWithError(
-          signConvention.execute(
-            { conventionId },
-            {
-              role: role as ConventionRole,
-              applicationId: conventionId,
-              emailHash: "toto",
-            },
-          ),
-          errors.convention.roleNotAllowedToSign({ role }),
-        );
-      });
+          await expectPromiseToFailWithError(
+            signConvention.execute(
+              { conventionId },
+              {
+                role: role as ConventionRole,
+                applicationId: conventionId,
+                emailHash: "toto",
+              },
+            ),
+            errors.convention.roleNotAllowedToSign({ role }),
+          );
+        },
+      );
     });
 
     describe("with convention connected user jwt", () => {
@@ -171,84 +172,84 @@ describe("Sign convention", () => {
     describe("bad statuses", () => {
       it.each(
         forbiddenInitialStatuses.map((initialStatus) => ({ initialStatus })),
-      )("$initialStatus initial status is not allowed", async ({
-        initialStatus,
-      }) => {
-        const { convention, agency } =
-          prepareAgencyAndConventionWithStatus(initialStatus);
-        uow.conventionRepository.setConventions([convention]);
-        uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      )(
+        "$initialStatus initial status is not allowed",
+        async ({ initialStatus }) => {
+          const { convention, agency } =
+            prepareAgencyAndConventionWithStatus(initialStatus);
+          uow.conventionRepository.setConventions([convention]);
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
 
-        await expectPromiseToFailWithError(
-          signConvention.execute(
-            { conventionId },
-            {
-              role: allowedRole,
-              applicationId: conventionId,
-              emailHash: "toto",
-            },
-          ),
-          errors.convention.badStatusTransition({
-            currentStatus: initialStatus,
-            targetStatus: [
-              "ACCEPTED_BY_VALIDATOR",
-              "ACCEPTED_BY_COUNSELLOR",
-              "IN_REVIEW",
-            ].includes(initialStatus)
-              ? "IN_REVIEW"
-              : "PARTIALLY_SIGNED",
-          }),
-        );
-      });
+          await expectPromiseToFailWithError(
+            signConvention.execute(
+              { conventionId },
+              {
+                role: allowedRole,
+                applicationId: conventionId,
+                emailHash: "toto",
+              },
+            ),
+            errors.convention.badStatusTransition({
+              currentStatus: initialStatus,
+              targetStatus: [
+                "ACCEPTED_BY_VALIDATOR",
+                "ACCEPTED_BY_COUNSELLOR",
+                "IN_REVIEW",
+              ].includes(initialStatus)
+                ? "IN_REVIEW"
+                : "PARTIALLY_SIGNED",
+            }),
+          );
+        },
+      );
     });
   });
 
   describe("happy paths", () => {
     describe("with convention jwt", () => {
-      it.each(
-        allowedToSignRoles.map((role) => ({ role })),
-      )("updates the convention with new signature for $role", async ({
-        role,
-      }) => {
-        const { convention, agency } =
-          prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
-        uow.conventionRepository.setConventions([convention]);
-        uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
-        const signedAt = new Date("2022-01-01");
-        timeGateway.setNextDate(signedAt);
+      it.each(allowedToSignRoles.map((role) => ({ role })))(
+        "updates the convention with new signature for $role",
+        async ({ role }) => {
+          const { convention, agency } =
+            prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
+          uow.conventionRepository.setConventions([convention]);
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+          const signedAt = new Date("2022-01-01");
+          timeGateway.setNextDate(signedAt);
 
-        await signConvention.execute(
-          { conventionId },
-          {
-            role,
-            applicationId: conventionId,
-            emailHash: "toto",
-          },
-        );
+          await signConvention.execute(
+            { conventionId },
+            {
+              role,
+              applicationId: conventionId,
+              emailHash: "toto",
+            },
+          );
 
-        expectToEqual(uow.conventionRepository.conventions, [
-          {
-            ...convention,
-            status: "PARTIALLY_SIGNED",
-            signatories: makeSignatories(convention, {
-              establishmentRepresentativeSignedAt:
-                role === "establishment-representative"
-                  ? signedAt.toISOString()
-                  : undefined,
-              beneficiarySignedAt:
-                role === "beneficiary" ? signedAt.toISOString() : undefined,
-              beneficiaryCurrentEmployerSignedAt:
-                role === "beneficiary-current-employer"
-                  ? signedAt.toISOString()
-                  : undefined,
-              beneficiaryRepresentativeSignedAt:
-                role === "beneficiary-representative"
-                  ? signedAt.toISOString()
-                  : undefined,
-            }),
-          },
-        ]);
-      });
+          expectToEqual(uow.conventionRepository.conventions, [
+            {
+              ...convention,
+              status: "PARTIALLY_SIGNED",
+              signatories: makeSignatories(convention, {
+                establishmentRepresentativeSignedAt:
+                  role === "establishment-representative"
+                    ? signedAt.toISOString()
+                    : undefined,
+                beneficiarySignedAt:
+                  role === "beneficiary" ? signedAt.toISOString() : undefined,
+                beneficiaryCurrentEmployerSignedAt:
+                  role === "beneficiary-current-employer"
+                    ? signedAt.toISOString()
+                    : undefined,
+                beneficiaryRepresentativeSignedAt:
+                  role === "beneficiary-representative"
+                    ? signedAt.toISOString()
+                    : undefined,
+              }),
+            },
+          ]);
+        },
+      );
     });
 
     describe("with connected user jwt", () => {
@@ -276,57 +277,57 @@ describe("Sign convention", () => {
           establishmentRepresentativeSignedAt?: string;
           beneficiarySignedAt?: string;
         };
-      }[])("updates the convention with new signature when connected user is $signatory", async ({
-        getEmail,
-        expectedSignatorySignedAt,
-      }) => {
-        const { convention, agency } =
-          prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
-        uow.conventionRepository.setConventions([convention]);
-        const user = new ConnectedUserBuilder()
-          .withEmail(getEmail(convention))
-          .withProConnectInfos({
-            externalId: "billy-external-id",
-            siret: "11111222224444",
-          })
-          .buildUser();
-        uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
-        uow.userRepository.users = [user];
-        const signedAt = new Date("2022-01-01");
-        timeGateway.setNextDate(signedAt);
+      }[])(
+        "updates the convention with new signature when connected user is $signatory",
+        async ({ getEmail, expectedSignatorySignedAt }) => {
+          const { convention, agency } =
+            prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
+          uow.conventionRepository.setConventions([convention]);
+          const user = new ConnectedUserBuilder()
+            .withEmail(getEmail(convention))
+            .withProConnectInfos({
+              externalId: "billy-external-id",
+              siret: "11111222224444",
+            })
+            .buildUser();
+          uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+          uow.userRepository.users = [user];
+          const signedAt = new Date("2022-01-01");
+          timeGateway.setNextDate(signedAt);
 
-        await signConvention.execute(
-          { conventionId },
-          {
-            userId: user.id,
-          },
-        );
+          await signConvention.execute(
+            { conventionId },
+            {
+              userId: user.id,
+            },
+          );
 
-        const expectedConvention: ConventionDto = {
-          ...convention,
-          status: "PARTIALLY_SIGNED",
-          signatories: makeSignatories(
-            convention,
-            expectedSignatorySignedAt(signedAt.toISOString()),
-          ),
-        };
+          const expectedConvention: ConventionDto = {
+            ...convention,
+            status: "PARTIALLY_SIGNED",
+            signatories: makeSignatories(
+              convention,
+              expectedSignatorySignedAt(signedAt.toISOString()),
+            ),
+          };
 
-        expectToEqual(uow.conventionRepository.conventions, [
-          expectedConvention,
-        ]);
-        expectEventsInOutbox([
-          {
-            topic: "ConventionPartiallySigned",
-            payload: {
-              convention: expectedConvention,
-              triggeredBy: {
-                kind: "connected-user",
-                userId: user.id,
+          expectToEqual(uow.conventionRepository.conventions, [
+            expectedConvention,
+          ]);
+          expectEventsInOutbox([
+            {
+              topic: "ConventionPartiallySigned",
+              payload: {
+                convention: expectedConvention,
+                triggeredBy: {
+                  kind: "connected-user",
+                  userId: user.id,
+                },
               },
             },
-          },
-        ]);
-      });
+          ]);
+        },
+      );
     });
 
     describe("convention status transitions", () => {

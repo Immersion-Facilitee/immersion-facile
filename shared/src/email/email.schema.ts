@@ -28,12 +28,10 @@ export const emailSchema: ZodSchemaWithInputMatchingOutput<Email> = z
   .transform((arg) => toLowerCaseWithoutDiacritics(arg.trim()))
   .pipe(
     //Temporary regex instead of email - waiting zod release
-    z
-      .string()
-      .regex(temporaryEmailRegex, {
-        error: (error) =>
-          `${localization.invalidEmailFormat}${error.input && error.input.length > 0 ? ` - email fourni : '${error.input}'` : ""}`,
-      }),
+    z.string().regex(temporaryEmailRegex, {
+      error: (error) =>
+        `${localization.invalidEmailFormat}${error.input && error.input.length > 0 ? ` - email fourni : '${error.input}'` : ""}`,
+    }),
   );
 
 export const templatedEmailSchema = z.object({

@@ -36,11 +36,12 @@ describe("email schemas validation", () => {
       "cap`pitaine{haddock@gmail.com",
     ];
 
-    it.each(
-      invalidEmailsSet,
-    )("email address %s should not be valid", (email) => {
-      expect(() => emailSchema.parse(email)).toThrow();
-    });
+    it.each(invalidEmailsSet)(
+      "email address %s should not be valid",
+      (email) => {
+        expect(() => emailSchema.parse(email)).toThrow();
+      },
+    );
 
     it("email should be normalized", () => {
       expect(emailSchema.parse("MaiL@Email.Com")).toBe("mail@email.com");
@@ -48,21 +49,19 @@ describe("email schemas validation", () => {
   });
 
   describe("emailPossiblyEmptySchema validation utils", () => {
-    it.each([
-      "capitainehaddock@gmail.com",
-      "",
-      undefined,
-    ])("possibly empty email address '%s' should be valid", (email) => {
-      expect(emailPossiblyEmptySchema.parse(email)).toBe(email);
-    });
+    it.each(["capitainehaddock@gmail.com", "", undefined])(
+      "possibly empty email address '%s' should be valid",
+      (email) => {
+        expect(emailPossiblyEmptySchema.parse(email)).toBe(email);
+      },
+    );
 
-    it.each([
-      "not an email :)",
-      "notanEmail",
-      null,
-    ])("not possibly empty email address '%s' should be invalid", (email) => {
-      expect(() => emailPossiblyEmptySchema.parse(email)).toThrow();
-    });
+    it.each(["not an email :)", "notanEmail", null])(
+      "not possibly empty email address '%s' should be invalid",
+      (email) => {
+        expect(() => emailPossiblyEmptySchema.parse(email)).toThrow();
+      },
+    );
 
     it("can check if email is valid without throwing", () => {
       const failureIsSuccess = emailSchema.safeParse("yolo").success;

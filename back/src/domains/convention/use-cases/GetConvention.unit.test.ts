@@ -343,38 +343,41 @@ describe("Get Convention", () => {
           "establishment-tutor",
           "beneficiary-current-employer",
           "beneficiary-representative",
-        ] satisfies Role[])("When there is not email hash match from '%role' emails in convention or in agency", async (role) => {
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [validator.id]: {
-                isNotifiedByEmail: false,
-                roles: ["validator"],
-              },
-              [counsellor.id]: {
-                isNotifiedByEmail: false,
-                roles: ["counsellor"],
-              },
-            }),
-          ];
+        ] satisfies Role[])(
+          "When there is not email hash match from '%role' emails in convention or in agency",
+          async (role) => {
+            uow.agencyRepository.agencies = [
+              toAgencyWithRights(agency, {
+                [validator.id]: {
+                  isNotifiedByEmail: false,
+                  roles: ["validator"],
+                },
+                [counsellor.id]: {
+                  isNotifiedByEmail: false,
+                  roles: ["counsellor"],
+                },
+              }),
+            ];
 
-          const emailHash = "thisHashDontMatch";
+            const emailHash = "thisHashDontMatch";
 
-          await expectPromiseToFailWithError(
-            getConvention.execute(
-              { conventionId: convention.id },
-              {
-                role,
+            await expectPromiseToFailWithError(
+              getConvention.execute(
+                { conventionId: convention.id },
+                {
+                  role,
+                  emailHash,
+                  applicationId: convention.id,
+                },
+              ),
+              errors.convention.forbiddenMissingRightsEmailHash({
                 emailHash,
-                applicationId: convention.id,
-              },
-            ),
-            errors.convention.forbiddenMissingRightsEmailHash({
-              emailHash,
-              role,
-              conventionId: convention.id,
-            }),
-          );
-        });
+                role,
+                conventionId: convention.id,
+              }),
+            );
+          },
+        );
 
         it("when the user has ProConnect but not for the agency of this convention", async () => {
           const anotherAgency = new AgencyDtoBuilder(agency)
@@ -801,55 +804,56 @@ describe("Get Convention", () => {
           );
         });
 
-        it.each(
-          establishmentsRoles,
-        )("that the connected user is also %s of the existing establishment with same siret in convention", async (role) => {
-          const establishmentWithRights = new EstablishmentAggregateBuilder(
-            establishmentWithSiret,
-          )
-            .withUserRights([
-              {
-                userId: johnDoe.id,
-                role,
-                status: "ACCEPTED",
-                job: "",
-                phone: "",
-                shouldReceiveDiscussionNotifications: true,
-                isMainContactByPhone: false,
-              },
-            ])
-            .build();
+        it.each(establishmentsRoles)(
+          "that the connected user is also %s of the existing establishment with same siret in convention",
+          async (role) => {
+            const establishmentWithRights = new EstablishmentAggregateBuilder(
+              establishmentWithSiret,
+            )
+              .withUserRights([
+                {
+                  userId: johnDoe.id,
+                  role,
+                  status: "ACCEPTED",
+                  job: "",
+                  phone: "",
+                  shouldReceiveDiscussionNotifications: true,
+                  isMainContactByPhone: false,
+                },
+              ])
+              .build();
 
-          uow.establishmentAggregateRepository.establishmentAggregates = [
-            establishmentWithRights,
-          ];
+            uow.establishmentAggregateRepository.establishmentAggregates = [
+              establishmentWithRights,
+            ];
 
-          expectToEqual(
-            await getConvention.execute(
-              { conventionId: convention.id },
+            expectToEqual(
+              await getConvention.execute(
+                { conventionId: convention.id },
+                {
+                  userId: johnDoe.id,
+                },
+              ),
               {
-                userId: johnDoe.id,
+                ...convention,
+                agencyName: agency.name,
+                agencyDepartment: agency.address.departmentCode,
+                agencyContactEmail: agency.contactEmail,
+                agencyKind: agency.kind,
+                agencySiret: agency.agencySiret,
+                agencyValidationSteps: "validator-only",
+                assessment: {
+                  status: assessment.status,
+                  endedWithAJob: assessment.endedWithAJob,
+                  signedAt: assessment.signedAt,
+                  createdAt: assessment.createdAt,
+                },
+                lastReminders: makeEmptyLastReminders(),
+                isEstablishmentBanned: false,
               },
-            ),
-            {
-              ...convention,
-              agencyName: agency.name,
-              agencyDepartment: agency.address.departmentCode,
-              agencyContactEmail: agency.contactEmail,
-              agencyKind: agency.kind,
-              agencySiret: agency.agencySiret,
-              agencyValidationSteps: "validator-only",
-              assessment: {
-                status: assessment.status,
-                endedWithAJob: assessment.endedWithAJob,
-                signedAt: assessment.signedAt,
-                createdAt: assessment.createdAt,
-              },
-              lastReminders: makeEmptyLastReminders(),
-              isEstablishmentBanned: false,
-            },
-          );
-        });
+            );
+          },
+        );
       });
 
       it("the user is backofficeAdmin", async () => {
@@ -909,41 +913,38 @@ describe("Get Convention", () => {
       ] satisfies {
         role: ConventionRole;
         email: string;
-      }[])("email hash match email hash for role '$role' in convention", async ({
-        role,
-        email,
-      }: {
-        role: ConventionRole;
-        email: string;
-      }) => {
-        expectToEqual(
-          await getConvention.execute(
-            { conventionId: convention.id },
+      }[])(
+        "email hash match email hash for role '$role' in convention",
+        async ({ role, email }: { role: ConventionRole; email: string }) => {
+          expectToEqual(
+            await getConvention.execute(
+              { conventionId: convention.id },
+              {
+                role,
+                emailHash: makeEmailHash(email),
+                applicationId: convention.id,
+              },
+            ),
             {
-              role,
-              emailHash: makeEmailHash(email),
-              applicationId: convention.id,
+              ...convention,
+              agencyName: agency.name,
+              agencyDepartment: agency.address.departmentCode,
+              agencyContactEmail: agency.contactEmail,
+              agencyKind: agency.kind,
+              agencySiret: agency.agencySiret,
+              agencyValidationSteps: "validator-only",
+              assessment: {
+                status: assessment.status,
+                endedWithAJob: assessment.endedWithAJob,
+                signedAt: assessment.signedAt,
+                createdAt: assessment.createdAt,
+              },
+              lastReminders: makeEmptyLastReminders(),
+              isEstablishmentBanned: false,
             },
-          ),
-          {
-            ...convention,
-            agencyName: agency.name,
-            agencyDepartment: agency.address.departmentCode,
-            agencyContactEmail: agency.contactEmail,
-            agencyKind: agency.kind,
-            agencySiret: agency.agencySiret,
-            agencyValidationSteps: "validator-only",
-            assessment: {
-              status: assessment.status,
-              endedWithAJob: assessment.endedWithAJob,
-              signedAt: assessment.signedAt,
-              createdAt: assessment.createdAt,
-            },
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        );
-      });
+          );
+        },
+      );
 
       it.each([
         {
@@ -957,55 +958,52 @@ describe("Get Convention", () => {
       ] satisfies {
         role: ConventionRole;
         email: string;
-      }[])("email hash match user email hash and has '$role' agency right", async ({
-        role,
-        email,
-      }: {
-        role: ConventionRole;
-        email: string;
-      }) => {
-        uow.userRepository.users = [counsellor, validator];
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [validator.id]: {
-              isNotifiedByEmail: false,
-              roles: ["validator"],
-            },
-            [counsellor.id]: {
-              isNotifiedByEmail: false,
-              roles: ["counsellor"],
-            },
-          }),
-        ];
+      }[])(
+        "email hash match user email hash and has '$role' agency right",
+        async ({ role, email }: { role: ConventionRole; email: string }) => {
+          uow.userRepository.users = [counsellor, validator];
+          uow.agencyRepository.agencies = [
+            toAgencyWithRights(agency, {
+              [validator.id]: {
+                isNotifiedByEmail: false,
+                roles: ["validator"],
+              },
+              [counsellor.id]: {
+                isNotifiedByEmail: false,
+                roles: ["counsellor"],
+              },
+            }),
+          ];
 
-        expectToEqual(
-          await getConvention.execute(
-            { conventionId: convention.id },
+          expectToEqual(
+            await getConvention.execute(
+              { conventionId: convention.id },
+              {
+                role,
+                emailHash: makeEmailHash(email),
+                applicationId: convention.id,
+              },
+            ),
             {
-              role,
-              emailHash: makeEmailHash(email),
-              applicationId: convention.id,
+              ...convention,
+              agencyName: agency.name,
+              agencyDepartment: agency.address.departmentCode,
+              agencyContactEmail: agency.contactEmail,
+              agencyKind: agency.kind,
+              agencySiret: agency.agencySiret,
+              agencyValidationSteps: "validator-only",
+              assessment: {
+                status: assessment.status,
+                endedWithAJob: assessment.endedWithAJob,
+                signedAt: assessment.signedAt,
+                createdAt: assessment.createdAt,
+              },
+              lastReminders: makeEmptyLastReminders(),
+              isEstablishmentBanned: false,
             },
-          ),
-          {
-            ...convention,
-            agencyName: agency.name,
-            agencyDepartment: agency.address.departmentCode,
-            agencyContactEmail: agency.contactEmail,
-            agencyKind: agency.kind,
-            agencySiret: agency.agencySiret,
-            agencyValidationSteps: "validator-only",
-            assessment: {
-              status: assessment.status,
-              endedWithAJob: assessment.endedWithAJob,
-              signedAt: assessment.signedAt,
-              createdAt: assessment.createdAt,
-            },
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        );
-      });
+          );
+        },
+      );
 
       it("user is a FtAdvisor", async () => {
         expectToEqual(

@@ -76,23 +76,22 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
     );
   });
 
-  it.each<ConventionStatus>([
-    "REJECTED",
-    "CANCELLED",
-    "DEPRECATED",
-  ])("does not notify convention actors for status %s", async (status) => {
-    const convention = new ConventionDtoBuilder()
-      .withSiret(bannedSiret)
-      .withStatus(status)
-      .build();
-    uow.conventionRepository.setConventions([convention]);
+  it.each<ConventionStatus>(["REJECTED", "CANCELLED", "DEPRECATED"])(
+    "does not notify convention actors for status %s",
+    async (status) => {
+      const convention = new ConventionDtoBuilder()
+        .withSiret(bannedSiret)
+        .withStatus(status)
+        .build();
+      uow.conventionRepository.setConventions([convention]);
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({
-      siret: bannedSiret,
-    });
+      await notifyThatEstablishmentFromConventionIsBanned.execute({
+        siret: bannedSiret,
+      });
 
-    expectSavedNotificationsAndEvents({ emails: [] });
-  });
+      expectSavedNotificationsAndEvents({ emails: [] });
+    },
+  );
 
   it("does not notify actors for a validated convention that ended today", async () => {
     const dateStart = addDays(timeGateway.now(), -2);
@@ -296,47 +295,51 @@ describe("NotifyThatEstablishmentFromConventionIsBanned", () => {
     "PARTIALLY_SIGNED",
     "IN_REVIEW",
     "ACCEPTED_BY_COUNSELLOR",
-  ])("notifies the beneficiary and (not already registered) establishment representative for a convention with status %s", async (status) => {
-    const convention = new ConventionDtoBuilder()
-      .withSiret(bannedSiret)
-      .withStatus(status)
-      .withBusinessName("Entreprise interdite")
-      .withBeneficiaryEmail("beneficiary@example.com")
-      .withBeneficiaryFirstName("Jean")
-      .withBeneficiaryLastName("Dupont")
-      .withEstablishmentRepresentativeEmail("representative@example.com")
-      .build();
-    uow.conventionRepository.setConventions([convention]);
+  ])(
+    "notifies the beneficiary and (not already registered) establishment representative for a convention with status %s",
+    async (status) => {
+      const convention = new ConventionDtoBuilder()
+        .withSiret(bannedSiret)
+        .withStatus(status)
+        .withBusinessName("Entreprise interdite")
+        .withBeneficiaryEmail("beneficiary@example.com")
+        .withBeneficiaryFirstName("Jean")
+        .withBeneficiaryLastName("Dupont")
+        .withEstablishmentRepresentativeEmail("representative@example.com")
+        .build();
+      uow.conventionRepository.setConventions([convention]);
 
-    await notifyThatEstablishmentFromConventionIsBanned.execute({
-      siret: bannedSiret,
-    });
+      await notifyThatEstablishmentFromConventionIsBanned.execute({
+        siret: bannedSiret,
+      });
 
-    expectSavedNotificationsAndEvents({
-      emails: [
-        {
-          kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
-          recipients: [convention.signatories.beneficiary.email],
-          params: {
-            businessName: convention.businessName,
-            beneficiaryFirstName: convention.signatories.beneficiary.firstName,
-            beneficiaryLastName: convention.signatories.beneficiary.lastName,
-            immersionBaseUrl,
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
+            recipients: [convention.signatories.beneficiary.email],
+            params: {
+              businessName: convention.businessName,
+              beneficiaryFirstName:
+                convention.signatories.beneficiary.firstName,
+              beneficiaryLastName: convention.signatories.beneficiary.lastName,
+              immersionBaseUrl,
+            },
           },
-        },
-        {
-          kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
-          recipients: [
-            convention.signatories.establishmentRepresentative.email,
-          ],
-          params: {
-            businessName: convention.businessName,
-            siret: convention.siret,
+          {
+            kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
+            recipients: [
+              convention.signatories.establishmentRepresentative.email,
+            ],
+            params: {
+              businessName: convention.businessName,
+              siret: convention.siret,
+            },
           },
-        },
-      ],
-    });
-  });
+        ],
+      });
+    },
+  );
 
   it("only notifies actors of banned establishments for eligible conventions (mixed test)", async () => {
     const validator = new UserBuilder()

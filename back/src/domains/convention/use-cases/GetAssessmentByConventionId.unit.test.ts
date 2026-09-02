@@ -155,25 +155,26 @@ describe("GetAssessmentByConventionId", () => {
       );
     });
 
-    it.each(
-      failingRoles,
-    )("throws forbidden if magicLink role is '%s'", async (role) => {
-      await expectPromiseToFailWithError(
-        getAssessment.execute(
-          { conventionId: convention.id },
-          {
-            applicationId: convention.id,
-            emailHash: makeHashByRolesForTest(
-              convention,
-              counsellor,
-              validator,
-            )[role],
-            role: role as ConventionRole,
-          },
-        ),
-        errors.assessment.forbidden("GetAssessment"),
-      );
-    });
+    it.each(failingRoles)(
+      "throws forbidden if magicLink role is '%s'",
+      async (role) => {
+        await expectPromiseToFailWithError(
+          getAssessment.execute(
+            { conventionId: convention.id },
+            {
+              applicationId: convention.id,
+              emailHash: makeHashByRolesForTest(
+                convention,
+                counsellor,
+                validator,
+              )[role],
+              role: role as ConventionRole,
+            },
+          ),
+          errors.assessment.forbidden("GetAssessment"),
+        );
+      },
+    );
 
     it("throws forbidden if connected user email is not linked to the convention", async () => {
       await expectPromiseToFailWithError(
@@ -187,39 +188,39 @@ describe("GetAssessmentByConventionId", () => {
       );
     });
 
-    it.each([
-      "counsellor",
-      "validator",
-    ] satisfies Role[])("throw forbidden if the jwt role is '%s' the user is not notified on agency rights", async (role) => {
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [counsellor.id]: {
-            isNotifiedByEmail: false,
-            roles: ["counsellor"],
-          },
-          [validator.id]: {
-            isNotifiedByEmail: false,
-            roles: ["validator"],
-          },
-        }),
-      ];
+    it.each(["counsellor", "validator"] satisfies Role[])(
+      "throw forbidden if the jwt role is '%s' the user is not notified on agency rights",
+      async (role) => {
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [counsellor.id]: {
+              isNotifiedByEmail: false,
+              roles: ["counsellor"],
+            },
+            [validator.id]: {
+              isNotifiedByEmail: false,
+              roles: ["validator"],
+            },
+          }),
+        ];
 
-      await expectPromiseToFailWithError(
-        getAssessment.execute(
-          { conventionId: convention.id },
-          {
-            ...establishmentTutorPayload,
-            emailHash: makeHashByRolesForTest(
-              convention,
-              counsellor,
-              validator,
-            )[role],
-            role,
-          },
-        ),
-        errors.assessment.forbidden("GetAssessment"),
-      );
-    });
+        await expectPromiseToFailWithError(
+          getAssessment.execute(
+            { conventionId: convention.id },
+            {
+              ...establishmentTutorPayload,
+              emailHash: makeHashByRolesForTest(
+                convention,
+                counsellor,
+                validator,
+              )[role],
+              role,
+            },
+          ),
+          errors.assessment.forbidden("GetAssessment"),
+        );
+      },
+    );
 
     it("throw not found error when no assessment exist", async () => {
       uow.assessmentRepository.assessments = [];
@@ -238,27 +239,28 @@ describe("GetAssessmentByConventionId", () => {
 
   describe("Right paths", () => {
     describe("with magic link", () => {
-      it.each(
-        passingRoles,
-      )("get existing assessment with role '%s'", async (role) => {
-        expectToEqual(
-          await getAssessment.execute(
-            {
-              conventionId: convention.id,
-            },
-            {
-              ...establishmentTutorPayload,
-              role,
-              emailHash: makeHashByRolesForTest(
-                convention,
-                counsellor,
-                validator,
-              )[role],
-            },
-          ),
-          assessment,
-        );
-      });
+      it.each(passingRoles)(
+        "get existing assessment with role '%s'",
+        async (role) => {
+          expectToEqual(
+            await getAssessment.execute(
+              {
+                conventionId: convention.id,
+              },
+              {
+                ...establishmentTutorPayload,
+                role,
+                emailHash: makeHashByRolesForTest(
+                  convention,
+                  counsellor,
+                  validator,
+                )[role],
+              },
+            ),
+            assessment,
+          );
+        },
+      );
     });
 
     describe("with connected user", () => {
@@ -271,53 +273,57 @@ describe("GetAssessmentByConventionId", () => {
         ["agency-viewer", agencyViewer.id],
         ["establishment-representative", establishmentRepresentative.id],
         ["establishment-tutor", establishmentTutorUser.id],
-      ] as const)("get existing assessment if connected user is %s", async (_label, userId) => {
-        expectToEqual(
-          await getAssessment.execute(
-            { conventionId: convention.id },
-            { userId },
-          ),
-          assessment,
-        );
-      });
+      ] as const)(
+        "get existing assessment if connected user is %s",
+        async (_label, userId) => {
+          expectToEqual(
+            await getAssessment.execute(
+              { conventionId: convention.id },
+              { userId },
+            ),
+            assessment,
+          );
+        },
+      );
 
-      it.each(
-        establishmentsRoles,
-      )("get existing assessment if connected user is %s on establishment with same siret", async (role) => {
-        const establishmentUser = new ConnectedUserBuilder()
-          .withId(`establishment-${role}-user-id`)
-          .withEmail(`${role}@mail.com`)
-          .buildUser();
+      it.each(establishmentsRoles)(
+        "get existing assessment if connected user is %s on establishment with same siret",
+        async (role) => {
+          const establishmentUser = new ConnectedUserBuilder()
+            .withId(`establishment-${role}-user-id`)
+            .withEmail(`${role}@mail.com`)
+            .buildUser();
 
-        uow.userRepository.users = [
-          ...uow.userRepository.users,
-          establishmentUser,
-        ];
-        uow.establishmentAggregateRepository.establishmentAggregates = [
-          new EstablishmentAggregateBuilder()
-            .withEstablishmentSiret(convention.siret)
-            .withUserRights([
-              {
-                userId: establishmentUser.id,
-                role,
-                status: "ACCEPTED",
-                job: "",
-                phone: "",
-                shouldReceiveDiscussionNotifications: true,
-                isMainContactByPhone: false,
-              },
-            ])
-            .build(),
-        ];
+          uow.userRepository.users = [
+            ...uow.userRepository.users,
+            establishmentUser,
+          ];
+          uow.establishmentAggregateRepository.establishmentAggregates = [
+            new EstablishmentAggregateBuilder()
+              .withEstablishmentSiret(convention.siret)
+              .withUserRights([
+                {
+                  userId: establishmentUser.id,
+                  role,
+                  status: "ACCEPTED",
+                  job: "",
+                  phone: "",
+                  shouldReceiveDiscussionNotifications: true,
+                  isMainContactByPhone: false,
+                },
+              ])
+              .build(),
+          ];
 
-        expectToEqual(
-          await getAssessment.execute(
-            { conventionId: convention.id },
-            { userId: establishmentUser.id },
-          ),
-          assessment,
-        );
-      });
+          expectToEqual(
+            await getAssessment.execute(
+              { conventionId: convention.id },
+              { userId: establishmentUser.id },
+            ),
+            assessment,
+          );
+        },
+      );
     });
 
     it("can also get an assessment with legacy format", async () => {

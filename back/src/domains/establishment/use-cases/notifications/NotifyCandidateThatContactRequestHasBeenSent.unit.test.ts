@@ -91,21 +91,21 @@ describe("NotifyCandidateThatContactRequestHasBeenSent", () => {
     });
   });
 
-  it.each([
-    "PHONE",
-    "IN_PERSON",
-  ] as const)("does not sends an email when contact mode is %s", async (contactMode) => {
-    const discussion = new DiscussionBuilder()
-      .withContactMode(contactMode)
-      .build();
+  it.each(["PHONE", "IN_PERSON"] as const)(
+    "does not sends an email when contact mode is %s",
+    async (contactMode) => {
+      const discussion = new DiscussionBuilder()
+        .withContactMode(contactMode)
+        .build();
 
-    uow.discussionRepository.discussions = [discussion];
+      uow.discussionRepository.discussions = [discussion];
 
-    await notifyCandidateThatContactRequestHasBeenSent.execute({
-      discussionId: discussion.id,
-      siret: discussion.siret,
-    });
+      await notifyCandidateThatContactRequestHasBeenSent.execute({
+        discussionId: discussion.id,
+        siret: discussion.siret,
+      });
 
-    expectSavedNotificationsAndEvents({ emails: [] });
-  });
+      expectSavedNotificationsAndEvents({ emails: [] });
+    },
+  );
 });

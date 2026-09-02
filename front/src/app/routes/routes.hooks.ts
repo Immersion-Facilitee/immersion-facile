@@ -11,9 +11,8 @@ type RouteByName<TRouteName extends CurrentRouteName> = Extract<
 type EnsureRouteNamesMatchUnion<
   TRouteName extends CurrentRouteName,
   TRouteNames extends readonly TRouteName[],
-> = Exclude<TRouteName, TRouteNames[number]> extends never
-  ? TRouteNames
-  : never;
+> =
+  Exclude<TRouteName, TRouteNames[number]> extends never ? TRouteNames : never;
 
 const isRouteAmong = <TRouteName extends CurrentRouteName>(
   route: CurrentRoute,

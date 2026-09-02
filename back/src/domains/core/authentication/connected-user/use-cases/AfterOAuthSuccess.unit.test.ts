@@ -426,23 +426,24 @@ describe("AfterOAuthSuccessRedirection use case", () => {
       });
 
       describe("handle dynamic login pages", () => {
-        it.each(
-          keys(allowedLoginSources),
-        )("generates an app token and returns a redirection url which includes token and user data for %s", async (source) => {
-          const allowedRoute = allowedLoginSources[source];
-          const { initialOngoingOAuth, userId } =
-            makeSuccessfulAuthenticationConditions(allowedRoute({}).href);
+        it.each(keys(allowedLoginSources))(
+          "generates an app token and returns a redirection url which includes token and user data for %s",
+          async (source) => {
+            const allowedRoute = allowedLoginSources[source];
+            const { initialOngoingOAuth, userId } =
+              makeSuccessfulAuthenticationConditions(allowedRoute({}).href);
 
-          const response = await afterOAuthSuccessRedirection.execute({
-            code: "my-code",
-            state: initialOngoingOAuth.state,
-          });
+            const response = await afterOAuthSuccessRedirection.execute({
+              code: "my-code",
+              state: initialOngoingOAuth.state,
+            });
 
-          expectToEqual(response, {
-            provider: "proConnect",
-            redirectUri: `http://fake-connected-user${allowedRoute({ token: `jwt-${userId}`, provider: "proConnect" }).href}`,
-          });
-        });
+            expectToEqual(response, {
+              provider: "proConnect",
+              redirectUri: `http://fake-connected-user${allowedRoute({ token: `jwt-${userId}`, provider: "proConnect" }).href}`,
+            });
+          },
+        );
       });
     });
 
@@ -914,58 +915,59 @@ describe("AfterOAuthSuccessRedirection use case", () => {
     });
 
     describe("handle dynamic login pages", () => {
-      it.each(
-        keys(allowedLoginSources),
-      )("generates an app token and returns a redirection url which includes token and user data for %s, create user and update onGoingOAuth", async (source) => {
-        const email = "my-email@mail.com";
+      it.each(keys(allowedLoginSources))(
+        "generates an app token and returns a redirection url which includes token and user data for %s, create user and update onGoingOAuth",
+        async (source) => {
+          const email = "my-email@mail.com";
 
-        const allowedRoute = allowedLoginSources[source];
+          const allowedRoute = allowedLoginSources[source];
 
-        const initialOngoingOAuth: OngoingOAuth = {
-          fromUri: allowedRoute().href,
-          provider: "email",
-          state: "my-state",
-          nonce: "nounce", // matches the one in the payload of the token
-          email,
-          usedAt: null,
-        };
-
-        uow.ongoingOAuthRepository.ongoingOAuths = [initialOngoingOAuth];
-
-        const userId = "new-user-id";
-        uuidGenerator.setNextUuid(userId);
-
-        const redirectedUrl = await afterOAuthSuccessRedirection.execute({
-          code: generateEmailAuthCode({ version: 1, emailAuthCode: true }),
-          state: initialOngoingOAuth.state,
-        });
-
-        expectToEqual(uow.userRepository.users, [
-          {
-            id: userId,
+          const initialOngoingOAuth: OngoingOAuth = {
+            fromUri: allowedRoute().href,
+            provider: "email",
+            state: "my-state",
+            nonce: "nounce", // matches the one in the payload of the token
             email,
-            createdAt: timeGateway.now().toISOString(),
-            preventToDelete: false,
-            firstName: "",
-            lastName: "",
-            proConnect: null,
-            lastLoginAt: timeGateway.now().toISOString(),
-          },
-        ]);
+            usedAt: null,
+          };
 
-        expectToEqual(uow.ongoingOAuthRepository.ongoingOAuths, [
-          {
-            ...initialOngoingOAuth,
-            userId,
-            usedAt: timeGateway.now(),
-          },
-        ]);
+          uow.ongoingOAuthRepository.ongoingOAuths = [initialOngoingOAuth];
 
-        expectToEqual(redirectedUrl, {
-          provider: "email",
-          redirectUri: `http://fake-connected-user${allowedRoute({ token: "jwt-new-user-id", provider: "email" }).href}`,
-        });
-      });
+          const userId = "new-user-id";
+          uuidGenerator.setNextUuid(userId);
+
+          const redirectedUrl = await afterOAuthSuccessRedirection.execute({
+            code: generateEmailAuthCode({ version: 1, emailAuthCode: true }),
+            state: initialOngoingOAuth.state,
+          });
+
+          expectToEqual(uow.userRepository.users, [
+            {
+              id: userId,
+              email,
+              createdAt: timeGateway.now().toISOString(),
+              preventToDelete: false,
+              firstName: "",
+              lastName: "",
+              proConnect: null,
+              lastLoginAt: timeGateway.now().toISOString(),
+            },
+          ]);
+
+          expectToEqual(uow.ongoingOAuthRepository.ongoingOAuths, [
+            {
+              ...initialOngoingOAuth,
+              userId,
+              usedAt: timeGateway.now(),
+            },
+          ]);
+
+          expectToEqual(redirectedUrl, {
+            provider: "email",
+            redirectUri: `http://fake-connected-user${allowedRoute({ token: "jwt-new-user-id", provider: "email" }).href}`,
+          });
+        },
+      );
     });
   });
 

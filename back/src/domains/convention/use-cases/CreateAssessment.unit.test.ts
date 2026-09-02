@@ -261,38 +261,38 @@ describe("CreateAssessment", () => {
       );
     });
 
-    it.each(
-      failingStatuses.map((status) => ({ status })),
-    )("throws bad request if the Convention status is '$status'", async ({
-      status,
-    }) => {
-      const convention = new ConventionDtoBuilder(validatedConvention)
-        .withStatus(status)
-        .build();
-      uow.conventionRepository.setConventions([convention]);
+    it.each(failingStatuses.map((status) => ({ status })))(
+      "throws bad request if the Convention status is '$status'",
+      async ({ status }) => {
+        const convention = new ConventionDtoBuilder(validatedConvention)
+          .withStatus(status)
+          .build();
+        uow.conventionRepository.setConventions([convention]);
 
-      await expectPromiseToFailWithError(
-        createAssessment.execute(assessment, tutorPayload),
-        errors.assessment.badStatus(status),
-      );
-    });
+        await expectPromiseToFailWithError(
+          createAssessment.execute(assessment, tutorPayload),
+          errors.assessment.badStatus(status),
+        );
+      },
+    );
 
-    it.each(
-      failingRoles,
-    )("throws forbidden if the jwt role is '%s'", async (role) => {
-      await expectPromiseToFailWithError(
-        createAssessment.execute(assessment, {
-          applicationId: validatedConvention.id,
-          emailHash: makeHashByRolesForTest(
-            validatedConvention,
-            counsellor,
-            validator,
-          )[role],
-          role: role as ConventionRole,
-        }),
-        errors.assessment.forbidden("CreateAssessment"),
-      );
-    });
+    it.each(failingRoles)(
+      "throws forbidden if the jwt role is '%s'",
+      async (role) => {
+        await expectPromiseToFailWithError(
+          createAssessment.execute(assessment, {
+            applicationId: validatedConvention.id,
+            emailHash: makeHashByRolesForTest(
+              validatedConvention,
+              counsellor,
+              validator,
+            )[role],
+            role: role as ConventionRole,
+          }),
+          errors.assessment.forbidden("CreateAssessment"),
+        );
+      },
+    );
 
     it("throws forbidden if user doesnt have allowed assessment role on convention", async () => {
       await expectPromiseToFailWithError(
@@ -307,65 +307,63 @@ describe("CreateAssessment", () => {
       );
     });
 
-    it.each([
-      "counsellor",
-      "validator",
-    ] satisfies Role[])("throw forbidden if the jwt role is '%s' the user is not notified on agency rights", async (role) => {
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [counsellor.id]: {
-            isNotifiedByEmail: false,
-            roles: ["counsellor"],
-          },
-          [validator.id]: {
-            isNotifiedByEmail: false,
-            roles: ["validator"],
-          },
-        }),
-      ];
-      await expectPromiseToFailWithError(
-        createAssessment.execute(assessment, {
-          ...tutorPayload,
-          emailHash: makeHashByRolesForTest(
-            validatedConvention,
-            counsellor,
-            validator,
-          )[role],
-          role,
-        }),
-        errors.assessment.forbidden("CreateAssessment"),
-      );
-    });
+    it.each(["counsellor", "validator"] satisfies Role[])(
+      "throw forbidden if the jwt role is '%s' the user is not notified on agency rights",
+      async (role) => {
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [counsellor.id]: {
+              isNotifiedByEmail: false,
+              roles: ["counsellor"],
+            },
+            [validator.id]: {
+              isNotifiedByEmail: false,
+              roles: ["validator"],
+            },
+          }),
+        ];
+        await expectPromiseToFailWithError(
+          createAssessment.execute(assessment, {
+            ...tutorPayload,
+            emailHash: makeHashByRolesForTest(
+              validatedConvention,
+              counsellor,
+              validator,
+            )[role],
+            role,
+          }),
+          errors.assessment.forbidden("CreateAssessment"),
+        );
+      },
+    );
   });
 
   describe("Right paths", () => {
-    it.each(
-      passingStatusAndRoles,
-    )("should save the Assessment if Convention has status $status and role with email hash in payload is $role", async ({
-      status,
-      role,
-    }) => {
-      const convention = new ConventionDtoBuilder(validatedConvention)
-        .withStatus(status)
-        .build();
-      uow.conventionRepository.setConventions([convention]);
+    it.each(passingStatusAndRoles)(
+      "should save the Assessment if Convention has status $status and role with email hash in payload is $role",
+      async ({ status, role }) => {
+        const convention = new ConventionDtoBuilder(validatedConvention)
+          .withStatus(status)
+          .build();
+        uow.conventionRepository.setConventions([convention]);
 
-      await createAssessment.execute(assessment, {
-        ...tutorPayload,
-        role,
-        emailHash: makeHashByRolesForTest(convention, counsellor, validator)[
-          role
-        ],
-      });
+        await createAssessment.execute(assessment, {
+          ...tutorPayload,
+          role,
+          emailHash: makeHashByRolesForTest(convention, counsellor, validator)[
+            role
+          ],
+        });
 
-      expectArraysToEqual(uow.assessmentRepository.assessments, [
-        {
-          ...assessment,
-          _entityName: "Assessment",
-          numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
-        },
-      ]);
-    });
+        expectArraysToEqual(uow.assessmentRepository.assessments, [
+          {
+            ...assessment,
+            _entityName: "Assessment",
+            numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          },
+        ]);
+      },
+    );
 
     it("should save the Assessment when user is validator on convention", async () => {
       uow.conventionRepository.setConventions([validatedConvention]);

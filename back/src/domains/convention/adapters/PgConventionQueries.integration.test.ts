@@ -106,55 +106,55 @@ describe("Pg implementation of ConventionQueries", () => {
     await pool.end();
   });
 
-  describe.each([
-    "Pg",
-    "InMemory",
-  ] as const)("%s getConventionById", (adapter) => {
-    let conventionQueries: ConventionQueries;
-    let agencyRepo: AgencyRepository;
-    let conventionRepository: ConventionRepository;
+  describe.each(["Pg", "InMemory"] as const)(
+    "%s getConventionById",
+    (adapter) => {
+      let conventionQueries: ConventionQueries;
+      let agencyRepo: AgencyRepository;
+      let conventionRepository: ConventionRepository;
 
-    beforeEach(() => {
-      if (adapter === "Pg") {
-        conventionQueries = new PgConventionQueries(db);
-        agencyRepo = new PgAgencyRepository(db);
-        conventionRepository = new PgConventionRepository(db);
-      } else {
-        const uow = createInMemoryUow();
-        conventionQueries = uow.conventionQueries;
-        agencyRepo = uow.agencyRepository;
-        conventionRepository = uow.conventionRepository;
-      }
-    });
+      beforeEach(() => {
+        if (adapter === "Pg") {
+          conventionQueries = new PgConventionQueries(db);
+          agencyRepo = new PgAgencyRepository(db);
+          conventionRepository = new PgConventionRepository(db);
+        } else {
+          const uow = createInMemoryUow();
+          conventionQueries = uow.conventionQueries;
+          agencyRepo = uow.agencyRepository;
+          conventionRepository = uow.conventionRepository;
+        }
+      });
 
-    it("Returns undefined if no convention with such id", async () => {
-      expect(
-        await conventionQueries.getConventionById(conventionIdA),
-      ).toBeUndefined();
-    });
+      it("Returns undefined if no convention with such id", async () => {
+        expect(
+          await conventionQueries.getConventionById(conventionIdA),
+        ).toBeUndefined();
+      });
 
-    it("Retrieves a convention by id exists", async () => {
-      const agency = new AgencyDtoBuilder().withId(agencyIdA).build();
-      await agencyRepo.insert(
-        toAgencyWithRights(agency, {
-          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        }),
-      );
+      it("Retrieves a convention by id exists", async () => {
+        const agency = new AgencyDtoBuilder().withId(agencyIdA).build();
+        await agencyRepo.insert(
+          toAgencyWithRights(agency, {
+            [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+          }),
+        );
 
-      const convention = new ConventionDtoBuilder()
-        .withId(conventionIdA)
-        .withAgencyId(agency.id)
-        .withUpdatedAt(anyConventionUpdatedAt)
-        .withSourceConventionDraftId(uuid())
-        .build();
-      await conventionRepository.save(convention, anyConventionUpdatedAt);
+        const convention = new ConventionDtoBuilder()
+          .withId(conventionIdA)
+          .withAgencyId(agency.id)
+          .withUpdatedAt(anyConventionUpdatedAt)
+          .withSourceConventionDraftId(uuid())
+          .build();
+        await conventionRepository.save(convention, anyConventionUpdatedAt);
 
-      expectToEqual(
-        await conventionQueries.getConventionById(conventionIdA),
-        convention,
-      );
-    });
-  });
+        expectToEqual(
+          await conventionQueries.getConventionById(conventionIdA),
+          convention,
+        );
+      });
+    },
+  );
 
   describe("getConventions", () => {
     const agency = AgencyDtoBuilder.create()
@@ -1054,656 +1054,826 @@ describe("Pg implementation of ConventionQueries", () => {
     });
   });
 
-  describe.each([
-    "Pg",
-    "InMemory",
-  ] as const)("%s getPaginatedConventions", (adapter) => {
-    const agencyId = "cccccc99-9c0b-1bbb-bb6d-6bb9bd38cccc";
-    const agency = new AgencyDtoBuilder()
-      .withId(agencyId)
-      .withName("Test Agency")
-      .withAddress({
-        city: "Paris",
-        departmentCode: "75",
-        postcode: "75017",
-        streetNumberAndAddress: "Avenue des champs Elysées",
-      })
-      .build();
+  describe.each(["Pg", "InMemory"] as const)(
+    "%s getPaginatedConventions",
+    (adapter) => {
+      const agencyId = "cccccc99-9c0b-1bbb-bb6d-6bb9bd38cccc";
+      const agency = new AgencyDtoBuilder()
+        .withId(agencyId)
+        .withName("Test Agency")
+        .withAddress({
+          city: "Paris",
+          departmentCode: "75",
+          postcode: "75017",
+          streetNumberAndAddress: "Avenue des champs Elysées",
+        })
+        .build();
 
-    const differentAgencyId = "dddddddd-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
-    const differentAgency = new AgencyDtoBuilder()
-      .withId(differentAgencyId)
-      .withName("Different Agency")
-      .withAddress({
-        city: "Lyon",
-        departmentCode: "69",
-        postcode: "69001",
-        streetNumberAndAddress: "Rue de la République",
-      })
-      .build();
-    const conventionA = new ConventionDtoBuilder()
-      .withId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
-      .withSiret("12345678901235")
-      .withAgencyId(agencyId)
-      .withBeneficiaryEmail("beneficiary@convention-a.com")
-      .withStatus("READY_TO_SIGN")
-      .withDateStart(new Date("2023-01-15").toISOString())
-      .withDateEnd(new Date("2023-01-20").toISOString())
-      .withDateSubmission(new Date("2023-01-10").toISOString())
-      .withBeneficiaryFirstName("John")
-      .withBeneficiaryLastName("Doe")
-      .withBusinessName("Business A")
-      .withAgencyReferent({
-        firstname: "Marie",
-        lastname: "Dupont",
-      })
-      .withUpdatedAt(anyConventionUpdatedAt)
-      .build();
+      const differentAgencyId = "dddddddd-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+      const differentAgency = new AgencyDtoBuilder()
+        .withId(differentAgencyId)
+        .withName("Different Agency")
+        .withAddress({
+          city: "Lyon",
+          departmentCode: "69",
+          postcode: "69001",
+          streetNumberAndAddress: "Rue de la République",
+        })
+        .build();
+      const conventionA = new ConventionDtoBuilder()
+        .withId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
+        .withSiret("12345678901235")
+        .withAgencyId(agencyId)
+        .withBeneficiaryEmail("beneficiary@convention-a.com")
+        .withStatus("READY_TO_SIGN")
+        .withDateStart(new Date("2023-01-15").toISOString())
+        .withDateEnd(new Date("2023-01-20").toISOString())
+        .withDateSubmission(new Date("2023-01-10").toISOString())
+        .withBeneficiaryFirstName("John")
+        .withBeneficiaryLastName("Doe")
+        .withBusinessName("Business A")
+        .withAgencyReferent({
+          firstname: "Marie",
+          lastname: "Dupont",
+        })
+        .withUpdatedAt(anyConventionUpdatedAt)
+        .build();
 
-    const conventionB = new ConventionDtoBuilder()
-      .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
-      .withAgencyId(agencyId)
-      .withStatus("IN_REVIEW")
-      .withDateStart(new Date("2023-02-15").toISOString())
-      .withDateEnd(new Date("2023-02-20").toISOString())
-      .withDateSubmission(new Date("2023-02-10").toISOString())
-      .withBeneficiaryFirstName("Jane")
-      .withBeneficiaryLastName("Smith")
-      .withBusinessName("Business B")
-      .withAgencyReferent({
-        firstname: "Pierre",
-        lastname: "Martin",
-      })
-      .withUpdatedAt(anyConventionUpdatedAt)
-      .build();
+      const conventionB = new ConventionDtoBuilder()
+        .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
+        .withAgencyId(agencyId)
+        .withStatus("IN_REVIEW")
+        .withDateStart(new Date("2023-02-15").toISOString())
+        .withDateEnd(new Date("2023-02-20").toISOString())
+        .withDateSubmission(new Date("2023-02-10").toISOString())
+        .withBeneficiaryFirstName("Jane")
+        .withBeneficiaryLastName("Smith")
+        .withBusinessName("Business B")
+        .withAgencyReferent({
+          firstname: "Pierre",
+          lastname: "Martin",
+        })
+        .withUpdatedAt(anyConventionUpdatedAt)
+        .build();
 
-    const conventionC = new ConventionDtoBuilder()
-      .withId("cccccccc-cccc-4ccc-8ccc-cccccccccccc")
-      .withAgencyId(agencyId)
-      .withStatus("ACCEPTED_BY_VALIDATOR")
-      .withDateStart(new Date("2023-03-15").toISOString())
-      .withDateEnd(new Date("2023-03-20").toISOString())
-      .withDateSubmission(new Date("2023-03-10").toISOString())
-      .withBeneficiaryFirstName("Alice")
-      .withBeneficiaryLastName("Johnson")
-      .withBusinessName("Business C")
-      .withUpdatedAt(anyConventionUpdatedAt)
-      .build();
+      const conventionC = new ConventionDtoBuilder()
+        .withId("cccccccc-cccc-4ccc-8ccc-cccccccccccc")
+        .withAgencyId(agencyId)
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .withDateStart(new Date("2023-03-15").toISOString())
+        .withDateEnd(new Date("2023-03-20").toISOString())
+        .withDateSubmission(new Date("2023-03-10").toISOString())
+        .withBeneficiaryFirstName("Alice")
+        .withBeneficiaryLastName("Johnson")
+        .withBusinessName("Business C")
+        .withUpdatedAt(anyConventionUpdatedAt)
+        .build();
 
-    const conventionD = new ConventionDtoBuilder()
-      .withId("dddddddd-dddd-4ddd-8ddd-dddddddddddd")
-      .withAgencyId(differentAgencyId)
-      .withStatus("READY_TO_SIGN")
-      .withDateStart(new Date("2023-04-15").toISOString())
-      .withDateEnd(new Date("2023-04-20").toISOString())
-      .withDateSubmission(new Date("2023-04-10").toISOString())
-      .withBeneficiaryFirstName("Bob")
-      .withBeneficiaryLastName("Brown")
-      .withBusinessName("Business D")
-      .withUpdatedAt(anyConventionUpdatedAt)
-      .build();
+      const conventionD = new ConventionDtoBuilder()
+        .withId("dddddddd-dddd-4ddd-8ddd-dddddddddddd")
+        .withAgencyId(differentAgencyId)
+        .withStatus("READY_TO_SIGN")
+        .withDateStart(new Date("2023-04-15").toISOString())
+        .withDateEnd(new Date("2023-04-20").toISOString())
+        .withDateSubmission(new Date("2023-04-10").toISOString())
+        .withBeneficiaryFirstName("Bob")
+        .withBeneficiaryLastName("Brown")
+        .withBusinessName("Business D")
+        .withUpdatedAt(anyConventionUpdatedAt)
+        .build();
 
-    const completedAssessment = new AssessmentDtoBuilder()
-      .withConventionId(conventionC.id)
-      .withCreatedAt(
-        addDays(ASSESSEMENT_SIGNATURE_RELEASE_DATE, 2).toISOString(),
-      )
-      .build();
+      const completedAssessment = new AssessmentDtoBuilder()
+        .withConventionId(conventionC.id)
+        .withCreatedAt(
+          addDays(ASSESSEMENT_SIGNATURE_RELEASE_DATE, 2).toISOString(),
+        )
+        .build();
 
-    let conventionQueries: ConventionQueries;
-    let agencyRepo: AgencyRepository;
-    let assessmentRepo: AssessmentRepository;
-    let conventionRepository: ConventionRepository;
+      let conventionQueries: ConventionQueries;
+      let agencyRepo: AgencyRepository;
+      let assessmentRepo: AssessmentRepository;
+      let conventionRepository: ConventionRepository;
 
-    beforeEach(async () => {
-      if (adapter === "Pg") {
-        conventionQueries = new PgConventionQueries(db);
-        agencyRepo = new PgAgencyRepository(db);
-        assessmentRepo = new PgAssessmentRepository(db);
-        conventionRepository = new PgConventionRepository(db);
-      } else {
-        const uow = createInMemoryUow();
-        conventionQueries = uow.conventionQueries;
-        agencyRepo = uow.agencyRepository;
-        assessmentRepo = uow.assessmentRepository;
-        conventionRepository = uow.conventionRepository;
-      }
+      beforeEach(async () => {
+        if (adapter === "Pg") {
+          conventionQueries = new PgConventionQueries(db);
+          agencyRepo = new PgAgencyRepository(db);
+          assessmentRepo = new PgAssessmentRepository(db);
+          conventionRepository = new PgConventionRepository(db);
+        } else {
+          const uow = createInMemoryUow();
+          conventionQueries = uow.conventionQueries;
+          agencyRepo = uow.agencyRepository;
+          assessmentRepo = uow.assessmentRepository;
+          conventionRepository = uow.conventionRepository;
+        }
 
-      await agencyRepo.insert(
-        toAgencyWithRights(agency, {
-          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        }),
-      );
+        await agencyRepo.insert(
+          toAgencyWithRights(agency, {
+            [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+          }),
+        );
 
-      await agencyRepo.insert(
-        toAgencyWithRights(differentAgency, {
-          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-          [counsellor.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
-        }),
-      );
+        await agencyRepo.insert(
+          toAgencyWithRights(differentAgency, {
+            [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+            [counsellor.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
+          }),
+        );
 
-      await Promise.all([
-        conventionRepository.save(conventionA, anyConventionUpdatedAt),
-        conventionRepository.save(conventionB, anyConventionUpdatedAt),
-        conventionRepository.save(conventionC, anyConventionUpdatedAt),
-        conventionRepository.save(conventionD, anyConventionUpdatedAt),
-      ]);
+        await Promise.all([
+          conventionRepository.save(conventionA, anyConventionUpdatedAt),
+          conventionRepository.save(conventionB, anyConventionUpdatedAt),
+          conventionRepository.save(conventionC, anyConventionUpdatedAt),
+          conventionRepository.save(conventionD, anyConventionUpdatedAt),
+        ]);
 
-      await assessmentRepo.save(
-        createAssessmentEntity(completedAssessment, conventionC),
-      );
-    });
-
-    it("should return conventions with pagination", async () => {
-      const resultPage1 = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 2 },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
+        await assessmentRepo.save(
+          createAssessmentEntity(completedAssessment, conventionC),
+        );
       });
 
-      expect(resultPage1.pagination).toEqual({
-        currentPage: 1,
-        totalPages: 2,
-        numberPerPage: 2,
-        totalRecords: 4,
-      });
-      expectToEqual(resultPage1.data, [conventionD, conventionC]);
+      it("should return conventions with pagination", async () => {
+        const resultPage1 = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 2 },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
 
-      const resultPage2 = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 2, perPage: 2 },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(resultPage2.data, [conventionB, conventionA]);
-      expectToEqual(resultPage2.pagination, {
-        currentPage: 2,
-        totalPages: 2,
-        numberPerPage: 2,
-        totalRecords: 4,
-      });
-    });
-
-    it("should not filter by agency when agencyIds is undefined", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [
-        conventionD,
-        conventionC,
-        conventionB,
-        conventionA,
-      ]);
-      expectToEqual(result.pagination, {
-        currentPage: 1,
-        totalPages: 1,
-        numberPerPage: 10,
-        totalRecords: 4,
-      });
-    });
-
-    it("should return correct data when accessing a non-first page", async () => {
-      const resultPage3 = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 3, perPage: 1 },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(resultPage3, {
-        data: [conventionB],
-        pagination: {
-          currentPage: 3,
-          totalPages: 4,
-          numberPerPage: 1,
+        expect(resultPage1.pagination).toEqual({
+          currentPage: 1,
+          totalPages: 2,
+          numberPerPage: 2,
           totalRecords: 4,
-        },
-      });
-    });
+        });
+        expectToEqual(resultPage1.data, [conventionD, conventionC]);
 
-    it("should filter conventions by status", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          statuses: ["READY_TO_SIGN"],
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionD, conventionA]);
-    });
-
-    it("should filter conventions by beneficiary name", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: { search: "John" },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expect(result.data.length).toBe(2);
-    });
-
-    it("should filter conventions by beneficiary fullname", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: { search: "John D" },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expect(result.data.length).toBe(1);
-      expectToEqual(result.data[0].signatories.beneficiary.lastName, "Doe");
-      expectToEqual(result.data[0].signatories.beneficiary.firstName, "John");
-    });
-
-    it("should filter conventions by establishment name", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          search: "Business B",
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionB]);
-    });
-
-    it("should filter conventions by establishment SIRET", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          search: conventionA.siret,
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-      expectToEqual(result.data, [conventionA]);
-    });
-
-    it("should filter conventions by convention ID", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          search: conventionA.id,
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionA]);
-    });
-
-    it("should return no results for non-existent convention ID", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          search: "00000000-0000-0000-0000-000000000000",
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, []);
-    });
-
-    it("should filter conventions by agency referent first name", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: { search: "Marie" },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionA]);
-    });
-
-    it("should filter conventions by agency referent last name", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: { search: "Martin" },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionB]);
-    });
-
-    it("should filter conventions by agency referent fullname", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          search: "Pierre Martin",
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionB]);
-    });
-
-    it("should filter conventions by beneficiary representative email", async () => {
-      const conventionWithBeneficiaryRepresentative = new ConventionDtoBuilder(
-        conventionA,
-      )
-        .withBeneficiaryRepresentative({
-          firstName: "Jean",
-          lastName: "Repr",
-          email: "beneficiary.representative@convention-a.com",
-          role: "beneficiary-representative",
-          phone: "+33123456789",
-        })
-        .build();
-      await conventionRepository.update(
-        conventionWithBeneficiaryRepresentative,
-        anyConventionUpdatedAt,
-      );
-
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          search: "beneficiary.representative@convention-a",
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionWithBeneficiaryRepresentative]);
-    });
-
-    it("should filter conventions by beneficiary current employer email", async () => {
-      const conventionWithBeneficiaryCurrentEmployer = new ConventionDtoBuilder(
-        conventionA,
-      )
-        .withBeneficiaryCurrentEmployer({
-          firstName: "Mon",
-          lastName: "Employeur",
-          email: "current.employer@convention-a.com",
-          job: "Employeur",
-          role: "beneficiary-current-employer",
-          phone: "+33123456789",
-          businessSiret: "12345678901234",
-          businessName: "Business A Employer",
-          businessAddress: "123 Rue de la Paix, 75000 Paris, France",
-        })
-        .build();
-      await conventionRepository.update(
-        conventionWithBeneficiaryCurrentEmployer,
-        anyConventionUpdatedAt,
-      );
-
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          search: "current.employer",
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionWithBeneficiaryCurrentEmployer]);
-    });
-
-    it("should filter conventions by date range", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          dateStart: {
-            from: "2023-02-01",
-            to: "2023-03-31",
+        const resultPage2 = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 2, perPage: 2 },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
           },
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
+        });
+
+        expectToEqual(resultPage2.data, [conventionB, conventionA]);
+        expectToEqual(resultPage2.pagination, {
+          currentPage: 2,
+          totalPages: 2,
+          numberPerPage: 2,
+          totalRecords: 4,
+        });
       });
 
-      expectToEqual(result.data, [conventionC, conventionB]);
-    });
-    it("should filter conventions by date range with only from", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          dateEnd: {
-            from: "2023-03-01",
+      it("should not filter by agency when agencyIds is undefined", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
           },
-        },
-        sort: {
-          by: "dateEnd",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionD, conventionC]);
-    });
-
-    describe("assessment completion status filter", () => {
-      describe("assessment filter is 'finalized'", () => {
-        it(`should return old convention with assessment created before ${ASSESSEMENT_SIGNATURE_RELEASE_DATE.toISOString()}`, async () => {
-          const oldAssessmentCreatedAt = subMonths(
-            ASSESSEMENT_SIGNATURE_RELEASE_DATE,
-            1,
-          ).toISOString();
-
-          const conventionWithOldAssessment: ConventionDto = {
-            ...conventionB,
-            id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
-            status: "ACCEPTED_BY_VALIDATOR",
-          };
-
-          const oldAssessmentWithoutSignature: AssessmentDto = {
-            ...completedAssessment,
-            conventionId: conventionWithOldAssessment.id,
-            createdAt: oldAssessmentCreatedAt,
-            signedAt: null,
-          };
-
-          await conventionRepository.save(
-            conventionWithOldAssessment,
-            anyConventionUpdatedAt,
-          );
-          await assessmentRepo.save(
-            createAssessmentEntity(
-              oldAssessmentWithoutSignature,
-              conventionWithOldAssessment,
-            ),
-          );
-
-          const result = await conventionQueries.getPaginatedConventions({
-            pagination: { page: 1, perPage: 10 },
-            filters: {
-              assessmentCompletionStatus: ["finalized"],
-            },
-            sort: {
-              by: "dateSubmission",
-              direction: "desc",
-            },
-          });
-
-          expectToEqual(result.data, [conventionWithOldAssessment]);
         });
 
-        it(`should return convention with assessment signed and created after ${ASSESSEMENT_SIGNATURE_RELEASE_DATE.toISOString()}`, async () => {
-          const signedAssessment: AssessmentDto = {
-            ...completedAssessment,
-            conventionId: conventionC.id,
-            createdAt: addDays(
-              ASSESSEMENT_SIGNATURE_RELEASE_DATE,
-              2,
-            ).toISOString(),
-            signedAt: addDays(
-              ASSESSEMENT_SIGNATURE_RELEASE_DATE,
-              2,
-            ).toISOString(),
-          };
-
-          await assessmentRepo.update({
-            ...signedAssessment,
-            _entityName: "Assessment",
-            numberOfHoursActuallyMade: null,
-          });
-
-          const result = await conventionQueries.getPaginatedConventions({
-            pagination: { page: 1, perPage: 10 },
-            filters: {
-              assessmentCompletionStatus: ["finalized"],
-            },
-            sort: {
-              by: "dateSubmission",
-              direction: "desc",
-            },
-          });
-
-          expectToEqual(result.data, [conventionC]);
+        expectToEqual(result.data, [
+          conventionD,
+          conventionC,
+          conventionB,
+          conventionA,
+        ]);
+        expectToEqual(result.pagination, {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 4,
         });
       });
 
-      describe("assessment filter is 'to-sign'", () => {
-        it(`should return convention when assessment is created after ${ASSESSEMENT_SIGNATURE_RELEASE_DATE.toISOString()}`, async () => {
-          const oldAssessmentCreatedAt = subMonths(
-            ASSESSEMENT_SIGNATURE_RELEASE_DATE,
-            1,
-          ).toISOString();
+      it("should return correct data when accessing a non-first page", async () => {
+        const resultPage3 = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 3, perPage: 1 },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
 
-          const conventionWithOldAssessment: ConventionDto = {
-            ...conventionB,
-            id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
-            status: "ACCEPTED_BY_VALIDATOR",
-          };
-
-          const oldAssessment: AssessmentDto = {
-            ...completedAssessment,
-            conventionId: conventionWithOldAssessment.id,
-            createdAt: oldAssessmentCreatedAt,
-          };
-
-          await conventionRepository.save(
-            conventionWithOldAssessment,
-            anyConventionUpdatedAt,
-          );
-          await assessmentRepo.save(
-            createAssessmentEntity(oldAssessment, conventionWithOldAssessment),
-          );
-
-          const result = await conventionQueries.getPaginatedConventions({
-            pagination: { page: 1, perPage: 10 },
-            filters: {
-              assessmentCompletionStatus: ["to-sign"],
-            },
-            sort: {
-              by: "dateSubmission",
-              direction: "desc",
-            },
-          });
-
-          expectToEqual(result.data, [conventionC]);
+        expectToEqual(resultPage3, {
+          data: [conventionB],
+          pagination: {
+            currentPage: 3,
+            totalPages: 4,
+            numberPerPage: 1,
+            totalRecords: 4,
+          },
         });
       });
 
-      describe("assessment filter is 'to-complete'", () => {
-        it("should return convention when missing assessment", async () => {
-          const oldConventionWithoutAssessment: ConventionDto = {
-            ...conventionB,
-            status: "ACCEPTED_BY_VALIDATOR",
-            updatedAt: anyConventionUpdatedAt,
-          };
-          const recentConventionWithoutAssessment = new ConventionDtoBuilder(
-            conventionA,
-          )
-            .withStatus("ACCEPTED_BY_VALIDATOR")
-            .withDateStart(new Date("2023-03-15").toISOString())
-            .withDateEnd(new Date("2023-03-20").toISOString())
-            .withDateSubmission(new Date("2023-03-10").toISOString())
-            .withSchedule(reasonableSchedule)
-            .withUpdatedAt(anyConventionUpdatedAt)
-            .build();
-          await conventionRepository.update(
-            oldConventionWithoutAssessment,
-            anyConventionUpdatedAt,
-          );
-          await conventionRepository.update(
-            recentConventionWithoutAssessment,
-            anyConventionUpdatedAt,
-          );
-
-          const result = await conventionQueries.getPaginatedConventions({
-            pagination: { page: 1, perPage: 10 },
-            filters: {
-              assessmentCompletionStatus: ["to-complete"],
-            },
-            sort: {
-              by: "dateSubmission",
-              direction: "desc",
-            },
-          });
-
-          expectToEqual(result.data, [
-            recentConventionWithoutAssessment,
-            oldConventionWithoutAssessment,
-          ]);
+      it("should filter conventions by status", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            statuses: ["READY_TO_SIGN"],
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
         });
 
-        it("should return empty array when assessment completion status to-complete does not match any convention", async () => {
-          const validatedConvention: ConventionDto = {
-            ...conventionB,
-            id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
-            status: "ACCEPTED_BY_VALIDATOR",
-          };
-          const signedAt = new Date().toISOString();
-          const signedAssessment = new AssessmentDtoBuilder()
-            .withConventionId(validatedConvention.id)
-            .withBeneficiarySignature({
-              beneficiaryAgreement: true,
-              beneficiaryFeedback: "feedback",
-              signedAt,
+        expectToEqual(result.data, [conventionD, conventionA]);
+      });
+
+      it("should filter conventions by beneficiary name", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: { search: "John" },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expect(result.data.length).toBe(2);
+      });
+
+      it("should filter conventions by beneficiary fullname", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: { search: "John D" },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expect(result.data.length).toBe(1);
+        expectToEqual(result.data[0].signatories.beneficiary.lastName, "Doe");
+        expectToEqual(result.data[0].signatories.beneficiary.firstName, "John");
+      });
+
+      it("should filter conventions by establishment name", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "Business B",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionB]);
+      });
+
+      it("should filter conventions by establishment SIRET", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: conventionA.siret,
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+        expectToEqual(result.data, [conventionA]);
+      });
+
+      it("should filter conventions by convention ID", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: conventionA.id,
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionA]);
+      });
+
+      it("should return no results for non-existent convention ID", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "00000000-0000-0000-0000-000000000000",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, []);
+      });
+
+      it("should filter conventions by agency referent first name", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: { search: "Marie" },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionA]);
+      });
+
+      it("should filter conventions by agency referent last name", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: { search: "Martin" },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionB]);
+      });
+
+      it("should filter conventions by agency referent fullname", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "Pierre Martin",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionB]);
+      });
+
+      it("should filter conventions by beneficiary representative email", async () => {
+        const conventionWithBeneficiaryRepresentative =
+          new ConventionDtoBuilder(conventionA)
+            .withBeneficiaryRepresentative({
+              firstName: "Jean",
+              lastName: "Repr",
+              email: "beneficiary.representative@convention-a.com",
+              role: "beneficiary-representative",
+              phone: "+33123456789",
             })
             .build();
+        await conventionRepository.update(
+          conventionWithBeneficiaryRepresentative,
+          anyConventionUpdatedAt,
+        );
 
-          await conventionRepository.save(
-            validatedConvention,
-            anyConventionUpdatedAt,
-          );
-          await assessmentRepo.save(
-            createAssessmentEntity(signedAssessment, validatedConvention),
-          );
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "beneficiary.representative@convention-a",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
 
+        expectToEqual(result.data, [conventionWithBeneficiaryRepresentative]);
+      });
+
+      it("should filter conventions by beneficiary current employer email", async () => {
+        const conventionWithBeneficiaryCurrentEmployer =
+          new ConventionDtoBuilder(conventionA)
+            .withBeneficiaryCurrentEmployer({
+              firstName: "Mon",
+              lastName: "Employeur",
+              email: "current.employer@convention-a.com",
+              job: "Employeur",
+              role: "beneficiary-current-employer",
+              phone: "+33123456789",
+              businessSiret: "12345678901234",
+              businessName: "Business A Employer",
+              businessAddress: "123 Rue de la Paix, 75000 Paris, France",
+            })
+            .build();
+        await conventionRepository.update(
+          conventionWithBeneficiaryCurrentEmployer,
+          anyConventionUpdatedAt,
+        );
+
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "current.employer",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionWithBeneficiaryCurrentEmployer]);
+      });
+
+      it("should filter conventions by date range", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            dateStart: {
+              from: "2023-02-01",
+              to: "2023-03-31",
+            },
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionC, conventionB]);
+      });
+      it("should filter conventions by date range with only from", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            dateEnd: {
+              from: "2023-03-01",
+            },
+          },
+          sort: {
+            by: "dateEnd",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionD, conventionC]);
+      });
+
+      describe("assessment completion status filter", () => {
+        describe("assessment filter is 'finalized'", () => {
+          it(`should return old convention with assessment created before ${ASSESSEMENT_SIGNATURE_RELEASE_DATE.toISOString()}`, async () => {
+            const oldAssessmentCreatedAt = subMonths(
+              ASSESSEMENT_SIGNATURE_RELEASE_DATE,
+              1,
+            ).toISOString();
+
+            const conventionWithOldAssessment: ConventionDto = {
+              ...conventionB,
+              id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+              status: "ACCEPTED_BY_VALIDATOR",
+            };
+
+            const oldAssessmentWithoutSignature: AssessmentDto = {
+              ...completedAssessment,
+              conventionId: conventionWithOldAssessment.id,
+              createdAt: oldAssessmentCreatedAt,
+              signedAt: null,
+            };
+
+            await conventionRepository.save(
+              conventionWithOldAssessment,
+              anyConventionUpdatedAt,
+            );
+            await assessmentRepo.save(
+              createAssessmentEntity(
+                oldAssessmentWithoutSignature,
+                conventionWithOldAssessment,
+              ),
+            );
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["finalized"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, [conventionWithOldAssessment]);
+          });
+
+          it(`should return convention with assessment signed and created after ${ASSESSEMENT_SIGNATURE_RELEASE_DATE.toISOString()}`, async () => {
+            const signedAssessment: AssessmentDto = {
+              ...completedAssessment,
+              conventionId: conventionC.id,
+              createdAt: addDays(
+                ASSESSEMENT_SIGNATURE_RELEASE_DATE,
+                2,
+              ).toISOString(),
+              signedAt: addDays(
+                ASSESSEMENT_SIGNATURE_RELEASE_DATE,
+                2,
+              ).toISOString(),
+            };
+
+            await assessmentRepo.update({
+              ...signedAssessment,
+              _entityName: "Assessment",
+              numberOfHoursActuallyMade: null,
+            });
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["finalized"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, [conventionC]);
+          });
+        });
+
+        describe("assessment filter is 'to-sign'", () => {
+          it(`should return convention when assessment is created after ${ASSESSEMENT_SIGNATURE_RELEASE_DATE.toISOString()}`, async () => {
+            const oldAssessmentCreatedAt = subMonths(
+              ASSESSEMENT_SIGNATURE_RELEASE_DATE,
+              1,
+            ).toISOString();
+
+            const conventionWithOldAssessment: ConventionDto = {
+              ...conventionB,
+              id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+              status: "ACCEPTED_BY_VALIDATOR",
+            };
+
+            const oldAssessment: AssessmentDto = {
+              ...completedAssessment,
+              conventionId: conventionWithOldAssessment.id,
+              createdAt: oldAssessmentCreatedAt,
+            };
+
+            await conventionRepository.save(
+              conventionWithOldAssessment,
+              anyConventionUpdatedAt,
+            );
+            await assessmentRepo.save(
+              createAssessmentEntity(
+                oldAssessment,
+                conventionWithOldAssessment,
+              ),
+            );
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["to-sign"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, [conventionC]);
+          });
+        });
+
+        describe("assessment filter is 'to-complete'", () => {
+          it("should return convention when missing assessment", async () => {
+            const oldConventionWithoutAssessment: ConventionDto = {
+              ...conventionB,
+              status: "ACCEPTED_BY_VALIDATOR",
+              updatedAt: anyConventionUpdatedAt,
+            };
+            const recentConventionWithoutAssessment = new ConventionDtoBuilder(
+              conventionA,
+            )
+              .withStatus("ACCEPTED_BY_VALIDATOR")
+              .withDateStart(new Date("2023-03-15").toISOString())
+              .withDateEnd(new Date("2023-03-20").toISOString())
+              .withDateSubmission(new Date("2023-03-10").toISOString())
+              .withSchedule(reasonableSchedule)
+              .withUpdatedAt(anyConventionUpdatedAt)
+              .build();
+            await conventionRepository.update(
+              oldConventionWithoutAssessment,
+              anyConventionUpdatedAt,
+            );
+            await conventionRepository.update(
+              recentConventionWithoutAssessment,
+              anyConventionUpdatedAt,
+            );
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["to-complete"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, [
+              recentConventionWithoutAssessment,
+              oldConventionWithoutAssessment,
+            ]);
+          });
+
+          it("should return empty array when assessment completion status to-complete does not match any convention", async () => {
+            const validatedConvention: ConventionDto = {
+              ...conventionB,
+              id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
+              status: "ACCEPTED_BY_VALIDATOR",
+            };
+            const signedAt = new Date().toISOString();
+            const signedAssessment = new AssessmentDtoBuilder()
+              .withConventionId(validatedConvention.id)
+              .withBeneficiarySignature({
+                beneficiaryAgreement: true,
+                beneficiaryFeedback: "feedback",
+                signedAt,
+              })
+              .build();
+
+            await conventionRepository.save(
+              validatedConvention,
+              anyConventionUpdatedAt,
+            );
+            await assessmentRepo.save(
+              createAssessmentEntity(signedAssessment, validatedConvention),
+            );
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["to-complete"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, []);
+          });
+
+          it("should exclude convention without assessment when dateEnd is in more than one day", async () => {
+            const now = new Date();
+            const conventionEndingInMoreThanOneDay = new ConventionDtoBuilder()
+              .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3")
+              .withSiret("12345678901236")
+              .withAgencyId(agencyId)
+              .withStatus("ACCEPTED_BY_VALIDATOR")
+              .withDateStart(subDays(now, 10).toISOString())
+              .withDateEnd(addDays(now, 5).toISOString())
+              .withSchedule(reasonableSchedule)
+              .withUpdatedAt(anyConventionUpdatedAt)
+              .build();
+
+            const conventionWithAssessmentToComplete =
+              new ConventionDtoBuilder()
+                .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb5")
+                .withSiret("12345678901238")
+                .withAgencyId(agencyId)
+                .withStatus("ACCEPTED_BY_VALIDATOR")
+                .withDateStart(subDays(now, 5).toISOString())
+                .withDateEnd(subDays(now, 1).toISOString())
+                .withSchedule(reasonableSchedule)
+                .withUpdatedAt(anyConventionUpdatedAt)
+                .build();
+
+            await conventionRepository.save(
+              conventionEndingInMoreThanOneDay,
+              anyConventionUpdatedAt,
+            );
+            await conventionRepository.save(
+              conventionWithAssessmentToComplete,
+              anyConventionUpdatedAt,
+            );
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["to-complete"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, [conventionWithAssessmentToComplete]);
+          });
+
+          it("should return convention without assessment when dateEnd is within one day", async () => {
+            const now = new Date();
+            const conventionEndingWithinOneDay = new ConventionDtoBuilder()
+              .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb4")
+              .withSiret("12345678901237")
+              .withAgencyId(agencyId)
+              .withStatus("ACCEPTED_BY_VALIDATOR")
+              .withDateStart(subDays(now, 5).toISOString())
+              .withDateEnd(addDays(now, 1).toISOString())
+              .withSchedule(reasonableSchedule)
+              .withUpdatedAt(anyConventionUpdatedAt)
+              .build();
+
+            await conventionRepository.save(
+              conventionEndingWithinOneDay,
+              anyConventionUpdatedAt,
+            );
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["to-complete"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, [conventionEndingWithinOneDay]);
+          });
+        });
+
+        describe("when multiple filters", () => {
+          it("should filter conventions by assessment completion statuses to-complete + to-sign", async () => {
+            const validatedConventionWithoutAssessment: ConventionDto = {
+              ...conventionB,
+              id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
+              status: "ACCEPTED_BY_VALIDATOR",
+            };
+            await conventionRepository.save(
+              validatedConventionWithoutAssessment,
+              anyConventionUpdatedAt,
+            );
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["to-complete", "to-sign"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, [
+              conventionC,
+              validatedConventionWithoutAssessment,
+            ]);
+          });
+
+          it("should filter conventions by multiple assessment completion statuses signed + to-sign", async () => {
+            const anotherValidatedConvention: ConventionDto = {
+              ...conventionB,
+              id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
+              status: "ACCEPTED_BY_VALIDATOR",
+            };
+            const signedAt = new Date().toISOString();
+            const signedAssessment = new AssessmentDtoBuilder()
+              .withConventionId(anotherValidatedConvention.id)
+              .withBeneficiarySignature({
+                beneficiaryAgreement: true,
+                beneficiaryFeedback: "feedback",
+                signedAt,
+              })
+              .build();
+
+            await conventionRepository.save(
+              anotherValidatedConvention,
+              anyConventionUpdatedAt,
+            );
+            await assessmentRepo.save(
+              createAssessmentEntity(
+                signedAssessment,
+                anotherValidatedConvention,
+              ),
+            );
+
+            const result = await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: {
+                assessmentCompletionStatus: ["finalized", "to-sign"],
+              },
+              sort: {
+                by: "dateSubmission",
+                direction: "desc",
+              },
+            });
+
+            expectToEqual(result.data, [
+              conventionC,
+              anotherValidatedConvention,
+            ]);
+          });
+        });
+
+        it("should not filter conventions by assessment completion statuses if the convention is not accepted by validator", async () => {
           const result = await conventionQueries.getPaginatedConventions({
             pagination: { page: 1, perPage: 10 },
             filters: {
@@ -1717,103 +1887,186 @@ describe("Pg implementation of ConventionQueries", () => {
 
           expectToEqual(result.data, []);
         });
+      });
 
-        it("should exclude convention without assessment when dateEnd is in more than one day", async () => {
-          const now = new Date();
-          const conventionEndingInMoreThanOneDay = new ConventionDtoBuilder()
-            .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3")
-            .withSiret("12345678901236")
-            .withAgencyId(agencyId)
-            .withStatus("ACCEPTED_BY_VALIDATOR")
-            .withDateStart(subDays(now, 10).toISOString())
-            .withDateEnd(addDays(now, 5).toISOString())
-            .withSchedule(reasonableSchedule)
-            .withUpdatedAt(anyConventionUpdatedAt)
-            .build();
+      it("should sort conventions by dateStart, then conventionId", async () => {
+        const sameDateStartConvention = {
+          ...conventionA,
+          id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+        };
+        await conventionRepository.save(
+          sameDateStartConvention,
+          anyConventionUpdatedAt,
+        );
 
-          const conventionWithAssessmentToComplete = new ConventionDtoBuilder()
-            .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb5")
-            .withSiret("12345678901238")
-            .withAgencyId(agencyId)
-            .withStatus("ACCEPTED_BY_VALIDATOR")
-            .withDateStart(subDays(now, 5).toISOString())
-            .withDateEnd(subDays(now, 1).toISOString())
-            .withSchedule(reasonableSchedule)
-            .withUpdatedAt(anyConventionUpdatedAt)
-            .build();
-
-          await conventionRepository.save(
-            conventionEndingInMoreThanOneDay,
-            anyConventionUpdatedAt,
-          );
-          await conventionRepository.save(
-            conventionWithAssessmentToComplete,
-            anyConventionUpdatedAt,
-          );
-
-          const result = await conventionQueries.getPaginatedConventions({
-            pagination: { page: 1, perPage: 10 },
-            filters: {
-              assessmentCompletionStatus: ["to-complete"],
-            },
-            sort: {
-              by: "dateSubmission",
-              direction: "desc",
-            },
-          });
-
-          expectToEqual(result.data, [conventionWithAssessmentToComplete]);
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          sort: {
+            by: "dateStart",
+            direction: "asc",
+          },
         });
 
-        it("should return convention without assessment when dateEnd is within one day", async () => {
-          const now = new Date();
-          const conventionEndingWithinOneDay = new ConventionDtoBuilder()
-            .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb4")
-            .withSiret("12345678901237")
-            .withAgencyId(agencyId)
-            .withStatus("ACCEPTED_BY_VALIDATOR")
-            .withDateStart(subDays(now, 5).toISOString())
-            .withDateEnd(addDays(now, 1).toISOString())
-            .withSchedule(reasonableSchedule)
-            .withUpdatedAt(anyConventionUpdatedAt)
-            .build();
+        expectToEqual(result.data, [
+          conventionA,
+          sameDateStartConvention,
+          conventionB,
+          conventionC,
+          conventionD,
+        ]);
+      });
 
-          await conventionRepository.save(
-            conventionEndingWithinOneDay,
-            anyConventionUpdatedAt,
-          );
+      it("should respect pagination limits", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 2 },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
 
-          const result = await conventionQueries.getPaginatedConventions({
-            pagination: { page: 1, perPage: 10 },
-            filters: {
-              assessmentCompletionStatus: ["to-complete"],
+        expectToEqual(result.data, [conventionD, conventionC]);
+      });
+
+      it("should filter by multiple criteria", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            statuses: ["READY_TO_SIGN", "IN_REVIEW"],
+            dateSubmission: {
+              from: "2023-01-01",
+              to: "2023-02-15",
             },
-            sort: {
-              by: "dateSubmission",
-              direction: "desc",
-            },
-          });
+            search: "@convention-a.com",
+          },
+          sort: {
+            by: "dateStart",
+            direction: "desc",
+          },
+        });
 
-          expectToEqual(result.data, [conventionEndingWithinOneDay]);
+        expectToEqual(result.data, [conventionA]);
+      });
+
+      it("should return empty page when agencyIds is empty", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          filters: { agencyIds: [] },
+          pagination: { page: 1, perPage: 10 },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result, {
+          data: [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 0,
+          },
         });
       });
 
-      describe("when multiple filters", () => {
-        it("should filter conventions by assessment completion statuses to-complete + to-sign", async () => {
-          const validatedConventionWithoutAssessment: ConventionDto = {
-            ...conventionB,
-            id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
-            status: "ACCEPTED_BY_VALIDATOR",
-          };
-          await conventionRepository.save(
-            validatedConventionWithoutAssessment,
-            anyConventionUpdatedAt,
-          );
+      it("should filter conventions by agencyIds", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: { agencyIds: [agencyId] },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionC, conventionB, conventionA]);
+
+        // Verify all returned conventions belong to the specified agency
+        const allConventionsBelongToSpecifiedAgency = result.data.every(
+          (convention) => convention.agencyId === agencyId,
+        );
+        expect(allConventionsBelongToSpecifiedAgency).toBe(true);
+      });
+
+      it("should filter conventions by multiple agencyIds", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: { agencyIds: [agencyId, differentAgencyId] },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [
+          conventionD,
+          conventionC,
+          conventionB,
+          conventionA,
+        ]);
+      });
+
+      it("should filter conventions by agencyIds combined with other filters", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            agencyIds: [agencyId],
+            statuses: ["READY_TO_SIGN"],
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionA]);
+      });
+
+      describe("when omitting statuses for some agencies", () => {
+        const omittedStatuses = [
+          "READY_TO_SIGN",
+          "PARTIALLY_SIGNED",
+          "IN_REVIEW",
+        ] as const;
+        const conventionInReview = new ConventionDtoBuilder()
+          .withId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
+          .withAgencyId(differentAgencyId)
+          .withStatus("IN_REVIEW")
+          .withDateStart(new Date("2023-05-15").toISOString())
+          .withDateEnd(new Date("2023-05-20").toISOString())
+          .withDateSubmission(new Date("2023-05-10").toISOString())
+          .withUpdatedAt(anyConventionUpdatedAt)
+          .build();
+        const conventionAcceptedByCounsellor = new ConventionDtoBuilder()
+          .withId("ffffffff-ffff-4fff-8fff-ffffffffffff")
+          .withAgencyId(differentAgencyId)
+          .withStatus("ACCEPTED_BY_COUNSELLOR")
+          .withDateStart(new Date("2023-06-15").toISOString())
+          .withDateEnd(new Date("2023-06-20").toISOString())
+          .withDateSubmission(new Date("2023-06-10").toISOString())
+          .withUpdatedAt(anyConventionUpdatedAt)
+          .build();
+
+        it("should keep all statuses for agencies not in omit and hide omitted statuses for omitted agencies", async () => {
+          await Promise.all([
+            conventionRepository.save(
+              conventionInReview,
+              anyConventionUpdatedAt,
+            ),
+            conventionRepository.save(
+              conventionAcceptedByCounsellor,
+              anyConventionUpdatedAt,
+            ),
+          ]);
 
           const result = await conventionQueries.getPaginatedConventions({
             pagination: { page: 1, perPage: 10 },
             filters: {
-              assessmentCompletionStatus: ["to-complete", "to-sign"],
+              agencyIds: [agencyId, differentAgencyId],
+              omitStatusesForAgencies: {
+                agencyIds: [differentAgencyId],
+                statuses: [...omittedStatuses],
+              },
             },
             sort: {
               by: "dateSubmission",
@@ -1822,42 +2075,38 @@ describe("Pg implementation of ConventionQueries", () => {
           });
 
           expectToEqual(result.data, [
+            conventionAcceptedByCounsellor,
             conventionC,
-            validatedConventionWithoutAssessment,
+            conventionB,
+            conventionA,
           ]);
+          expectToEqual(result.pagination.totalRecords, 4);
         });
 
-        it("should filter conventions by multiple assessment completion statuses signed + to-sign", async () => {
-          const anotherValidatedConvention: ConventionDto = {
-            ...conventionB,
-            id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
-            status: "ACCEPTED_BY_VALIDATOR",
-          };
-          const signedAt = new Date().toISOString();
-          const signedAssessment = new AssessmentDtoBuilder()
-            .withConventionId(anotherValidatedConvention.id)
-            .withBeneficiarySignature({
-              beneficiaryAgreement: true,
-              beneficiaryFeedback: "feedback",
-              signedAt,
-            })
+        it("should hide omitted statuses when the agency is both in agencyIds and omit", async () => {
+          const conventionPartiallySigned = new ConventionDtoBuilder()
+            .withId("99999999-9999-4999-8999-999999999999")
+            .withAgencyId(agencyId)
+            .withStatus("PARTIALLY_SIGNED")
+            .withDateStart(new Date("2023-05-15").toISOString())
+            .withDateEnd(new Date("2023-05-20").toISOString())
+            .withDateSubmission(new Date("2023-05-10").toISOString())
+            .withUpdatedAt(anyConventionUpdatedAt)
             .build();
 
           await conventionRepository.save(
-            anotherValidatedConvention,
+            conventionPartiallySigned,
             anyConventionUpdatedAt,
-          );
-          await assessmentRepo.save(
-            createAssessmentEntity(
-              signedAssessment,
-              anotherValidatedConvention,
-            ),
           );
 
           const result = await conventionQueries.getPaginatedConventions({
             pagination: { page: 1, perPage: 10 },
             filters: {
-              assessmentCompletionStatus: ["finalized", "to-sign"],
+              agencyIds: [agencyId],
+              omitStatusesForAgencies: {
+                agencyIds: [agencyId],
+                statuses: [...omittedStatuses],
+              },
             },
             sort: {
               by: "dateSubmission",
@@ -1865,325 +2114,84 @@ describe("Pg implementation of ConventionQueries", () => {
             },
           });
 
-          expectToEqual(result.data, [conventionC, anotherValidatedConvention]);
-        });
-      });
-
-      it("should not filter conventions by assessment completion statuses if the convention is not accepted by validator", async () => {
-        const result = await conventionQueries.getPaginatedConventions({
-          pagination: { page: 1, perPage: 10 },
-          filters: {
-            assessmentCompletionStatus: ["to-complete"],
-          },
-          sort: {
-            by: "dateSubmission",
-            direction: "desc",
-          },
+          expectToEqual(result.data, [conventionC]);
         });
 
-        expectToEqual(result.data, []);
-      });
-    });
-
-    it("should sort conventions by dateStart, then conventionId", async () => {
-      const sameDateStartConvention = {
-        ...conventionA,
-        id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
-      };
-      await conventionRepository.save(
-        sameDateStartConvention,
-        anyConventionUpdatedAt,
-      );
-
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        sort: {
-          by: "dateStart",
-          direction: "asc",
-        },
-      });
-
-      expectToEqual(result.data, [
-        conventionA,
-        sameDateStartConvention,
-        conventionB,
-        conventionC,
-        conventionD,
-      ]);
-    });
-
-    it("should respect pagination limits", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 2 },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionD, conventionC]);
-    });
-
-    it("should filter by multiple criteria", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          statuses: ["READY_TO_SIGN", "IN_REVIEW"],
-          dateSubmission: {
-            from: "2023-01-01",
-            to: "2023-02-15",
-          },
-          search: "@convention-a.com",
-        },
-        sort: {
-          by: "dateStart",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionA]);
-    });
-
-    it("should return empty page when agencyIds is empty", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        filters: { agencyIds: [] },
-        pagination: { page: 1, perPage: 10 },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result, {
-        data: [],
-        pagination: {
-          currentPage: 1,
-          totalPages: 1,
-          numberPerPage: 10,
-          totalRecords: 0,
-        },
-      });
-    });
-
-    it("should filter conventions by agencyIds", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: { agencyIds: [agencyId] },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionC, conventionB, conventionA]);
-
-      // Verify all returned conventions belong to the specified agency
-      const allConventionsBelongToSpecifiedAgency = result.data.every(
-        (convention) => convention.agencyId === agencyId,
-      );
-      expect(allConventionsBelongToSpecifiedAgency).toBe(true);
-    });
-
-    it("should filter conventions by multiple agencyIds", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: { agencyIds: [agencyId, differentAgencyId] },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [
-        conventionD,
-        conventionC,
-        conventionB,
-        conventionA,
-      ]);
-    });
-
-    it("should filter conventions by agencyIds combined with other filters", async () => {
-      const result = await conventionQueries.getPaginatedConventions({
-        pagination: { page: 1, perPage: 10 },
-        filters: {
-          agencyIds: [agencyId],
-          statuses: ["READY_TO_SIGN"],
-        },
-        sort: {
-          by: "dateSubmission",
-          direction: "desc",
-        },
-      });
-
-      expectToEqual(result.data, [conventionA]);
-    });
-
-    describe("when omitting statuses for some agencies", () => {
-      const omittedStatuses = [
-        "READY_TO_SIGN",
-        "PARTIALLY_SIGNED",
-        "IN_REVIEW",
-      ] as const;
-      const conventionInReview = new ConventionDtoBuilder()
-        .withId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
-        .withAgencyId(differentAgencyId)
-        .withStatus("IN_REVIEW")
-        .withDateStart(new Date("2023-05-15").toISOString())
-        .withDateEnd(new Date("2023-05-20").toISOString())
-        .withDateSubmission(new Date("2023-05-10").toISOString())
-        .withUpdatedAt(anyConventionUpdatedAt)
-        .build();
-      const conventionAcceptedByCounsellor = new ConventionDtoBuilder()
-        .withId("ffffffff-ffff-4fff-8fff-ffffffffffff")
-        .withAgencyId(differentAgencyId)
-        .withStatus("ACCEPTED_BY_COUNSELLOR")
-        .withDateStart(new Date("2023-06-15").toISOString())
-        .withDateEnd(new Date("2023-06-20").toISOString())
-        .withDateSubmission(new Date("2023-06-10").toISOString())
-        .withUpdatedAt(anyConventionUpdatedAt)
-        .build();
-
-      it("should keep all statuses for agencies not in omit and hide omitted statuses for omitted agencies", async () => {
-        await Promise.all([
-          conventionRepository.save(conventionInReview, anyConventionUpdatedAt),
-          conventionRepository.save(
-            conventionAcceptedByCounsellor,
+        it("should return IN_REVIEW only from agencies that are not omitted", async () => {
+          await conventionRepository.save(
+            conventionInReview,
             anyConventionUpdatedAt,
-          ),
-        ]);
+          );
 
-        const result = await conventionQueries.getPaginatedConventions({
-          pagination: { page: 1, perPage: 10 },
-          filters: {
-            agencyIds: [agencyId, differentAgencyId],
-            omitStatusesForAgencies: {
-              agencyIds: [differentAgencyId],
-              statuses: [...omittedStatuses],
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              agencyIds: [agencyId, differentAgencyId],
+              omitStatusesForAgencies: {
+                agencyIds: [differentAgencyId],
+                statuses: [...omittedStatuses],
+              },
+              statuses: ["IN_REVIEW"],
             },
-          },
-          sort: {
-            by: "dateSubmission",
-            direction: "desc",
-          },
-        });
-
-        expectToEqual(result.data, [
-          conventionAcceptedByCounsellor,
-          conventionC,
-          conventionB,
-          conventionA,
-        ]);
-        expectToEqual(result.pagination.totalRecords, 4);
-      });
-
-      it("should hide omitted statuses when the agency is both in agencyIds and omit", async () => {
-        const conventionPartiallySigned = new ConventionDtoBuilder()
-          .withId("99999999-9999-4999-8999-999999999999")
-          .withAgencyId(agencyId)
-          .withStatus("PARTIALLY_SIGNED")
-          .withDateStart(new Date("2023-05-15").toISOString())
-          .withDateEnd(new Date("2023-05-20").toISOString())
-          .withDateSubmission(new Date("2023-05-10").toISOString())
-          .withUpdatedAt(anyConventionUpdatedAt)
-          .build();
-
-        await conventionRepository.save(
-          conventionPartiallySigned,
-          anyConventionUpdatedAt,
-        );
-
-        const result = await conventionQueries.getPaginatedConventions({
-          pagination: { page: 1, perPage: 10 },
-          filters: {
-            agencyIds: [agencyId],
-            omitStatusesForAgencies: {
-              agencyIds: [agencyId],
-              statuses: [...omittedStatuses],
+            sort: {
+              by: "dateSubmission",
+              direction: "desc",
             },
-          },
-          sort: {
-            by: "dateSubmission",
-            direction: "desc",
-          },
+          });
+
+          expectToEqual(result.data, [conventionB]);
         });
 
-        expectToEqual(result.data, [conventionC]);
-      });
-
-      it("should return IN_REVIEW only from agencies that are not omitted", async () => {
-        await conventionRepository.save(
-          conventionInReview,
-          anyConventionUpdatedAt,
-        );
-
-        const result = await conventionQueries.getPaginatedConventions({
-          pagination: { page: 1, perPage: 10 },
-          filters: {
-            agencyIds: [agencyId, differentAgencyId],
-            omitStatusesForAgencies: {
-              agencyIds: [differentAgencyId],
-              statuses: [...omittedStatuses],
+        it("should paginate with totalRecords that ignore omitted conventions", async () => {
+          const resultPage1 = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 2 },
+            filters: {
+              agencyIds: [agencyId, differentAgencyId],
+              omitStatusesForAgencies: {
+                agencyIds: [differentAgencyId],
+                statuses: [...omittedStatuses],
+              },
             },
-            statuses: ["IN_REVIEW"],
-          },
-          sort: {
-            by: "dateSubmission",
-            direction: "desc",
-          },
-        });
-
-        expectToEqual(result.data, [conventionB]);
-      });
-
-      it("should paginate with totalRecords that ignore omitted conventions", async () => {
-        const resultPage1 = await conventionQueries.getPaginatedConventions({
-          pagination: { page: 1, perPage: 2 },
-          filters: {
-            agencyIds: [agencyId, differentAgencyId],
-            omitStatusesForAgencies: {
-              agencyIds: [differentAgencyId],
-              statuses: [...omittedStatuses],
+            sort: {
+              by: "dateSubmission",
+              direction: "desc",
             },
-          },
-          sort: {
-            by: "dateSubmission",
-            direction: "desc",
-          },
-        });
+          });
 
-        expectToEqual(resultPage1.data, [conventionC, conventionB]);
-        expectToEqual(resultPage1.pagination, {
-          currentPage: 1,
-          totalPages: 2,
-          numberPerPage: 2,
-          totalRecords: 3,
-        });
+          expectToEqual(resultPage1.data, [conventionC, conventionB]);
+          expectToEqual(resultPage1.pagination, {
+            currentPage: 1,
+            totalPages: 2,
+            numberPerPage: 2,
+            totalRecords: 3,
+          });
 
-        const resultPage2 = await conventionQueries.getPaginatedConventions({
-          pagination: { page: 2, perPage: 2 },
-          filters: {
-            agencyIds: [agencyId, differentAgencyId],
-            omitStatusesForAgencies: {
-              agencyIds: [differentAgencyId],
-              statuses: [...omittedStatuses],
+          const resultPage2 = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 2, perPage: 2 },
+            filters: {
+              agencyIds: [agencyId, differentAgencyId],
+              omitStatusesForAgencies: {
+                agencyIds: [differentAgencyId],
+                statuses: [...omittedStatuses],
+              },
             },
-          },
-          sort: {
-            by: "dateSubmission",
-            direction: "desc",
-          },
-        });
+            sort: {
+              by: "dateSubmission",
+              direction: "desc",
+            },
+          });
 
-        expectToEqual(resultPage2.data, [conventionA]);
-        expectToEqual(resultPage2.pagination, {
-          currentPage: 2,
-          totalPages: 2,
-          numberPerPage: 2,
-          totalRecords: 3,
+          expectToEqual(resultPage2.data, [conventionA]);
+          expectToEqual(resultPage2.pagination, {
+            currentPage: 2,
+            totalPages: 2,
+            numberPerPage: 2,
+            totalRecords: 3,
+          });
         });
       });
-    });
-  });
+    },
+  );
 
   describe("getConventionsWithErroredBroadcastFeedbackForAgencyUser", () => {
     describe("when no conventions with errored broadcast feedback for the agency user", () => {
@@ -3025,20 +3033,20 @@ describe("Pg implementation of ConventionQueries", () => {
             },
           },
         },
-      ])("results are ordered by occurredtAt desc and paginated", async ({
-        requestedPagination,
-        expectedResult,
-      }) => {
-        const result =
-          await conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
-            {
-              userAgencyIds: [agency.id],
-              pagination: requestedPagination,
-            },
-          );
+      ])(
+        "results are ordered by occurredtAt desc and paginated",
+        async ({ requestedPagination, expectedResult }) => {
+          const result =
+            await conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
+              {
+                userAgencyIds: [agency.id],
+                pagination: requestedPagination,
+              },
+            );
 
-        expectToEqual(result, expectedResult);
-      });
+          expectToEqual(result, expectedResult);
+        },
+      );
     });
 
     describe("filters", () => {

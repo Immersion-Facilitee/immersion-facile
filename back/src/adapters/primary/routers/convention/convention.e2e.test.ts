@@ -365,79 +365,80 @@ describe("convention e2e", () => {
       ];
     });
 
-    it.each([
-      "ConventionJwt",
-      "BackOfficeJwt",
-      "ConnectedUserJwt",
-    ] as const)("200 - succeeds with JWT %s", async (scenario) => {
-      inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
-      inMemoryUow.assessmentRepository.assessments = [
-        {
-          conventionId: convention.id,
-          status: "COMPLETED",
-          endedWithAJob: false,
-          establishmentFeedback: "Ca c'est bien passé",
-          establishmentAdvices: "mon conseil",
-          numberOfHoursActuallyMade: 35,
-          beneficiaryAgreement: null,
-          beneficiaryFeedback: null,
-          signedAt: null,
-          createdAt: new Date("2025-01-01").toISOString(),
-          _entityName: "Assessment",
-        },
-      ];
-
-      const jwt = match(scenario)
-        .with("ConventionJwt", () =>
-          generateConventionJwt({
-            applicationId: convention.id,
-            role: "beneficiary",
-            emailHash: makeEmailHash(convention.signatories.beneficiary.email),
-            iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
-            exp:
-              Math.round(gateways.timeGateway.now().getTime() / 1000) +
-              31 * 24 * 3600,
-            version: currentJwtVersions.convention,
-          }),
-        )
-        .with("BackOfficeJwt", () =>
-          generateConnectedUserJwt(backofficeAdminJwtPayload),
-        )
-        .with("ConnectedUserJwt", () =>
-          generateConnectedUserJwt({
-            userId: validator.id,
-            version: currentJwtVersions.connectedUser,
-            iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
-          }),
-        )
-        .exhaustive();
-
-      const response = await magicLinkRequest.getConvention({
-        headers: { authorization: jwt },
-        urlParams: { conventionId: convention.id },
-      });
-
-      expectHttpResponseToEqual(response, {
-        status: 200,
-        body: {
-          ...convention,
-          agencyName: ftAgency.name,
-          agencyDepartment: ftAgency.address.departmentCode,
-          agencyContactEmail: ftAgency.contactEmail,
-          agencyKind: ftAgency.kind,
-          agencySiret: ftAgency.agencySiret,
-          agencyValidationSteps: "validator-only",
-          assessment: {
+    it.each(["ConventionJwt", "BackOfficeJwt", "ConnectedUserJwt"] as const)(
+      "200 - succeeds with JWT %s",
+      async (scenario) => {
+        inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
+        inMemoryUow.assessmentRepository.assessments = [
+          {
+            conventionId: convention.id,
             status: "COMPLETED",
             endedWithAJob: false,
+            establishmentFeedback: "Ca c'est bien passé",
+            establishmentAdvices: "mon conseil",
+            numberOfHoursActuallyMade: 35,
+            beneficiaryAgreement: null,
+            beneficiaryFeedback: null,
             signedAt: null,
             createdAt: new Date("2025-01-01").toISOString(),
+            _entityName: "Assessment",
           },
-          lastReminders: makeEmptyLastReminders(),
-          isEstablishmentBanned: false,
-        },
-      });
-    });
+        ];
+
+        const jwt = match(scenario)
+          .with("ConventionJwt", () =>
+            generateConventionJwt({
+              applicationId: convention.id,
+              role: "beneficiary",
+              emailHash: makeEmailHash(
+                convention.signatories.beneficiary.email,
+              ),
+              iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+              exp:
+                Math.round(gateways.timeGateway.now().getTime() / 1000) +
+                31 * 24 * 3600,
+              version: currentJwtVersions.convention,
+            }),
+          )
+          .with("BackOfficeJwt", () =>
+            generateConnectedUserJwt(backofficeAdminJwtPayload),
+          )
+          .with("ConnectedUserJwt", () =>
+            generateConnectedUserJwt({
+              userId: validator.id,
+              version: currentJwtVersions.connectedUser,
+              iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+            }),
+          )
+          .exhaustive();
+
+        const response = await magicLinkRequest.getConvention({
+          headers: { authorization: jwt },
+          urlParams: { conventionId: convention.id },
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 200,
+          body: {
+            ...convention,
+            agencyName: ftAgency.name,
+            agencyDepartment: ftAgency.address.departmentCode,
+            agencyContactEmail: ftAgency.contactEmail,
+            agencyKind: ftAgency.kind,
+            agencySiret: ftAgency.agencySiret,
+            agencyValidationSteps: "validator-only",
+            assessment: {
+              status: "COMPLETED",
+              endedWithAJob: false,
+              signedAt: null,
+              createdAt: new Date("2025-01-01").toISOString(),
+            },
+            lastReminders: makeEmptyLastReminders(),
+            isEstablishmentBanned: false,
+          },
+        });
+      },
+    );
 
     it("400 - no JWT", async () => {
       const response = await magicLinkRequest.getConvention({
@@ -867,79 +868,79 @@ describe("convention e2e", () => {
       inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
     });
 
-    it.each([
-      "ConventionJwt",
-      "BackOfficeJwt",
-      "ConnectedUserJwt",
-    ] as const)("200 - Succeeds with JWT %s", async (scenario) => {
-      const jwt = match(scenario)
-        .with("ConventionJwt", () =>
-          generateConventionJwt(
-            createConventionMagicLinkPayload({
-              id: convention.id,
-              role: "counsellor",
-              email: "counsellor@pe.fr",
-              now: gateways.timeGateway.now(),
+    it.each(["ConventionJwt", "BackOfficeJwt", "ConnectedUserJwt"] as const)(
+      "200 - Succeeds with JWT %s",
+      async (scenario) => {
+        const jwt = match(scenario)
+          .with("ConventionJwt", () =>
+            generateConventionJwt(
+              createConventionMagicLinkPayload({
+                id: convention.id,
+                role: "counsellor",
+                email: "counsellor@pe.fr",
+                now: gateways.timeGateway.now(),
+              }),
+            ),
+          )
+          .with("BackOfficeJwt", () =>
+            generateConnectedUserJwt({
+              userId: validator.id,
+              version: currentJwtVersions.connectedUser,
+              iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+              exp:
+                Math.round(gateways.timeGateway.now().getTime() / 1000) + 3600,
             }),
-          ),
-        )
-        .with("BackOfficeJwt", () =>
-          generateConnectedUserJwt({
-            userId: validator.id,
-            version: currentJwtVersions.connectedUser,
-            iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
-            exp: Math.round(gateways.timeGateway.now().getTime() / 1000) + 3600,
-          }),
-        )
-        .with("ConnectedUserJwt", () =>
-          generateConnectedUserJwt({
-            userId: validator.id,
-            version: currentJwtVersions.connectedUser,
-            iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
-          }),
-        )
-        .exhaustive();
+          )
+          .with("ConnectedUserJwt", () =>
+            generateConnectedUserJwt({
+              userId: validator.id,
+              version: currentJwtVersions.connectedUser,
+              iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+            }),
+          )
+          .exhaustive();
 
-      const statusJustification = "test-justification";
+        const statusJustification = "test-justification";
 
-      const response = await magicLinkRequest.updateConventionStatus({
-        headers: { authorization: jwt },
-        body: {
-          status: "REJECTED",
-          statusJustification,
-          conventionId: convention.id,
-        },
-      });
-
-      expectHttpResponseToEqual(response, {
-        status: 200,
-        body: { id: convention.id },
-      });
-
-      await eventCrawler.processNewEvents();
-
-      expectToEqual(gateways.franceTravailGateway.broadcastParamsCalls, [
-        {
-          eventType: "CONVENTION_UPDATED",
-          convention: {
-            ...convention,
+        const response = await magicLinkRequest.updateConventionStatus({
+          headers: { authorization: jwt },
+          body: {
             status: "REJECTED",
             statusJustification,
-            agencyName: ftAgency.name,
-            agencyDepartment: ftAgency.address.departmentCode,
-            agencyContactEmail: ftAgency.contactEmail,
-            agencyKind: toPartnerAgencyKind(ftAgency.kind),
-            agencySiret: ftAgency.agencySiret,
-            agencyValidatorEmails: ftAgency.validatorEmails,
-            agencyValidationSteps: "validator-only",
-            agencyRefersTo: undefined,
-            assessment: null,
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
+            conventionId: convention.id,
           },
-        },
-      ]);
-    });
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 200,
+          body: { id: convention.id },
+        });
+
+        await eventCrawler.processNewEvents();
+
+        expectToEqual(gateways.franceTravailGateway.broadcastParamsCalls, [
+          {
+            eventType: "CONVENTION_UPDATED",
+            convention: {
+              ...convention,
+              status: "REJECTED",
+              statusJustification,
+              agencyName: ftAgency.name,
+              agencyDepartment: ftAgency.address.departmentCode,
+              agencyContactEmail: ftAgency.contactEmail,
+              agencyKind: toPartnerAgencyKind(ftAgency.kind),
+              agencySiret: ftAgency.agencySiret,
+              agencyValidatorEmails: ftAgency.validatorEmails,
+              agencyValidationSteps: "validator-only",
+              agencyRefersTo: undefined,
+              assessment: null,
+              lastReminders: makeEmptyLastReminders(),
+              isEstablishmentBanned: false,
+            },
+          },
+        ]);
+      },
+    );
 
     it("when a convention is ACCEPTED_BY_VALIDATOR, an Establishment Lead is created", async () => {
       const jwt = generateConventionJwt(

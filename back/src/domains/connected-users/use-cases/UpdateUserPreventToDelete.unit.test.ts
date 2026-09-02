@@ -62,26 +62,24 @@ describe("UpdateUserPreventToDelete", () => {
     );
   });
 
-  it.each([
-    { preventToDelete: true },
-    { preventToDelete: false },
-  ])("sets preventToDelete to $preventToDelete", async ({
-    preventToDelete,
-  }) => {
-    const targetUser = new ConnectedUserBuilder()
-      .withId("target-id")
-      .withEmail("target@mail.com")
-      .withPreventToDelete(!preventToDelete)
-      .build();
-    uow.userRepository.users = [targetUser];
+  it.each([{ preventToDelete: true }, { preventToDelete: false }])(
+    "sets preventToDelete to $preventToDelete",
+    async ({ preventToDelete }) => {
+      const targetUser = new ConnectedUserBuilder()
+        .withId("target-id")
+        .withEmail("target@mail.com")
+        .withPreventToDelete(!preventToDelete)
+        .build();
+      uow.userRepository.users = [targetUser];
 
-    await updateUserPreventToDelete.execute(
-      { userId: targetUser.id, preventToDelete: preventToDelete },
-      adminUser,
-    );
+      await updateUserPreventToDelete.execute(
+        { userId: targetUser.id, preventToDelete: preventToDelete },
+        adminUser,
+      );
 
-    expectToEqual(uow.userRepository.users, [
-      { ...targetUser, preventToDelete: preventToDelete },
-    ]);
-  });
+      expectToEqual(uow.userRepository.users, [
+        { ...targetUser, preventToDelete: preventToDelete },
+      ]);
+    },
+  );
 });

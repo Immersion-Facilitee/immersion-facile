@@ -945,7 +945,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
              })}</li>   
              <li>Type de contrat : ${assessment.typeOfContract}</li>`
                : ""
-           }
+}
           </ul>
 
           <strong>⭐ Evaluation de l'entreprise</strong>
@@ -2446,11 +2446,11 @@ Tél : ${beneficiaryPhone}`,
                beneficiaryRepresentativeName
                  ? `\n- Le représentant légal du bénéficiaire ${beneficiaryRepresentativeName}`
                  : ""
-             }${
+}${
                beneficiaryCurrentEmployerName
                  ? `\n- L'employeur actuel du bénéficiaire ${beneficiaryCurrentEmployerName}`
                  : ""
-             }
+}
              - L'entreprise ${businessName} représentée par ${establishmentRepresentativeName}
              - Le tuteur dans l'entreprise ${establishmentTutorName}
           

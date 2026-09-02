@@ -18,7 +18,7 @@ const recreateViewConventions = (
             (id, "Structure", "Type de structure", "Département de la structure", "Région de la structure",
              "Date de la demande", "Date de validation", "Statut", ${
                direction === "up" ? '"tech_status", ' : ""
-             }
+}
              "Accepté par l'entreprise", "Accepté par le bénéficiaire", "Accepté par le rep. légal du bénéfiaire",
              "Accepté par l'employeur actuel du bénéficiaire", "Date de début", "Date de fin",
              "Objectif de l'immersion", "Métier observé", "Rome du métier observé",

@@ -52,21 +52,22 @@ describe("PgConventionsToSyncRepository", () => {
   });
 
   describe("save and getById convention", () => {
-    it.each(
-      conventionsToSync,
-    )(`with status '$status'`, async (conventionToSync) => {
-      expectToEqual(
-        await conventionsToSyncRepository.getById(conventionToSync.id),
-        undefined,
-      );
+    it.each(conventionsToSync)(
+      `with status '$status'`,
+      async (conventionToSync) => {
+        expectToEqual(
+          await conventionsToSyncRepository.getById(conventionToSync.id),
+          undefined,
+        );
 
-      await conventionsToSyncRepository.save(conventionToSync);
+        await conventionsToSyncRepository.save(conventionToSync);
 
-      const syncedConvention = await conventionsToSyncRepository.getById(
-        conventionToSync.id,
-      );
-      expectToEqual(syncedConvention, conventionToSync);
-    });
+        const syncedConvention = await conventionsToSyncRepository.getById(
+          conventionToSync.id,
+        );
+        expectToEqual(syncedConvention, conventionToSync);
+      },
+    );
   });
 
   it("save updated conventionToSync", async () => {

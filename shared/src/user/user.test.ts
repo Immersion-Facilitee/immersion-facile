@@ -20,13 +20,13 @@ describe("lastnameSchema & firstnameSchema", () => {
       { name: "multiple   spaces", expectedName: "multiple spaces" },
       { name: "Éléonore", expectedName: "Éléonore" },
       { name: "", expectedName: "" },
-    ])("accepts valid name '%s' and transforms to '%s'", ({
-      name,
-      expectedName,
-    }) => {
-      expect(lastnameSchema.parse(name)).toBe(expectedName);
-      expect(firstnameSchema.parse(name)).toBe(expectedName);
-    });
+    ])(
+      "accepts valid name '%s' and transforms to '%s'",
+      ({ name, expectedName }) => {
+        expect(lastnameSchema.parse(name)).toBe(expectedName);
+        expect(firstnameSchema.parse(name)).toBe(expectedName);
+      },
+    );
   });
 
   describe("lastname Errors", () => {

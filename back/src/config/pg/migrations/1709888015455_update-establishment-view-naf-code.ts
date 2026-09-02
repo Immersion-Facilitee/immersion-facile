@@ -84,7 +84,7 @@ FROM establishments e
                      direction === "down"
                        ? "'(dd)(dd)(w)'::text, '\\1.\\2'::text"
                        : "'(\\d{2})(\\d{2}).*'::text, '\\1.\\2'::text"
-                   })
+})
          LEFT JOIN count_contact_requests_by_siret count_rel ON count_rel.siret = e.siret
          LEFT JOIN count_conventions_by_siret count_conv ON count_conv.siret = e.siret
          LEFT JOIN establishments_locations loc ON loc.establishment_siret = e.siret;

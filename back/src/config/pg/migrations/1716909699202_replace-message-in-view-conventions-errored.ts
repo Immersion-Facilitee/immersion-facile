@@ -76,13 +76,13 @@ const createViewConventionsErrored = (
                               se.message = '"Identifiant National DE non trouvé"'::text)
                          AND ((se.params ->> 'httpStatus'::text)::bigint) = 404
                          AND se.service_name = 'PoleEmploiGateway.notifyOnConventionUpdated'::text`
-                       })
+})
 SELECT c.id,
        ${
          migrationDirection === "up"
            ? "re.subscriber_error_feedback ->> 'message'"
            : "re.message"
-       } as "message",
+} as "message",
        a.name                                                           AS "Structure",
        a.id                                                             AS "Id Structure",
        a.department_code                                                AS "Département de l'agence",

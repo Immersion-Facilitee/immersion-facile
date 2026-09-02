@@ -355,46 +355,49 @@ describe("UpdateDiscussionStatus", () => {
           },
           expectedRejectionReason: "my rejection reason",
         },
-      ])("rejects discussion with kind $params.rejectionKind", async ({
-        expectedRejectionReason,
-        params: { discussionId, ...rest },
-      }) => {
-        await updateDiscussionStatus.execute(
-          { discussionId, ...rest },
-          authorizedUser,
-        );
-
-        const { htmlContent, subject } = makeExpectedEmailParams(
+      ])(
+        "rejects discussion with kind $params.rejectionKind",
+        async ({
           expectedRejectionReason,
-          authorizedUser.firstName,
-          authorizedUser.lastName,
-        );
+          params: { discussionId, ...rest },
+        }) => {
+          await updateDiscussionStatus.execute(
+            { discussionId, ...rest },
+            authorizedUser,
+          );
 
-        expectDiscussionInRepoAndInOutbox({
-          triggeredBy: {
-            kind: "connected-user",
-            userId: authorizedUser.id,
-          },
-          expectedDiscussion: {
-            ...discussion,
-            ...rest,
-            updatedAt: timeGateway.now().toISOString(),
-            exchanges: [
-              ...discussion.exchanges,
-              {
-                subject,
-                message: htmlContent,
-                attachments: [],
-                sender: "establishment",
-                email: authorizedUser.email,
-                firstname: authorizedUser.firstName,
-                lastname: authorizedUser.lastName,
-                sentAt: timeGateway.now().toISOString(),
-              },
-            ],
-          },
-        });
-      });
+          const { htmlContent, subject } = makeExpectedEmailParams(
+            expectedRejectionReason,
+            authorizedUser.firstName,
+            authorizedUser.lastName,
+          );
+
+          expectDiscussionInRepoAndInOutbox({
+            triggeredBy: {
+              kind: "connected-user",
+              userId: authorizedUser.id,
+            },
+            expectedDiscussion: {
+              ...discussion,
+              ...rest,
+              updatedAt: timeGateway.now().toISOString(),
+              exchanges: [
+                ...discussion.exchanges,
+                {
+                  subject,
+                  message: htmlContent,
+                  attachments: [],
+                  sender: "establishment",
+                  email: authorizedUser.email,
+                  firstname: authorizedUser.firstName,
+                  lastname: authorizedUser.lastName,
+                  sentAt: timeGateway.now().toISOString(),
+                },
+              ],
+            },
+          });
+        },
+      );
     });
 
     describe("validate user rights", () => {

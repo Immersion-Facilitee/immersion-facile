@@ -95,32 +95,30 @@ describe("address router", () => {
       });
     });
 
-    it.each([
-      "1,",
-      "1, ",
-      "⠀  , a ",
-      " )),$,#                  ",
-    ])(`${displayRouteName(
-      addressRoutes.lookupStreetAddress,
-    )} 400 with lookup="%s"`, async (lookup) => {
-      const response = await httpClient.lookupStreetAddress({
-        queryParams: {
-          lookup,
-          countryCode: defaultCountryCode,
-        },
-      });
+    it.each(["1,", "1, ", "⠀  , a ", " )),$,#                  "])(
+      `${displayRouteName(
+        addressRoutes.lookupStreetAddress,
+      )} 400 with lookup="%s"`,
+      async (lookup) => {
+        const response = await httpClient.lookupStreetAddress({
+          queryParams: {
+            lookup,
+            countryCode: defaultCountryCode,
+          },
+        });
 
-      expectHttpResponseToEqual(response, {
-        status: 400,
-        body: {
-          issues: [
-            "lookup : Too small: expected string to have >=2 characters, excluding special chars",
-          ],
-          message: `Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: GET /address/lookupStreetAddress`,
+        expectHttpResponseToEqual(response, {
           status: 400,
-        },
-      });
-    });
+          body: {
+            issues: [
+              "lookup : Too small: expected string to have >=2 characters, excluding special chars",
+            ],
+            message: `Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: GET /address/lookupStreetAddress`,
+            status: 400,
+          },
+        });
+      },
+    );
   });
 
   describe("GET /address/lookup-location", () => {
