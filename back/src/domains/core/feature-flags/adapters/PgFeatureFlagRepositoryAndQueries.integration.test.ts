@@ -72,6 +72,7 @@ describe("PG getFeatureFlags", () => {
       enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
       enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
       enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+      enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
     };
 
     await featureFlagRepository.insertAll(expectedFeatureFlags);
@@ -109,6 +110,7 @@ describe("PG getFeatureFlags", () => {
       enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
       enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
       enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+      enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
     });
   });
 
@@ -146,6 +148,7 @@ describe("PG getFeatureFlags", () => {
       enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
       enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
       enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+      enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
     };
 
     await featureFlagRepository.insertAll(initialFeatureFlags);
@@ -212,6 +215,7 @@ describe("PG getFeatureFlags", () => {
       enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
       enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
       enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
+      enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
     });
   });
 });
