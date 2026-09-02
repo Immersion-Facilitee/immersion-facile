@@ -1247,6 +1247,16 @@ export const errors = {
       new Error(
         `L'objectif d'immersion ${discussionObjective} est non supportée pour la candidature ${discussionId} de type ${discussionKind}`,
       ),
+    missingRequiredIfFields: ({
+      discussionId,
+      discussionKind,
+    }: {
+      discussionId: DiscussionId;
+      discussionKind: DiscussionKind;
+    }) =>
+      new Error(
+        `Les champs requis ne sont pas renseignés pour la candidature ${discussionId} de type ${discussionKind}`,
+      ),
     badEmailFormat: ({ email }: { email: Email }) =>
       new BadRequestError(`L'email n'a pas le bon format '${email}'.`),
     badRecipientKindFormat: ({ kind }: { kind: string }) =>

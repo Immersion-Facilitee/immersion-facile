@@ -304,10 +304,9 @@ export const discussionReadSchema: ZodSchemaWithInputMatchingOutput<DiscussionRe
           potentialBeneficiary: potentialBeneficiaryCommonSchema.extend({
             immersionObjective: immersionObjectiveSchema.or(z.null()),
             resumeLink: resumeLinkSchema,
-            motivation: zStringMinLength1Max800.optional(),
-            immersionDuration: immersionDurationSchema.optional(),
-            experienceAdditionalInformation:
-              zStringMinLength1Max11000.optional(),
+            motivation: zStringMinLength1Max800,
+            immersionDuration: immersionDurationSchema,
+            experienceAdditionalInformation: zStringMinLength1Max11000,
           }),
         }),
         z.object({

@@ -167,9 +167,9 @@ export type ContactEstablishmentEventPayload = {
 type WithDiscussionKindProps<D extends DiscussionKind> = D extends "IF"
   ? {
       resumeLink?: string;
-      motivation?: string;
-      immersionDuration?: ImmersionDuration;
-      experienceAdditionalInformation?: string;
+      motivation: string;
+      immersionDuration: ImmersionDuration;
+      experienceAdditionalInformation: string;
       immersionObjective: ImmersionObjective | null;
     }
   : {
