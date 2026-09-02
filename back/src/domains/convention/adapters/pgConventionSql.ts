@@ -1,4 +1,4 @@
-import type { SelectQueryBuilder } from "kysely";
+import type { Expression, SelectQueryBuilder } from "kysely";
 import { sql } from "kysely";
 import {
   type AgencyId,
@@ -411,14 +411,11 @@ export const wrapInMaterializedCteWithEnrichment = ({
   pipeWithValue(
     transaction
       .with(
-        (cte) => cte("user_conventions").materialized(),
-        () => filteredBuilder.selectAll("conventions"),
+        (cte) => cte("user_conventions" as const).materialized(),
+        (): Expression<Database["conventions"]> =>
+          filteredBuilder.selectAll("conventions"),
       )
-      .selectFrom("user_conventions as conventions") as SelectQueryBuilder<
-      ConventionQueryBuilderDb,
-      "conventions",
-      any
-    >,
+      .selectFrom("user_conventions as conventions"),
     withActorJoins,
     withAppellationsAndPartnerPeJoinAndPhoneNumber,
     createConventionSelection,
