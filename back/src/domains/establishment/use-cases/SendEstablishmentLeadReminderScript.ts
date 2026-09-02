@@ -67,13 +67,22 @@ export const makeSendEstablishmentLeadReminderScript = useCaseBuilder(
   .withDeps<Deps>()
   .build(async ({ deps, inputParams: { kind, beforeDate }, uow }) => {
     const tenDaysAgo = subDays(deps.timeGateway.now(), 10);
-    const conventions =
+    const leadConventions =
       await uow.establishmentLeadQueries.getLastConventionsByUniqLastEventKind({
         conventionEndDateGreater: tenDaysAgo,
         kind,
         beforeDate,
         maxResults: 1000,
       });
+
+    const registeredSirets =
+      await uow.establishmentAggregateRepository.getSiretsInRepoFromSiretList(
+        leadConventions.map(({ siret }) => siret),
+      );
+
+    const conventions = leadConventions.filter(
+      ({ siret }) => !registeredSirets.includes(siret),
+    );
 
     logger.info({ message: `processing ${conventions.length} conventions` });
 
