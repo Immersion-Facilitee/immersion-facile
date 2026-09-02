@@ -138,6 +138,7 @@ const isInvalidGrantError = (
 ) =>
   context === "exchangeCodeForAccessToken" &&
   error.response?.status === HTTP_STATUS.BAD_REQUEST &&
+  // biome-ignore lint/correctness/noUnsafeOptionalChaining: Legacy code and FT Response standards not trusted
   (error.response?.data as { error?: string }).error === "invalid_grant";
 
 const hasNoErrorIdentifier = (error: AxiosError) =>
