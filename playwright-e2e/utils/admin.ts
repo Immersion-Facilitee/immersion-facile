@@ -9,6 +9,7 @@ import {
   adminTabRouteNames,
   adminTabs,
   type BeneficiaryDashboardTab,
+  type ConventionId,
   domElementIds,
   type EmailType,
   type EstablishmentDashboardTab,
@@ -40,10 +41,16 @@ const openEmailInAdmin = async (
   page: Page,
   emailType: EmailType,
   elementIndex = 0,
+  conventionId?: ConventionId,
 ) => {
   await goToAdminTab(page, "adminNotifications");
   const emailSection = page
-    .locator(`.fr-accordion:has-text("${emailType}")`)
+    .locator(
+      conventionId
+        ? `.im-email-info-container--convention-${conventionId}`
+        : ".fr-accordion",
+    )
+    .filter({ hasText: emailType })
     .nth(elementIndex);
   const locator = emailSection.locator(".fr-accordion__btn");
   await expect(locator).toBeVisible();
@@ -56,13 +63,20 @@ export const getMagicLinkLocatorFromEmail = async ({
   emailType,
   elementIndex = 0,
   label = "magicLink",
+  conventionId,
 }: {
+  conventionId?: ConventionId;
   page: Page;
   emailType: EmailType;
   elementIndex?: number;
   label?: string;
 }): Promise<Locator> => {
-  const emailWrapper = await openEmailInAdmin(page, emailType, elementIndex);
+  const emailWrapper = await openEmailInAdmin(
+    page,
+    emailType,
+    elementIndex,
+    conventionId,
+  );
   return emailWrapper
     .locator("li")
     .filter({
@@ -76,13 +90,20 @@ export const getMagicLinkAndRecipientFromEmail = async ({
   emailType,
   elementIndex = 0,
   label = "magicLink",
+  conventionId,
 }: {
+  conventionId?: ConventionId;
   page: Page;
   emailType: EmailType;
   elementIndex?: number;
   label?: string;
 }): Promise<{ href: string | null; recipientEmail: string | null }> => {
-  const emailWrapper = await openEmailInAdmin(page, emailType, elementIndex);
+  const emailWrapper = await openEmailInAdmin(
+    page,
+    emailType,
+    elementIndex,
+    conventionId,
+  );
   const href = await emailWrapper
     .locator("li")
     .filter({
@@ -106,7 +127,9 @@ export const getMagicLinkFromEmail = async ({
   emailType,
   elementIndex = 0,
   label = "magicLink",
+  conventionId,
 }: {
+  conventionId?: ConventionId;
   page: Page;
   emailType: EmailType;
   elementIndex?: number;
@@ -117,6 +140,7 @@ export const getMagicLinkFromEmail = async ({
     emailType,
     elementIndex,
     label,
+    conventionId,
   });
   return locator.getAttribute("href");
 };
