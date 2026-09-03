@@ -620,6 +620,61 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
       ]);
     });
 
+    it("Replaces every previous lead contact for the same siret in the marketing gateway", async () => {
+      uow.conventionRepository.setConventions([convention]);
+
+      const previousContacts: MarketingContact[] = [
+        {
+          createdAt: new Date("2024-01-02"),
+          email: "previous-contact@example.com",
+          firstName: "Previous",
+          lastName: "Contact",
+        },
+        {
+          createdAt: new Date("2024-01-01"),
+          email: "oldest-contact@example.com",
+          firstName: "Oldest",
+          lastName: "Contact",
+        },
+      ];
+
+      uow.establishmentMarketingRepository.contacts = [
+        {
+          ...establishmentMarketingContactEntityWithoutNafCode,
+          contactEmail: previousContacts[0].email,
+          emailContactHistory: previousContacts,
+        },
+      ];
+      marketingGateway.marketingEstablishments = previousContacts.map(
+        (contact) => ({
+          email: contact.email,
+          firstName: contact.firstName,
+          lastName: contact.lastName,
+          conventions: { numberOfValidatedConvention: 1 },
+          hasIcAccount: false,
+          isRegistered: false,
+          siret: convention.siret,
+        }),
+      );
+
+      await updateMarketingEstablishmentContactList.execute({
+        siret: convention.siret,
+      });
+
+      expectToEqual(uow.establishmentMarketingRepository.contacts, [
+        {
+          ...establishmentMarketingContactEntityWithoutNafCode,
+          emailContactHistory: [
+            conventionMarketingContact,
+            ...previousContacts,
+          ],
+        },
+      ]);
+      expectToEqual(marketingGateway.marketingEstablishments, [
+        establishmentMarketingGatewayDto,
+      ]);
+    });
+
     it("Update naf code to null when siren api returns no naf code", async () => {
       uow.conventionRepository.setConventions([convention]);
 
