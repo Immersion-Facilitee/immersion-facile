@@ -222,6 +222,38 @@ const AssessmentStatusSection = ({
 
   const getFieldError = makeFieldError(formState);
 
+  const setEstablishmentComments = (comments: string): void => {
+    setValue("establishmentAdvices", comments);
+    setValue("establishmentFeedback", comments);
+  };
+
+  const onStatusChange = (value: string): void => {
+    const status = match(value)
+      .with("COMPLETED", (matched) => {
+        unregister("partialCompletionDetails");
+        setEstablishmentComments("");
+        return matched;
+      })
+      .with("PARTIALLY_COMPLETED", (matched) => {
+        setEstablishmentComments("");
+        setValue("partialCompletionDetails", {
+          lastDayOfPresence: null,
+          numberOfMissedHours: null,
+          numberOfMissedMinutes: null,
+        });
+        return matched;
+      })
+      .with("DID_NOT_SHOW", (matched) => {
+        setEstablishmentComments("Non applicable");
+        setValue("endedWithAJob", false);
+        unregister("partialCompletionDetails");
+        return matched;
+      })
+      .otherwise(() => null);
+
+    if (status) setValue("status", status);
+  };
+
   const formValues = watch();
 
   const partialCompletionDetailsFormValue =
@@ -268,33 +300,7 @@ const AssessmentStatusSection = ({
               nativeInputProps: {
                 value,
                 ...register("status"),
-                onChange: (event) => {
-                  const { value } = event.target;
-                  if (value === "COMPLETED") {
-                    unregister("partialCompletionDetails");
-                  }
-                  if (
-                    value === "PARTIALLY_COMPLETED" ||
-                    value === "COMPLETED"
-                  ) {
-                    setValue("establishmentAdvices", "");
-                    setValue("establishmentFeedback", "");
-                  }
-                  if (value === "DID_NOT_SHOW") {
-                    setValue("establishmentAdvices", "Non applicable");
-                    setValue("establishmentFeedback", "Non applicable");
-                    setValue("endedWithAJob", false);
-                    unregister("partialCompletionDetails");
-                  }
-                  if (value === "PARTIALLY_COMPLETED") {
-                    setValue("partialCompletionDetails", {
-                      lastDayOfPresence: null,
-                      numberOfMissedHours: null,
-                      numberOfMissedMinutes: null,
-                    });
-                  }
-                  setValue("status", value as AssessmentStatus);
-                },
+                onChange: (event) => onStatusChange(event.target.value),
               },
             }))}
             {...getFieldError("status")}
