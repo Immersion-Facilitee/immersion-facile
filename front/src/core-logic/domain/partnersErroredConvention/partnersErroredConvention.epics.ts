@@ -54,7 +54,7 @@ const fetchConventionLastBroadcastFeedbackEpic: PartnersErroredConventionEpic =
             payload.jwt,
           )
           .pipe(
-            map((lastBroadcastFeedback) =>
+            map(({ lastBroadcastFeedback }) =>
               partnersErroredConventionSlice.actions.fetchConventionLastBroadcastFeedbackSucceeded(
                 {
                   lastBroadcastFeedback,

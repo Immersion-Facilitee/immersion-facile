@@ -36,4 +36,9 @@ export type BroadcastFeedback = {
   handledByAgency: boolean;
 };
 
-export type ConventionLastBroadcastFeedbackResponse = BroadcastFeedback | null;
+export type ConventionLastBroadcastFeedbackResponse =
+  | { lastBroadcastFeedback: null }
+  | {
+      lastBroadcastFeedback: BroadcastFeedback;
+      shouldBeHandled: boolean;
+    };

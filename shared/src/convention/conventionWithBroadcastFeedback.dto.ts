@@ -1,5 +1,5 @@
 import type { AgencyId } from "../agency/agency.dto";
-import type { ConventionLastBroadcastFeedbackResponse } from "../broadcast/broadcastFeedback.dto";
+import type { BroadcastFeedback } from "../broadcast/broadcastFeedback.dto";
 import type {
   PaginationQueryParams,
   WithRequiredPagination,
@@ -17,7 +17,7 @@ export type ConventionWithBroadcastFeedback = {
   id: ConventionId;
   status: ConventionStatus;
   beneficiary: WithFirstnameAndLastname;
-  lastBroadcastFeedback: ConventionLastBroadcastFeedbackResponse;
+  lastBroadcastFeedback: BroadcastFeedback | null;
   agencyReferent: WithOptionalFirstnameAndLastname | null;
   agencyId: AgencyId;
 };
