@@ -52,23 +52,22 @@ type AssessmentFormProperties = {
   onAssessmentSubmitted: (assessment: AssessmentDto) => void;
 };
 
+type Step = 1 | 2 | 3;
+
+type AssessmentFormFieldPath =
+  | keyof AssessmentFormDto
+  | DotNestedKeys<AssessmentFormDto>;
+
 export type OnStepChange = (
   step: Step,
-  fieldsToValidate: (
-    | keyof AssessmentFormDto
-    | DotNestedKeys<AssessmentFormDto>
-  )[],
+  fieldsToValidate: AssessmentFormFieldPath[],
 ) => void;
-
-type Step = 1 | 2 | 3;
 
 const partialCompletionDetailsFields = [
   "partialCompletionDetails",
   "partialCompletionDetails.lastDayOfPresence",
   "partialCompletionDetails.numberOfMissedHours",
-] as const satisfies ReadonlyArray<
-  keyof AssessmentFormDto | DotNestedKeys<AssessmentFormDto>
->;
+] as const satisfies ReadonlyArray<AssessmentFormFieldPath>;
 
 const steps: Record<Step, Pick<StepperProps, "title" | "nextTitle">> = {
   1: {
@@ -95,11 +94,6 @@ export const AssessmentForm = ({
   const initialValues: AssessmentFormDto = {
     conventionId: convention.id,
     status: null,
-    partialCompletionDetails: {
-      lastDayOfPresence: null,
-      numberOfMissedHours: null,
-      numberOfMissedMinutes: null,
-    },
     endedWithAJob: null,
     typeOfContract: null,
     contractStartDate: null,
@@ -223,17 +217,52 @@ const AssessmentStatusSection = ({
   convention: ConventionDto;
   onStepChange: OnStepChange;
 }) => {
-  const { register, formState, watch, setValue } =
+  const { register, formState, watch, setValue, unregister } =
     useFormContext<AssessmentFormDto>();
 
   const getFieldError = makeFieldError(formState);
 
+  const setEstablishmentComments = (comments: string): void => {
+    setValue("establishmentAdvices", comments);
+    setValue("establishmentFeedback", comments);
+  };
+
+  const onStatusChange = (value: string): void => {
+    const status = match(value)
+      .with("COMPLETED", (matched) => {
+        unregister("partialCompletionDetails");
+        setEstablishmentComments("");
+        return matched;
+      })
+      .with("PARTIALLY_COMPLETED", (matched) => {
+        setEstablishmentComments("");
+        setValue("partialCompletionDetails", {
+          lastDayOfPresence: null,
+          numberOfMissedHours: null,
+          numberOfMissedMinutes: null,
+        });
+        return matched;
+      })
+      .with("DID_NOT_SHOW", (matched) => {
+        setEstablishmentComments("Non applicable");
+        setValue("endedWithAJob", false);
+        unregister("partialCompletionDetails");
+        return matched;
+      })
+      .otherwise(() => null);
+
+    if (status) setValue("status", status);
+  };
+
   const formValues = watch();
 
-  const partialCompletionDetailsFormValue = formValues.partialCompletionDetails;
+  const partialCompletionDetailsFormValue =
+    formValues.status === "PARTIALLY_COMPLETED"
+      ? formValues.partialCompletionDetails
+      : null;
 
   const hasImmersionEndedEarly =
-    partialCompletionDetailsFormValue.lastDayOfPresence &&
+    partialCompletionDetailsFormValue?.lastDayOfPresence &&
     new Date(partialCompletionDetailsFormValue.lastDayOfPresence) <
       new Date(convention.dateEnd);
 
@@ -271,22 +300,7 @@ const AssessmentStatusSection = ({
               nativeInputProps: {
                 value,
                 ...register("status"),
-                onChange: (event) => {
-                  const { value } = event.target;
-                  if (
-                    value === "PARTIALLY_COMPLETED" ||
-                    value === "COMPLETED"
-                  ) {
-                    setValue("establishmentAdvices", "");
-                    setValue("establishmentFeedback", "");
-                  }
-                  if (value === "DID_NOT_SHOW") {
-                    setValue("establishmentAdvices", "Non applicable");
-                    setValue("establishmentFeedback", "Non applicable");
-                    setValue("endedWithAJob", false);
-                  }
-                  setValue("status", value as AssessmentStatus);
-                },
+                onChange: (event) => onStatusChange(event.target.value),
               },
             }))}
             {...getFieldError("status")}

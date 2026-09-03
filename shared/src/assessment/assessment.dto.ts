@@ -33,7 +33,7 @@ export type WithEstablishmentComments = {
   establishmentAdvices: string;
 };
 
-type CommonAssessmentFields = {
+export type CommonAssessmentFields = {
   conventionId: ConventionId;
   beneficiaryAgreement: boolean | null;
   beneficiaryFeedback: string | null;
@@ -100,11 +100,32 @@ export type PartiallyCompletedAssessmentDetails = {
   numberOfMissedMinutes: number | null;
 };
 
-export type AssessmentFormDto = {
+export type AssessmentFormCommonFields = {
   conventionId: ConventionId;
-  status: AssessmentStatus | null;
-  partialCompletionDetails: PartiallyCompletedAssessmentDetails;
   endedWithAJob: boolean | null;
   typeOfContract: TypeOfContract | null;
   contractStartDate: DateString | null;
 } & WithEstablishmentComments;
+
+export type AssessmentFormDtoWithStatusNull = AssessmentFormCommonFields & {
+  status: null;
+};
+
+export type AssessmentFormDtoCompleted = AssessmentFormCommonFields & {
+  status: "COMPLETED";
+};
+
+export type AssessmentFormDtoDidNotShow = AssessmentFormCommonFields & {
+  status: "DID_NOT_SHOW";
+};
+
+export type AssessmentFormDtoPartiallyCompleted = AssessmentFormCommonFields & {
+  status: "PARTIALLY_COMPLETED";
+  partialCompletionDetails: PartiallyCompletedAssessmentDetails;
+};
+
+export type AssessmentFormDto =
+  | AssessmentFormDtoWithStatusNull
+  | AssessmentFormDtoCompleted
+  | AssessmentFormDtoDidNotShow
+  | AssessmentFormDtoPartiallyCompleted;
