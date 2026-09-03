@@ -19,7 +19,7 @@
   "license": "ISC",
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
-    "@faker-js/faker": "^8.3.1",
+    "@faker-js/faker": "^10.5.0",
     "@playwright/test": "^1.57.0",
     "@testcontainers/postgresql": "^11.10.0",
     "@types/jest": "^30.0.0",
