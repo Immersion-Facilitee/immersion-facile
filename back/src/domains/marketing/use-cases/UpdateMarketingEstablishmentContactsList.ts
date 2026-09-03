@@ -2,6 +2,7 @@ import { equals } from "ramda";
 import {
   type ConventionDto,
   errors,
+  executeInSequence,
   isSuperEstablishment,
   type SiretDto,
   type WithSiretDto,
@@ -288,10 +289,20 @@ const saveMarketingContactEntity = async ({
   if (
     establishmentMarketingContactEntity &&
     establishmentMarketingContactEntity.contactEmail !== marketingContact.email
-  )
-    await establishmentMarketingGateway.delete(
-      establishmentMarketingContactEntity.contactEmail,
+  ) {
+    const obsoleteContactEmails = [
+      ...new Set([
+        establishmentMarketingContactEntity.contactEmail,
+        ...establishmentMarketingContactEntity.emailContactHistory.map(
+          ({ email }) => email,
+        ),
+      ]),
+    ].filter((email) => email !== marketingContact.email);
+
+    await executeInSequence(obsoleteContactEmails, (email) =>
+      establishmentMarketingGateway.delete(email),
     );
+  }
 
   if (!equals(lastMarketingcontact, marketingContact))
     await uow.establishmentMarketingRepository.save({
