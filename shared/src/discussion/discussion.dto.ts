@@ -103,6 +103,22 @@ export const labelsForContactLevelOfEducation: Record<
   "2nde": "Seconde",
 };
 
+export const immersionDurations = [
+  "short",
+  "medium",
+  "long",
+  "flexible",
+] as const;
+
+export type ImmersionDuration = (typeof immersionDurations)[number];
+
+export const immersionDurationLabels: Record<ImmersionDuration, string> = {
+  short: "Moins d'une semaine",
+  medium: "1 semaine",
+  long: "2 semaines ou plus",
+  flexible: "Je suis flexible",
+};
+
 type ContactInformations<D extends DiscussionKind> = {
   appellationCode: AppellationCode;
   siret: SiretDto;
@@ -126,7 +142,9 @@ type CreateDiscussionDtoCommon = {
 export type CreateDiscussionIFDto = ContactInformations<"IF"> &
   CreateDiscussionDtoCommon & {
     immersionObjective: ImmersionObjective;
-    experienceAdditionalInformation?: string;
+    immersionDuration: ImmersionDuration;
+    motivation: string;
+    experienceAdditionalInformation: string;
     potentialBeneficiaryResumeLink?: string;
   };
 
@@ -149,7 +167,9 @@ export type ContactEstablishmentEventPayload = {
 type WithDiscussionKindProps<D extends DiscussionKind> = D extends "IF"
   ? {
       resumeLink?: string;
-      experienceAdditionalInformation?: string;
+      motivation: string;
+      immersionDuration: ImmersionDuration;
+      experienceAdditionalInformation: string;
       immersionObjective: ImmersionObjective | null;
     }
   : {

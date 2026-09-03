@@ -233,6 +233,18 @@ describe("PgDiscussionRepository", () => {
               .build(),
           },
           {
+            title:
+              "insert with kind IF with motivation and immersionDuration set",
+            discussion: new DiscussionBuilder()
+              .withDiscussionKind("IF")
+              .withContactMode("EMAIL")
+              .withMotivation(
+                "Je veux confirmer mon projet de devenir boulanger",
+              )
+              .withImmersionDuration("long")
+              .build(),
+          },
+          {
             title: "insert with kind 1_ELEVE_1_STAGE and contact mode EMAIL",
             discussion: new DiscussionBuilder()
               .withDiscussionKind("1_ELEVE_1_STAGE")

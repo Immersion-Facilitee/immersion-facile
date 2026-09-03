@@ -309,6 +309,8 @@ const makeDiscussionDto = async ({
             firstName: contactRequest.potentialBeneficiaryFirstName,
             lastName: contactRequest.potentialBeneficiaryLastName,
             email: contactRequest.potentialBeneficiaryEmail,
+            motivation: contactRequest.motivation,
+            immersionDuration: contactRequest.immersionDuration,
             experienceAdditionalInformation:
               contactRequest.experienceAdditionalInformation,
             datePreferences: contactRequest.datePreferences,

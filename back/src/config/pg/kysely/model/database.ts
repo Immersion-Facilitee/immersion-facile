@@ -13,6 +13,7 @@ import type {
   DiscussionStatus,
   Email,
   EstablishmentUserRightStatus,
+  ImmersionDuration,
   PhoneStatus,
   SiretDto,
   SubscriberErrorFeedback,
@@ -134,6 +135,8 @@ interface Discussions extends WithAcquisition {
   potential_beneficiary_phone_id: number;
   potential_beneficiary_resume_link: string | null;
   potential_beneficiary_experience_additional_information: string | null;
+  potential_beneficiary_motivation: string | null;
+  potential_beneficiary_immersion_duration: ImmersionDuration | null;
   potential_beneficiary_date_preferences: string;
   potential_beneficiary_level_of_education: ContactLevelOfEducation | null;
   appellation_code: number;

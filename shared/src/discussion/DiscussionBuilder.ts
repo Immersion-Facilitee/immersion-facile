@@ -23,6 +23,7 @@ import type {
   DiscussionReadDto,
   Exchange,
   ExchangeRead,
+  ImmersionDuration,
   WithDiscussionStatus,
 } from "./discussion.dto";
 
@@ -47,6 +48,9 @@ const defaultDiscussion = {
     email: "ali-baba@gmail.com",
     phone: "+33654533456",
     resumeLink: undefined,
+    motivation:
+      "Je ne mange que du beurre salé et je sais faire des crêpe. Le Mt Saint-Michel est breton.",
+    immersionDuration: "medium",
     experienceAdditionalInformation: "my super experience",
     datePreferences: "my fake date preferences",
     immersionObjective: "Confirmer un projet professionnel",
@@ -316,6 +320,56 @@ export class DiscussionBuilder implements Builder<DiscussionDto> {
 
     throw new Error(
       `Invalid potentialBeneficiary with resumeLink ${resumeLink} for discussionKind ${this.discussion.kind}`,
+    );
+  }
+
+  public withMotivation(motivation?: string) {
+    if (this.discussion.kind === "IF") {
+      return new DiscussionBuilder({
+        ...this.discussion,
+        potentialBeneficiary: {
+          ...this.discussion.potentialBeneficiary,
+          motivation,
+        },
+      } as DiscussionDto);
+    }
+
+    throw new Error(
+      `Invalid potentialBeneficiary with motivation ${motivation} for discussionKind ${this.discussion.kind}`,
+    );
+  }
+
+  public withImmersionDuration(immersionDuration?: ImmersionDuration) {
+    if (this.discussion.kind === "IF") {
+      return new DiscussionBuilder({
+        ...this.discussion,
+        potentialBeneficiary: {
+          ...this.discussion.potentialBeneficiary,
+          immersionDuration,
+        },
+      } as DiscussionDto);
+    }
+
+    throw new Error(
+      `Invalid potentialBeneficiary with immersionDuration ${immersionDuration} for discussionKind ${this.discussion.kind}`,
+    );
+  }
+
+  public withExperienceAdditionalInformation(
+    experienceAdditionalInformation?: string,
+  ) {
+    if (this.discussion.kind === "IF") {
+      return new DiscussionBuilder({
+        ...this.discussion,
+        potentialBeneficiary: {
+          ...this.discussion.potentialBeneficiary,
+          experienceAdditionalInformation,
+        },
+      } as DiscussionDto);
+    }
+
+    throw new Error(
+      `Invalid potentialBeneficiary with experienceAdditionalInformation ${experienceAdditionalInformation} for discussionKind ${this.discussion.kind}`,
     );
   }
 

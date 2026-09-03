@@ -28,6 +28,7 @@ import {
 import { makeDateStringSchema } from "../utils/date";
 import {
   MAX_HTML_SIZE,
+  zStringMinLength1Max800,
   zStringMinLength1Max1024,
   zStringMinLength1Max6000,
   zStringMinLength1Max11000,
@@ -50,6 +51,9 @@ import {
   type CreateDiscussionIFDto,
   candidateWarnedMethods,
   contactLevelsOfEducation,
+  type DiscussionDto,
+  type DiscussionDto1Eleve1Stage,
+  type DiscussionDtoIF,
   type DiscussionExchangeForbiddenParams,
   type DiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl,
   type DiscussionExchangeForbiddenReason,
@@ -57,10 +61,13 @@ import {
   type DiscussionInList,
   type DiscussionReadDto,
   type DiscussionStatus,
+  type Exchange,
   type ExchangeFromDashboard,
   type ExchangeRead,
   type ExchangeRole,
   type FlatGetPaginatedDiscussionsParams,
+  type ImmersionDuration,
+  immersionDurations,
   type Message,
   type PotentialBeneficiaryCommonProps,
   type WithDiscussionId,
@@ -157,26 +164,41 @@ export const messageSchema: ZodSchemaWithInputMatchingOutput<Message> = z
   .trim()
   .max(MAX_HTML_SIZE);
 
+const commonExchangeSchema = z.object({
+  subject: zStringMinLength1Max1024,
+  message: messageSchema,
+  sentAt: makeDateStringSchema(),
+  attachments: z.array(attachmentSchema),
+});
+
+export const exchangeSchema: ZodSchemaWithInputMatchingOutput<Exchange> =
+  commonExchangeSchema.and(
+    z.discriminatedUnion("sender", [
+      z.object({
+        sender: z.literal("establishment"),
+        firstname: firstnameSchema,
+        lastname: lastnameSchema,
+        email: emailSchema,
+      }),
+      z.object({
+        sender: z.literal("potentialBeneficiary"),
+      }),
+    ]),
+  );
+
 export const exchangeReadSchema: ZodSchemaWithInputMatchingOutput<ExchangeRead> =
-  z
-    .object({
-      subject: zStringMinLength1Max1024,
-      message: messageSchema,
-      sentAt: makeDateStringSchema(),
-      attachments: z.array(attachmentSchema),
-    })
-    .and(
-      z.discriminatedUnion("sender", [
-        z.object({
-          sender: z.literal("establishment"),
-          firstname: firstnameSchema,
-          lastname: lastnameSchema,
-        }),
-        z.object({
-          sender: z.literal("potentialBeneficiary"),
-        }),
-      ]),
-    );
+  commonExchangeSchema.and(
+    z.discriminatedUnion("sender", [
+      z.object({
+        sender: z.literal("establishment"),
+        firstname: firstnameSchema,
+        lastname: lastnameSchema,
+      }),
+      z.object({
+        sender: z.literal("potentialBeneficiary"),
+      }),
+    ]),
+  );
 
 const candidateWarnedMethodSchema = z.enum(candidateWarnedMethods, {
   error: localization.invalidEnum,
@@ -280,6 +302,25 @@ const discussionLevelOfEducationSchema = z.enum(["3ème", "2nde"], {
 
 const resumeLinkSchema = absoluteUrlCanBeEmpty.optional();
 
+const immersionDurationSchema: ZodSchemaWithInputMatchingOutput<ImmersionDuration> =
+  z.enum(immersionDurations, {
+    error: localization.invalidEnum,
+  });
+
+const potentialBeneficiaryIFSchema = potentialBeneficiaryCommonSchema.extend({
+  immersionObjective: immersionObjectiveSchema.or(z.null()),
+  resumeLink: resumeLinkSchema,
+  motivation: zStringMinLength1Max800,
+  immersionDuration: immersionDurationSchema,
+  experienceAdditionalInformation: zStringMinLength1Max11000,
+});
+
+const potentialBeneficiary1Eleve1StageSchema =
+  potentialBeneficiaryCommonSchema.extend({
+    immersionObjective: z.literal(discoverObjective),
+    levelOfEducation: discussionLevelOfEducationSchema,
+  });
+
 export const discussionReadSchema: ZodSchemaWithInputMatchingOutput<DiscussionReadDto> =
   commonDiscussionSchema
     .and(
@@ -293,23 +334,43 @@ export const discussionReadSchema: ZodSchemaWithInputMatchingOutput<DiscussionRe
         z.object({
           contactMode: contactModeSchema,
           kind: discussionKindIfSchema,
-          potentialBeneficiary: potentialBeneficiaryCommonSchema.extend({
-            immersionObjective: immersionObjectiveSchema.or(z.null()),
-            resumeLink: resumeLinkSchema,
-            experienceAdditionalInformation:
-              zStringMinLength1Max11000.optional(),
-          }),
+          potentialBeneficiary: potentialBeneficiaryIFSchema,
         }),
         z.object({
           contactMode: contactModeSchema,
           kind: discussionKind1Eleve1StageSchema,
-          potentialBeneficiary: potentialBeneficiaryCommonSchema.extend({
-            immersionObjective: z.literal(discoverObjective),
-            levelOfEducation: discussionLevelOfEducationSchema,
-          }),
+          potentialBeneficiary: potentialBeneficiary1Eleve1StageSchema,
         }),
       ]),
     );
+
+const withDiscussionExtraSchema = withAcquisitionSchema.and(
+  z.object({
+    appellationCode: appellationCodeSchema,
+    exchanges: z.array(exchangeSchema),
+  }),
+);
+
+export const discussionIFSchema: ZodSchemaWithInputMatchingOutput<DiscussionDtoIF> =
+  commonDiscussionSchema.and(withDiscussionExtraSchema).and(
+    z.object({
+      contactMode: contactModeSchema,
+      kind: discussionKindIfSchema,
+      potentialBeneficiary: potentialBeneficiaryIFSchema,
+    }),
+  );
+
+export const discussion1Eleve1StageSchema: ZodSchemaWithInputMatchingOutput<DiscussionDto1Eleve1Stage> =
+  commonDiscussionSchema.and(withDiscussionExtraSchema).and(
+    z.object({
+      contactMode: contactModeSchema,
+      kind: discussionKind1Eleve1StageSchema,
+      potentialBeneficiary: potentialBeneficiary1Eleve1StageSchema,
+    }),
+  );
+
+export const discussionSchema: ZodSchemaWithInputMatchingOutput<DiscussionDto> =
+  z.union([discussionIFSchema, discussion1Eleve1StageSchema]);
 
 export const flatGetPaginatedDiscussionsParamsSchema: ZodSchemaWithInputMatchingOutput<FlatGetPaginatedDiscussionsParams> =
   z.object({
@@ -398,41 +459,38 @@ const contactInformationsCommonSchema = z.object({
   locationId: zUuidLike,
 });
 
-const createDiscussionCommonSchema = contactInformationsCommonSchema.and(
-  z.object({
-    potentialBeneficiaryPhone: phoneNumberSchema,
-    datePreferences: zStringMinLength1Max6000,
-    contactMode: contactModeSchema,
-  }),
-);
+const createDiscussionCommonSchema = contactInformationsCommonSchema.extend({
+  potentialBeneficiaryPhone: phoneNumberSchema,
+  datePreferences: zStringMinLength1Max6000,
+  contactMode: contactModeSchema,
+});
 
-const createDiscussionIFSchema: ZodSchemaWithInputMatchingOutput<CreateDiscussionIFDto> =
-  createDiscussionCommonSchema.and(
-    z.object({
-      kind: z.literal("IF"),
-      immersionObjective: immersionObjectiveSchema,
-      experienceAdditionalInformation: zStringMinLength1Max1024.optional(),
-      potentialBeneficiaryResumeLink: resumeLinkSchema,
-    }),
-  );
+const createDiscussionIFSchema = createDiscussionCommonSchema.extend({
+  kind: z.literal("IF"),
+  immersionObjective: immersionObjectiveSchema,
+  immersionDuration: immersionDurationSchema,
+  motivation: zStringMinLength1Max800,
+  experienceAdditionalInformation: zStringMinLength1Max800,
+  potentialBeneficiaryResumeLink: resumeLinkSchema,
+}) satisfies ZodSchemaWithInputMatchingOutput<CreateDiscussionIFDto>;
 
 const contactLevelOfEducationSchema: ZodSchemaWithInputMatchingOutput<ContactLevelOfEducation> =
   z.enum(contactLevelsOfEducation, {
     error: localization.invalidEnum,
   });
 
-const createDiscussion1Eleve1StageSchema: ZodSchemaWithInputMatchingOutput<CreateDiscussion1Eleve1StageDto> =
-  createDiscussionCommonSchema.and(
-    z.object({
-      kind: z.literal("1_ELEVE_1_STAGE"),
-      immersionObjective: z.literal(discoverObjective),
-      levelOfEducation: contactLevelOfEducationSchema,
-    }),
-  );
+const createDiscussion1Eleve1StageSchema = createDiscussionCommonSchema.extend({
+  kind: z.literal("1_ELEVE_1_STAGE"),
+  immersionObjective: z.literal(discoverObjective),
+  levelOfEducation: contactLevelOfEducationSchema,
+}) satisfies ZodSchemaWithInputMatchingOutput<CreateDiscussion1Eleve1StageDto>;
 
 export const createDiscussionSchema: ZodSchemaWithInputMatchingOutput<CreateDiscussionDto> =
-  createDiscussionIFSchema
-    .or(createDiscussion1Eleve1StageSchema)
+  z
+    .discriminatedUnion("kind", [
+      createDiscussionIFSchema,
+      createDiscussion1Eleve1StageSchema,
+    ])
     .and(withAcquisitionSchema);
 
 export const contactEstablishmentEventPayloadSchema: ZodSchemaWithInputMatchingOutput<ContactEstablishmentEventPayload> =
