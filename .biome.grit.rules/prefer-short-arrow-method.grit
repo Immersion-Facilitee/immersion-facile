@@ -1,0 +1,30 @@
+// Source rule : https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/prefer-short-arrow-method.md
+
+language js(typescript, jsx);
+
+JsMethodObjectMember(
+  name = $name,
+  parameters = $params,
+  body = $body
+) as $method where {
+
+  $body <: contains `return $expr`,
+
+
+  $method <: not contains `this`,
+  $method <: not contains `super`,
+  $method <: not contains `arguments`,
+
+  register_diagnostic(
+    span = $method,
+    message = "Préfère la syntaxe fléchée courte (ex: getUrl: () => ...).",
+    severity = "warn",
+    fix_kind = "safe"
+  ),
+
+  if ($method <: contains `async`) {
+    $method => `$name: async $params => $expr`
+  } else {
+    $method => `$name: $params => $expr`
+  }
+}
