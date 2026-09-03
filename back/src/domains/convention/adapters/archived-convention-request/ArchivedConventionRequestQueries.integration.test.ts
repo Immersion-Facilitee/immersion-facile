@@ -117,7 +117,7 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
       );
     });
 
-    it("does not return TREATED or REFUSED requests", async () => {
+    it("does not return TREATED or REJECTED requests", async () => {
       const pendingRequest: ArchivedConventionRequestEntity = {
         id: uuid(),
         userId: user.id,
@@ -145,7 +145,7 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
         userId: user.id,
         createdAt: new Date("2024-01-01").toISOString(),
         updatedAt: new Date("2026-01-01").toISOString(),
-        status: "REFUSED",
+        status: "REJECTED",
         conventionSearchMethod: "withConventionId",
         conventionId: uuid(),
         reason: "legalDispute",

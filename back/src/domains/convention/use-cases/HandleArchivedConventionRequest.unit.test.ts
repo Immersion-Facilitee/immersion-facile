@@ -95,9 +95,9 @@ describe("HandleArchivedConventionRequest", () => {
       ]);
     });
 
-    it("marks a PENDING request as REFUSED", async () => {
+    it("marks a PENDING request as REJECTED", async () => {
       await handleArchivedConventionRequest.execute(
-        { archivedConventionRequestId: requestId, status: "REFUSED" },
+        { archivedConventionRequestId: requestId, status: "REJECTED" },
         adminConnectedUser,
       );
 
@@ -107,7 +107,7 @@ describe("HandleArchivedConventionRequest", () => {
         ],
         {
           ...pendingRequest,
-          status: "REFUSED",
+          status: "REJECTED",
           updatedAt: now.toISOString(),
         },
       );
@@ -117,7 +117,7 @@ describe("HandleArchivedConventionRequest", () => {
           topic: "ArchivedConventionRequestHandled",
           payload: {
             archivedConventionRequestId: requestId,
-            status: "REFUSED",
+            status: "REJECTED",
             triggeredBy: {
               kind: "connected-user",
               userId: adminConnectedUser.id,
@@ -171,60 +171,38 @@ describe("HandleArchivedConventionRequest", () => {
       expectToEqual(uow.outboxRepository.events, []);
     });
 
-    it("throws alreadyHandled if request is already TREATED", async () => {
-      const treatedRequest: ArchivedConventionRequestEntity = {
-        ...pendingRequest,
-        status: "TREATED",
-        updatedAt: createdAt.toISOString(),
-      };
+    it.each(["TREATED", "REJECTED"] as const)(
+      "throws alreadyHandled if request is already %s",
+      async (existingStatus) => {
+        const alreadyHandledRequest: ArchivedConventionRequestEntity = {
+          ...pendingRequest,
+          status: existingStatus,
+          updatedAt: createdAt.toISOString(),
+        };
 
-      uow.archivedConventionRequestRepository.archivedConventionRequests = {
-        [requestId]: treatedRequest,
-      };
+        uow.archivedConventionRequestRepository.archivedConventionRequests = {
+          [requestId]: alreadyHandledRequest,
+        };
 
-      await expectPromiseToFailWithError(
-        handleArchivedConventionRequest.execute(
-          { archivedConventionRequestId: requestId, status: "REFUSED" },
-          adminConnectedUser,
-        ),
-        errors.archivedConventionRequest.alreadyHandled({ id: requestId }),
-      );
+        await expectPromiseToFailWithError(
+          handleArchivedConventionRequest.execute(
+            {
+              archivedConventionRequestId: requestId,
+              status: existingStatus === "TREATED" ? "REJECTED" : "TREATED",
+            },
+            adminConnectedUser,
+          ),
+          errors.archivedConventionRequest.alreadyHandled({ id: requestId }),
+        );
 
-      expectToEqual(
-        uow.archivedConventionRequestRepository.archivedConventionRequests[
-          requestId
-        ],
-        treatedRequest,
-      );
-      expectToEqual(uow.outboxRepository.events, []);
-    });
-
-    it("throws alreadyHandled if request is already REFUSED", async () => {
-      const refusedRequest: ArchivedConventionRequestEntity = {
-        ...pendingRequest,
-        status: "REFUSED",
-        updatedAt: createdAt.toISOString(),
-      };
-
-      uow.archivedConventionRequestRepository.archivedConventionRequests = {
-        [requestId]: refusedRequest,
-      };
-
-      await expectPromiseToFailWithError(
-        handleArchivedConventionRequest.execute(
-          { archivedConventionRequestId: requestId, status: "TREATED" },
-          adminConnectedUser,
-        ),
-        errors.archivedConventionRequest.alreadyHandled({ id: requestId }),
-      );
-
-      expectToEqual(
-        uow.archivedConventionRequestRepository.archivedConventionRequests[
-          requestId
-        ],
-        refusedRequest,
-      );
-      expectToEqual(uow.outboxRepository.events, []);
-    });
+        expectToEqual(
+          uow.archivedConventionRequestRepository.archivedConventionRequests[
+            requestId
+          ],
+          alreadyHandledRequest,
+        );
+        expectToEqual(uow.outboxRepository.events, []);
+      },
+    );
   });
 });

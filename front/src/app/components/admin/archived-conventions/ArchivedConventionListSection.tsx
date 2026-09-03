@@ -118,7 +118,7 @@ export const ArchivedConventionListSection = () => {
                     disabled: isLoading,
                     type: "button",
                     id: `${domElementIds.adminConventions.refuseArchivedConventionRequestButton}--${selectedRequest.id}`,
-                    onClick: () => handleArchivedConventionRequest("REFUSED"),
+                    onClick: () => handleArchivedConventionRequest("REJECTED"),
                   },
                   {
                     children: "Marquer comme traitée",
@@ -144,30 +144,30 @@ export const ArchivedConventionListSection = () => {
 };
 
 const makeArchivedConventionListLine = (
-  ArchivedConventionrequest: ArchivedConventionRequestToReviewDto,
+  archivedConventionRequest: ArchivedConventionRequestToReviewDto,
   onClick: () => void,
 ): React.ReactNode[] => [
   <>
     <strong>
       {getFormattedFirstnameAndLastname({
-        firstname: ArchivedConventionrequest.requester.firstname,
-        lastname: ArchivedConventionrequest.requester.lastname,
+        firstname: archivedConventionRequest.requester.firstname,
+        lastname: archivedConventionRequest.requester.lastname,
       })}
     </strong>
     <br />
-    {ArchivedConventionrequest.requester.email}
+    {archivedConventionRequest.requester.email}
   </>,
-  toDisplayedDate({ date: new Date(ArchivedConventionrequest.createdAt) }),
-  archiveReasonContentMapping[ArchivedConventionrequest.reason],
+  toDisplayedDate({ date: new Date(archivedConventionRequest.createdAt) }),
+  archiveReasonContentMapping[archivedConventionRequest.reason],
   <ButtonsGroup
-    key={`${ArchivedConventionrequest.id}-actions`}
+    key={`${archivedConventionRequest.id}-actions`}
     inlineLayoutWhen="always"
     buttons={[
       {
         children: "Traiter la demande",
         priority: "secondary",
         className: fr.cx("fr-my-1v"),
-        id: `${domElementIds.adminConventions.handleArchivedConventionRequestButton}--${ArchivedConventionrequest.id}`,
+        id: `${domElementIds.adminConventions.handleArchivedConventionRequestButton}--${archivedConventionRequest.id}`,
         onClick,
       },
     ]}
