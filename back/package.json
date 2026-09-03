@@ -116,7 +116,7 @@
     "zod-to-json-schema": "^3.21.4"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.3.1",
+    "@faker-js/faker": "^10.5.0",
     "@swc/core": "^1.15.11",
     "@swc/jest": "^0.2.39",
     "@types/body-parser": "^1.19.6",
