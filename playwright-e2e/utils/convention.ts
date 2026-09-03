@@ -27,10 +27,7 @@ export type ConventionSubmitted = {
 };
 
 const beneficiaryBirthdate = faker.date
-  .birthdate({
-    min: 1910,
-    max: 2005,
-  })
+  .birthdate({ mode: "year", min: 1910, max: 2005 })
   .toISOString()
   .split("T")[0];
 
