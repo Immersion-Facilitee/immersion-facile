@@ -8,9 +8,7 @@
     }
   },
   "root": true,
-  "plugins":[
-    "./.biome.grit.rules/prefer-short-arrow-method.grit"
-  ],
+  "plugins": ["./.biome.grit.rules/prefer-short-arrow-method.grit"],
   "linter": {
     "enabled": true,
     "rules": {
