@@ -128,7 +128,7 @@ describe("PgDiscussionRepository", () => {
             title: "insert with status and conventionId",
             discussion: new DiscussionBuilder()
               .withStatus({ status: "ACCEPTED", candidateWarnedMethod: null })
-              .withConventionId("some-convention-id")
+              .withConventionId(uuid())
               .build(),
           },
           {
@@ -146,17 +146,17 @@ describe("PgDiscussionRepository", () => {
                 {
                   sender: "establishment",
                   message: "",
-                  subject: "",
+                  subject: "Subject",
                   firstname: "",
                   lastname: "",
-                  email: "",
+                  email: "crepes@breizh.bzh",
                   attachments: [],
                   sentAt: subDays(new Date(), 9).toISOString(),
                 },
                 {
                   sender: "potentialBeneficiary",
                   message: "",
-                  subject: "",
+                  subject: "Subject",
                   attachments: [],
                   sentAt: subDays(new Date(), 8).toISOString(),
                 },
@@ -208,15 +208,6 @@ describe("PgDiscussionRepository", () => {
               .build(),
           },
           {
-            title:
-              "insert with kind IF and contact mode EMAIL and empty datePreference",
-            discussion: new DiscussionBuilder()
-              .withDiscussionKind("IF")
-              .withContactMode("EMAIL")
-              .withDatePreference("")
-              .build(),
-          },
-          {
             title: "insert with kind IF and contact mode PHONE",
             discussion: new DiscussionBuilder()
               .withDiscussionKind("IF")
@@ -241,7 +232,7 @@ describe("PgDiscussionRepository", () => {
               .withMotivation(
                 "Je veux confirmer mon projet de devenir boulanger",
               )
-              .withImmersionDuration("twoWeeksOrMore")
+              .withImmersionDuration("long")
               .build(),
           },
           {
@@ -387,7 +378,7 @@ describe("PgDiscussionRepository", () => {
             .withSiret(siret)
             .withCreatedAt(new Date("2023-07-07"))
             .withStatus({ status: "PENDING" })
-            .withPotentialBeneficiaryEmail(phoneNumber)
+            .withPotentialBeneficiaryPhone(phoneNumber)
             .build();
 
           await pgDiscussionRepository.insert(discussion);
@@ -486,7 +477,7 @@ describe("PgDiscussionRepository", () => {
               message: "mon nouveau message",
               sentAt: new Date("2023-11-11").toISOString(),
               sender: "establishment",
-              email: "",
+              email: "crepes@breizh.bzh",
               firstname: "",
               lastname: "",
               attachments: [],
@@ -504,7 +495,7 @@ describe("PgDiscussionRepository", () => {
               message: "mon nouveau message",
               sentAt: new Date("2022-11-11").toISOString(),
               sender: "establishment",
-              email: "",
+              email: "test@test.com",
               firstname: "",
               lastname: "",
               attachments: [
@@ -672,12 +663,12 @@ describe("PgDiscussionRepository", () => {
 
       describe("discussion archiving process", () => {
         const exchangeFromEstablishment: Exchange = {
-          email: "",
+          email: "crepes@breizh.bzh",
           firstname: "",
           lastname: "",
           sender: "establishment",
           message: "",
-          subject: "",
+          subject: "Subject",
           sentAt: new Date().toISOString(),
           attachments: [],
         };
@@ -2183,7 +2174,7 @@ describe("PgDiscussionRepository", () => {
                 message: "",
                 attachments: [],
                 sentAt: new Date().toISOString(),
-                subject: "",
+                subject: "Subject",
               },
             ])
             .build();
@@ -2192,13 +2183,13 @@ describe("PgDiscussionRepository", () => {
             .withExchanges([
               {
                 sender: "establishment",
-                email: "",
+                email: "crepes@breizh.bzh",
                 firstname: "",
                 lastname: "",
                 message: "",
                 attachments: [],
                 sentAt: new Date().toISOString(),
-                subject: "",
+                subject: "Subject",
               },
             ])
             .build();
@@ -2319,7 +2310,7 @@ describe("PgDiscussionRepository", () => {
               ].map((rest, index) => ({
                 ...rest,
                 message: "",
-                subject: "",
+                subject: "Subject",
                 attachments: [],
                 sentAt: addHours(new Date(date), index).toISOString(),
               })),
@@ -2333,7 +2324,7 @@ describe("PgDiscussionRepository", () => {
               [sentByBeneficiary, sentByEstablishment].map((rest, index) => ({
                 ...rest,
                 message: "",
-                subject: "",
+                subject: "Subject",
                 attachments: [],
                 sentAt: addHours(new Date(date), index).toISOString(),
               })),
@@ -2371,7 +2362,7 @@ describe("PgDiscussionRepository", () => {
               {
                 attachments: [],
                 message: "",
-                subject: "",
+                subject: "Subject",
                 sentAt: new Date().toISOString(),
                 sender: "potentialBeneficiary",
               },
