@@ -8,23 +8,33 @@ JsMethodObjectMember(
   body = $body
 ) as $method where {
 
-  $body <: contains `return $expr`,
+  $name <: not `__proto__`,
+  $method <: not contains `*`,
 
+  $body <: `{ return $expr; }`,
+  $expr <: not ``,
 
-  $method <: not contains `this`,
-  $method <: not contains `super`,
-  $method <: not contains `arguments`,
+  $params <: not contains `this`,
+  $body <: not contains `this`,
+  $body <: not contains `super`,
+  $body <: not contains `arguments`,
 
   register_diagnostic(
     span = $method,
-    message = "Préfère la syntaxe fléchée courte (ex: getUrl: () => ...).",
-    severity = "warn",
+    message = "Prefer an arrow function property over a method with a single return.",
+    severity = "error",
     fix_kind = "safe"
   ),
 
-  if ($method <: contains `async`) {
-    $method => `$name: async $params => $expr`
+  if ($expr <: or { `{ $... }`, `$x as $t`, `$x satisfies $t` }) {
+    $wrapped = `($expr)`
   } else {
-    $method => `$name: $params => $expr`
+    $wrapped = $expr
+  },
+
+  if ($method <: contains `async`) {
+    $method => `$name: async $params => $wrapped`
+  } else {
+    $method => `$name: $params => $wrapped`
   }
 }
