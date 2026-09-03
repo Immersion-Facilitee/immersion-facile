@@ -104,18 +104,18 @@ export const labelsForContactLevelOfEducation: Record<
 };
 
 export const immersionDurations = [
-  "lessThanOneWeek",
-  "oneWeek",
-  "twoWeeksOrMore",
+  "short",
+  "medium",
+  "long",
   "flexible",
 ] as const;
 
 export type ImmersionDuration = (typeof immersionDurations)[number];
 
 export const immersionDurationLabels: Record<ImmersionDuration, string> = {
-  lessThanOneWeek: "Moins d'une semaine",
-  oneWeek: "1 semaine",
-  twoWeeksOrMore: "2 semaines ou plus",
+  short: "Moins d'une semaine",
+  medium: "1 semaine",
+  long: "2 semaines ou plus",
   flexible: "Je suis flexible",
 };
 

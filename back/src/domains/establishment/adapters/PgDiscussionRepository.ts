@@ -14,6 +14,8 @@ import {
   type DiscussionKind,
   type DiscussionOrderKey,
   type DiscussionStatus,
+  discussion1Eleve1StageSchema,
+  discussionIFSchema,
   type EstablishmentRole,
   type Exchange,
   type ExchangeRole,
@@ -740,18 +742,7 @@ const makeDiscussionDtoFromPgDiscussion = (
     };
 
     if (discussion.kind === "IF") {
-      if (
-        discussion.potentialBeneficiary.motivation === undefined ||
-        discussion.potentialBeneficiary.immersionDuration === undefined ||
-        discussion.potentialBeneficiary.experienceAdditionalInformation ===
-          undefined
-      )
-        throw errors.discussion.missingRequiredIfFields({
-          discussionId: discussion.id,
-          discussionKind: discussion.kind,
-        });
-
-      return {
+      return discussionIFSchema.parse({
         ...common,
         appellationCode: discussion.appellationCode,
         acquisitionCampaign: discussion.acquisition_campaign,
@@ -771,26 +762,10 @@ const makeDiscussionDtoFromPgDiscussion = (
           motivation: discussion.potentialBeneficiary.motivation,
           immersionDuration: discussion.potentialBeneficiary.immersionDuration,
         },
-      };
+      });
     }
 
-    if (
-      discussion.immersionObjective !==
-      "Découvrir un métier ou un secteur d'activité"
-    )
-      throw errors.discussion.badImmersionObjective(
-        discussion.id,
-        discussion.kind,
-        discussion.immersionObjective,
-      );
-
-    if (!discussion.potentialBeneficiary.levelOfEducation)
-      throw errors.discussion.missingLevelOfEducation({
-        id: discussion.id,
-        kind: discussion.kind,
-      });
-
-    return {
+    return discussion1Eleve1StageSchema.parse({
       ...common,
       appellationCode: discussion.appellationCode,
       acquisitionCampaign: discussion.acquisition_campaign,
@@ -806,7 +781,7 @@ const makeDiscussionDtoFromPgDiscussion = (
         immersionObjective: discussion.immersionObjective,
         levelOfEducation: discussion.potentialBeneficiary.levelOfEducation,
       },
-    };
+    });
   });
 
 const discussionStatusWithRejectionToPg = (

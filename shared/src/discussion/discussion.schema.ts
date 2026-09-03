@@ -51,6 +51,9 @@ import {
   type CreateDiscussionIFDto,
   candidateWarnedMethods,
   contactLevelsOfEducation,
+  type DiscussionDto,
+  type DiscussionDto1Eleve1Stage,
+  type DiscussionDtoIF,
   type DiscussionExchangeForbiddenParams,
   type DiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl,
   type DiscussionExchangeForbiddenReason,
@@ -58,6 +61,7 @@ import {
   type DiscussionInList,
   type DiscussionReadDto,
   type DiscussionStatus,
+  type Exchange,
   type ExchangeFromDashboard,
   type ExchangeRead,
   type ExchangeRole,
@@ -160,26 +164,41 @@ export const messageSchema: ZodSchemaWithInputMatchingOutput<Message> = z
   .trim()
   .max(MAX_HTML_SIZE);
 
+const commonExchangeSchema = z.object({
+  subject: zStringMinLength1Max1024,
+  message: messageSchema,
+  sentAt: makeDateStringSchema(),
+  attachments: z.array(attachmentSchema),
+});
+
+export const exchangeSchema: ZodSchemaWithInputMatchingOutput<Exchange> =
+  commonExchangeSchema.and(
+    z.discriminatedUnion("sender", [
+      z.object({
+        sender: z.literal("establishment"),
+        firstname: firstnameSchema,
+        lastname: lastnameSchema,
+        email: emailSchema,
+      }),
+      z.object({
+        sender: z.literal("potentialBeneficiary"),
+      }),
+    ]),
+  );
+
 export const exchangeReadSchema: ZodSchemaWithInputMatchingOutput<ExchangeRead> =
-  z
-    .object({
-      subject: zStringMinLength1Max1024,
-      message: messageSchema,
-      sentAt: makeDateStringSchema(),
-      attachments: z.array(attachmentSchema),
-    })
-    .and(
-      z.discriminatedUnion("sender", [
-        z.object({
-          sender: z.literal("establishment"),
-          firstname: firstnameSchema,
-          lastname: lastnameSchema,
-        }),
-        z.object({
-          sender: z.literal("potentialBeneficiary"),
-        }),
-      ]),
-    );
+  commonExchangeSchema.and(
+    z.discriminatedUnion("sender", [
+      z.object({
+        sender: z.literal("establishment"),
+        firstname: firstnameSchema,
+        lastname: lastnameSchema,
+      }),
+      z.object({
+        sender: z.literal("potentialBeneficiary"),
+      }),
+    ]),
+  );
 
 const candidateWarnedMethodSchema = z.enum(candidateWarnedMethods, {
   error: localization.invalidEnum,
@@ -288,6 +307,20 @@ const immersionDurationSchema: ZodSchemaWithInputMatchingOutput<ImmersionDuratio
     error: localization.invalidEnum,
   });
 
+const potentialBeneficiaryIFSchema = potentialBeneficiaryCommonSchema.extend({
+  immersionObjective: immersionObjectiveSchema.or(z.null()),
+  resumeLink: resumeLinkSchema,
+  motivation: zStringMinLength1Max800,
+  immersionDuration: immersionDurationSchema,
+  experienceAdditionalInformation: zStringMinLength1Max11000,
+});
+
+const potentialBeneficiary1Eleve1StageSchema =
+  potentialBeneficiaryCommonSchema.extend({
+    immersionObjective: z.literal(discoverObjective),
+    levelOfEducation: discussionLevelOfEducationSchema,
+  });
+
 export const discussionReadSchema: ZodSchemaWithInputMatchingOutput<DiscussionReadDto> =
   commonDiscussionSchema
     .and(
@@ -301,24 +334,43 @@ export const discussionReadSchema: ZodSchemaWithInputMatchingOutput<DiscussionRe
         z.object({
           contactMode: contactModeSchema,
           kind: discussionKindIfSchema,
-          potentialBeneficiary: potentialBeneficiaryCommonSchema.extend({
-            immersionObjective: immersionObjectiveSchema.or(z.null()),
-            resumeLink: resumeLinkSchema,
-            motivation: zStringMinLength1Max800,
-            immersionDuration: immersionDurationSchema,
-            experienceAdditionalInformation: zStringMinLength1Max11000,
-          }),
+          potentialBeneficiary: potentialBeneficiaryIFSchema,
         }),
         z.object({
           contactMode: contactModeSchema,
           kind: discussionKind1Eleve1StageSchema,
-          potentialBeneficiary: potentialBeneficiaryCommonSchema.extend({
-            immersionObjective: z.literal(discoverObjective),
-            levelOfEducation: discussionLevelOfEducationSchema,
-          }),
+          potentialBeneficiary: potentialBeneficiary1Eleve1StageSchema,
         }),
       ]),
     );
+
+const withDiscussionExtraSchema = withAcquisitionSchema.and(
+  z.object({
+    appellationCode: appellationCodeSchema,
+    exchanges: z.array(exchangeSchema),
+  }),
+);
+
+export const discussionIFSchema: ZodSchemaWithInputMatchingOutput<DiscussionDtoIF> =
+  commonDiscussionSchema.and(withDiscussionExtraSchema).and(
+    z.object({
+      contactMode: contactModeSchema,
+      kind: discussionKindIfSchema,
+      potentialBeneficiary: potentialBeneficiaryIFSchema,
+    }),
+  );
+
+export const discussion1Eleve1StageSchema: ZodSchemaWithInputMatchingOutput<DiscussionDto1Eleve1Stage> =
+  commonDiscussionSchema.and(withDiscussionExtraSchema).and(
+    z.object({
+      contactMode: contactModeSchema,
+      kind: discussionKind1Eleve1StageSchema,
+      potentialBeneficiary: potentialBeneficiary1Eleve1StageSchema,
+    }),
+  );
+
+export const discussionSchema: ZodSchemaWithInputMatchingOutput<DiscussionDto> =
+  z.union([discussionIFSchema, discussion1Eleve1StageSchema]);
 
 export const flatGetPaginatedDiscussionsParamsSchema: ZodSchemaWithInputMatchingOutput<FlatGetPaginatedDiscussionsParams> =
   z.object({

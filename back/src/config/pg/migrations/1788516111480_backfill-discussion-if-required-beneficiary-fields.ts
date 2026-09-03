@@ -3,6 +3,7 @@ import type { MigrationBuilder } from "node-pg-migrate";
 const motivationDefault = "Non renseigné";
 const experienceAdditionalInformationDefault = "Non renseigné";
 const immersionDurationDefault = "flexible";
+const datePreferencesDefault = "Non renseignées";
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
   pgm.sql(`
@@ -28,6 +29,12 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
         OR potential_beneficiary_immersion_duration IS NULL
       )
   `);
+
+  pgm.sql(`
+    UPDATE discussions
+    SET potential_beneficiary_date_preferences = '${datePreferencesDefault}'
+    WHERE potential_beneficiary_date_preferences = ''
+  `);
 }
 
 export async function down(pgm: MigrationBuilder): Promise<void> {
@@ -47,5 +54,11 @@ export async function down(pgm: MigrationBuilder): Promise<void> {
         '${immersionDurationDefault}'
       )
     WHERE kind = 'IF'
+  `);
+
+  pgm.sql(`
+    UPDATE discussions
+    SET potential_beneficiary_date_preferences = ''
+    WHERE potential_beneficiary_date_preferences = '${datePreferencesDefault}'
   `);
 }
