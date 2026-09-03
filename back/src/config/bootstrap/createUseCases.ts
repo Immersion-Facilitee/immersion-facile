@@ -177,6 +177,7 @@ import { makeNotifyThatReferencedEstablishmentIsBanned } from "../../domains/est
 import { makeRegisterUserOnEstablishment } from "../../domains/establishment/use-cases/RegisterUserOnEstablishment";
 import { makeRetrieveFormEstablishmentFromAggregates } from "../../domains/establishment/use-cases/RetrieveFormEstablishmentFromAggregates";
 import { makeUpdateEstablishmentAggregateFromForm } from "../../domains/establishment/use-cases/UpdateEstablishmentAggregateFromFormEstablishement";
+import { makeDeleteEstablishmentMarketingContact } from "../../domains/marketing/use-cases/DeleteEstablishmentMarketingContact";
 import { makeUpdateMarketingEstablishmentContactList } from "../../domains/marketing/use-cases/UpdateMarketingEstablishmentContactsList";
 import type { AppConfig } from "./appConfig";
 import type { Gateways } from "./createGateways";
@@ -1019,6 +1020,13 @@ export const createUseCases = ({
           establishmentMarketingGateway: gateways.establishmentMarketingGateway,
           timeGateway,
           siretGateway: gateways.siret,
+        },
+        uowPerformer,
+      }),
+    deleteEstablishmentMarketingContact:
+      makeDeleteEstablishmentMarketingContact({
+        deps: {
+          establishmentMarketingGateway: gateways.establishmentMarketingGateway,
         },
         uowPerformer,
       }),

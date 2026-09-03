@@ -1,4 +1,4 @@
-import type { Email, SiretDto } from "shared";
+import type { Email } from "shared";
 
 import type {
   EstablishmentMarketingGateway,
@@ -17,11 +17,11 @@ export class InMemoryEstablishmentMarketingGateway
   async save(marketing: EstablishmentMarketingGatewayDto): Promise<void> {
     this.#marketingEstablishments = {
       ...this.#marketingEstablishments,
-      [marketing.siret]: marketing,
+      [marketing.email]: marketing,
     };
   }
 
-  #marketingEstablishments: Record<SiretDto, EstablishmentMarketingGatewayDto> =
+  #marketingEstablishments: Record<Email, EstablishmentMarketingGatewayDto> =
     {};
 
   public get marketingEstablishments(): EstablishmentMarketingGatewayDto[] {
@@ -32,9 +32,9 @@ export class InMemoryEstablishmentMarketingGateway
     this.#marketingEstablishments = marketingEstablishments.reduce(
       (acc, marketingEstablishment) => ({
         ...acc,
-        [marketingEstablishment.siret]: marketingEstablishment,
+        [marketingEstablishment.email]: marketingEstablishment,
       }),
-      {} as Record<SiretDto, EstablishmentMarketingGatewayDto>,
+      {} as Record<Email, EstablishmentMarketingGatewayDto>,
     );
   }
 }
