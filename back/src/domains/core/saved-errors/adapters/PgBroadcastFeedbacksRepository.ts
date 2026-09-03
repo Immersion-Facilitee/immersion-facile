@@ -3,7 +3,6 @@ import {
   type AgencyId,
   type BroadcastFeedback,
   type ConventionId,
-  type ConventionLastBroadcastFeedbackResponse,
   type DateTimeIsoString,
   errors,
 } from "shared";
@@ -18,7 +17,7 @@ export class PgBroadcastFeedbacksRepository
 
   public async getLastBroadcastFeedback(
     id: ConventionId,
-  ): Promise<ConventionLastBroadcastFeedbackResponse> {
+  ): Promise<BroadcastFeedback | null> {
     const result = await this.transaction
       .with("latest_feedback", (qb) =>
         qb

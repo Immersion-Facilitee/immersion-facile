@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
+  BroadcastFeedback,
   ConventionId,
-  ConventionLastBroadcastFeedbackResponse,
   ConventionSupportedJwt,
   MarkPartnersErroredConventionAsHandledRequest,
 } from "shared";
@@ -9,7 +9,7 @@ import type { PayloadActionWithFeedbackTopic } from "../feedback/feedback.slice"
 
 export interface PartnersErroredConventionState {
   isLoading: boolean;
-  lastBroadcastFeedback: ConventionLastBroadcastFeedbackResponse;
+  lastBroadcastFeedback: BroadcastFeedback | null;
 }
 
 export const initialPartnersErroredConventionState: PartnersErroredConventionState =
@@ -63,7 +63,7 @@ export const partnersErroredConventionSlice = createSlice({
     fetchConventionLastBroadcastFeedbackSucceeded: (
       state,
       action: PayloadAction<{
-        lastBroadcastFeedback: ConventionLastBroadcastFeedbackResponse;
+        lastBroadcastFeedback: BroadcastFeedback | null;
       }>,
     ) => {
       state.isLoading = false;

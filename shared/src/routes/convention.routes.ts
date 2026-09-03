@@ -12,7 +12,7 @@ import {
   legacyAssessmentDtoSchema,
   signAssessmentRequestDtoSchema,
 } from "../assessment/assessment.schema";
-import { broadcastFeedbackSchema } from "../broadcast/broadcastFeedback.schema";
+import { conventionLastBroadcastFeedbackResponseSchema } from "../broadcast/broadcastFeedback.schema";
 import { addConventionInputSchema } from "../convention/addConventionInput";
 import { paginatedAgencyUserConventionListSchema } from "../convention/agencyUserConventionList.schema";
 import {
@@ -453,7 +453,7 @@ export const authenticatedConventionRoutes = defineRoutes({
     method: "get",
     ...withAuthorizationHeaders,
     responses: {
-      200: broadcastFeedbackSchema,
+      200: conventionLastBroadcastFeedbackResponseSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
       403: httpErrorSchema,

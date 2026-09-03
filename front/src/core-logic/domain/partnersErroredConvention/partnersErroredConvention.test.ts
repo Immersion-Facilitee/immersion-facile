@@ -126,7 +126,10 @@ describe("Broadcast feedback in store", () => {
       ),
     );
     dependencies.conventionGateway.getConventionLastBroadcastFeedbackResult$.next(
-      mockBroadcastFeedback,
+      {
+        lastBroadcastFeedback: mockBroadcastFeedback,
+        shouldBeHandled: false,
+      },
     );
 
     expectIsLoadingToBe(false);
@@ -145,7 +148,9 @@ describe("Broadcast feedback in store", () => {
       ),
     );
     dependencies.conventionGateway.getConventionLastBroadcastFeedbackResult$.next(
-      null,
+      {
+        lastBroadcastFeedback: null,
+      },
     );
 
     expectIsLoadingToBe(false);
@@ -199,7 +204,10 @@ describe("Broadcast feedback in store", () => {
       ),
     );
     dependencies.conventionGateway.getConventionLastBroadcastFeedbackResult$.next(
-      broadcastFeedback,
+      {
+        lastBroadcastFeedback: broadcastFeedback,
+        shouldBeHandled: false,
+      },
     );
 
     expect(
