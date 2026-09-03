@@ -15,6 +15,7 @@ import {
 } from "./discussion.helpers";
 import {
   discussionReadSchema,
+  discussionSchema,
   makeExchangeEmailSchema,
 } from "./discussion.schema";
 
@@ -493,6 +494,50 @@ describe("Discussions", () => {
       discussionInPersonIF,
       discussionPhone1E1S,
       discussionPhoneIF,
+    ])("Test discussionSchema", (discussion) => {
+      expectToEqual(discussionSchema.parse(discussion), discussion);
+    });
+
+    it("discussionSchema keeps the establishment exchange email (unlike the read schema)", () => {
+      const discussion = new DiscussionBuilder()
+        .withExchanges([
+          {
+            subject: "Sujet",
+            message: "message",
+            sender: "establishment",
+            firstname: "John",
+            lastname: "Doe",
+            email: "john.doe@establishment.com",
+            sentAt: new Date("2024-01-01").toISOString(),
+            attachments: [],
+          },
+        ])
+        .build();
+
+      expectToEqual(discussionSchema.parse(discussion), discussion);
+    });
+
+    it("discussionSchema rejects an IF discussion without motivation", () => {
+      if (discussionEmailIF.kind !== "IF")
+        throw new Error("expected an IF discussion for this test");
+      expect(() =>
+        discussionSchema.parse({
+          ...discussionEmailIF,
+          potentialBeneficiary: omit(
+            ["motivation"],
+            discussionEmailIF.potentialBeneficiary,
+          ),
+        }),
+      ).toThrow();
+    });
+
+    it.each([
+      discussionEmailIF,
+      discussionEmail1E1S,
+      discussionInPerson1E1S,
+      discussionInPersonIF,
+      discussionPhone1E1S,
+      discussionPhoneIF,
     ])("Test discussionReadSchema", ({ appellationCode, ...rest }) => {
       const discussionRead: DiscussionReadDto = {
         ...rest,
@@ -511,23 +556,28 @@ describe("Discussions", () => {
       "motivation",
       "immersionDuration",
       "experienceAdditionalInformation",
-    ] as const)("discussionReadSchema rejects an IF discussion without %s", (missingField) => {
-      const { appellationCode, ...rest } = discussionEmailIF;
-      if (rest.kind !== "IF")
-        throw new Error("expected an IF discussion for this test");
-      const invalidDiscussionRead = {
-        ...rest,
-        appellation: {
-          appellationCode: appellationCode,
-          appellationLabel: "osef",
-          romeCode: "A2023",
-          romeLabel: "osef",
-        },
-        potentialBeneficiary: omit([missingField], rest.potentialBeneficiary),
-      };
+    ] as const)(
+      "discussionReadSchema rejects an IF discussion without %s",
+      (missingField) => {
+        const { appellationCode, ...rest } = discussionEmailIF;
+        if (rest.kind !== "IF")
+          throw new Error("expected an IF discussion for this test");
+        const invalidDiscussionRead = {
+          ...rest,
+          appellation: {
+            appellationCode: appellationCode,
+            appellationLabel: "osef",
+            romeCode: "A2023",
+            romeLabel: "osef",
+          },
+          potentialBeneficiary: omit([missingField], rest.potentialBeneficiary),
+        };
 
-      expect(() => discussionReadSchema.parse(invalidDiscussionRead)).toThrow();
-    });
+        expect(() =>
+          discussionReadSchema.parse(invalidDiscussionRead),
+        ).toThrow();
+      },
+    );
 
     it("accept message with html sanitized - tested input sample of inbound parsing real usage", () => {
       const { appellationCode, ...rest } = new DiscussionBuilder().build();

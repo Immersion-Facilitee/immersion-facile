@@ -241,7 +241,7 @@ describe("PgDiscussionRepository", () => {
               .withMotivation(
                 "Je veux confirmer mon projet de devenir boulanger",
               )
-              .withImmersionDuration("twoWeeksOrMore")
+              .withImmersionDuration("long")
               .build(),
           },
           {

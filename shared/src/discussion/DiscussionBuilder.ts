@@ -50,7 +50,7 @@ const defaultDiscussion = {
     resumeLink: undefined,
     motivation:
       "Je ne mange que du beurre salé et je sais faire des crêpe. Le Mt Saint-Michel est breton.",
-    immersionDuration: "oneWeek",
+    immersionDuration: "medium",
     experienceAdditionalInformation: "my super experience",
     datePreferences: "my fake date preferences",
     immersionObjective: "Confirmer un projet professionnel",

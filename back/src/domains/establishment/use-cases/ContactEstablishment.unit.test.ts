@@ -112,7 +112,7 @@ describe("ContactEstablishment", () => {
     datePreferences: "fake date preferences",
     potentialBeneficiaryPhone: "+33654783402",
     immersionObjective: "Confirmer un projet professionnel",
-    immersionDuration: "oneWeek",
+    immersionDuration: "medium",
     motivation: "Je sais faire des crêpes",
     kind: "IF",
     potentialBeneficiaryFirstName: "billy",
@@ -651,7 +651,7 @@ describe("ContactEstablishment", () => {
           potentialBeneficiaryPhone: "+33654783402",
           locationId: establishmentAggregate.establishment.locations[0].id,
           datePreferences: "fake date preferences",
-          immersionDuration: "oneWeek",
+          immersionDuration: "medium",
           motivation: "Je sais faire des crêpes",
           experienceAdditionalInformation:
             "fake experience additional information",
@@ -723,7 +723,7 @@ describe("ContactEstablishment", () => {
           potentialBeneficiaryPhone: "+33654783404",
           locationId: establishmentAggregate.establishment.locations[0].id,
           datePreferences: "fake date preferences",
-          immersionDuration: "oneWeek",
+          immersionDuration: "medium",
           motivation: "Je sais faire des crêpes",
           experienceAdditionalInformation:
             "fake experience additional information",

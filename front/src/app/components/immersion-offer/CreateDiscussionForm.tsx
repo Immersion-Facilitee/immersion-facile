@@ -106,7 +106,7 @@ export const CreateDiscussionForm = ({
         ? {
             kind: "IF",
             immersionObjective: null as any as ImmersionObjective,
-            immersionDuration: "" as any as ImmersionDuration,
+            immersionDuration: null as any as ImmersionDuration,
             motivation: "",
             experienceAdditionalInformation: "",
           }
