@@ -16,7 +16,7 @@ describe("assessment helpers", () => {
 
   const createdAt = "2024-01-21T00:00:00.000Z";
 
-  const baseFormValues: AssessmentFormDto = {
+  const basePartiallyCompletedFormValues: AssessmentFormDto = {
     conventionId: convention.id,
     status: "PARTIALLY_COMPLETED",
     partialCompletionDetails: {
@@ -24,6 +24,16 @@ describe("assessment helpers", () => {
       numberOfMissedHours: null,
       numberOfMissedMinutes: null,
     },
+    endedWithAJob: false,
+    typeOfContract: null,
+    contractStartDate: null,
+    establishmentFeedback: "feedback",
+    establishmentAdvices: "advices",
+  };
+
+  const baseCompletedFormValues: AssessmentFormDto = {
+    conventionId: convention.id,
+    status: "COMPLETED",
     endedWithAJob: false,
     typeOfContract: null,
     contractStartDate: null,
@@ -109,9 +119,9 @@ describe("assessment helpers", () => {
     it("maps hours-only form to PARTIALLY_COMPLETED with convention.dateEnd", () => {
       const assessment = assessmentFormValuesToAssessmentDto(
         {
-          ...baseFormValues,
+          ...basePartiallyCompletedFormValues,
           partialCompletionDetails: {
-            ...baseFormValues.partialCompletionDetails,
+            ...basePartiallyCompletedFormValues.partialCompletionDetails,
             numberOfMissedHours: 2,
           },
         },
@@ -137,7 +147,7 @@ describe("assessment helpers", () => {
     it("maps date-only form (0h 0min) to PARTIALLY_COMPLETED with numberOfMissedHours 0", () => {
       const assessment = assessmentFormValuesToAssessmentDto(
         {
-          ...baseFormValues,
+          ...basePartiallyCompletedFormValues,
           partialCompletionDetails: {
             lastDayOfPresence: "2024-01-18",
             numberOfMissedHours: 0,
@@ -166,7 +176,7 @@ describe("assessment helpers", () => {
     it("maps 1h30 to numberOfMissedHours 1.5", () => {
       const assessment = assessmentFormValuesToAssessmentDto(
         {
-          ...baseFormValues,
+          ...basePartiallyCompletedFormValues,
           partialCompletionDetails: {
             lastDayOfPresence: "2024-01-18",
             numberOfMissedHours: 1,
@@ -184,10 +194,7 @@ describe("assessment helpers", () => {
 
     it("maps COMPLETED status", () => {
       const assessment = assessmentFormValuesToAssessmentDto(
-        {
-          ...baseFormValues,
-          status: "COMPLETED",
-        },
+        baseCompletedFormValues,
         convention,
         createdAt,
       );
@@ -208,8 +215,7 @@ describe("assessment helpers", () => {
     it("maps endedWithAJob when contract fields are filled", () => {
       const assessment = assessmentFormValuesToAssessmentDto(
         {
-          ...baseFormValues,
-          status: "COMPLETED",
+          ...baseCompletedFormValues,
           endedWithAJob: true,
           typeOfContract: "CDI",
           contractStartDate: "2024-01-15",
@@ -237,9 +243,9 @@ describe("assessment helpers", () => {
   describe("computeTotalHours via mapper", () => {
     it("gives the same total for hours-only form as with lastDayOfPresence = convention.dateEnd", () => {
       const formValues: AssessmentFormDto = {
-        ...baseFormValues,
+        ...basePartiallyCompletedFormValues,
         partialCompletionDetails: {
-          ...baseFormValues.partialCompletionDetails,
+          ...basePartiallyCompletedFormValues.partialCompletionDetails,
           numberOfMissedHours: 2,
         },
       };

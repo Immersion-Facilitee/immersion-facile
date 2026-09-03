@@ -104,24 +104,40 @@ const partialCompletionDetailsFormValuesSchema: ZodSchemaWithInputMatchingOutput
     numberOfMissedMinutes: z.number().nullable(),
   });
 
-const assessmentFormValuesBaseSchema: ZodSchemaWithInputMatchingOutput<AssessmentFormDto> =
+const assessmentFormStatusSchema = z.discriminatedUnion("status", [
   z.object({
-    conventionId: z.string(),
-    status: z
-      .enum(["COMPLETED", "PARTIALLY_COMPLETED", "DID_NOT_SHOW"], {
-        error: localization.invalidEnum,
-      })
-      .nullable(),
+    status: z.literal("COMPLETED"),
+  }),
+  z.object({
+    status: z.literal("DID_NOT_SHOW"),
+  }),
+  z.object({
+    status: z.literal("PARTIALLY_COMPLETED"),
     partialCompletionDetails: partialCompletionDetailsFormValuesSchema,
-    endedWithAJob: z.boolean().nullable(),
-    typeOfContract: zEnumValidation(
-      typeOfContracts,
-      localization.required,
-    ).nullable(),
-    contractStartDate: makeDateStringSchema().nullable(),
-    establishmentFeedback: zStringMinLength1Max9200,
-    establishmentAdvices: zStringMinLength1Max6000,
-  });
+  }),
+]);
+
+const assessmentFormValuesBaseSchema: ZodSchemaWithInputMatchingOutput<AssessmentFormDto> =
+  z
+    .object({
+      conventionId: z.string(),
+      endedWithAJob: z.boolean().nullable(),
+      typeOfContract: zEnumValidation(
+        typeOfContracts,
+        localization.required,
+      ).nullable(),
+      contractStartDate: makeDateStringSchema().nullable(),
+      establishmentFeedback: zStringMinLength1Max9200,
+      establishmentAdvices: zStringMinLength1Max6000,
+    })
+    .and(
+      z.union([
+        z.object({
+          status: z.null(),
+        }),
+        assessmentFormStatusSchema,
+      ]),
+    );
 
 const toFormMissedHours = ({
   numberOfMissedHours,
