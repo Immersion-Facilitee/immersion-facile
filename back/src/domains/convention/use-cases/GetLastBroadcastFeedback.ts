@@ -32,10 +32,16 @@ export const makeGetLastBroadcastFeedback = useCaseBuilder(
       userHasEnoughRightsOnConvention(userWithRights, convention, [
         ...allAgencyRoles,
       ])
-    )
-      return uow.broadcastFeedbacksRepository.getLastBroadcastFeedback(
-        inputParams,
-      );
+    ) {
+      const lastBroadcastFeedback =
+        await uow.broadcastFeedbacksRepository.getLastBroadcastFeedback(
+          inputParams,
+        );
+      if (!lastBroadcastFeedback) {
+        return { lastBroadcastFeedback: null };
+      }
+      return { lastBroadcastFeedback, shouldBeHandled: false };
+    }
     throw errors.user.forbidden({
       userId: currentUser.id,
     });

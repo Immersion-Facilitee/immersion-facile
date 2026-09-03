@@ -1,9 +1,4 @@
-import {
-  type BroadcastFeedback,
-  type ConventionId,
-  type ConventionLastBroadcastFeedbackResponse,
-  errors,
-} from "shared";
+import { type BroadcastFeedback, type ConventionId, errors } from "shared";
 
 import type { BroadcastFeedbacksRepository } from "../ports/BroadcastFeedbacksRepository";
 
@@ -56,7 +51,7 @@ export class InMemoryBroadcastFeedbacksRepository
 
   public async getLastBroadcastFeedback(
     conventionId: ConventionId,
-  ): Promise<ConventionLastBroadcastFeedbackResponse> {
+  ): Promise<BroadcastFeedback | null> {
     return (
       this.#broadcastFeedbacks
         .filter(

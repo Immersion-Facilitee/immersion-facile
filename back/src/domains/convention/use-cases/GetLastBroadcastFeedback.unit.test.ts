@@ -1,9 +1,9 @@
 import {
   AgencyDtoBuilder,
   type BroadcastFeedback,
-  broadcastFeedbackSchema,
   ConnectedUserBuilder,
   ConventionDtoBuilder,
+  conventionLastBroadcastFeedbackResponseSchema,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
@@ -79,19 +79,27 @@ describe("GetLastBroadcastFeedback", () => {
         connectedUser,
       );
 
-      const parseResult = broadcastFeedbackSchema.safeParse(result);
+      const parseResult =
+        conventionLastBroadcastFeedbackResponseSchema.safeParse(result);
       expect(parseResult.success).toBeTruthy();
-      expectToEqual(result, sampleBroadcastFeedback);
+      expectToEqual(result, {
+        lastBroadcastFeedback: sampleBroadcastFeedback,
+        shouldBeHandled: false,
+      });
     });
 
     it("rejects broadcast feedbacks with inconsistent convention ids", () => {
-      const parseResult = broadcastFeedbackSchema.safeParse({
-        ...sampleBroadcastFeedback,
-        requestParams: {
-          ...sampleBroadcastFeedback.requestParams,
-          conventionId: "11111111-1111-4111-8111-111111111111",
-        },
-      });
+      const parseResult =
+        conventionLastBroadcastFeedbackResponseSchema.safeParse({
+          lastBroadcastFeedback: {
+            ...sampleBroadcastFeedback,
+            requestParams: {
+              ...sampleBroadcastFeedback.requestParams,
+              conventionId: "11111111-1111-4111-8111-111111111111",
+            },
+          },
+          shouldBeHandled: false,
+        });
 
       expect(parseResult.success).toBe(false);
     });
@@ -102,7 +110,9 @@ describe("GetLastBroadcastFeedback", () => {
         connectedUser,
       );
 
-      expectToEqual(result, null);
+      expectToEqual(result, {
+        lastBroadcastFeedback: null,
+      });
     });
 
     it("should return the most recent broadcast feedback when multiple exist", async () => {
@@ -128,7 +138,10 @@ describe("GetLastBroadcastFeedback", () => {
         connectedUser,
       );
 
-      expectToEqual(result, newerFeedback);
+      expectToEqual(result, {
+        lastBroadcastFeedback: newerFeedback,
+        shouldBeHandled: false,
+      });
     });
 
     it("should handle broadcast feedback with error response", async () => {
@@ -161,7 +174,10 @@ describe("GetLastBroadcastFeedback", () => {
         connectedUser,
       );
 
-      expectToEqual(result, errorFeedback);
+      expectToEqual(result, {
+        lastBroadcastFeedback: errorFeedback,
+        shouldBeHandled: false,
+      });
     });
   });
 
