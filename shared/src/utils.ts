@@ -150,9 +150,9 @@ export type DotNestedKeys<T> = (
       : T extends Array<infer U>
         ? `${number}${DotPrefix<DotNestedKeys<U>>}`
         : {
-            [K in Exclude<keyof T, symbol>]: `${K}${DotPrefix<
-              DotNestedKeys<T[K]>
-            >}`;
+            [K in Exclude<keyof T, symbol>]:
+              | K
+              | `${K}${DotPrefix<DotNestedKeys<T[K]>>}`;
           }[Exclude<keyof T, symbol>]
     : ""
 ) extends infer D
