@@ -235,6 +235,50 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
       ]);
     });
 
+    it("Removes the previous lead marketing contact from the gateway when the establishment gets registered with a different contact email", async () => {
+      const leadContact: MarketingContact = {
+        createdAt: new Date("2024-01-01"),
+        email: "lead-representative@example.com",
+        firstName: "Lead",
+        lastName: "Representative",
+      };
+
+      uow.establishmentMarketingRepository.contacts = [
+        {
+          ...establishmentMarketingContactEntity,
+          contactEmail: leadContact.email,
+          emailContactHistory: [leadContact],
+        },
+      ];
+
+      marketingGateway.marketingEstablishments = [
+        {
+          email: leadContact.email,
+          firstName: leadContact.firstName,
+          lastName: leadContact.lastName,
+          conventions: { numberOfValidatedConvention: 1 },
+          hasIcAccount: false,
+          isRegistered: false,
+          siret: establishment.establishment.siret,
+        },
+      ];
+
+      await updateMarketingEstablishmentContactList.execute({
+        siret: establishment.establishment.siret,
+      });
+
+      expectToEqual(uow.establishmentMarketingRepository.contacts, [
+        {
+          ...establishmentMarketingContactEntity,
+          emailContactHistory: [marketingContact, leadContact],
+        },
+      ]);
+
+      expectToEqual(marketingGateway.marketingEstablishments, [
+        establishmentMarketingGatewayDto,
+      ]);
+    });
+
     describe("Update convention related properties", () => {
       beforeEach(() => {
         uow.establishmentMarketingRepository.contacts = [
@@ -573,6 +617,61 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
 
       expectToEqual(marketingGateway.marketingEstablishments, [
         { ...establishmentMarketingGatewayDto },
+      ]);
+    });
+
+    it("Replaces every previous lead contact for the same siret in the marketing gateway", async () => {
+      uow.conventionRepository.setConventions([convention]);
+
+      const previousContacts: MarketingContact[] = [
+        {
+          createdAt: new Date("2024-01-02"),
+          email: "previous-contact@example.com",
+          firstName: "Previous",
+          lastName: "Contact",
+        },
+        {
+          createdAt: new Date("2024-01-01"),
+          email: "oldest-contact@example.com",
+          firstName: "Oldest",
+          lastName: "Contact",
+        },
+      ];
+
+      uow.establishmentMarketingRepository.contacts = [
+        {
+          ...establishmentMarketingContactEntityWithoutNafCode,
+          contactEmail: previousContacts[0].email,
+          emailContactHistory: previousContacts,
+        },
+      ];
+      marketingGateway.marketingEstablishments = previousContacts.map(
+        (contact) => ({
+          email: contact.email,
+          firstName: contact.firstName,
+          lastName: contact.lastName,
+          conventions: { numberOfValidatedConvention: 1 },
+          hasIcAccount: false,
+          isRegistered: false,
+          siret: convention.siret,
+        }),
+      );
+
+      await updateMarketingEstablishmentContactList.execute({
+        siret: convention.siret,
+      });
+
+      expectToEqual(uow.establishmentMarketingRepository.contacts, [
+        {
+          ...establishmentMarketingContactEntityWithoutNafCode,
+          emailContactHistory: [
+            conventionMarketingContact,
+            ...previousContacts,
+          ],
+        },
+      ]);
+      expectToEqual(marketingGateway.marketingEstablishments, [
+        establishmentMarketingGatewayDto,
       ]);
     });
 

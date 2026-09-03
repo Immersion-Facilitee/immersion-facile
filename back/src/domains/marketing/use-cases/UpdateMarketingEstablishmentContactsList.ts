@@ -2,6 +2,7 @@ import { equals } from "ramda";
 import {
   type ConventionDto,
   errors,
+  executeInSequence,
   isSuperEstablishment,
   type SiretDto,
   type WithSiretDto,
@@ -13,6 +14,7 @@ import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { EstablishmentAggregate } from "../../establishment/entities/EstablishmentAggregate";
 import type { MarketingContact } from "../entities/MarketingContact";
+import { deleteEstablishmentMarketingContact } from "../helpers/establishmentMarketingContact.helpers";
 import type {
   ConventionInfos,
   EstablishmentMarketingGateway,
@@ -101,11 +103,12 @@ const onMissingEstablishment = async ({
   const { lastConvention } = marketingConventionsData;
 
   if (!lastConvention) {
-    return deleteMarketingContactEntity(
-      siret,
+    return deleteEstablishmentMarketingContact({
       uow,
       establishmentMarketingGateway,
-    );
+      siret,
+      throwIfMissing: true,
+    });
   }
 
   const marketingContact: MarketingContact = {
@@ -120,6 +123,7 @@ const onMissingEstablishment = async ({
     siret: lastConvention.siret,
     marketingContact,
     siretGateway,
+    establishmentMarketingGateway,
   });
 
   return establishmentMarketingGateway.save({
@@ -182,6 +186,7 @@ const onEstablishment = async ({
     siret: establishmentAggregate.establishment.siret,
     marketingContact,
     siretGateway,
+    establishmentMarketingGateway: marketingGateway,
   });
 
   const user = await uow.userRepository.findByEmail(marketingContact.email);
@@ -262,11 +267,13 @@ const saveMarketingContactEntity = async ({
   siret,
   marketingContact,
   siretGateway,
+  establishmentMarketingGateway,
 }: {
   uow: UnitOfWork;
   siret: SiretDto;
   marketingContact: MarketingContact;
   siretGateway: SiretGateway;
+  establishmentMarketingGateway: EstablishmentMarketingGateway;
 }): Promise<void> => {
   const establishmentMarketingContactEntity =
     await uow.establishmentMarketingRepository.getBySiret(siret);
@@ -278,6 +285,24 @@ const saveMarketingContactEntity = async ({
     throw new Error(
       "Marketing contact does not have any contact history. This should not occurs.",
     );
+
+  if (
+    establishmentMarketingContactEntity &&
+    establishmentMarketingContactEntity.contactEmail !== marketingContact.email
+  ) {
+    const obsoleteContactEmails = [
+      ...new Set([
+        establishmentMarketingContactEntity.contactEmail,
+        ...establishmentMarketingContactEntity.emailContactHistory.map(
+          ({ email }) => email,
+        ),
+      ]),
+    ].filter((email) => email !== marketingContact.email);
+
+    await executeInSequence(obsoleteContactEmails, (email) =>
+      establishmentMarketingGateway.delete(email),
+    );
+  }
 
   if (!equals(lastMarketingcontact, marketingContact))
     await uow.establishmentMarketingRepository.save({
@@ -293,22 +318,6 @@ const saveMarketingContactEntity = async ({
         (await siretGateway.getEstablishmentBySiret(siret))?.nafDto?.code ??
         null,
     });
-};
-
-const deleteMarketingContactEntity = async (
-  siret: SiretDto,
-  uow: UnitOfWork,
-  establishmentMarketingGateway: EstablishmentMarketingGateway,
-): Promise<void> => {
-  const establishmentMarketingContactEntity =
-    await uow.establishmentMarketingRepository.getBySiret(siret);
-  if (!establishmentMarketingContactEntity)
-    throw errors.establishmentMarketing.notFound({ siret });
-
-  await uow.establishmentMarketingRepository.delete(siret);
-  await establishmentMarketingGateway.delete(
-    establishmentMarketingContactEntity.contactEmail,
-  );
 };
 
 const makeEstablishmentMarketingSearchableBy = (
