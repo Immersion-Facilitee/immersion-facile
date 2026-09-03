@@ -1579,7 +1579,7 @@ describe("authenticatedConventionRoutes", () => {
       });
     });
 
-    it("403 - non-admin user", async () => {
+    it("403 - non backoffice admin user", async () => {
       inMemoryUow.userRepository.users = [validator, requesterUser];
       inMemoryUow.archivedConventionRequestRepository.archivedConventionRequests =
         { [requestId]: pendingRequest };
@@ -1636,7 +1636,7 @@ describe("authenticatedConventionRoutes", () => {
       const response = await httpClient.handleArchivedConventionRequest({
         headers: adminAuthorization(),
         urlParams: { archivedConventionRequestId: requestId },
-        body: { status: "REFUSED" },
+        body: { status: "REJECTED" },
       });
 
       expectHttpResponseToEqual(response, {

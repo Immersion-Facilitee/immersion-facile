@@ -25,22 +25,21 @@ export const archivedConventionRequestReasons = [
 export type ArchivedConventionRequestReason =
   (typeof archivedConventionRequestReasons)[number];
 
-export const archivedConventionRequestStatuses = [
-  "PENDING",
-  "TREATED",
-  "REFUSED",
-] as const;
-
-export type ArchivedConventionRequestStatus =
-  (typeof archivedConventionRequestStatuses)[number];
-
 export const archivedConventionRequestHandledStatuses = [
   "TREATED",
-  "REFUSED",
+  "REJECTED",
 ] as const;
 
 export type ArchivedConventionRequestHandledStatus =
   (typeof archivedConventionRequestHandledStatuses)[number];
+
+export const archivedConventionRequestStatuses = [
+  "PENDING",
+  ...archivedConventionRequestHandledStatuses,
+] as const;
+
+export type ArchivedConventionRequestStatus =
+  (typeof archivedConventionRequestStatuses)[number];
 
 export type HandleArchivedConventionRequestDto =
   WithArchivedConventionRequestId & {

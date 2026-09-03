@@ -37,12 +37,34 @@ describe("archived convention request slice", () => {
       "archived-convention-request-handle";
     const jwt = "jwt";
     const archivedConventionRequestId = uuid();
+    const initialListToReview: ArchivedConventionRequestToReviewListDto = [
+      {
+        id: archivedConventionRequestId,
+        reason: "legalDispute",
+        createdAt: new Date().toISOString(),
+        conventionSearchMethod: "withConventionId",
+        conventionId: uuid(),
+        requester: {
+          firstname: "Moaning",
+          lastname: "Malone",
+          email: "uwu@mail.com",
+        },
+      },
+    ];
     const remainingList: ArchivedConventionRequestToReviewListDto = [];
+    const stateWithListToReview: ArchivedConventionRequestState = {
+      isLoading: false,
+      archivedConventionListToReview: initialListToReview,
+    };
+
+    beforeEach(() => {
+      ({ store, dependencies } = createTestStore({
+        archivedConventionRequest: stateWithListToReview,
+      }));
+    });
 
     it("on treated success, shows treated feedback and refetches the list", () => {
-      expectArchivedConventionRequestState(
-        initialArchivedConventionRequestState,
-      );
+      expectArchivedConventionRequestState(stateWithListToReview);
 
       store.dispatch(
         archivedConventionRequestSlice.actions.handleArchivedConventionRequestRequested(
@@ -57,7 +79,7 @@ describe("archived convention request slice", () => {
 
       expectArchivedConventionRequestState({
         isLoading: true,
-        archivedConventionListToReview: null,
+        archivedConventionListToReview: initialListToReview,
       });
 
       feedGatewayWithHandleArchivedConventionRequest();
@@ -78,20 +100,23 @@ describe("archived convention request slice", () => {
     });
 
     it("on refused success, shows refused feedback and refetches the list", () => {
-      expectArchivedConventionRequestState(
-        initialArchivedConventionRequestState,
-      );
+      expectArchivedConventionRequestState(stateWithListToReview);
 
       store.dispatch(
         archivedConventionRequestSlice.actions.handleArchivedConventionRequestRequested(
           {
             archivedConventionRequestId,
-            status: "REFUSED",
+            status: "REJECTED",
             jwt,
             feedbackTopic: handleFeedbackTopic,
           },
         ),
       );
+
+      expectArchivedConventionRequestState({
+        isLoading: true,
+        archivedConventionListToReview: initialListToReview,
+      });
 
       feedGatewayWithHandleArchivedConventionRequest();
 
@@ -111,9 +136,7 @@ describe("archived convention request slice", () => {
     });
 
     it("on failed, shows error feedback and does not change the list", () => {
-      expectArchivedConventionRequestState(
-        initialArchivedConventionRequestState,
-      );
+      expectArchivedConventionRequestState(stateWithListToReview);
 
       store.dispatch(
         archivedConventionRequestSlice.actions.handleArchivedConventionRequestRequested(
@@ -126,12 +149,15 @@ describe("archived convention request slice", () => {
         ),
       );
 
+      expectArchivedConventionRequestState({
+        isLoading: true,
+        archivedConventionListToReview: initialListToReview,
+      });
+
       const error = new Error("already handled");
       feedGatewayWithHandleArchivedConventionRequest(error);
 
-      expectArchivedConventionRequestState(
-        initialArchivedConventionRequestState,
-      );
+      expectArchivedConventionRequestState(stateWithListToReview);
       expectFeedbackTopic(handleFeedbackTopic, {
         level: "error",
         on: "update",
