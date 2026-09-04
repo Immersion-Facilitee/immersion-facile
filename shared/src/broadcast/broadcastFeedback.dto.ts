@@ -37,8 +37,8 @@ export type BroadcastFeedback = {
 };
 
 export type ConventionLastBroadcastFeedbackResponse =
-  | { lastBroadcastFeedback: null }
+  | { broadcastFeedback: null }
   | {
-      lastBroadcastFeedback: BroadcastFeedback;
+      broadcastFeedback: BroadcastFeedback;
       shouldBeHandled: boolean;
     };
