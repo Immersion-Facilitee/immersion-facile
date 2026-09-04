@@ -73,6 +73,49 @@ export class PgBroadcastFeedbacksRepository
     };
   }
 
+  public async getBroadcastFeedbacksByConventionId(
+    id: ConventionId,
+  ): Promise<BroadcastFeedback[]> {
+    const rows = await this.transaction
+      .selectFrom("broadcast_feedbacks as bf")
+      .where("bf.convention_id", "=", id)
+      .select([
+        "bf.consumer_id as consumerId",
+        "bf.consumer_name as consumerName",
+        "bf.service_name as serviceName",
+        "bf.subscriber_error_feedback as subscriberErrorFeedback",
+        "bf.request_params as requestParams",
+        sql<DateTimeIsoString>`date_to_iso(bf.occurred_at)`.as("occurredAt"),
+        "bf.handled_by_agency as handledByAgency",
+        "bf.response as response",
+        "bf.convention_id as conventionId",
+        "bf.agency_id as agencyId",
+      ])
+      .orderBy("bf.occurred_at", "asc")
+      .execute();
+
+    return rows.flatMap((row) => {
+      if (!row.conventionId || !row.agencyId) return [];
+
+      return [
+        {
+          consumerId: row.consumerId,
+          consumerName: row.consumerName,
+          conventionId: row.conventionId,
+          agencyId: row.agencyId,
+          handledByAgency: row.handledByAgency,
+          occurredAt: row.occurredAt,
+          requestParams: row.requestParams,
+          serviceName: row.serviceName,
+          response: row.response,
+          subscriberErrorFeedback: row.subscriberErrorFeedback
+            ? row.subscriberErrorFeedback
+            : undefined,
+        },
+      ];
+    });
+  }
+
   async #getAgencyId(conventionId: ConventionId): Promise<AgencyId | null> {
     const convention = await this.transaction
       .selectFrom("conventions")

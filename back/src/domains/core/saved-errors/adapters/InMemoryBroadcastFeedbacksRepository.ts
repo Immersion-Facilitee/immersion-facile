@@ -65,6 +65,17 @@ export class InMemoryBroadcastFeedbacksRepository
     );
   }
 
+  public async getBroadcastFeedbacksByConventionId(
+    conventionId: ConventionId,
+  ): Promise<BroadcastFeedback[]> {
+    return this.#broadcastFeedbacks
+      .filter((broadcast) => broadcast.conventionId === conventionId)
+      .sort(
+        (a, b) =>
+          new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime(),
+      );
+  }
+
   public get broadcastFeedbacks(): BroadcastFeedback[] {
     return this.#broadcastFeedbacks;
   }
