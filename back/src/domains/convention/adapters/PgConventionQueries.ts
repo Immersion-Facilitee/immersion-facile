@@ -401,10 +401,14 @@ export class PgConventionQueries implements ConventionQueries {
     );
 
     const toCompleteSelect = selectUnfinalizedAssessmentFields(
-      conventionsWithoutAssessmentRows,
+      conventionsWithoutAssessmentRows as Parameters<
+        typeof selectUnfinalizedAssessmentFields
+      >[0],
     );
     const toSignSelect = selectUnfinalizedAssessmentFields(
-      conventionsWithAssessmentToSignRows,
+      conventionsWithAssessmentToSignRows as Parameters<
+        typeof selectUnfinalizedAssessmentFields
+      >[0],
     );
 
     const unfinalizedAssessmentRows = match(assessmentCompletionStatus)
