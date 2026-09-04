@@ -29,6 +29,7 @@ import type { VerificationAction } from "src/app/components/forms/convention/man
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { isAssessmentToBeSignedByBeneficiary } from "src/app/utils/assessment.utils";
+import { shouldShowPartnersBroadcastError } from "src/app/utils/broadcast.utils";
 import { getConventionSubStatus } from "src/app/utils/conventionSubStatus";
 import { apiConsumerSelectors } from "src/core-logic/domain/apiConsumer/apiConsumer.selector";
 import { assessmentSlice } from "src/core-logic/domain/assessment/assessment.slice";
@@ -88,9 +89,16 @@ export const ConventionManageActions = ({
     conventionActionSelectors.isLoading,
   );
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
-  const broadcastErrorFeedback = useAppSelector(
+  const lastBroadcastFeedback = useAppSelector(
     partnersErroredConventionSelectors.lastBroadcastFeedback,
-  )?.subscriberErrorFeedback;
+  );
+  const shouldShowBroadcastError = shouldShowPartnersBroadcastError({
+    isBackofficeAdmin: currentUser?.isBackofficeAdmin ?? false,
+    lastBroadcastFeedback,
+  });
+  const broadcastErrorFeedback = shouldShowBroadcastError
+    ? lastBroadcastFeedback.broadcastFeedback?.subscriberErrorFeedback
+    : undefined;
 
   const feedbacks = useAppSelector(feedbacksSelectors.feedbacks);
   const consumerNames = useAppSelector(apiConsumerSelectors.apiConsumerNames);
