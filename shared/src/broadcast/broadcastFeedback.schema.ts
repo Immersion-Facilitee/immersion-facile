@@ -10,6 +10,7 @@ import { conventionIdSchema } from "../convention/convention.schema";
 import { dateTimeIsoStringSchema } from "../utils/date";
 import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
 import type {
+  BroadcastFeedback,
   BroadcastFeedbackResponse,
   ConventionBroadcastRequestParams,
   ConventionLastBroadcastFeedbackResponse,
@@ -59,5 +60,18 @@ const nonNullableBroadcastFeedbackSchema = z
     },
   );
 
-export const broadcastFeedbackSchema: ZodSchemaWithInputMatchingOutput<ConventionLastBroadcastFeedbackResponse> =
+export const broadcastFeedbackSchema: ZodSchemaWithInputMatchingOutput<BroadcastFeedback | null> =
   nonNullableBroadcastFeedbackSchema.nullable();
+
+export const conventionLastBroadcastFeedbackResponseSchema: ZodSchemaWithInputMatchingOutput<ConventionLastBroadcastFeedbackResponse> =
+  z.union([
+    z
+      .object({
+        broadcastFeedback: z.null(),
+      })
+      .strict(),
+    z.object({
+      broadcastFeedback: nonNullableBroadcastFeedbackSchema,
+      shouldBeHandled: z.boolean(),
+    }),
+  ]);

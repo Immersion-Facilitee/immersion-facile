@@ -15,7 +15,7 @@ export interface PartnersErroredConventionState {
 export const initialPartnersErroredConventionState: PartnersErroredConventionState =
   {
     isLoading: false,
-    lastBroadcastFeedback: null,
+    lastBroadcastFeedback: { broadcastFeedback: null },
   };
 
 type MarkPartnersErroredConventionAsHandledRequestPayload = {
@@ -62,12 +62,10 @@ export const partnersErroredConventionSlice = createSlice({
     },
     fetchConventionLastBroadcastFeedbackSucceeded: (
       state,
-      action: PayloadAction<{
-        lastBroadcastFeedback: ConventionLastBroadcastFeedbackResponse;
-      }>,
+      action: PayloadAction<ConventionLastBroadcastFeedbackResponse>,
     ) => {
       state.isLoading = false;
-      state.lastBroadcastFeedback = action.payload.lastBroadcastFeedback;
+      state.lastBroadcastFeedback = action.payload;
     },
     fetchConventionLastBroadcastFeedbackFailed: (
       state: PartnersErroredConventionState,
