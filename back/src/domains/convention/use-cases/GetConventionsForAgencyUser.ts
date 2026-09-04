@@ -5,6 +5,7 @@ import {
   type AgencyUserConventionListDto,
   type ConnectedUser,
   type DataWithPagination,
+  type DateFilter,
   type DateString,
   defaultMonthsThresholdForConventionsListing,
   type GetConventionsForAgencyUserParams,
@@ -46,8 +47,6 @@ export const makeGetConventionsForAgencyUser = useCaseBuilder(
 
     const pagination = getPaginationParamsForWeb(inputParams.pagination);
 
-    const now = deps.timeGateway.now();
-
     const user = await getUserWithRights(uow, currentUser.id);
 
     const agencyRightsInScope = user.agencyRights
@@ -69,6 +68,8 @@ export const makeGetConventionsForAgencyUser = useCaseBuilder(
       .filter(isValidatorOfAgencyRefersTo)
       .map(({ agency }) => agency.id);
 
+    const featureFlags = await uow.featureFlagQueries.getAll();
+
     const paginated = await uow.conventionQueries.getPaginatedConventions({
       ...withSort,
       filters: {
@@ -82,18 +83,14 @@ export const makeGetConventionsForAgencyUser = useCaseBuilder(
               },
             }
           : {}),
-        dateEnd: {
-          ...restFilters.dateEnd,
-          from: shouldUseDefaultDateEndFrom(restFilters.dateEnd?.from, now)
-            ? subMonths(
-                now,
-                defaultMonthsThresholdForConventionsListing,
-              ).toISOString()
-            : restFilters.dateEnd?.from,
-          to: shouldIgnoreDateEndTo(restFilters.dateEnd?.to, now)
-            ? undefined
-            : restFilters.dateEnd?.to,
-        },
+        ...(featureFlags.enableRequestArchivedConvention.isActive
+          ? {}
+          : {
+              dateEnd: computeDateEnd(
+                restFilters.dateEnd,
+                deps.timeGateway.now(),
+              ),
+            }),
       },
       pagination,
     });
@@ -119,16 +116,30 @@ const isValidatorOfAgencyRefersTo = ({ agency, roles }: AgencyRight) =>
   !roles.includes("agency-admin") &&
   !roles.includes("agency-viewer");
 
+const computeDateEnd = (
+  dateEnd: DateFilter | undefined,
+  now: Date,
+): DateFilter => ({
+  ...dateEnd,
+  from: shouldUseDefaultDateEndFrom(dateEnd?.from, now)
+    ? subMonths(now, defaultMonthsThresholdForConventionsListing).toISOString()
+    : dateEnd?.from,
+  to: shouldIgnoreDateEndTo(dateEnd?.to, now) ? undefined : dateEnd?.to,
+});
+
 const shouldUseDefaultDateEndFrom = (
   dateEndFrom: DateString | undefined,
   now: Date,
-) =>
+): boolean =>
   dateEndFrom
     ? new Date(dateEndFrom) <=
       subMonths(now, defaultMonthsThresholdForConventionsListing)
     : true;
 
-const shouldIgnoreDateEndTo = (dateEndTo: DateString | undefined, now: Date) =>
+const shouldIgnoreDateEndTo = (
+  dateEndTo: DateString | undefined,
+  now: Date,
+): boolean =>
   dateEndTo
     ? new Date(dateEndTo) <=
       subMonths(now, defaultMonthsThresholdForConventionsListing)

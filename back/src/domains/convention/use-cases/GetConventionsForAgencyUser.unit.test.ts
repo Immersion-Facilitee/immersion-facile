@@ -1,19 +1,17 @@
-import { subMonths } from "date-fns";
+import { addMonths, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AgencyRole,
-  type AgencyUserConventionListDto,
   ConnectedUserBuilder,
-  type ConventionDto,
   ConventionDtoBuilder,
-  type DataWithPagination,
+  defaultMonthsThresholdForConventionsListing,
   expectArraysToEqualIgnoringOrder,
   expectToEqual,
   type GetConventionsForAgencyUserParams,
+  makeBooleanFeatureFlag,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
-import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -49,21 +47,21 @@ describe("GetConventionsForAgencyUser", () => {
       .build(),
   );
 
+  const now = new Date("2026-09-01T10:10:00.000Z");
+
   let getConventionsForAgencyUser: ReturnType<
     typeof makeGetConventionsForAgencyUser
   >;
-  let timeGateway: TimeGateway;
   let uow: InMemoryUnitOfWork;
+  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    timeGateway = new CustomTimeGateway();
+    timeGateway = new CustomTimeGateway(now);
     const uowPerformer = new InMemoryUowPerformer(uow);
     getConventionsForAgencyUser = makeGetConventionsForAgencyUser({
       uowPerformer,
-      deps: {
-        timeGateway,
-      },
+      deps: { timeGateway },
     });
 
     uow.agencyRepository.agencies = [agency];
@@ -72,144 +70,321 @@ describe("GetConventionsForAgencyUser", () => {
   });
 
   describe("Filtering", () => {
-    it("should filter out conventions that are older than 25 months by default", async () => {
-      const conventionOutOfRange = new ConventionDtoBuilder()
-        .withId("convention-id-1")
-        .withAgencyId(agency.id)
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateEnd(subMonths(timeGateway.now(), 26).toISOString())
-        .build();
-      const conventionInRange = new ConventionDtoBuilder()
-        .withId("convention-id-2")
-        .withAgencyId(agency.id)
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateEnd(subMonths(timeGateway.now(), 24).toISOString())
-        .build();
-
-      uow.conventionRepository.setConventions([
-        conventionOutOfRange,
-        conventionInRange,
-      ]);
-
-      const params: GetConventionsForAgencyUserParams = {
-        filters: {},
-        pagination: {
-          page: 1,
-          perPage: 10,
-        },
-      };
-
-      const result = await getConventionsForAgencyUser.execute(
-        params,
-        currentUser,
-      );
-
-      expectOnlyConventionInResult(result, conventionInRange);
-      expectToEqual(result.pagination, {
-        currentPage: 1,
-        totalPages: 1,
-        numberPerPage: 10,
-        totalRecords: 1,
+    describe("when enableRequestArchivedConvention is active", () => {
+      beforeEach(() => {
+        uow.featureFlagRepository.featureFlags = {
+          enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+        };
       });
-    });
 
-    it("should keep and override dateEnd from if provided and less or equal to defaultMonthsThreshold", async () => {
-      const conventionOutOfRange = new ConventionDtoBuilder()
-        .withId("convention-id-1")
-        .withAgencyId(agency.id)
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateEnd(subMonths(timeGateway.now(), 14).toISOString())
-        .build();
-      const conventionInRange = new ConventionDtoBuilder()
-        .withId("convention-id-2")
-        .withAgencyId(agency.id)
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateEnd(subMonths(timeGateway.now(), 12).toISOString())
-        .build();
+      it(`should include archived conventions (older than ${defaultMonthsThresholdForConventionsListing} months) by default`, async () => {
+        const archivedConventionDateEnd = subMonths(
+          now,
+          defaultMonthsThresholdForConventionsListing + 1,
+        ).toISOString();
+        const archivedConvention = new ConventionDtoBuilder()
+          .withId("convention-id-1")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(archivedConventionDateEnd)
+          .build();
+        const nonArchivedConvention = new ConventionDtoBuilder()
+          .withId("convention-id-2")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(
+            subMonths(
+              now,
+              defaultMonthsThresholdForConventionsListing - 1,
+            ).toISOString(),
+          )
+          .build();
 
-      uow.conventionRepository.setConventions([
-        conventionOutOfRange,
-        conventionInRange,
-      ]);
+        uow.conventionRepository.setConventions([
+          archivedConvention,
+          nonArchivedConvention,
+        ]);
 
-      const params: GetConventionsForAgencyUserParams = {
-        filters: {
-          dateEnd: {
-            from: subMonths(timeGateway.now(), 13).toISOString(),
+        const params: GetConventionsForAgencyUserParams = {
+          filters: {},
+          pagination: {
+            page: 1,
+            perPage: 10,
           },
-        },
-        pagination: {
-          page: 1,
-          perPage: 10,
-        },
-      };
+        };
 
-      const result = await getConventionsForAgencyUser.execute(
-        params,
-        currentUser,
-      );
+        const result = await getConventionsForAgencyUser.execute(
+          params,
+          currentUser,
+        );
 
-      expectOnlyConventionInResult(result, conventionInRange);
-      expectToEqual(result.pagination, {
-        currentPage: 1,
-        totalPages: 1,
-        numberPerPage: 10,
-        totalRecords: 1,
+        expectArraysToEqualIgnoringOrder(
+          result.data.map(({ id }) => id),
+          [archivedConvention.id, nonArchivedConvention.id],
+        );
+        expectToEqual(result.pagination, {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 2,
+        });
       });
-    });
 
-    it("shouldn't take into account dateEnd to if provided and greater than defaultMonthsThreshold", async () => {
-      const conventionOutOfRange = new ConventionDtoBuilder()
-        .withId("convention-id-1")
-        .withAgencyId(agency.id)
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateEnd(subMonths(timeGateway.now(), 26).toISOString())
-        .build();
-      const conventionInRange = new ConventionDtoBuilder()
-        .withId("convention-id-2")
-        .withAgencyId(agency.id)
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateEnd(subMonths(timeGateway.now(), 24).toISOString())
-        .build();
+      it(`should respect dateEnd.from even when older than ${defaultMonthsThresholdForConventionsListing} months`, async () => {
+        const oldDateEndFrom = subMonths(
+          now,
+          defaultMonthsThresholdForConventionsListing + 3,
+        );
+        const conventionBeforeFrom = new ConventionDtoBuilder()
+          .withId("convention-id-1")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(subMonths(oldDateEndFrom, 1).toISOString())
+          .build();
+        const conventionAfterFrom = new ConventionDtoBuilder()
+          .withId("convention-id-2")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(addMonths(oldDateEndFrom, 1).toISOString())
+          .build();
 
-      uow.conventionRepository.setConventions([
-        conventionOutOfRange,
-        conventionInRange,
-      ]);
+        uow.conventionRepository.setConventions([
+          conventionBeforeFrom,
+          conventionAfterFrom,
+        ]);
 
-      const params: GetConventionsForAgencyUserParams = {
-        filters: {
-          dateEnd: {
-            to: subMonths(timeGateway.now(), 30).toISOString(),
+        const result = await getConventionsForAgencyUser.execute(
+          {
+            filters: {
+              dateEnd: { from: oldDateEndFrom.toISOString() },
+            },
+            pagination: {
+              page: 1,
+              perPage: 10,
+            },
           },
-        },
-        pagination: {
-          page: 1,
-          perPage: 10,
-        },
-      };
+          currentUser,
+        );
 
-      const result = await getConventionsForAgencyUser.execute(
-        params,
-        currentUser,
-      );
+        expectArraysToEqualIgnoringOrder(
+          result.data.map(({ id }) => id),
+          [conventionAfterFrom.id],
+        );
+        expectToEqual(result.pagination, {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        });
+      });
 
-      expectOnlyConventionInResult(result, conventionInRange);
-      expectToEqual(result.pagination, {
-        currentPage: 1,
-        totalPages: 1,
-        numberPerPage: 10,
-        totalRecords: 1,
+      it(`should respect dateEnd.to even when older than ${defaultMonthsThresholdForConventionsListing} months`, async () => {
+        const oldDateEndTo = subMonths(
+          now,
+          defaultMonthsThresholdForConventionsListing + 3,
+        );
+        const conventionBeforeTo = new ConventionDtoBuilder()
+          .withId("convention-id-1")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(subMonths(oldDateEndTo, 1).toISOString())
+          .build();
+        const conventionAfterTo = new ConventionDtoBuilder()
+          .withId("convention-id-2")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(addMonths(oldDateEndTo, 1).toISOString())
+          .build();
+
+        uow.conventionRepository.setConventions([
+          conventionBeforeTo,
+          conventionAfterTo,
+        ]);
+
+        const result = await getConventionsForAgencyUser.execute(
+          {
+            filters: {
+              dateEnd: { to: oldDateEndTo.toISOString() },
+            },
+            pagination: {
+              page: 1,
+              perPage: 10,
+            },
+          },
+          currentUser,
+        );
+
+        expectToEqual(
+          result.data.map(({ id }) => id),
+          [conventionBeforeTo.id],
+        );
+        expectToEqual(result.pagination, {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        });
       });
     });
-    const expectOnlyConventionInResult = (
-      result: DataWithPagination<AgencyUserConventionListDto>,
-      convention: ConventionDto,
-    ) => {
-      expect(result.data).toHaveLength(1);
-      expect(result.data[0]?.id).toBe(convention.id);
-      expect(result.data[0]?.dateEnd).toBe(convention.dateEnd);
-    };
+
+    describe("when enableRequestArchivedConvention is inactive", () => {
+      it(`should filter out conventions that are older than ${defaultMonthsThresholdForConventionsListing} months by default`, async () => {
+        const conventionOutOfRange = new ConventionDtoBuilder()
+          .withId("convention-id-1")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(
+            subMonths(
+              now,
+              defaultMonthsThresholdForConventionsListing + 1,
+            ).toISOString(),
+          )
+          .build();
+        const conventionInRange = new ConventionDtoBuilder()
+          .withId("convention-id-2")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(
+            subMonths(
+              now,
+              defaultMonthsThresholdForConventionsListing - 1,
+            ).toISOString(),
+          )
+          .build();
+
+        uow.conventionRepository.setConventions([
+          conventionOutOfRange,
+          conventionInRange,
+        ]);
+
+        const result = await getConventionsForAgencyUser.execute(
+          {
+            filters: {},
+            pagination: {
+              page: 1,
+              perPage: 10,
+            },
+          },
+          currentUser,
+        );
+
+        expectToEqual(
+          result.data.map(({ id }) => id),
+          [conventionInRange.id],
+        );
+        expectToEqual(result.pagination, {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        });
+      });
+
+      it("should keep dateEnd.from when it is within the listing threshold", async () => {
+        const conventionOutOfRange = new ConventionDtoBuilder()
+          .withId("convention-id-1")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(subMonths(now, 14).toISOString())
+          .build();
+        const conventionInRange = new ConventionDtoBuilder()
+          .withId("convention-id-2")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(subMonths(now, 12).toISOString())
+          .build();
+
+        uow.conventionRepository.setConventions([
+          conventionOutOfRange,
+          conventionInRange,
+        ]);
+
+        const result = await getConventionsForAgencyUser.execute(
+          {
+            filters: {
+              dateEnd: {
+                from: subMonths(now, 13).toISOString(),
+              },
+            },
+            pagination: {
+              page: 1,
+              perPage: 10,
+            },
+          },
+          currentUser,
+        );
+
+        expectToEqual(
+          result.data.map(({ id }) => id),
+          [conventionInRange.id],
+        );
+        expectToEqual(result.pagination, {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        });
+      });
+
+      it(`should ignore dateEnd.to when it is older than ${defaultMonthsThresholdForConventionsListing} months`, async () => {
+        const conventionOutOfRange = new ConventionDtoBuilder()
+          .withId("convention-id-1")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(
+            subMonths(
+              now,
+              defaultMonthsThresholdForConventionsListing + 1,
+            ).toISOString(),
+          )
+          .build();
+        const conventionInRange = new ConventionDtoBuilder()
+          .withId("convention-id-2")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateEnd(
+            subMonths(
+              now,
+              defaultMonthsThresholdForConventionsListing - 1,
+            ).toISOString(),
+          )
+          .build();
+
+        uow.conventionRepository.setConventions([
+          conventionOutOfRange,
+          conventionInRange,
+        ]);
+
+        const result = await getConventionsForAgencyUser.execute(
+          {
+            filters: {
+              dateEnd: {
+                to: subMonths(
+                  now,
+                  defaultMonthsThresholdForConventionsListing + 5,
+                ).toISOString(),
+              },
+            },
+            pagination: {
+              page: 1,
+              perPage: 10,
+            },
+          },
+          currentUser,
+        );
+
+        expectToEqual(
+          result.data.map(({ id }) => id),
+          [conventionInRange.id],
+        );
+        expectToEqual(result.pagination, {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        });
+      });
+    });
   });
 
   describe("Agency rights", () => {

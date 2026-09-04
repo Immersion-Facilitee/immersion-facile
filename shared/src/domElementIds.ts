@@ -1028,6 +1028,8 @@ export const domElementIds = {
     dashboard: {
       tabContainer: "im-agency-dashboard__tab-container",
       goToConventionButton: "im-agency-dashboard__go-to-convention-button",
+      unarchiveConventionButton:
+        "im-agency-dashboard__unarchive-convention-button",
     },
     initiateConvention: {
       button: "im-agency-dashboard__initiate-convention-button",
