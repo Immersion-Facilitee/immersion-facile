@@ -127,18 +127,22 @@ describe("Broadcast feedback in store", () => {
     );
     dependencies.conventionGateway.getConventionLastBroadcastFeedbackResult$.next(
       {
-        lastBroadcastFeedback: mockBroadcastFeedback,
-        shouldBeHandled: false,
+        broadcastFeedback: mockBroadcastFeedback,
+        shouldBeHandled: true,
       },
     );
 
     expectIsLoadingToBe(false);
-    expect(
+    expectToEqual(
       store.getState().partnersErroredConvention.lastBroadcastFeedback,
-    ).toEqual(mockBroadcastFeedback);
+      {
+        broadcastFeedback: mockBroadcastFeedback,
+        shouldBeHandled: true,
+      },
+    );
   });
 
-  it("should set lastBroadcastFeedback to null when fetch last broadcast feedback succeeds with null", () => {
+  it("should set lastBroadcastFeedback with null feedback when fetch succeeds with null", () => {
     store.dispatch(
       partnersErroredConventionSlice.actions.fetchConventionLastBroadcastFeedbackRequested(
         {
@@ -149,14 +153,15 @@ describe("Broadcast feedback in store", () => {
     );
     dependencies.conventionGateway.getConventionLastBroadcastFeedbackResult$.next(
       {
-        lastBroadcastFeedback: null,
+        broadcastFeedback: null,
       },
     );
 
     expectIsLoadingToBe(false);
-    expect(
+    expectToEqual(
       store.getState().partnersErroredConvention.lastBroadcastFeedback,
-    ).toBeNull();
+      { broadcastFeedback: null },
+    );
   });
 
   it("should handle error when fetch last broadcast feedback fails", () => {
@@ -176,9 +181,10 @@ describe("Broadcast feedback in store", () => {
 
     expectIsLoadingToBe(false);
 
-    expect(
+    expectToEqual(
       store.getState().partnersErroredConvention.lastBroadcastFeedback,
-    ).toBeNull();
+      { broadcastFeedback: null },
+    );
   });
 
   it("should clear lastBroadcastFeedback when clearLastBroadcastFeedback is dispatched", () => {
@@ -205,22 +211,27 @@ describe("Broadcast feedback in store", () => {
     );
     dependencies.conventionGateway.getConventionLastBroadcastFeedbackResult$.next(
       {
-        lastBroadcastFeedback: broadcastFeedback,
-        shouldBeHandled: false,
+        broadcastFeedback: broadcastFeedback,
+        shouldBeHandled: true,
       },
     );
 
-    expect(
+    expectToEqual(
       store.getState().partnersErroredConvention.lastBroadcastFeedback,
-    ).toEqual(broadcastFeedback);
+      {
+        broadcastFeedback: broadcastFeedback,
+        shouldBeHandled: true,
+      },
+    );
 
     store.dispatch(
       partnersErroredConventionSlice.actions.clearConventionLastBroadcastFeedback(),
     );
 
-    expect(
+    expectToEqual(
       store.getState().partnersErroredConvention.lastBroadcastFeedback,
-    ).toBeNull();
+      { broadcastFeedback: null },
+    );
   });
 
   const expectIsLoadingToBe = (

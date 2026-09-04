@@ -40,6 +40,7 @@ import {
   getAssessmentCompletionStatus,
   getAssessmentLabelsAndSeverityByStatus,
 } from "src/app/utils/assessment.utils";
+import { shouldShowPartnersBroadcastError } from "src/app/utils/broadcast.utils";
 import { commonIllustrations } from "src/assets/img/illustrations";
 import { sendAssessmentLinkSlice } from "src/core-logic/domain/assessment/send-assessment-link/sendAssessmentLink.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
@@ -77,9 +78,11 @@ export const ConventionValidation = ({
   roles,
 }: ConventionValidationProps) => {
   const dispatch = useDispatch();
-  const conventionLastBroadcastFeedback = useAppSelector(
+  const lastBroadcastFeedback = useAppSelector(
     partnersErroredConventionSelectors.lastBroadcastFeedback,
   );
+  const conventionLastBroadcastFeedback =
+    lastBroadcastFeedback.broadcastFeedback;
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
 
   useScrollTo(
@@ -133,7 +136,10 @@ export const ConventionValidation = ({
     });
 
   const shouldShowConventionLastBroadcastFeedbackErrorInfo =
-    conventionLastBroadcastFeedback?.subscriberErrorFeedback &&
+    shouldShowPartnersBroadcastError({
+      isBackofficeAdmin: currentUser?.isBackofficeAdmin ?? false,
+      lastBroadcastFeedback,
+    }) &&
     hasAllowedRole({
       allowedRoles: [...agencyModifierRoles, "back-office"],
       candidateRoles: roles,
@@ -236,10 +242,10 @@ export const ConventionValidation = ({
       )}
 
       {shouldShowConventionLastBroadcastFeedbackErrorInfo &&
-        conventionLastBroadcastFeedback.subscriberErrorFeedback && (
+        conventionLastBroadcastFeedback?.subscriberErrorFeedback && (
           <SubscriberErrorFeedbackComponent
             subscriberErrorFeedback={
-              conventionLastBroadcastFeedback?.subscriberErrorFeedback
+              conventionLastBroadcastFeedback.subscriberErrorFeedback
             }
             conventionStatus={convention.status}
           />
