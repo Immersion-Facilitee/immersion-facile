@@ -17,15 +17,21 @@ export const makeGetBeneficiaryConventionList = useCaseBuilder(
   .withCurrentUser<ConnectedUser>()
   .withDeps<{ timeGateway: TimeGateway }>()
   .build(async ({ uow, currentUser, deps }) => {
+    const featureFlags = await uow.featureFlagQueries.getAll();
+
     const conventions = await uow.conventionQueries.getConventions({
       filters: {
         withBeneficiary: { email: currentUser.email },
-        endDate: {
-          from: subMonths(
-            deps.timeGateway.now(),
-            defaultMonthsThresholdForConventionsListing,
-          ),
-        },
+        ...(featureFlags.enableRequestArchivedConvention.isActive
+          ? {}
+          : {
+              endDate: {
+                from: subMonths(
+                  deps.timeGateway.now(),
+                  defaultMonthsThresholdForConventionsListing,
+                ),
+              },
+            }),
       },
       sortBy: "dateStart",
     });

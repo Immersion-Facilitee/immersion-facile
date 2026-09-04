@@ -6,20 +6,21 @@ import RadioButtons, {
   type RadioButtonsProps,
 } from "@codegouvfr/react-dsfr/RadioButtons";
 import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
-import { format, subMonths } from "date-fns";
 import { equals, pick } from "ramda";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { HeadingSection, RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
+  type ConventionId,
   type ConventionStatus,
   conventionStatuses,
-  defaultMonthsThresholdForConventionsListing,
+  type DateString,
   defaultPerPageInWebPagination,
   domElementIds,
   type FlatGetConventionsForAgencyUserParams,
   frontRoutes,
   getFormattedFirstnameAndLastname,
+  isConventionArchived,
   isNotEmptyArray,
 } from "shared";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
@@ -398,22 +399,11 @@ export const ConventionList = () => {
                   />
                 </Fragment>,
 
-                <Button
+                <ConventionActionButton
                   key={`${convention.id}-actions`}
-                  id={`${domElementIds.agencyDashboard.dashboard.goToConventionButton}--${convention.id}`}
-                  size="small"
-                  iconId="fr-icon-external-link-line"
-                  iconPosition="right"
-                  priority="secondary"
-                  linkProps={{
-                    ...frontRoutes.manageConventionConnectedUser({
-                      conventionId: convention.id,
-                    }).link,
-                    target: "_blank",
-                  }}
-                >
-                  Piloter
-                </Button>,
+                  conventionId={convention.id}
+                  conventionDateEnd={convention.dateEnd}
+                />,
               ])}
               dropdownFilters={{
                 items: [
@@ -595,13 +585,6 @@ export const ConventionList = () => {
                               label="Date"
                               nativeInputProps={{
                                 type: "date",
-                                min: format(
-                                  subMonths(
-                                    new Date(),
-                                    defaultMonthsThresholdForConventionsListing,
-                                  ),
-                                  "yyyy-MM-dd",
-                                ),
                                 value: dateFilterStates.dateEnd.value,
                                 onChange: (event) => {
                                   setDateFilterStates((prev) => ({
@@ -738,6 +721,41 @@ export const ConventionList = () => {
     </HeadingSection>
   );
 };
+
+const ConventionActionButton = ({
+  conventionId,
+  conventionDateEnd,
+}: {
+  conventionId: ConventionId;
+  conventionDateEnd: DateString;
+}): React.ReactNode =>
+  isConventionArchived({ dateEnd: conventionDateEnd, now: new Date() }) ? (
+    <Button
+      id={`${domElementIds.agencyDashboard.dashboard.unarchiveConventionButton}--${conventionId}`}
+      size="small"
+      priority="secondary"
+      linkProps={{
+        ...frontRoutes.archivedConventionRequest({ conventionId }).link,
+        target: "_blank",
+      }}
+    >
+      Désarchiver
+    </Button>
+  ) : (
+    <Button
+      id={`${domElementIds.agencyDashboard.dashboard.goToConventionButton}--${conventionId}`}
+      size="small"
+      priority="secondary"
+      linkProps={{
+        ...frontRoutes.manageConventionConnectedUser({
+          conventionId,
+        }).link,
+        target: "_blank",
+      }}
+    >
+      Piloter
+    </Button>
+  );
 
 const isStringConventionStatus = (value: string): value is ConventionStatus => {
   return conventionStatuses.includes(value as ConventionStatus);

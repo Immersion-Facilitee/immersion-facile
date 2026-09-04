@@ -1028,6 +1028,8 @@ export const domElementIds = {
     dashboard: {
       tabContainer: "im-agency-dashboard__tab-container",
       goToConventionButton: "im-agency-dashboard__go-to-convention-button",
+      unarchiveConventionButton:
+        "im-agency-dashboard__unarchive-convention-button",
     },
     initiateConvention: {
       button: "im-agency-dashboard__initiate-convention-button",
@@ -1230,6 +1232,8 @@ export const domElementIds = {
       "im-beneficary-convention-list__no-convention-helpdesk-hint",
     goToConventionButton:
       "im-beneficiary-convention-list__see-convention-button",
+    unarchiveConventionButton:
+      "im-beneficiary-convention-list__unarchive-convention-button",
     login: {
       proConnectButton:
         "im-login-form__inclusion-connect-button--beneficiary-dashboard-conventions",
