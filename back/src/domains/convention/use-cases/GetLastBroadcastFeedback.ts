@@ -44,15 +44,15 @@ export const makeGetLastBroadcastFeedback = useCaseBuilder(
         await uow.broadcastFeedbacksRepository.getBroadcastFeedbacksByConventionId(
           inputParams,
         );
-      const lastBroadcastFeedback = broadcastFeedbacks.at(-1);
+      const broadcastFeedback = broadcastFeedbacks.at(-1);
 
-      if (!lastBroadcastFeedback) return { lastBroadcastFeedback: null };
+      if (!broadcastFeedback) return { broadcastFeedback: null };
 
       return {
-        lastBroadcastFeedback,
+        broadcastFeedback,
         shouldBeHandled: shouldBroadcastFeedbackBeHandled(
           convention,
-          lastBroadcastFeedback,
+          broadcastFeedback,
           broadcastFeedbacks,
         ),
       };
@@ -64,12 +64,12 @@ export const makeGetLastBroadcastFeedback = useCaseBuilder(
 
 const shouldBroadcastFeedbackBeHandled = (
   convention: ConventionDto,
-  lastBroadcastFeedback: BroadcastFeedback,
+  broadcastFeedback: BroadcastFeedback,
   allBroadcastFeedbacks: BroadcastFeedback[],
 ): boolean => {
   if (
-    !lastBroadcastFeedback.subscriberErrorFeedback ||
-    lastBroadcastFeedback.handledByAgency
+    !broadcastFeedback.subscriberErrorFeedback ||
+    broadcastFeedback.handledByAgency
   )
     return false;
 

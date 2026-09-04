@@ -101,7 +101,7 @@ describe("GetLastBroadcastFeedback", () => {
         conventionLastBroadcastFeedbackResponseSchema.safeParse(result);
       expect(parseResult.success).toBeTruthy();
       expectToEqual(result, {
-        lastBroadcastFeedback: sampleBroadcastFeedback,
+        broadcastFeedback: sampleBroadcastFeedback,
         shouldBeHandled: false,
       });
     });
@@ -109,7 +109,7 @@ describe("GetLastBroadcastFeedback", () => {
     it("rejects broadcast feedbacks with inconsistent convention ids", () => {
       const parseResult =
         conventionLastBroadcastFeedbackResponseSchema.safeParse({
-          lastBroadcastFeedback: {
+          broadcastFeedback: {
             ...sampleBroadcastFeedback,
             requestParams: {
               ...sampleBroadcastFeedback.requestParams,
@@ -129,7 +129,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: null,
+        broadcastFeedback: null,
       });
     });
 
@@ -157,7 +157,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: newerFeedback,
+        broadcastFeedback: newerFeedback,
         shouldBeHandled: false,
       });
     });
@@ -181,7 +181,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: successFeedback,
+        broadcastFeedback: successFeedback,
         shouldBeHandled: false,
       });
     });
@@ -197,7 +197,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: unhandledErrorFeedback,
+        broadcastFeedback: unhandledErrorFeedback,
         shouldBeHandled: true,
       });
     });
@@ -218,7 +218,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: handledErrorFeedback,
+        broadcastFeedback: handledErrorFeedback,
         shouldBeHandled: false,
       });
     });
@@ -238,7 +238,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: unhandledErrorFeedback,
+        broadcastFeedback: unhandledErrorFeedback,
         shouldBeHandled: false,
       });
     });
@@ -281,7 +281,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: cancelledErrorFeedback,
+        broadcastFeedback: cancelledErrorFeedback,
         shouldBeHandled: false,
       });
     });
@@ -315,7 +315,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: cancelledErrorFeedback,
+        broadcastFeedback: cancelledErrorFeedback,
         shouldBeHandled: true,
       });
     });
@@ -349,7 +349,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: cancelledErrorFeedback,
+        broadcastFeedback: cancelledErrorFeedback,
         shouldBeHandled: false,
       });
     });
@@ -390,7 +390,7 @@ describe("GetLastBroadcastFeedback", () => {
       );
 
       expectToEqual(result, {
-        lastBroadcastFeedback: partnerError,
+        broadcastFeedback: partnerError,
         shouldBeHandled: true,
       });
     });

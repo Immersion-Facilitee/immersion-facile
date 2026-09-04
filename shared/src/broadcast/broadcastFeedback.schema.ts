@@ -67,11 +67,11 @@ export const conventionLastBroadcastFeedbackResponseSchema: ZodSchemaWithInputMa
   z.union([
     z
       .object({
-        lastBroadcastFeedback: z.null(),
+        broadcastFeedback: z.null(),
       })
       .strict(),
     z.object({
-      lastBroadcastFeedback: nonNullableBroadcastFeedbackSchema,
+      broadcastFeedback: nonNullableBroadcastFeedbackSchema,
       shouldBeHandled: z.boolean(),
     }),
   ]);
