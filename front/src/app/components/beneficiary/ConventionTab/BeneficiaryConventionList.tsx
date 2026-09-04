@@ -165,7 +165,10 @@ const ConventionActionButton = ({
       </Button>
     );
 
-  return isConventionArchived(conventionDateEnd) ? (
+  return isConventionArchived({
+    dateEnd: conventionDateEnd,
+    now: new Date(),
+  }) ? (
     <Button
       id={`${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${conventionId}`}
       size="small"

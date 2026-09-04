@@ -729,7 +729,7 @@ const ConventionActionButton = ({
   conventionId: ConventionId;
   conventionDateEnd: DateString;
 }): React.ReactNode =>
-  isConventionArchived(conventionDateEnd) ? (
+  isConventionArchived({ dateEnd: conventionDateEnd, now: new Date() }) ? (
     <Button
       id={`${domElementIds.agencyDashboard.dashboard.unarchiveConventionButton}--${conventionId}`}
       size="small"

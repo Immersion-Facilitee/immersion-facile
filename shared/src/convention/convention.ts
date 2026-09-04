@@ -332,6 +332,12 @@ export const isConventionEndingInOneDayOrMore = (dateEnd: DateString) =>
 
 export const defaultMonthsThresholdForConventionsListing = 25;
 
-export const isConventionArchived = (dateEnd: DateString): boolean =>
+export const isConventionArchived = ({
+  dateEnd,
+  now,
+}: {
+  dateEnd: DateString;
+  now: Date;
+}): boolean =>
   new Date(dateEnd) <
-  subMonths(new Date(), defaultMonthsThresholdForConventionsListing);
+  subMonths(now, defaultMonthsThresholdForConventionsListing);
