@@ -5,6 +5,8 @@ import { acceptCookiesIfBannerVisible } from "../utils/utils";
 
 const { adminAuthFile, establishmentAuthFile, agencyAuthFile } = testConfig;
 
+setup.describe.configure({ mode: "parallel" });
+
 setup("authenticate as admin", async ({ page }) => {
   console.time("auth-admin");
   await page.goto("/");
@@ -16,29 +18,28 @@ setup("authenticate as admin", async ({ page }) => {
   console.timeEnd("auth-admin");
 });
 
-setup("authenticate as IC user establishment", async ({ page }) => {
-  console.time("auth-establishment");
-  await page.goto("/");
-  await acceptCookiesIfBannerVisible(page);
-  await loginWithIdentityProvider(page, "establishmentDashboard", "ProConnect");
-  await expect(page.locator(".fr-tabs__list")).toBeVisible();
-  await page.context().storageState({ path: establishmentAuthFile });
-  console.timeEnd("auth-establishment");
-});
+setup(
+  "authenticate as IC user for establishment and agency",
+  async ({ page }) => {
+    console.time("auth-establishment");
+    await page.goto("/");
+    await acceptCookiesIfBannerVisible(page);
+    await loginWithIdentityProvider(
+      page,
+      "establishmentDashboard",
+      "ProConnect",
+    );
+    await expect(page.locator(".fr-tabs__list")).toBeVisible();
+    await page.context().storageState({ path: establishmentAuthFile });
+    console.timeEnd("auth-establishment");
 
-setup("authenticate as IC user agency", async ({ page }) => {
-  console.time("auth-agency");
-  await page.goto("/");
-  await acceptCookiesIfBannerVisible(page);
-
-  await loginWithIdentityProvider(page, "agencyDashboard", "ProConnect");
-  await expect(
-    page.locator(`#${domElementIds.agencyDashboard.registerAgencies.search}`),
-  ).toBeVisible();
-
-  await page.context().storageState({ path: agencyAuthFile });
-  console.timeEnd("auth-agency");
-});
+    await page.goto(frontRoutes.agencyDashboard().href);
+    await expect(
+      page.locator(`#${domElementIds.agencyDashboard.registerAgencies.search}`),
+    ).toBeVisible();
+    await page.context().storageState({ path: agencyAuthFile });
+  },
+);
 
 type ProviderMode = "ProConnect";
 

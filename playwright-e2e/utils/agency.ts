@@ -7,6 +7,7 @@ import {
   frontRoutes,
 } from "shared";
 import { goToAdminTab } from "./admin";
+import { defaultE2eSiret } from "./siret";
 import { fillAutocomplete } from "./utils";
 
 export const fillAndSubmitBasicAgencyForm = async (
@@ -29,7 +30,7 @@ export const fillAndSubmitBasicAgencyForm = async (
 
   await page
     .locator(`#${domElementIds.addAgency.agencySiretInput}`)
-    .fill(override?.siret ?? "751 984 972 00016");
+    .fill(override?.siret ?? defaultE2eSiret);
 
   await expect(
     page.locator(

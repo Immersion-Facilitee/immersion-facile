@@ -29,11 +29,19 @@ export const updateEstablishmentThroughEstablishmentDashboard =
 
     await goToEstablishmentDashboardTab(page, "fiche-entreprise");
 
-    await page.waitForURL(
+    const establishmentDashboardUrl =
       frontRoutes.establishmentDashboardFormEstablishment({
         siret: updatedFormEstablishment.siret,
-      }).href,
-    );
+      }).href;
+    if (!page.url().includes(establishmentDashboardUrl)) {
+      await page
+        .locator(
+          `#${domElementIds.establishmentDashboard.manageEstablishments.selectEstablishmentInput}`,
+        )
+        .selectOption(updatedFormEstablishment.siret);
+    }
+
+    await page.waitForURL(establishmentDashboardUrl);
 
     await editEstablishmentInEstablishmentDashboard(
       page,

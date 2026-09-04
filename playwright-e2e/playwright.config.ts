@@ -17,8 +17,10 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 4,
-  reporter: process.env.CI ? [["github"], ["html"], ["line"]] : "html",
+  workers: 4,
+  reporter: process.env.CI
+    ? [["github"], ["html"], ["line"], ["./duration-reporter.ts"]]
+    : "html",
   use: {
     baseURL,
     screenshot: {
@@ -26,7 +28,7 @@ export default defineConfig({
       fullPage: true,
     },
     storageState: storageStatePath,
-    trace: "retain-on-failure",
+    trace: process.env.CI ? "on-first-retry" : "retain-on-failure",
   },
   timeout: process.env.CI ? 60_000 : 30_000,
   expect: {

@@ -15,15 +15,6 @@ on:
         required: true
       PRO_CONNECT_CLIENT_SECRET:
         required: true
-      SIRENE_INSEE_CLIENT_ID:
-        required: true
-      SIRENE_INSEE_CLIENT_SECRET:
-        required: true
-      SIRENE_INSEE_USERNAME:
-        required: true
-      SIRENE_INSEE_PASSWORD:
-        required: true
-
 jobs:
   validation:
     name: ""
@@ -138,11 +129,6 @@ jobs:
       PRO_CONNECT_CLIENT_SECRET: ${{ secrets.PRO_CONNECT_CLIENT_SECRET }}
       API_KEY_OPEN_CAGE_DATA_GEOCODING: ${{ secrets.API_KEY_OPEN_CAGE_DATA_GEOCODING }}
       API_KEY_OPEN_CAGE_DATA_GEOSEARCH: ${{ secrets.API_KEY_OPEN_CAGE_DATA_GEOSEARCH }}
-      SIRENE_INSEE_CLIENT_ID: ${{ secrets.SIRENE_INSEE_CLIENT_ID }}
-      SIRENE_INSEE_CLIENT_SECRET: ${{ secrets.SIRENE_INSEE_CLIENT_SECRET }}
-      SIRENE_INSEE_USERNAME: ${{ secrets.SIRENE_INSEE_USERNAME }}
-      SIRENE_INSEE_PASSWORD: ${{ secrets.SIRENE_INSEE_PASSWORD }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v3

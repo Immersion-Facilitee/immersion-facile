@@ -15,11 +15,6 @@ jobs:
       PC_PASSWORD: ${{ secrets.PC_PASSWORD }}
       PC_ADMIN_PASSWORD: ${{ secrets.PC_ADMIN_PASSWORD }}
       PRO_CONNECT_CLIENT_SECRET: ${{ secrets.PRO_CONNECT_CLIENT_SECRET}}
-      SIRENE_INSEE_CLIENT_ID: ${{ secrets.SIRENE_INSEE_CLIENT_ID }}
-      SIRENE_INSEE_CLIENT_SECRET: ${{ secrets.SIRENE_INSEE_CLIENT_SECRET }}
-      SIRENE_INSEE_USERNAME: ${{ secrets.SIRENE_INSEE_USERNAME }}
-      SIRENE_INSEE_PASSWORD: ${{ secrets.SIRENE_INSEE_PASSWORD }}
-
   build-front-artefact:
     uses: ./.github/workflows/build-front-artefact.yml
     with:

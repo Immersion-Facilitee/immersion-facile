@@ -35,8 +35,7 @@ export const e2eBackendEnv = {
   DOMAIN: `localhost:${frontPort}`,
   REPOSITORIES: "PG",
   INBOUND_EMAIL_ALLOWED_IPS: "::ffff:127.0.0.1",
-  SIRENE_REPOSITORY: "ANNUAIRE_DES_ENTREPRISES",
-  SIRENE_INSEE_ENDPOINT: "https://api.insee.fr/api-sirene/prive/3.11",
+  SIRENE_REPOSITORY: "IN_MEMORY",
   EVENT_CRAWLER_PERIOD_MS: "600",
   EXTERNAL_AXIOS_TIMEOUT: "30000",
   CACHE: "NONE",
@@ -86,6 +85,7 @@ export const ensureJwtEnv = (): JwtEnv => {
 export const makeBackWebServerEnv = (
   baseURL: string,
 ): Record<string, string> => {
+  const jwtEnv = ensureJwtEnv();
   const playwrightEnv = loadEnvFileWithProcessEnv(resolve(__dirname, ".env"));
   const backendEnv = loadEnvFileWithProcessEnv(
     resolve(__dirname, "../back/.env"),
@@ -93,10 +93,7 @@ export const makeBackWebServerEnv = (
 
   return {
     ...e2eBackendEnv,
-    API_JWT_PRIVATE_KEY: backendEnv.API_JWT_PRIVATE_KEY,
-    API_JWT_PUBLIC_KEY: backendEnv.API_JWT_PUBLIC_KEY,
-    JWT_PRIVATE_KEY: backendEnv.JWT_PRIVATE_KEY,
-    JWT_PUBLIC_KEY: backendEnv.JWT_PUBLIC_KEY,
+    ...jwtEnv,
     PC_USERNAME:
       playwrightEnv.PC_USERNAME ??
       "recette+playwright@immersion-facile.beta.gouv.fr",
@@ -107,10 +104,6 @@ export const makeBackWebServerEnv = (
       backendEnv.API_KEY_OPEN_CAGE_DATA_GEOCODING,
     API_KEY_OPEN_CAGE_DATA_GEOSEARCH:
       backendEnv.API_KEY_OPEN_CAGE_DATA_GEOSEARCH,
-    SIRENE_INSEE_CLIENT_ID: backendEnv.SIRENE_INSEE_CLIENT_ID,
-    SIRENE_INSEE_CLIENT_SECRET: backendEnv.SIRENE_INSEE_CLIENT_SECRET,
-    SIRENE_INSEE_USERNAME: backendEnv.SIRENE_INSEE_USERNAME,
-    SIRENE_INSEE_PASSWORD: backendEnv.SIRENE_INSEE_PASSWORD,
     DATABASE_URL:
       process.env.E2E_DATABASE_URL ??
       "postgresql://immersion:pg_password@localhost:5432/immersion-db",
