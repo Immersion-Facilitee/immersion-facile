@@ -14,4 +14,7 @@ export interface BroadcastFeedbacksRepository {
   getLastBroadcastFeedback: (
     id: ConventionId,
   ) => Promise<BroadcastFeedback | null>;
+  getBroadcastFeedbacksByConventionId: (
+    id: ConventionId,
+  ) => Promise<BroadcastFeedback[]>;
 }
