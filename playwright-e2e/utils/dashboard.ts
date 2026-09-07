@@ -3,6 +3,7 @@ import { expect } from "@playwright/test";
 import {
   type BeneficiaryDashboardTab,
   beneficiaryDashboardTabsList,
+  conventionTemplateSchema,
   domElementIds,
   type EstablishmentDashboardTab,
   frontRoutes,
@@ -80,24 +81,31 @@ export const createConventionTemplate = async (
   );
   await fillConventionForm(page);
 
-  await page.click(
-    `#${domElementIds.conventionTemplate.form.submitFormButton}`,
-  );
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/convention-templates") &&
+        response.request().method() === "POST" &&
+        response.status() === 200,
+    ),
+    page.click(`#${domElementIds.conventionTemplate.form.submitFormButton}`),
+  ]);
   await expect(page.locator(".fr-alert--success")).toBeVisible();
+  return conventionTemplateSchema.parse(response.request().postDataJSON()).id;
 };
 
 export const deleteConventionTemplate = async (
   page: Page,
   dashboardKind: "agency" | "establishment",
+  templateId: string,
 ) => {
   await page.goto("/");
   await goToDashboard(page, dashboardKind);
 
   await page
     .locator(
-      `[id^="${domElementIds.conventionTemplate.deleteConventionTemplateButton}-"]`,
+      `#${domElementIds.conventionTemplate.deleteConventionTemplateButton}-${templateId}`,
     )
-    .first()
     .click();
   await page.click(
     `#${domElementIds.conventionTemplate.deleteConventionTemplate.confirmButton}`,
@@ -109,13 +117,19 @@ export const initiateConvention = async ({
   page,
   dashboardKind,
   fromConventionTemplate,
+  templateId,
 }: {
   page: Page;
   dashboardKind: "agency" | "establishment";
   fromConventionTemplate: boolean;
+  templateId?: string;
 }): Promise<void> => {
   if (fromConventionTemplate)
-    return initiateConventionFromConventionTemplate({ page, dashboardKind });
+    return initiateConventionFromConventionTemplate({
+      page,
+      dashboardKind,
+      templateId,
+    });
 
   dashboardKind === "establishment"
     ? await initiateConventionFromEstablishmentInformations({ page })
@@ -125,9 +139,11 @@ export const initiateConvention = async ({
 const initiateConventionFromConventionTemplate = async ({
   page,
   dashboardKind,
+  templateId,
 }: {
   page: Page;
   dashboardKind: "agency" | "establishment";
+  templateId?: string;
 }) => {
   const domIds =
     dashboardKind === "agency"
@@ -146,11 +162,13 @@ const initiateConventionFromConventionTemplate = async ({
 
   await templateRadioButtonLocator.click();
 
-  const firstConventionTemplateLocator = page.locator(
-    `[for='${domIds.initiateConvention.templateRadioButtons}-0']`,
+  if (!templateId) throw new Error("Missing convention template ID");
+  const templateRadio = page.locator(
+    `input[type="radio"][value="${templateId}"]`,
   );
-
-  await firstConventionTemplateLocator.click();
+  await expect(templateRadio).toBeAttached();
+  const radioId = await templateRadio.getAttribute("id");
+  await page.locator(`label[for="${radioId}"]`).click();
 
   await page.click(`#${domIds.initiateConvention.modalButton}`);
   await expect(

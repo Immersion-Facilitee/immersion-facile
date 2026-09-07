@@ -216,10 +216,11 @@ test.describe("Agency dashboard workflow", () => {
   });
 
   test.describe("Manage convention templates", () => {
+    let templateId: string;
     test.use({ storageState: testConfig.agencyAuthFile });
 
     test("IC user can create a new convention template", async ({ page }) => {
-      await createConventionTemplate(page, "agency");
+      templateId = await createConventionTemplate(page, "agency");
     });
 
     test("IC user can update a convention template", async ({ page }) => {
@@ -229,9 +230,8 @@ test.describe("Agency dashboard workflow", () => {
 
       await page
         .locator(
-          `[id^="${domElementIds.conventionTemplate.editConventionTemplateButton}-"]`,
+          `#${domElementIds.conventionTemplate.editConventionTemplateButton}-${templateId}`,
         )
-        .first()
         .click();
 
       const nameInput = page.locator(
@@ -248,7 +248,7 @@ test.describe("Agency dashboard workflow", () => {
 
       await goToDashboard(page, "agency");
       await expect(
-        await page.locator('[id^="convention-template-"]').first(),
+        page.locator(`#convention-template-${templateId}`),
       ).toContainText(newConventionTemplateName);
     });
 
@@ -260,9 +260,8 @@ test.describe("Agency dashboard workflow", () => {
 
       await page
         .locator(
-          `[id^="${domElementIds.conventionTemplate.shareAsConventionDraft.button}-"]`,
+          `#${domElementIds.conventionTemplate.shareAsConventionDraft.button}-${templateId}`,
         )
-        .first()
         .click();
 
       await page.fill(
@@ -276,7 +275,7 @@ test.describe("Agency dashboard workflow", () => {
     });
 
     test("IC user can delete a convention template", async ({ page }) => {
-      await deleteConventionTemplate(page, "agency");
+      await deleteConventionTemplate(page, "agency", templateId);
     });
   });
 
@@ -284,13 +283,14 @@ test.describe("Agency dashboard workflow", () => {
     test.use({ storageState: testConfig.agencyAuthFile });
 
     test("should initiate from a convention template", async ({ page }) => {
-      await createConventionTemplate(page, "agency");
+      const templateId = await createConventionTemplate(page, "agency");
       await initiateConvention({
         page,
         dashboardKind: "agency",
         fromConventionTemplate: true,
+        templateId,
       });
-      await deleteConventionTemplate(page, "agency");
+      await deleteConventionTemplate(page, "agency", templateId);
     });
 
     test("should initiate from agency informations", async ({ page }) => {
