@@ -1,7 +1,7 @@
+import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 import { domElementIds } from "shared";
 import { testConfig } from "../../custom.config";
-import { getMagicLinkLocatorFromEmail, goToAdminTab } from "../../utils/admin";
 
 test.describe.configure({ mode: "serial" });
 
@@ -9,16 +9,7 @@ test.describe("Assessment workflow", () => {
   test.use({ storageState: testConfig.adminAuthFile });
 
   test("Can add an assessment", async ({ page }) => {
-    await page.goto("/");
-    await goToAdminTab(page, "adminNotifications");
-
-    const magicLinkLocator = await getMagicLinkLocatorFromEmail({
-      page,
-      emailType: "ASSESSMENT_ESTABLISHMENT_NOTIFICATION",
-      elementIndex: 0,
-      label: "assessmentCreationLink",
-    });
-    await magicLinkLocator.click();
+    await page.goto(await readFile(testConfig.assessmentLinkFile, "utf8"));
 
     await expect(
       await page.locator(`#${domElementIds.assessment.statusInput}`),
@@ -65,13 +56,7 @@ test.describe("Assessment workflow", () => {
   test("Can't fill the form if assessment has already been submitted", async ({
     page,
   }) => {
-    await page.goto("/");
-    const magicLink = await getMagicLinkLocatorFromEmail({
-      page,
-      emailType: "ASSESSMENT_ESTABLISHMENT_NOTIFICATION",
-      label: "assessmentCreationLink",
-    });
-    await magicLink.click();
+    await page.goto(await readFile(testConfig.assessmentLinkFile, "utf8"));
     await expect(await page.locator(".fr-alert--error")).toBeVisible();
   });
 });

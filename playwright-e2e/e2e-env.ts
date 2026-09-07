@@ -96,9 +96,14 @@ export const makeBackWebServerEnv = (
     ...jwtEnv,
     PC_USERNAME:
       playwrightEnv.PC_USERNAME ??
+      backendEnv.PC_USERNAME ??
       "recette+playwright@immersion-facile.beta.gouv.fr",
-    PC_PASSWORD: playwrightEnv.PC_PASSWORD ?? "password123",
-    PC_ADMIN_PASSWORD: playwrightEnv.PC_ADMIN_PASSWORD ?? "password123",
+    PC_PASSWORD:
+      playwrightEnv.PC_PASSWORD ?? backendEnv.PC_PASSWORD ?? "password123",
+    PC_ADMIN_PASSWORD:
+      playwrightEnv.PC_ADMIN_PASSWORD ??
+      backendEnv.PC_ADMIN_PASSWORD ??
+      "password123",
     PRO_CONNECT_CLIENT_SECRET: backendEnv.PRO_CONNECT_CLIENT_SECRET,
     API_KEY_OPEN_CAGE_DATA_GEOCODING:
       backendEnv.API_KEY_OPEN_CAGE_DATA_GEOCODING,
