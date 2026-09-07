@@ -11,6 +11,11 @@ const storageStatePath = resolve(__dirname, "data/storageState.json");
 const baseURL = process.env.BASE_URL || `http://localhost:${frontPort}`;
 const reuseExistingServer =
   !process.env.CI && process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER !== "false";
+const chromium = { ...devices["Desktop Chrome"] };
+const priorityWorkflows = [
+  /convention\/conventionWorkflow\.spec\.ts/,
+  /establishment\/establishmentWorkflow\.spec\.ts/,
+];
 
 export default defineConfig({
   testDir: "./tests",
@@ -37,8 +42,15 @@ export default defineConfig({
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
     {
+      name: "chromium-priority",
+      testMatch: priorityWorkflows,
+      use: chromium,
+      dependencies: ["setup"],
+    },
+    {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      testIgnore: priorityWorkflows,
+      use: chromium,
       dependencies: ["setup"],
     },
   ],
@@ -59,6 +71,7 @@ export default defineConfig({
       cwd: "..",
       env: {
         BACKEND_PORT: backPort.toString(),
+        NODE_ENV: "production",
         PORT: frontPort.toString(),
         VITE_GATEWAY: "HTTP",
         VITE_ENV_TYPE: "local",

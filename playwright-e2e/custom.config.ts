@@ -18,6 +18,7 @@ export const testConfig = {
     adminPassword: throwIfNotDefinedOrDefault("PC_ADMIN_PASSWORD"),
   },
   adminAuthFile: resolve(__dirname, ".auth/admin.json"),
+  assessmentLinkFile: resolve(__dirname, ".auth/assessment-link.txt"),
   establishmentAuthFile: resolve(__dirname, ".auth/establishment.json"),
   agencyAuthFile: resolve(__dirname, ".auth/agency.json"),
 };
