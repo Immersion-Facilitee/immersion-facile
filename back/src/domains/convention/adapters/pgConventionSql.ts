@@ -39,8 +39,6 @@ type ConventionQueryBuilderDb = Database & {
   et: Database["actors"];
   br: Database["actors"];
   bce: Database["actors"];
-  ftu: Database["ft_connect_users"];
-  cftu: Database["conventions__ft_connect_users"];
   vad: Database["view_appellations_dto"];
   phone_numbers_b_emergency_phone: Database["phone_numbers"];
   phone_numbers_er: Database["phone_numbers"];
@@ -108,32 +106,7 @@ const createConventionSelection = (
             emergencyContact: sql`b.extra_fields ->> 'emergencyContact'`,
             emergencyContactPhone: sql`phone_numbers_b_emergency_phone.phone_number`,
             emergencyContactEmail: sql`b.extra_fields ->> 'emergencyContactEmail'`,
-            federatedIdentity: eb
-              .case()
-              .when("ftu.ft_connect_id", "is not", null)
-              .then(
-                jsonBuildObject({
-                  provider: sql`'ftConnect'`,
-                  token: ref("ftu.ft_connect_id"),
-                  payload: eb
-                    .case()
-                    .when("ftu.advisor_email", "is not", null)
-                    .then(
-                      jsonBuildObject({
-                        advisor: jsonBuildObject({
-                          email: ref("ftu.advisor_email"),
-                          firstName: ref("ftu.advisor_firstname"),
-                          lastName: ref("ftu.advisor_lastname"),
-                          type: ref("ftu.advisor_kind"),
-                        }),
-                      }),
-                    )
-                    .else(null)
-                    .end(),
-                }),
-              )
-              .else(null)
-              .end(),
+            federatedIdentity: sql`b.extra_fields -> 'federatedIdentity'`,
             levelOfEducation: eb
               .case()
               .when(sql`b.extra_fields ->> 'levelOfEducation'`, "is not", null)
@@ -335,16 +308,6 @@ const withAppellationsAndPartnerPeJoinAndPhoneNumber = (
   builder: ConventionBaseQueryBuilder,
 ): ConventionBaseQueryBuilder =>
   builder
-    .leftJoin(
-      "conventions__ft_connect_users as cftu",
-      "cftu.convention_id",
-      "conventions.id",
-    )
-    .leftJoin(
-      "ft_connect_users as ftu",
-      "ftu.ft_connect_id",
-      "cftu.ft_connect_id",
-    )
     .leftJoin(
       "view_appellations_dto as vad",
       "vad.appellation_code",

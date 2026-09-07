@@ -34,7 +34,6 @@ export interface Database {
   convention_templates: ConventionTemplates;
   conventions_to_sync_with_pe: ConventionsToSyncWithPe;
   conventions: Conventions;
-  conventions__ft_connect_users: ConventionsFtConnectUsers;
   delegation_contacts: DelegationContacts;
   discussions: Discussions;
   discussions_archives: DiscussionsArchives;
@@ -46,7 +45,6 @@ export interface Database {
   establishments: Establishments;
   exchanges: Exchanges;
   feature_flags: FeatureFlags;
-  ft_connect_users: FtConnectUsers;
   groups__sirets: GroupsSirets;
   groups: Groups;
   immersion_assessments: ImmersionAssessments;
@@ -412,22 +410,6 @@ interface Actors {
   signed_at: Timestamp | null;
   extra_fields: Json | null;
   id: Generated<number>;
-}
-
-interface FtConnectUsers {
-  ft_connect_id: string;
-  advisor_firstname: string | null;
-  advisor_lastname: string | null;
-  advisor_email: string | null;
-  advisor_kind: string | null;
-  created_at: Timestamp;
-  updated_at: Timestamp;
-}
-
-interface ConventionsFtConnectUsers {
-  convention_id: string;
-  ft_connect_id: string;
-  created_at: Generated<Timestamp>;
 }
 
 interface ViewAppellationsDto {
