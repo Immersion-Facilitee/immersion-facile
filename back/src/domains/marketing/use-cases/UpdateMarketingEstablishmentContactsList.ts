@@ -8,13 +8,13 @@ import {
   type WithSiretDto,
   withSiretSchema,
 } from "shared";
+import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { SiretGateway } from "../../core/sirene/ports/SiretGateway";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { EstablishmentAggregate } from "../../establishment/entities/EstablishmentAggregate";
 import type { MarketingContact } from "../entities/MarketingContact";
-import { deleteEstablishmentMarketingContact } from "../helpers/establishmentMarketingContact.helpers";
 import type {
   ConventionInfos,
   EstablishmentMarketingGateway,
@@ -35,11 +35,17 @@ export const makeUpdateMarketingEstablishmentContactList = useCaseBuilder(
     establishmentMarketingGateway: EstablishmentMarketingGateway;
     siretGateway: SiretGateway;
     timeGateway: TimeGateway;
+    createNewEvent: CreateNewEvent;
   }>()
   .build(
     async ({
       inputParams: { siret },
-      deps: { establishmentMarketingGateway, timeGateway, siretGateway },
+      deps: {
+        establishmentMarketingGateway,
+        timeGateway,
+        siretGateway,
+        createNewEvent,
+      },
       uow,
     }): Promise<void> => {
       const establishment =
@@ -75,6 +81,7 @@ export const makeUpdateMarketingEstablishmentContactList = useCaseBuilder(
             timeGateway,
             siretGateway,
             establishmentMarketingGateway,
+            createNewEvent,
             marketingConventionsData,
             siret,
           });
@@ -86,6 +93,7 @@ const onMissingEstablishment = async ({
   timeGateway,
   siretGateway,
   establishmentMarketingGateway,
+  createNewEvent,
   marketingConventionsData,
   siret,
 }: {
@@ -93,6 +101,7 @@ const onMissingEstablishment = async ({
   timeGateway: TimeGateway;
   siretGateway: SiretGateway;
   establishmentMarketingGateway: EstablishmentMarketingGateway;
+  createNewEvent: CreateNewEvent;
   marketingConventionsData: {
     firstConvention: ConventionDto | undefined;
     lastConvention: ConventionDto | undefined;
@@ -103,12 +112,13 @@ const onMissingEstablishment = async ({
   const { lastConvention } = marketingConventionsData;
 
   if (!lastConvention) {
-    return deleteEstablishmentMarketingContact({
-      uow,
-      establishmentMarketingGateway,
-      siret,
-      throwIfMissing: true,
-    });
+    await uow.outboxRepository.save(
+      createNewEvent({
+        topic: "MarketingEstablishmentContactDeletionRequested",
+        payload: { siret, triggeredBy: null },
+      }),
+    );
+    return;
   }
 
   const marketingContact: MarketingContact = {

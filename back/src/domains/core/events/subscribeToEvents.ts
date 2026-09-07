@@ -221,6 +221,9 @@ const getUseCasesByTopics = (
     useCases.notifyThatEstablishmentFromConventionIsBanned,
   ],
   EstablishmentDeleted: [useCases.deleteEstablishmentMarketingContact],
+  MarketingEstablishmentContactDeletionRequested: [
+    useCases.deleteEstablishmentMarketingContact,
+  ],
   PendingUserRightRegisteredOnEstablishment: [
     useCases.notifyEstablishmentAdminsThatUserRightIsPending,
   ],

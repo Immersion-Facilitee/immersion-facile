@@ -859,12 +859,6 @@ export const errors = {
         `Les informations de lead d'entreprise avec le siret '${siret}' ne sont pas trouvés.`,
       ),
   },
-  establishmentMarketing: {
-    notFound: ({ siret }: { siret: string }) =>
-      new NotFoundError(
-        `Les informations de marketing d'entreprise avec le siret '${siret}' ne sont pas trouvés.`,
-      ),
-  },
   bannedEstablishment: {
     alreadyBanned: ({ siret }: { siret: SiretDto }) =>
       new ConflictError(

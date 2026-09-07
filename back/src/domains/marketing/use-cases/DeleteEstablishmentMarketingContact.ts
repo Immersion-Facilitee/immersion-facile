@@ -1,6 +1,5 @@
 import { type WithSiretDto, withSiretSchema } from "shared";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
-import { deleteEstablishmentMarketingContact } from "../helpers/establishmentMarketingContact.helpers";
 import type { EstablishmentMarketingGateway } from "../ports/EstablishmentMarketingGateway";
 
 export type DeleteEstablishmentMarketingContact = ReturnType<
@@ -17,10 +16,13 @@ export const makeDeleteEstablishmentMarketingContact = useCaseBuilder(
     establishmentMarketingGateway: EstablishmentMarketingGateway;
   }>()
   .build(async ({ inputParams: { siret }, deps, uow }) => {
-    await deleteEstablishmentMarketingContact({
-      uow,
-      establishmentMarketingGateway: deps.establishmentMarketingGateway,
-      siret,
-      throwIfMissing: false,
-    });
+    const establishmentMarketingContactEntity =
+      await uow.establishmentMarketingRepository.getBySiret(siret);
+
+    if (!establishmentMarketingContactEntity) return;
+
+    await uow.establishmentMarketingRepository.delete(siret);
+    await deps.establishmentMarketingGateway.delete(
+      establishmentMarketingContactEntity.contactEmail,
+    );
   });

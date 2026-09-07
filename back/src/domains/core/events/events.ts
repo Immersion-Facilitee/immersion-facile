@@ -154,6 +154,7 @@ export type DomainEvent =
   | GenericEvent<"EstablishmentDeleted", WithSiretDto & WithTriggeredBy>
   | GenericEvent<"PendingUserRightRegisteredOnEstablishment", WithSiretDto & Pick<EstablishmentUserRight, "role" | "userId"> & WithTriggeredBy>
   | GenericEvent<"EstablishmentBanned", WithSiretDto & WithTriggeredBy>
+  | GenericEvent<"MarketingEstablishmentContactDeletionRequested", WithSiretDto & WithTriggeredBy>
 
   // CONTACT REQUEST RELATED
   | GenericEvent<"ContactRequestedByBeneficiary", ContactEstablishmentEventPayload & WithTriggeredBy>

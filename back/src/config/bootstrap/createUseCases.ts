@@ -1021,6 +1021,7 @@ export const createUseCases = ({
           establishmentMarketingGateway: gateways.establishmentMarketingGateway,
           timeGateway,
           siretGateway: gateways.siret,
+          createNewEvent,
         },
         uowPerformer,
       }),
