@@ -1,4 +1,13 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["src/**/*.test.ts"]
+  "include": [
+    "src/**/*.ts",
+    "../shared/src/**/*.ts",
+    "../libs/html-templates/src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "../shared/src/**/*.test.ts",
+    "../libs/html-templates/src/**/*.test.ts"
+  ]
 }
