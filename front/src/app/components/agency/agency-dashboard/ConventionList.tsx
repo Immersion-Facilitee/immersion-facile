@@ -274,7 +274,7 @@ export const ConventionList = () => {
       dispatch(
         conventionListSlice.actions.fetchConventionListRequested({
           filters: {
-            sortBy: "dateStart",
+            sortBy: "dateSubmission",
             sortDirection: "desc",
             page: 1,
             perPage: 10,
