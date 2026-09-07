@@ -347,6 +347,7 @@ export class PgConventionRepository implements ConventionRepository {
           'emergencyContactEmail', ${beneficiary.emergencyContactEmail}::text,
           'financiaryHelp', ${beneficiary.financiaryHelp}::text,
           'isRqth', ${beneficiary.isRqth}::boolean,
+          'federatedIdentity', ${beneficiary.federatedIdentity}::jsonb,
           'levelOfEducation', ${studentFields.levelOfEducation}::text,
           'schoolName', ${studentFields.schoolName}::text,
           'schoolPostcode', ${studentFields.schoolPostcode}::text,
