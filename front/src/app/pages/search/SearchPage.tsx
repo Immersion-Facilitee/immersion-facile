@@ -40,6 +40,7 @@ import {
   canSubmitSearch,
 } from "src/app/pages/search/SearchPage.utils";
 import labonneboiteLogoUrl from "src/assets/img/logo-lbb-centered.png";
+import { appellationSlice } from "src/core-logic/domain/appellation/appellation.slice";
 import { featureFlagSelectors } from "src/core-logic/domain/featureFlags/featureFlags.selector";
 import { geosearchSlice } from "src/core-logic/domain/geosearch/geosearch.slice";
 import { nafSlice } from "src/core-logic/domain/naf/naf.slice";
@@ -238,7 +239,21 @@ export const SearchPage = ({
   useScrollTo(pagination?.currentPage ?? 1);
 
   useEffect(() => {
-    if (keys(routeParams).length === 0) return;
+    if (keys(routeParams).length === 0) {
+      setSearchMade(null);
+      reset(initialValues);
+      dispatch(
+        geosearchSlice.actions.clearLocatorDataRequested({
+          locator: "search-form-place",
+        }),
+      );
+      dispatch(
+        appellationSlice.actions.clearLocatorDataRequested({
+          locator: "search-form-appellation",
+        }),
+      );
+      return;
+    }
     const valuesFromUrl = buildValuesFromRouteParams(routeParams);
     if (!canSubmitSearch(valuesFromUrl)) return;
     setSearchMade(valuesFromUrl);
@@ -256,6 +271,7 @@ export const SearchPage = ({
     reset,
     dispatch,
     isExternal,
+    initialValues,
   ]);
 
   useEffect(() => {
