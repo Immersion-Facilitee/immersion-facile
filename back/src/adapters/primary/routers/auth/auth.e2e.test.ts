@@ -122,7 +122,7 @@ describe("auth router", () => {
           `${displayRouteName(
             authRoutes.initiateLoginByOAuth,
           )} 302 > [ProConnect]/login - 302 > ${displayRouteName(
-            authRoutes.afterEmailOrProConnectOAuthLogin,
+            authRoutes.afterLogin,
           )} 302 > page %s with required connected user params`,
           async (source) => {
             const generatedUserId = "my-user-id";
@@ -169,13 +169,12 @@ describe("auth router", () => {
               },
             });
 
-            const response =
-              await authRoutesClient.afterEmailOrProConnectOAuthLogin({
-                queryParams: {
-                  code: authCode,
-                  state,
-                },
-              });
+            const response = await authRoutesClient.afterLogin({
+              queryParams: {
+                code: authCode,
+                state,
+              },
+            });
 
             if (response.status !== 302)
               throw errors.generic.testError("Response must be 302");
@@ -275,13 +274,12 @@ describe("auth router", () => {
           },
         });
 
-        const response =
-          await authRoutesClient.afterEmailOrProConnectOAuthLogin({
-            queryParams: {
-              code: authCode,
-              state,
-            },
-          });
+        const response = await authRoutesClient.afterLogin({
+          queryParams: {
+            code: authCode,
+            state,
+          },
+        });
 
         expectHttpResponseToEqual(response, {
           body: {},
@@ -311,7 +309,7 @@ describe("auth router", () => {
           `${displayRouteName(
             authRoutes.initiateLoginByEmail,
           )} 200 | EMAIL with connexion link > ${displayRouteName(
-            authRoutes.afterEmailOrProConnectOAuthLogin,
+            authRoutes.afterLogin,
           )} 200 > page %s with required connected user params`,
           async (source) => {
             const email: Email = "mail@email.com";
@@ -358,13 +356,12 @@ describe("auth router", () => {
               throw new Error(
                 `missing code on url ${notification.templatedContent.params.loginLink}`,
               );
-            const response =
-              await authRoutesClient.afterEmailOrProConnectOAuthLogin({
-                queryParams: {
-                  code,
-                  state,
-                },
-              });
+            const response = await authRoutesClient.afterLogin({
+              queryParams: {
+                code,
+                state,
+              },
+            });
 
             if (response.status !== 200)
               throw errors.generic.testError("Response must be 200");
@@ -475,7 +472,7 @@ describe("auth router", () => {
         });
       });
 
-      describe(displayRouteName(authRoutes.afterFTConnectOAuthLogin), () => {
+      describe(displayRouteName(authRoutes.afterLogin), () => {
         it("redirects to convention immersion page with convention draft id", async () => {
           uuidGenerator.new = () => conventionDraftId;
           inMemoryUow.ongoingOAuthRepository.ongoingOAuths = [
@@ -511,7 +508,7 @@ describe("auth router", () => {
             },
           ]);
 
-          const response = await authRoutesClient.afterFTConnectOAuthLogin({
+          const response = await authRoutesClient.afterLogin({
             queryParams: {
               code: ftConnectAuthCode,
               state,
@@ -582,7 +579,7 @@ describe("auth router", () => {
             throw new ManagedFTConnectError("ftConnectNoAuthorisation");
           };
 
-          const response = await authRoutesClient.afterFTConnectOAuthLogin({
+          const response = await authRoutesClient.afterLogin({
             queryParams: {
               code: ftConnectAuthCode,
               state,
@@ -615,7 +612,7 @@ describe("auth router", () => {
             throw new FTConnectError(rawErrorTitle, rawErrorMessage);
           };
 
-          const response = await authRoutesClient.afterFTConnectOAuthLogin({
+          const response = await authRoutesClient.afterLogin({
             queryParams: {
               code: ftConnectAuthCode,
               state,

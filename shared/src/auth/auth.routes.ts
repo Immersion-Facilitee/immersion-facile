@@ -4,7 +4,6 @@ import { absoluteUrlSchema } from "../AbsoluteUrl";
 import { withUserFiltersSchema } from "../admin/admin.schema";
 import { withAuthorizationHeaders } from "../headers";
 import { httpErrorSchema } from "../httpClient/httpErrors.schema";
-import { ftConnect } from "../routes/routes";
 import { renewExpiredJwtRequestSchema } from "../tokens/jwt.schema";
 import {
   connectedUserSchema,
@@ -40,22 +39,12 @@ export const authRoutes = defineRoutes({
       200: expressEmptyResponseBody,
     },
   }),
-  afterEmailOrProConnectOAuthLogin: defineRoute({
+  afterLogin: defineRoute({
     method: "get",
-    url: "/inclusion-connect-after-login", // URI déclarée chez ProConnect, ne pas toucher sauf si on change la config chez ProConnect
+    url: "/login-callback",
     queryParamsSchema: oAuthSuccessLoginParamsSchema,
     responses: {
       200: afterOAuthSuccessRedirectionResponseSchema,
-      302: emptyObjectSchema,
-      400: httpErrorSchema,
-      403: httpErrorSchema,
-    },
-  }),
-  afterFTConnectOAuthLogin: defineRoute({
-    method: "get",
-    url: `/${ftConnect}`, // URI déclarée chez FT Connect ?
-    queryParamsSchema: oAuthSuccessLoginParamsSchema,
-    responses: {
       302: emptyObjectSchema,
       400: httpErrorSchema,
       403: httpErrorSchema,

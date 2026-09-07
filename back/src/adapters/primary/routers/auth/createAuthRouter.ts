@@ -19,37 +19,29 @@ export const createAuthRouter = (deps: AppDependencies) => {
     ),
   );
 
-  authSharedRouter.afterEmailOrProConnectOAuthLogin(async (req, res) => {
+  authSharedRouter.afterLogin(async (req, res) => {
     return sendHttpResponse(req, res, async () => {
-      const useCaseResult =
-        await deps.useCases.afterOAuthSuccessRedirection.execute(req.query);
-      if (useCaseResult.provider === "proConnect") {
-        return res.status(302).redirect(useCaseResult.redirectUri);
+      try {
+        const result = await deps.useCases.afterOAuthSuccessRedirection.execute(
+          req.query,
+        );
+        if (result.provider === "email") {
+          return result;
+        }
+        return res.status(302).redirect(result.redirectUri);
+      } catch (error) {
+        if (error instanceof ManagedFTConnectError)
+          return res.redirect(makeRedirectErrorUrl({}, deps.config));
+        if (error instanceof FTConnectError)
+          return res.redirect(
+            makeRedirectErrorUrl(
+              { title: error.title, message: error.message },
+              deps.config,
+            ),
+          );
+
+        throw error;
       }
-      return useCaseResult;
-    });
-  });
-
-  authSharedRouter.afterFTConnectOAuthLogin(async (req, res) => {
-    return sendHttpResponse(req, res, async () => {
-      return deps.useCases.afterOAuthSuccessRedirection
-        .execute(req.query)
-        .then((result) => {
-          return res.status(302).redirect(result.redirectUri);
-        })
-        .catch((error) => {
-          if (error instanceof ManagedFTConnectError)
-            return res.redirect(makeRedirectErrorUrl({}, deps.config));
-          if (error instanceof FTConnectError)
-            return res.redirect(
-              makeRedirectErrorUrl(
-                { title: error.title, message: error.message },
-                deps.config,
-              ),
-            );
-
-          throw error;
-        });
     });
   });
 
