@@ -245,9 +245,9 @@ describe("BrevoNotificationGateway unit", () => {
       <br/>
       <br/>• <strong>Pour les responsables de votre structure</strong> :
       <br/><a 
-      href="https://app.livestorm.co/immersion-facilitee/immersion-facilitee-parametrer-les-acces-au-tableau-de-bord?s=6a2504e1-6eaf-4174-afc9-f9a4b48369ec" 
-      target="_blank">Un point pour bien paramétrer votre compte</a>
-      <br/>(30 minutes)
+      href="https://aide.immersion-facile.beta.gouv.fr/fr/article/administrateur-gerer-votre-organisme-sbjao/" 
+      target="_blank">Un article d'aide pour paramétrer votre compte</a>
+      <br/>(une vidéo est disponible à la fin de l'article, mettez le son)
       <br/>
       <br/>• <strong>Pour l'ensemble de vos collaborateurs</strong> :
       <br/><a 
