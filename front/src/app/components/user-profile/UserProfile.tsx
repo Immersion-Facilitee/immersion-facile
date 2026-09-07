@@ -159,7 +159,7 @@ export const UserProfile = ({
                   id={domElementIds.myAccount.registerAgenciesSearchLink}
                   priority="primary"
                   linkProps={{
-                    href: `${frontRoutes.myAccountAgencyRegistration().href}`,
+                    href: `${frontRoutes.agencyRegistration({ fromRoute: "myAccount" }).href}`,
                   }}
                   iconId="fr-icon-add-line"
                   className={fr.cx("fr-ml-auto")}
@@ -322,7 +322,9 @@ const myProfileEmptyContent: Record<UserProfileTabId, ReactNode> = {
         <Button
           id={domElementIds.myAccount.registerAgencyButton}
           priority="primary"
-          linkProps={frontRoutes.myAccountAgencyRegistration().link}
+          linkProps={
+            frontRoutes.agencyRegistration({ fromRoute: "myAccount" }).link
+          }
           className={fr.cx("fr-ml-auto")}
           iconId="fr-icon-add-line"
         >

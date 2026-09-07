@@ -1368,7 +1368,9 @@ export const domElementIds = {
   establishmentManagement: {},
   myAccountAgencies: {},
   myAccountEstablishments: {},
-  myAccountAgencyRegistration: {},
+  agencyRegistration: {
+    backButton: "im-agency-registration__back-button",
+  },
   agencyDashboardAgencies: {
     userRegistrationToAgency: {
       modal: "im-agency-dashboard-agencies__user-registration-to-agency-modal",

@@ -101,9 +101,9 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
     label: "Mon profil",
     route: frontRoutes.myAccount(),
     children: {
-      myAccountAgencyRegistration: {
+      agencyRegistration: {
         label: "Demander l'accès à des organismes",
-        route: frontRoutes.myAccountAgencyRegistration(),
+        route: frontRoutes.agencyRegistration({ fromRoute: "myAccount" }),
       },
       myAccountEstablishmentRegistration: {
         label: "Se rattacher à une entreprise",

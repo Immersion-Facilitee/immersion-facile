@@ -179,6 +179,31 @@ export const conventionTemplateFromRouteSerializer: ValueSerializer<
   stringify: (value) => value,
 };
 
+const agencyRegistrationFromRouteValues = [
+  "myAccount",
+  "agencyDashboardAgencies",
+] as const;
+
+export type AgencyRegistrationFromRoute =
+  (typeof agencyRegistrationFromRouteValues)[number];
+
+export const isAgencyRegistrationFromRoute = (
+  value: unknown,
+): value is AgencyRegistrationFromRoute =>
+  typeof value === "string" &&
+  agencyRegistrationFromRouteValues.some((v) => v === value);
+
+export const agencyRegistrationFromRouteSerializer: ValueSerializer<AgencyRegistrationFromRoute> =
+  {
+    parse: (value) => {
+      if (isAgencyRegistrationFromRoute(value)) return value;
+      throw new Error(
+        `Invalid agency registration fromRoute: expected one of ${agencyRegistrationFromRouteValues.join(", ")}, got "${value}"`,
+      );
+    },
+    stringify: (value) => value,
+  };
+
 export const {
   RouteProvider,
   useRoute,
@@ -234,7 +259,14 @@ export const {
   myAccount,
   myAccountAgencies: myAccount.extend("/mes-agences"),
   myAccountEstablishments: myAccount.extend("/mes-etablissements"),
-  myAccountAgencyRegistration: myAccount.extend("/agency-registration"),
+  agencyRegistration: myAccount.extend(
+    {
+      fromRoute: param.query.optional.ofType(
+        agencyRegistrationFromRouteSerializer,
+      ),
+    },
+    () => "/agency-registration",
+  ),
   myAccountEstablishmentRegistration: myAccount.extend(
     { siret: param.query.optional.string },
     () => "/rattachement-entreprise",
