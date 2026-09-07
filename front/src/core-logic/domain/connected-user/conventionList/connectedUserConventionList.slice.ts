@@ -37,7 +37,7 @@ export const initialConventionWithPagination: DataWithPagination<AgencyUserConve
     numberPerPage: defaultPerPageInWebPagination,
   },
   filters: {
-    sortBy: "dateStart",
+    sortBy: "dateSubmission",
     sortDirection: "desc",
     page: 1,
     perPage: defaultPerPageInWebPagination,

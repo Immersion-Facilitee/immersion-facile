@@ -77,7 +77,7 @@ describe("ConnectedUserConventionList", () => {
         conventionListSlice.actions.fetchConventionListRequested({
           jwt,
           filters: {
-            sortBy: "dateStart",
+            sortBy: "dateSubmission",
             sortDirection: "desc",
             page: 1,
             perPage: defaultPerPageInWebPagination,
@@ -98,7 +98,7 @@ describe("ConnectedUserConventionList", () => {
         conventionsWithPagination: {
           ...conventionsWithPagination,
           filters: {
-            sortBy: "dateStart",
+            sortBy: "dateSubmission",
             sortDirection: "desc",
             page: 1,
             perPage: defaultPerPageInWebPagination,
@@ -114,7 +114,7 @@ describe("ConnectedUserConventionList", () => {
         conventionListSlice.actions.fetchConventionListRequested({
           jwt,
           filters: {
-            sortBy: "dateStart",
+            sortBy: "dateSubmission",
             sortDirection: "desc",
             page: 1,
             perPage: defaultPerPageInWebPagination,
@@ -178,7 +178,7 @@ describe("ConnectedUserConventionList", () => {
         conventionListSlice.actions.fetchConventionListRequested({
           jwt,
           filters: {
-            sortBy: "dateStart",
+            sortBy: "dateSubmission",
             sortDirection: "desc",
             page: 1,
             perPage: defaultPerPageInWebPagination,
@@ -194,7 +194,7 @@ describe("ConnectedUserConventionList", () => {
         conventionsWithPagination: {
           ...conventionsWithPagination,
           filters: {
-            sortBy: "dateStart",
+            sortBy: "dateSubmission",
             sortDirection: "desc",
             page: 1,
             perPage: defaultPerPageInWebPagination,
