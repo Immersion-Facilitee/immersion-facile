@@ -57,10 +57,6 @@
       "size": "M"
     },
     {
-      "command": "0 13 * * 6 pnpm back run trigger-assign-agency-viewer-role-to-users",
-      "size": "M"
-    },
-    {
       "command": "0 5 * * 1-5 pnpm back run trigger-remind-agency-admin-that-new-user-request-agency-right",
       "size": "M"
     },

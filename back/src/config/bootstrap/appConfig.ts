@@ -671,13 +671,6 @@ export class AppConfig {
       ),
     };
   }
-
-  public get ftUserIdsAssociatedToAllFtAgencies() {
-    return this.#throwIfNotDefinedOrDefault(
-      "FT_USER_IDS_ASSOCIATED_TO_ALL_FT_AGENCIES",
-      "",
-    );
-  }
 }
 
 // Parsers
