@@ -5,6 +5,7 @@ import type {
   ConnectedUserDomainJwtPayload,
   ConventionRole,
   ConventionStatus,
+  FtConnectIdentity,
   Role,
 } from "shared";
 import {
@@ -22,7 +23,6 @@ import {
 import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
 import type { FtConnectImmersionAdvisorDto } from "../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
-import type { FtConnectUserDto } from "../../core/authentication/ft-connect/dto/FtConnectUserDto";
 import {
   type CreateNewEvent,
   makeCreateNewEvent,
@@ -63,6 +63,25 @@ describe("TransferConventionToAgency", () => {
     .signedByEstablishmentRepresentative(undefined)
     .signedByBeneficiary(undefined)
     .withBeneficiarySignedAt(undefined)
+    .build();
+
+  const userFtExternalId = "92f44bbf-103d-4312-bd74-217c7d79f618";
+
+  const ftAdvisor: FtConnectImmersionAdvisorDto = {
+    firstName: "Jean",
+    lastName: "Dupont",
+    email: "jean.dupont@pole-emploi.fr",
+    type: "PLACEMENT",
+  };
+  const federatedIdentity: FtConnectIdentity = {
+    provider: "ftConnect",
+    token: userFtExternalId,
+    payload: {
+      advisor: ftAdvisor,
+    },
+  };
+  const conventionWithFederatedIdentity = new ConventionDtoBuilder(convention)
+    .withFederatedIdentity(federatedIdentity)
     .build();
 
   const preValidatedConvention = new ConventionDtoBuilder(convention)
@@ -628,35 +647,10 @@ describe("TransferConventionToAgency", () => {
       });
 
       describe("federatedIdentity is set in initial convention", () => {
-        const userFtExternalId = "92f44bbf-103d-4312-bd74-217c7d79f618";
-        const beneficiary: FtConnectUserDto = {
-          email: "",
-          firstName: "",
-          isJobseeker: true,
-          lastName: "",
-          ftExternalId: userFtExternalId,
-          birthdate: "1990-01-01",
-        };
-        const ftAdvisor: FtConnectImmersionAdvisorDto = {
-          firstName: "Jean",
-          lastName: "Dupont",
-          email: "jean.dupont@pole-emploi.fr",
-          type: "PLACEMENT",
-        };
-
         beforeEach(async () => {
-          await uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor(
-            {
-              advisor: ftAdvisor,
-              user: beneficiary,
-            },
-          );
-          await uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-            conventionId,
-            userFtExternalId,
-          );
-
-          uow.conventionRepository.setConventions([convention]);
+          uow.conventionRepository.setConventions([
+            conventionWithFederatedIdentity,
+          ]);
           uow.userRepository.users = [connectedUser];
         });
 
@@ -686,24 +680,14 @@ describe("TransferConventionToAgency", () => {
           );
 
           const expectedConvention = {
-            ...convention,
+            ...conventionWithFederatedIdentity,
             agencyId: otherAgency.id,
           };
 
           expectToEqual(uow.conventionRepository.conventions, [
             expectedConvention,
           ]);
-          expectToEqual(
-            await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-              conventionId,
-            ),
-            {
-              conventionId,
-              advisor: ftAdvisor,
-              ftExternalId: userFtExternalId,
-              _entityName: "ConventionFranceTravailAdvisor",
-            },
-          );
+
           expectArraysToMatch(uow.outboxRepository.events, [
             {
               topic: "ConventionTransferredToAgency",
@@ -748,24 +732,13 @@ describe("TransferConventionToAgency", () => {
           );
 
           const expectedConvention = {
-            ...convention,
+            ...conventionWithFederatedIdentity,
             agencyId: otherAgency.id,
           };
 
           expectToEqual(uow.conventionRepository.conventions, [
             expectedConvention,
           ]);
-          expectToEqual(
-            await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-              conventionId,
-            ),
-            {
-              conventionId,
-              advisor: ftAdvisor,
-              ftExternalId: userFtExternalId,
-              _entityName: "ConventionFranceTravailAdvisor",
-            },
-          );
 
           expectArraysToMatch(uow.outboxRepository.events, [
             {
@@ -974,35 +947,10 @@ describe("TransferConventionToAgency", () => {
       });
 
       describe("federatedIdentity is set in initial convention", () => {
-        const userFtExternalId = "92f44bbf-103d-4312-bd74-217c7d79f618";
-        const beneficiary: FtConnectUserDto = {
-          email: "",
-          firstName: "",
-          isJobseeker: true,
-          lastName: "",
-          ftExternalId: userFtExternalId,
-          birthdate: "1990-01-01",
-        };
-        const ftAdvisor: FtConnectImmersionAdvisorDto = {
-          firstName: "Jean",
-          lastName: "Dupont",
-          email: "jean.dupont@pole-emploi.fr",
-          type: "PLACEMENT",
-        };
-
         beforeEach(async () => {
-          await uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor(
-            {
-              advisor: ftAdvisor,
-              user: beneficiary,
-            },
-          );
-          await uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-            conventionId,
-            userFtExternalId,
-          );
-
-          uow.conventionRepository.setConventions([convention]);
+          uow.conventionRepository.setConventions([
+            conventionWithFederatedIdentity,
+          ]);
           uow.userRepository.users = [notConnectedUser];
         });
 
@@ -1039,24 +987,13 @@ describe("TransferConventionToAgency", () => {
           );
 
           const expectedConvention = {
-            ...convention,
+            ...conventionWithFederatedIdentity,
             agencyId: otherAgency.id,
           };
 
           expectToEqual(uow.conventionRepository.conventions, [
             expectedConvention,
           ]);
-          expectToEqual(
-            await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-              conventionId,
-            ),
-            {
-              conventionId,
-              advisor: ftAdvisor,
-              ftExternalId: userFtExternalId,
-              _entityName: "ConventionFranceTravailAdvisor",
-            },
-          );
 
           expectArraysToMatch(uow.outboxRepository.events, [
             {
@@ -1109,24 +1046,14 @@ describe("TransferConventionToAgency", () => {
           );
 
           const expectedConvention = {
-            ...convention,
+            ...conventionWithFederatedIdentity,
             agencyId: otherAgency.id,
           };
 
           expectToEqual(uow.conventionRepository.conventions, [
             expectedConvention,
           ]);
-          expectToEqual(
-            await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-              conventionId,
-            ),
-            {
-              conventionId,
-              advisor: ftAdvisor,
-              ftExternalId: userFtExternalId,
-              _entityName: "ConventionFranceTravailAdvisor",
-            },
-          );
+
           expectArraysToMatch(uow.outboxRepository.events, [
             {
               topic: "ConventionTransferredToAgency",

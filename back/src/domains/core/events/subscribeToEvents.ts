@@ -65,7 +65,6 @@ const getUseCasesByTopics = (
 
   // "Happy case" for conventions.
   ConventionSubmittedByBeneficiary: [
-    useCases.bindConventionToFederatedIdentity,
     useCases.markDiscussionLinkedToConvention,
     extractWithConventionDraftIdFromAddConventionInput(
       useCases.deleteConventionDraft,

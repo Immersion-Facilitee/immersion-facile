@@ -603,6 +603,9 @@ describe("AfterOAuthSuccessRedirection use case", () => {
                 federatedIdentity: {
                   provider: "ftConnect",
                   token: ftJobseekerUser.ftExternalId,
+                  payload: {
+                    advisor: ftPlacementAdvisor,
+                  },
                 },
               },
             },
@@ -623,11 +626,6 @@ describe("AfterOAuthSuccessRedirection use case", () => {
             },
           },
         ]);
-        expectToEqual(
-          uow.conventionFranceTravailAdvisorRepository
-            .conventionFranceTravailUsers,
-          {},
-        );
         expectToEqual(response, {
           provider: "ftConnect",
           redirectUri: `http://baseUrl${frontRoutes.conventionImmersion({ conventionDraftId, skipIntro: true }).href}`,
@@ -670,6 +668,9 @@ describe("AfterOAuthSuccessRedirection use case", () => {
                 federatedIdentity: {
                   provider: "ftConnect",
                   token: ftJobseekerUser.ftExternalId,
+                  payload: {
+                    advisor: ftCapEmploiAdvisor,
+                  },
                 },
               },
             },

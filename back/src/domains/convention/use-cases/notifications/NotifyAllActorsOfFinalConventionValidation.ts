@@ -19,7 +19,6 @@ import {
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import type { GenerateConventionMagicLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
-import type { ConventionFtUserAdvisorEntity } from "../../../core/authentication/ft-connect/dto/FtConnect.dto";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import type { ShortLinkIdGeneratorGateway } from "../../../core/short-link/ports/ShortLinkIdGeneratorGateway";
 import { prepareConventionMagicShortLinkMaker } from "../../../core/short-link/ShortLink";
@@ -53,7 +52,9 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
       throw errors.agency.notFound({ agencyId: convention.agencyId });
 
     const agency = await agencyWithRightToAgencyDto(uow, agencyWithRights);
-
+    const conventionBeneficiaryAdvisor =
+      convention.signatories.beneficiary.federatedIdentity?.payload?.advisor;
+    const conventionBeneficiaryAdvisorRole: ConventionRole = "validator";
     const recipientsRoleAndEmail: { role: ConventionRole; email: Email }[] =
       uniqBy(
         (recipient) => recipient.email,
@@ -83,11 +84,15 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
               email: counsellorEmail,
             }),
           ),
-          ...getFtAdvisorEmailAndRoleIfExist(
-            await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-              convention.id,
-            ),
-          ),
+          ...(conventionBeneficiaryAdvisor &&
+          conventionBeneficiaryAdvisor?.type !== "INDEMNISATION"
+            ? [
+                {
+                  email: conventionBeneficiaryAdvisor.email,
+                  role: conventionBeneficiaryAdvisorRole,
+                },
+              ]
+            : []),
         ],
       );
 
@@ -106,13 +111,6 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
       );
     }
   });
-
-const getFtAdvisorEmailAndRoleIfExist = (
-  conventionFtUserAdvisor: ConventionFtUserAdvisorEntity | undefined,
-): [{ role: ConventionRole; email: Email }] | [] =>
-  conventionFtUserAdvisor?.advisor?.email
-    ? [{ role: "validator", email: conventionFtUserAdvisor.advisor.email }]
-    : [];
 
 const prepareEmail = async ({
   convention,

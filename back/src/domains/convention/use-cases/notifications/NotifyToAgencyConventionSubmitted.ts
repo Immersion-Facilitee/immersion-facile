@@ -38,14 +38,13 @@ export const makeNotifyToAgencyConventionSubmitted = useCaseBuilder(
 
     const agency = await agencyWithRightToAgencyDto(uow, agencyWithRights);
 
-    const conventionAdvisorEntity =
-      await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-        convention.id,
-      );
+    const conventionAdvisorEmail =
+      convention.signatories.beneficiary.federatedIdentity?.payload?.advisor
+        ?.email;
 
-    const recipientsAndWarning = conventionAdvisorEntity?.advisor
+    const recipientsAndWarning = conventionAdvisorEmail
       ? {
-          recipients: [conventionAdvisorEntity.advisor.email],
+          recipients: [conventionAdvisorEmail],
           warning: undefined,
         }
       : {

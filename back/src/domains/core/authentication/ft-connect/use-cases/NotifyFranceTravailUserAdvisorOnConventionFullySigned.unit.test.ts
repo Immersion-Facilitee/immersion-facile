@@ -21,7 +21,6 @@ import {
 } from "../../../unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../../unit-of-work/adapters/InMemoryUowPerformer";
 import { UuidV4Generator } from "../../../uuid-generator/adapters/UuidGeneratorImplementations";
-import type { FtUserAndAdvisor } from "../dto/FtConnect.dto";
 import type { FtConnectImmersionAdvisorDto } from "../dto/FtConnectAdvisor.dto";
 import {
   makeNotifyFranceTravailUserAdvisorOnConventionFullySigned,
@@ -36,17 +35,6 @@ describe("NotifyFranceTravailUserAdvisorOnConventionFullySigned", () => {
     firstName: "Elsa",
     lastName: "Oldenburg",
     type: "CAPEMPLOI",
-  };
-  const userAdvisorDto: FtUserAndAdvisor = {
-    advisor,
-    user: {
-      ftExternalId: userFtExternalId,
-      email: "",
-      firstName: "",
-      isJobseeker: true,
-      lastName: "",
-      birthdate: "",
-    },
   };
 
   let uow: InMemoryUnitOfWork;
@@ -107,17 +95,17 @@ describe("NotifyFranceTravailUserAdvisorOnConventionFullySigned", () => {
       .withSchedule((interval) =>
         reasonableSchedule(interval, ["samedi", "dimanche"]),
       )
+      .withFederatedIdentity({
+        provider: "ftConnect",
+        token: userFtExternalId,
+        payload: {
+          advisor,
+        },
+      })
       .withBusinessName("Boulangerie Les Echarts")
       .build();
 
     uow.conventionRepository.setConventions([conventionDtoFromEvent]);
-    uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor(
-      userAdvisorDto,
-    );
-    uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-      conventionId,
-      userAdvisorDto.user.ftExternalId,
-    );
 
     await notifyFranceTravailUserAdvisorOnConventionFullySigned.execute({
       convention: conventionDtoFromEvent,
@@ -176,20 +164,14 @@ describe("NotifyFranceTravailUserAdvisorOnConventionFullySigned", () => {
       .withSchedule((interval) =>
         reasonableSchedule(interval, ["samedi", "dimanche"]),
       )
+      .withFederatedIdentity({
+        provider: "ftConnect",
+        token: userFtExternalId,
+      })
       .withBusinessName("Boulangerie Les Echarts")
       .build();
 
     uow.conventionRepository.setConventions([conventionDtoFromEvent]);
-    uow.conventionFranceTravailAdvisorRepository.ftConnectedUsers = {
-      [userAdvisorDto.user.ftExternalId]: {
-        user: userAdvisorDto.user,
-        advisor: undefined,
-      },
-    };
-    uow.conventionFranceTravailAdvisorRepository.conventionFranceTravailUsers =
-      {
-        [conventionId]: userAdvisorDto.user.ftExternalId,
-      };
 
     await notifyFranceTravailUserAdvisorOnConventionFullySigned.execute({
       convention: conventionDtoFromEvent,

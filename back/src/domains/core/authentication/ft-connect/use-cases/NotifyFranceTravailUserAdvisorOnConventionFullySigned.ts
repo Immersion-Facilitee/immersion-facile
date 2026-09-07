@@ -20,33 +20,31 @@ export const makeNotifyFranceTravailUserAdvisorOnConventionFullySigned =
       config: AppConfig;
     }>()
     .build(async ({ inputParams, uow, deps }) => {
-      const conventionFtAdvisor =
-        await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-          inputParams.convention.id,
-        );
-
       const convention = await uow.conventionRepository.getById(
         inputParams.convention.id,
       );
 
       if (!convention) return;
 
+      const conventionFtAdvisor =
+        convention.signatories.beneficiary.federatedIdentity?.payload?.advisor;
+
       const [agency] = await uow.agencyRepository.getByIds([
         convention.agencyId,
       ]);
 
-      if (conventionFtAdvisor?.advisor && agency)
+      if (conventionFtAdvisor && agency)
         await deps.saveNotificationAndRelatedEvent(uow, {
           kind: "email",
           templatedContent: {
             kind: "POLE_EMPLOI_ADVISOR_ON_CONVENTION_FULLY_SIGNED",
-            recipients: [conventionFtAdvisor.advisor.email],
+            recipients: [conventionFtAdvisor.email],
             params: {
               advisorFirstName: getFormattedFirstnameAndLastname({
-                firstname: conventionFtAdvisor.advisor.firstName,
+                firstname: conventionFtAdvisor.firstName,
               }),
               advisorLastName: getFormattedFirstnameAndLastname({
-                lastname: conventionFtAdvisor.advisor.lastName,
+                lastname: conventionFtAdvisor.lastName,
               }),
               agencyLogoUrl: agency.logoUrl ?? undefined,
               beneficiaryFirstName: getFormattedFirstnameAndLastname({

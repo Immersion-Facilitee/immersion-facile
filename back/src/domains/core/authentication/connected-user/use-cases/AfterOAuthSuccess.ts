@@ -215,11 +215,6 @@ const saveFTConnectAuthenticationDataAndReturnRedirectURI = async ({
     ? chooseValidAdvisor(userAndAdvisors.user, userAndAdvisors.advisors)
     : undefined;
 
-  await uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor({
-    advisor: validAdvisor,
-    user: userAndAdvisors.user,
-  });
-
   const conventionDraft: ConventionDraftDto = {
     id: deps.uuidGenerator.new(),
     internshipKind: "immersion",
@@ -234,6 +229,13 @@ const saveFTConnectAuthenticationDataAndReturnRedirectURI = async ({
         federatedIdentity: {
           provider: "ftConnect",
           token: userAndAdvisors.user.ftExternalId,
+          ...(validAdvisor
+            ? {
+                payload: {
+                  advisor: validAdvisor,
+                },
+              }
+            : {}),
         },
       },
     },

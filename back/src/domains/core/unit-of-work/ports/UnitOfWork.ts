@@ -24,7 +24,6 @@ import type { EstablishmentMarketingRepository } from "../../../marketing/ports/
 import type { ApiConsumerRepository } from "../../api-consumer/ports/ApiConsumerRepository";
 import type { OngoingOAuthRepository } from "../../authentication/connected-user/port/OngoingOAuthRepositiory";
 import type { UserRepository } from "../../authentication/connected-user/port/UserRepository";
-import type { ConventionFranceTravailAdvisorRepository } from "../../authentication/ft-connect/port/ConventionFranceTravailAdvisorRepository";
 import type { OutboxQueries } from "../../events/ports/OutboxQueries";
 import type { OutboxRepository } from "../../events/ports/OutboxRepository";
 import type { FeatureFlagQueries } from "../../feature-flags/ports/FeatureFlagQueries";
@@ -47,7 +46,6 @@ export type UnitOfWork = {
   bannedEstablishmentRepository: BannedEstablishmentRepository;
   conventionDraftRepository: ConventionDraftRepository;
   conventionExternalIdRepository: ConventionExternalIdRepository;
-  conventionFranceTravailAdvisorRepository: ConventionFranceTravailAdvisorRepository;
   conventionTemplateQueries: ConventionTemplateQueries;
   conventionQueries: ConventionQueries;
   conventionRepository: ConventionRepository;

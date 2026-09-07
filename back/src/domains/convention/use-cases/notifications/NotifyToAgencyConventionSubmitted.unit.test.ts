@@ -17,6 +17,7 @@ import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
+import type { FtConnectImmersionAdvisorDto } from "../../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
 import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {
@@ -273,22 +274,6 @@ describe("NotifyToAgencyConventionSubmitted", () => {
       baseUrl: config.immersionFacileBaseUrl,
     });
 
-    uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor({
-      advisor: undefined,
-      user: {
-        email: "john.doe@gmail.com",
-        firstName: "John",
-        isJobseeker: true,
-        lastName: "Doe",
-        ftExternalId: ftIdentity.token,
-        birthdate: "2000-01-01",
-      },
-    });
-    uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-      validConvention.id,
-      ftIdentity.token,
-    );
-
     await notifyToAgencyConventionSubmitted.execute({
       convention: validConvention,
     });
@@ -339,9 +324,18 @@ describe("NotifyToAgencyConventionSubmitted", () => {
 
   it("Sends notification email only to peAdvisor when beneficiary is ftConnected and beneficiary has PE advisor", async () => {
     const ftAdvisorEmail = "ft-advisor@gmail.com";
+    const advisor: FtConnectImmersionAdvisorDto = {
+      email: ftAdvisorEmail,
+      firstName: "Elsa",
+      lastName: "Oldenburg",
+      type: "CAPEMPLOI",
+    };
     const ftIdentity: FtConnectIdentity = {
       provider: "ftConnect",
       token: "123",
+      payload: {
+        advisor,
+      },
     };
 
     const validConvention = new ConventionDtoBuilder()
@@ -355,27 +349,6 @@ describe("NotifyToAgencyConventionSubmitted", () => {
       }),
       baseUrl: config.immersionFacileBaseUrl,
     });
-
-    uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor({
-      advisor: {
-        email: ftAdvisorEmail,
-        firstName: "Elsa",
-        lastName: "Oldenburg",
-        type: "CAPEMPLOI",
-      },
-      user: {
-        email: "john.doe@gmail.com",
-        firstName: "John",
-        isJobseeker: true,
-        lastName: "Doe",
-        ftExternalId: ftIdentity.token,
-        birthdate: "2000-01-01",
-      },
-    });
-    uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-      validConvention.id,
-      ftIdentity.token,
-    );
 
     await notifyToAgencyConventionSubmitted.execute({
       convention: validConvention,

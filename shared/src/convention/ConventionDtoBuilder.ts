@@ -595,7 +595,9 @@ export class ConventionDtoBuilder implements Builder<ConventionDto> {
   ): ConventionDtoBuilder {
     return this.withBeneficiary({
       ...this.#beneficiary,
-      ...(federatedIdentity ? { federatedIdentity } : {}),
+      ...(federatedIdentity
+        ? { federatedIdentity }
+        : { federatedIdentity: undefined }),
     });
   }
 

@@ -25,9 +25,19 @@ export const makeRemoveConventionFTAdvisorIfAgencyIsNotFranceTravail =
         throw errors.agency.notFound({
           agencyId: convention.agencyId,
         });
-
       if (agency.kind !== "france-travail")
-        await uow.conventionFranceTravailAdvisorRepository.deleteByConventionId(
-          inputParams.conventionId,
+        await uow.conventionRepository.update(
+          convention.internshipKind === "immersion"
+            ? {
+                ...convention,
+                signatories: {
+                  ...convention.signatories,
+                  beneficiary: {
+                    ...convention.signatories.beneficiary,
+                    federatedIdentity: undefined,
+                  },
+                },
+              }
+            : convention,
         );
     });

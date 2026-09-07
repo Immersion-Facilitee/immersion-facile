@@ -352,6 +352,13 @@ describe("NotifyThatReferencedEstablishmentIsBanned", () => {
           beneficiary: {
             ...validatedConvention.signatories.beneficiary,
             ...ftConnectedBeneficiary,
+            federatedIdentity: {
+              provider: "ftConnect",
+              token: ftConnectedBeneficiary.ftExternalId,
+              payload: {
+                advisor: ftConnectImmersionAdvisor,
+              },
+            },
           },
         },
         validators: {
@@ -364,17 +371,6 @@ describe("NotifyThatReferencedEstablishmentIsBanned", () => {
       };
 
       uow.conventionRepository.setConventions([conventionWithFtConnectUsers]);
-      uow.conventionFranceTravailAdvisorRepository.ftConnectedUsers = {
-        [ftConnectedBeneficiary.ftExternalId]: {
-          advisor: ftConnectImmersionAdvisor,
-          user: ftConnectedBeneficiary,
-        },
-      };
-      uow.conventionFranceTravailAdvisorRepository.conventionFranceTravailUsers =
-        {
-          [conventionWithFtConnectUsers.id]:
-            ftConnectedBeneficiary.ftExternalId,
-        };
 
       await notifyThatReferencedEstablishmentIsBanned.execute({ siret });
 
