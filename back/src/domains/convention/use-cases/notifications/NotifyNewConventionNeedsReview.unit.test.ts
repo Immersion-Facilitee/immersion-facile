@@ -72,9 +72,18 @@ describe("NotifyNewConventionNeedsReview", () => {
   );
 
   const ftAdvisorEmail = "ft-advisor@gmail.com";
+  const advisor: FtConnectImmersionAdvisorDto = {
+    email: ftAdvisorEmail,
+    firstName: "Elsa",
+    lastName: "Oldenburg",
+    type: "CAPEMPLOI",
+  };
   const ftIdentity: FtConnectIdentity = {
     provider: "ftConnect",
     token: "123",
+    payload: {
+      advisor,
+    },
   };
 
   let uow: InMemoryUnitOfWork;
@@ -245,29 +254,6 @@ describe("NotifyNewConventionNeedsReview", () => {
         .withFederatedIdentity(ftIdentity)
         .build();
 
-      const advisor: FtConnectImmersionAdvisorDto = {
-        email: ftAdvisorEmail,
-        firstName: "Elsa",
-        lastName: "Oldenburg",
-        type: "CAPEMPLOI",
-      };
-
-      uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor({
-        advisor,
-        user: {
-          email: "john.doe@gmail.com",
-          firstName: "John",
-          isJobseeker: true,
-          lastName: "Doe",
-          ftExternalId: ftIdentity.token,
-          birthdate: "2000-01-01",
-        },
-      });
-      uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-        conventionInReviewWithFtAdvisor.id,
-        ftIdentity.token,
-      );
-
       await notifyNewConventionNeedsReview.execute({
         convention: conventionInReviewWithFtAdvisor,
       });
@@ -327,22 +313,6 @@ describe("NotifyNewConventionNeedsReview", () => {
         lastName: "Oldenburg",
         type: "CAPEMPLOI",
       };
-
-      uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor({
-        advisor,
-        user: {
-          email: "john.doe@gmail.com",
-          firstName: "John",
-          isJobseeker: true,
-          lastName: "Doe",
-          ftExternalId: ftIdentity.token,
-          birthdate: "2000-01-01",
-        },
-      });
-      uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-        conventionInReviewWithFtAdvisor.id,
-        ftIdentity.token,
-      );
 
       await notifyNewConventionNeedsReview.execute({
         convention: conventionInReviewWithFtAdvisor,
@@ -498,22 +468,6 @@ describe("NotifyNewConventionNeedsReview", () => {
         lastName: "Oldenburg",
         type: "CAPEMPLOI",
       };
-
-      uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor({
-        advisor,
-        user: {
-          email: "john.doe@gmail.com",
-          firstName: "John",
-          isJobseeker: true,
-          lastName: "Doe",
-          ftExternalId: ftIdentity.token,
-          birthdate: "2000-01-01",
-        },
-      });
-      uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-        conventionAcceptedByCounsellorWithFtAdvisor.id,
-        ftIdentity.token,
-      );
 
       await notifyNewConventionNeedsReview.execute({
         convention: conventionAcceptedByCounsellorWithFtAdvisor,

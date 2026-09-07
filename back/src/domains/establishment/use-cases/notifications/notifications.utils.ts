@@ -1,7 +1,6 @@
 import { uniq } from "ramda";
 import { type AbsoluteUrl, type ConventionDto, errors } from "shared";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
-import type { ConventionFtUserAdvisorEntity } from "../../../core/authentication/ft-connect/dto/FtConnect.dto";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import type { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";
 
@@ -15,13 +14,12 @@ export const notifyValidatorAndCounsellor = async (
   const agency = await uow.agencyRepository.getById(convention.agencyId);
   if (!agency) throw errors.agency.notFound({ agencyId: convention.agencyId });
 
-  const ftUserAdvisor: ConventionFtUserAdvisorEntity | undefined =
-    await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-      convention.id,
-    );
+  const ftUserAdvisorEmail =
+    convention.signatories.beneficiary.federatedIdentity?.payload?.advisor
+      ?.email;
 
-  const recipients = ftUserAdvisor?.advisor
-    ? [ftUserAdvisor.advisor.email]
+  const recipients = ftUserAdvisorEmail
+    ? [ftUserAdvisorEmail]
     : await getAgencyValidatorAndCounsellorEmails(uow, agency);
 
   await saveNotificationAndRelatedEvent(uow, {

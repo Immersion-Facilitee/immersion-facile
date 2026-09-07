@@ -5,6 +5,7 @@ import {
   ConventionDtoBuilder,
   errors,
   expectPromiseToFailWithError,
+  type FtConnectIdentity,
   getFormattedFirstnameAndLastname,
   reasonableSchedule,
 } from "shared";
@@ -13,6 +14,7 @@ import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
+import type { FtConnectImmersionAdvisorDto } from "../../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
 import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {
@@ -183,31 +185,26 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow", () => {
 
     describe("When the convention is FT connected", () => {
       const advisorEmail = "john.doe@mail.fr";
+      const userFtExternalId = "92f44bbf-103d-4312-bd74-217c7d79f618";
 
-      beforeEach(() => {
-        uow.conventionFranceTravailAdvisorRepository.ftConnectedUsers = {
-          "pe-external-id": {
-            advisor: {
-              firstName: "John",
-              lastName: "Doe",
-              type: "PLACEMENT",
-              email: advisorEmail,
-            },
-            user: {
-              ftExternalId: "pe-external-id",
-              email: "elsa@email.com",
-              firstName: "Elsa",
-              lastName: "Oldenburg",
-              birthdate: "1990-01-01",
-              isJobseeker: false,
-            },
-          },
-        };
-        uow.conventionFranceTravailAdvisorRepository.conventionFranceTravailUsers =
-          {
-            [convention.id]: "pe-external-id",
-          };
-      });
+      const ftAdvisor: FtConnectImmersionAdvisorDto = {
+        firstName: "Jean",
+        lastName: "Dupont",
+        email: advisorEmail,
+        type: "PLACEMENT",
+      };
+      const federatedIdentity: FtConnectIdentity = {
+        provider: "ftConnect",
+        token: userFtExternalId,
+        payload: {
+          advisor: ftAdvisor,
+        },
+      };
+      const conventionWithFederatedIdentity = new ConventionDtoBuilder(
+        convention,
+      )
+        .withFederatedIdentity(federatedIdentity)
+        .build();
 
       it("Send an email to the advisor (and not to other agency users)", async () => {
         uow.userRepository.users = [validator];
@@ -217,7 +214,7 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow", () => {
           }),
         ];
 
-        await uow.conventionRepository.save(convention);
+        await uow.conventionRepository.save(conventionWithFederatedIdentity);
 
         await notifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow.execute({
           assessment: assessmentDidNotShow,

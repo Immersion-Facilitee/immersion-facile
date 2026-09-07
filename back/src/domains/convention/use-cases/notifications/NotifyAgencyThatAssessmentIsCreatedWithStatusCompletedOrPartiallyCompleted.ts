@@ -41,13 +41,12 @@ export const makeNotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartial
       const { validatorEmails, counsellorEmails } =
         await agencyWithRightToAgencyDto(uow, agency);
 
-      const conventionAdvisor =
-        await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-          convention.id,
-        );
+      const conventionAdvisorEmail =
+        convention.signatories.beneficiary.federatedIdentity?.payload?.advisor
+          ?.email;
 
-      const agencyEmails: Email[] = conventionAdvisor?.advisor
-        ? [conventionAdvisor?.advisor.email]
+      const agencyEmails: Email[] = conventionAdvisorEmail
+        ? [conventionAdvisorEmail]
         : uniq([...validatorEmails, ...counsellorEmails]);
 
       const numberOfHoursMade = computeTotalHours({

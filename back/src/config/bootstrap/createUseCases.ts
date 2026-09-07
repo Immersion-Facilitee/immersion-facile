@@ -108,7 +108,6 @@ import { makeGetOAuthLogoutUrl } from "../../domains/core/authentication/connect
 import { makeInitiateLoginByEmail } from "../../domains/core/authentication/connected-user/use-cases/InitiateLoginByEmail";
 import { makeInitiateLoginByOAuth } from "../../domains/core/authentication/connected-user/use-cases/InitiateLoginByOAuth";
 import { makeRenewExpiredJwt } from "../../domains/core/authentication/connected-user/use-cases/RenewExpiredJwt";
-import { makeBindConventionToFederatedIdentity } from "../../domains/core/authentication/ft-connect/use-cases/BindConventionToFederatedIdentity";
 import { makeNotifyFranceTravailUserAdvisorOnConventionFullySigned } from "../../domains/core/authentication/ft-connect/use-cases/NotifyFranceTravailUserAdvisorOnConventionFullySigned";
 import type { DashboardGateway } from "../../domains/core/dashboard/port/DashboardGateway";
 import { makeGetDashboardUrl } from "../../domains/core/dashboard/useCases/GetDashboardUrl";
@@ -335,12 +334,6 @@ export const createUseCases = ({
       deps: {
         createNewEvent,
         timeGateway: gateways.timeGateway,
-      },
-    }),
-    bindConventionToFederatedIdentity: makeBindConventionToFederatedIdentity({
-      uowPerformer,
-      deps: {
-        createNewEvent,
       },
     }),
     signConvention: makeSignConvention({

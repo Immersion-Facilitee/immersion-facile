@@ -1,14 +1,13 @@
 import {
   AgencyDtoBuilder,
   ConventionDtoBuilder,
-  type ConventionId,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
+  type FtConnectIdentity,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import type { FtConnectImmersionAdvisorDto } from "../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
-import type { FtConnectUserDto } from "../../core/authentication/ft-connect/dto/FtConnectUserDto";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -30,19 +29,19 @@ describe("RemoveConventionFTAdvisorIfAgencyIsNotFranceTravail", () => {
     .withKind("mission-locale")
     .build();
   const userFtExternalId = "92f44bbf-103d-4312-bd74-217c7d79f618";
-  const ftConnectUser: FtConnectUserDto = {
-    email: "",
-    firstName: "",
-    isJobseeker: true,
-    lastName: "",
-    ftExternalId: userFtExternalId,
-    birthdate: "1990-01-01",
-  };
   const ftAdvisor: FtConnectImmersionAdvisorDto = {
     firstName: "Jean",
     lastName: "Dupont",
     email: "jean.dupont@pole-emploi.fr",
     type: "PLACEMENT",
+  };
+
+  const federatedIdentity: FtConnectIdentity = {
+    provider: "ftConnect",
+    token: userFtExternalId,
+    payload: {
+      advisor: ftAdvisor,
+    },
   };
 
   let uow: InMemoryUnitOfWork;
@@ -84,127 +83,45 @@ describe("RemoveConventionFTAdvisorIfAgencyIsNotFranceTravail", () => {
 
   describe("Right paths", () => {
     it("removes convention France Travail advisor when new agency is not France Travail", async () => {
-      uow.conventionRepository.setConventions([
-        new ConventionDtoBuilder()
-          .withId(conventionId)
-          .withAgencyId(missionLocaleAgency.id)
-          .build(),
-      ]);
+      const convention = new ConventionDtoBuilder()
+        .withId(conventionId)
+        .withAgencyId(missionLocaleAgency.id)
+        .withFederatedIdentity(federatedIdentity)
+        .build();
+
+      uow.conventionRepository.setConventions([convention]);
       uow.agencyRepository.agencies = [
         toAgencyWithRights(missionLocaleAgency, {}),
       ];
-      saveConventionFranceTravailAdvisor({
-        advisor: ftAdvisor,
-        user: ftConnectUser,
-        conventionId,
-      });
 
       await usecase.execute({
         conventionId,
       });
 
-      expectToEqual(
-        uow.conventionFranceTravailAdvisorRepository
-          .conventionFranceTravailUsers,
-        {},
-      );
-      expectToEqual(
-        uow.conventionFranceTravailAdvisorRepository.ftConnectedUsers,
-        {},
-      );
-    });
-
-    it("keeps ftConnectUser when it is still linked to another convention", async () => {
-      const otherConventionId = "970cc531-088d-42e5-8385-48a7fd4e5fa5";
-      uow.conventionRepository.setConventions([
-        new ConventionDtoBuilder()
-          .withId(conventionId)
-          .withAgencyId(missionLocaleAgency.id)
-          .build(),
-        new ConventionDtoBuilder()
-          .withId(otherConventionId)
-          .withAgencyId(missionLocaleAgency.id)
+      expectToEqual(uow.conventionRepository.conventions, [
+        new ConventionDtoBuilder(convention)
+          .withFederatedIdentity(undefined)
           .build(),
       ]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(missionLocaleAgency, {}),
-      ];
-      saveConventionFranceTravailAdvisor({
-        advisor: ftAdvisor,
-        user: ftConnectUser,
-        conventionId,
-      });
-      uow.conventionFranceTravailAdvisorRepository.conventionFranceTravailUsers[
-        otherConventionId
-      ] = userFtExternalId;
-
-      await usecase.execute({
-        conventionId,
-      });
-
-      expectToEqual(
-        uow.conventionFranceTravailAdvisorRepository
-          .conventionFranceTravailUsers,
-        {
-          [otherConventionId]: userFtExternalId,
-        },
-      );
-      expectToEqual(
-        uow.conventionFranceTravailAdvisorRepository.ftConnectedUsers,
-        {
-          [userFtExternalId]: {
-            advisor: ftAdvisor,
-            user: ftConnectUser,
-          },
-        },
-      );
     });
 
     it("keeps convention France Travail advisor when new agency is France Travail", async () => {
-      uow.conventionRepository.setConventions([
-        new ConventionDtoBuilder()
-          .withId(conventionId)
-          .withAgencyId(ftAgency.id)
-          .build(),
-      ]);
+      const transferredConvention = new ConventionDtoBuilder()
+        .withId(conventionId)
+        .withAgencyId(ftAgency.id)
+        .withFederatedIdentity(federatedIdentity)
+        .build();
+
+      uow.conventionRepository.setConventions([transferredConvention]);
       uow.agencyRepository.agencies = [toAgencyWithRights(ftAgency, {})];
-      saveConventionFranceTravailAdvisor({
-        advisor: ftAdvisor,
-        user: ftConnectUser,
-        conventionId,
-      });
 
       await usecase.execute({
         conventionId,
       });
 
-      expectToEqual(
-        uow.conventionFranceTravailAdvisorRepository
-          .conventionFranceTravailUsers,
-        {
-          [conventionId]: ftConnectUser.ftExternalId,
-        },
-      );
+      expectToEqual(uow.conventionRepository.conventions, [
+        transferredConvention,
+      ]);
     });
   });
-
-  const saveConventionFranceTravailAdvisor = ({
-    advisor,
-    user,
-    conventionId,
-  }: {
-    advisor: FtConnectImmersionAdvisorDto;
-    user: FtConnectUserDto;
-    conventionId: ConventionId;
-  }) => {
-    uow.conventionFranceTravailAdvisorRepository.conventionFranceTravailUsers[
-      conventionId
-    ] = user.ftExternalId;
-    uow.conventionFranceTravailAdvisorRepository.ftConnectedUsers[
-      user.ftExternalId
-    ] = {
-      advisor,
-      user,
-    };
-  };
 });

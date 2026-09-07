@@ -3,6 +3,7 @@ import {
   type ConventionRole,
   type ConventionStatus,
   executeInSequence,
+  type FtConnectAdvisorForBeneficiary,
   frontRoutes,
   getFormattedFirstnameAndLastname,
   makeRouteAbsoluteUrl,
@@ -12,7 +13,6 @@ import {
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
 import { createLogger } from "../../../../utils/logger";
-import type { FtConnectImmersionAdvisorDto } from "../../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
@@ -46,11 +46,7 @@ export const makeNotifyNewConventionNeedsReview = useCaseBuilder(
     const recipients = determineRecipients(
       convention.status,
       await agencyWithRightToAgencyDto(uow, agency),
-      (
-        await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-          convention.id,
-        )
-      )?.advisor,
+      convention.signatories.beneficiary.federatedIdentity?.payload?.advisor,
     );
 
     if (!recipients) {
@@ -130,7 +126,7 @@ type Recipient = {
 const determineRecipients = (
   status: ConventionStatus,
   agency: AgencyDto,
-  peAdvisor: FtConnectImmersionAdvisorDto | undefined,
+  peAdvisor: FtConnectAdvisorForBeneficiary["advisor"],
 ): Recipient[] => {
   const hasCounsellorEmails = agency.counsellorEmails.length > 0;
   const hasValidatorEmails = agency.validatorEmails.length > 0;

@@ -24,7 +24,6 @@ import { InMemoryEstablishementMarketingRepository } from "../../../marketing/ad
 import { InMemoryApiConsumerRepository } from "../../api-consumer/adapters/InMemoryApiConsumerRepository";
 import { InMemoryOngoingOAuthRepository } from "../../authentication/connected-user/adapters/InMemoryOngoingOAuthRepository";
 import { InMemoryUserRepository } from "../../authentication/connected-user/adapters/InMemoryUserRepository";
-import { InMemoryConventionFranceTravailAdvisorRepository } from "../../authentication/ft-connect/adapters/InMemoryConventionFranceTravailAdvisorRepository";
 import { InMemoryOutboxQueries } from "../../events/adapters/InMemoryOutboxQueries";
 import { InMemoryOutboxRepository } from "../../events/adapters/InMemoryOutboxRepository";
 import { InMemoryFeatureFlagQueries } from "../../feature-flags/adapters/InMemoryFeatureFlagQueries";
@@ -75,8 +74,6 @@ export const createInMemoryUow = () => {
     conventionQueries,
     conventionRepository,
     conventionTemplateQueries: new InMemoryConventionTemplateQueries(),
-    conventionFranceTravailAdvisorRepository:
-      new InMemoryConventionFranceTravailAdvisorRepository(),
     conventionsToSyncRepository: new InMemoryConventionsToSyncRepository(),
     delegationContactRepository: new InMemoryDelegationContactRepository(),
     discussionRepository: new InMemoryDiscussionRepository(userRepository),

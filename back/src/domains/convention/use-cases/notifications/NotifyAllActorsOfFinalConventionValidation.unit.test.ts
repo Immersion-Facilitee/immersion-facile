@@ -10,12 +10,14 @@ import {
   type EstablishmentRepresentative,
   type EstablishmentTutor,
   expectToEqual,
+  type FtConnectIdentity,
   type ShortLinkId,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../../utils/agency";
 import { fakeGenerateMagicLinkUrlFn } from "../../../../utils/jwtTestHelper";
+import type { FtConnectImmersionAdvisorDto } from "../../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
 import { expectEmailFinalValidationConfirmationParamsMatchingConvention } from "../../../core/notifications/adapters/InMemoryNotificationRepository";
 import {
   makeSaveNotificationAndRelatedEvent,
@@ -102,6 +104,27 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         job: "tuteur",
       })
       .build();
+
+  const userFtExternalId = "92f44bbf-103d-4312-bd74-217c7d79f618";
+
+  const ftAdvisor: FtConnectImmersionAdvisorDto = {
+    firstName: "Jean",
+    lastName: "Dupont",
+    email: peAdvisorEmail,
+    type: "PLACEMENT",
+  };
+  const federatedIdentity: FtConnectIdentity = {
+    provider: "ftConnect",
+    token: userFtExternalId,
+    payload: {
+      advisor: ftAdvisor,
+    },
+  };
+  const conventionWithFederatedIdentity = new ConventionDtoBuilder(
+    validConventionWithSameTutorAndRepresentative,
+  )
+    .withFederatedIdentity(federatedIdentity)
+    .build();
 
   const defaultAgency = AgencyDtoBuilder.create(
     validConventionWithSameTutorAndRepresentative.agencyId,
@@ -542,28 +565,6 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           assessmentCreationLinkId: undefined,
         },
       ];
-      const userFtExternalId = "i-am-an-external-id";
-
-      uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor({
-        user: {
-          ftExternalId: userFtExternalId,
-          email: "john.doe@plop.fr",
-          firstName: "John",
-          isJobseeker: true,
-          lastName: "Doe",
-          birthdate: "1990-01-01",
-        },
-        advisor: {
-          email: peAdvisorEmail,
-          firstName: "Elsa",
-          lastName: "Oldenburg",
-          type: "CAPEMPLOI",
-        },
-      });
-      uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-        validConventionWithSameTutorAndRepresentative.id,
-        userFtExternalId,
-      );
 
       const actorsWithShortlinks = actors.filter(
         (actor) => actor.role !== "validator" && actor.role !== "counsellor",
@@ -576,8 +577,12 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
 
       shortLinkIdGenerator.addMoreShortLinkIds(shortlinkIds);
 
+      uow.conventionRepository.setConventions([
+        conventionWithFederatedIdentity,
+      ]);
+
       await notifyAllActorsOfFinalConventionValidation.execute({
-        convention: validConventionWithSameTutorAndRepresentative,
+        convention: conventionWithFederatedIdentity,
       });
 
       expectToEqual(
@@ -617,6 +622,17 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
     });
 
     it("With ftConnect Federated identity: beneficiary, establishment tutor, agency counsellor & validator, and no advisor", async () => {
+      const conventionWithFederatedIdentityButNoAdvisor =
+        new ConventionDtoBuilder(conventionWithFederatedIdentity)
+          .withFederatedIdentity({
+            provider: "ftConnect",
+            token: userFtExternalId,
+            payload: {
+              advisor: undefined,
+            },
+          })
+          .build();
+
       const actors: ActorForNotification[] = [
         {
           role: "beneficiary",
@@ -645,23 +661,6 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           assessmentCreationLinkId: undefined,
         },
       ];
-      const userFtExternalId = "i-am-an-external-id";
-
-      uow.conventionFranceTravailAdvisorRepository.saveFtUserAndAdvisor({
-        user: {
-          ftExternalId: userFtExternalId,
-          email: "john.doe@plop.fr",
-          firstName: "John",
-          isJobseeker: true,
-          lastName: "Doe",
-          birthdate: "1990-01-01",
-        },
-        advisor: undefined,
-      });
-      uow.conventionFranceTravailAdvisorRepository.associateConventionAndUserAdvisor(
-        validConventionWithSameTutorAndRepresentative.id,
-        userFtExternalId,
-      );
 
       const actorsWithShortlinks = actors.filter(
         (actor) => actor.role !== "validator" && actor.role !== "counsellor",
@@ -674,15 +673,19 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
 
       shortLinkIdGenerator.addMoreShortLinkIds(shortlinkIds);
 
+      uow.conventionRepository.setConventions([
+        conventionWithFederatedIdentityButNoAdvisor,
+      ]);
+
       await notifyAllActorsOfFinalConventionValidation.execute({
-        convention: validConventionWithSameTutorAndRepresentative,
+        convention: conventionWithFederatedIdentityButNoAdvisor,
       });
 
       expectToEqual(
         uow.shortLinkQuery.getShortLinks(),
         makeExpectedShortLinks(
           actorsWithShortlinks,
-          validConventionWithSameTutorAndRepresentative,
+          conventionWithFederatedIdentityButNoAdvisor,
           timeGateway,
         ),
       );
@@ -705,7 +708,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           [actor.email],
           emailNotifications[index].templatedContent,
           defaultAgency,
-          validConventionWithSameTutorAndRepresentative,
+          conventionWithFederatedIdentityButNoAdvisor,
           config,
           actor.conventionShortlinkId,
           actor.assessmentCreationLinkId,

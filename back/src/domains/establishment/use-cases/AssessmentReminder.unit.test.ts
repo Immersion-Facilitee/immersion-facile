@@ -375,28 +375,7 @@ describe("AssessmentReminder", () => {
 
     it("when there is an advisor, send assessment reminder to tutor and advisor", async () => {
       const advisorEmail = "johnny.joey@mail.fr";
-      uow.conventionFranceTravailAdvisorRepository.ftConnectedUsers = {
-        "pe-external-id": {
-          user: {
-            email: "john.doe@mail.fr",
-            firstName: "John",
-            lastName: "Doe",
-            isJobseeker: true,
-            ftExternalId: "pe-external-id",
-            birthdate: "1990-01-01",
-          },
-          advisor: {
-            firstName: "Johnny",
-            lastName: "Joey",
-            type: "PLACEMENT",
-            email: advisorEmail,
-          },
-        },
-      };
-      uow.conventionFranceTravailAdvisorRepository.conventionFranceTravailUsers =
-        {
-          [convention.id]: "pe-external-id",
-        };
+
       const initialEstablishmentNotification: Notification =
         buildEstablishmentNotificationFrom({
           convention,
@@ -405,6 +384,27 @@ describe("AssessmentReminder", () => {
       uow.notificationRepository.notifications = [
         initialEstablishmentNotification,
       ];
+
+      const conventionWithFederatedIdentity = new ConventionDtoBuilder(
+        convention,
+      )
+        .withFederatedIdentity({
+          provider: "ftConnect",
+          token: "pe-external-id",
+          payload: {
+            advisor: {
+              firstName: "Johnny",
+              lastName: "Joey",
+              type: "PLACEMENT",
+              email: advisorEmail,
+            },
+          },
+        })
+        .build();
+
+      uow.conventionRepository.setConventions([
+        conventionWithFederatedIdentity,
+      ]);
 
       const { numberOfConventionsReminded } = await assessmentReminder.execute({
         mode: "3daysAfterInitialAssessmentEmail",

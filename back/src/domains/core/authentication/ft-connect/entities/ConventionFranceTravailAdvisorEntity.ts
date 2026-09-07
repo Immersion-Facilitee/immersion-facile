@@ -24,7 +24,7 @@ const preferCapEmploiPredicate = (
   _: FtConnectImmersionAdvisorDto,
 ) => (a.type === "CAPEMPLOI" ? -1 : 1);
 
-const onlyValidAdvisorsForImmersion = (
+export const onlyValidAdvisorsForImmersion = (
   advisor: FtConnectAdvisorDto,
 ): advisor is FtConnectImmersionAdvisorDto => advisor.type !== "INDEMNISATION";
 

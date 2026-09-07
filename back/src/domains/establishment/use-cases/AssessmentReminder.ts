@@ -297,12 +297,9 @@ const sendAgencyAssessmentReminder = async ({
   if (!agencyWithUserRights)
     throw errors.agency.notFound({ agencyId: convention.agencyId });
 
-  const conventionAdvisorEntity =
-    await uow.conventionFranceTravailAdvisorRepository.getByConventionId(
-      convention.id,
-    );
-
-  const advisorEmail = conventionAdvisorEntity?.advisor?.email;
+  const advisorEmail =
+    convention?.signatories.beneficiary.federatedIdentity?.payload?.advisor
+      ?.email;
   const agency = await agencyWithRightToAgencyDto(uow, agencyWithUserRights);
 
   const recipientsEmails: Email[] = advisorEmail
