@@ -29,6 +29,8 @@ if (fs.existsSync("./back-build.tar.gz")) fs.unlinkSync("./back-build.tar.gz");
 const version = process.argv[2];
 console.log(`Transpile back and setting version ${version}`);
 execSync("tsc -b --noCheck tsconfig.prod.json");
+console.log("Check compiled HTML templates can be loaded");
+require("./build/libs/html-templates/src/index.js");
 const versionJsPath = "build/back/src/scripts/version.js";
 replaceInFileSync(versionJsPath, /"__VERSION__"/, `"${version}"`);
 
