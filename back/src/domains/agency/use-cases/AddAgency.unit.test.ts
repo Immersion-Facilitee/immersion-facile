@@ -461,6 +461,37 @@ describe("AddAgency use case", () => {
       );
     });
 
+    it.each(["structure-IAE", "cci", "autre", "operateur-cep"] as const)(
+      "fails when referred agency kind is %s",
+      async (kind) => {
+        const referredAgency = new AgencyDtoBuilder()
+          .withId("referred-agency-id")
+          .withKind(kind)
+          .withName("Agence référente")
+          .withAgencySiret(TEST_OPEN_ESTABLISHMENT_1.siret)
+          .build();
+        const referredAgencyWithRights = toAgencyWithRights(referredAgency, {
+          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+        });
+
+        uow.userRepository.users = [validator];
+        uow.agencyRepository.agencies = [referredAgencyWithRights];
+
+        await expectPromiseToFailWithError(
+          addAgency.execute({
+            ...createAgencyWithRefersToParams,
+            refersToAgencyId: referredAgency.id,
+            refersToAgencyName: referredAgency.name,
+            refersToAgencyContactEmail: referredAgency.contactEmail,
+          }),
+          errors.agency.invalidKindForReferringAgency({ kind }),
+        );
+        expectToEqual(uow.agencyRepository.agencies, [
+          referredAgencyWithRights,
+        ]);
+      },
+    );
+
     it("fails to create if agency siret is not valid", async () => {
       const newAgency = new AgencyDtoBuilder()
         .withId("agency-to-create-id")

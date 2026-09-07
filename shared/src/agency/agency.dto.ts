@@ -187,8 +187,11 @@ export const allAgencyKindsAllowedToAdd = keys(agencyKindToLabel).sort(
 );
 
 export const fitForDelegationAgencyKind = allAgencyKindsAllowedToAdd.filter(
-  (kind) => !["autre", "cci", "operateur-cep"].includes(kind),
+  (kind) => !["autre", "cci", "operateur-cep", "structure-IAE"].includes(kind),
 );
+
+export const isFitForDelegationAgencyKind = (kind: AgencyKind): boolean =>
+  fitForDelegationAgencyKind.some((allowedKind) => allowedKind === kind);
 
 export const delegationAgencyKindList = [
   "france-travail",

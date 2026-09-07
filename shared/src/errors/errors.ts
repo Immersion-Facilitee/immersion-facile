@@ -1,8 +1,10 @@
 import type { LocationId } from "../address/address.dto";
-import type {
-  AgencyId,
-  AgencyStatus,
-  AgencyWithUsersRights,
+import {
+  type AgencyId,
+  type AgencyKind,
+  type AgencyStatus,
+  type AgencyWithUsersRights,
+  agencyKindToLabelIncludingIFAndPrepa,
 } from "../agency/agency.dto";
 import type {
   ApiConsumerId,
@@ -934,6 +936,10 @@ export const errors = {
     }) =>
       new ForbiddenError(
         `L'agence '${agencyId}' n'est pas éligible pour ce rappel de convention de délégation.`,
+      ),
+    invalidKindForReferringAgency: ({ kind }: { kind: AgencyKind }) =>
+      new BadRequestError(
+        `Une structure de type « ${agencyKindToLabelIncludingIFAndPrepa[kind]} » ne peut pas être désignée comme prescripteur référent.`,
       ),
     invalidSiret: ({ siret }: { siret: SiretDto }) =>
       new NotFoundError(
