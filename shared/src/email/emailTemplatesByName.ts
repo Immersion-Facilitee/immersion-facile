@@ -537,8 +537,8 @@ export const emailTemplatesByName =
         <strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong>
         
         • <strong>Pour les responsables de votre structure</strong> :
-        <a href="https://app.livestorm.co/immersion-facilitee/immersion-facilitee-parametrer-les-acces-au-tableau-de-bord?s=6a2504e1-6eaf-4174-afc9-f9a4b48369ec" target="_blank">Un point pour bien paramétrer votre compte</a>
-        (30 minutes)
+        <a href="${immersionFacileHelpdeskRootUrl}/article/administrateur-gerer-votre-organisme-sbjao/" target="_blank">Un article d'aide pour paramétrer votre compte</a>
+        (une vidéo est disponible à la fin de l'article, mettez le son)
 
         • <strong>Pour l'ensemble de vos collaborateurs</strong> :
         <a href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" target="_blank">Un temps de présentation de toutes les fonctionnalités du site</a>
