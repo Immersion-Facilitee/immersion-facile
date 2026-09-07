@@ -7,6 +7,7 @@ import {
   createAgencySchema,
   errors,
   executeInSequence,
+  isFitForDelegationAgencyKind,
   type UserId,
 } from "shared";
 import { createOrGetUserIdByEmail } from "../../core/authentication/connected-user/entities/user.helper";
@@ -120,6 +121,10 @@ const getReferredAgencyValidatorUserIds = async (
   const referredAgency = await uow.agencyRepository.getById(refersToAgencyId);
   if (!referredAgency)
     throw errors.agency.notFound({ agencyId: refersToAgencyId });
+  if (!isFitForDelegationAgencyKind(referredAgency.kind))
+    throw errors.agency.invalidKindForReferringAgency({
+      kind: referredAgency.kind,
+    });
   return toPairs(referredAgency.usersRights)
     .filter(([_, right]) => right?.roles.includes("validator"))
     .map(([userId, right]) => ({
