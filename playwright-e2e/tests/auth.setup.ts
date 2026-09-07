@@ -28,9 +28,11 @@ setup("authenticate as admin", async ({ page }) => {
   await writeFile(testConfig.assessmentLinkFile, assessmentLink);
 });
 
-setup(
-  "authenticate as IC user for establishment and agency",
-  async ({ page }) => {
+setup.describe("IC authentication entry points", () => {
+  // Both entries use the same ProConnect account: do not log in concurrently.
+  setup.describe.configure({ mode: "serial" });
+
+  setup("authenticate as IC user establishment", async ({ page }) => {
     console.time("auth-establishment");
     await page.goto("/");
     await acceptCookiesIfBannerVisible(page);
@@ -42,14 +44,18 @@ setup(
     await expect(page.locator(".fr-tabs__list")).toBeVisible();
     await page.context().storageState({ path: establishmentAuthFile });
     console.timeEnd("auth-establishment");
+  });
 
-    await page.goto(frontRoutes.agencyDashboard().href);
+  setup("authenticate as IC user agency", async ({ page }) => {
+    await page.goto("/");
+    await acceptCookiesIfBannerVisible(page);
+    await loginWithIdentityProvider(page, "agencyDashboard", "ProConnect");
     await expect(
       page.locator(`#${domElementIds.agencyDashboard.registerAgencies.search}`),
     ).toBeVisible();
     await page.context().storageState({ path: agencyAuthFile });
-  },
-);
+  });
+});
 
 type ProviderMode = "ProConnect";
 

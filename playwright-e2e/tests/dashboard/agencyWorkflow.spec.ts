@@ -10,14 +10,14 @@ import {
   goToDashboard,
   initiateConvention,
 } from "../../utils/dashboard";
-import { e2eSiretEstablishments } from "../../utils/siret";
+import { e2eSiretAgencies } from "../../utils/siret";
 import { fillAutocomplete, test } from "../../utils/utils";
 
 test.describe.configure({ mode: "serial" });
 
 test.describe("Agency dashboard workflow", () => {
   let agencyId: AgencyId | null = null;
-  const agencySiret = e2eSiretEstablishments[1].siret;
+  const agencySiret = e2eSiretAgencies.dashboard;
 
   test.describe("Agency creation", () => {
     test.use({ storageState: testConfig.agencyAuthFile });

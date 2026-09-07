@@ -78,6 +78,7 @@ export const franceMerguez = new EstablishmentAggregateBuilder()
     },
     {
       userId: seedUsers.icUser.id,
+      // Dashboard E2E must have admin access before any other workflow runs.
       role: "establishment-admin",
       status: "ACCEPTED",
       job: "Contact RH",

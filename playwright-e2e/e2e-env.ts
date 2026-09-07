@@ -84,6 +84,7 @@ export const ensureJwtEnv = (): JwtEnv => {
 
 export const makeBackWebServerEnv = (
   baseURL: string,
+  siretGateway: "IN_MEMORY" | "ANNUAIRE_DES_ENTREPRISES" = "IN_MEMORY",
 ): Record<string, string> => {
   const jwtEnv = ensureJwtEnv();
   const playwrightEnv = loadEnvFileWithProcessEnv(resolve(__dirname, ".env"));
@@ -94,6 +95,15 @@ export const makeBackWebServerEnv = (
   return {
     ...e2eBackendEnv,
     ...jwtEnv,
+    SIRENE_REPOSITORY: siretGateway,
+    ...(siretGateway === "ANNUAIRE_DES_ENTREPRISES"
+      ? {
+          SIRENE_INSEE_CLIENT_ID: backendEnv.SIRENE_INSEE_CLIENT_ID,
+          SIRENE_INSEE_CLIENT_SECRET: backendEnv.SIRENE_INSEE_CLIENT_SECRET,
+          SIRENE_INSEE_USERNAME: backendEnv.SIRENE_INSEE_USERNAME,
+          SIRENE_INSEE_PASSWORD: backendEnv.SIRENE_INSEE_PASSWORD,
+        }
+      : {}),
     PC_USERNAME:
       playwrightEnv.PC_USERNAME ??
       backendEnv.PC_USERNAME ??

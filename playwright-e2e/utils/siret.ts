@@ -17,3 +17,9 @@ export const e2eSiretEstablishments = [
 ] as const;
 
 export const defaultE2eSiret = e2eSiretEstablishments[0].siret;
+
+// Agencies must not reuse establishments created or deleted by other workflows.
+export const e2eSiretAgencies = {
+  default: "75198497200016",
+  dashboard: "34792240300030",
+} as const;

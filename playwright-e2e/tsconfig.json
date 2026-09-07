@@ -19,6 +19,7 @@
     "*.ts",
     "tests/*.ts",
     "tests/**/*.ts",
+    "external-tests/**/*.ts",
     "tests-manual/**/*.ts",
     "utils/*.ts",
     "utils/**/*.ts",
