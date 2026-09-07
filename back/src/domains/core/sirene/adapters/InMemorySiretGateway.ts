@@ -92,6 +92,17 @@ export class InMemorySiretGateway implements SiretGateway {
     [TEST_OPEN_ESTABLISHMENT_FRANCE_MERGUEZ.siret]:
       TEST_OPEN_ESTABLISHMENT_FRANCE_MERGUEZ,
     [TEST_CLOSED_ESTABLISHMENT_1.siret]: TEST_CLOSED_ESTABLISHMENT_1,
+    // Deterministic agency fixtures, separate from establishment workflows.
+    "75198497200016": {
+      ...TEST_OPEN_ESTABLISHMENT_1,
+      siret: "75198497200016",
+      businessName: "AGENCE E2E",
+    },
+    "34792240300030": {
+      ...TEST_OPEN_ESTABLISHMENT_1,
+      siret: "34792240300030",
+      businessName: "AGENCE DASHBOARD E2E",
+    },
   };
 
   public async getEstablishmentBySiret(

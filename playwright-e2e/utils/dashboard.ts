@@ -6,6 +6,7 @@ import {
   conventionTemplateSchema,
   domElementIds,
   type EstablishmentDashboardTab,
+  establishmentDashboardTabsList,
   frontRoutes,
 } from "shared";
 import { getTabIndexByTabName } from "./admin";
@@ -24,8 +25,12 @@ export const goToEstablishmentDashboardTab = async (
   tab: EstablishmentDashboardTab,
 ) => {
   const tabUrl = establishmentDashboardTabUrls[tab];
-  await page.goto(tabUrl);
-  await page.waitForURL(tabUrl);
+  await page
+    .locator(".fr-tabs__list li")
+    .nth(getTabIndexByTabName(establishmentDashboardTabsList, tab))
+    .locator(".fr-tabs__tab")
+    .click();
+  await expect(page).toHaveURL(new RegExp(tabUrl));
 };
 
 export const goToBeneficiaryDashboardTab = async (
