@@ -471,106 +471,113 @@ describe("PgBroadcastFeedbacksRepository", () => {
     });
   });
 
-  describe.each([
-    "Pg",
-    "InMemory",
-  ] as const)("%s getBroadcastFeedbacksByConventionId", (adapter) => {
-    let repository: BroadcastFeedbacksRepository;
+  describe.each(["Pg", "InMemory"] as const)(
+    "%s getBroadcastFeedbacksByConventionId",
+    (adapter) => {
+      let repository: BroadcastFeedbacksRepository;
 
-    beforeEach(() => {
-      repository =
-        adapter === "Pg"
-          ? pgBroadcastFeedbacksRepository
-          : new InMemoryBroadcastFeedbacksRepository();
-    });
-
-    it("returns an empty array when there is no broadcast feedback", async () => {
-      const result =
-        await repository.getBroadcastFeedbacksByConventionId(someConventionId);
-
-      expectToEqual(result, []);
-    });
-
-    it("returns all feedbacks for a convention ordered by occurredAt ascending", async () => {
-      const conventionId = someConventionId;
-
-      const firstBroadcast = await makeBroadcastFeedback({
-        conventionId,
-        serviceName: broadcastToFtServiceName,
-        kind: "success",
-        occurredAt: new Date("2024-07-01"),
-      });
-      const secondBroadcast = await makeBroadcastFeedback({
-        conventionId,
-        serviceName: broadcastToFtServiceName,
-        kind: "error",
-        occurredAt: new Date("2024-07-15"),
-      });
-      const thirdBroadcast = await makeBroadcastFeedback({
-        conventionId,
-        serviceName: broadcastToFtServiceName,
-        kind: "error",
-        occurredAt: new Date("2024-07-31"),
+      beforeEach(() => {
+        repository =
+          adapter === "Pg"
+            ? pgBroadcastFeedbacksRepository
+            : new InMemoryBroadcastFeedbacksRepository();
       });
 
-      await repository.save(thirdBroadcast);
-      await repository.save(firstBroadcast);
-      await repository.save(secondBroadcast);
+      it("returns an empty array when there is no broadcast feedback", async () => {
+        const result =
+          await repository.getBroadcastFeedbacksByConventionId(
+            someConventionId,
+          );
 
-      const result =
-        await repository.getBroadcastFeedbacksByConventionId(conventionId);
-
-      expectToEqual(
-        result.map(({ occurredAt, serviceName, conventionId: id }) => ({
-          occurredAt,
-          serviceName,
-          conventionId: id,
-        })),
-        [
-          {
-            occurredAt: firstBroadcast.occurredAt,
-            serviceName: firstBroadcast.serviceName,
-            conventionId,
-          },
-          {
-            occurredAt: secondBroadcast.occurredAt,
-            serviceName: secondBroadcast.serviceName,
-            conventionId,
-          },
-          {
-            occurredAt: thirdBroadcast.occurredAt,
-            serviceName: thirdBroadcast.serviceName,
-            conventionId,
-          },
-        ],
-      );
-    });
-
-    it("isolates feedbacks by conventionId", async () => {
-      const broadcastForConvention1 = await makeBroadcastFeedback({
-        conventionId: someConventionId,
-        serviceName: broadcastToFtServiceName,
-        kind: "success",
-        occurredAt: new Date("2024-07-01"),
-      });
-      const broadcastForConvention2 = await makeBroadcastFeedback({
-        conventionId: anotherConventionId,
-        serviceName: broadcastToFtServiceName,
-        kind: "error",
-        occurredAt: new Date("2024-07-15"),
+        expectToEqual(result, []);
       });
 
-      await repository.save(broadcastForConvention1);
-      await repository.save(broadcastForConvention2);
+      it("returns all feedbacks for a convention ordered by occurredAt ascending", async () => {
+        const conventionId = someConventionId;
 
-      const result =
-        await repository.getBroadcastFeedbacksByConventionId(someConventionId);
+        const firstBroadcast = await makeBroadcastFeedback({
+          conventionId,
+          serviceName: broadcastToFtServiceName,
+          kind: "success",
+          occurredAt: new Date("2024-07-01"),
+        });
+        const secondBroadcast = await makeBroadcastFeedback({
+          conventionId,
+          serviceName: broadcastToFtServiceName,
+          kind: "error",
+          occurredAt: new Date("2024-07-15"),
+        });
+        const thirdBroadcast = await makeBroadcastFeedback({
+          conventionId,
+          serviceName: broadcastToFtServiceName,
+          kind: "error",
+          occurredAt: new Date("2024-07-31"),
+        });
 
-      expectToEqual(result.length, 1);
-      expectToEqual(result[0]?.conventionId, someConventionId);
-      expectToEqual(result[0]?.occurredAt, broadcastForConvention1.occurredAt);
-    });
-  });
+        await repository.save(thirdBroadcast);
+        await repository.save(firstBroadcast);
+        await repository.save(secondBroadcast);
+
+        const result =
+          await repository.getBroadcastFeedbacksByConventionId(conventionId);
+
+        expectToEqual(
+          result.map(({ occurredAt, serviceName, conventionId: id }) => ({
+            occurredAt,
+            serviceName,
+            conventionId: id,
+          })),
+          [
+            {
+              occurredAt: firstBroadcast.occurredAt,
+              serviceName: firstBroadcast.serviceName,
+              conventionId,
+            },
+            {
+              occurredAt: secondBroadcast.occurredAt,
+              serviceName: secondBroadcast.serviceName,
+              conventionId,
+            },
+            {
+              occurredAt: thirdBroadcast.occurredAt,
+              serviceName: thirdBroadcast.serviceName,
+              conventionId,
+            },
+          ],
+        );
+      });
+
+      it("isolates feedbacks by conventionId", async () => {
+        const broadcastForConvention1 = await makeBroadcastFeedback({
+          conventionId: someConventionId,
+          serviceName: broadcastToFtServiceName,
+          kind: "success",
+          occurredAt: new Date("2024-07-01"),
+        });
+        const broadcastForConvention2 = await makeBroadcastFeedback({
+          conventionId: anotherConventionId,
+          serviceName: broadcastToFtServiceName,
+          kind: "error",
+          occurredAt: new Date("2024-07-15"),
+        });
+
+        await repository.save(broadcastForConvention1);
+        await repository.save(broadcastForConvention2);
+
+        const result =
+          await repository.getBroadcastFeedbacksByConventionId(
+            someConventionId,
+          );
+
+        expectToEqual(result.length, 1);
+        expectToEqual(result[0]?.conventionId, someConventionId);
+        expectToEqual(
+          result[0]?.occurredAt,
+          broadcastForConvention1.occurredAt,
+        );
+      });
+    },
+  );
 });
 
 const makeBroadcastFeedback = async (params: {
