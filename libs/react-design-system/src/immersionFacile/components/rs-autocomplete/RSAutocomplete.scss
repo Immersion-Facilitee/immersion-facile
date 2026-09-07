@@ -46,6 +46,10 @@
   &__placeholder {
     font-style: italic;
     color: var(--grey-425-625);
+    right: 2.5rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   &__option {
