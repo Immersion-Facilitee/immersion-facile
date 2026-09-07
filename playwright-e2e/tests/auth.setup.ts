@@ -1,6 +1,8 @@
+import { writeFile } from "node:fs/promises";
 import { expect, type Page, test as setup } from "@playwright/test";
 import { domElementIds, frontRoutes } from "shared";
 import { testConfig } from "../custom.config";
+import { getMagicLinkFromEmail } from "../utils/admin";
 import { acceptCookiesIfBannerVisible } from "../utils/utils";
 
 const { adminAuthFile, establishmentAuthFile, agencyAuthFile } = testConfig;
@@ -16,6 +18,14 @@ setup("authenticate as admin", async ({ page }) => {
   await expect(adminButton).toBeVisible();
   await page.context().storageState({ path: adminAuthFile });
   console.timeEnd("auth-admin");
+  // Capture the seeded link before concurrent workflows fill the 30-email inbox.
+  const assessmentLink = await getMagicLinkFromEmail({
+    page,
+    emailType: "ASSESSMENT_ESTABLISHMENT_NOTIFICATION",
+    label: "assessmentCreationLink",
+  });
+  if (!assessmentLink) throw new Error("Missing seeded assessment link");
+  await writeFile(testConfig.assessmentLinkFile, assessmentLink);
 });
 
 setup(

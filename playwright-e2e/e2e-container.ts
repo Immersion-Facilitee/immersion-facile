@@ -50,7 +50,9 @@ export const stopAndCleanup = (state: ContainerState | undefined) => {
 const stopContainer = (containerId: string) => {
   try {
     console.log(`Stopping container ${containerId}...`);
-    execFileSync("docker", ["rm", "-f", containerId], { stdio: "ignore" });
+    execFileSync("docker", ["rm", "-f", "-v", containerId], {
+      stdio: "ignore",
+    });
     console.log("Container stopped.");
   } catch {
     console.log("Container already gone.");

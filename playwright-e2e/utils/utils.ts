@@ -154,7 +154,14 @@ export const test = base.extend({
       });
 
       page.on("console", (msg) => {
-        console.log(`${prefix} BROWSER CONSOLE [${msg.type()}]: ${msg.text()}`);
+        if (
+          !process.env.CI ||
+          msg.type() === "warning" ||
+          msg.type() === "error"
+        )
+          console.log(
+            `${prefix} BROWSER CONSOLE [${msg.type()}]: ${msg.text()}`,
+          );
       });
 
       page.on("requestfailed", (req) => {
