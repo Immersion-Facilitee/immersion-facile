@@ -4,6 +4,7 @@ import {
   DiscussionBuilder,
   defaultProConnectInfos,
   errors,
+  expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
   isSuperEstablishment,
@@ -12,6 +13,7 @@ import {
 } from "shared";
 import { v4 as uuid } from "uuid";
 import { toAgencyWithRights } from "../../../utils/agency";
+import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import { InMemorySiretGateway } from "../../core/sirene/adapters/InMemorySiretGateway";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
@@ -19,6 +21,7 @@ import {
   type InMemoryUnitOfWork,
 } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
+import { TestUuidGenerator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
 import type { EstablishmentUserRight } from "../../establishment/entities/EstablishmentAggregate";
 import { EstablishmentAggregateBuilder } from "../../establishment/helpers/EstablishmentBuilders";
 import { InMemoryEstablishmentMarketingGateway } from "../adapters/establishmentMarketingGateway/InMemoryEstablishmentMarketingGateway";
@@ -36,6 +39,7 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
   let timeGateway: CustomTimeGateway;
   let updateMarketingEstablishmentContactList: UpdateMarketingEstablishmentContactList;
   let siretGateway: InMemorySiretGateway;
+  let uuidGenerator: TestUuidGenerator;
 
   const now = new Date();
 
@@ -95,6 +99,7 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
     timeGateway = new CustomTimeGateway(now);
     marketingGateway = new InMemoryEstablishmentMarketingGateway();
     siretGateway = new InMemorySiretGateway();
+    uuidGenerator = new TestUuidGenerator();
     updateMarketingEstablishmentContactList =
       makeUpdateMarketingEstablishmentContactList({
         uowPerformer: new InMemoryUowPerformer(uow),
@@ -102,6 +107,7 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
           establishmentMarketingGateway: marketingGateway,
           timeGateway,
           siretGateway,
+          createNewEvent: makeCreateNewEvent({ timeGateway, uuidGenerator }),
         },
       });
     uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
@@ -745,7 +751,7 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
       ]);
     });
 
-    it("Remove establishment marketing if no convention were found", async () => {
+    it("Requests establishment marketing contact deletion through an event if no convention were found", async () => {
       uow.conventionRepository.setConventions([]);
 
       uow.establishmentMarketingRepository.contacts = [
@@ -759,9 +765,20 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
       await updateMarketingEstablishmentContactList.execute({
         siret: convention.siret,
       });
-      expectToEqual(uow.establishmentMarketingRepository.contacts, []);
 
-      expectToEqual(marketingGateway.marketingEstablishments, []);
+      expectObjectInArrayToMatch(uow.outboxRepository.events, [
+        {
+          topic: "MarketingEstablishmentContactDeletionRequested",
+          payload: { siret: convention.siret, triggeredBy: null },
+        },
+      ]);
+
+      expectToEqual(uow.establishmentMarketingRepository.contacts, [
+        establishmentMarketingContactEntityWithoutNafCode,
+      ]);
+      expectToEqual(marketingGateway.marketingEstablishments, [
+        establishmentMarketingGatewayDto,
+      ]);
     });
   });
 });
