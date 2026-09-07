@@ -591,16 +591,31 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         numberOfMonthsWithoutConvention,
       }) => ({
         subject:
-          "Fermeture automatique de votre organisme sur Immersion Facilitée",
+          "Fermeture automatique de votre organisme prescripteur sur Immersion Facilitée",
         greetings: "Bonjour,",
-        content: `Votre organisme (${agencyName}) a été automatiquement fermé sur Immersion Facilitée en raison d’une période prolongée d’inactivité.
-
-        Un organisme peut être considéré comme inactif lorsqu’il ne présente aucune convention validée ou en cours de validation depuis ${numberOfMonthsWithoutConvention} mois.
+        content: `Votre structure "<strong>${agencyName}</strong>" a été automatiquement fermée sur Immersion Facilitée, car <strong>aucune convention n'a été validée (ou n'est en cours de validation) depuis plus de ${numberOfMonthsWithoutConvention} mois</strong>.
 
         Cette fermeture n’a pas d’impact sur les conventions qui auraient déjà été signées et archivées.
-        
-        Si cette fermeture ne correspond pas à votre situation, ou si l’organisme doit être rouvert, vous pouvez <a href=${immersionFacileHelpdeskRootUrl} target="_blank">contacter le support</a>.
+
+        Si votre organisme <strong>accueille des personnes en immersion</strong>, rien ne change :
+
+        • si vous proposez des offres d’immersion vous pouvez continuer à recevoir des candidatures ;
+        • vous pouvez continuer à signer les conventions en tant qu’entreprise accueillante.
+
+        Notre équipe est à votre disposition si :
+
+        • vous souhaitez reprendre votre activité de prescripteur en utilisant les conventions dématérialisées ;
+        • cette fermeture ne correspond pas à votre situation ;
+        • vous rencontrez des difficultés pour mobiliser le dispositif ou utiliser Immersion Facilitée ;
+        • vous avez besoin de mettre à jour les coordonnées de votre structure.
         `,
+        buttons: [
+          {
+            label: "Contactez-nous",
+            url: immersionFacileHelpdeskRootUrl,
+            target: "_blank",
+          },
+        ],
         subContent: defaultSignature("immersion"),
       }),
     },
