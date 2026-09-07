@@ -303,14 +303,11 @@ export const SearchListResults = ({
                           },
                         },
                         {
-                          children: "Rechercher sur La Bonne Boite",
+                          children: "Rechercher sur La Bonne Boîte",
                           id: domElementIds.search.noResultsLbbButton,
-                          onClick: () => {
-                            onSearchFormSubmit({
-                              ...searchParams,
-                              showOnlyAvailableOffers: false,
-                            });
-                          },
+                          linkProps: frontRoutes.externalSearch(
+                            getFilteredSearchParamsForLBB(searchParams),
+                          ).link,
                         },
                       ]}
                     />
@@ -494,15 +491,15 @@ const getFilteredSearchParamsForLBB = (
   filterParamsForRoute({
     urlParams: searchParams,
     matchingParams: {
-      distanceKm: undefined,
-      latitude: undefined,
-      longitude: undefined,
-      place: undefined,
-      appellations: undefined,
-      nafCodes: undefined,
-      nafLabel: undefined,
-      appellationCodes: undefined,
-      fitForDisabledWorkers: undefined,
+      distanceKm: true,
+      latitude: true,
+      longitude: true,
+      place: true,
+      appellations: true,
+      nafCodes: true,
+      nafLabel: true,
+      appellationCodes: true,
+      fitForDisabledWorkers: true,
     },
   });
 
