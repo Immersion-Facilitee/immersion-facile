@@ -5,7 +5,6 @@ import {
   authRoutes,
   environments,
   filterNotFalsy,
-  ftConnect,
   loginByEmailLinkDurationInMinutes,
   makeGetBooleanVariable,
   makeThrowIfNotAbsoluteUrl,
@@ -322,7 +321,7 @@ export class AppConfig {
         this.proConnectGateway !== "HTTPS" ? "fake secret" : undefined,
       ),
       immersionRedirectUri: {
-        afterLogin: `${this.immersionFacileBaseUrl}/api${authRoutes.afterEmailOrProConnectOAuthLogin.url}`,
+        afterLogin: `${this.immersionFacileBaseUrl}/api${authRoutes.afterLogin.url}`,
         afterLogout: this.immersionFacileBaseUrl,
       },
       providerBaseUri: this.#throwIfNotAbsoluteUrl(
@@ -348,7 +347,7 @@ export class AppConfig {
           ? this.franceTravailClientSecret
           : "fake secret",
       immersionRedirectUri: {
-        afterLogin: `${this.immersionFacileBaseUrl}/api/${ftConnect}`,
+        afterLogin: `${this.immersionFacileBaseUrl}/api${authRoutes.afterLogin.url}`,
         afterLogout: this.immersionFacileBaseUrl,
       },
       providerBaseUri:
