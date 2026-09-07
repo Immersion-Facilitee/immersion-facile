@@ -112,7 +112,11 @@ export const AgencyAdminTabContent = ({
         titleAction={
           <Button
             id={domElementIds.agencyDashboard.registerAgencies.newAgencyButton}
-            linkProps={frontRoutes.myAccountAgencyRegistration().link}
+            linkProps={
+              frontRoutes.agencyRegistration({
+                fromRoute: "agencyDashboardAgencies",
+              }).link
+            }
           >
             Demander l'accès à un organisme
           </Button>

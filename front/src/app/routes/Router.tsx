@@ -318,14 +318,14 @@ const getPageByRouteName: {
       <MyProfileMainTab route={route} />
     </ConnectedPrivateRoutePage>
   ),
-  myAccountAgencyRegistration: (route) => (
+  agencyRegistration: (route) => (
     <ConnectedPrivateRoutePage
       route={route}
       oAuthConnectionPageHeader={
         <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
       }
     >
-      <RequestAgencyRegistrationTab />
+      <RequestAgencyRegistrationTab route={route} />
     </ConnectedPrivateRoutePage>
   ),
 
