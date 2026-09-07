@@ -65,13 +65,14 @@ test.describe("Establishment dashboard workflow", () => {
 
   test.describe("Initiate convention", () => {
     test("should initiate from a convention template", async ({ page }) => {
-      await createConventionTemplate(page, "establishment");
+      const templateId = await createConventionTemplate(page, "establishment");
       await initiateConvention({
         page,
         dashboardKind: "establishment",
         fromConventionTemplate: true,
+        templateId,
       });
-      await deleteConventionTemplate(page, "establishment");
+      await deleteConventionTemplate(page, "establishment", templateId);
     });
 
     test("should initiate from establishment informations", async ({
