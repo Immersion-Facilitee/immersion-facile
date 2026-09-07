@@ -13,7 +13,7 @@ import {
   type AgencyRight,
   type ConnectedUser,
   domElementIds,
-  immersionFacileAgencyRegistrationHelpFormUrl,
+  frontRoutes,
 } from "shared";
 import { AgencyRightsTable } from "src/app/components/agency/agencies-table/AgencyRightsTable";
 import { AgencyAdminUsersToReview } from "src/app/components/agency/agency-dashboard/AgencyAdminUsersToReview";
@@ -112,9 +112,9 @@ export const AgencyAdminTabContent = ({
         titleAction={
           <Button
             id={domElementIds.agencyDashboard.registerAgencies.newAgencyButton}
-            linkProps={{ href: immersionFacileAgencyRegistrationHelpFormUrl }}
+            linkProps={frontRoutes.myAccountAgencyRegistration().link}
           >
-            Inscrire un nouvel organisme
+            Demander l'accès à un organisme
           </Button>
         }
       >
