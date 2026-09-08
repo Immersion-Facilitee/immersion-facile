@@ -1,5 +1,6 @@
 import {
   emailSchema,
+  ftAdvisorKinds,
   localization,
   makeDateStringSchema,
   type ZodSchemaWithInputMatchingOutput,
@@ -7,10 +8,7 @@ import {
 } from "shared";
 import { z } from "zod";
 import type { BearerToken } from "../../dto/BearerToken";
-import {
-  type FtConnectAdvisorsKind,
-  ftAdvisorKinds,
-} from "../../dto/FtConnectAdvisor.dto";
+import type { FtConnectAdvisorsKind } from "../../dto/FtConnectAdvisor.dto";
 import type {
   ExternalFtConnectAdvisor,
   ExternalFtConnectBirthDate,

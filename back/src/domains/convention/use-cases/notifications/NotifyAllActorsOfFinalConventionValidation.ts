@@ -84,8 +84,7 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
               email: counsellorEmail,
             }),
           ),
-          ...(conventionBeneficiaryAdvisor &&
-          conventionBeneficiaryAdvisor?.type !== "INDEMNISATION"
+          ...(conventionBeneficiaryAdvisor
             ? [
                 {
                   email: conventionBeneficiaryAdvisor.email,

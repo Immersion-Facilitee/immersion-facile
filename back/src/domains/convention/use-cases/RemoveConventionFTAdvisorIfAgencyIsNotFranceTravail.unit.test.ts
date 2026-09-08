@@ -5,9 +5,9 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
   type FtConnectIdentity,
+  type FtConnectImmersionAdvisorDto,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
-import type { FtConnectImmersionAdvisorDto } from "../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,

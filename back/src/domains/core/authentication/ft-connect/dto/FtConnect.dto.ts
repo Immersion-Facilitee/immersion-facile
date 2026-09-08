@@ -3,6 +3,7 @@ import {
   type DateString,
   dateRegExp,
   type FederatedIdentityProvider,
+  type FtConnectImmersionAdvisorDto,
   type FtConnectToken,
   type FtExternalId,
   type InternshipKind,
@@ -10,7 +11,6 @@ import {
 } from "shared";
 import type { EntityFromDto } from "../../../../../utils/EntityFromDto";
 import type { IdToken } from "../../connected-user/entities/OngoingOAuth";
-import type { FtConnectImmersionAdvisorDto } from "./FtConnectAdvisor.dto";
 import type { FtConnectUserDto } from "./FtConnectUserDto";
 
 export type ConventionFtUserAdvisorDto = {

@@ -82,27 +82,6 @@ const getUseCasesByTopics = (
   // Convention Federated Identities
   // Handlers kept for in-flight outbox events after BindConventionToFederatedIdentity removal.
   FTConnectedSuccessfully: [],
-  FederatedIdentityBoundToConvention: [
-    useCases.notifyToAgencyConventionSubmitted,
-    useCases.notifySignatoriesThatConventionSubmittedNeedsSignature,
-    extractConventionIdFromConvention(
-      useCases.broadcastToFranceTravailOnConventionUpdates,
-    ),
-    extractConventionIdFromConvention(
-      useCases.broadcastToPartnersOnConventionUpdates,
-    ),
-  ],
-  FederatedIdentityNotBoundToConvention: [
-    useCases.notifyToAgencyConventionSubmitted,
-    useCases.notifySignatoriesThatConventionSubmittedNeedsSignature,
-    extractConventionIdFromConvention(
-      useCases.broadcastToFranceTravailOnConventionUpdates,
-    ),
-    extractConventionIdFromConvention(
-      useCases.broadcastToPartnersOnConventionUpdates,
-    ),
-  ],
-
   ConventionSubmittedAfterModification: [
     extractConventionIdFromConvention(
       useCases.removeConventionFTAdvisorIfAgencyIsNotFranceTravail,
