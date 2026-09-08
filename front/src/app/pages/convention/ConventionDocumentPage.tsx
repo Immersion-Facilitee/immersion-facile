@@ -195,7 +195,9 @@ export const ConventionDocumentPage = ({
           firstname: beneficiary.firstName,
           lastname: beneficiary.lastName,
         })}
-        businessName={convention.businessName}
+        businessName={
+          convention.businessNameCustomized?.trim() || convention.businessName
+        }
         internshipKind={internshipKind}
         customActions={[
           <Button
@@ -299,8 +301,13 @@ export const ConventionDocumentPage = ({
                   lastname: establishmentRepresentative.lastName,
                 })}
               </strong>{" "}
-              en qualité de <strong>représentant de l'entreprise</strong>{" "}
-              {convention.businessName}
+              en qualité de{" "}
+              <strong>
+                représentant de{" "}
+                {convention.businessNameCustomized?.trim()
+                  ? `${convention.businessNameCustomized.trim()}, dont la raison sociale est ${convention.businessName}`
+                  : convention.businessName}
+              </strong>
               <ul>
                 <li>tel.&nbsp;: {establishmentRepresentative.phone}</li>
                 <li>email&nbsp;: {establishmentRepresentative.email}</li>
@@ -434,8 +441,13 @@ export const ConventionDocumentPage = ({
         <h4 className={fr.cx("fr-h6")}>Lieu et dates</h4>
         <p>
           {internshipKind === "immersion" ? "Cette immersion" : "Ce mini-stage"}{" "}
-          se déroulera au sein de <strong>{convention.businessName}</strong>,
-          (Siret n° :{" "}
+          se déroulera au sein de{" "}
+          <strong>
+            {convention.businessNameCustomized?.trim()
+              ? `${convention.businessNameCustomized.trim()}, dont la raison sociale est ${convention.businessName}`
+              : convention.businessName}
+          </strong>{" "}
+          (Siret n°
           <a
             href={makeSiretDescriptionLink(convention.siret)}
             target="_blank"
@@ -443,7 +455,7 @@ export const ConventionDocumentPage = ({
           >
             {convention.siret}
           </a>
-          ) à l'adresse suivante <strong>{convention.immersionAddress}</strong>.
+          ), à l'adresse <strong>{convention.immersionAddress}</strong>.
         </p>
         <p className={fr.cx("fr-text--bold")}>
           {internshipKind === "immersion" ? "L'immersion" : "Le mini-stage"} se
