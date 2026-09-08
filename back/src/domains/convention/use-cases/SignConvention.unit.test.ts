@@ -2,6 +2,7 @@ import {
   AgencyDtoBuilder,
   allRoles,
   allSignatoryRoles,
+  type BeneficiaryCurrentEmployer,
   type BeneficiaryRepresentative,
   ConnectedUserBuilder,
   type ConventionDomainJwtPayload,
@@ -45,6 +46,18 @@ const establishmentRepresentative: EstablishmentRepresentative = {
   phone: "+33665565432",
   firstName: "Pa",
   lastName: "Tron",
+};
+
+const beneficiaryCurrentEmployer: BeneficiaryCurrentEmployer = {
+  role: "beneficiary-current-employer",
+  email: "current-employer@email.com",
+  phone: "+33665565433",
+  firstName: "Jean",
+  lastName: "Employeur",
+  job: "Boss",
+  businessSiret: "01234567891234",
+  businessName: "business",
+  businessAddress: "Rue des Bouchers 67065 Strasbourg",
 };
 
 describe("Sign convention", () => {
@@ -270,12 +283,34 @@ describe("Sign convention", () => {
             beneficiarySignedAt: signedAt,
           }),
         },
+        {
+          signatory: "beneficiary-representative",
+          getEmail: (convention: ConventionDto) =>
+            convention.signatories.beneficiaryRepresentative!.email,
+          expectedSignatorySignedAt: (signedAt: string) => ({
+            beneficiaryRepresentativeSignedAt: signedAt,
+          }),
+        },
+        {
+          signatory: "beneficiary-current-employer",
+          getEmail: (convention: ConventionDto) =>
+            convention.signatories.beneficiaryCurrentEmployer!.email,
+          expectedSignatorySignedAt: (signedAt: string) => ({
+            beneficiaryCurrentEmployerSignedAt: signedAt,
+          }),
+        },
       ] satisfies {
-        signatory: "establishment-representative" | "beneficiary";
+        signatory:
+          | "establishment-representative"
+          | "beneficiary"
+          | "beneficiary-representative"
+          | "beneficiary-current-employer";
         getEmail: (convention: ConventionDto) => string;
         expectedSignatorySignedAt: (signedAt: string) => {
           establishmentRepresentativeSignedAt?: string;
           beneficiarySignedAt?: string;
+          beneficiaryRepresentativeSignedAt?: string;
+          beneficiaryCurrentEmployerSignedAt?: string;
         };
       }[])(
         "updates the convention with new signature when connected user is $signatory",
@@ -499,6 +534,7 @@ describe("Sign convention", () => {
       .withAgencyId(agency.id)
       .withStatus(initialStatus)
       .withBeneficiaryRepresentative(beneficiaryRepresentative)
+      .withBeneficiaryCurrentEmployer(beneficiaryCurrentEmployer)
       .withEstablishmentRepresentative(establishmentRepresentative);
 
     return match(initialStatus)
@@ -517,6 +553,10 @@ describe("Sign convention", () => {
               })
               .withBeneficiaryRepresentative({
                 ...beneficiaryRepresentative,
+                signedAt: new Date().toISOString(),
+              })
+              .withBeneficiaryCurrentEmployer({
+                ...beneficiaryCurrentEmployer,
                 signedAt: new Date().toISOString(),
               })
               .build(),

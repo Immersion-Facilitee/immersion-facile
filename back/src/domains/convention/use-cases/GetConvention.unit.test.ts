@@ -77,6 +77,24 @@ describe("Get Convention", () => {
     createdAt: new Date().toISOString(),
     preventToDelete: false,
   };
+  const beneficiaryRepresentative: User = {
+    id: "beneficiary-representative",
+    email: "benef-rep@email.com",
+    firstName: "Joel",
+    lastName: "LeRepBeneficiaire",
+    proConnect: defaultProConnectInfos,
+    createdAt: new Date().toISOString(),
+    preventToDelete: false,
+  };
+  const beneficiaryCurrentEmployer: User = {
+    id: "beneficiary-current-employer",
+    email: "benef-employer@email.com",
+    firstName: "Julie",
+    lastName: "Lemployeur",
+    proConnect: defaultProConnectInfos,
+    createdAt: new Date().toISOString(),
+    preventToDelete: false,
+  };
   const userWithNoRight: User = {
     id: "user-with-no-right",
     email: "user-with-no-right@mail.com",
@@ -245,6 +263,8 @@ describe("Get Convention", () => {
       johnDoe,
       establishmentRep,
       beneficiary,
+      beneficiaryRepresentative,
+      beneficiaryCurrentEmployer,
       userWithNoRight,
       tutor,
       backofficeAdminUser,
@@ -690,33 +710,46 @@ describe("Get Convention", () => {
     });
 
     describe("with connected user", () => {
-      it("that beneficiary email is also the connected user email", async () => {
-        expectToEqual(
-          await getConvention.execute(
-            { conventionId: convention.id },
+      it.each([
+        { role: "beneficiary", user: beneficiary },
+        {
+          role: "beneficiary-representative",
+          user: beneficiaryRepresentative,
+        },
+        {
+          role: "beneficiary-current-employer",
+          user: beneficiaryCurrentEmployer,
+        },
+      ] satisfies { role: ConventionRole; user: User }[])(
+        "that $role email is also the connected user email",
+        async ({ user }: { user: User }) => {
+          expectToEqual(
+            await getConvention.execute(
+              { conventionId: convention.id },
+              {
+                userId: user.id,
+              },
+            ),
             {
-              userId: beneficiary.id,
+              ...convention,
+              agencyName: agency.name,
+              agencyDepartment: agency.address.departmentCode,
+              agencyKind: agency.kind,
+              agencyContactEmail: agency.contactEmail,
+              agencySiret: agency.agencySiret,
+              agencyValidationSteps: "validator-only",
+              assessment: {
+                status: assessment.status,
+                endedWithAJob: assessment.endedWithAJob,
+                signedAt: assessment.signedAt,
+                createdAt: assessment.createdAt,
+              },
+              lastReminders: makeEmptyLastReminders(),
+              isEstablishmentBanned: false,
             },
-          ),
-          {
-            ...convention,
-            agencyName: agency.name,
-            agencyDepartment: agency.address.departmentCode,
-            agencyKind: agency.kind,
-            agencyContactEmail: agency.contactEmail,
-            agencySiret: agency.agencySiret,
-            agencyValidationSteps: "validator-only",
-            assessment: {
-              status: assessment.status,
-              endedWithAJob: assessment.endedWithAJob,
-              signedAt: assessment.signedAt,
-              createdAt: assessment.createdAt,
-            },
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        );
-      });
+          );
+        },
+      );
 
       it("that have agency rights", async () => {
         uow.agencyRepository.agencies = [

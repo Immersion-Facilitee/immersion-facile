@@ -583,6 +583,49 @@ describe("Update Convention", () => {
             expectedSignedAt: string,
           ) => builder.signedByEstablishmentRepresentative(expectedSignedAt),
         },
+        {
+          role: "beneficiary-representative" as const,
+          user: new ConnectedUserBuilder()
+            .withId("beneficiary-representative-user-id")
+            .withEmail(convention.signatories.beneficiaryRepresentative!.email)
+            .buildUser(),
+          storedConvention: new ConventionDtoBuilder(convention)
+            .withStatus("PARTIALLY_SIGNED")
+            .signedByEstablishmentRepresentative(signedAt)
+            .build(),
+          withChangedEmail: (builder: ConventionDtoBuilder) =>
+            builder.withBeneficiaryRepresentativeEmail(
+              "new-beneficiary-representative@email.fr",
+            ),
+          withSignature: (
+            builder: ConventionDtoBuilder,
+            expectedSignedAt: string,
+          ) => builder.signedByBeneficiaryRepresentative(expectedSignedAt),
+        },
+        {
+          role: "beneficiary-current-employer" as const,
+          user: new ConnectedUserBuilder()
+            .withId("beneficiary-current-employer-user-id")
+            .withEmail(convention.signatories.beneficiaryCurrentEmployer!.email)
+            .buildUser(),
+          storedConvention: new ConventionDtoBuilder(convention)
+            .withStatus("PARTIALLY_SIGNED")
+            .signedByEstablishmentRepresentative(signedAt)
+            .build(),
+          withChangedEmail: (builder: ConventionDtoBuilder) =>
+            builder.withBeneficiaryCurrentEmployer({
+              ...builder.build().signatories.beneficiaryCurrentEmployer!,
+              email: "new-beneficiary-current-employer@email.fr",
+            }),
+          withSignature: (
+            builder: ConventionDtoBuilder,
+            expectedSignedAt: string,
+          ) =>
+            builder.withBeneficiaryCurrentEmployer({
+              ...builder.build().signatories.beneficiaryCurrentEmployer!,
+              signedAt: expectedSignedAt,
+            }),
+        },
       ];
 
       it.each(signatoryCases)(

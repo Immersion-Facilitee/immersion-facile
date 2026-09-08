@@ -113,6 +113,16 @@ describe("SendAssessmentLink", () => {
     .withEmail(convention.signatories.beneficiary.email)
     .build();
 
+  const connectedBeneficiaryRepresentativeUser = new ConnectedUserBuilder()
+    .withId("bcc5c20e-6dd2-45cf-affe-927358005265")
+    .withEmail("beneficiary-representative@mail.com")
+    .build();
+
+  const connectedBeneficiaryCurrentEmployerUser = new ConnectedUserBuilder()
+    .withId("bcc5c20e-6dd2-45cf-affe-927358005266")
+    .withEmail("beneficiary-current-employer@mail.com")
+    .build();
+
   const backofficeAdmin = new ConnectedUserBuilder()
     .withId("bcc5c20e-6dd2-45cf-affe-927358005263")
     .withIsAdmin(true)
@@ -640,16 +650,29 @@ describe("SendAssessmentLink", () => {
         },
       );
 
-      it("When connected beneficiary triggers it", async () => {
+      it.each([
+        {
+          role: "beneficiary",
+          user: connectedBeneficiaryUser,
+        },
+        {
+          role: "beneficiary-representative",
+          user: connectedBeneficiaryRepresentativeUser,
+        },
+        {
+          role: "beneficiary-current-employer",
+          user: connectedBeneficiaryCurrentEmployerUser,
+        },
+      ])("When connected $role triggers it", async ({ user }) => {
         uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
-        uow.userRepository.users = [connectedBeneficiaryUser];
+        uow.userRepository.users = [user];
 
         await usecase.execute(
           {
             conventionId: convention.id,
             notificationKind: "sms",
           },
-          { userId: connectedBeneficiaryUser.id },
+          { userId: user.id },
         );
 
         expectToEqual(uow.shortLinkQuery.getShortLinks(), [
@@ -677,7 +700,7 @@ describe("SendAssessmentLink", () => {
               transport: "sms",
               triggeredBy: {
                 kind: "connected-user",
-                userId: connectedBeneficiaryUser.id,
+                userId: user.id,
               },
             },
           },
@@ -689,7 +712,7 @@ describe("SendAssessmentLink", () => {
               conventionId: convention.id,
               agencyId: convention.agencyId,
               establishmentSiret: convention.siret,
-              userId: connectedBeneficiaryUser.id,
+              userId: user.id,
             },
             templatedContent: {
               recipientPhone: convention.establishmentTutor.phone,
