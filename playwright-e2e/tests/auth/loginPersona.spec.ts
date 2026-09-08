@@ -89,4 +89,53 @@ test.describe("Login page persona radio button", () => {
       ),
     ).toHaveCount(0);
   });
+
+  test("pre-selects the professional persona on the connected convention management page", async ({
+    page,
+  }) => {
+    await page.goto(
+      frontRoutes.manageConventionConnectedUser({
+        conventionId: "00000000-0000-4000-8000-000000000001",
+      }).href,
+    );
+    await acceptCookiesIfBannerVisible(page);
+
+    await expect(loginPersonaRadio(page, "professional")).toBeChecked();
+    await expect(loginPersonaRadio(page, "beneficiary")).not.toBeChecked();
+    await expect(
+      page.locator(
+        `#${domElementIds.manageConventionConnectedUser.login.byEmailButton}`,
+      ),
+    ).toBeVisible();
+    await expect(
+      page.locator(
+        `#${domElementIds.manageConventionConnectedUser.login.proConnectButton}`,
+      ),
+    ).toBeVisible();
+  });
+
+  test("pre-selects the candidate persona when loginPersona=beneficiary is on the connected convention management page", async ({
+    page,
+  }) => {
+    await page.goto(
+      frontRoutes.manageConventionConnectedUser({
+        conventionId: "00000000-0000-4000-8000-000000000001",
+        loginPersona: "beneficiary",
+      }).href,
+    );
+    await acceptCookiesIfBannerVisible(page);
+
+    await expect(loginPersonaRadio(page, "beneficiary")).toBeChecked();
+    await expect(loginPersonaRadio(page, "professional")).not.toBeChecked();
+    await expect(
+      page.locator(
+        `#${domElementIds.manageConventionConnectedUser.login.byEmailButton}`,
+      ),
+    ).toBeVisible();
+    await expect(
+      page.locator(
+        `#${domElementIds.manageConventionConnectedUser.login.proConnectButton}`,
+      ),
+    ).toHaveCount(0);
+  });
 });

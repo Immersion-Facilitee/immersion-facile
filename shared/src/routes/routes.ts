@@ -205,6 +205,17 @@ export const agencyRegistrationFromRouteSerializer: ValueSerializer<
   stringify: (value) => value,
 };
 
+const loginPersonaSerializer: ValueSerializer<"beneficiary" | "professional"> =
+  {
+    parse: (value) => {
+      if (value === "beneficiary" || value === "professional") return value;
+      throw new Error(
+        `Invalid loginPersona: expected beneficiary or professional, got "${value}"`,
+      );
+    },
+    stringify: (value) => value,
+  };
+
 export const {
   RouteProvider,
   useRoute,
@@ -463,7 +474,12 @@ export const {
     () => "/pilotage-convention",
   ),
   manageConventionConnectedUser: defineRoute(
-    { ...connectedUserParams, conventionId: param.query.optional.string },
+    {
+      ...connectedUserParams,
+      conventionId: param.query.optional.string,
+      ...acquisitionParams,
+      loginPersona: param.query.optional.ofType(loginPersonaSerializer),
+    },
     () => "/pilotage-convention-inclusion-connect",
   ),
   openApiDoc: defineRoute(
