@@ -98,9 +98,9 @@ a.kind as agency_kind,
 pdr.department_name as agency_department_name,
 pdr.region_name as agency_region_name,
 
--- FT Connect user fields
-ftu.advisor_email as ft_advisor_email,
-ftu.ft_connect_id as ft_connect_id,
+-- FT Connect fields (stored on beneficiary actor after ft_connect_users removal)
+b.extra_fields #>> '{federatedIdentity, payload, advisor, email}' as ft_advisor_email,
+b.extra_fields #>> '{federatedIdentity, token}' as ft_connect_id,
 
 -- Appellation and ROME fields
 pad.ogr_appellation as appellation_code,
@@ -245,12 +245,6 @@ left join {{ source('immersion', 'agencies') }} as refer_a
     on a.refers_to_agency_id = refer_a.id
 left join {{ source('immersion', 'public_department_region') }} as pdr
     on pdr.department_code = a.department_code
-
--- FT Connect users (via junction table)
-left join {{ source('immersion', 'conventions__ft_connect_users') }} as cftu
-    on c.id = cftu.convention_id
-left join {{ source('immersion', 'ft_connect_users') }} as ftu
-    on ftu.ft_connect_id = cftu.ft_connect_id
 
 -- Appellation and ROME reference data
 inner join {{ source('immersion', 'public_appellations_data') }} as pad
