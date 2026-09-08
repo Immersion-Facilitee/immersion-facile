@@ -44,6 +44,12 @@ export const PhoneInput = ({
     inputProps?.nativeInputProps?.value?.toString() ?? "",
   );
 
+  const phoneInputId = inputProps?.nativeInputProps?.id ?? id;
+  const countrySelectId = phoneInputId ? `${phoneInputId}-country` : undefined;
+  const errorMessageId = phoneInputId
+    ? `${phoneInputId}-error-desc-error`
+    : undefined;
+
   const getCountryCodeValue = () => {
     const countryCodeFromDisplayedNumber =
       getCountryCodeFromPhoneNumber(displayedPhoneNumber);
@@ -53,100 +59,129 @@ export const PhoneInput = ({
     return countryCode || defaultCountryCodeValue;
   };
 
+  const phoneInput = (
+    <Input
+      label={shouldDisplaySelect ? "Numéro de téléphone" : ""}
+      hintText=""
+      classes={shouldDisplaySelect ? { label: fr.cx("fr-sr-only") } : undefined}
+      nativeInputProps={{
+        ...inputProps?.nativeInputProps,
+        ...(phoneInputId ? { id: phoneInputId } : {}),
+        ...(stateRelatedMessage && errorMessageId
+          ? { "aria-describedby": errorMessageId }
+          : {}),
+        onChange: (event) => {
+          const updatedPhoneNumber = event.currentTarget.value;
+          const countryCodeFromPhoneNumber =
+            getCountryCodeFromPhoneNumber(updatedPhoneNumber);
+          const shouldUpdateCountryCode =
+            updatedPhoneNumber.includes("+") &&
+            countryCodeFromPhoneNumber &&
+            countryCodeFromPhoneNumber !== countryCode;
+          inputProps?.nativeInputProps?.onChange?.(event);
+          setDisplayedPhoneNumber(updatedPhoneNumber);
+          if (shouldUpdateCountryCode) {
+            setCountryCode(countryCodeFromPhoneNumber);
+          }
+        },
+        onBlur: (event) => {
+          const internationalPhoneNumber = toInternationalPhoneNumber(
+            displayedPhoneNumber,
+            countryCode || defaultCountryCodeValue,
+          );
+          if (internationalPhoneNumber) {
+            onPhoneNumberChange(internationalPhoneNumber);
+          }
+          if (!internationalPhoneNumber) {
+            setError(inputProps?.nativeInputProps?.name ?? "", {
+              message: "Le numéro de téléphone n'est pas valide",
+            });
+          }
+          inputProps?.nativeInputProps?.onBlur?.(event);
+        },
+        value: displayedPhoneNumber,
+        type: "tel",
+        disabled,
+      }}
+    />
+  );
+
+  const phoneInputWithCountrySelect = (
+    <div className={fr.cx("fr-grid-row", "fr-mt-1w")}>
+      {shouldDisplaySelect && (
+        <div className={fr.cx("fr-col-12", "fr-col-md-5")}>
+          <Select
+            label={<span className={fr.cx("fr-sr-only")}>Indicatif</span>}
+            options={Object.entries(countryCodesData).map(
+              ([code, { name, flag }]) => ({
+                value: code,
+                label:
+                  name === "France"
+                    ? `${flag} ${name} (incl. DOM/TOM)`
+                    : `${flag} ${name}`,
+              }),
+            )}
+            nativeSelectProps={{
+              ...selectProps?.nativeSelectProps,
+              id: countrySelectId,
+              value: getCountryCodeValue(),
+              disabled,
+              onChange: (event) => {
+                const updatedCountryCode = event.currentTarget.value;
+                if (isSupportedCountryCode(updatedCountryCode)) {
+                  setCountryCode(updatedCountryCode);
+                  setDisplayedPhoneNumber("");
+                  onPhoneNumberChange("");
+                }
+              },
+            }}
+          />
+        </div>
+      )}
+
+      <div
+        className={fr.cx(
+          "fr-col",
+          shouldDisplaySelect && ["fr-ml-md-1w", "fr-mt-1w", "fr-mt-md-0"],
+        )}
+      >
+        {phoneInput}
+      </div>
+    </div>
+  );
+
   return (
     <div
       className={fr.cx("fr-input-group", "fr-mb-3w", {
         "fr-input-group--error": !!stateRelatedMessage,
       })}
     >
-      {label && (
-        <label className={fr.cx("fr-label")} htmlFor={id}>
-          {label}
-        </label>
-      )}
-      {hintText && <span className={fr.cx("fr-hint-text")}>{hintText}</span>}
-
-      <div className={fr.cx("fr-grid-row", "fr-mt-1w")}>
-        {shouldDisplaySelect && (
-          <div className={fr.cx("fr-col-12", "fr-col-md-5")}>
-            <Select
-              label=""
-              options={Object.entries(countryCodesData).map(
-                ([code, { name, flag }]) => ({
-                  value: code,
-                  label:
-                    name === "France"
-                      ? `${flag} ${name} (incl. DOM/TOM)`
-                      : `${flag} ${name}`,
-                }),
+      {shouldDisplaySelect ? (
+        <fieldset className={fr.cx("fr-fieldset")}>
+          <div className={fr.cx("fr-fieldset__content")}>
+            <legend className={fr.cx("fr-label")}>
+              {label}
+              {hintText && (
+                <span className={fr.cx("fr-hint-text")}>{hintText}</span>
               )}
-              nativeSelectProps={{
-                ...selectProps?.nativeSelectProps,
-                value: getCountryCodeValue(),
-                disabled,
-                onChange: (event) => {
-                  const updatedCountryCode = event.currentTarget.value;
-                  if (isSupportedCountryCode(updatedCountryCode)) {
-                    setCountryCode(updatedCountryCode);
-                    setDisplayedPhoneNumber("");
-                    onPhoneNumberChange("");
-                  }
-                },
-              }}
-            />
+            </legend>
+            {phoneInputWithCountrySelect}
           </div>
-        )}
-
-        <div
-          className={fr.cx(
-            "fr-col",
-            shouldDisplaySelect && ["fr-ml-md-1w", "fr-mt-1w", "fr-mt-md-0"],
+        </fieldset>
+      ) : (
+        <>
+          <label className={fr.cx("fr-label")} htmlFor={phoneInputId}>
+            {label}
+          </label>
+          {hintText && (
+            <span className={fr.cx("fr-hint-text")}>{hintText}</span>
           )}
-        >
-          <Input
-            label=""
-            hintText=""
-            nativeInputProps={{
-              ...inputProps?.nativeInputProps,
-              onChange: (event) => {
-                const updatedPhoneNumber = event.currentTarget.value;
-                const countryCodeFromPhoneNumber =
-                  getCountryCodeFromPhoneNumber(updatedPhoneNumber);
-                const shouldUpdateCountryCode =
-                  updatedPhoneNumber.includes("+") &&
-                  countryCodeFromPhoneNumber &&
-                  countryCodeFromPhoneNumber !== countryCode;
-                inputProps?.nativeInputProps?.onChange?.(event);
-                setDisplayedPhoneNumber(updatedPhoneNumber);
-                if (shouldUpdateCountryCode) {
-                  setCountryCode(countryCodeFromPhoneNumber);
-                }
-              },
-              onBlur: (event) => {
-                const internationalPhoneNumber = toInternationalPhoneNumber(
-                  displayedPhoneNumber,
-                  countryCode || defaultCountryCodeValue,
-                );
-                if (internationalPhoneNumber) {
-                  onPhoneNumberChange(internationalPhoneNumber);
-                }
-                if (!internationalPhoneNumber) {
-                  setError(inputProps?.nativeInputProps?.name ?? "", {
-                    message: "Le numéro de téléphone n'est pas valide",
-                  });
-                }
-                inputProps?.nativeInputProps?.onBlur?.(event);
-              },
-              value: displayedPhoneNumber,
-              type: "tel",
-              disabled,
-            }}
-          />
-        </div>
-      </div>
+          {phoneInputWithCountrySelect}
+        </>
+      )}
 
       {stateRelatedMessage && (
-        <p id={`${id}-error-desc-error`} className={fr.cx("fr-error-text")}>
+        <p id={errorMessageId} className={fr.cx("fr-error-text")}>
           {stateRelatedMessage}
         </p>
       )}
