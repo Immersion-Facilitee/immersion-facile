@@ -10,7 +10,9 @@ describe("deleteOrphanLeadMarketingContacts", () => {
   const siret: SiretDto = "00000000000001";
   const otherSiret: SiretDto = "00000000000002";
   const currentContactEmail: Email = "current-contact@mail.com";
+  const otherCurrentContactEmail: Email = "other-current-contact@mail.com";
   const obsoleteEmail: Email = "former-representative@mail.com";
+  const secondObsoleteEmail: Email = "old-manager@mail.com";
 
   let pool: Pool;
   let db: KyselyDb;
@@ -126,6 +128,84 @@ describe("deleteOrphanLeadMarketingContacts", () => {
     expectToEqual(result.deleted, []);
     expect(establishmentMarketingGateway.marketingEstablishments.length).toBe(
       2,
+    );
+  });
+
+  it("deletes an obsolete email only once when it appears in the history of several sirets", async () => {
+    await saveMarketingContactWithHistory(siret, currentContactEmail, [
+      obsoleteEmail,
+    ]);
+    await saveMarketingContactWithHistory(
+      otherSiret,
+      otherCurrentContactEmail,
+      [obsoleteEmail],
+    );
+
+    const result = await deleteOrphanLeadMarketingContacts({
+      db,
+      establishmentMarketingGateway,
+      dryRun: false,
+    });
+
+    expectToEqual(result.candidates, [{ siret, obsoleteEmail }]);
+    expectToEqual(result.deleted, [{ siret, obsoleteEmail }]);
+    expectToEqual(result.errors, []);
+    expectToEqual(
+      establishmentMarketingGateway.marketingEstablishments
+        .map(({ email }) => email)
+        .sort(),
+      [currentContactEmail, otherCurrentContactEmail].sort(),
+    );
+  });
+
+  it("deletes several obsolete emails present in a single contact history", async () => {
+    await saveMarketingContactWithHistory(siret, currentContactEmail, [
+      obsoleteEmail,
+      secondObsoleteEmail,
+    ]);
+
+    const result = await deleteOrphanLeadMarketingContacts({
+      db,
+      establishmentMarketingGateway,
+      dryRun: false,
+    });
+
+    expectToEqual(result.deleted, [
+      { siret, obsoleteEmail },
+      { siret, obsoleteEmail: secondObsoleteEmail },
+    ]);
+    expectToEqual(result.errors, []);
+    expectToEqual(
+      establishmentMarketingGateway.marketingEstablishments.map(
+        ({ email }) => email,
+      ),
+      [currentContactEmail],
+    );
+  });
+
+  it("caps the number of deletions to the given limit but still reports every candidate", async () => {
+    await saveMarketingContactWithHistory(siret, currentContactEmail, [
+      obsoleteEmail,
+      secondObsoleteEmail,
+    ]);
+
+    const result = await deleteOrphanLeadMarketingContacts({
+      db,
+      establishmentMarketingGateway,
+      dryRun: false,
+      limit: 1,
+    });
+
+    expectToEqual(result.candidates, [
+      { siret, obsoleteEmail },
+      { siret, obsoleteEmail: secondObsoleteEmail },
+    ]);
+    expectToEqual(result.deleted, [{ siret, obsoleteEmail }]);
+    expectToEqual(
+      establishmentMarketingGateway.marketingEstablishments
+        .map(({ email }) => email)
+        .sort(),
+      [currentContactEmail, secondObsoleteEmail].sort(),
     );
   });
 });
