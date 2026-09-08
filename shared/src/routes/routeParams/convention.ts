@@ -17,6 +17,7 @@ import type {
   CreateConventionTemplatePresentationInitialValues,
 } from "../../convention/conventionPresentation.dto";
 import type { ConventionTemplate } from "../../convention/conventionTemplate.dto";
+import type { FtConnectImmersionAdvisorDto } from "../../federatedIdentities/federatedIdentity.dto";
 import type { AppellationAndRomeDto } from "../../romeAndAppellationDtos/romeAndAppellation.dto";
 import type { ScheduleDto } from "../../schedule/Schedule.dto";
 import { reasonableSchedule } from "../../schedule/ScheduleUtils";
@@ -306,19 +307,9 @@ export const conventionPresentationFromConventionDraft = (
         conventionDraft.signatories?.beneficiary?.financiaryHelp ?? "",
       birthdate: conventionDraft.signatories?.beneficiary?.birthdate ?? "",
       isRqth: conventionDraft.signatories?.beneficiary?.isRqth ?? false,
-      ...(conventionDraft.signatories?.beneficiary?.federatedIdentity
-        ?.provider &&
-      conventionDraft.signatories?.beneficiary?.federatedIdentity?.token
-        ? {
-            federatedIdentity: {
-              provider: conventionDraft.signatories?.beneficiary
-                ?.federatedIdentity?.provider as FtConnectIdentity["provider"],
-              token:
-                conventionDraft.signatories?.beneficiary?.federatedIdentity
-                  ?.token,
-            },
-          }
-        : {}),
+      federatedIdentity: ftConnectIdentityFromDraft(
+        conventionDraft.signatories?.beneficiary?.federatedIdentity,
+      ),
     },
     establishmentRepresentative: {
       role: "establishment-representative",
@@ -433,4 +424,48 @@ export const makeConventionPresentationFromConventionTemplate = (
     ...conventionDraft,
     id: uuidV4(),
   });
+};
+
+const ftConnectIdentityFromDraft = (federatedIdentity?: {
+  provider?: FtConnectIdentity["provider"];
+  token?: FtConnectIdentity["token"];
+  payload?: {
+    advisor?: Partial<FtConnectImmersionAdvisorDto>;
+  };
+}): FtConnectIdentity | undefined => {
+  if (!federatedIdentity?.provider || !federatedIdentity.token) {
+    return undefined;
+  }
+
+  const advisor = ftConnectAdvisorFromDraft(federatedIdentity.payload?.advisor);
+
+  return {
+    provider: federatedIdentity.provider,
+    token: federatedIdentity.token,
+    ...(federatedIdentity.payload !== undefined && advisor
+      ? {
+          payload: { advisor },
+        }
+      : {}),
+  };
+};
+
+const ftConnectAdvisorFromDraft = (
+  advisor?: Partial<FtConnectImmersionAdvisorDto>,
+): FtConnectImmersionAdvisorDto | undefined => {
+  if (
+    !advisor?.email ||
+    !advisor.firstName ||
+    !advisor.lastName ||
+    !advisor.type
+  ) {
+    return undefined;
+  }
+
+  return {
+    email: advisor.email,
+    firstName: advisor.firstName,
+    lastName: advisor.lastName,
+    type: advisor.type,
+  };
 };
