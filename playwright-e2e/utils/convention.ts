@@ -4,6 +4,7 @@ import { addBusinessDays, format } from "date-fns";
 import {
   type AgencyId,
   addressRoutes,
+  authenticatedConventionRoutes,
   type ConventionId,
   domElementIds,
   executeInSequence,
@@ -530,6 +531,22 @@ export const openManageConventionPageFromDashboard = async (
   page: Page,
   conventionId: ConventionId,
 ): Promise<Page> => {
+  // Concurrent workflows can push seeded conventions beyond the first page.
+  await page
+    .getByRole("search", { name: "Rechercher", exact: true })
+    .fill(conventionId);
+  const [response] = await Promise.all([
+    page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname.endsWith(
+          authenticatedConventionRoutes.getConventionsForAgencyUser.url,
+        ) && url.searchParams.get("search") === conventionId
+      );
+    }),
+    page.getByRole("button", { name: "Rechercher", exact: true }).click(),
+  ]);
+  expect(response.ok()).toBe(true);
   const goToConventionButton = page.locator(
     `#${domElementIds.agencyDashboard.dashboard.goToConventionButton}--${conventionId}`,
   );
