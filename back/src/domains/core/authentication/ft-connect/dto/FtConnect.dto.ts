@@ -5,24 +5,11 @@ import {
   type FederatedIdentityProvider,
   type FtConnectImmersionAdvisorDto,
   type FtConnectToken,
-  type FtExternalId,
   type InternshipKind,
   type PhoneNumber,
 } from "shared";
-import type { EntityFromDto } from "../../../../../utils/EntityFromDto";
 import type { IdToken } from "../../connected-user/entities/OngoingOAuth";
 import type { FtConnectUserDto } from "./FtConnectUserDto";
-
-export type ConventionFtUserAdvisorDto = {
-  ftExternalId: FtExternalId;
-  conventionId: string;
-  advisor?: FtConnectImmersionAdvisorDto;
-};
-
-export type ConventionFtUserAdvisorEntity = EntityFromDto<
-  ConventionFtUserAdvisorDto,
-  "ConventionFranceTravailAdvisor"
->;
 
 type BeneficiaryBasicIdentity = Pick<
   Beneficiary<InternshipKind>,
