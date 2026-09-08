@@ -94,7 +94,6 @@ export const ArchivedConventionListSection = () => {
       {archivedConventionListToReview !== null &&
         (archivedConventionListToReview.length > 0 ? (
           <Table
-            fixed
             data={archivedConventionListToReview.map((request) =>
               makeArchivedConventionListLine(request, () => {
                 setSelectedRequest(request);

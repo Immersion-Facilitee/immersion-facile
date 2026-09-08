@@ -133,12 +133,7 @@ export const EstablishmentUsersList = () => {
 
       <Feedback topics={["establishment-dashboard-users-rights"]} />
 
-      <Table
-        fixed
-        id="establishment-users-table"
-        headers={headers}
-        data={data}
-      />
+      <Table id="establishment-users-table" headers={headers} data={data} />
       {createPortal(
         <establishmentUsersEditModal.Component
           title={

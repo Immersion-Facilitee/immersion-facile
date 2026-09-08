@@ -150,7 +150,6 @@ export const AgencyAdminUsersToReview = ({
         )}
         {usersToReview.length > 0 ? (
           <Table
-            fixed
             headers={["Utilisateur", "Organisme demandé", "Actions"]}
             data={usersToReview.map((userToReview) =>
               TableLine({

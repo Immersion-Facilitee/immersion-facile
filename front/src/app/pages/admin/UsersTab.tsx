@@ -67,7 +67,6 @@ const UsersTable = () => {
 
   return (
     <Table
-      fixed
       id={domElementIds.admin.usersTab.usersTable}
       headers={[
         "Utilisateur",
