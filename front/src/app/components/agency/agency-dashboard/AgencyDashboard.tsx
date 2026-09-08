@@ -134,6 +134,20 @@ const rawAgencyDashboardTabs = ({
           },
         ]
       : []),
+    ...(dashboards.agencies.agencyManagement
+      ? [
+          {
+            tabId: "agencyManagement" satisfies AgencyDashboardRouteName,
+            label: "Pilotage de ma structure",
+            content: (
+              <MetabaseView
+                title="Pilotage de ma structure"
+                url={dashboards.agencies.agencyManagement}
+              />
+            ),
+          },
+        ]
+      : []),
     ...(dashboards.agencies.statsEstablishmentDetailsUrl
       ? [
           {
@@ -149,28 +163,14 @@ const rawAgencyDashboardTabs = ({
           },
         ]
       : []),
-    ...(dashboards.agencies.agencyManagement
-      ? [
-          {
-            tabId: "agencyManagement" satisfies AgencyDashboardRouteName,
-            label: "Pilotage de ma structure",
-            content: (
-              <MetabaseView
-                title="Pilotage de ma structure"
-                url={dashboards.agencies.agencyManagement}
-              />
-            ),
-          },
-        ]
-      : []),
     ...(dashboards.agencies.establishmentManagement
       ? [
           {
             tabId: "establishmentManagement" satisfies AgencyDashboardRouteName,
-            label: "Pilotage de mes entreprises",
+            label: "Pilotage des entreprises",
             content: (
               <MetabaseView
-                title="Pilotage de mes entreprises"
+                title="Pilotage des entreprises"
                 url={dashboards.agencies.establishmentManagement}
               />
             ),
