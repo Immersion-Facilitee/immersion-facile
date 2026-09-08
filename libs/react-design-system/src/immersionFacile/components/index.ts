@@ -38,7 +38,6 @@ export * from "./rich-dropdown";
 export * from "./rich-table";
 export * from "./rs-autocomplete";
 export * from "./search-result-illustration";
-export * from "./section-accordion";
 export * from "./section-convention-next-steps";
 export * from "./section-faq";
 export * from "./section-highlight";
