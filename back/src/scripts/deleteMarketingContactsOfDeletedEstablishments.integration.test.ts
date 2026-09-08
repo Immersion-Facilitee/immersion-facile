@@ -17,6 +17,8 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
   const deletedEstablishmentEmail: Email = "deleted@mail.com";
   const registeredEstablishmentSiret: SiretDto = "00000000000002";
   const leadSiret: SiretDto = "00000000000003";
+  const secondDeletedEstablishmentSiret: SiretDto = "00000000000004";
+  const secondDeletedEstablishmentEmail: Email = "deleted-2@mail.com";
 
   const establishmentAdmin = new UserBuilder().withId(uuid()).build();
   const establishmentAdminRight: EstablishmentUserRight = {
@@ -53,6 +55,8 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
     await db.deleteFrom("establishments_location_infos").execute();
     await db.deleteFrom("establishments_location_positions").execute();
     await db.deleteFrom("establishments").execute();
+    await db.deleteFrom("convention_templates").execute();
+    await db.deleteFrom("conventions").execute();
     await db.deleteFrom("users").execute();
 
     establishmentMarketingRepository = new PgEstablishmentMarketingRepository(
@@ -220,6 +224,41 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
     expect(
       await establishmentMarketingRepository.getBySiret(
         deletedEstablishmentSiret,
+      ),
+    ).toBeDefined();
+    expect(establishmentMarketingGateway.marketingEstablishments.length).toBe(
+      1,
+    );
+  });
+
+  it("caps the number of processed contacts to the given limit", async () => {
+    await saveMarketingContact(
+      deletedEstablishmentSiret,
+      deletedEstablishmentEmail,
+    );
+    await saveDeletedEstablishment(deletedEstablishmentSiret);
+    await saveMarketingContact(
+      secondDeletedEstablishmentSiret,
+      secondDeletedEstablishmentEmail,
+    );
+    await saveDeletedEstablishment(secondDeletedEstablishmentSiret);
+
+    const result = await deleteMarketingContactsOfDeletedEstablishments({
+      db,
+      establishmentMarketingGateway,
+      dryRun: false,
+      limit: 1,
+    });
+
+    expectToEqual(result.candidates, [
+      { siret: deletedEstablishmentSiret, email: deletedEstablishmentEmail },
+    ]);
+    expectToEqual(result.deleted, [
+      { siret: deletedEstablishmentSiret, email: deletedEstablishmentEmail },
+    ]);
+    expect(
+      await establishmentMarketingRepository.getBySiret(
+        secondDeletedEstablishmentSiret,
       ),
     ).toBeDefined();
     expect(establishmentMarketingGateway.marketingEstablishments.length).toBe(
