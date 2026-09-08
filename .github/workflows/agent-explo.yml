@@ -1,0 +1,75 @@
+# Répond aux commentaires d’issue/PR commençant par @Immersion-Facilitee/agent-explo.
+# Explore la branche par défaut et le web en lecture seule ; publie via l’App.
+# 👀 En cours · 👍 Réponse publiée · 😕 Échec. Une relance met à jour la même réponse.
+# Prompt : .github/scripts/agent-explo.prompt.md
+#
+# Installation : App dédiée sur ce dépôt, sans webhook, avec Members: read et
+# Issues: read/write. La team visible agent-explo sert à l’autocomplétion.
+# Secrets : AGENT_EXPLO_APP_PRIVATE_KEY (PEM), OPENCODE_API_KEY (OpenCode Go).
+# Variables :
+#   AGENT_EXPLO_APP_CLIENT_ID : Client ID de l’App
+#   AGENT_EXPLO_ALLOWED_TEAM : immersion-facilitee
+#   AGENT_EXPLO_MODEL : opencode-go/gpt-5.6-luna (obligatoire, sans repli)
+#   AGENT_EXPLO_ENABLED : true pour activer, false pour désactiver
+# Le futur agent-code aura sa propre App et ses variables AGENT_CODE_*.
+#
+# Recette : autorisation/refus, réponse, relance, échec, web et image par URL.
+# Pas de commentaires de review dans le diff ; images selon accès URL et modèle.
+# Aucun token GitHub transmis à OpenCode. Délai de 10 min ; une annulation forcée
+# ou une panne GitHub peut empêcher la publication et la réaction finale.
+
+name: Agent explo
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+concurrency:
+  group: agent-explo-issue_comment-${{ github.event.comment.id }}
+  cancel-in-progress: false
+
+jobs:
+  answer:
+    if: vars.AGENT_EXPLO_ENABLED == 'true' && github.event.sender.type == 'User'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.14.0'
+      - uses: actions/create-github-app-token@v3
+        id: membership
+        with:
+          client-id: ${{ vars.AGENT_EXPLO_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_EXPLO_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-members: read
+      - name: Authorize question and active team member
+        id: authorize
+        run: node .github/scripts/agent-explo.ts authorize
+        env:
+          GH_TOKEN: ${{ steps.membership.outputs.token }}
+          AGENT_ALLOWED_TEAM: ${{ vars.AGENT_EXPLO_ALLOWED_TEAM }}
+      - uses: actions/create-github-app-token@v3
+        if: steps.authorize.outputs.authorized == 'true'
+        id: writer
+        with:
+          client-id: ${{ vars.AGENT_EXPLO_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_EXPLO_APP_PRIVATE_KEY }}
+          permission-issues: write
+      - name: Collect context, ask OpenCode and publish the answer
+        if: steps.authorize.outputs.authorized == 'true'
+        run: node .github/scripts/agent-explo.ts answer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AGENT_WRITE_TOKEN: ${{ steps.writer.outputs.token }}
+          AGENT_BOT_LOGIN: ${{ steps.writer.outputs.app-slug }}[bot]
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          OPENCODE_MODEL: ${{ vars.AGENT_EXPLO_MODEL }}
