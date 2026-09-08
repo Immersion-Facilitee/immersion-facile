@@ -1,21 +1,7 @@
 import type { FtConnectImmersionAdvisorDto } from "shared";
 import { createLogger } from "../../../../../utils/logger";
-import type {
-  ConventionFtUserAdvisorEntity,
-  FtUserAndAdvisor,
-} from "../dto/FtConnect.dto";
 import type { FtConnectAdvisorDto } from "../dto/FtConnectAdvisor.dto";
 import type { FtConnectUserDto } from "../dto/FtConnectUserDto";
-
-export const conventionFranceTravailUserAdvisorFromDto = (
-  dto: FtUserAndAdvisor,
-  conventionId: string,
-): ConventionFtUserAdvisorEntity => ({
-  advisor: dto.advisor,
-  ftExternalId: dto.user.ftExternalId,
-  conventionId,
-  _entityName: "ConventionFranceTravailAdvisor",
-});
 
 const preferCapEmploiPredicate = (
   a: FtConnectImmersionAdvisorDto,
