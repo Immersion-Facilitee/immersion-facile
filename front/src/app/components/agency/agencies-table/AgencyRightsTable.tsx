@@ -27,10 +27,12 @@ import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fe
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { AgencyLineAdminEmails } from "./agency-line/AgencyLineAdminEmails";
 
+type Mode = "rights-to-review" | "other-rights";
 type AgencyRightsTableProps = {
   agencyRights: AgencyRight[];
   user: User;
   title?: string;
+  mode: Mode;
   onUserRegistrationCancelledRequested?: (agencyRight: AgencyRight) => void;
 } & (
   | {
@@ -44,6 +46,7 @@ export const AgencyRightsTable = ({
   agencyRights,
   user,
   modalId,
+  mode,
   onUserUpdateRequested,
   onUserRegistrationCancelledRequested,
   title,
@@ -96,7 +99,7 @@ export const AgencyRightsTable = ({
           "Organisme",
           "Type",
           "Administrateurs",
-          "Mes Rôles & préférences",
+          mode === "other-rights" ? "Mes Rôles & préférences" : "Action",
         ]}
         data={agencyRights
           .sort((a, b) => {
@@ -118,6 +121,7 @@ export const AgencyRightsTable = ({
               onRegistrationCancelledClicked:
                 onUserRegistrationCancelledRequested,
               isBackofficeAdmin,
+              mode,
             }),
           )}
       />
@@ -174,7 +178,9 @@ const AgencyRightLine = ({
   onUpdateClicked,
   onRegistrationCancelledClicked,
   isBackofficeAdmin,
+  mode,
 }: {
+  mode: Mode;
   agencyRight: AgencyRight;
   user: User;
   onUpdateClicked?: (agencyRight: AgencyRight) => void;
@@ -214,14 +220,18 @@ const AgencyRightLine = ({
   />,
 
   <Fragment key={`${agencyRight.agency.id}-agency-infos`}>
-    <div className={fr.cx("fr-mb-1w")}>
-      {agencyRight.roles
-        .map((role) => agencyRolesToDisplay[role].label)
-        .join(", ")}
-    </div>
-    <div className={fr.cx("fr-mb-1w")}>
-      <NotificationIndicator isNotified={agencyRight.isNotifiedByEmail} />
-    </div>
+    {mode === "other-rights" && (
+      <>
+        <div className={fr.cx("fr-mb-1w")}>
+          {agencyRight.roles
+            .map((role) => agencyRolesToDisplay[role].label)
+            .join(", ")}
+        </div>
+        <div className={fr.cx("fr-mb-1w")}>
+          <NotificationIndicator isNotified={agencyRight.isNotifiedByEmail} />
+        </div>
+      </>
+    )}
     <AgencyLineRightsCTAs
       key={`${agencyRight.agency.id}-rights-ctas`}
       agencyRight={agencyRight}

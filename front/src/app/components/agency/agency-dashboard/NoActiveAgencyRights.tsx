@@ -50,6 +50,7 @@ export function NoActiveAgencyRights({
           </p>
 
           <AgencyRightsTable
+            mode="rights-to-review"
             agencyRights={toReviewAgencyRights}
             user={currentUser}
             title={`Demandes d'accès en cours (${toReviewAgencyRights.length})`}

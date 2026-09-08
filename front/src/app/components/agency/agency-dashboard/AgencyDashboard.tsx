@@ -28,10 +28,12 @@ import { AgencyConventionTabContent } from "./tabs/AgencyConventionTabContent";
 export const AgencyDashboard = ({
   route,
   activeAgencyRights,
+  toReviewAgencyRights,
   dashboards,
 }: {
   route: FrontAgencyDashboardRoute;
   activeAgencyRights: AgencyRight[];
+  toReviewAgencyRights: AgencyRight[];
 } & WithDashboards): JSX.Element => {
   const currentTab = route.name;
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
@@ -44,6 +46,7 @@ export const AgencyDashboard = ({
 
   const agencyTabs = rawAgencyDashboardTabs({
     activeAgencyRights,
+    toReviewAgencyRights,
     dashboards,
     currentUser,
   });
@@ -97,9 +100,11 @@ export const AgencyDashboard = ({
 const rawAgencyDashboardTabs = ({
   dashboards,
   activeAgencyRights,
+  toReviewAgencyRights,
   currentUser,
 }: {
   activeAgencyRights: AgencyRight[];
+  toReviewAgencyRights: AgencyRight[];
   currentUser: ConnectedUser;
 } & WithDashboards): DashboardTab[] => {
   const agenciesWithActiveStatus = activeAgencyRights
@@ -128,6 +133,7 @@ const rawAgencyDashboardTabs = ({
             content: (
               <AgencyAdminTabContent
                 activeAgencyRights={activeAgencyRights}
+                toReviewAgencyRights={toReviewAgencyRights}
                 currentUser={currentUser}
               />
             ),
