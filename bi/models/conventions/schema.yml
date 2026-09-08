@@ -110,7 +110,7 @@ models:
       - name: agency_region_name
         description: Region name of the agency
 
-      # FT Connect fields
+      # FT Connect fields (from beneficiary actors.extra_fields.federatedIdentity)
       - name: ft_advisor_email
         description: Email of France Travail advisor
       - name: ft_connect_id

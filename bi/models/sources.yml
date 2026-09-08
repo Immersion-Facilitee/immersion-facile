@@ -680,22 +680,6 @@ sources:
           - name: published_at
             description: "Timestamp when published"
 
-      - name: partners_pe_connect
-        description: "PE Connect partners"
-        columns:
-          - name: user_pe_external_id
-            description: "External ID of user"
-          - name: convention_id
-            description: "Foreign key to conventions table"
-          - name: firstname
-            description: "First name"
-          - name: lastname
-            description: "Last name"
-          - name: email
-            description: "Email address"
-          - name: type
-            description: "Type of partner"
-
       - name: phone_numbers
         description: "Phone numbers table"
         columns:
@@ -937,34 +921,6 @@ sources:
             description: "Convention status code"
           - name: translation
             description: "French translation of status"
-
-      - name: ft_connect_users
-        description: "France Travail Connect users"
-        columns:
-          - name: ft_connect_id
-            description: "Primary key - FT Connect ID"
-          - name: advisor_firstname
-            description: "Advisor first name"
-          - name: advisor_lastname
-            description: "Advisor last name"
-          - name: advisor_email
-            description: "Advisor email"
-          - name: advisor_kind
-            description: "Advisor type"
-          - name: created_at
-            description: "Timestamp when created"
-          - name: updated_at
-            description: "Timestamp when updated"
-
-      - name: conventions__ft_connect_users
-        description: "Junction table between conventions and FT Connect users"
-        columns:
-          - name: convention_id
-            description: "Foreign key to conventions table"
-          - name: ft_connect_id
-            description: "Foreign key to ft_connect_users table"
-          - name: created_at
-            description: "Timestamp when created"
 
       - name: users_admins
         description: "Admin users"

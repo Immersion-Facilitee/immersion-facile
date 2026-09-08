@@ -26,15 +26,13 @@ type GenericFederatedIdentity<
   payload?: P;
 };
 
-export const authFailed = "AuthFailed";
-
 export type FtExternalId = Flavor<string, "FtExternalId">;
 
 export type WithFtConnectAdvisorForBeneficiary = {
   advisor?: FtConnectImmersionAdvisorDto;
 };
 
-export type FtConnectToken = FtExternalId | typeof authFailed;
+export type FtConnectToken = FtExternalId;
 
 export type FtConnectIdentity = GenericFederatedIdentity<
   "ftConnect",
