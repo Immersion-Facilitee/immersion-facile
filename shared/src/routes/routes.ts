@@ -304,9 +304,11 @@ export const {
   ),
   assessmentDocument: defineRoute(
     {
+      ...connectedUserParams,
       jwt: param.query.optional.string,
       conventionId: param.query.optional.string,
       ...acquisitionParams,
+      loginPersona: param.query.optional.ofType(loginPersonaSerializer),
     },
     () => "/bilan-document",
   ),

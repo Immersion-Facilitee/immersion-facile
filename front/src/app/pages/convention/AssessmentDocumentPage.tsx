@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import DOMPurify from "dompurify";
 import { useEffect } from "react";
@@ -72,6 +73,7 @@ export const AssessmentDocumentPage = ({
 }: AssessmentDocumentPageProps) => {
   const dispatch = useDispatch();
   const { jwt, jwtPayload } = useJwt(route);
+  const hasOwnLayout = !!route.params.jwt;
 
   const conventionId = jwtPayload.applicationId ?? route.params.conventionId;
   const assessment = useAppSelector(assessmentSelectors.currentAssessment);
@@ -142,18 +144,29 @@ export const AssessmentDocumentPage = ({
   )
     return <Loader />;
 
-  if (fetchConventionError)
+  if (fetchConventionError) {
+    if (route.params.jwt)
+      return (
+        <ShowConventionErrorOrRenewExpiredJwt
+          errorMessage={conventionFormFeedback.message}
+          jwt={jwt}
+        />
+      );
+
     return (
-      <ShowConventionErrorOrRenewExpiredJwt
-        errorMessage={conventionFormFeedback.message}
-        jwt={jwt}
+      <Alert
+        severity="error"
+        title="Impossible d’afficher ce bilan"
+        description={conventionFormFeedback.message}
       />
     );
+  }
 
   if (!convention) return <p>Pas de convention correspondante trouvée</p>;
   if (!assessment)
     return (
       <FullPageFeedback
+        includeWrapper={hasOwnLayout}
         title="Ce bilan n’est plus disponible"
         illustration={commonIllustrations.success}
         content={
@@ -191,6 +204,7 @@ export const AssessmentDocumentPage = ({
   if (isSignAssessmentSuccess)
     return (
       <FullPageFeedback
+        includeWrapper={hasOwnLayout}
         title="Votre bilan d'immersion a bien été signé"
         illustration={commonIllustrations.documentsAdministratifs}
         content={
@@ -249,8 +263,8 @@ export const AssessmentDocumentPage = ({
     isBeforeSignatureReleaseDate
   );
 
-  return (
-    <MainWrapper layout="default" vSpacing={8}>
+  const documentContent = (
+    <>
       <Feedback topics={["sign-assessment"]} />
       <Document
         logos={logos}
@@ -597,6 +611,15 @@ export const AssessmentDocumentPage = ({
           )}
         </>
       )}
-    </MainWrapper>
+    </>
   );
+
+  if (hasOwnLayout)
+    return (
+      <MainWrapper layout="default" vSpacing={8}>
+        {documentContent}
+      </MainWrapper>
+    );
+
+  return documentContent;
 };
