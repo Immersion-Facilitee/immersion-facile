@@ -264,7 +264,9 @@ export const AssessmentDocumentPage = ({
           firstname: convention.signatories.beneficiary.firstName,
           lastname: convention.signatories.beneficiary.lastName,
         })}
-        businessName={convention.businessName}
+        businessName={
+          convention.businessNameCustomized?.trim() || convention.businessName
+        }
         internshipKind={convention.internshipKind}
         showPrintButton={!isSignatureRequired}
         customActions={
@@ -308,7 +310,13 @@ export const AssessmentDocumentPage = ({
               new Date(convention.dateEnd),
             ),
           })}{" "}
-          au sein de <strong>{convention.businessName}</strong> (Siret n° :{" "}
+          au sein de{" "}
+          <strong>
+            {convention.businessNameCustomized?.trim()
+              ? `${convention.businessNameCustomized.trim()}, dont la raison sociale est ${convention.businessName}`
+              : convention.businessName}
+          </strong>{" "}
+          (Siret n°
           <a
             href={makeSiretDescriptionLink(convention.siret)}
             target="_blank"
@@ -316,7 +324,7 @@ export const AssessmentDocumentPage = ({
           >
             {convention.siret}
           </a>
-          ) à l'adresse suivante <strong>{convention.immersionAddress}</strong>.
+          ), à l'adresse <strong>{convention.immersionAddress}</strong>.
         </p>
         <ul>
           <li>
