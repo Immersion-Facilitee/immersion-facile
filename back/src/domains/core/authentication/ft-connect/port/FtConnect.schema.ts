@@ -1,4 +1,5 @@
 import {
+  immersionFranceTravailAdvisors,
   localization,
   makezTrimmedString,
   type ZodSchemaWithInputMatchingOutput,
@@ -6,7 +7,6 @@ import {
 } from "shared";
 import { z } from "zod";
 import type { ConventionFtUserAdvisorDto } from "../dto/FtConnect.dto";
-import { immersionFranceTravailAdvisors } from "../dto/FtConnectAdvisor.dto";
 
 export const conventionFranceTravailUserAdvisorDtoSchema: ZodSchemaWithInputMatchingOutput<ConventionFtUserAdvisorDto> =
   z.object({

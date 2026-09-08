@@ -1,5 +1,6 @@
 import type { ConnectedUserJwt } from "../tokens/jwt.dto";
 import type { Flavor } from "../typeFlavors";
+import type { NotEmptyArray } from "../utils";
 
 export type FederatedIdentityProvider =
   (typeof federatedIdentityProviders)[number];
@@ -29,13 +30,8 @@ export const authFailed = "AuthFailed";
 
 export type FtExternalId = Flavor<string, "FtExternalId">;
 
-export type FtConnectAdvisorForBeneficiary = {
-  advisor?: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    type: "PLACEMENT" | "CAPEMPLOI" | "INDEMNISATION";
-  };
+export type WithFtConnectAdvisorForBeneficiary = {
+  advisor?: FtConnectImmersionAdvisorDto;
 };
 
 export type FtConnectToken = FtExternalId | typeof authFailed;
@@ -43,7 +39,7 @@ export type FtConnectToken = FtExternalId | typeof authFailed;
 export type FtConnectIdentity = GenericFederatedIdentity<
   "ftConnect",
   FtConnectToken,
-  FtConnectAdvisorForBeneficiary
+  WithFtConnectAdvisorForBeneficiary
 >;
 
 export type FtConnectIdentityWithoutToken = Omit<FtConnectIdentity, "token">;
@@ -54,3 +50,22 @@ type ConnectedUserIdentity = GenericFederatedIdentity<
 >;
 
 export type FederatedIdentity = ConnectedUserIdentity;
+
+const ftAdvisorImmersionKinds = ["PLACEMENT", "CAPEMPLOI"] as const;
+export const ftAdvisorKinds = [
+  ...ftAdvisorImmersionKinds,
+  "INDEMNISATION",
+] as const;
+
+export const immersionFranceTravailAdvisors: NotEmptyArray<FtConnectImmersionAdvisorsKind> =
+  ["PLACEMENT", "CAPEMPLOI"];
+
+export type FtConnectImmersionAdvisorsKind =
+  (typeof ftAdvisorImmersionKinds)[number];
+
+export type FtConnectImmersionAdvisorDto = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  type: FtConnectImmersionAdvisorsKind;
+};

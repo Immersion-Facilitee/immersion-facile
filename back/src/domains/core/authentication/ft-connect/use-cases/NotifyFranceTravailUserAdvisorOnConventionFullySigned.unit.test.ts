@@ -2,6 +2,7 @@ import {
   type AgencyWithUsersRights,
   type ConventionDto,
   ConventionDtoBuilder,
+  type FtConnectImmersionAdvisorDto,
   frontRoutes,
   getFormattedFirstnameAndLastname,
   makeRouteAbsoluteUrl,
@@ -21,7 +22,6 @@ import {
 } from "../../../unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../../unit-of-work/adapters/InMemoryUowPerformer";
 import { UuidV4Generator } from "../../../uuid-generator/adapters/UuidGeneratorImplementations";
-import type { FtConnectImmersionAdvisorDto } from "../dto/FtConnectAdvisor.dto";
 import {
   makeNotifyFranceTravailUserAdvisorOnConventionFullySigned,
   type NotifyFranceTravailUserAdvisorOnConventionFullySigned,

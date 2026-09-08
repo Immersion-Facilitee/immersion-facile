@@ -6,6 +6,7 @@ import {
   DiscussionBuilder,
   errors,
   expectPromiseToFailWithError,
+  type FtConnectImmersionAdvisorDto,
   reasonableSchedule,
   UserBuilder,
 } from "shared";
@@ -14,7 +15,6 @@ import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
-import type { FtConnectImmersionAdvisorDto } from "../../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
 import type { FtConnectUserDto } from "../../../core/authentication/ft-connect/dto/FtConnectUserDto";
 import {
   makeSaveNotificationAndRelatedEvent,

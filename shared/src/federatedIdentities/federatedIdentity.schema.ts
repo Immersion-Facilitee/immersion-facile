@@ -4,25 +4,27 @@ import {
   type ZodSchemaWithInputMatchingOutput,
 } from "../zodUtils";
 import type {
-  FtConnectAdvisorForBeneficiary,
   FtConnectIdentity,
   FtConnectIdentityWithoutToken,
+  FtConnectImmersionAdvisorDto,
+  WithFtConnectAdvisorForBeneficiary,
 } from "./federatedIdentity.dto";
 
-const ftConnectAdvisorPayloadSchema: ZodSchemaWithInputMatchingOutput<
-  FtConnectAdvisorForBeneficiary | undefined
+const ftConnectImmersionAdvisorSchema: ZodSchemaWithInputMatchingOutput<FtConnectImmersionAdvisorDto> =
+  z.object({
+    email: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+    type: z.enum(["PLACEMENT", "CAPEMPLOI"], {
+      error: localization.invalidEnum,
+    }),
+  });
+
+const withFtConnectImmersionAdvisorSchema: ZodSchemaWithInputMatchingOutput<
+  WithFtConnectAdvisorForBeneficiary | undefined
 > = z
   .object({
-    advisor: z
-      .object({
-        email: z.string(),
-        firstName: z.string(),
-        lastName: z.string(),
-        type: z.enum(["PLACEMENT", "CAPEMPLOI", "INDEMNISATION"], {
-          error: localization.invalidEnum,
-        }),
-      })
-      .optional(),
+    advisor: ftConnectImmersionAdvisorSchema.optional(),
   })
   .optional();
 
@@ -30,11 +32,11 @@ export const ftConnectIdentitySchema: ZodSchemaWithInputMatchingOutput<FtConnect
   z.object({
     provider: z.literal("ftConnect"),
     token: z.string(),
-    payload: ftConnectAdvisorPayloadSchema,
+    payload: withFtConnectImmersionAdvisorSchema,
   });
 
 export const ftConnectIdentityWithoutTokenSchema: ZodSchemaWithInputMatchingOutput<FtConnectIdentityWithoutToken> =
   z.object({
     provider: z.literal("ftConnect"),
-    payload: ftConnectAdvisorPayloadSchema,
+    payload: withFtConnectImmersionAdvisorSchema,
   });

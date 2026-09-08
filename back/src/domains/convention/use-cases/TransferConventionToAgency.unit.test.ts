@@ -6,6 +6,7 @@ import type {
   ConventionRole,
   ConventionStatus,
   FtConnectIdentity,
+  FtConnectImmersionAdvisorDto,
   Role,
 } from "shared";
 import {
@@ -22,7 +23,6 @@ import {
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
-import type { FtConnectImmersionAdvisorDto } from "../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
 import {
   type CreateNewEvent,
   makeCreateNewEvent,

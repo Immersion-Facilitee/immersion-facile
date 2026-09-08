@@ -3,11 +3,11 @@ import {
   type ConventionRole,
   type ConventionStatus,
   executeInSequence,
-  type FtConnectAdvisorForBeneficiary,
   frontRoutes,
   getFormattedFirstnameAndLastname,
   makeRouteAbsoluteUrl,
   type TemplatedEmail,
+  type WithFtConnectAdvisorForBeneficiary,
   withConventionSchema,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
@@ -126,7 +126,7 @@ type Recipient = {
 const determineRecipients = (
   status: ConventionStatus,
   agency: AgencyDto,
-  peAdvisor: FtConnectAdvisorForBeneficiary["advisor"],
+  peAdvisor: WithFtConnectAdvisorForBeneficiary["advisor"],
 ): Recipient[] => {
   const hasCounsellorEmails = agency.counsellorEmails.length > 0;
   const hasValidatorEmails = agency.validatorEmails.length > 0;

@@ -4,6 +4,7 @@ import {
   type ConventionDto,
   ConventionDtoBuilder,
   type FtConnectIdentity,
+  type FtConnectImmersionAdvisorDto,
   frontRoutes,
   getFormattedFirstnameAndLastname,
   makeRouteAbsoluteUrl,
@@ -16,7 +17,6 @@ import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
-import type { FtConnectImmersionAdvisorDto } from "../../../core/authentication/ft-connect/dto/FtConnectAdvisor.dto";
 import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {

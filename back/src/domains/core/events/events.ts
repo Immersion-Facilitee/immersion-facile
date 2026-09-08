@@ -191,8 +191,6 @@ export type DomainEvent =
 
   // FTCONNECT related
   | GenericEvent<"FTConnectedSuccessfully", WithFTConnectEvent>
-  | GenericEvent<"FederatedIdentityBoundToConvention", WithConventionDto & WithTriggeredBy>
-  | GenericEvent<"FederatedIdentityNotBoundToConvention", WithConventionDto & WithTriggeredBy>
   // USER CONNECTED related.
   // We don't put full OAuth in payload to avoid private data in logs etc...
   | GenericEvent<"UserAuthenticationByEmailRequested", InitiateLoginByEmailParams>

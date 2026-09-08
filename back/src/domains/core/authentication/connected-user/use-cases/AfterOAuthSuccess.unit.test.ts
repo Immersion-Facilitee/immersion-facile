@@ -8,6 +8,7 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  type FtConnectImmersionAdvisorDto,
   frontRoutes,
   makeRouteAbsoluteUrl,
   type OAuthSuccessLoginParams,
@@ -28,10 +29,7 @@ import {
 import { InMemoryUowPerformer } from "../../../unit-of-work/adapters/InMemoryUowPerformer";
 import { TestUuidGenerator } from "../../../uuid-generator/adapters/UuidGeneratorImplementations";
 import { InMemoryFtConnectGateway } from "../../ft-connect/adapters/ft-connect-gateway/InMemoryFtConnectGateway";
-import type {
-  FtConnectAdvisorDto,
-  FtConnectImmersionAdvisorDto,
-} from "../../ft-connect/dto/FtConnectAdvisor.dto";
+import type { FtConnectAdvisorDto } from "../../ft-connect/dto/FtConnectAdvisor.dto";
 import type { FtConnectUserDto } from "../../ft-connect/dto/FtConnectUserDto";
 import {
   fakeProviderConfig,
