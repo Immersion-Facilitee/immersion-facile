@@ -209,7 +209,19 @@ const getPageByRouteName: {
       <ConventionTemplateForm route={route} />
     </DashboardPrivateRoutePage>
   ),
-  assessmentDocument: (route) => <AssessmentDocumentPage route={route} />,
+  assessmentDocument: (route) =>
+    route.params.jwt ? (
+      <AssessmentDocumentPage route={route} />
+    ) : (
+      <ConnectedPrivateRoutePage
+        route={route}
+        oAuthConnectionPageHeader={
+          <PageHeader title="Vous devez vous connecter pour accéder au bilan" />
+        }
+      >
+        <AssessmentDocumentPage route={route} />
+      </ConnectedPrivateRoutePage>
+    ),
   archivedConventionRequest: (route) => (
     <ArchivedConventionRequestPage route={route} />
   ),

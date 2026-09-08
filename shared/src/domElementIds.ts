@@ -991,6 +991,16 @@ export const domElementIds = {
     downloadPdfButton: "im-convention-document__download-pdf-button",
   },
   assessmentDocument: {
+    login: {
+      proConnectButton:
+        "im-login-form__inclusion-connect-button--assessment-document",
+      byEmailButton: "im-login-form__connect-button--assessment-document-email",
+      navigateToHome:
+        "im-login-form__navigate-to-home-button--assessment-document",
+      retryButton: "im-login-form__retry-login-button--assessment-document",
+      contactSupport:
+        "im-login-form__contact-support-link--assessment-document",
+    },
     downloadPdfButton: "im-assessment-document__download-pdf-button",
     cancelSignAssessmentButton:
       "im-assessment-document__cancel-sign-assessment-button",

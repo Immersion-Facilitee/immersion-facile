@@ -13,6 +13,7 @@ export type AllowedLoginSource = ExtractFromExisting<
   | "agencyDashboard"
   | "agencyDashboardAgencyDetails"
   | "archivedConventionRequest"
+  | "assessmentDocument"
   | "beneficiaryDashboard"
   | "beneficiaryDashboardDiscussions"
   | "beneficiaryDashboardConventions"
@@ -42,6 +43,7 @@ export const allowedLoginSources: Record<
   agencyDashboard: frontRoutes.agencyDashboard,
   agencyDashboardAgencyDetails: frontRoutes.agencyDashboardAgencyDetails,
   archivedConventionRequest: frontRoutes.archivedConventionRequest,
+  assessmentDocument: frontRoutes.assessmentDocument,
   beneficiaryDashboard: frontRoutes.beneficiaryDashboard,
   beneficiaryDashboardConventions: frontRoutes.beneficiaryDashboardConventions,
   beneficiaryDashboardDiscussions: frontRoutes.beneficiaryDashboardDiscussions,

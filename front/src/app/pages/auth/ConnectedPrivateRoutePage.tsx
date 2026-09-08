@@ -133,6 +133,7 @@ type ConnectPrivateRoute =
   | Route<typeof frontRoutes.addAgency>
   | Route<typeof frontRoutes.archivedConventionRequest>
   | Route<typeof frontRoutes.manageConventionConnectedUser>
+  | Route<typeof frontRoutes.assessmentDocument>
   | Route<typeof frontRoutes.beneficiaryDashboardDiscussions>;
 
 type ConnectedPrivateRoutePageProps = {
@@ -399,6 +400,7 @@ const getAllowedStartAuthPage = (
     return "establishmentDashboardDiscussions";
   if (routeName === "manageConventionConnectedUser")
     return "manageConventionConnectedUser";
+  if (routeName === "assessmentDocument") return "assessmentDocument";
   if (routeName === "archivedConventionRequest")
     return "archivedConventionRequest";
   if (
@@ -439,6 +441,7 @@ const loginPersonaByLoginSource: Record<
   agencyDashboard: "professional",
   agencyDashboardAgencyDetails: "professional",
   manageConventionConnectedUser: "professional",
+  assessmentDocument: "beneficiary",
   admin: "professional",
   conventionTemplate: "professional",
   beneficiaryDashboard: "beneficiary",
