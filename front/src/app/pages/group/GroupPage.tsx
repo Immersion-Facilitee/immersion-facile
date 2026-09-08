@@ -10,12 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  Loader,
-  MainWrapper,
-  SectionAccordion,
-  SectionTextEmbed,
-} from "react-design-system";
+import { Loader, MainWrapper, SectionTextEmbed } from "react-design-system";
 import type {
   frontRoutes,
   Group,
@@ -195,7 +190,6 @@ const GroupPageContent = ({ group, results }: GroupWithResults) => {
           results={displayedResults}
           parentContainerIdToScrollToTop={elementIdToScrollTo}
         />
-        <SectionAccordion />
         <SectionTextEmbed
           videoUrl=" https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise.mp4"
           videoPosterUrl="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise_poster.webp"

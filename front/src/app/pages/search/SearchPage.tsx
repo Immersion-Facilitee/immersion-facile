@@ -1,6 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
+import { Tile } from "@codegouvfr/react-dsfr/Tile";
 import { includes, keys } from "ramda";
 import {
   type ElementRef,
@@ -14,7 +15,6 @@ import {
   Loader,
   MainWrapper,
   PageHeader,
-  SectionAccordion,
   SectionHighlight,
   SectionTextEmbed,
   useScrollTo,
@@ -39,6 +39,10 @@ import {
   areValidGeoParams,
   canSubmitSearch,
 } from "src/app/pages/search/SearchPage.utils";
+import {
+  isKeyInObjectAndValueNotUndefinedNorEmpty,
+  isValueUndefinedOrEmpty,
+} from "src/app/utils/url.utils";
 import labonneboiteLogoUrl from "src/assets/img/logo-lbb-centered.png";
 import { appellationSlice } from "src/core-logic/domain/appellation/appellation.slice";
 import { featureFlagSelectors } from "src/core-logic/domain/featureFlags/featureFlags.selector";
@@ -51,10 +55,7 @@ import {
 } from "src/core-logic/domain/search/search.slice";
 import { useStyles } from "tss-react/dsfr";
 import "./SearchPage.scss";
-import {
-  isKeyInObjectAndValueNotUndefinedNorEmpty,
-  isValueUndefinedOrEmpty,
-} from "src/app/utils/url.utils";
+import { commonIllustrations } from "src/assets/img/illustrations";
 import Styles from "./SearchPage.styles";
 
 export const radiusOptions = ["1", "2", "5", "10", "20", "50", "100"].map(
@@ -417,8 +418,21 @@ export const SearchPage = ({
             </PageHeader>
 
             <div className={fr.cx("fr-pt-6w", "fr-mt-6w", "fr-hr")}>
+              <Tile
+                imageUrl={commonIllustrations.job}
+                imageAlt=""
+                title="Vous cherchez une entreprise ?"
+                titleAs="h2"
+                desc="Découvrez les grands groupes inscrits sur Immersion Facilitée qui proposent des immersions partout en France."
+                detail="Aldi, Boulanger, Decatlon, EDF, Enedis ou encore le Club Med."
+                orientation="horizontal"
+                className={fr.cx("fr-container", "fr-mb-10w")}
+                linkProps={{
+                  href: "https://pages.immersion-facile.beta.gouv.fr/ressources-entreprises/groupes/",
+                  rel: "noreferrer",
+                }}
+              />
               <SearchInfoSection />
-              <SectionAccordion />
               <SectionTextEmbed
                 videoUrl="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise.mp4"
                 videoPosterUrl="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise_poster.webp"
