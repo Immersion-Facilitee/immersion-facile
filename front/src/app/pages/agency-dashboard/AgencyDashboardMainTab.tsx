@@ -112,6 +112,7 @@ export const AgencyDashboardMainTab = ({
               <AgencyDashboard
                 route={route}
                 activeAgencyRights={activeAgencyRights}
+                toReviewAgencyRights={toReviewAgencyRights}
                 dashboards={currentUser.dashboards}
               />
             ) : (

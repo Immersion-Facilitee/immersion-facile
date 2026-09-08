@@ -19,16 +19,20 @@ import { AgencyRightsTable } from "src/app/components/agency/agencies-table/Agen
 import { AgencyAdminUsersToReview } from "src/app/components/agency/agency-dashboard/AgencyAdminUsersToReview";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { useFeedbackTopics } from "src/app/hooks/feedback.hooks";
+import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import { usersToReviewSelectors } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.selectors";
 import { usersToReviewSlice } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
+import { SelfRemoveUserAgencyRightFeedback } from "../../removeUserAgencyRights";
 
 export const AgencyAdminTabContent = ({
   activeAgencyRights,
   currentUser,
+  toReviewAgencyRights,
 }: {
   activeAgencyRights: AgencyRight[];
+  toReviewAgencyRights: AgencyRight[];
   currentUser: ConnectedUser;
 }) => {
   const dispatch = useDispatch();
@@ -63,6 +67,17 @@ export const AgencyAdminTabContent = ({
         updateUserOnAgencySlice.actions.updateUserAgencyRightRequested({
           ...userParamsForAgency,
           feedbackTopic,
+        }),
+      );
+    };
+
+  const onUserRegistrationCancelledRequested =
+    (feedbackTopic: FeedbackTopic) => (agencyRight: AgencyRight) => {
+      dispatch(
+        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
+          agencyId: agencyRight.agency.id,
+          feedbackTopic,
+          userId: currentUser.id,
         }),
       );
     };
@@ -143,6 +158,7 @@ export const AgencyAdminTabContent = ({
         )}
         {agenciesUserIsAdminOn.length > 0 && (
           <AgencyRightsTable
+            mode="other-rights"
             agencyRights={agenciesUserIsAdminOn}
             user={currentUser}
             title={`Organismes sur lesquels vous êtes administrateur (${agenciesUserIsAdminOn.length} organismes)`}
@@ -155,6 +171,7 @@ export const AgencyAdminTabContent = ({
 
         {agenciesUserIsNotAdminOn.length > 0 && (
           <AgencyRightsTable
+            mode="other-rights"
             agencyRights={agenciesUserIsNotAdminOn}
             user={currentUser}
             title={`Organismes auxquels vous êtes rattaché (${agenciesUserIsNotAdminOn.length} organismes)`}
@@ -163,6 +180,25 @@ export const AgencyAdminTabContent = ({
               "agency-user-for-dashboard",
             )}
           />
+        )}
+        <SelfRemoveUserAgencyRightFeedback />
+
+        {toReviewAgencyRights.length > 0 && (
+          <>
+            <h2 className={fr.cx("fr-h4")}>
+              Mes demandes d'accès envoyées ({toReviewAgencyRights.length}{" "}
+              {toReviewAgencyRights.length === 1 ? "organisme" : "organismes"})
+            </h2>
+
+            <AgencyRightsTable
+              mode="rights-to-review"
+              agencyRights={toReviewAgencyRights}
+              user={currentUser}
+              onUserRegistrationCancelledRequested={onUserRegistrationCancelledRequested(
+                "user",
+              )}
+            />
+          </>
         )}
       </HeadingSection>
     </>
