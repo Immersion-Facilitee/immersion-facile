@@ -202,9 +202,12 @@ export const ConnectedPrivateRoutePage = ({
   }, [authIsLoading, isConnectedUser, afterLoginRedirectionUrl, dispatch]);
 
   const page = getAllowedStartAuthPage(route.name, route.params);
+  const loginPersonaFromQuery = getLoginPersonaFromRouteParams(route.params);
 
   const [selectedLoginPersona, setSelectedLoginPersona] =
-    useState<LoginPersona | null>(loginPersonaByLoginSource[page]);
+    useState<LoginPersona | null>(
+      loginPersonaFromQuery ?? loginPersonaByLoginSource[page],
+    );
 
   const alreadyUsedAuthentication = route.params.alreadyUsedAuthentication;
 
@@ -417,6 +420,13 @@ const getAllowedStartAuthPage = (
 };
 
 type LoginPersona = "professional" | "beneficiary";
+
+const getLoginPersonaFromRouteParams = (
+  routeParams: ConnectPrivateRoute["params"],
+): LoginPersona | undefined => {
+  if (!("loginPersona" in routeParams)) return undefined;
+  return routeParams.loginPersona;
+};
 
 const loginPersonaByLoginSource: Record<
   AllowedLoginSource,
