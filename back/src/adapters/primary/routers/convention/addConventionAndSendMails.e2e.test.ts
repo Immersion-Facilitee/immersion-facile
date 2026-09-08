@@ -90,9 +90,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       },
     ]);
 
-    // 1. initial submission, needs PE bind usecase
-    await eventCrawler.processNewEvents();
-    // 2. actual processing of the event
     await processEventsForEmailToBeSent(eventCrawler);
 
     expectSentEmails(gateways.notification, [
@@ -229,8 +226,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       convention,
     );
 
-    // needs extra processing to bind PE connect
-    await eventCrawler.processNewEvents();
     await processEventsForEmailToBeSent(eventCrawler);
 
     expect(inMemoryUow.notificationRepository.notifications).toHaveLength(3);
