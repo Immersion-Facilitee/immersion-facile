@@ -112,8 +112,8 @@ const establishmentContactPhoneSchema = z.object({
   isMainContactByPhone: zBoolean.optional(),
 });
 
-const establishmentContactSchema = establishmentContactBaseSchema.and(
-  establishmentContactPhoneSchema,
+const establishmentContactSchema = establishmentContactBaseSchema.extend(
+  establishmentContactPhoneSchema.shape,
 );
 
 const establishmentAdminSchema = z.object({
@@ -130,7 +130,10 @@ const establishmentAdminSchema = z.object({
 });
 
 export const formEstablishmentUserRightSchema: ZodSchemaWithInputMatchingOutput<FormEstablishmentUserRight> =
-  establishmentAdminSchema.or(establishmentContactSchema);
+  z.discriminatedUnion("role", [
+    establishmentAdminSchema,
+    establishmentContactSchema,
+  ]);
 
 export const establishmentFormOfferSchema: ZodSchemaWithInputMatchingOutput<EstablishmentFormOffer> =
   appellationAndRomeDtoSchema.and(withRemoteWorkModeSchema);

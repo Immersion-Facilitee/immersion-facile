@@ -64,7 +64,6 @@ export const AgencyUsersTable = ({
     <>
       {agencyUsers.length > 0 ? (
         <Table
-          fixed
           id={tableId}
           headers={[
             "Utilisateurs",
