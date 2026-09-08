@@ -57,10 +57,38 @@ describe("GetAssessmentByConventionId", () => {
     .withId("agencyViewer")
     .withEmail("agencyViewer@email.com")
     .buildUser();
-  const convention = new ConventionDtoBuilder().withAgencyId(agency.id).build();
+  const convention = new ConventionDtoBuilder()
+    .withAgencyId(agency.id)
+    .withBeneficiaryRepresentative({
+      role: "beneficiary-representative",
+      email: "benef-rep@email.com",
+      firstName: "Bob",
+      lastName: "Rep",
+      phone: "+33665565432",
+    })
+    .withBeneficiaryCurrentEmployer({
+      role: "beneficiary-current-employer",
+      email: "benef-employer@email.com",
+      firstName: "Jean",
+      lastName: "Employeur",
+      phone: "+33665565433",
+      job: "Boss",
+      businessSiret: "01234567891234",
+      businessName: "business",
+      businessAddress: "Rue des Bouchers 67065 Strasbourg",
+    })
+    .build();
   const beneficiary = new ConnectedUserBuilder()
     .withId("beneficiary")
     .withEmail(convention.signatories.beneficiary.email)
+    .buildUser();
+  const beneficiaryRepresentative = new ConnectedUserBuilder()
+    .withId("beneficiary-representative")
+    .withEmail("benef-rep@email.com")
+    .buildUser();
+  const beneficiaryCurrentEmployer = new ConnectedUserBuilder()
+    .withId("beneficiary-current-employer")
+    .withEmail("benef-employer@email.com")
     .buildUser();
   const establishmentRepresentative = new ConnectedUserBuilder()
     .withId("establishment-representative")
@@ -94,6 +122,7 @@ describe("GetAssessmentByConventionId", () => {
       "validator",
       "counsellor",
       "beneficiary",
+      "beneficiary-representative",
     ],
   );
 
@@ -123,6 +152,8 @@ describe("GetAssessmentByConventionId", () => {
       agencyAdmin,
       agencyViewer,
       beneficiary,
+      beneficiaryRepresentative,
+      beneficiaryCurrentEmployer,
       establishmentRepresentative,
       establishmentTutorUser,
       userWithoutRoleOnConvention,
@@ -182,6 +213,18 @@ describe("GetAssessmentByConventionId", () => {
           { conventionId: convention.id },
           {
             userId: userWithoutRoleOnConvention.id,
+          },
+        ),
+        errors.assessment.forbidden("GetAssessment"),
+      );
+    });
+
+    it("throws forbidden if connected user is beneficiary-current-employer", async () => {
+      await expectPromiseToFailWithError(
+        getAssessment.execute(
+          { conventionId: convention.id },
+          {
+            userId: beneficiaryCurrentEmployer.id,
           },
         ),
         errors.assessment.forbidden("GetAssessment"),
@@ -266,6 +309,7 @@ describe("GetAssessmentByConventionId", () => {
     describe("with connected user", () => {
       it.each([
         ["beneficiary", beneficiary.id],
+        ["beneficiary-representative", beneficiaryRepresentative.id],
         ["validator", validator.id],
         ["counsellor", counsellor.id],
         ["back-office admin", backOfficeAdmin.id],

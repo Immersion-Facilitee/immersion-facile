@@ -3,6 +3,7 @@ import { subDays, subHours } from "date-fns";
 import {
   AgencyDtoBuilder,
   CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS,
+  type ConnectedUser,
   ConnectedUserBuilder,
   type ConnectedUserDomainJwtPayload,
   ConventionDtoBuilder,
@@ -56,6 +57,27 @@ const convention = new ConventionDtoBuilder()
   .withEstablishmentRepresentativeEmail("establishment-representative@mail.com")
   .build();
 
+const conventionWithAllSignatories = new ConventionDtoBuilder(convention)
+  .withBeneficiaryRepresentative({
+    role: "beneficiary-representative",
+    email: "beneficiary-representative@mail.com",
+    phone: "+33622222222",
+    firstName: "Marie",
+    lastName: "Dupont",
+  })
+  .withBeneficiaryCurrentEmployer({
+    role: "beneficiary-current-employer",
+    email: "beneficiary-current-employer@mail.com",
+    phone: "+33633333333",
+    firstName: "Jean",
+    lastName: "Martin",
+    job: "Manager",
+    businessSiret: "98765432109876",
+    businessName: "Entreprise Actuelle",
+    businessAddress: "123 rue de l'emploi, 75001 Paris",
+  })
+  .build();
+
 const agency = new AgencyDtoBuilder().withId(convention.agencyId).build();
 
 const viewerJwtPayload = createConventionMagicLinkPayload({
@@ -106,6 +128,24 @@ const connectedBeneficiaryPayload: ConnectedUserDomainJwtPayload = {
 const connectedBeneficiaryUser = new ConnectedUserBuilder()
   .withId(connectedBeneficiaryPayload.userId)
   .withEmail(convention.signatories.beneficiary.email)
+  .build();
+
+const connectedBeneficiaryRepresentativePayload: ConnectedUserDomainJwtPayload =
+  {
+    userId: "bcc5c20e-6dd2-45cf-affe-927358005265",
+  };
+const connectedBeneficiaryRepresentativeUser = new ConnectedUserBuilder()
+  .withId(connectedBeneficiaryRepresentativePayload.userId)
+  .withEmail("beneficiary-representative@mail.com")
+  .build();
+
+const connectedBeneficiaryCurrentEmployerPayload: ConnectedUserDomainJwtPayload =
+  {
+    userId: "bcc5c20e-6dd2-45cf-affe-927358005266",
+  };
+const connectedBeneficiaryCurrentEmployerUser = new ConnectedUserBuilder()
+  .withId(connectedBeneficiaryCurrentEmployerPayload.userId)
+  .withEmail("beneficiary-current-employer@mail.com")
   .build();
 
 describe("Send signature link", () => {
@@ -692,15 +732,42 @@ describe("Send signature link", () => {
         },
       );
 
-      it.each(["beneficiary", "establishment-representative"] as const)(
-        "When connected beneficiary triggers it for %s",
-        async (signatoryRole) => {
+      it.each([
+        {
+          connectedRole: "beneficiary",
+          user: connectedBeneficiaryUser,
+          signatoryRole: "beneficiary",
+        },
+        {
+          connectedRole: "beneficiary",
+          user: connectedBeneficiaryUser,
+          signatoryRole: "establishment-representative",
+        },
+        {
+          connectedRole: "beneficiary-representative",
+          user: connectedBeneficiaryRepresentativeUser,
+          signatoryRole: "establishment-representative",
+        },
+        {
+          connectedRole: "beneficiary-current-employer",
+          user: connectedBeneficiaryCurrentEmployerUser,
+          signatoryRole: "establishment-representative",
+        },
+      ] satisfies {
+        connectedRole: SignatoryRole;
+        user: ConnectedUser;
+        signatoryRole: SignatoryRole;
+      }[])(
+        "When connected $connectedRole triggers it for $signatoryRole",
+        async ({ user, signatoryRole }) => {
           const shortLinkId = "link1";
           shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
 
-          uow.conventionRepository.setConventions([convention]);
+          uow.conventionRepository.setConventions([
+            conventionWithAllSignatories,
+          ]);
           uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
-          uow.userRepository.users = [connectedBeneficiaryUser];
+          uow.userRepository.users = [user];
 
           await usecase.execute(
             {
@@ -708,25 +775,26 @@ describe("Send signature link", () => {
               signatoryRole,
               notificationKind: "sms",
             },
-            connectedBeneficiaryPayload,
+            { userId: user.id },
           );
 
           const recipient =
             signatoryRole === "beneficiary"
-              ? convention.signatories.beneficiary
-              : convention.signatories.establishmentRepresentative;
+              ? conventionWithAllSignatories.signatories.beneficiary
+              : conventionWithAllSignatories.signatories
+                  .establishmentRepresentative;
 
           expectObjectInArrayToMatch(uow.outboxRepository.events, [
             { topic: "NotificationAdded" },
             {
               topic: "ConventionSignatureLinkManuallySent",
               payload: {
-                convention,
+                convention: conventionWithAllSignatories,
                 recipientRole: signatoryRole,
                 transport: "sms",
                 triggeredBy: {
                   kind: "connected-user",
-                  userId: connectedBeneficiaryUser.id,
+                  userId: user.id,
                 },
               },
             },
@@ -735,10 +803,10 @@ describe("Send signature link", () => {
             {
               kind: "sms",
               followedIds: {
-                conventionId: convention.id,
-                agencyId: convention.agencyId,
-                establishmentSiret: convention.siret,
-                userId: connectedBeneficiaryUser.id,
+                conventionId: conventionWithAllSignatories.id,
+                agencyId: conventionWithAllSignatories.agencyId,
+                establishmentSiret: conventionWithAllSignatories.siret,
+                userId: user.id,
               },
               templatedContent: {
                 recipientPhone: recipient.phone,
@@ -1012,29 +1080,6 @@ describe("Send signature link", () => {
           });
           const shortLinkId = "link1";
           shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-
-          const conventionWithAllSignatories = new ConventionDtoBuilder(
-            convention,
-          )
-            .withBeneficiaryRepresentative({
-              role: "beneficiary-representative",
-              email: "beneficiary-representative@mail.com",
-              phone: "+33622222222",
-              firstName: "Marie",
-              lastName: "Dupont",
-            })
-            .withBeneficiaryCurrentEmployer({
-              role: "beneficiary-current-employer",
-              email: "beneficiary-current-employer@mail.com",
-              phone: "+33633333333",
-              firstName: "Jean",
-              lastName: "Martin",
-              job: "Manager",
-              businessSiret: "98765432109876",
-              businessName: "Entreprise Actuelle",
-              businessAddress: "123 rue de l'emploi, 75001 Paris",
-            })
-            .build();
 
           uow.conventionRepository.setConventions([
             conventionWithAllSignatories,
