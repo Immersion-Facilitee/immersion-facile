@@ -508,7 +508,8 @@ export class PgConventionRepository implements ConventionRepository {
           'isRqth',  ${beneficiary.isRqth}::boolean,
           'schoolName',  ${studentFields.schoolName}::text,
           'schoolPostcode',  ${studentFields.schoolPostcode}::text,
-          'address', ${studentFields.address}::jsonb
+          'address', ${studentFields.address}::jsonb,
+          'federatedIdentity', ${beneficiary.federatedIdentity}::jsonb
       ))`,
       })
       .from("conventions")

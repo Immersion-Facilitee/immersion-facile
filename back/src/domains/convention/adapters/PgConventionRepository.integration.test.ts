@@ -544,7 +544,7 @@ describe("PgConventionRepository", () => {
     );
   });
 
-  it("Updates an already saved immersion", async () => {
+  it("Updates an already saved convention", async () => {
     const idA: ConventionId = "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa";
     const convention = conventionStylisteBuilder
       .withId(idA)
@@ -563,6 +563,18 @@ describe("PgConventionRepository", () => {
       .withDateEnd(new Date("2024-10-24").toISOString())
       .withEstablishmentNumberOfEmployeesRange("200-249")
       .withBusinessNameCustomized("Enseigne mise à jour")
+      .withFederatedIdentity({
+        provider: "ftConnect",
+        token: "123456",
+        payload: {
+          advisor: {
+            email: "dude@mail.com",
+            firstName: "Billy",
+            lastName: "Idol",
+            type: "CAPEMPLOI",
+          },
+        },
+      })
       .build();
 
     await conventionRepository.update(
