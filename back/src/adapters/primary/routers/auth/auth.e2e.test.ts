@@ -550,6 +550,14 @@ describe("auth router", () => {
                     federatedIdentity: {
                       provider: "ftConnect",
                       token: ftConnectExternalId,
+                      payload: {
+                        advisor: {
+                          type: "PLACEMENT",
+                          firstName: "Alice",
+                          lastName: "Martin",
+                          email: "conseiller@francetravail.fr",
+                        },
+                      },
                     },
                   },
                 },

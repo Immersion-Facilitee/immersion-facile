@@ -1321,7 +1321,7 @@ export const errors = {
       ),
     ) =>
       new BadRequestError(
-        `${badSchemaErrorMessagePrefix} ${"schemaName" in params ? `for schema ${params.schemaName}` : `in usecase ${params.useCaseName}`}${params.id ? ` for element with id ${params.id}` : ""}. See issues for details.}`,
+        `${badSchemaErrorMessagePrefix} ${"schemaName" in params ? `for schema ${params.schemaName}` : `in usecase ${params.useCaseName}`}${params.id ? ` for element with id ${params.id}` : ""}. See issues for details.`,
         params.flattenErrors,
       ),
   },
