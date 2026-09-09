@@ -4,18 +4,15 @@ import {
   type ConventionDto,
   executeInSequence,
   filterNotFalsy,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
   type Signatory,
   type TemplatedEmail,
   withConventionSchema,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
-import type { GenerateConventionMagicLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
-import type { ShortLinkIdGeneratorGateway } from "../../../core/short-link/ports/ShortLinkIdGeneratorGateway";
-import { prepareConventionMagicShortLinkMaker } from "../../../core/short-link/ShortLink";
-import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
-import type { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 import { retrieveConventionWithAgency } from "../../entities/Convention";
 
@@ -27,11 +24,8 @@ export type NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificat
   >;
 
 type Deps = {
-  timeGateway: TimeGateway;
-  shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
   config: AppConfig;
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-  generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
 };
 
 export const makeNotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification =
@@ -50,12 +44,11 @@ export const makeNotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModi
         async (signatory) =>
           deps.saveNotificationAndRelatedEvent(uow, {
             kind: "email",
-            templatedContent: await makeEmail(
+            templatedContent: makeEmail(
               signatory,
               conventionReadDto,
               agency,
-              uow,
-              deps,
+              deps.config,
             ),
             followedIds: {
               conventionId: conventionReadDto.id,
@@ -66,18 +59,12 @@ export const makeNotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModi
       );
     });
 
-const makeEmail = async (
+const makeEmail = (
   signatory: Signatory,
   convention: ConventionDto,
   agency: AgencyWithUsersRights,
-  uow: UnitOfWork,
-  {
-    timeGateway,
-    config,
-    generateConventionMagicLinkUrl,
-    shortLinkIdGeneratorGateway,
-  }: Deps,
-): Promise<TemplatedEmail> => ({
+  config: AppConfig,
+): TemplatedEmail => ({
   kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE_AFTER_MODIFICATION",
   recipients: [signatory.email],
   params: {
@@ -90,23 +77,16 @@ const makeEmail = async (
     }),
     businessName: convention.businessName,
     conventionId: convention.id,
-    conventionSignShortlink: await prepareConventionMagicShortLinkMaker({
-      conventionMagicLinkPayload: {
-        id: convention.id,
-        role: signatory.role,
-        email: signatory.email,
-        now: timeGateway.now(),
-      },
-      uow,
-      config,
-      generateConventionMagicLinkUrl,
-      shortLinkIdGeneratorGateway,
-    })({
-      targetRoute: "conventionToSign",
-      lifetime: "2Days",
-      extraQueryParams: {
+    conventionSignatureLink: makeRouteAbsoluteUrl({
+      route: frontRoutes.manageConventionConnectedUser({
+        conventionId: convention.id,
+        loginPersona:
+          signatory.role === "establishment-representative"
+            ? "professional"
+            : "beneficiary",
         at_campaign: "email-signature-link-after-modification",
-      },
+      }),
+      baseUrl: config.immersionFacileBaseUrl,
     }),
     justification: convention.statusJustification ?? NO_JUSTIFICATION,
     signatoryFirstName: getFormattedFirstnameAndLastname({

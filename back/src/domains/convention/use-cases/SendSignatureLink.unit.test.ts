@@ -544,7 +544,7 @@ describe("Send signature link", () => {
                   lastname:
                     convention.signatories.beneficiaryCurrentEmployer.lastName,
                 }),
-              conventionSignShortlink: makeShortLinkUrl(config, "shortLink"),
+              conventionSignatureLink: makeShortLinkUrl(config, "shortLink"),
               businessName: convention.businessName,
               agencyLogoUrl: undefined,
             },
@@ -1267,7 +1267,7 @@ describe("Send signature link", () => {
                       convention.signatories.beneficiaryCurrentEmployer
                         .lastName,
                   }),
-                conventionSignShortlink: makeShortLinkUrl(config, shortLinkId),
+                conventionSignatureLink: makeShortLinkUrl(config, shortLinkId),
                 businessName: convention.businessName,
                 agencyLogoUrl: undefined,
               },

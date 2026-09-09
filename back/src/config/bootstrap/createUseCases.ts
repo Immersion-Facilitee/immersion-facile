@@ -1280,10 +1280,7 @@ export const createUseCases = ({
         uowPerformer,
         deps: {
           config,
-          generateConventionMagicLinkUrl,
           saveNotificationAndRelatedEvent,
-          shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
-          timeGateway,
         },
       }),
     notifySignatoriesThatConventionSubmittedNeedsSignatureAfterNotification:
@@ -1291,11 +1288,8 @@ export const createUseCases = ({
         {
           uowPerformer,
           deps: {
-            timeGateway,
-            shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
             config,
             saveNotificationAndRelatedEvent,
-            generateConventionMagicLinkUrl,
           },
         },
       ),

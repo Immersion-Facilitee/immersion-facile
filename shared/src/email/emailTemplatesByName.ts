@@ -2434,7 +2434,7 @@ Tél : ${beneficiaryPhone}`,
         establishmentRepresentativeName,
         establishmentTutorName,
         internshipKind,
-        conventionSignShortlink,
+        conventionSignatureLink,
         signatoryName,
         renewed,
       }) => ({
@@ -2476,9 +2476,9 @@ Tél : ${beneficiaryPhone}`,
             } de valider la convention. Merci !
           
           <strong>Ouvrez la demande via le bouton ci-dessous puis vérifiez les informations :</strong>
-          - Si les informations sont correctes, cliquez sur “Signer” puis “Je termine la signature” sur l’écran suivant.
-          - Si les informations ne sont pas correctes, cliquez sur le bouton "Annuler les signatures et demander une modification".`,
-        buttons: [{ url: conventionSignShortlink, label: "Ouvrir ma demande" }],
+          - Si les informations sont correctes, cliquez sur “Signer la convention”.
+          - Si les informations ne sont pas correctes, cliquez sur le bouton "Modifier une autre information".`,
+        buttons: [{ url: conventionSignatureLink, label: "Ouvrir ma demande" }],
         highlight: {
           content: `Attention, ne démarrez pas votre ${
             internshipKind === "immersion" ? "immersion" : "mini stage"
@@ -2517,7 +2517,7 @@ Tél : ${beneficiaryPhone}`,
         beneficiaryLastName,
         businessName,
         conventionId,
-        conventionSignShortlink,
+        conventionSignatureLink,
         internshipKind,
         justification,
         signatoryFirstName,
@@ -2542,7 +2542,7 @@ Tél : ${beneficiaryPhone}`,
         Votre signature sur la première demande de convention a donc été annulée.`,
         buttons: [
           {
-            url: conventionSignShortlink,
+            url: conventionSignatureLink,
             label: "Signer ou modifier la demande",
           },
         ],

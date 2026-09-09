@@ -624,7 +624,7 @@ describe("Get Convention", () => {
               establishmentRepresentativeName: "Establishment Rep",
               establishmentTutorName: "Tutor",
               internshipKind: convention.internshipKind,
-              conventionSignShortlink: "https://short.link",
+              conventionSignatureLink: "https://short.link",
               signatoryName: "Signatory",
             },
           },

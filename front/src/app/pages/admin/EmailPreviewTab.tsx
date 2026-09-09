@@ -628,7 +628,8 @@ export const defaultEmailValueByEmailKind: {
     establishmentRepresentativeName: "ESTABLISHMENT_REPRESENTATIVE_NAME",
     establishmentTutorName: "ESTABLISHMENT_TUTOR_NAME",
     internshipKind: "immersion",
-    conventionSignShortlink: "CONVENTION_SIGN_MAGIC_LINK",
+    conventionSignatureLink:
+      "http://MANAGE_CONVENTION_CONNECTED_USER?loginPersona=beneficiary",
     signatoryName: "SIGNATORY_NAME",
     beneficiaryCurrentEmployerName: "CURRENT_EMPLOYER_NAME",
     renewed: {
@@ -642,7 +643,8 @@ export const defaultEmailValueByEmailKind: {
     beneficiaryLastName: "BENEFICIARY_LAST_NAME",
     businessName: "BUSINESS_NAME",
     conventionId: "CONVENTION_ID",
-    conventionSignShortlink: "http://www.google.fr",
+    conventionSignatureLink:
+      "http://MANAGE_CONVENTION_CONNECTED_USER?loginPersona=beneficiary",
     internshipKind: "immersion",
     justification: "REASON",
     signatoryFirstName: "SIGNATORY_FIRST_NAME",

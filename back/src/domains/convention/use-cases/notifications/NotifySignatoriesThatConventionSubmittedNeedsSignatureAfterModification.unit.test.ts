@@ -3,20 +3,18 @@ import {
   ConventionDtoBuilder,
   errors,
   expectPromiseToFailWithError,
-  expectToEqual,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../../utils/agency";
-import { fakeGenerateMagicLinkUrlFn } from "../../../../utils/jwtTestHelper";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
 import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
-import { DeterministShortLinkIdGeneratorGateway } from "../../../core/short-link/adapters/short-link-generator-gateway/DeterministShortLinkIdGeneratorGateway";
-import { makeShortLinkUrl } from "../../../core/short-link/ShortLink";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
@@ -33,27 +31,21 @@ import {
 describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification", () => {
   let useCase: NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification;
   let config: AppConfig;
-  let shortLinkGenerator: DeterministShortLinkIdGeneratorGateway;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
   let uow: InMemoryUnitOfWork;
-  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
     config = new AppConfigBuilder({}).build();
-    shortLinkGenerator = new DeterministShortLinkIdGeneratorGateway();
 
     uow = createInMemoryUow();
     const uuidGenerator = new UuidV4Generator();
-    timeGateway = new CustomTimeGateway(new Date());
+    const timeGateway = new CustomTimeGateway(new Date());
     useCase =
       makeNotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification(
         {
           uowPerformer: new InMemoryUowPerformer(uow),
           deps: {
-            timeGateway,
             config,
-            shortLinkIdGeneratorGateway: shortLinkGenerator,
-            generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
             saveNotificationAndRelatedEvent:
               makeSaveNotificationAndRelatedEvent(uuidGenerator, timeGateway),
           },
@@ -67,11 +59,9 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
 
   describe("Right paths", () => {
     const agency = new AgencyDtoBuilder().build();
-    const shortLinks = ["shortLink1", "shortLink2", "shortLink3", "shortLink4"];
 
     beforeEach(() => {
       uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
-      shortLinkGenerator.addMoreShortLinkIds(shortLinks);
     });
 
     it("Convention with minimal signatories", async () => {
@@ -86,39 +76,6 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
       uow.conventionRepository.setConventions([convention]);
 
       await useCase.execute({ convention });
-
-      expectToEqual(uow.shortLinkQuery.getShortLinks(), [
-        {
-          id: shortLinks[0],
-          url: fakeGenerateMagicLinkUrlFn({
-            id: convention.id,
-            role: convention.signatories.beneficiary.role,
-            email: convention.signatories.beneficiary.email,
-            now: timeGateway.now(),
-            targetRoute: "conventionToSign",
-            lifetime: "2Days",
-            extraQueryParams: {
-              at_campaign: "email-signature-link-after-modification",
-            },
-          }),
-          lastUsedAt: null,
-        },
-        {
-          id: shortLinks[1],
-          url: fakeGenerateMagicLinkUrlFn({
-            id: convention.id,
-            role: convention.signatories.establishmentRepresentative.role,
-            email: convention.signatories.establishmentRepresentative.email,
-            now: timeGateway.now(),
-            targetRoute: "conventionToSign",
-            lifetime: "2Days",
-            extraQueryParams: {
-              at_campaign: "email-signature-link-after-modification",
-            },
-          }),
-          lastUsedAt: null,
-        },
-      ]);
 
       expectSavedNotificationsAndEvents({
         emails: [
@@ -135,7 +92,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[0]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "beneficiary",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -161,7 +125,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[1]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "professional",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -203,7 +174,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[0]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "beneficiary",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               internshipKind: convention.internshipKind,
               justification: NO_JUSTIFICATION,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -229,7 +207,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[1]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "professional",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               internshipKind: convention.internshipKind,
               justification: NO_JUSTIFICATION,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -293,7 +278,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[0]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "beneficiary",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -319,7 +311,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[1]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "professional",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -348,7 +347,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[2]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "beneficiary",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: convention.signatories
@@ -384,7 +390,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[3]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "beneficiary",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: convention.signatories
@@ -463,7 +476,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
             ],
             params: {
               ...commonEmailParams,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[0]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "professional",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               signatoryFirstName: getFormattedFirstnameAndLastname({
                 firstname:
                   convention.signatories.establishmentRepresentative.firstName,
@@ -482,7 +502,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
             ],
             params: {
               ...commonEmailParams,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[1]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "beneficiary",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               signatoryFirstName: convention.signatories
                 .beneficiaryRepresentative
                 ? getFormattedFirstnameAndLastname({
@@ -508,7 +535,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
             ],
             params: {
               ...commonEmailParams,
-              conventionSignShortlink: makeShortLinkUrl(config, shortLinks[2]),
+              conventionSignatureLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "beneficiary",
+                  at_campaign: "email-signature-link-after-modification",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
               signatoryFirstName: convention.signatories
                 .beneficiaryCurrentEmployer
                 ? getFormattedFirstnameAndLastname({
