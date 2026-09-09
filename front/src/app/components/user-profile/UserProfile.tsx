@@ -192,7 +192,7 @@ export const UserProfile = ({
                   }
                   priority="primary"
                   linkProps={
-                    frontRoutes.myAccountEstablishmentRegistration({}).link
+                    frontRoutes.myAccountEstablishmentRegistration().link
                   }
                   className={fr.cx("fr-ml-auto")}
                   iconId="fr-icon-add-line"
