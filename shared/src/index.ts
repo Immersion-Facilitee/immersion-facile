@@ -82,6 +82,7 @@ export * from "./establishment/bannedEstablishmentInformations.dto";
 export * from "./establishment/bannedEstablishmentInformations.schema";
 export * from "./establishment/establishment.dto";
 export * from "./establishment/establishment.schema";
+export * from "./establishment/establishment.utils";
 export * from "./establishment/superEstablishment";
 export * from "./featureFlag/featureFlags.dto";
 export * from "./featureFlag/featureFlags.schema";
