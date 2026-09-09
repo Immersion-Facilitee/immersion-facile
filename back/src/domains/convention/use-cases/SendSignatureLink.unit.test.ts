@@ -14,7 +14,9 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
   type Notification,
   type SignatoryRole,
   UserBuilder,
@@ -23,7 +25,6 @@ import {
 import { AppConfigBuilder } from "../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
-import { fakeGenerateMagicLinkUrlFn } from "../../../utils/jwtTestHelper";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import {
   makeSaveNotificationAndRelatedEvent,
@@ -171,7 +172,6 @@ describe("Send signature link", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         saveNotificationAndRelatedEvent,
-        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
         timeGateway,
         shortLinkIdGeneratorGateway,
         config,
@@ -682,14 +682,13 @@ describe("Send signature link", () => {
           expectToEqual(uow.shortLinkQuery.getShortLinks(), [
             {
               id: shortLinkId,
-              url: fakeGenerateMagicLinkUrlFn({
-                id: convention.id,
-                role: convention.signatories.establishmentRepresentative.role,
-                email: convention.signatories.establishmentRepresentative.email,
-                now: timeGateway.now(),
-                targetRoute: "conventionToSign",
-                lifetime: "2Days",
-                extraQueryParams: { at_campaign: "sms-signature-link" },
+              url: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: convention.id,
+                  loginPersona: "professional",
+                  at_campaign: "sms-signature-link",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
               }),
               lastUsedAt: null,
             },
@@ -783,6 +782,24 @@ describe("Send signature link", () => {
               ? conventionWithAllSignatories.signatories.beneficiary
               : conventionWithAllSignatories.signatories
                   .establishmentRepresentative;
+
+          expectToEqual(uow.shortLinkQuery.getShortLinks(), [
+            {
+              id: shortLinkId,
+              url: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: conventionWithAllSignatories.id,
+                  loginPersona:
+                    signatoryRole === "establishment-representative"
+                      ? "professional"
+                      : "beneficiary",
+                  at_campaign: "sms-signature-link",
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
+              lastUsedAt: null,
+            },
+          ]);
 
           expectObjectInArrayToMatch(uow.outboxRepository.events, [
             { topic: "NotificationAdded" },
@@ -1169,112 +1186,133 @@ describe("Send signature link", () => {
 
   describe("Right paths: send signature link email", () => {
     describe("from connected user", () => {
-      it("sends signature link by email", async () => {
-        const shortLinkId = "link1";
-        shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-        uow.conventionRepository.setConventions([convention]);
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [connectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: false,
+      it.each([
+        {
+          signatoryRole: "beneficiary",
+          loginPersona: "beneficiary",
+        },
+        {
+          signatoryRole: "establishment-representative",
+          loginPersona: "professional",
+        },
+      ] satisfies {
+        signatoryRole: SignatoryRole;
+        loginPersona: "beneficiary" | "professional";
+      }[])(
+        "sends signature link by email to $signatoryRole",
+        async ({ signatoryRole, loginPersona }) => {
+          uow.conventionRepository.setConventions([convention]);
+          uow.agencyRepository.agencies = [
+            toAgencyWithRights(agency, {
+              [connectedUser.id]: {
+                roles: ["validator"],
+                isNotifiedByEmail: false,
+              },
+            }),
+          ];
+          uow.userRepository.users = [connectedUser];
+
+          await usecase.execute(
+            {
+              conventionId,
+              signatoryRole,
+              notificationKind: "email",
             },
-          }),
-        ];
-        uow.userRepository.users = [connectedUser];
+            connectedUserPayload,
+          );
 
-        await usecase.execute(
-          {
-            conventionId,
-            signatoryRole: "establishment-representative",
-            notificationKind: "email",
-          },
-          connectedUserPayload,
-        );
+          const recipient =
+            signatoryRole === "beneficiary"
+              ? convention.signatories.beneficiary
+              : convention.signatories.establishmentRepresentative;
 
-        expectObjectInArrayToMatch(uow.outboxRepository.events, [
-          { topic: "NotificationAdded" },
-          {
-            topic: "ConventionSignatureLinkManuallySent",
-            payload: {
-              convention,
-              recipientRole: "establishment-representative",
-              transport: "email",
-              triggeredBy: {
-                kind: "connected-user",
-                userId: connectedUser.id,
+          expectObjectInArrayToMatch(uow.outboxRepository.events, [
+            { topic: "NotificationAdded" },
+            {
+              topic: "ConventionSignatureLinkManuallySent",
+              payload: {
+                convention,
+                recipientRole: signatoryRole,
+                transport: "email",
+                triggeredBy: {
+                  kind: "connected-user",
+                  userId: connectedUser.id,
+                },
               },
             },
-          },
-        ]);
-        expectToEqual(uow.shortLinkQuery.getShortLinks().length, 1);
-        expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-          {
-            kind: "email",
-            followedIds: {
-              conventionId: convention.id,
-              agencyId: convention.agencyId,
-              establishmentSiret: convention.siret,
-            },
-            templatedContent: {
-              kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
-              recipients: [
-                convention.signatories.establishmentRepresentative.email,
-              ],
-              params: {
+          ]);
+          expectToEqual(uow.shortLinkQuery.getShortLinks(), []);
+          expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+            {
+              kind: "email",
+              followedIds: {
                 conventionId: convention.id,
-                internshipKind: convention.internshipKind,
-                signatoryName: getFormattedFirstnameAndLastname({
-                  firstname:
-                    convention.signatories.establishmentRepresentative
-                      .firstName,
-                  lastname:
-                    convention.signatories.establishmentRepresentative.lastName,
-                }),
-                beneficiaryName: getFormattedFirstnameAndLastname({
-                  firstname: convention.signatories.beneficiary.firstName,
-                  lastname: convention.signatories.beneficiary.lastName,
-                }),
-                establishmentTutorName: getFormattedFirstnameAndLastname({
-                  firstname: convention.establishmentTutor.firstName,
-                  lastname: convention.establishmentTutor.lastName,
-                }),
-                establishmentRepresentativeName:
-                  getFormattedFirstnameAndLastname({
-                    firstname:
-                      convention.signatories.establishmentRepresentative
-                        .firstName,
-                    lastname:
-                      convention.signatories.establishmentRepresentative
-                        .lastName,
+                agencyId: convention.agencyId,
+                establishmentSiret: convention.siret,
+              },
+              templatedContent: {
+                kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
+                recipients: [recipient.email],
+                params: {
+                  conventionId: convention.id,
+                  internshipKind: convention.internshipKind,
+                  signatoryName: getFormattedFirstnameAndLastname({
+                    firstname: recipient.firstName,
+                    lastname: recipient.lastName,
                   }),
-                beneficiaryRepresentativeName:
-                  convention.signatories.beneficiaryRepresentative &&
-                  getFormattedFirstnameAndLastname({
-                    firstname:
-                      convention.signatories.beneficiaryRepresentative
-                        .firstName,
-                    lastname:
-                      convention.signatories.beneficiaryRepresentative.lastName,
+                  beneficiaryName: getFormattedFirstnameAndLastname({
+                    firstname: convention.signatories.beneficiary.firstName,
+                    lastname: convention.signatories.beneficiary.lastName,
                   }),
-                beneficiaryCurrentEmployerName:
-                  convention.signatories.beneficiaryCurrentEmployer &&
-                  getFormattedFirstnameAndLastname({
-                    firstname:
-                      convention.signatories.beneficiaryCurrentEmployer
-                        .firstName,
-                    lastname:
-                      convention.signatories.beneficiaryCurrentEmployer
-                        .lastName,
+                  establishmentTutorName: getFormattedFirstnameAndLastname({
+                    firstname: convention.establishmentTutor.firstName,
+                    lastname: convention.establishmentTutor.lastName,
                   }),
-                conventionSignatureLink: makeShortLinkUrl(config, shortLinkId),
-                businessName: convention.businessName,
-                agencyLogoUrl: undefined,
+                  establishmentRepresentativeName:
+                    getFormattedFirstnameAndLastname({
+                      firstname:
+                        convention.signatories.establishmentRepresentative
+                          .firstName,
+                      lastname:
+                        convention.signatories.establishmentRepresentative
+                          .lastName,
+                    }),
+                  beneficiaryRepresentativeName:
+                    convention.signatories.beneficiaryRepresentative &&
+                    getFormattedFirstnameAndLastname({
+                      firstname:
+                        convention.signatories.beneficiaryRepresentative
+                          .firstName,
+                      lastname:
+                        convention.signatories.beneficiaryRepresentative
+                          .lastName,
+                    }),
+                  beneficiaryCurrentEmployerName:
+                    convention.signatories.beneficiaryCurrentEmployer &&
+                    getFormattedFirstnameAndLastname({
+                      firstname:
+                        convention.signatories.beneficiaryCurrentEmployer
+                          .firstName,
+                      lastname:
+                        convention.signatories.beneficiaryCurrentEmployer
+                          .lastName,
+                    }),
+                  conventionSignatureLink: makeRouteAbsoluteUrl({
+                    route: frontRoutes.manageConventionConnectedUser({
+                      conventionId: convention.id,
+                      loginPersona,
+                      at_campaign: "email-signature-link",
+                    }),
+                    baseUrl: config.immersionFacileBaseUrl,
+                  }),
+                  businessName: convention.businessName,
+                  agencyLogoUrl: undefined,
+                },
               },
             },
-          },
-        ]);
-      });
+          ]);
+        },
+      );
     });
   });
 });
