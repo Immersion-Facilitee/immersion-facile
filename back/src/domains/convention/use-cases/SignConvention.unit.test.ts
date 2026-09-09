@@ -17,6 +17,7 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
   type Signatories,
+  type SignatoryRole,
   splitCasesBetweenPassingAndFailing,
 } from "shared";
 import { match } from "ts-pattern";
@@ -300,11 +301,7 @@ describe("Sign convention", () => {
           }),
         },
       ] satisfies {
-        signatory:
-          | "establishment-representative"
-          | "beneficiary"
-          | "beneficiary-representative"
-          | "beneficiary-current-employer";
+        signatory: SignatoryRole;
         getEmail: (convention: ConventionDto) => string;
         expectedSignatorySignedAt: (signedAt: string) => {
           establishmentRepresentativeSignedAt?: string;
