@@ -15,6 +15,7 @@ import {
   frontRoutes,
   type GenericActor,
   getFormattedFirstnameAndLastname,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type ReminderKind,
   splitCasesBetweenPassingAndFailing,
@@ -798,10 +799,7 @@ const makeSignatoryConnectedConventionUrl = ({
   makeRouteAbsoluteUrl({
     route: frontRoutes.manageConventionConnectedUser({
       conventionId: convention.id,
-      loginPersona:
-        role === "establishment-representative"
-          ? "professional"
-          : "beneficiary",
+      loginPersona: loginPersonaByConventionRole(role),
     }),
     baseUrl: config.immersionFacileBaseUrl,
   });

@@ -10,6 +10,7 @@ import {
   expectToEqual,
   frontRoutes,
   getFormattedFirstnameAndLastname,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type Notification,
   type NotificationId,
@@ -347,10 +348,7 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
         conventionSignatureLink: makeRouteAbsoluteUrl({
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
-            loginPersona:
-              signatory.role === "establishment-representative"
-                ? "professional"
-                : "beneficiary",
+            loginPersona: loginPersonaByConventionRole(signatory.role),
             at_campaign: "email-signature-link",
           }),
           baseUrl: config.immersionFacileBaseUrl,
@@ -369,12 +367,7 @@ export const expectEmailFinalValidationConfirmationParamsMatchingConvention = (
   config: AppConfig,
   role: ConventionRole,
 ) => {
-  const loginPersona =
-    role === "beneficiary" ||
-    role === "beneficiary-representative" ||
-    role === "beneficiary-current-employer"
-      ? "beneficiary"
-      : "professional";
+  const loginPersona = loginPersonaByConventionRole(role);
 
   return expectToEqual(templatedEmails, {
     kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",

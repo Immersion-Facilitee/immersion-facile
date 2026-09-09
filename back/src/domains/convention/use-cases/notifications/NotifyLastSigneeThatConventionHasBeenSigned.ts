@@ -3,6 +3,7 @@ import {
   type ConventionDto,
   errors,
   frontRoutes,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type Signatory,
   type TemplatedEmail,
@@ -79,12 +80,7 @@ const makeEmail = (
 
   if (lastSignee) {
     const { role } = lastSignee;
-    const loginPersona =
-      role === "beneficiary" ||
-      role === "beneficiary-representative" ||
-      role === "beneficiary-current-employer"
-        ? "beneficiary"
-        : "professional";
+    const loginPersona = loginPersonaByConventionRole(role);
 
     return {
       kind: "SIGNEE_HAS_SIGNED_CONVENTION",
