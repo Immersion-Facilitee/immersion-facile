@@ -23,7 +23,6 @@ import {
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../../utils/agency";
-import { fakeGenerateMagicLinkUrlFn } from "../../../../utils/jwtTestHelper";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
@@ -75,9 +74,7 @@ describe("NotifyConventionReminder use case", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         config,
-        timeGateway,
         shortLinkIdGeneratorGateway,
-        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
         saveNotificationsBatchAndRelatedEvent:
           makeSaveNotificationsBatchAndRelatedEvent(
             new UuidV4Generator(),
@@ -375,8 +372,6 @@ describe("NotifyConventionReminder use case", () => {
           .build();
         uow.conventionRepository.setConventions([convention]);
         uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
-        const shortLinkIds = ["link1", "link2"];
-        shortLinkIdGeneratorGateway.addMoreShortLinkIds(shortLinkIds);
 
         //Act
         await useCase.execute({
@@ -385,42 +380,25 @@ describe("NotifyConventionReminder use case", () => {
         });
 
         //Assert
-        expectToEqual(uow.shortLinkQuery.getShortLinks(), [
-          {
-            id: shortLinkIds[0],
-            url: fakeGenerateMagicLinkUrlFn({
-              id: convention.id,
-              role: convention.signatories.beneficiary.role,
-              targetRoute: "conventionToSign",
-              email: convention.signatories.beneficiary.email,
-              now: timeGateway.now(),
-            }),
-            lastUsedAt: null,
-          },
-          {
-            id: shortLinkIds[1],
-            url: fakeGenerateMagicLinkUrlFn({
-              id: convention.id,
-              role: convention.signatories.establishmentRepresentative.role,
-              targetRoute: "conventionToSign",
-              email: convention.signatories.establishmentRepresentative.email,
-              now: timeGateway.now(),
-            }),
-            lastUsedAt: null,
-          },
-        ]);
-
         expectSavedNotificationsAndEvents({
           emails: [
             makeSignatoriesLastReminderEmail({
               actor: convention.signatories.beneficiary,
               convention,
-              shortlinkUrl: makeShortLinkUrl(config, shortLinkIds[0]),
+              magicLinkUrl: makeSignatoryConnectedConventionUrl({
+                convention,
+                role: convention.signatories.beneficiary.role,
+                config,
+              }),
             }),
             makeSignatoriesLastReminderEmail({
               actor: convention.signatories.establishmentRepresentative,
               convention,
-              shortlinkUrl: makeShortLinkUrl(config, shortLinkIds[1]),
+              magicLinkUrl: makeSignatoryConnectedConventionUrl({
+                convention,
+                role: convention.signatories.establishmentRepresentative.role,
+                config,
+              }),
             }),
           ],
         });
@@ -451,8 +429,14 @@ describe("NotifyConventionReminder use case", () => {
           .build();
         uow.conventionRepository.setConventions([convention]);
         uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
-        const shortLinkIds = ["link1", "link2", "link3"];
+        const shortLinkIds = ["sms-link"];
         shortLinkIdGeneratorGateway.addMoreShortLinkIds(shortLinkIds);
+        const establishmentRepresentativeConnectedUrl =
+          makeSignatoryConnectedConventionUrl({
+            convention,
+            role: convention.signatories.establishmentRepresentative.role,
+            config,
+          });
 
         //Act
         await useCase.execute({
@@ -464,38 +448,7 @@ describe("NotifyConventionReminder use case", () => {
         expectToEqual(uow.shortLinkQuery.getShortLinks(), [
           {
             id: shortLinkIds[0],
-            url: fakeGenerateMagicLinkUrlFn({
-              id: convention.id,
-              role: convention.signatories.beneficiary.role,
-              targetRoute: "conventionToSign",
-              email: convention.signatories.beneficiary.email,
-              now: timeGateway.now(),
-            }),
-
-            lastUsedAt: null,
-          },
-          {
-            id: shortLinkIds[1],
-            url: fakeGenerateMagicLinkUrlFn({
-              id: convention.id,
-              role: convention.signatories.establishmentRepresentative.role,
-              targetRoute: "conventionToSign",
-              email: convention.signatories.establishmentRepresentative.email,
-              now: timeGateway.now(),
-            }),
-
-            lastUsedAt: null,
-          },
-          {
-            id: shortLinkIds[2],
-            url: fakeGenerateMagicLinkUrlFn({
-              id: convention.id,
-              role: convention.signatories.establishmentRepresentative.role,
-              targetRoute: "conventionToSign",
-              email: convention.signatories.establishmentRepresentative.email,
-              now: timeGateway.now(),
-            }),
-
+            url: establishmentRepresentativeConnectedUrl,
             lastUsedAt: null,
           },
         ]);
@@ -505,17 +458,21 @@ describe("NotifyConventionReminder use case", () => {
             makeSignatoriesLastReminderEmail({
               actor: convention.signatories.beneficiary,
               convention,
-              shortlinkUrl: makeShortLinkUrl(config, shortLinkIds[0]),
+              magicLinkUrl: makeSignatoryConnectedConventionUrl({
+                convention,
+                role: convention.signatories.beneficiary.role,
+                config,
+              }),
             }),
             makeSignatoriesLastReminderEmail({
               actor: convention.signatories.establishmentRepresentative,
               convention,
-              shortlinkUrl: makeShortLinkUrl(config, shortLinkIds[1]),
+              magicLinkUrl: establishmentRepresentativeConnectedUrl,
             }),
             makeSignatoriesLastReminderEmail({
               actor: convention.establishmentTutor,
               convention,
-              shortlinkUrl: undefined,
+              magicLinkUrl: undefined,
             }),
           ],
           sms: [
@@ -524,7 +481,7 @@ describe("NotifyConventionReminder use case", () => {
                 convention.signatories.establishmentRepresentative.phone,
               kind,
               params: {
-                shortLink: makeShortLinkUrl(config, shortLinkIds[2]),
+                shortLink: makeShortLinkUrl(config, shortLinkIds[0]),
               },
             },
           ],
@@ -663,8 +620,13 @@ describe("NotifyConventionReminder use case", () => {
         uow.conventionRepository.setConventions([convention]);
         uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
 
-        const shortLinkIds = ["link1", "link2", "link3"];
+        const shortLinkIds = ["sms-link"];
         shortLinkIdGeneratorGateway.addMoreShortLinkIds(shortLinkIds);
+        const beneficiaryConnectedUrl = makeSignatoryConnectedConventionUrl({
+          convention,
+          role: convention.signatories.beneficiary.role,
+          config,
+        });
 
         //Act
         await useCase.execute({
@@ -676,36 +638,7 @@ describe("NotifyConventionReminder use case", () => {
         expectToEqual(uow.shortLinkQuery.getShortLinks(), [
           {
             id: shortLinkIds[0],
-            url: fakeGenerateMagicLinkUrlFn({
-              id: convention.id,
-              role: convention.signatories.beneficiary.role,
-              targetRoute: "conventionToSign",
-              email: convention.signatories.beneficiary.email,
-              now: timeGateway.now(),
-            }),
-            lastUsedAt: null,
-          },
-          {
-            id: shortLinkIds[1],
-            url: fakeGenerateMagicLinkUrlFn({
-              id: convention.id,
-              role: convention.signatories.establishmentRepresentative.role,
-              targetRoute: "conventionToSign",
-              email: convention.signatories.establishmentRepresentative.email,
-              now: timeGateway.now(),
-            }),
-            lastUsedAt: null,
-          },
-          {
-            id: shortLinkIds[2],
-            url: fakeGenerateMagicLinkUrlFn({
-              id: convention.id,
-              role: convention.signatories.beneficiary.role,
-              targetRoute: "conventionToSign",
-              email: convention.signatories.beneficiary.email,
-              now: timeGateway.now(),
-            }),
-
+            url: beneficiaryConnectedUrl,
             lastUsedAt: null,
           },
         ]);
@@ -715,17 +648,21 @@ describe("NotifyConventionReminder use case", () => {
             makeSignatoriesLastReminderEmail({
               actor: convention.signatories.beneficiary,
               convention,
-              shortlinkUrl: makeShortLinkUrl(config, shortLinkIds[0]),
+              magicLinkUrl: beneficiaryConnectedUrl,
             }),
             makeSignatoriesLastReminderEmail({
               actor: convention.signatories.establishmentRepresentative,
               convention,
-              shortlinkUrl: makeShortLinkUrl(config, shortLinkIds[1]),
+              magicLinkUrl: makeSignatoryConnectedConventionUrl({
+                convention,
+                role: convention.signatories.establishmentRepresentative.role,
+                config,
+              }),
             }),
             makeSignatoriesLastReminderEmail({
               actor: convention.establishmentTutor,
               convention,
-              shortlinkUrl: undefined,
+              magicLinkUrl: undefined,
             }),
           ],
           sms: [
@@ -733,7 +670,7 @@ describe("NotifyConventionReminder use case", () => {
               kind: "ReminderForSignatories",
               recipientPhone: internationalMobilePhone,
               params: {
-                shortLink: makeShortLinkUrl(config, shortLinkIds[2]),
+                shortLink: makeShortLinkUrl(config, shortLinkIds[0]),
               },
             },
           ],
@@ -753,56 +690,35 @@ describe("NotifyConventionReminder use case", () => {
       uow.conventionRepository.setConventions([convention]);
       uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
 
-      const shortLinkIds = ["link1", "link2"];
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds(shortLinkIds);
-
       await useCase.execute({
         conventionId: convention.id,
         reminderKind: "ReminderForSignatories",
       });
-
-      expectToEqual(uow.shortLinkQuery.getShortLinks(), [
-        {
-          id: shortLinkIds[0],
-          url: fakeGenerateMagicLinkUrlFn({
-            id: convention.id,
-            role: convention.signatories.beneficiary.role,
-            targetRoute: "conventionToSign",
-            email: convention.signatories.beneficiary.email,
-            now: timeGateway.now(),
-          }),
-
-          lastUsedAt: null,
-        },
-        {
-          id: shortLinkIds[1],
-          url: fakeGenerateMagicLinkUrlFn({
-            id: convention.id,
-            role: convention.signatories.establishmentRepresentative.role,
-            targetRoute: "conventionToSign",
-            email: convention.signatories.establishmentRepresentative.email,
-            now: timeGateway.now(),
-          }),
-          lastUsedAt: null,
-        },
-      ]);
 
       expectSavedNotificationsAndEvents({
         emails: [
           makeSignatoriesLastReminderEmail({
             actor: convention.signatories.beneficiary,
             convention,
-            shortlinkUrl: makeShortLinkUrl(config, shortLinkIds[0]),
+            magicLinkUrl: makeSignatoryConnectedConventionUrl({
+              convention,
+              role: convention.signatories.beneficiary.role,
+              config,
+            }),
           }),
           makeSignatoriesLastReminderEmail({
             actor: convention.signatories.establishmentRepresentative,
             convention,
-            shortlinkUrl: makeShortLinkUrl(config, shortLinkIds[1]),
+            magicLinkUrl: makeSignatoryConnectedConventionUrl({
+              convention,
+              role: convention.signatories.establishmentRepresentative.role,
+              config,
+            }),
           }),
           makeSignatoriesLastReminderEmail({
             actor: convention.establishmentTutor,
             convention,
-            shortlinkUrl: undefined,
+            magicLinkUrl: undefined,
           }),
         ],
         sms: [],
@@ -870,14 +786,34 @@ const makeAgencyLastReminderEmail = ({
   },
 });
 
+const makeSignatoryConnectedConventionUrl = ({
+  convention,
+  role,
+  config,
+}: {
+  convention: ConventionDto;
+  role: ConventionActorRole;
+  config: AppConfig;
+}): AbsoluteUrl =>
+  makeRouteAbsoluteUrl({
+    route: frontRoutes.manageConventionConnectedUser({
+      conventionId: convention.id,
+      loginPersona:
+        role === "establishment-representative"
+          ? "professional"
+          : "beneficiary",
+    }),
+    baseUrl: config.immersionFacileBaseUrl,
+  });
+
 const makeSignatoriesLastReminderEmail = ({
   actor,
   convention,
-  shortlinkUrl,
+  magicLinkUrl,
 }: {
   actor: GenericActor<ConventionActorRole>;
   convention: ConventionDto;
-  shortlinkUrl: AbsoluteUrl | undefined;
+  magicLinkUrl: AbsoluteUrl | undefined;
 }): TemplatedEmail => ({
   kind: "SIGNATORY_REMINDER",
   recipients: [actor.email],
@@ -897,6 +833,6 @@ const makeSignatoriesLastReminderEmail = ({
     }),
     businessName: convention.businessName,
     signatoriesSummary: toSignatoriesSummary(convention).join("\n"),
-    magicLinkUrl: shortlinkUrl,
+    magicLinkUrl,
   },
 });
