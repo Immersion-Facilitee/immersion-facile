@@ -10,6 +10,7 @@ import {
   type ConnectedUser,
   domElementIds,
   frontRoutes,
+  partitionEstablishmentRightsByStatus,
   type UserId,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
@@ -120,19 +121,12 @@ export const UserProfile = ({
 
   useScrollTo(!!useFeedbackTopic("agency-user-right-self"));
 
-  const acceptedUserEstablishmentsRights =
-    userWithRights.establishments?.filter(
-      (userEstablishment) => userEstablishment.status === "ACCEPTED",
-    ) || [];
-
-  const pendingUserEstablishmentsRights =
-    userWithRights.establishments?.filter(
-      (userEstablishment) => userEstablishment.status === "PENDING",
-    ) || [];
+  const { acceptedEstablishmentRights, pendingEstablishmentRights } =
+    partitionEstablishmentRightsByStatus(userWithRights.establishments);
 
   const allDisplayedEstablishmentsRights = [
-    ...acceptedUserEstablishmentsRights,
-    ...pendingUserEstablishmentsRights,
+    ...acceptedEstablishmentRights,
+    ...pendingEstablishmentRights,
   ];
 
   const userAgenciesRights = userWithRights.agencyRights;
@@ -201,24 +195,24 @@ export const UserProfile = ({
                 </Button>
               </div>
             )}
-            {pendingUserEstablishmentsRights.length > 0 && (
+            {pendingEstablishmentRights.length > 0 && (
               <>
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
                   Mes demandes d'accès envoyées
                 </h3>
                 <EstablishmentsTablesSection
-                  withEstablishmentData={pendingUserEstablishmentsRights}
+                  withEstablishmentData={pendingEstablishmentRights}
                   isBackofficeAdmin={currentUser?.isBackofficeAdmin}
                 />
               </>
             )}
-            {acceptedUserEstablishmentsRights.length > 0 && (
+            {acceptedEstablishmentRights.length > 0 && (
               <>
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
                   Mes rattachements entreprises
                 </h3>
                 <EstablishmentsTablesSection
-                  withEstablishmentData={acceptedUserEstablishmentsRights}
+                  withEstablishmentData={acceptedEstablishmentRights}
                   isBackofficeAdmin={currentUser?.isBackofficeAdmin}
                 />
               </>

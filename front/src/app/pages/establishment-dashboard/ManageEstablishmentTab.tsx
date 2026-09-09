@@ -7,20 +7,21 @@ import { useDispatch } from "react-redux";
 import {
   domElementIds,
   frontRoutes,
+  type PendingUserEstablishmentRightDetails,
   type UserEstablishmentRightDetails,
 } from "shared";
 import { EstablishmentsTablesSection } from "src/app/components/establishment/establishments-table/EstablishmentsTablesSection";
 import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
-import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { makeUseTypedRoute } from "src/app/routes/routes.hooks";
 import { getUrlParameters } from "src/app/utils/url.utils";
-import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { establishmentSlice } from "src/core-logic/domain/establishment/establishment.slice";
 import { geocodingSlice } from "src/core-logic/domain/geocoding/geocoding.slice";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 
 type ManageEstablishmentTabProps = {
   establishments: UserEstablishmentRightDetails[];
+  pendingEstablishmentRights: PendingUserEstablishmentRightDetails[];
+  isBackofficeAdmin: boolean | undefined;
 };
 
 const useEstablishmentDashboardFormEstablishmentRoute =
@@ -30,6 +31,8 @@ const useEstablishmentDashboardFormEstablishmentRoute =
 
 export const ManageEstablishmentsTab = ({
   establishments,
+  pendingEstablishmentRights,
+  isBackofficeAdmin,
 }: ManageEstablishmentTabProps) => {
   const dispatch = useDispatch();
   const route = useEstablishmentDashboardFormEstablishmentRoute([
@@ -37,12 +40,6 @@ export const ManageEstablishmentsTab = ({
   ]);
   const { siret } = route.params;
   const initialUrlParams = getUrlParameters(window.location);
-  const currentUser = useAppSelector(connectedUserSelectors.currentUser);
-  const pendingUserEstablishmentsRights =
-    currentUser?.establishments?.filter(
-      (userEstablishment) => userEstablishment.status === "PENDING",
-    ) || [];
-
   if (establishments.length === 1) {
     frontRoutes
       .establishmentDashboardFormEstablishment({
@@ -78,8 +75,8 @@ export const ManageEstablishmentsTab = ({
           Mes demandes d'accès envoyées
         </h4>
         <EstablishmentsTablesSection
-          withEstablishmentData={pendingUserEstablishmentsRights}
-          isBackofficeAdmin={currentUser?.isBackofficeAdmin}
+          withEstablishmentData={pendingEstablishmentRights}
+          isBackofficeAdmin={isBackofficeAdmin}
         />
       </HeadingSection>
       <div className={fr.cx("fr-mb-4w")}>

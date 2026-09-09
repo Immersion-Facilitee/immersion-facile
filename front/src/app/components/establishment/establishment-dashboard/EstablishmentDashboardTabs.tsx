@@ -13,6 +13,7 @@ import {
   frontRoutes,
   immersionFacileHelpdeskRootUrl,
   onlyAdminUserRightsWithStatusAccepted,
+  partitionEstablishmentRightsByStatus,
   type UserEstablishmentRightDetails,
 } from "shared";
 import { ConventionTemplatesList } from "src/app/components/agency/agency-dashboard/ConventionTemplatesList";
@@ -123,7 +124,8 @@ const filterActiveEstablishmentsForUser = (
   establishment: UserEstablishmentRightDetails,
 ) =>
   !establishment.isEstablishmentBanned &&
-  onlyAdminUserRightsWithStatusAccepted(establishment);
+  (onlyAdminUserRightsWithStatusAccepted(establishment) ||
+    establishment.status === "PENDING");
 
 const makeEstablishmentDashboardTabs = (
   {
@@ -131,12 +133,15 @@ const makeEstablishmentDashboardTabs = (
       establishments: { conventions },
     },
     establishments,
+    isBackofficeAdmin,
   }: ConnectedUser,
   userHasDiscussions: boolean,
 ): DashboardTab[] => {
   const establishmentsArray = establishments
     ? establishments.filter(filterActiveEstablishmentsForUser)
     : [];
+  const { pendingEstablishmentRights } =
+    partitionEstablishmentRightsByStatus(establishments);
   const userIsOnboarding = establishmentsArray.length === 0;
   const userCanManageEstablishments = establishmentsArray.length > 0;
 
@@ -192,6 +197,8 @@ const makeEstablishmentDashboardTabs = (
                   (establishment) =>
                     establishment.role === "establishment-admin",
                 )}
+                pendingEstablishmentRights={pendingEstablishmentRights}
+                isBackofficeAdmin={isBackofficeAdmin}
               />
             ),
           },
