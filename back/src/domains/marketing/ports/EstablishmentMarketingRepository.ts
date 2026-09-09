@@ -17,4 +17,6 @@ export type EstablishmentMarketingRepository = {
   getBySiret(
     siret: SiretDto,
   ): Promise<EstablishmentMarketingContactEntity | undefined>;
+
+  getSiretsByContactEmail(email: Email): Promise<SiretDto[]>;
 };

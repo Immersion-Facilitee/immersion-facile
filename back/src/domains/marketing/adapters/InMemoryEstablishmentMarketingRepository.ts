@@ -1,4 +1,4 @@
-import type { SiretDto } from "shared";
+import type { Email, SiretDto } from "shared";
 import type {
   EstablishmentMarketingContactEntity,
   EstablishmentMarketingRepository,
@@ -15,6 +15,12 @@ export class InMemoryEstablishementMarketingRepository
     siret: SiretDto,
   ): Promise<EstablishmentMarketingContactEntity | undefined> {
     return this.#contacts[siret];
+  }
+
+  async getSiretsByContactEmail(email: Email): Promise<SiretDto[]> {
+    return this.contacts
+      .filter((contact) => contact.contactEmail === email)
+      .map(({ siret }) => siret);
   }
 
   async save(
