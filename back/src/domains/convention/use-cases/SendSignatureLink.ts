@@ -11,6 +11,7 @@ import {
   frontRoutes,
   getFormattedFirstnameAndLastname,
   isWithinHoursCooldown,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type NotificationKind,
   type SendSignatureLinkRequestDto,
@@ -177,10 +178,7 @@ const sendSms = async ({
     longLink: makeRouteAbsoluteUrl({
       route: frontRoutes.manageConventionConnectedUser({
         conventionId: convention.id,
-        loginPersona:
-          signatory.role === "establishment-representative"
-            ? "professional"
-            : "beneficiary",
+        loginPersona: loginPersonaByConventionRole(signatory.role),
         at_campaign: "sms-signature-link",
       }),
       baseUrl: config.immersionFacileBaseUrl,
@@ -269,10 +267,7 @@ const sendEmail = async ({
         conventionSignatureLink: makeRouteAbsoluteUrl({
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
-            loginPersona:
-              signatory.role === "establishment-representative"
-                ? "professional"
-                : "beneficiary",
+            loginPersona: loginPersonaByConventionRole(signatory.role),
             at_campaign: "email-signature-link",
           }),
           baseUrl: config.immersionFacileBaseUrl,

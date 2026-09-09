@@ -6,6 +6,7 @@ import {
   filterNotFalsy,
   frontRoutes,
   getFormattedFirstnameAndLastname,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type Signatory,
   type TemplatedEmail,
@@ -80,10 +81,7 @@ const makeEmail = (
     conventionSignatureLink: makeRouteAbsoluteUrl({
       route: frontRoutes.manageConventionConnectedUser({
         conventionId: convention.id,
-        loginPersona:
-          signatory.role === "establishment-representative"
-            ? "professional"
-            : "beneficiary",
+        loginPersona: loginPersonaByConventionRole(signatory.role),
         at_campaign: "email-signature-link-after-modification",
       }),
       baseUrl: config.immersionFacileBaseUrl,

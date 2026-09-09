@@ -19,6 +19,7 @@ import {
   isEstablishmentTutorIsEstablishmentRepresentative,
   isSignatoryRole,
   isValidMobilePhone,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type ReminderKind,
   type TemplatedEmail,
@@ -228,10 +229,7 @@ const makeSignatoryReminderEmail = ({
       ? makeRouteAbsoluteUrl({
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
-            loginPersona:
-              role === "establishment-representative"
-                ? "professional"
-                : "beneficiary",
+            loginPersona: loginPersonaByConventionRole(role),
           }),
           baseUrl: config.immersionFacileBaseUrl,
         })
@@ -259,10 +257,7 @@ const prepareSmsReminderParams = async ({
     longLink: makeRouteAbsoluteUrl({
       route: frontRoutes.manageConventionConnectedUser({
         conventionId: convention.id,
-        loginPersona:
-          role === "establishment-representative"
-            ? "professional"
-            : "beneficiary",
+        loginPersona: loginPersonaByConventionRole(role),
       }),
       baseUrl: deps.config.immersionFacileBaseUrl,
     }),

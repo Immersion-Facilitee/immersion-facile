@@ -9,6 +9,7 @@ import {
   errors,
   frontRoutes,
   getFormattedFirstnameAndLastname,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type TemplatedEmail,
   withConventionSchema,
@@ -116,12 +117,7 @@ const prepareEmail = ({
   config: AppConfig;
   agency: AgencyDto;
 }): TemplatedEmail => {
-  const loginPersona =
-    role === "beneficiary" ||
-    role === "beneficiary-representative" ||
-    role === "beneficiary-current-employer"
-      ? "beneficiary"
-      : "professional";
+  const loginPersona = loginPersonaByConventionRole(role);
 
   return {
     kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",

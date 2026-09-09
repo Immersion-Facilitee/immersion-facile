@@ -38,6 +38,7 @@ import {
   type EditConventionWithFinalStatusFormValues,
   type EstablishmentRepresentative,
   type InternshipKind,
+  loginPersonaByConventionRole,
   makeEmptyLastReminders,
   maximumCalendarDayByInternshipKind,
 } from "./convention.dto";
@@ -1684,6 +1685,20 @@ describe("updateConventionStatusRequestSchema", () => {
         conventionId,
       }),
     ).toThrow(ZodError);
+  });
+});
+
+describe("loginPersonaByConventionRole", () => {
+  it.each([
+    { role: "beneficiary", expected: "beneficiary" },
+    { role: "beneficiary-representative", expected: "beneficiary" },
+    { role: "beneficiary-current-employer", expected: "beneficiary" },
+    { role: "establishment-representative", expected: "professional" },
+    { role: "establishment-tutor", expected: "professional" },
+    { role: "counsellor", expected: "professional" },
+    { role: "validator", expected: "professional" },
+  ] as const)("maps $role to $expected", ({ role, expected }) => {
+    expectToEqual(loginPersonaByConventionRole(role), expected);
   });
 });
 

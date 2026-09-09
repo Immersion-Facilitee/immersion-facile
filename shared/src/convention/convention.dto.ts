@@ -34,6 +34,7 @@ import {
   type AgencyRole,
   allSignatoryRoles,
   type ConventionActorRole,
+  type ConventionRole,
   type Role,
   type SignatoryRole,
 } from "../role/role.dto";
@@ -407,6 +408,15 @@ export const signatoryKeys: (keyof Signatories)[] = [
 
 export const isSignatoryRole = (role: Role): role is SignatoryRole =>
   allSignatoryRoles.includes(role as SignatoryRole);
+
+export const loginPersonaByConventionRole = (
+  role: ConventionRole,
+): "beneficiary" | "professional" =>
+  role === "beneficiary" ||
+  role === "beneficiary-representative" ||
+  role === "beneficiary-current-employer"
+    ? "beneficiary"
+    : "professional";
 
 export type Signatory = GenericSignatory<SignatoryRole>;
 

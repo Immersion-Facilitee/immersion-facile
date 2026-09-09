@@ -16,6 +16,7 @@ import {
   expectToEqual,
   frontRoutes,
   getFormattedFirstnameAndLastname,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type Notification,
   type SignatoryRole,
@@ -789,10 +790,7 @@ describe("Send signature link", () => {
               url: makeRouteAbsoluteUrl({
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: conventionWithAllSignatories.id,
-                  loginPersona:
-                    signatoryRole === "establishment-representative"
-                      ? "professional"
-                      : "beneficiary",
+                  loginPersona: loginPersonaByConventionRole(signatoryRole),
                   at_campaign: "sms-signature-link",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,

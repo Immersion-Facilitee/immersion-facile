@@ -7,6 +7,7 @@ import {
   errors,
   frontRoutes,
   getFormattedFirstnameAndLastname,
+  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
@@ -179,12 +180,7 @@ const sendSignatoriesEmail = async (
 ) => {
   for (const emailAndRole of signatoriesRecipientsRoleAndEmail) {
     const { role, email } = emailAndRole;
-    const loginPersona =
-      role === "beneficiary" ||
-      role === "beneficiary-representative" ||
-      role === "beneficiary-current-employer"
-        ? "beneficiary"
-        : "professional";
+    const loginPersona = loginPersonaByConventionRole(role);
 
     await deps.saveNotificationAndRelatedEvent(uow, {
       kind: "email",
