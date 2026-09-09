@@ -3074,8 +3074,6 @@ L'équipe d'Immersion Facilitée`,
         immersionAppellationLabel,
         internshipKind,
         magicLink,
-        assessmentMagicLink,
-        agencyReferentName,
         agencyName,
         validatorName,
       }) => ({
@@ -3087,12 +3085,23 @@ L'équipe d'Immersion Facilitée`,
         content: `
       Bonne nouvelle ! 
 
-      La demande faite par ${beneficiaryFirstName} ${beneficiaryLastName} (né(e) le ${
+      La demande effectuée par ${beneficiaryFirstName} ${beneficiaryLastName} (né(e) le ${
         isStringDate(beneficiaryBirthdate)
           ? toDisplayedDate({ date: new Date(beneficiaryBirthdate) })
           : "Date invalide"
-      })${agencyReferentName ? `, suivi par ${agencyReferentName}` : ""} pour réaliser une immersion du ${dateStart} au ${dateEnd}, au sein de ${businessName} et encadrée par ${establishmentTutorName} a été validée par ${agencyName} représentée par ${validatorName} 
-      et la convention est bien enregistrée. 
+      }) a été validée.
+
+      <strong>Récapitulatif ${
+        internshipKind === "immersion" ? "de l'immersion" : "du mini stage"
+      } :</strong>
+      <ul>
+        <li><strong>Dates :</strong> du ${dateStart} au ${dateEnd}</li>
+        <li><strong>Entreprise :</strong> ${businessName}</li>
+        <li><strong>Tuteur :</strong> ${establishmentTutorName}</li>
+        <li><strong>Validation :</strong> ${agencyName}${
+          validatorName ? ` (par ${validatorName})` : ""
+        }</li>
+      </ul>
       
       ${internshipKind === "immersion" ? "L'immersion" : "Le mini stage"} peut donc démarrer aux dates convenues.       
       `,
@@ -3106,28 +3115,30 @@ L'équipe d'Immersion Facilitée`,
           },
         ],
         subContent: `
-      ${defaultSignature(internshipKind)}
+      <strong>Depuis cette page, vous pouvez notamment :</strong>
+      <ul>
+        <li>consulter et télécharger la convention au format PDF ;</li>
+        <li><strong>déclarer une fin anticipée</strong> si ${
+          internshipKind === "immersion" ? "l'immersion" : "le mini stage"
+        } doit être ${
+          internshipKind === "immersion" ? "interrompue" : "interrompu"
+        } (abandon, arrêt anticipé, ...).</li>
+      </ul>
 
-
-      En cas de difficulté, prévenez au plus vite votre ${
+      En cas de difficulté, prévenez au plus vite ${
         internshipKind === "immersion"
-          ? "conseiller"
-          : "conseiller de la Chambre consulaire ayant émis la convention"
-      } pour qu'il vous conseille au mieux. 
-      
+          ? "le conseiller"
+          : "le conseiller de la Chambre consulaire ayant émis la convention"
+      } afin qu'il puisse vous accompagner au mieux.
+
       ${
         emergencyContactInfos
-          ? `Si la situation l'impose, le contact d'urgence de ${beneficiaryFirstName} ${beneficiaryLastName} : ${emergencyContactInfos}`
+          ? `<strong>Contact d'urgence :</strong>
+      Si la situation l'impose, le contact d'urgence de ${beneficiaryFirstName} ${beneficiaryLastName} est : ${emergencyContactInfos}.`
           : ""
-      }`,
-        highlight: assessmentMagicLink
-          ? {
-              content: `
-              Un imprévu ?
+      }
 
-              Si l’immersion ne peut pas aller à son terme (abandon, arrêt anticipé, etc.), merci de nous le signaler dès que possible en <a href="${assessmentMagicLink}">déclarant une fin anticipée</a> , pour assurer un bon suivi.`,
-            }
-          : undefined,
+      ${defaultSignature(internshipKind)}`,
         agencyLogoUrl,
       }),
     },

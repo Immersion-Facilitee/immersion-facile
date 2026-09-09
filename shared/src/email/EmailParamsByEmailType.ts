@@ -573,10 +573,8 @@ export type EmailParamsByEmailType = {
     immersionAppellationLabel: string;
     internshipKind: InternshipKind;
     magicLink: string;
-    assessmentMagicLink: string | undefined;
     validatorName: string;
     agencyName: string;
-    agencyReferentName: string | undefined;
   };
   ACCOUNT_DELETION_WARNING: {
     fullName: string;

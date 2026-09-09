@@ -455,22 +455,40 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       ],
     );
 
-    const needsToTriggerConventionSentEmail = expectEmailOfType(
-      sentEmails[sentEmails.length - 1],
-      "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
-    );
-    expect(needsToTriggerConventionSentEmail.recipients).toEqual([
-      validator.email,
-    ]);
-
-    // Validators now get user-connected URLs instead of magic link shortlinks
-    expect(needsToTriggerConventionSentEmail.params.magicLink).toBe(
+    const manageConventionUrl = (
+      loginPersona: "beneficiary" | "professional",
+    ) =>
       makeRouteAbsoluteUrl({
         route: frontRoutes.manageConventionConnectedUser({
           conventionId: initialConvention.id,
+          loginPersona,
         }),
         baseUrl: appConfig.immersionFacileBaseUrl,
-      }),
+      });
+
+    expectArraysToEqualIgnoringOrder(
+      sentEmails
+        .filter((email) => email.kind === "VALIDATED_CONVENTION_FINAL_CONFIRMATION")
+        .map((email) => ({
+          recipients: email.recipients,
+          magicLink: email.params.magicLink,
+        })),
+      [
+        {
+          recipients: [initialConvention.signatories.beneficiary.email],
+          magicLink: manageConventionUrl("beneficiary"),
+        },
+        {
+          recipients: [
+            initialConvention.signatories.establishmentRepresentative.email,
+          ],
+          magicLink: manageConventionUrl("professional"),
+        },
+        {
+          recipients: [validator.email],
+          magicLink: manageConventionUrl("professional"),
+        },
+      ],
     );
   };
 
