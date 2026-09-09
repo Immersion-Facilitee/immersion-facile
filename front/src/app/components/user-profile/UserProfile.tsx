@@ -204,7 +204,7 @@ export const UserProfile = ({
             {pendingUserEstablishmentsRights.length > 0 && (
               <>
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
-                  Demandes d'accès en cours
+                  Mes demandes d'accès envoyées
                 </h3>
                 <EstablishmentsTablesSection
                   withEstablishmentData={pendingUserEstablishmentsRights}
