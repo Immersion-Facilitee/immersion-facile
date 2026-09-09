@@ -310,7 +310,7 @@ export type EmailParamsByEmailType = {
     agencyAddress: string;
     businessName: string;
     justification: string;
-    magicLink: string;
+    manageConventionLink: AbsoluteUrl;
     conventionId: ConventionId;
   };
   DEPRECATED_CONVENTION_NOTIFICATION: {

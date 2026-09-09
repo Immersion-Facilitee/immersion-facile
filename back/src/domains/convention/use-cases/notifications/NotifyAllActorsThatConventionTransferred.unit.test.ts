@@ -12,16 +12,13 @@ import {
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../../utils/agency";
-import { fakeGenerateMagicLinkUrlFn } from "../../../../utils/jwtTestHelper";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
 import type { TransferConventionToAgencyPayload } from "../../../core/events/eventPayload.dto";
 import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
-import { DeterministShortLinkIdGeneratorGateway } from "../../../core/short-link/adapters/short-link-generator-gateway/DeterministShortLinkIdGeneratorGateway";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
-import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -67,19 +64,15 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
     .withTestPresetPreviousKeys()
     .build();
   let uow: InMemoryUnitOfWork;
-  let timeGateway: TimeGateway;
   let usecase: NotifyAllActorsThatConventionTransferred;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
-  let shortLinkIdGeneratorGateway: DeterministShortLinkIdGeneratorGateway;
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    timeGateway = new CustomTimeGateway();
     expectSavedNotificationsAndEvents = makeExpectSavedNotificationsAndEvents(
       uow.notificationRepository,
       uow.outboxRepository,
     );
-    shortLinkIdGeneratorGateway = new DeterministShortLinkIdGeneratorGateway();
 
     usecase = makeNotifyAllActorsThatConventionTransferred({
       uowPerformer: new InMemoryUowPerformer(uow),
@@ -88,9 +81,6 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
           new UuidV4Generator(),
           new CustomTimeGateway(),
         ),
-        timeGateway,
-        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
-        shortLinkIdGeneratorGateway,
         config,
       },
     });
@@ -148,8 +138,6 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
   });
 
   it("should notify agency and signatories that convention has been transferred", async () => {
-    const shortLinks = ["shortLink1", "shortLink2", "shortLink3"];
-    shortLinkIdGeneratorGateway.addMoreShortLinkIds(shortLinks);
     uow.agencyRepository.agencies = [
       toAgencyWithRights(previousAgency, {}),
       toAgencyWithRights(newAgency, {
@@ -169,6 +157,17 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
       previousAgencyId: previousAgency.id,
       shouldNotifyActors: true,
     });
+
+    const makeManageConventionLink = (
+      loginPersona: "beneficiary" | "professional",
+    ) =>
+      makeRouteAbsoluteUrl({
+        route: frontRoutes.manageConventionConnectedUser({
+          conventionId: convention.id,
+          loginPersona,
+        }),
+        baseUrl: config.immersionFacileBaseUrl,
+      });
 
     expectSavedNotificationsAndEvents({
       emails: [
@@ -208,7 +207,7 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
             agencyAddress: `${newAgency.address.streetNumberAndAddress} ${newAgency.address.postcode} ${newAgency.address.city}`,
             businessName: convention.businessName,
             justification: "agency change",
-            magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
+            manageConventionLink: makeManageConventionLink("beneficiary"),
             conventionId: convention.id,
           },
         },
@@ -226,7 +225,7 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
             agencyAddress: `${newAgency.address.streetNumberAndAddress} ${newAgency.address.postcode} ${newAgency.address.city}`,
             businessName: convention.businessName,
             justification: "agency change",
-            magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[1]}`,
+            manageConventionLink: makeManageConventionLink("professional"),
             conventionId: convention.id,
           },
         },
@@ -242,7 +241,7 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
             agencyAddress: `${newAgency.address.streetNumberAndAddress} ${newAgency.address.postcode} ${newAgency.address.city}`,
             businessName: convention.businessName,
             justification: "agency change",
-            magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[2]}`,
+            manageConventionLink: makeManageConventionLink("professional"),
             conventionId: convention.id,
           },
         },
