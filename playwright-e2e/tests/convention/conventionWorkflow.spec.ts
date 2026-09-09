@@ -1,17 +1,22 @@
 import { faker } from "@faker-js/faker";
 import test, { expect } from "@playwright/test";
-import { domElementIds } from "shared";
+import { domElementIds, frontRoutes } from "shared";
 import { testConfig } from "../../custom.config";
 import {
+  getMagicLinkAndRecipientFromEmail,
   getMagicLinkFromEmail,
   getMagicLinkLocatorFromEmail,
   goToAdminTab,
+  openConnectedConventionAsRecipient,
 } from "../../utils/admin";
 import {
   allOtherSignatoriesSignConvention,
   type ConventionSubmitted,
+  checkConventionSummary,
   confirmCreateConventionFormSubmit,
+  getSignatureLinksAndRecipients,
   goToFormPageAndFillConventionForm,
+  type SignatureLinkAndRecipient,
   shareConventionDraftByEmail,
   signConvention,
   submitBasicConventionForm,
@@ -57,29 +62,21 @@ test.describe("Convention creation and modification workflow", () => {
 
     test.describe("convention initial signatures before modification", () => {
       const signatoriesCount = 2;
-      const signatoriesMagicLinks: string[] = [];
+      let signatories: SignatureLinkAndRecipient[];
 
       test("get signatories magicLink urls from email", async ({ page }) => {
-        await page.goto("/");
-        await goToAdminTab(page, "adminNotifications");
-        for (let index = 0; index < signatoriesCount; index++) {
-          const href = await getMagicLinkFromEmail({
-            page,
-            emailType: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
-            elementIndex: index,
-            label: "conventionSignShortlink",
-          });
-          if (href) {
-            signatoriesMagicLinks.push(href);
-          }
-        }
-        await expect(signatoriesMagicLinks.length).toBe(signatoriesCount);
+        signatories = await getSignatureLinksAndRecipients({
+          page,
+          count: signatoriesCount,
+        });
+        await expect(signatories).toHaveLength(signatoriesCount);
       });
 
       test("first two signatories signs the convention", async ({ page }) => {
         await signConvention(
           page,
-          signatoriesMagicLinks[0],
+          signatories[0].href,
+          signatories[0].recipientEmail,
           tomorrowDateDisplayed,
         );
       });
@@ -91,7 +88,8 @@ test.describe("Convention creation and modification workflow", () => {
         test("signs convention for signatory 4", async ({ page }) => {
           await signConvention(
             page,
-            signatoriesMagicLinks[1],
+            signatories[1].href,
+            signatories[1].recipientEmail,
             tomorrowDateDisplayed,
           );
         });
@@ -135,23 +133,32 @@ test.describe("Convention creation and modification workflow", () => {
       test("then first signatory also edit the convention (his submission also signs the convention)", async ({
         page,
       }) => {
+        test.setTimeout(90_000);
         await page.goto("/");
-        await goToAdminTab(page, "adminNotifications");
+        const { href, recipientEmail } =
+          await getMagicLinkAndRecipientFromEmail({
+            page,
+            emailType:
+              "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE_AFTER_MODIFICATION",
+            elementIndex: 0,
+            label: "conventionSignatureLink",
+          });
+        expect(href).toBeTruthy();
+        expect(recipientEmail).toBeTruthy();
 
-        const magicLinkLocator = await getMagicLinkLocatorFromEmail({
-          page,
-          emailType:
-            "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE_AFTER_MODIFICATION",
-          elementIndex: 0,
-          label: "conventionSignShortlink",
-        });
-        await magicLinkLocator.click();
+        const { page: recipientPage, context } =
+          await openConnectedConventionAsRecipient(
+            page,
+            href!,
+            recipientEmail!,
+          );
 
-        await page
-          .locator(`#${domElementIds.conventionToSign.modificationButton}`)
+        await recipientPage
+          .locator(`#${domElementIds.manageConvention.editLink}`)
           .click();
+
         await expect(
-          page.locator(
+          recipientPage.locator(
             `#${domElementIds.conventionImmersion.form({
               internshipKind: "immersion",
               mode: "edit-convention",
@@ -159,26 +166,39 @@ test.describe("Convention creation and modification workflow", () => {
           ),
         ).toBeVisible();
 
-        await page
+        await recipientPage
           .locator(`#${domElementIds.conventionImmersion.submitFormButton}`)
           .click();
 
-        await page.fill(
+        await recipientPage.fill(
           `#${domElementIds.conventionImmersion.statusJustificationInput}`,
           "justification de la modification",
         );
 
-        await page.click(
-          `#${domElementIds.conventionToSign.openSignModalButton}`,
-        );
+        await recipientPage
+          .getByRole("button", { name: "Signer la convention" })
+          .click();
+        await recipientPage
+          .getByRole("button", { name: "Je termine la signature" })
+          .click();
 
-        await page.click(`#${domElementIds.conventionToSign.submitButton}`);
-        await expect(page.locator(".fr-alert--success")).toBeVisible();
+        await recipientPage.waitForURL(
+          `**${frontRoutes.manageConventionConnectedUser({}).href}**`,
+        );
+        await checkConventionSummary(recipientPage, updatedEndDateDisplayed);
+        await expect(
+          recipientPage.locator(
+            `#${domElementIds.manageConvention.openSignModalButton}`,
+          ),
+        ).toBeHidden();
+
+        await context.close();
       });
     });
 
     test.describe("convention signatures after modification", () => {
       test("all other signatories sign the convention", async ({ page }) => {
+        test.setTimeout(120_000);
         await allOtherSignatoriesSignConvention({
           page,
           expectedConventionEndDate: updatedEndDateDisplayed,

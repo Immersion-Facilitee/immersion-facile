@@ -3,7 +3,6 @@ import {
   type AssessmentStatus,
   ConventionDtoBuilder,
   type ExtractFromExisting,
-  emailTemplatesByName,
   errors,
   expectPromiseToFailWithError,
   frontRoutes,

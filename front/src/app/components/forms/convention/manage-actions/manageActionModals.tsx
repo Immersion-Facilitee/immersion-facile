@@ -242,6 +242,9 @@ const createSignModalParams = {
   id: domElementIds.manageConvention.signModal,
   isOpenedByDefault: false,
   formId: domElementIds.manageConvention.signModalForm,
+  submitButton: {
+    id: domElementIds.manageConvention.submitSignModalButton,
+  },
 };
 const {
   Component: SignModal,
