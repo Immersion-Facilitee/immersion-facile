@@ -4,8 +4,11 @@ import {
   ConventionDtoBuilder,
   errors,
   expectPromiseToFailWithError,
+  frontRoutes,
+  makeRouteAbsoluteUrl,
 } from "shared";
-import { fakeGenerateMagicLinkUrlFn } from "../../../../utils/jwtTestHelper";
+import type { AppConfig } from "../../../../config/bootstrap/appConfig";
+import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
@@ -27,9 +30,9 @@ describe("NotifyLastSigneeThatConventionHasBeenSigned", () => {
   let conventionSignedByNoOne: ConventionDto;
   let notifyLastSignee: NotifyLastSigneeThatConventionHasBeenSigned;
   let uow: InMemoryUnitOfWork;
-  let timeGateway: CustomTimeGateway;
   let agency: AgencyWithUsersRights;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
+  let config: AppConfig;
 
   beforeEach(() => {
     uow = createInMemoryUow();
@@ -45,43 +48,43 @@ describe("NotifyLastSigneeThatConventionHasBeenSigned", () => {
       uow.outboxRepository,
     );
 
-    timeGateway = new CustomTimeGateway();
+    config = new AppConfigBuilder({}).build();
 
     const uuidGenerator = new UuidV4Generator();
     const saveNotificationAndRelatedEvent = makeSaveNotificationAndRelatedEvent(
       uuidGenerator,
-      timeGateway,
+      new CustomTimeGateway(),
     );
 
     notifyLastSignee = makeNotifyLastSigneeThatConventionHasBeenSigned({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         saveNotificationAndRelatedEvent,
-        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
-        timeGateway,
+        config,
       },
     });
   });
+
+  const manageConventionUrl = (
+    conventionId: string,
+    loginPersona: "beneficiary" | "professional",
+  ) =>
+    makeRouteAbsoluteUrl({
+      route: frontRoutes.manageConventionConnectedUser({
+        conventionId,
+        loginPersona,
+      }),
+      baseUrl: config.immersionFacileBaseUrl,
+    });
 
   it("Last signed by beneficiary, no more signees", async () => {
     const signedConvention = new ConventionDtoBuilder(conventionSignedByNoOne)
       .signedByBeneficiary(new Date().toISOString())
       .build();
-    const now = new Date();
-    timeGateway.setNextDate(now);
 
     uow.conventionRepository.setConventions([signedConvention]);
 
     await notifyLastSignee.execute({ convention: signedConvention });
-
-    const magicLink = fakeGenerateMagicLinkUrlFn({
-      targetRoute: "manageConvention",
-      id: signedConvention.id,
-      role: "beneficiary",
-      email: signedConvention.signatories.beneficiary.email,
-      now,
-      lifetime: "1Month",
-    });
 
     expectSavedNotificationsAndEvents({
       emails: [
@@ -89,9 +92,9 @@ describe("NotifyLastSigneeThatConventionHasBeenSigned", () => {
           params: {
             internshipKind: signedConvention.internshipKind,
             conventionId: signedConvention.id,
-            // biome-ignore lint/style/noNonNullAssertion: <explanation>
+            // biome-ignore lint/style/noNonNullAssertion: signedAt is set in this test
             signedAt: signedConvention.signatories.beneficiary.signedAt!,
-            magicLink,
+            magicLink: manageConventionUrl(signedConvention.id, "beneficiary"),
             agencyLogoUrl: agency.logoUrl ?? undefined,
             agencyName: agency.name,
           },
@@ -107,8 +110,6 @@ describe("NotifyLastSigneeThatConventionHasBeenSigned", () => {
       .signedByBeneficiary(new Date().toISOString())
       .signedByEstablishmentRepresentative(new Date().toISOString())
       .build();
-    const now = new Date();
-    timeGateway.setNextDate(now);
     uow.conventionRepository.setConventions([signedConvention]);
 
     await notifyLastSignee.execute({ convention: signedConvention });
@@ -119,19 +120,11 @@ describe("NotifyLastSigneeThatConventionHasBeenSigned", () => {
           params: {
             internshipKind: signedConvention.internshipKind,
             signedAt:
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              // biome-ignore lint/style/noNonNullAssertion: signedAt is set in this test
               signedConvention.signatories.establishmentRepresentative
                 .signedAt!,
             conventionId: signedConvention.id,
-            magicLink: fakeGenerateMagicLinkUrlFn({
-              targetRoute: "manageConvention",
-              id: signedConvention.id,
-              role: "establishment-representative",
-              email:
-                signedConvention.signatories.establishmentRepresentative.email,
-              now,
-              lifetime: "1Month",
-            }),
+            magicLink: manageConventionUrl(signedConvention.id, "professional"),
             agencyLogoUrl: agency.logoUrl ?? undefined,
             agencyName: agency.name,
           },

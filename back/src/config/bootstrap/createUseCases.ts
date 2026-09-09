@@ -1253,9 +1253,8 @@ export const createUseCases = ({
       makeNotifyLastSigneeThatConventionHasBeenSigned({
         uowPerformer,
         deps: {
+          config,
           saveNotificationAndRelatedEvent,
-          generateConventionMagicLinkUrl,
-          timeGateway,
         },
       }),
     notifyNewConventionNeedsReview: makeNotifyNewConventionNeedsReview({
