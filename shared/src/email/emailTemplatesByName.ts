@@ -1577,7 +1577,7 @@ Tél : ${beneficiaryPhone}`,
         agencyAddress,
         businessName,
         justification,
-        magicLink,
+        manageConventionLink,
         conventionId,
       }) => ({
         subject: `Changement de prescripteur de la demande d'immersion pour observer l'activité de ${immersionProfession} au sein de ${businessName}`,
@@ -1589,7 +1589,7 @@ Tél : ${beneficiaryPhone}`,
         Vous pouvez vous rapprocher de votre conseiller chez ${newAgencyName} - ${agencyAddress} pour suivre votre demande.`,
         buttons: [
           {
-            url: magicLink,
+            url: manageConventionLink,
             label: "Voir l'état de ma demande",
           },
         ],

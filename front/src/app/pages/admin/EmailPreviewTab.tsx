@@ -453,7 +453,7 @@ export const defaultEmailValueByEmailKind: {
     conventionId: "CONVENTION_ID",
     businessName: "BUSINESS_NAME",
     internshipKind: "immersion",
-    magicLink: "MAGIC_LINK",
+    manageConventionLink: "http://MANAGE_CONVENTION_LINK",
     immersionProfession: "IMMERSION_PROFESSION",
     previousAgencyName: "PREVIOUS_AGENCY_NAME",
     newAgencyName: "NEW_AGENCY_NAME",

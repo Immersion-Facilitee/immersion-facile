@@ -950,9 +950,6 @@ export const createUseCases = ({
         uowPerformer,
         deps: {
           saveNotificationAndRelatedEvent,
-          generateConventionMagicLinkUrl,
-          timeGateway,
-          shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
           config,
         },
       }),
