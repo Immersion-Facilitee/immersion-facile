@@ -115,7 +115,7 @@ const onMissingEstablishment = async ({
     await uow.outboxRepository.save(
       createNewEvent({
         topic: "MarketingEstablishmentContactDeletionRequested",
-        payload: { siret, triggeredBy: null },
+        payload: { siret, triggeredBy: { kind: "crawler" } },
       }),
     );
     return;
