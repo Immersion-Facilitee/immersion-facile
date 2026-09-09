@@ -1,12 +1,13 @@
 import {
   errors,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
   type WithAssessmentDto,
   withAssessmentSchema,
 } from "shared";
-import type { GenerateConventionMagicLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
+import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
-import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
 export type NotifyBeneficiaryThatAssessmentIsCreated = ReturnType<
@@ -20,8 +21,7 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
   .withCurrentUser<void>()
   .withDeps<{
     saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-    generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
-    timeGateway: TimeGateway;
+    config: AppConfig;
   }>()
   .build(async ({ uow, inputParams, deps }) => {
     const convention = await uow.conventionRepository.getById(
@@ -33,13 +33,19 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
         conventionId: inputParams.assessment.conventionId,
       });
 
-    const today = deps.timeGateway.now();
-
     const followedIds = {
       conventionId: convention.id,
       agencyId: convention.agencyId,
       establishmentSiret: convention.siret,
     };
+
+    const magicLink = makeRouteAbsoluteUrl({
+      route: frontRoutes.assessmentDocument({
+        conventionId: convention.id,
+        loginPersona: "beneficiary",
+      }),
+      baseUrl: deps.config.immersionFacileBaseUrl,
+    });
 
     await deps.saveNotificationAndRelatedEvent(uow, {
       kind: "email",
@@ -55,14 +61,7 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
           beneficiaryFirstName: getFormattedFirstnameAndLastname({
             firstname: convention.signatories.beneficiary.firstName,
           }),
-          magicLink: deps.generateConventionMagicLinkUrl({
-            id: convention.id,
-            email: convention.signatories.beneficiary.email,
-            role: "beneficiary",
-            targetRoute: "assessmentDocument",
-            now: today,
-            lifetime: "1Month",
-          }),
+          magicLink,
         },
       },
       followedIds,
@@ -86,14 +85,7 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
             beneficiaryFirstName: getFormattedFirstnameAndLastname({
               firstname: convention.signatories.beneficiary.firstName,
             }),
-            magicLink: deps.generateConventionMagicLinkUrl({
-              id: convention.id,
-              email: convention.signatories.beneficiaryRepresentative.email,
-              role: "beneficiary-representative",
-              targetRoute: "assessmentDocument",
-              now: today,
-              lifetime: "1Month",
-            }),
+            magicLink,
           },
         },
         followedIds,
