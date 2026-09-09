@@ -285,6 +285,115 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
       ]);
     });
 
+    it("Keeps the previous contact email in the gateway when another siret still uses it as its contact email", async () => {
+      const sharedContact: MarketingContact = {
+        createdAt: new Date("2024-01-01"),
+        email: "shared-contact@example.com",
+        firstName: "Shared",
+        lastName: "Contact",
+      };
+      const otherSiret = "99998888777766";
+
+      uow.establishmentMarketingRepository.contacts = [
+        {
+          ...establishmentMarketingContactEntity,
+          contactEmail: sharedContact.email,
+          emailContactHistory: [sharedContact],
+        },
+        {
+          contactEmail: sharedContact.email,
+          siret: otherSiret,
+          emailContactHistory: [sharedContact],
+          nafCode: null,
+        },
+      ];
+
+      marketingGateway.marketingEstablishments = [
+        {
+          email: sharedContact.email,
+          firstName: sharedContact.firstName,
+          lastName: sharedContact.lastName,
+          conventions: { numberOfValidatedConvention: 1 },
+          hasIcAccount: false,
+          isRegistered: false,
+          siret: establishment.establishment.siret,
+        },
+      ];
+
+      await updateMarketingEstablishmentContactList.execute({
+        siret: establishment.establishment.siret,
+      });
+
+      expectObjectInArrayToMatch(marketingGateway.marketingEstablishments, [
+        { email: sharedContact.email },
+        { email: establishmentMarketingGatewayDto.email },
+      ]);
+    });
+
+    it("Only removes the immediately previous contact email, not older emails still present in the history", async () => {
+      const olderContact: MarketingContact = {
+        createdAt: new Date("2023-01-01"),
+        email: "older-contact@example.com",
+        firstName: "Older",
+        lastName: "Contact",
+      };
+      const previousContact: MarketingContact = {
+        createdAt: new Date("2024-01-01"),
+        email: "previous-contact@example.com",
+        firstName: "Previous",
+        lastName: "Contact",
+      };
+
+      uow.establishmentMarketingRepository.contacts = [
+        {
+          ...establishmentMarketingContactEntity,
+          contactEmail: previousContact.email,
+          emailContactHistory: [previousContact, olderContact],
+        },
+      ];
+
+      marketingGateway.marketingEstablishments = [
+        {
+          email: previousContact.email,
+          firstName: previousContact.firstName,
+          lastName: previousContact.lastName,
+          conventions: { numberOfValidatedConvention: 1 },
+          hasIcAccount: false,
+          isRegistered: false,
+          siret: establishment.establishment.siret,
+        },
+        {
+          email: olderContact.email,
+          firstName: olderContact.firstName,
+          lastName: olderContact.lastName,
+          conventions: { numberOfValidatedConvention: 1 },
+          hasIcAccount: false,
+          isRegistered: false,
+          siret: establishment.establishment.siret,
+        },
+      ];
+
+      await updateMarketingEstablishmentContactList.execute({
+        siret: establishment.establishment.siret,
+      });
+
+      expectToEqual(uow.establishmentMarketingRepository.contacts, [
+        {
+          ...establishmentMarketingContactEntity,
+          emailContactHistory: [
+            marketingContact,
+            previousContact,
+            olderContact,
+          ],
+        },
+      ]);
+
+      expectObjectInArrayToMatch(marketingGateway.marketingEstablishments, [
+        { email: olderContact.email },
+        { email: establishmentMarketingGatewayDto.email },
+      ]);
+    });
+
     describe("Update convention related properties", () => {
       beforeEach(() => {
         uow.establishmentMarketingRepository.contacts = [
@@ -626,7 +735,7 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
       ]);
     });
 
-    it("Replaces every previous lead contact for the same siret in the marketing gateway", async () => {
+    it("Removes only the previous contact email from the marketing gateway, keeping older history emails untouched", async () => {
       uow.conventionRepository.setConventions([convention]);
 
       const previousContacts: MarketingContact[] = [
@@ -676,8 +785,9 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
           ],
         },
       ]);
-      expectToEqual(marketingGateway.marketingEstablishments, [
-        establishmentMarketingGatewayDto,
+      expectObjectInArrayToMatch(marketingGateway.marketingEstablishments, [
+        { email: previousContacts[1].email },
+        { email: establishmentMarketingGatewayDto.email },
       ]);
     });
 
@@ -769,7 +879,10 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
       expectObjectInArrayToMatch(uow.outboxRepository.events, [
         {
           topic: "MarketingEstablishmentContactDeletionRequested",
-          payload: { siret: convention.siret, triggeredBy: null },
+          payload: {
+            siret: convention.siret,
+            triggeredBy: { kind: "crawler" },
+          },
         },
       ]);
 

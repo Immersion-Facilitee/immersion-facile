@@ -100,4 +100,50 @@ describe("PgAgencyRepository", () => {
       undefined,
     );
   });
+
+  it("getSiretsByContactEmail returns every siret currently using the email as contact email", async () => {
+    const sharedEmail = "shared-contact@gmail.com";
+    const makeContact = (
+      siret: string,
+      contactEmail: string,
+    ): EstablishmentMarketingContactEntity => ({
+      contactEmail,
+      siret,
+      nafCode: "0111Z",
+      emailContactHistory: [
+        {
+          email: contactEmail,
+          firstName: "Jean",
+          lastName: "Bidule",
+          createdAt: new Date(),
+        },
+      ],
+    });
+
+    await establishmentMarketingRepository.save(
+      makeContact("11112222333344", sharedEmail),
+    );
+    await establishmentMarketingRepository.save(
+      makeContact("55556666777788", sharedEmail),
+    );
+    await establishmentMarketingRepository.save(
+      makeContact("99990000111122", "other-contact@gmail.com"),
+    );
+
+    expectToEqual(
+      (
+        await establishmentMarketingRepository.getSiretsByContactEmail(
+          sharedEmail,
+        )
+      ).sort(),
+      ["11112222333344", "55556666777788"],
+    );
+
+    expectToEqual(
+      await establishmentMarketingRepository.getSiretsByContactEmail(
+        "unknown-contact@gmail.com",
+      ),
+      [],
+    );
+  });
 });

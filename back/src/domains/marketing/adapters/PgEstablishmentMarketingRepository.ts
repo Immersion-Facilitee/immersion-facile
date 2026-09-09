@@ -1,4 +1,4 @@
-import type { SiretDto } from "shared";
+import type { Email, SiretDto } from "shared";
 import type { KyselyDb } from "../../../config/pg/kysely/kyselyUtils";
 
 import type {
@@ -33,6 +33,16 @@ export class PgEstablishmentMarketingRepository
         ),
       }
     );
+  }
+
+  public async getSiretsByContactEmail(email: Email): Promise<SiretDto[]> {
+    const rows = await this.transaction
+      .selectFrom("marketing_establishment_contacts")
+      .select("siret")
+      .where("email", "=", email)
+      .execute();
+
+    return rows.map(({ siret }) => siret);
   }
 
   public async delete(siret: SiretDto): Promise<void> {
