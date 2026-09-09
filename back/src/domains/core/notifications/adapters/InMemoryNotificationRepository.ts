@@ -16,7 +16,6 @@ import {
   type NotificationKind,
   type NotificationState,
   replaceElementWhere,
-  type ShortLinkId,
   type Signatory,
   type SiretDto,
   type SmsNotification,
@@ -24,7 +23,6 @@ import {
   type UserId,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
-import { makeShortLinkUrl } from "../../short-link/ShortLink";
 import type {
   DeleteNotificationsParams,
   EmailNotificationFilters,
@@ -369,19 +367,14 @@ export const expectEmailFinalValidationConfirmationParamsMatchingConvention = (
   agency: AgencyDto,
   convention: ConventionDto,
   config: AppConfig,
-  conventionToSignLinkId: ShortLinkId,
-  assessmentShortlink: ShortLinkId | undefined,
   role: ConventionRole,
 ) => {
-  const isAgencyModifierRole = role === "validator" || role === "counsellor";
-  const magicLink = isAgencyModifierRole
-    ? makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: convention.id,
-        }),
-        baseUrl: config.immersionFacileBaseUrl,
-      })
-    : makeShortLinkUrl(config, conventionToSignLinkId);
+  const loginPersona =
+    role === "beneficiary" ||
+    role === "beneficiary-representative" ||
+    role === "beneficiary-current-employer"
+      ? "beneficiary"
+      : "professional";
 
   return expectToEqual(templatedEmails, {
     kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
@@ -411,14 +404,14 @@ export const expectEmailFinalValidationConfirmationParamsMatchingConvention = (
         beneficiary: convention.signatories.beneficiary,
       }),
       agencyLogoUrl: agency.logoUrl ?? undefined,
-      magicLink,
-      assessmentMagicLink: assessmentShortlink
-        ? makeShortLinkUrl(config, assessmentShortlink)
-        : undefined,
+      magicLink: makeRouteAbsoluteUrl({
+        route: frontRoutes.manageConventionConnectedUser({
+          conventionId: convention.id,
+          loginPersona,
+        }),
+        baseUrl: config.immersionFacileBaseUrl,
+      }),
       agencyName: agency.name,
-      agencyReferentName: convention.agencyReferent
-        ? getFormattedFirstnameAndLastname(convention.agencyReferent)
-        : undefined,
       validatorName: convention.validators?.agencyValidator
         ? getFormattedFirstnameAndLastname(
             convention.validators.agencyValidator,
