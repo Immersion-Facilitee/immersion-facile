@@ -1098,7 +1098,6 @@ export const createUseCases = ({
         timeGateway,
         config,
         saveNotificationAndRelatedEvent,
-        generateConventionMagicLinkUrl,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         createNewEvent,
       },

@@ -6,24 +6,24 @@ import {
   type ConventionRelatedJwtPayload,
   errors,
   formatHoursCooldownTimeRemaining,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
   isBeforeAssessmentSignatureReleaseDate,
   isWithinHoursCooldown,
+  makeRouteAbsoluteUrl,
   type NotificationKind,
   type SendAssessmentLinkRequestDto,
   sendAssessmentLinkRequestSchema,
   type UserId,
 } from "shared";
 import type { AppConfig } from "../../../config/bootstrap/appConfig";
-import type { GenerateConventionMagicLinkUrl } from "../../../config/bootstrap/magicLinkUrl";
 import { throwErrorIfConventionStatusNotAllowed } from "../../../utils/convention";
-import type { CreateConventionMagicLinkPayloadProperties } from "../../../utils/jwt";
 import { throwIfNotAuthorizedForRole } from "../../connected-users/helpers/authorization.helper";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { SaveNotificationAndRelatedEvent } from "../../core/notifications/helpers/Notification";
 import type { NotificationRepository } from "../../core/notifications/ports/NotificationRepository";
 import type { ShortLinkIdGeneratorGateway } from "../../core/short-link/ports/ShortLinkIdGeneratorGateway";
-import { prepareConventionMagicShortLinkMaker } from "../../core/short-link/ShortLink";
+import { makeShortLink } from "../../core/short-link/ShortLink";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
@@ -46,7 +46,6 @@ export const makeSendAssessmentSignatureReminder = useCaseBuilder(
   .withCurrentUser<ConventionRelatedJwtPayload>()
   .withDeps<{
     saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-    generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
     timeGateway: TimeGateway;
     shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
     config: AppConfig;
@@ -119,12 +118,6 @@ export const makeSendAssessmentSignatureReminder = useCaseBuilder(
         signatoryRole: "beneficiary",
       });
       await sendAssessmentSignatureReminderSms({
-        conventionMagicLinkPayload: {
-          id: convention.id,
-          role: convention.signatories.beneficiary.role,
-          email: convention.signatories.beneficiary.email,
-          now: deps.timeGateway.now(),
-        },
         userId: "userId" in jwtPayload ? jwtPayload.userId : undefined,
         recipientPhone: convention.signatories.beneficiary.phone,
         uow,
@@ -136,12 +129,6 @@ export const makeSendAssessmentSignatureReminder = useCaseBuilder(
     if (notificationKind === "email")
       await sendAssessmentSignatureReminderEmail({
         convention,
-        conventionMagicLinkPayload: {
-          id: convention.id,
-          role: convention.signatories.beneficiary.role,
-          email: convention.signatories.beneficiary.email,
-          now: deps.timeGateway.now(),
-        },
         uow,
         ...deps,
       });
@@ -169,35 +156,16 @@ export const makeSendAssessmentSignatureReminder = useCaseBuilder(
 
 const sendAssessmentSignatureReminderEmail = async ({
   convention,
-  conventionMagicLinkPayload,
   saveNotificationAndRelatedEvent,
-  generateConventionMagicLinkUrl,
-  shortLinkIdGeneratorGateway,
   config,
   uow,
 }: {
   convention: ConventionDto;
-  conventionMagicLinkPayload: CreateConventionMagicLinkPayloadProperties;
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-  generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
-  shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
   config: AppConfig;
   uow: UnitOfWork;
 }) => {
   const beneficiary = convention.signatories.beneficiary;
-
-  const makeMagicShortLink = prepareConventionMagicShortLinkMaker({
-    conventionMagicLinkPayload,
-    uow,
-    config,
-    generateConventionMagicLinkUrl,
-    shortLinkIdGeneratorGateway,
-  });
-
-  const assessmentSignatureLink = await makeMagicShortLink({
-    targetRoute: "assessmentDocument",
-    lifetime: "2Days",
-  });
 
   await saveNotificationAndRelatedEvent(uow, {
     kind: "email",
@@ -214,7 +182,13 @@ const sendAssessmentSignatureReminderEmail = async ({
         }),
         businessName: convention.businessName,
         internshipKind: convention.internshipKind,
-        assessmentSignatureLink,
+        assessmentSignatureLink: makeRouteAbsoluteUrl({
+          route: frontRoutes.assessmentDocument({
+            conventionId: convention.id,
+            loginPersona: "beneficiary",
+          }),
+          baseUrl: config.immersionFacileBaseUrl,
+        }),
       },
     },
     followedIds: {
@@ -226,9 +200,7 @@ const sendAssessmentSignatureReminderEmail = async ({
 };
 
 const sendAssessmentSignatureReminderSms = async ({
-  conventionMagicLinkPayload,
   saveNotificationAndRelatedEvent,
-  generateConventionMagicLinkUrl,
   shortLinkIdGeneratorGateway,
   config,
   convention,
@@ -236,9 +208,7 @@ const sendAssessmentSignatureReminderSms = async ({
   recipientPhone,
   userId,
 }: {
-  conventionMagicLinkPayload: CreateConventionMagicLinkPayloadProperties;
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-  generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
   shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
   config: AppConfig;
   convention: ConventionDto;
@@ -246,18 +216,18 @@ const sendAssessmentSignatureReminderSms = async ({
   recipientPhone: string;
   userId: UserId | undefined;
 }) => {
-  const makeShortMagicLink = prepareConventionMagicShortLinkMaker({
-    config,
-    conventionMagicLinkPayload,
-    generateConventionMagicLinkUrl,
-    shortLinkIdGeneratorGateway,
+  const shortLink = await makeShortLink({
     uow,
-  });
-
-  const shortLink = await makeShortMagicLink({
-    targetRoute: "assessmentDocument",
-    lifetime: "2Days",
-    extraQueryParams: { at_campaign: "sms-assessment-signature-reminder" },
+    shortLinkIdGeneratorGateway,
+    config,
+    longLink: makeRouteAbsoluteUrl({
+      route: frontRoutes.assessmentDocument({
+        conventionId: convention.id,
+        loginPersona: "beneficiary",
+        at_campaign: "sms-assessment-signature-reminder",
+      }),
+      baseUrl: config.immersionFacileBaseUrl,
+    }),
   });
 
   await saveNotificationAndRelatedEvent(uow, {

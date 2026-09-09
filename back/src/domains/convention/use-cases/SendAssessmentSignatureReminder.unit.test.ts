@@ -14,13 +14,14 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
 } from "shared";
 import type { AppConfig } from "../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
-import { fakeGenerateMagicLinkUrlFn } from "../../../utils/jwtTestHelper";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import { makeSaveNotificationAndRelatedEvent } from "../../core/notifications/helpers/Notification";
 import { DeterministShortLinkIdGeneratorGateway } from "../../core/short-link/adapters/short-link-generator-gateway/DeterministShortLinkIdGeneratorGateway";
@@ -98,7 +99,6 @@ describe("SendAssessmentSignatureReminder", () => {
           uuidGenerator,
           timeGateway,
         ),
-        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
         timeGateway,
         shortLinkIdGeneratorGateway,
         config,
@@ -151,7 +151,13 @@ describe("SendAssessmentSignatureReminder", () => {
             }),
             businessName: convention.businessName,
             internshipKind: convention.internshipKind,
-            assessmentSignatureLink: makeShortLinkUrl(config, shortLinkId),
+            assessmentSignatureLink: makeRouteAbsoluteUrl({
+              route: frontRoutes.assessmentDocument({
+                conventionId: convention.id,
+                loginPersona: "beneficiary",
+              }),
+              baseUrl: config.immersionFacileBaseUrl,
+            }),
           },
         },
       },
@@ -196,6 +202,20 @@ describe("SendAssessmentSignatureReminder", () => {
             shortLink: makeShortLinkUrl(config, shortLinkId),
           },
         },
+      },
+    ]);
+    expectToEqual(uow.shortLinkQuery.getShortLinks(), [
+      {
+        id: shortLinkId,
+        url: makeRouteAbsoluteUrl({
+          route: frontRoutes.assessmentDocument({
+            conventionId: convention.id,
+            loginPersona: "beneficiary",
+            at_campaign: "sms-assessment-signature-reminder",
+          }),
+          baseUrl: config.immersionFacileBaseUrl,
+        }),
+        lastUsedAt: null,
       },
     ]);
     expectObjectInArrayToMatch(uow.outboxRepository.events, [
