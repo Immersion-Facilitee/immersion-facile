@@ -457,7 +457,7 @@ export type EmailParamsByEmailType = {
     establishmentRepresentativeName: string;
     establishmentTutorName: string;
     internshipKind: InternshipKind;
-    conventionSignShortlink: string;
+    conventionSignatureLink: AbsoluteUrl;
     signatoryName: string;
     renewed?: Renewed;
   };
@@ -467,7 +467,7 @@ export type EmailParamsByEmailType = {
     beneficiaryLastName: string;
     businessName: string;
     conventionId: ConventionId;
-    conventionSignShortlink: AbsoluteUrl;
+    conventionSignatureLink: AbsoluteUrl;
     internshipKind: InternshipKind;
     justification: string;
     signatoryFirstName: string;

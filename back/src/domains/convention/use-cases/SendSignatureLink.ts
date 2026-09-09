@@ -286,7 +286,7 @@ const sendEmail = async ({
             lastname:
               convention.signatories.beneficiaryCurrentEmployer.lastName,
           }),
-        conventionSignShortlink: await makeShortMagicLink({
+        conventionSignatureLink: await makeShortMagicLink({
           targetRoute: "conventionToSign",
           lifetime: "2Days",
           extraQueryParams: { at_campaign: "email-signature-link" },

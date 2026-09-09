@@ -4,21 +4,17 @@ import {
   type ConventionDto,
   errors,
   filterNotFalsy,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
   type Signatory,
   type TemplatedEmail,
   withConventionSchema,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
-import type { GenerateConventionMagicLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
-import type { CreateConventionMagicLinkPayloadProperties } from "../../../../utils/jwt";
 import { createLogger } from "../../../../utils/logger";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
-import type { ShortLinkIdGeneratorGateway } from "../../../core/short-link/ports/ShortLinkIdGeneratorGateway";
-import { prepareConventionMagicShortLinkMaker } from "../../../core/short-link/ShortLink";
-import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
-import type { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
 const logger = createLogger(__filename);
@@ -28,9 +24,6 @@ export type NotifySignatoriesThatConventionSubmittedNeedsSignature = ReturnType<
 >;
 
 type Deps = {
-  timeGateway: TimeGateway;
-  shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
-  generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
   config: AppConfig;
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
 };
@@ -59,12 +52,11 @@ export const makeNotifySignatoriesThatConventionSubmittedNeedsSignature =
       )) {
         await deps.saveNotificationAndRelatedEvent(uow, {
           kind: "email",
-          templatedContent: await makeEmail(
+          templatedContent: makeEmail(
             signatory,
             convention,
             await agencyWithRightToAgencyDto(uow, agencyWithRights),
-            uow,
-            deps,
+            deps.config,
           ),
           followedIds: {
             conventionId: convention.id,
@@ -75,20 +67,13 @@ export const makeNotifySignatoriesThatConventionSubmittedNeedsSignature =
       }
     });
 
-const makeEmail = async (
+const makeEmail = (
   signatory: Signatory,
   convention: ConventionDto,
   agency: AgencyDto,
-  uow: UnitOfWork,
-  {
-    config,
-    generateConventionMagicLinkUrl,
-    shortLinkIdGeneratorGateway,
-    timeGateway,
-  }: Deps,
-): Promise<TemplatedEmail> => {
+  config: AppConfig,
+): TemplatedEmail => {
   const {
-    id,
     businessName,
     signatories: {
       beneficiary,
@@ -97,22 +82,6 @@ const makeEmail = async (
       beneficiaryCurrentEmployer,
     },
   } = convention;
-
-  const conventionMagicLinkPayload: CreateConventionMagicLinkPayloadProperties =
-    {
-      id,
-      role: signatory.role,
-      email: signatory.email,
-      now: timeGateway.now(),
-    };
-
-  const makeMagicShortLink = prepareConventionMagicShortLinkMaker({
-    conventionMagicLinkPayload,
-    uow,
-    config,
-    generateConventionMagicLinkUrl,
-    shortLinkIdGeneratorGateway,
-  });
 
   return {
     kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
@@ -148,12 +117,16 @@ const makeEmail = async (
           lastname: beneficiaryCurrentEmployer.lastName,
           firstname: beneficiaryCurrentEmployer.firstName,
         }),
-      conventionSignShortlink: await makeMagicShortLink({
-        targetRoute: "conventionToSign",
-        lifetime: "2Days",
-        extraQueryParams: {
+      conventionSignatureLink: makeRouteAbsoluteUrl({
+        route: frontRoutes.manageConventionConnectedUser({
+          conventionId: convention.id,
+          loginPersona:
+            signatory.role === "establishment-representative"
+              ? "professional"
+              : "beneficiary",
           at_campaign: "email-signature-link",
-        },
+        }),
+        baseUrl: config.immersionFacileBaseUrl,
       }),
       businessName,
       agencyLogoUrl: agency.logoUrl ?? undefined,

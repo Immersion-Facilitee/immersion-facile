@@ -295,7 +295,6 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
     signatory,
     recipient,
     agency,
-    conventionToSignLinkId,
     config,
   }: {
     config: AppConfig;
@@ -303,9 +302,7 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
     convention: ConventionDto;
     signatory: Signatory;
     recipient: string;
-    now: Date;
     agency: AgencyDto;
-    conventionToSignLinkId: ShortLinkId;
   }) => {
     const { businessName } = convention;
     const {
@@ -349,10 +346,17 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
             firstname: beneficiaryCurrentEmployer.firstName,
             lastname: beneficiaryCurrentEmployer.lastName,
           }),
-        conventionSignShortlink: makeShortLinkUrl(
-          config,
-          conventionToSignLinkId,
-        ),
+        conventionSignatureLink: makeRouteAbsoluteUrl({
+          route: frontRoutes.manageConventionConnectedUser({
+            conventionId: convention.id,
+            loginPersona:
+              signatory.role === "establishment-representative"
+                ? "professional"
+                : "beneficiary",
+            at_campaign: "email-signature-link",
+          }),
+          baseUrl: config.immersionFacileBaseUrl,
+        }),
         businessName,
         agencyLogoUrl: agency.logoUrl ?? undefined,
       },

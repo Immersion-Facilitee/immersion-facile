@@ -104,7 +104,7 @@ describe("conventionDtosToConventionReadDtos", () => {
         establishmentRepresentativeName: "Establishment Rep",
         establishmentTutorName: "Tutor",
         internshipKind: convention.internshipKind,
-        conventionSignShortlink: "https://short.link",
+        conventionSignatureLink: "https://signature.link",
         signatoryName: "Signatory",
       },
     },

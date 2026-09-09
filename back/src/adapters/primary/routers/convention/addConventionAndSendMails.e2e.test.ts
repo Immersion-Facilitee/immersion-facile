@@ -8,29 +8,23 @@ import {
   currentJwtVersions,
   expectArraysToEqualIgnoringOrder,
   expectEmailOfType,
-  expectJwtInMagicLinkAndGetIt,
-  expectObjectInArrayToMatch,
   expectToEqual,
   frontRoutes,
   makeRouteAbsoluteUrl,
   type Signatories,
-  type TemplatedEmail,
-  technicalRoutes,
   type UpdateConventionStatusRequestDto,
   unauthenticatedConventionRoutes,
   VALID_EMAILS,
 } from "shared";
-import { createSupertestSharedClient } from "shared-routes/supertest";
 import type supertest from "supertest";
 import type { InMemoryOutboxRepository } from "../../../../domains/core/events/adapters/InMemoryOutboxRepository";
 import type { DomainEvent } from "../../../../domains/core/events/events";
-import type { InMemoryNotificationGateway } from "../../../../domains/core/notifications/adapters/InMemoryNotificationGateway";
 import { toAgencyWithRights } from "../../../../utils/agency";
 import {
   buildTestApp,
   type TestAppAndDeps,
 } from "../../../../utils/buildTestApp";
-import { shortLinkRedirectToLinkWithValidation } from "../../../../utils/e2eTestHelpers";
+import { createConventionMagicLinkPayload } from "../../../../utils/jwt";
 import { processEventsForEmailToBeSent } from "../../../../utils/processEventsForEmailToBeSent";
 
 describe("Add Convention Notifications, then checks the mails are sent (trigerred by events)", () => {
@@ -92,19 +86,14 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
 
     await processEventsForEmailToBeSent(eventCrawler);
 
-    expectSentEmails(gateways.notification, [
-      { kind: "NEW_CONVENTION_AGENCY_NOTIFICATION" },
-      {
-        kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
-        recipients: [validConvention.signatories.beneficiary.email],
-      },
-      {
-        kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
-        recipients: [
-          validConvention.signatories.establishmentRepresentative.email,
-        ],
-      },
-    ]);
+    expectArraysToEqualIgnoringOrder(
+      gateways.notification.getSentEmails().map((email) => email.kind),
+      [
+        "NEW_CONVENTION_AGENCY_NOTIFICATION",
+        "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
+        "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
+      ],
+    );
   });
 
   it("Scenario: convention submitted, then signed, then validated", async () => {
@@ -174,13 +163,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     );
   });
 
-  const expectSentEmails = (
-    notificationGateway: InMemoryNotificationGateway,
-    emails: Partial<TemplatedEmail>[],
-  ) => {
-    expectObjectInArrayToMatch(notificationGateway.getSentEmails(), emails);
-  };
-
   const expectEventsInOutbox = (
     outbox: InMemoryOutboxRepository,
     events: Partial<DomainEvent>[],
@@ -199,14 +181,17 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
   const numberOfEmailInitialySent = 4;
 
   const beneficiarySubmitsApplicationForTheFirstTime = async (
-    { request, gateways, eventCrawler, inMemoryUow }: TestAppAndDeps,
+    {
+      request,
+      gateways,
+      eventCrawler,
+      inMemoryUow,
+      generateConventionJwt,
+      appConfig,
+    }: TestAppAndDeps,
     convention: ConventionDto,
     submitDate: Date,
   ) => {
-    const technicalRoutesClient = createSupertestSharedClient(
-      technicalRoutes,
-      request,
-    );
     gateways.timeGateway.setNextDate(submitDate);
     gateways.shortLinkGenerator.addMoreShortLinkIds([
       "shortLink1",
@@ -245,30 +230,62 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       [[VALID_EMAILS[2]], [VALID_EMAILS[0]], [VALID_EMAILS[1]]],
     );
 
-    expectEmailOfType(sentEmails[0], "NEW_CONVENTION_AGENCY_NOTIFICATION");
-    const beneficiaryShortLinkSignEmail = expectEmailOfType(
-      sentEmails[1],
+    const beneficiarySignEmail = expectEmailOfType(
+      // biome-ignore lint/style/noNonNullAssertion: email is found by recipient
+      sentEmails.find((email) =>
+        email.recipients.includes(convention.signatories.beneficiary.email),
+      )!,
       "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
     );
-    const establishmentShortLinkSignEmail = expectEmailOfType(
-      sentEmails[2],
+    expectToEqual(
+      beneficiarySignEmail.params.conventionSignatureLink,
+      makeRouteAbsoluteUrl({
+        route: frontRoutes.manageConventionConnectedUser({
+          conventionId: convention.id,
+          loginPersona: "beneficiary",
+          at_campaign: "email-signature-link",
+        }),
+        baseUrl: appConfig.immersionFacileBaseUrl,
+      }),
+    );
+
+    const establishmentSignEmail = expectEmailOfType(
+      // biome-ignore lint/style/noNonNullAssertion: email is found by recipient
+      sentEmails.find((email) =>
+        email.recipients.includes(
+          convention.signatories.establishmentRepresentative.email,
+        ),
+      )!,
       "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
     );
-
-    const beneficiarySignLink = await shortLinkRedirectToLinkWithValidation(
-      beneficiaryShortLinkSignEmail.params.conventionSignShortlink,
-      technicalRoutesClient,
+    expectToEqual(
+      establishmentSignEmail.params.conventionSignatureLink,
+      makeRouteAbsoluteUrl({
+        route: frontRoutes.manageConventionConnectedUser({
+          conventionId: convention.id,
+          loginPersona: "professional",
+          at_campaign: "email-signature-link",
+        }),
+        baseUrl: appConfig.immersionFacileBaseUrl,
+      }),
     );
 
-    const establishmentSignLink = await shortLinkRedirectToLinkWithValidation(
-      establishmentShortLinkSignEmail.params.conventionSignShortlink,
-      technicalRoutesClient,
+    const now = gateways.timeGateway.now();
+    const beneficiarySignJwt = generateConventionJwt(
+      createConventionMagicLinkPayload({
+        id: convention.id,
+        role: convention.signatories.beneficiary.role,
+        email: convention.signatories.beneficiary.email,
+        now,
+      }),
     );
-
-    const beneficiarySignJwt =
-      expectJwtInMagicLinkAndGetIt(beneficiarySignLink);
-    const establishmentSignJwt = expectJwtInMagicLinkAndGetIt(
-      establishmentSignLink,
+    const establishmentSignJwt = generateConventionJwt(
+      createConventionMagicLinkPayload({
+        id: convention.id,
+        role: convention.signatories.establishmentRepresentative.role,
+        email: convention.signatories.establishmentRepresentative.email,
+        now,
+      }),
     );
 
     return {
