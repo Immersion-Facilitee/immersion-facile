@@ -374,6 +374,38 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       ],
     );
 
+    const manageConventionUrl = (
+      loginPersona: "beneficiary" | "professional",
+    ) =>
+      makeRouteAbsoluteUrl({
+        route: frontRoutes.manageConventionConnectedUser({
+          conventionId: initialConvention.id,
+          loginPersona,
+        }),
+        baseUrl: appConfig.immersionFacileBaseUrl,
+      });
+
+    expectArraysToEqualIgnoringOrder(
+      sentEmails
+        .filter((email) => email.kind === "SIGNEE_HAS_SIGNED_CONVENTION")
+        .map((email) => ({
+          recipients: email.recipients,
+          magicLink: email.params.magicLink,
+        })),
+      [
+        {
+          recipients: [initialConvention.signatories.beneficiary.email],
+          magicLink: manageConventionUrl("beneficiary"),
+        },
+        {
+          recipients: [
+            initialConvention.signatories.establishmentRepresentative.email,
+          ],
+          magicLink: manageConventionUrl("professional"),
+        },
+      ],
+    );
+
     const needsReviewEmail = expectEmailOfType(
       sentEmails[sentEmails.length - 1],
       "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",

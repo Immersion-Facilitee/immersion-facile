@@ -2,13 +2,14 @@ import {
   type AgencyWithUsersRights,
   type ConventionDto,
   errors,
+  frontRoutes,
+  makeRouteAbsoluteUrl,
   type Signatory,
   type TemplatedEmail,
   withConventionSchema,
 } from "shared";
-import type { GenerateConventionMagicLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
+import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
-import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
 export type NotifyLastSigneeThatConventionHasBeenSigned = ReturnType<
@@ -17,8 +18,7 @@ export type NotifyLastSigneeThatConventionHasBeenSigned = ReturnType<
 
 type Deps = {
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-  generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
-  timeGateway: TimeGateway;
+  config: AppConfig;
 };
 
 export const makeNotifyLastSigneeThatConventionHasBeenSigned = useCaseBuilder(
@@ -43,7 +43,7 @@ export const makeNotifyLastSigneeThatConventionHasBeenSigned = useCaseBuilder(
 
     await deps.saveNotificationAndRelatedEvent(uow, {
       kind: "email",
-      templatedContent: makeEmail(savedConvention, agency, deps),
+      templatedContent: makeEmail(savedConvention, agency, deps.config),
       followedIds: {
         conventionId: savedConvention.id,
         agencyId: savedConvention.agencyId,
@@ -71,13 +71,21 @@ const getLastSignee = (signatories: Signatory[]): Signee | undefined =>
 const makeEmail = (
   convention: ConventionDto,
   agency: AgencyWithUsersRights,
-  deps: Deps,
+  config: AppConfig,
 ): TemplatedEmail => {
   const lastSignee: Signee | undefined = getLastSignee(
     Object.values(convention.signatories),
   );
 
-  if (lastSignee)
+  if (lastSignee) {
+    const { role } = lastSignee;
+    const loginPersona =
+      role === "beneficiary" ||
+      role === "beneficiary-representative" ||
+      role === "beneficiary-current-employer"
+        ? "beneficiary"
+        : "professional";
+
     return {
       kind: "SIGNEE_HAS_SIGNED_CONVENTION",
       params: {
@@ -85,18 +93,18 @@ const makeEmail = (
         internshipKind: convention.internshipKind,
         conventionId: convention.id,
         signedAt: lastSignee.signedAt,
-        magicLink: deps.generateConventionMagicLinkUrl({
-          targetRoute: "manageConvention",
-          id: convention.id,
-          role: lastSignee.role,
-          email: lastSignee.email,
-          now: deps.timeGateway.now(),
-          lifetime: "1Month",
+        magicLink: makeRouteAbsoluteUrl({
+          route: frontRoutes.manageConventionConnectedUser({
+            conventionId: convention.id,
+            loginPersona,
+          }),
+          baseUrl: config.immersionFacileBaseUrl,
         }),
         agencyName: agency.name,
       },
       recipients: [lastSignee.email],
     };
+  }
 
   throw errors.convention.noSignatoryHasSigned({
     conventionId: convention.id,
