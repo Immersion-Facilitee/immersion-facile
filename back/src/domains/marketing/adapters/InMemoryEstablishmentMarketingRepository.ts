@@ -20,7 +20,8 @@ export class InMemoryEstablishementMarketingRepository
   async getSiretsByContactEmail(email: Email): Promise<SiretDto[]> {
     return this.contacts
       .filter((contact) => contact.contactEmail === email)
-      .map(({ siret }) => siret);
+      .map(({ siret }) => siret)
+      .sort();
   }
 
   async save(

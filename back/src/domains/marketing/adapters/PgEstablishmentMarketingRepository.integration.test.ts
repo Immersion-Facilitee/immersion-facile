@@ -131,11 +131,9 @@ describe("PgAgencyRepository", () => {
     );
 
     expectToEqual(
-      (
-        await establishmentMarketingRepository.getSiretsByContactEmail(
-          sharedEmail,
-        )
-      ).sort(),
+      await establishmentMarketingRepository.getSiretsByContactEmail(
+        sharedEmail,
+      ),
       ["11112222333344", "55556666777788"],
     );
 

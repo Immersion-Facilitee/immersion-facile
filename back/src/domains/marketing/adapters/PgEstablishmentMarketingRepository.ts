@@ -40,6 +40,7 @@ export class PgEstablishmentMarketingRepository
       .selectFrom("marketing_establishment_contacts")
       .select("siret")
       .where("email", "=", email)
+      .orderBy("siret", "asc")
       .execute();
 
     return rows.map(({ siret }) => siret);
