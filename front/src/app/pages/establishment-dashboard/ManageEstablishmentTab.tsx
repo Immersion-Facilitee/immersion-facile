@@ -1,5 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
+import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Select from "@codegouvfr/react-dsfr/SelectNext";
 
 import { HeadingSection } from "react-design-system";
@@ -48,19 +48,33 @@ export const ManageEstablishmentsTab = ({
       titleAs="h2"
       className={fr.cx("fr-mt-0")}
       titleAction={
-        <Button
-          iconId="fr-icon-add-circle-line"
-          type="button"
-          onClick={() => {
-            frontRoutes.formEstablishment().push();
-          }}
-          id={
-            domElementIds.establishmentDashboard.manageEstablishments
-              .createEstablishment
-          }
-        >
-          Créer un nouvel établissement
-        </Button>
+        <ButtonsGroup
+          buttons={[
+            {
+              id: domElementIds.establishmentDashboard.manageEstablishments
+                .createEstablishment,
+              priority: "secondary",
+              onClick: () => {
+                frontRoutes.formEstablishment().push();
+              },
+              iconId: "fr-icon-add-line",
+              children: "Créer un nouvel établissement",
+            },
+            {
+              id: domElementIds.myAccountEstablishmentRegistration
+                .registerEstablishmentButton,
+
+              priority: "primary",
+              onClick: () => {
+                frontRoutes.myAccountEstablishmentRegistration().push();
+              },
+              iconId: "fr-icon-add-line",
+              children: "Se rattacher à un établissement",
+            },
+          ]}
+          inlineLayoutWhen="always"
+          className={fr.cx("fr-ml-auto")}
+        />
       }
     >
       <div className={fr.cx("fr-mb-4w")}>
