@@ -500,7 +500,9 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
 
     expectArraysToEqualIgnoringOrder(
       sentEmails
-        .filter((email) => email.kind === "VALIDATED_CONVENTION_FINAL_CONFIRMATION")
+        .filter(
+          (email) => email.kind === "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        )
         .map((email) => ({
           recipients: email.recipients,
           magicLink: email.params.magicLink,

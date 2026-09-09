@@ -1,4 +1,9 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import {
+  type BrowserContext,
+  expect,
+  type Locator,
+  type Page,
+} from "@playwright/test";
 import {
   type AdminTabRouteName,
   adminTabRouteNames,
@@ -9,6 +14,8 @@ import {
   type EstablishmentDashboardTab,
   frontRoutes,
 } from "shared";
+import { testConfig } from "../custom.config";
+import { acceptCookiesIfBannerVisible } from "./utils";
 
 export const goToAdminTab = async (page: Page, tabName: AdminTabRouteName) => {
   const adminButton = await page.locator("#fr-header-main-navigation-button-4");
@@ -64,6 +71,36 @@ export const getMagicLinkLocatorFromEmail = async ({
     .getByRole("link");
 };
 
+export const getMagicLinkAndRecipientFromEmail = async ({
+  page,
+  emailType,
+  elementIndex = 0,
+  label = "magicLink",
+}: {
+  page: Page;
+  emailType: EmailType;
+  elementIndex?: number;
+  label?: string;
+}): Promise<{ href: string | null; recipientEmail: string | null }> => {
+  const emailWrapper = await openEmailInAdmin(page, emailType, elementIndex);
+  const href = await emailWrapper
+    .locator("li")
+    .filter({
+      hasText: label,
+    })
+    .getByRole("link")
+    .getAttribute("href");
+  const recipientsText = await emailWrapper
+    .locator(".static-info-container")
+    .filter({ hasText: "Destinataires" })
+    .locator("div")
+    .nth(1)
+    .textContent();
+  const recipientEmail = recipientsText?.split(",")[0]?.trim() || null;
+
+  return { href, recipientEmail };
+};
+
 export const getMagicLinkFromEmail = async ({
   page,
   emailType,
@@ -82,6 +119,56 @@ export const getMagicLinkFromEmail = async ({
     label,
   });
   return locator.getAttribute("href");
+};
+
+export const openConnectedConventionAsRecipient = async (
+  adminPage: Page,
+  href: string,
+  recipientEmail: string,
+): Promise<{ page: Page; context: BrowserContext }> => {
+  const browser = adminPage.context().browser();
+  if (!browser) throw new Error("Browser instance is not available");
+
+  const context = await browser.newContext({
+    storageState: { cookies: [], origins: [] },
+  });
+  const page = await context.newPage();
+  await page.goto(href);
+  await acceptCookiesIfBannerVisible(page);
+
+  const byEmailButton = page.locator(
+    `#${domElementIds.manageConventionConnectedUser.login.byEmailButton}`,
+  );
+  await expect(byEmailButton).toBeVisible();
+  await page.getByLabel("Email").fill(recipientEmail);
+  await byEmailButton.click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Votre lien de connexion a bien été envoyé",
+    }),
+  ).toBeVisible();
+  await page.waitForTimeout(testConfig.timeForEventCrawler);
+
+  await adminPage.goto("/");
+  const loginLink = await getMagicLinkFromEmail({
+    page: adminPage,
+    emailType: "LOGIN_BY_EMAIL_REQUESTED",
+    elementIndex: 0,
+    label: "loginLink",
+  });
+  if (!loginLink) throw new Error("Login by email link not found");
+
+  await page.goto(loginLink);
+  await page
+    .getByRole("button", {
+      name: "Oui, me connecter à Immersion Facilitée",
+    })
+    .click();
+  await page.waitForURL(
+    `**${frontRoutes.manageConventionConnectedUser({}).href}**`,
+  );
+
+  return { page, context };
 };
 
 export const getTabIndexByTabName = (

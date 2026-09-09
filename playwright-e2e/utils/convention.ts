@@ -11,7 +11,11 @@ import {
   SEED_FT_AGENCY_ID,
   technicalRoutes,
 } from "shared";
-import { getMagicLinkFromEmail, goToAdminTab } from "./admin";
+import {
+  getMagicLinkAndRecipientFromEmail,
+  goToAdminTab,
+  openConnectedConventionAsRecipient,
+} from "./admin";
 import { getRandomizedData } from "./data";
 import {
   acceptCookiesIfBannerVisible,
@@ -207,33 +211,74 @@ export const submitBasicConventionForm = async (
   };
 };
 
+export type SignatureLinkAndRecipient = {
+  href: string;
+  recipientEmail: string;
+};
+
+export const getSignatureLinksAndRecipients = async ({
+  page,
+  count,
+}: {
+  page: Page;
+  count: number;
+}): Promise<SignatureLinkAndRecipient[]> => {
+  await page.goto("/");
+  await goToAdminTab(page, "adminNotifications");
+  return executeInSequence(
+    Array.from({ length: count }, (_, index) => index),
+    async (index) => {
+      const { href, recipientEmail } = await getMagicLinkAndRecipientFromEmail({
+        page,
+        emailType: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
+        elementIndex: index,
+        label: "conventionSignatureLink",
+      });
+      expect(href).toBeTruthy();
+      expect(recipientEmail).toBeTruthy();
+      return { href: href!, recipientEmail: recipientEmail! };
+    },
+  );
+};
+
 export const signConvention = async (
   page: Page,
-  magicLink: string,
+  href: string,
+  recipientEmail: string,
   dateEndDisplayed: string,
-) => {
-  await page.goto(magicLink);
-  await expect(page.locator(".fr-alert--success")).toBeHidden();
+): Promise<void> => {
+  const { page: recipientPage, context } =
+    await openConnectedConventionAsRecipient(page, href, recipientEmail);
 
-  await checkConventionSummary(page, dateEndDisplayed);
+  await expect(recipientPage.locator(".fr-alert--success")).toBeHidden();
+
+  await checkConventionSummary(recipientPage, dateEndDisplayed);
 
   await expectLocatorToBeVisibleAndEnabled(
-    await page.locator(
-      `#${domElementIds.conventionToSign.openSignModalButton}`,
+    await recipientPage.locator(
+      `#${domElementIds.manageConvention.openSignModalButton}`,
     ),
   );
 
-  await page.click(`#${domElementIds.conventionToSign.openSignModalButton}`);
+  await recipientPage.click(
+    `#${domElementIds.manageConvention.openSignModalButton}`,
+  );
 
   await expectLocatorToBeVisibleAndEnabled(
-    await page.locator(`#${domElementIds.conventionToSign.submitButton}`),
+    await recipientPage.locator(
+      `#${domElementIds.manageConvention.submitSignModalButton}`,
+    ),
   );
-  await page.click(`#${domElementIds.conventionToSign.submitButton}`);
+  await recipientPage.click(
+    `#${domElementIds.manageConvention.submitSignModalButton}`,
+  );
   await expect(
-    page
+    recipientPage
       .locator(".fr-alert--success")
-      .getByRole("heading", { name: "Vous avez signé cette convention." }),
+      .getByRole("heading", { name: "La convention a bien été signée" }),
   ).toBeVisible();
+
+  await context.close();
 };
 
 export const allOtherSignatoriesSignConvention = async ({
@@ -242,25 +287,11 @@ export const allOtherSignatoriesSignConvention = async ({
 }: {
   page: Page;
   expectedConventionEndDate: string;
-}) => {
-  const signatoriesMagicLinks: string[] = [];
-  await page.goto("/");
-  await goToAdminTab(page, "adminNotifications");
-  const allOtherSignatoriesCount = 3;
-  for (let index = 0; index < allOtherSignatoriesCount; index++) {
-    const href = await getMagicLinkFromEmail({
-      page,
-      emailType: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
-      elementIndex: index,
-      label: "conventionSignShortlink",
-    });
-    if (href) {
-      signatoriesMagicLinks.push(href);
-    }
-  }
-
-  await executeInSequence(signatoriesMagicLinks, (href) =>
-    signConvention(page, href, expectedConventionEndDate),
+}): Promise<void> => {
+  await executeInSequence(
+    await getSignatureLinksAndRecipients({ page, count: 3 }),
+    ({ href, recipientEmail }) =>
+      signConvention(page, href, recipientEmail, expectedConventionEndDate),
   );
 };
 
