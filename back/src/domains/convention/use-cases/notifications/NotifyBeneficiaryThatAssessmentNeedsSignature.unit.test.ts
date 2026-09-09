@@ -3,22 +3,18 @@ import {
   ConventionDtoBuilder,
   errors,
   expectPromiseToFailWithError,
-  expectToEqual,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
-  type ShortLinkId,
+  makeRouteAbsoluteUrl,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
-import { fakeGenerateMagicLinkUrlFn } from "../../../../utils/jwtTestHelper";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
 import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
-import { DeterministShortLinkIdGeneratorGateway } from "../../../core/short-link/adapters/short-link-generator-gateway/DeterministShortLinkIdGeneratorGateway";
-import { makeShortLinkUrl } from "../../../core/short-link/ShortLink";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
-import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -48,25 +44,18 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
   let uow: InMemoryUnitOfWork;
   let usecase: NotifyBeneficiaryThatAssessmentNeedsSignature;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
-  let timeGateway: TimeGateway;
-  let shortLinkGenerator: DeterministShortLinkIdGeneratorGateway;
   let config: AppConfig;
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    timeGateway = new CustomTimeGateway();
-    shortLinkGenerator = new DeterministShortLinkIdGeneratorGateway();
     config = new AppConfigBuilder({}).build();
     usecase = makeNotifyBeneficiaryThatAssessmentNeedsSignature({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         saveNotificationAndRelatedEvent: makeSaveNotificationAndRelatedEvent(
           new UuidV4Generator(),
-          timeGateway,
+          new CustomTimeGateway(),
         ),
-        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
-        timeGateway,
-        shortLinkIdGeneratorGateway: shortLinkGenerator,
         config,
       },
     });
@@ -82,7 +71,6 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
       errors.convention.notFound({ conventionId: convention.id }),
     );
     expectSavedNotificationsAndEvents({ emails: [] });
-    expectToEqual(uow.shortLinkQuery.getShortLinks(), []);
   });
 
   it("throws when assessment not found", async () => {
@@ -94,7 +82,6 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
       errors.assessment.notFound(convention.id),
     );
     expectSavedNotificationsAndEvents({ emails: [] });
-    expectToEqual(uow.shortLinkQuery.getShortLinks(), []);
   });
 
   it("does not send notification when assessment status is DID_NOT_SHOW", async () => {
@@ -114,10 +101,9 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
     await usecase.execute({ convention, assessment: assessmentDidNotShow });
 
     expectSavedNotificationsAndEvents({ emails: [] });
-    expectToEqual(uow.shortLinkQuery.getShortLinks(), []);
   });
 
-  it("notify beneficiary that assessment needs signature with single-use and 2-day lifetime signature short link", async () => {
+  it("notify beneficiary that assessment needs signature with connected assessment document URL", async () => {
     uow.conventionRepository.setConventions([convention]);
     uow.assessmentRepository.assessments = [
       {
@@ -127,27 +113,15 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
       },
     ];
 
-    const shortLinkId: ShortLinkId = "signature-short-link-id";
-    shortLinkGenerator.addMoreShortLinkIds([shortLinkId]);
-
     await usecase.execute({ convention, assessment });
 
-    const expectedLongLink = fakeGenerateMagicLinkUrlFn({
-      id: convention.id,
-      role: convention.signatories.beneficiary.role,
-      email: convention.signatories.beneficiary.email,
-      now: timeGateway.now(),
-      targetRoute: "assessmentDocument",
-      lifetime: "2Days",
+    const assessmentSignatureLink = makeRouteAbsoluteUrl({
+      route: frontRoutes.assessmentDocument({
+        conventionId: convention.id,
+        loginPersona: "beneficiary",
+      }),
+      baseUrl: config.immersionFacileBaseUrl,
     });
-
-    expectToEqual(uow.shortLinkQuery.getShortLinks(), [
-      {
-        id: shortLinkId,
-        url: expectedLongLink,
-        lastUsedAt: null,
-      },
-    ]);
 
     expectSavedNotificationsAndEvents({
       emails: [
@@ -163,7 +137,7 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
             }),
             businessName: convention.businessName,
             internshipKind: convention.internshipKind,
-            assessmentSignatureLink: makeShortLinkUrl(config, shortLinkId),
+            assessmentSignatureLink,
           },
           recipients: [convention.signatories.beneficiary.email],
         },

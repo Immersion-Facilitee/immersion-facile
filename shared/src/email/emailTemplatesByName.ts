@@ -841,7 +841,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 
           Ce retour peut être un atout pour vos futures candidatures en mettant en valeur vos expériences et compétences acquises.
           
-          Nous vous invitons à télécharger dès maintenant en cliquant sur le bouton ci-dessous. Ce lien a une validité de 1 mois.
+          Nous vous invitons à télécharger dès maintenant en cliquant sur le bouton ci-dessous.
           `,
           buttons: [{ label: "Consulter mon bilan", url: magicLink }],
           subContent: `

@@ -3,19 +3,22 @@ import {
   type AssessmentStatus,
   ConventionDtoBuilder,
   type ExtractFromExisting,
+  emailTemplatesByName,
   errors,
   expectPromiseToFailWithError,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
   reasonableSchedule,
 } from "shared";
-import { fakeGenerateMagicLinkUrlFn } from "../../../../utils/jwtTestHelper";
+import type { AppConfig } from "../../../../config/bootstrap/appConfig";
+import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
 import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
-import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -51,11 +54,11 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
   let uow: InMemoryUnitOfWork;
   let usecase: NotifyBeneficiaryThatAssessmentIsCreated;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
-  let timeGateway: TimeGateway;
+  let config: AppConfig;
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    timeGateway = new CustomTimeGateway();
+    config = new AppConfigBuilder({}).build();
     usecase = makeNotifyBeneficiaryThatAssessmentIsCreated({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
@@ -63,8 +66,7 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
           new UuidV4Generator(),
           new CustomTimeGateway(),
         ),
-        timeGateway,
-        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
+        config,
       },
     });
     expectSavedNotificationsAndEvents = makeExpectSavedNotificationsAndEvents(
@@ -88,10 +90,17 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
 
   describe("right paths", () => {
     it("Send an email to beneficiary", async () => {
-      const today = timeGateway.now();
       uow.conventionRepository.setConventions([convention]);
 
       await usecase.execute({ assessment });
+
+      const magicLink = makeRouteAbsoluteUrl({
+        route: frontRoutes.assessmentDocument({
+          conventionId: convention.id,
+          loginPersona: "beneficiary",
+        }),
+        baseUrl: config.immersionFacileBaseUrl,
+      });
 
       expectSavedNotificationsAndEvents({
         emails: [
@@ -106,14 +115,7 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
               beneficiaryLastName: getFormattedFirstnameAndLastname({
                 lastname: convention.signatories.beneficiary.lastName,
               }),
-              magicLink: fakeGenerateMagicLinkUrlFn({
-                id: convention.id,
-                email: convention.signatories.beneficiary.email,
-                role: "beneficiary",
-                targetRoute: "assessmentDocument",
-                now: today,
-                lifetime: "1Month",
-              }),
+              magicLink,
             },
             recipients: [convention.signatories.beneficiary.email],
           },
@@ -122,7 +124,6 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
     });
 
     it("Sends one email to the beneficiary and one to the legal representative for mini-stage CCI", async () => {
-      const today = timeGateway.now();
       const dateStart = new Date("2024-10-07").toISOString();
       const dateEnd = new Date("2024-10-11").toISOString();
       const cciConventionWithRepresentative = new ConventionDtoBuilder()
@@ -153,64 +154,40 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
 
       await usecase.execute({ assessment: miniStageAssessment });
 
+      const magicLink = makeRouteAbsoluteUrl({
+        route: frontRoutes.assessmentDocument({
+          conventionId: cciConventionWithRepresentative.id,
+          loginPersona: "beneficiary",
+        }),
+        baseUrl: config.immersionFacileBaseUrl,
+      });
+
+      const emailParams = {
+        internshipKind: cciConventionWithRepresentative.internshipKind,
+        conventionId: cciConventionWithRepresentative.id,
+        beneficiaryFirstName: getFormattedFirstnameAndLastname({
+          firstname:
+            cciConventionWithRepresentative.signatories.beneficiary.firstName,
+        }),
+        beneficiaryLastName: getFormattedFirstnameAndLastname({
+          lastname:
+            cciConventionWithRepresentative.signatories.beneficiary.lastName,
+        }),
+        magicLink,
+      };
+
       expectSavedNotificationsAndEvents({
         emails: [
           {
             kind: "ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION",
-            params: {
-              internshipKind: cciConventionWithRepresentative.internshipKind,
-              conventionId: cciConventionWithRepresentative.id,
-              beneficiaryFirstName: getFormattedFirstnameAndLastname({
-                firstname:
-                  cciConventionWithRepresentative.signatories.beneficiary
-                    .firstName,
-              }),
-              beneficiaryLastName: getFormattedFirstnameAndLastname({
-                lastname:
-                  cciConventionWithRepresentative.signatories.beneficiary
-                    .lastName,
-              }),
-              magicLink: fakeGenerateMagicLinkUrlFn({
-                id: cciConventionWithRepresentative.id,
-                email:
-                  cciConventionWithRepresentative.signatories.beneficiary.email,
-                role: "beneficiary",
-                targetRoute: "assessmentDocument",
-                now: today,
-                lifetime: "1Month",
-              }),
-            },
+            params: emailParams,
             recipients: [
               cciConventionWithRepresentative.signatories.beneficiary.email,
             ],
           },
           {
             kind: "ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION",
-            params: {
-              internshipKind: cciConventionWithRepresentative.internshipKind,
-              conventionId: cciConventionWithRepresentative.id,
-              beneficiaryFirstName: getFormattedFirstnameAndLastname({
-                firstname:
-                  cciConventionWithRepresentative.signatories.beneficiary
-                    .firstName,
-              }),
-              beneficiaryLastName: getFormattedFirstnameAndLastname({
-                lastname:
-                  cciConventionWithRepresentative.signatories.beneficiary
-                    .lastName,
-              }),
-              magicLink: fakeGenerateMagicLinkUrlFn({
-                id: cciConventionWithRepresentative.id,
-                email:
-                  // biome-ignore lint/style/noNonNullAssertion: <explanation>
-                  cciConventionWithRepresentative.signatories
-                    .beneficiaryRepresentative!.email,
-                role: "beneficiary-representative",
-                targetRoute: "assessmentDocument",
-                now: today,
-                lifetime: "1Month",
-              }),
-            },
+            params: emailParams,
             recipients: [
               // biome-ignore lint/style/noNonNullAssertion: <explanation>
               cciConventionWithRepresentative.signatories

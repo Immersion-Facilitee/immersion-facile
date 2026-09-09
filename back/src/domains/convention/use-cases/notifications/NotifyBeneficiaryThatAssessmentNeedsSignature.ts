@@ -1,18 +1,15 @@
 import {
   errors,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
   type WithAssessmentDto,
   type WithConventionDto,
   withAssessmentSchema,
   withConventionSchema,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
-import type { GenerateConventionMagicLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
-import type { CreateConventionMagicLinkPayloadProperties } from "../../../../utils/jwt";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
-import type { ShortLinkIdGeneratorGateway } from "../../../core/short-link/ports/ShortLinkIdGeneratorGateway";
-import { prepareConventionMagicShortLinkMaker } from "../../../core/short-link/ShortLink";
-import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
 export type NotifyBeneficiaryThatAssessmentNeedsSignature = ReturnType<
@@ -29,9 +26,6 @@ export const makeNotifyBeneficiaryThatAssessmentNeedsSignature = useCaseBuilder(
   .withCurrentUser<void>()
   .withDeps<{
     saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-    generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
-    timeGateway: TimeGateway;
-    shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
     config: AppConfig;
   }>()
   .build(async ({ uow, inputParams, deps }) => {
@@ -56,26 +50,6 @@ export const makeNotifyBeneficiaryThatAssessmentNeedsSignature = useCaseBuilder(
     if (assessment.status === "DID_NOT_SHOW") return;
 
     const beneficiary = convention.signatories.beneficiary;
-    const conventionMagicLinkPayload: CreateConventionMagicLinkPayloadProperties =
-      {
-        id: convention.id,
-        role: beneficiary.role,
-        email: beneficiary.email,
-        now: deps.timeGateway.now(),
-      };
-
-    const makeMagicShortLink = prepareConventionMagicShortLinkMaker({
-      conventionMagicLinkPayload,
-      uow,
-      config: deps.config,
-      generateConventionMagicLinkUrl: deps.generateConventionMagicLinkUrl,
-      shortLinkIdGeneratorGateway: deps.shortLinkIdGeneratorGateway,
-    });
-
-    const assessmentSignatureLink = await makeMagicShortLink({
-      targetRoute: "assessmentDocument",
-      lifetime: "2Days",
-    });
 
     await deps.saveNotificationAndRelatedEvent(uow, {
       kind: "email",
@@ -92,7 +66,13 @@ export const makeNotifyBeneficiaryThatAssessmentNeedsSignature = useCaseBuilder(
           }),
           businessName: convention.businessName,
           internshipKind: convention.internshipKind,
-          assessmentSignatureLink,
+          assessmentSignatureLink: makeRouteAbsoluteUrl({
+            route: frontRoutes.assessmentDocument({
+              conventionId: convention.id,
+              loginPersona: "beneficiary",
+            }),
+            baseUrl: deps.config.immersionFacileBaseUrl,
+          }),
         },
       },
       followedIds: {
