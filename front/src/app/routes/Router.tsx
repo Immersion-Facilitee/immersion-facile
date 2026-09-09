@@ -9,10 +9,8 @@ import {
 import { PageHeader } from "react-design-system";
 import {
   type AdminTabRouteName,
-  type AppellationAndRomeDto,
   adminTabRouteNames,
   frontRoutes,
-  parseStringToJsonOrThrow,
   useRoute,
 } from "shared";
 import { AdminAgencyDetail } from "src/app/components/forms/agency/AdminAgencyDetail";
@@ -45,10 +43,8 @@ import { SearchPage } from "src/app/pages/search/SearchPage";
 import { MyProfileMainTab } from "src/app/pages/user/MyProfileMainTab";
 import { RequestAgencyRegistrationTab } from "src/app/pages/user/tabs/RequestAgencyRegistrationTab";
 import { RequestEstablishmentRegistrationTab } from "src/app/pages/user/tabs/RequestEstablishmentRegistrationTab";
-import { getUrlParameters } from "src/app/utils/url.utils";
 import { store } from "src/config/dependencies";
 import { connectedUserSlice } from "src/core-logic/domain/connected-user/connectedUser.slice";
-import { searchSlice } from "src/core-logic/domain/search/search.slice";
 import type { Route } from "type-route";
 import {
   type StandardPageSlugs,
@@ -132,25 +128,6 @@ const getPageSideEffectByRouteName: Partial<Record<keyof Routes, () => void>> =
       store.dispatch(
         connectedUserSlice.actions.currentUserFetchRequested({
           feedbackTopic: "unused",
-        }),
-      );
-    },
-    externalSearch: () => {
-      const urlParams = getUrlParameters(window.location);
-      const appellations = parseStringToJsonOrThrow<AppellationAndRomeDto[]>(
-        urlParams.appellations,
-        "appellations",
-      );
-      store.dispatch(
-        searchSlice.actions.getOffersRequested({
-          ...urlParams,
-          appellations,
-          appellationCodes: appellations.map(
-            (appellation) => appellation.appellationCode,
-          ),
-          isExternal: true,
-          sortBy: "score",
-          sortOrder: "asc",
         }),
       );
     },

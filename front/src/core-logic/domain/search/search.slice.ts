@@ -83,6 +83,13 @@ export const searchSlice = createSlice({
         action.payload.searchResultsWithPagination;
       state.isLoading = false;
     },
+    getOffersFailed: (
+      state,
+      _action: PayloadAction<{ errorMessage: string }>,
+    ) => {
+      state.searchResultsWithPagination = emptySearchResult;
+      state.isLoading = false;
+    },
     fetchSearchResultRequested: (
       state,
       _action: PayloadActionWithFeedbackTopic<{

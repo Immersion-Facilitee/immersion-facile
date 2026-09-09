@@ -162,6 +162,70 @@ describe("search epic", () => {
       feedWithSearchResults([]);
       expectIsLoading(false);
     });
+
+    it("stops loading and keeps the epic alive when the gateway throws an error", () => {
+      store.dispatch(
+        searchSlice.actions.getOffersRequested({
+          distanceKm: 10,
+          longitude: 0,
+          latitude: 0,
+          appellationCodes: ["11000"],
+          sortBy: "distance",
+          sortOrder: "desc",
+        }),
+      );
+      expectIsLoading(true);
+
+      dependencies.searchGateway.internalOffers$.error(new Error("Oups"));
+      expectIsLoading(false);
+
+      store.dispatch(
+        searchSlice.actions.getOffersRequested({
+          distanceKm: 10,
+          longitude: 10,
+          latitude: 10,
+          isExternal: true,
+          appellationCodes: ["11000"],
+          sortBy: "score",
+          sortOrder: "asc",
+        }),
+      );
+      expectIsLoading(true);
+
+      feedWithExternalSearchResults([formSearchResult1]);
+      expectIsLoading(false);
+      expectSearchResults({
+        data: [formSearchResult1],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 50,
+        },
+      });
+    });
+
+    it("does not call the external gateway when geo params are missing and return empty results", () => {
+      store.dispatch(
+        searchSlice.actions.getOffersRequested({
+          isExternal: true,
+          appellationCodes: ["11000"],
+          sortBy: "score",
+          sortOrder: "asc",
+        }),
+      );
+
+      expectIsLoading(false);
+      expectSearchResults({
+        data: [],
+        pagination: {
+          totalRecords: 0,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 12,
+        },
+      });
+    });
   });
 
   it("should retrieve the immersion offer and populate our store", () => {
