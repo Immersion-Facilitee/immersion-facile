@@ -103,12 +103,7 @@ export class HttpSearchGateway implements SearchGateway {
     return from(
       this.httpClient
         .getExternalOffers({
-          queryParams: {
-            ...params,
-            latitude: params.latitude ?? 0,
-            longitude: params.longitude ?? 0,
-            distanceKm: params.distanceKm ?? 0,
-          },
+          queryParams: params,
         })
         .then((result) =>
           match(result)

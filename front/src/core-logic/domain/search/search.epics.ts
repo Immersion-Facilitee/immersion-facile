@@ -1,9 +1,25 @@
-import { filter, map, of, switchMap, take } from "rxjs";
-import { internalOfferSchema, type OfferDto } from "shared";
 import {
+  filter,
+  map,
+  type Observable,
+  of,
+  switchMap,
+  take,
+  throwError,
+} from "rxjs";
+import {
+  type DataWithPagination,
+  errors,
+  hasSearchGeoParams,
+  internalOfferSchema,
+  type OfferDto,
+} from "shared";
+import {
+  type GetOffersPayload,
   type SearchResultPayload,
   searchSlice,
 } from "src/core-logic/domain/search/search.slice";
+import type { SearchGateway } from "src/core-logic/ports/SearchGateway";
 import { catchEpicError } from "src/core-logic/storeConfig/catchEpicError";
 import type {
   ActionOfSlice,
@@ -14,27 +30,36 @@ type SearchAction = ActionOfSlice<typeof searchSlice>;
 
 type SearchEpic = AppEpic<SearchAction>;
 
+const offers$ = (
+  searchGateway: SearchGateway,
+  payload: GetOffersPayload,
+): Observable<DataWithPagination<OfferDto>> => {
+  if (payload.isExternal !== true) return searchGateway.getOffers$(payload);
+  if (!hasSearchGeoParams(payload))
+    return throwError(() => errors.search.invalidGeoParams());
+  return searchGateway.getExternalOffers$({
+    ...payload,
+    appellationCode: payload.appellationCodes
+      ? payload.appellationCodes[0]
+      : "",
+  });
+};
+
 const getOffersEpic: SearchEpic = (action$, _state$, { searchGateway }) =>
   action$.pipe(
     filter(searchSlice.actions.getOffersRequested.match),
     switchMap((action) =>
-      (action.payload.isExternal === true
-        ? searchGateway.getExternalOffers$({
-            ...action.payload,
-            appellationCode: action.payload.appellationCodes
-              ? action.payload.appellationCodes[0]
-              : "",
-            latitude: action.payload.latitude ?? 0,
-            longitude: action.payload.longitude ?? 0,
-            distanceKm: action.payload.distanceKm ?? 0,
-          })
-        : searchGateway.getOffers$(action.payload)
-      ).pipe(
+      offers$(searchGateway, action.payload).pipe(
         take(1),
         map((searchResultWithPagination) =>
           searchSlice.actions.getOffersSucceeded({
             searchResultsWithPagination: searchResultWithPagination,
             searchParams: action.payload,
+          }),
+        ),
+        catchEpicError((error) =>
+          searchSlice.actions.getOffersFailed({
+            errorMessage: error.message,
           }),
         ),
       ),
