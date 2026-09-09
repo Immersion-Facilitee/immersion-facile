@@ -182,7 +182,7 @@ export const conventionTemplateFromRouteSerializer: ValueSerializer<
 const agencyRegistrationFromRouteValues = [
   "myAccount",
   "agencyDashboardAgencies",
-] as const;
+] as const satisfies FrontRouteKeys[];
 
 export type AgencyRegistrationFromRoute =
   (typeof agencyRegistrationFromRouteValues)[number];
@@ -193,16 +193,17 @@ export const isAgencyRegistrationFromRoute = (
   typeof value === "string" &&
   agencyRegistrationFromRouteValues.some((v) => v === value);
 
-export const agencyRegistrationFromRouteSerializer: ValueSerializer<AgencyRegistrationFromRoute> =
-  {
-    parse: (value) => {
-      if (isAgencyRegistrationFromRoute(value)) return value;
-      throw new Error(
-        `Invalid agency registration fromRoute: expected one of ${agencyRegistrationFromRouteValues.join(", ")}, got "${value}"`,
-      );
-    },
-    stringify: (value) => value,
-  };
+export const agencyRegistrationFromRouteSerializer: ValueSerializer<
+  "myAccount" | "agencyDashboardAgencies"
+> = {
+  parse: (value) => {
+    if (isAgencyRegistrationFromRoute(value)) return value;
+    throw new Error(
+      `Invalid agency registration fromRoute: expected one of ${agencyRegistrationFromRouteValues.join(", ")}, got "${value}"`,
+    );
+  },
+  stringify: (value) => value,
+};
 
 export const {
   RouteProvider,
