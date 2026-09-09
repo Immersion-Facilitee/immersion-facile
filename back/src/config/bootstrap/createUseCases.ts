@@ -1243,10 +1243,8 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         config,
-        generateConventionMagicLinkUrl,
         saveNotificationsBatchAndRelatedEvent,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
-        timeGateway,
       },
     }),
     notifyLastSigneeThatConventionHasBeenSigned:
