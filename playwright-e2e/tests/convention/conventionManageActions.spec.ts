@@ -25,7 +25,9 @@ import {
   remoteModeIndexMap,
 } from "../../utils/utils";
 
-test.describe.configure({ mode: "serial" });
+// Actions use distinct seeded conventions. A failed action must not replay
+// successful state transitions against conventions already modified in the DB.
+test.describe.configure({ mode: "default" });
 
 test.describe("Convention manage actions from prescriber dashboard", () => {
   let agencyDashboardPage: Page;
@@ -283,7 +285,7 @@ test.describe("Convention manage actions from prescriber dashboard", () => {
         `form#${domElementIds.manageConvention.transferConventionModalForm} textarea[name="justification"]`,
       )
       .fill("le candidat s'est trompé d'agence");
-    managePage
+    await managePage
       .locator(
         `#${domElementIds.manageConvention.transferToAgencySubmitButton}`,
       )

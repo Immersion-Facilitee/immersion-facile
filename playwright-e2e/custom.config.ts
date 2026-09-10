@@ -2,9 +2,10 @@ import { resolve } from "node:path";
 import { adminPlaywrightEmail, makeThrowIfNotDefinedOrDefault } from "shared";
 import { loadEnvFileWithProcessEnv } from "./e2e-env";
 
-const throwIfNotDefinedOrDefault = makeThrowIfNotDefinedOrDefault(
-  loadEnvFileWithProcessEnv(resolve(__dirname, ".env")),
-);
+const throwIfNotDefinedOrDefault = makeThrowIfNotDefinedOrDefault({
+  ...loadEnvFileWithProcessEnv(resolve(__dirname, "../back/.env")),
+  ...loadEnvFileWithProcessEnv(resolve(__dirname, ".env")),
+});
 
 export const testConfig = {
   timeForDebounce: 600, // debounce time value * 2 for safety
@@ -17,6 +18,7 @@ export const testConfig = {
     adminPassword: throwIfNotDefinedOrDefault("PC_ADMIN_PASSWORD"),
   },
   adminAuthFile: resolve(__dirname, ".auth/admin.json"),
+  assessmentLinkFile: resolve(__dirname, ".auth/assessment-link.txt"),
   establishmentAuthFile: resolve(__dirname, ".auth/establishment.json"),
   agencyAuthFile: resolve(__dirname, ".auth/agency.json"),
 };

@@ -1,9 +1,13 @@
+import { writeFile } from "node:fs/promises";
 import { expect, type Page, test as setup } from "@playwright/test";
 import { domElementIds, frontRoutes } from "shared";
 import { testConfig } from "../custom.config";
+import { getMagicLinkFromEmail } from "../utils/admin";
 import { acceptCookiesIfBannerVisible } from "../utils/utils";
 
 const { adminAuthFile, establishmentAuthFile, agencyAuthFile } = testConfig;
+
+setup.describe.configure({ mode: "parallel" });
 
 setup("authenticate as admin", async ({ page }) => {
   console.time("auth-admin");
@@ -14,30 +18,43 @@ setup("authenticate as admin", async ({ page }) => {
   await expect(adminButton).toBeVisible();
   await page.context().storageState({ path: adminAuthFile });
   console.timeEnd("auth-admin");
+  // Capture the seeded link before concurrent workflows fill the 30-email inbox.
+  const assessmentLink = await getMagicLinkFromEmail({
+    page,
+    emailType: "ASSESSMENT_ESTABLISHMENT_NOTIFICATION",
+    label: "assessmentCreationLink",
+  });
+  if (!assessmentLink) throw new Error("Missing seeded assessment link");
+  await writeFile(testConfig.assessmentLinkFile, assessmentLink);
 });
 
-setup("authenticate as IC user establishment", async ({ page }) => {
-  console.time("auth-establishment");
-  await page.goto("/");
-  await acceptCookiesIfBannerVisible(page);
-  await loginWithIdentityProvider(page, "establishmentDashboard", "ProConnect");
-  await expect(page.locator(".fr-tabs__list")).toBeVisible();
-  await page.context().storageState({ path: establishmentAuthFile });
-  console.timeEnd("auth-establishment");
-});
+setup.describe("IC authentication entry points", () => {
+  // Both entries use the same ProConnect account: do not log in concurrently.
+  setup.describe.configure({ mode: "serial" });
 
-setup("authenticate as IC user agency", async ({ page }) => {
-  console.time("auth-agency");
-  await page.goto("/");
-  await acceptCookiesIfBannerVisible(page);
+  setup("authenticate as IC user establishment", async ({ page }) => {
+    console.time("auth-establishment");
+    await page.goto("/");
+    await acceptCookiesIfBannerVisible(page);
+    await loginWithIdentityProvider(
+      page,
+      "establishmentDashboard",
+      "ProConnect",
+    );
+    await expect(page.locator(".fr-tabs__list")).toBeVisible();
+    await page.context().storageState({ path: establishmentAuthFile });
+    console.timeEnd("auth-establishment");
+  });
 
-  await loginWithIdentityProvider(page, "agencyDashboard", "ProConnect");
-  await expect(
-    page.locator(`#${domElementIds.agencyDashboard.registerAgencies.search}`),
-  ).toBeVisible();
-
-  await page.context().storageState({ path: agencyAuthFile });
-  console.timeEnd("auth-agency");
+  setup("authenticate as IC user agency", async ({ page }) => {
+    await page.goto("/");
+    await acceptCookiesIfBannerVisible(page);
+    await loginWithIdentityProvider(page, "agencyDashboard", "ProConnect");
+    await expect(
+      page.locator(`#${domElementIds.agencyDashboard.registerAgencies.search}`),
+    ).toBeVisible();
+    await page.context().storageState({ path: agencyAuthFile });
+  });
 });
 
 type ProviderMode = "ProConnect";

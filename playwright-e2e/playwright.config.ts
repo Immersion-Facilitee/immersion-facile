@@ -11,14 +11,21 @@ const storageStatePath = resolve(__dirname, "data/storageState.json");
 const baseURL = process.env.BASE_URL || `http://localhost:${frontPort}`;
 const reuseExistingServer =
   !process.env.CI && process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER !== "false";
+const chromium = { ...devices["Desktop Chrome"] };
+const priorityWorkflows = [
+  /convention\/conventionWorkflow\.spec\.ts/,
+  /establishment\/establishmentWorkflow\.spec\.ts/,
+];
 
 export default defineConfig({
   testDir: "./tests",
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 4,
-  reporter: process.env.CI ? [["github"], ["html"], ["line"]] : "html",
+  workers: 4,
+  reporter: process.env.CI
+    ? [["github"], ["html"], ["line"], ["./duration-reporter.ts"]]
+    : "html",
   use: {
     baseURL,
     screenshot: {
@@ -26,7 +33,7 @@ export default defineConfig({
       fullPage: true,
     },
     storageState: storageStatePath,
-    trace: "retain-on-failure",
+    trace: process.env.CI ? "on-first-retry" : "retain-on-failure",
   },
   timeout: process.env.CI ? 60_000 : 30_000,
   expect: {
@@ -35,8 +42,15 @@ export default defineConfig({
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
     {
+      name: "chromium-priority",
+      testMatch: priorityWorkflows,
+      use: chromium,
+      dependencies: ["setup"],
+    },
+    {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      testIgnore: priorityWorkflows,
+      use: chromium,
       dependencies: ["setup"],
     },
   ],
@@ -57,6 +71,7 @@ export default defineConfig({
       cwd: "..",
       env: {
         BACKEND_PORT: backPort.toString(),
+        NODE_ENV: "production",
         PORT: frontPort.toString(),
         VITE_GATEWAY: "HTTP",
         VITE_ENV_TYPE: "local",

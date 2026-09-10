@@ -1,0 +1,47 @@
+name: External SIRET E2E
+
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-siret:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PRO_CONNECT_CLIENT_SECRET: ${{ secrets.PRO_CONNECT_CLIENT_SECRET }}
+      SIRENE_INSEE_CLIENT_ID: ${{ secrets.SIRENE_INSEE_CLIENT_ID }}
+      SIRENE_INSEE_CLIENT_SECRET: ${{ secrets.SIRENE_INSEE_CLIENT_SECRET }}
+      SIRENE_INSEE_USERNAME: ${{ secrets.SIRENE_INSEE_USERNAME }}
+      SIRENE_INSEE_PASSWORD: ${{ secrets.SIRENE_INSEE_PASSWORD }}
+      API_KEY_OPEN_CAGE_DATA_GEOCODING: ${{ secrets.API_KEY_OPEN_CAGE_DATA_GEOCODING }}
+      API_KEY_OPEN_CAGE_DATA_GEOSEARCH: ${{ secrets.API_KEY_OPEN_CAGE_DATA_GEOSEARCH }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10.32.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.14.0"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Install Chromium
+        run: pnpm --filter playwright-e2e exec playwright install --with-deps chromium
+      - name: Post install bun
+        working-directory: back/node_modules/bun
+        run: node install.js
+      - name: Real SIRET browser workflow
+        run: pnpm test:e2e --config playwright.external.config.ts
+        env:
+          CI: "true"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: external-siret-report
+          path: playwright-e2e/playwright-report/
+          retention-days: 7

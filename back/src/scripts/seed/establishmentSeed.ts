@@ -78,11 +78,13 @@ export const franceMerguez = new EstablishmentAggregateBuilder()
     },
     {
       userId: seedUsers.icUser.id,
-      role: "establishment-contact",
+      // Dashboard E2E must have admin access before any other workflow runs.
+      role: "establishment-admin",
       status: "ACCEPTED",
       job: "Contact RH",
       phone: "+33672787846",
       shouldReceiveDiscussionNotifications: true,
+      isMainContactByPhone: false,
     },
   ])
   .build();
@@ -155,6 +157,7 @@ export const establishmentSeed = async (uow: UnitOfWork) => {
     new DiscussionBuilder()
       .withId(discussionId)
       .withSiret(franceMerguez.establishment.siret)
+      .withAppellationCode("11569")
       .withPotentialBeneficiaryResumeLink(
         "https://www.docdroid.net/WyjIuyO/fake-resume-pdf",
       )
@@ -187,6 +190,7 @@ export const establishmentSeed = async (uow: UnitOfWork) => {
     new DiscussionBuilder()
       .withId(uuid())
       .withSiret(franceMerguez.establishment.siret)
+      .withAppellationCode("11569")
       .withPotentialBeneficiaryResumeLink(
         "https://www.docdroid.net/WyjIuyO/fake-resume-pdf",
       )

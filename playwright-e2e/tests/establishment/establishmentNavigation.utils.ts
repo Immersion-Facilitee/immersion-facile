@@ -2,10 +2,15 @@ import { expect, type Page } from "@playwright/test";
 import {
   domElementIds,
   type FormEstablishmentDto,
+  frontRoutes,
   type SiretDto,
 } from "shared";
 import { goToAdminTab } from "../../utils/admin";
 import { getFormEstablishmentApiPath } from "../../utils/apiRoutes";
+import {
+  goToDashboard,
+  goToEstablishmentDashboardTab,
+} from "../../utils/dashboard";
 import { waitForVisibleLoaderHidden } from "../../utils/utils";
 
 export const goToManageEstablishmentThroughEstablishmentDashboard = async (
@@ -13,20 +18,22 @@ export const goToManageEstablishmentThroughEstablishmentDashboard = async (
   establishment: FormEstablishmentDto,
 ) => {
   await page.goto("/");
-  await page.locator("#fr-header-main-navigation-button-2").click();
-  await page
-    .locator(`#${domElementIds.header.navLinks.establishment.dashboard}`)
-    .click();
+  await goToDashboard(page, "establishment");
   await expect(await page.locator(".fr-tabs__list li")).toHaveCount(3);
-  await page.locator(".fr-tabs__list").getByText("Mon établissement").click();
-  const establishmentSelector = await page.locator(
-    `#${domElementIds.establishmentDashboard.manageEstablishments.selectEstablishmentInput}`,
-  );
-  if ((await establishmentSelector.count()) > 0) {
-    await establishmentSelector.selectOption({
-      value: establishment.siret,
-    });
+  await goToEstablishmentDashboardTab(page, "fiche-entreprise");
+
+  const establishmentDashboardUrl =
+    frontRoutes.establishmentDashboardFormEstablishment({
+      siret: establishment.siret,
+    }).href;
+  if (!page.url().includes(establishmentDashboardUrl)) {
+    await page
+      .locator(
+        `#${domElementIds.establishmentDashboard.manageEstablishments.selectEstablishmentInput}`,
+      )
+      .selectOption(establishment.siret);
   }
+  await page.waitForURL(establishmentDashboardUrl);
 };
 
 export const goToManageEtablishmentBySiretInAdmin = async (

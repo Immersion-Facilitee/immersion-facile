@@ -20,7 +20,7 @@ import {
   updatedEndDateDisplayed,
 } from "../../utils/convention";
 
-test.describe.configure({ mode: "serial" });
+test.describe.configure({ mode: "parallel" });
 
 test.describe("Convention can be created from shared draft", () => {
   test.use({ storageState: testConfig.adminAuthFile });
@@ -45,7 +45,15 @@ test.describe("Convention can be created from shared draft", () => {
 });
 
 test.describe("Convention creation and modification workflow", () => {
+  test.describe.configure({ mode: "serial" });
+
   let conventionSubmitted: ConventionSubmitted | void;
+
+  const getConventionId = () => {
+    if (!conventionSubmitted)
+      throw new Error("The convention has not been submitted yet");
+    return conventionSubmitted.conventionId;
+  };
 
   test("creates a new convention", async ({ page }) => {
     conventionSubmitted = await submitBasicConventionForm(page);
@@ -68,6 +76,7 @@ test.describe("Convention creation and modification workflow", () => {
             emailType: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
             elementIndex: index,
             label: "conventionSignShortlink",
+            conventionId: getConventionId(),
           });
           if (href) {
             signatoriesMagicLinks.push(href);
@@ -110,6 +119,7 @@ test.describe("Convention creation and modification workflow", () => {
           emailType: "NEW_CONVENTION_AGENCY_NOTIFICATION",
           elementIndex: 0,
           label: "manageConventionLink",
+          conventionId: getConventionId(),
         });
         await validatorMagicLinkLocator.click();
 
@@ -144,6 +154,7 @@ test.describe("Convention creation and modification workflow", () => {
             "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE_AFTER_MODIFICATION",
           elementIndex: 0,
           label: "conventionSignShortlink",
+          conventionId: getConventionId(),
         });
         await magicLinkLocator.click();
 
@@ -182,6 +193,7 @@ test.describe("Convention creation and modification workflow", () => {
         await allOtherSignatoriesSignConvention({
           page,
           expectedConventionEndDate: updatedEndDateDisplayed,
+          conventionId: getConventionId(),
         });
       });
     });
@@ -194,6 +206,7 @@ test.describe("Convention creation and modification workflow", () => {
           emailType: "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
           elementIndex: 0,
           label: "manageConventionLink",
+          conventionId: getConventionId(),
         });
         expect(href).not.toBe(null);
         if (!href)
