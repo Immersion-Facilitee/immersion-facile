@@ -69,7 +69,6 @@ const getUseCasesByTopics = (
     extractWithConventionDraftIdFromAddConventionInput(
       useCases.deleteConventionDraft,
     ),
-    useCases.notifyToAgencyConventionSubmitted,
     useCases.notifySignatoriesThatConventionSubmittedNeedsSignature,
     extractConventionIdFromConvention(
       useCases.broadcastToFranceTravailOnConventionUpdates,

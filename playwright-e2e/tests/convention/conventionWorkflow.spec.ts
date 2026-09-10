@@ -5,7 +5,6 @@ import { testConfig } from "../../custom.config";
 import {
   getMagicLinkAndRecipientFromEmail,
   getMagicLinkFromEmail,
-  getMagicLinkLocatorFromEmail,
   goToAdminTab,
   openConnectedConventionAsRecipient,
 } from "../../utils/admin";
@@ -30,7 +29,10 @@ test.describe.configure({ mode: "serial" });
 test.describe("Convention can be created from shared draft", () => {
   test.use({ storageState: testConfig.adminAuthFile });
 
-  test("creates a new convention from shared draft", async ({ page }) => {
+  test("creates a new convention from shared draft", async ({
+    page,
+    context,
+  }) => {
     await goToFormPageAndFillConventionForm(page);
     await shareConventionDraftByEmail(page);
     await goToAdminTab(page, "adminNotifications");
@@ -45,15 +47,19 @@ test.describe("Convention can be created from shared draft", () => {
     await page.click(
       `#${domElementIds.conventionImmersion.fromSharedConventionContinueButton}`,
     );
-    await confirmCreateConventionFormSubmit(page, tomorrowDateDisplayed);
+    await confirmCreateConventionFormSubmit(
+      page,
+      context,
+      tomorrowDateDisplayed,
+    );
   });
 });
 
 test.describe("Convention creation and modification workflow", () => {
   let conventionSubmitted: ConventionSubmitted | void;
 
-  test("creates a new convention", async ({ page }) => {
-    conventionSubmitted = await submitBasicConventionForm(page);
+  test("creates a new convention", async ({ page, context }) => {
+    conventionSubmitted = await submitBasicConventionForm(page, context);
     await page.waitForTimeout(testConfig.timeForEventCrawler);
   });
 
@@ -102,14 +108,12 @@ test.describe("Convention creation and modification workflow", () => {
       });
 
       test("validator does the modification", async ({ page }) => {
-        await page.goto("/");
-        const validatorMagicLinkLocator = await getMagicLinkLocatorFromEmail({
-          page,
-          emailType: "NEW_CONVENTION_AGENCY_NOTIFICATION",
-          elementIndex: 0,
-          label: "manageConventionLink",
-        });
-        await validatorMagicLinkLocator.click();
+        if (!conventionSubmitted) throw new Error("No convention submitted");
+        await page.goto(
+          frontRoutes.manageConventionConnectedUser({
+            conventionId: conventionSubmitted.conventionId,
+          }).href,
+        );
 
         await page
           .locator(`#${domElementIds.manageConvention.editActionsButton}`)
@@ -251,7 +255,8 @@ test.describe("Convention creation and modification workflow in Martinique", () 
   });
   test("creates a new convention on a client in Martinique", async ({
     page,
+    context,
   }) => {
-    await submitBasicConventionForm(page);
+    await submitBasicConventionForm(page, context);
   });
 });

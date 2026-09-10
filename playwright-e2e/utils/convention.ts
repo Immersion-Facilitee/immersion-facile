@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, type Page } from "@playwright/test";
+import { type BrowserContext, expect, type Page } from "@playwright/test";
 import { addBusinessDays, format } from "date-fns";
 import {
   type AgencyId,
@@ -10,6 +10,7 @@ import {
   frontRoutes,
   SEED_FT_AGENCY_ID,
   technicalRoutes,
+  zUuidLike,
 } from "shared";
 import {
   getMagicLinkAndRecipientFromEmail,
@@ -28,6 +29,7 @@ import {
 
 export type ConventionSubmitted = {
   agencyId: AgencyId;
+  conventionId: ConventionId;
 };
 
 const beneficiaryBirthdate = faker.date
@@ -200,14 +202,21 @@ export const goToFormPageAndFillConventionForm = async (
 
 export const submitBasicConventionForm = async (
   page: Page,
+  context: BrowserContext,
 ): Promise<ConventionSubmitted | void> => {
   const agencyId = await goToFormPageAndFillConventionForm(page);
   expect(agencyId).not.toBeFalsy();
   if (!agencyId) return;
-  await confirmCreateConventionFormSubmit(page, tomorrowDateDisplayed);
+
+  const conventionId = await confirmCreateConventionFormSubmit(
+    page,
+    context,
+    tomorrowDateDisplayed,
+  );
 
   return {
     agencyId,
+    conventionId,
   };
 };
 
@@ -504,8 +513,9 @@ export const checkConventionSummary = async (
 
 export const confirmCreateConventionFormSubmit = async (
   page: Page,
+  context: BrowserContext,
   dateEndDisplayed: string,
-) => {
+): Promise<ConventionId> => {
   await page.click(`#${domElementIds.conventionImmersion.submitFormButton}`);
   await checkConventionSummary(page, dateEndDisplayed);
 
@@ -516,6 +526,15 @@ export const confirmCreateConventionFormSubmit = async (
     page,
     `#${domElementIds.conventionImmersion.conventionConfirmation.copyConventionIdButton}`,
   );
+  await page.click(
+    `#${domElementIds.conventionImmersion.conventionConfirmation.copyConventionIdButton}`,
+  );
+  await context.grantPermissions(["clipboard-read"]);
+  const handle = await page.evaluateHandle(() =>
+    navigator.clipboard.readText(),
+  );
+  const clipboardContent = await handle.jsonValue();
+  return zUuidLike.parse(clipboardContent);
 };
 
 const getRandomSiret = () =>
