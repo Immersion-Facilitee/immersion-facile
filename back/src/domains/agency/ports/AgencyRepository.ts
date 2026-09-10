@@ -30,6 +30,7 @@ export type GetAgenciesFilters = {
   sirets?: SiretDto[];
   doesNotReferToOtherAgency?: true;
   createdAtBefore?: Date;
+  updatedAtBefore?: Date;
   userIds?: UserId[];
   delegationConventionEndDate?: DateString;
 };

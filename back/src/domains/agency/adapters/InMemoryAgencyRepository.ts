@@ -171,6 +171,7 @@ export class InMemoryAgencyRepository implements AgencyRepository {
               filters?.doesNotReferToOtherAgency,
             ),
             agencyCreatedAtBefore(agency, filters?.createdAtBefore),
+            agencyUpdatedAtBefore(agency, filters?.updatedAtBefore),
             agencyHasUserIds(agency, filters?.userIds),
             agencyDelegationConventionEndsOnDate(
               agency,

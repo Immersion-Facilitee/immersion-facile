@@ -1,6 +1,7 @@
 import { subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
+  type AgencyKind,
   ConnectedUserBuilder,
   ConventionDtoBuilder,
   expectToEqual,
@@ -49,13 +50,13 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
   const agency1 = AgencyDtoBuilder.create("agency1-id")
     .withName("Agency 1")
     .withStatus("active")
-    .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+    .withUpdatedAt(subMonths(defaultDate, 7))
     .build();
 
   const agency2 = AgencyDtoBuilder.create("agency2-id")
     .withName("Agency 2")
     .withStatus("active")
-    .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+    .withUpdatedAt(subMonths(defaultDate, 7))
     .build();
 
   let uow: InMemoryUnitOfWork;
@@ -90,21 +91,21 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       const needsReviewAgency = AgencyDtoBuilder.create("needsReviewAgency-id")
         .withName("Agency 3")
         .withStatus("needsReview")
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 7))
         .build();
 
       const closedAgency = AgencyDtoBuilder.create("closedAgency-id")
         .withName("Agency 4")
         .withStatus("closed")
         .withStatusJustification("Already closed")
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 7))
         .build();
 
       const rejectedAgency = AgencyDtoBuilder.create("rejectedAgency-id")
         .withName("Agency 5")
         .withStatus("rejected")
         .withStatusJustification("Rejected")
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 7))
         .build();
       uow.agencyRepository.agencies = [
         toAgencyWithRights(needsReviewAgency, {
@@ -306,7 +307,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       const agency3 = AgencyDtoBuilder.create("agency3-id")
         .withName("Agency 3")
         .withStatus("active")
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 7))
         .build();
 
       const referringAgency = AgencyDtoBuilder.create("referring-agency-id")
@@ -317,7 +318,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           refersToAgencyName: agency1.name,
           refersToAgencyContactEmail: agency1.contactEmail,
         })
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 7))
         .build();
 
       const agency1WithRights = toAgencyWithRights(agency1, {
@@ -424,21 +425,21 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       });
     });
 
-    it("should not close agencies that were created recently (less than 6 months ago)", async () => {
-      const recentlyCreatedAgency = AgencyDtoBuilder.create("recent-agency-id")
-        .withName("Recently Created Agency")
+    it("should not close agencies that were updated recently (less than 6 months ago)", async () => {
+      const recentlyUpdatedAgency = AgencyDtoBuilder.create("recent-agency-id")
+        .withName("Recently updated Agency")
         .withStatus("active")
-        .withCreatedAt(subMonths(defaultDate, 1).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 1))
         .build();
 
       const oldAgency = AgencyDtoBuilder.create("old-agency-id")
         .withName("Old Agency")
         .withStatus("active")
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 7))
         .build();
 
-      const recentlyCreatedAgencyWithRights = toAgencyWithRights(
-        recentlyCreatedAgency,
+      const recentlyUpdatedAgencyWithRights = toAgencyWithRights(
+        recentlyUpdatedAgency,
         {
           [admin1.id]: {
             isNotifiedByEmail: true,
@@ -454,7 +455,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       });
 
       uow.agencyRepository.agencies = [
-        recentlyCreatedAgencyWithRights,
+        recentlyUpdatedAgencyWithRights,
         oldAgencyWithRights,
       ];
       uow.userRepository.users = [admin1, admin2];
@@ -470,7 +471,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       });
 
       expectToEqual(uow.agencyRepository.agencies, [
-        recentlyCreatedAgencyWithRights,
+        recentlyUpdatedAgencyWithRights,
         {
           ...oldAgencyWithRights,
           updatedAt: timeGateway.now().toISOString(),
@@ -497,13 +498,13 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       const agency3 = AgencyDtoBuilder.create("agency3-id")
         .withName("Agency 3")
         .withStatus("active")
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 7))
         .build();
 
       const agency4 = AgencyDtoBuilder.create("agency4-id")
         .withName("Agency 4")
         .withStatus("active")
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
+        .withUpdatedAt(subMonths(defaultDate, 7))
         .build();
 
       const agency1WithRights = toAgencyWithRights(agency1, {
@@ -588,65 +589,69 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       });
     });
 
-    it("should not close agencies of kind france-travail even if they are considered inactive", async () => {
-      const ftAgency = AgencyDtoBuilder.create("pole-emploi-agency-id")
-        .withName("Pôle Emploi Agency")
-        .withStatus("active")
-        .withKind("france-travail")
-        .withCreatedAt(subMonths(defaultDate, 7).toISOString())
-        .build();
+    it.each(["france-travail", "operateur-cep"] satisfies AgencyKind[])(
+      "should not close agencies of kind %s even if they are considered inactive",
+      async (kind) => {
+        const agencyToKeep = AgencyDtoBuilder.create("agency-id")
+          .withName(`Agency ${kind}`)
+          .withStatus("active")
+          .withKind(kind)
+          .withUpdatedAt(subMonths(defaultDate, 7))
+          .build();
 
-      const poleEmploiAgencyWithRights = toAgencyWithRights(ftAgency, {
-        [admin1.id]: {
-          isNotifiedByEmail: true,
-          roles: ["agency-admin"],
-        },
-      });
-      const agency1WithRights = toAgencyWithRights(agency1, {
-        [admin2.id]: {
-          isNotifiedByEmail: true,
-          roles: ["agency-admin"],
-        },
-      });
-
-      uow.agencyRepository.agencies = [
-        poleEmploiAgencyWithRights,
-        agency1WithRights,
-      ];
-      uow.userRepository.users = [admin1, admin2];
-      uow.conventionRepository.setConventions([]);
-
-      const result =
-        await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+        const agencyToKeepWithRights = toAgencyWithRights(agencyToKeep, {
+          [admin1.id]: {
+            isNotifiedByEmail: true,
+            roles: ["agency-admin"],
+          },
+        });
+        const agency1WithRights = toAgencyWithRights(agency1, {
+          [admin2.id]: {
+            isNotifiedByEmail: true,
+            roles: ["agency-admin"],
+          },
         });
 
-      expectToEqual(result, {
-        numberOfAgenciesClosed: 1,
-      });
+        uow.agencyRepository.agencies = [
+          agencyToKeepWithRights,
+          agency1WithRights,
+        ];
+        uow.userRepository.users = [admin1, admin2];
+        uow.conventionRepository.setConventions([]);
 
-      expectToEqual(uow.agencyRepository.agencies, [
-        poleEmploiAgencyWithRights,
-        {
-          ...agency1WithRights,
-          updatedAt: timeGateway.now().toISOString(),
-          status: "closed",
-          statusJustification: "Agence fermée automatiquement pour inactivité",
-        },
-      ]);
+        const result =
+          await closeInactiveAgenciesWithoutRecentConventions.execute({
+            numberOfMonthsWithoutConvention,
+          });
 
-      expectSavedNotificationsAndEvents({
-        emails: [
+        expectToEqual(result, {
+          numberOfAgenciesClosed: 1,
+        });
+
+        expectToEqual(uow.agencyRepository.agencies, [
+          agencyToKeepWithRights,
           {
-            kind: "AGENCY_CLOSED_FOR_INACTIVITY",
-            recipients: [admin2.email],
-            params: {
-              agencyName: agency1.name,
-              numberOfMonthsWithoutConvention,
-            },
+            ...agency1WithRights,
+            updatedAt: timeGateway.now().toISOString(),
+            status: "closed",
+            statusJustification:
+              "Agence fermée automatiquement pour inactivité",
           },
-        ],
-      });
-    });
+        ]);
+
+        expectSavedNotificationsAndEvents({
+          emails: [
+            {
+              kind: "AGENCY_CLOSED_FOR_INACTIVITY",
+              recipients: [admin2.email],
+              params: {
+                agencyName: agency1.name,
+                numberOfMonthsWithoutConvention,
+              },
+            },
+          ],
+        });
+      },
+    );
   });
 });
