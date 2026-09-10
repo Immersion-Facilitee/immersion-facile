@@ -435,20 +435,6 @@ export type EmailParamsByEmailType = {
     loginLink: AbsoluteUrl;
   };
   MAGIC_LINK_RENEWAL: MagicLinkRenewalParams;
-  NEW_CONVENTION_AGENCY_NOTIFICATION: {
-    agencyLogoUrl: AbsoluteUrl | undefined;
-    agencyName: string;
-    agencyReferentName: string | undefined;
-    businessName: string;
-    conventionId: ConventionId;
-    dateEnd: string;
-    dateStart: string;
-    internshipKind: InternshipKind;
-    firstName: string;
-    lastName: string;
-    manageConventionLink: AbsoluteUrl;
-    warning?: string;
-  };
   NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE: {
     agencyLogoUrl: AbsoluteUrl | undefined;
     beneficiaryName: string;
