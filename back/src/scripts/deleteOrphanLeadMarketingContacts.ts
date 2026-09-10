@@ -23,8 +23,6 @@ import { handleCRONScript } from "./handleCRONScript";
 const logger = createLogger(__filename);
 const config = AppConfig.createFromEnv();
 
-const maxSiretsInReport = 20;
-
 type ObsoleteMarketingContact = {
   siret: SiretDto;
   obsoleteEmail: Email;
@@ -173,17 +171,7 @@ const runScript =
   };
 
 const formatSirets = (contacts: ObsoleteMarketingContact[]): string =>
-  [
-    contacts
-      .slice(0, maxSiretsInReport)
-      .map(({ siret }) => siret)
-      .join(", "),
-    contacts.length > maxSiretsInReport
-      ? `(and ${contacts.length - maxSiretsInReport} more)`
-      : "",
-  ]
-    .filter((part) => part !== "")
-    .join(" ");
+  contacts.map(({ siret }) => siret).join(", ");
 
 if (require.main === module) {
   handleCRONScript({
@@ -197,9 +185,7 @@ if (require.main === module) {
         ...(candidates.length > 0 ? [`  ${formatSirets(candidates)}`] : []),
         `Deleted: ${deleted.length}`,
         `Errors: ${errors.length}`,
-        ...errors
-          .slice(0, maxSiretsInReport)
-          .map(({ siret, error }) => `  - ${siret} : ${error.message}`),
+        ...errors.map(({ siret, error }) => `  - ${siret} : ${error.message}`),
       ].join("\n"),
     logger,
   });
