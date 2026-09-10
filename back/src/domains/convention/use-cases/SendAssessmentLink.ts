@@ -60,7 +60,9 @@ export const makeSendAssessmentLink = useCaseBuilder("SendAssessmentLink")
       agencyWithUserRights: agency,
       authorizedRoles: [
         ...agencyModifierRoles,
-        ...allSignatoryRoles,
+        ...allSignatoryRoles.filter(
+          (role) => role !== "beneficiary-current-employer",
+        ),
         "back-office",
       ],
       errorToThrow: errors.assessment.sendAssessmentLinkForbidden(),

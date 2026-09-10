@@ -444,7 +444,6 @@ describe("SendAssessmentLink", () => {
 
       it.each([
         "beneficiary-representative",
-        "beneficiary-current-employer",
         "beneficiary",
         "establishment-representative",
       ] as SignatoryRole[])(
@@ -650,6 +649,22 @@ describe("SendAssessmentLink", () => {
         },
       );
 
+      it("throws unauthorized if connected user is beneficiary-current-employer", async () => {
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+        uow.userRepository.users = [connectedBeneficiaryCurrentEmployerUser];
+
+        await expectPromiseToFailWithError(
+          usecase.execute(
+            {
+              conventionId: convention.id,
+              notificationKind: "sms",
+            },
+            { userId: connectedBeneficiaryCurrentEmployerUser.id },
+          ),
+          errors.assessment.sendAssessmentLinkForbidden(),
+        );
+      });
+
       it.each([
         {
           role: "beneficiary",
@@ -658,10 +673,6 @@ describe("SendAssessmentLink", () => {
         {
           role: "beneficiary-representative",
           user: connectedBeneficiaryRepresentativeUser,
-        },
-        {
-          role: "beneficiary-current-employer",
-          user: connectedBeneficiaryCurrentEmployerUser,
         },
       ])("When connected $role triggers it", async ({ user }) => {
         uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
@@ -942,10 +953,31 @@ describe("SendAssessmentLink", () => {
         },
       );
 
+      it("throws unauthorized if not connected beneficiary-current-employer triggers it", async () => {
+        const signatoryJwtPayload = createConventionMagicLinkPayload({
+          id: convention.id,
+          role: "beneficiary-current-employer",
+          email: "beneficiary-current-employer@mail.com",
+          now: new Date(),
+        });
+
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+
+        await expectPromiseToFailWithError(
+          usecase.execute(
+            {
+              conventionId: convention.id,
+              notificationKind: "sms",
+            },
+            signatoryJwtPayload,
+          ),
+          errors.assessment.sendAssessmentLinkForbidden(),
+        );
+      });
+
       it.each([
         "beneficiary",
         "beneficiary-representative",
-        "beneficiary-current-employer",
         "establishment-representative",
       ] as SignatoryRole[])(
         "When not connected signatory %s triggers it",

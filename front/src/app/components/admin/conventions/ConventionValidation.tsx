@@ -122,7 +122,9 @@ export const ConventionValidation = ({
     hasAllowedRole({
       allowedRoles: [
         ...agencyModifierRoles,
-        ...allSignatoryRoles,
+        ...allSignatoryRoles.filter(
+          (role) => role !== "beneficiary-current-employer",
+        ),
         "back-office",
       ],
       candidateRoles: roles,
