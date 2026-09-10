@@ -27,7 +27,12 @@ export const DiscussionContentContainer = ({
       <div className={cx(fr.cx("fr-col-12", "fr-col-lg-8"), Styles.content)}>
         {content}
       </div>
-      <div className={cx(fr.cx("fr-col-12", "fr-col-lg-4"), Styles.aside)}>
+      <div
+        className={cx(
+          fr.cx("fr-col-12", "fr-col-lg-4", "fr-hidden", "fr-unhidden-lg"),
+          Styles.aside,
+        )}
+      >
         {aside}
       </div>
     </div>
