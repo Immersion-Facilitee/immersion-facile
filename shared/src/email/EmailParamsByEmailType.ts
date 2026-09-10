@@ -291,6 +291,11 @@ export type EmailParamsByEmailType = {
     potentialBeneficiaryFirstName: string;
     potentialBeneficiaryLastName: string;
   };
+  CONVENTION_SUMMARY: {
+    conventionsToManage: number;
+    newConventions: number;
+    validatedConventions: number;
+  };
   CONVENTION_TRANSFERRED_AGENCY_NOTIFICATION: {
     previousAgencyName: string;
     justification: string;
@@ -433,20 +438,6 @@ export type EmailParamsByEmailType = {
     loginLink: AbsoluteUrl;
   };
   MAGIC_LINK_RENEWAL: MagicLinkRenewalParams;
-  NEW_CONVENTION_AGENCY_NOTIFICATION: {
-    agencyLogoUrl: AbsoluteUrl | undefined;
-    agencyName: string;
-    agencyReferentName: string | undefined;
-    businessName: string;
-    conventionId: ConventionId;
-    dateEnd: string;
-    dateStart: string;
-    internshipKind: InternshipKind;
-    firstName: string;
-    lastName: string;
-    manageConventionLink: AbsoluteUrl;
-    warning?: string;
-  };
   NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE: {
     agencyLogoUrl: AbsoluteUrl | undefined;
     beneficiaryName: string;
@@ -472,26 +463,6 @@ export type EmailParamsByEmailType = {
     justification: string;
     signatoryFirstName: string;
     signatoryLastName: string;
-  };
-  NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION: {
-    agencyLogoUrl: AbsoluteUrl | undefined;
-    agencyReferentName: string | undefined;
-    beneficiaryFirstName: string;
-    beneficiaryLastName: string;
-    businessName: string;
-    conventionId: ConventionId;
-    internshipKind: InternshipKind;
-    manageConventionLink: string;
-    possibleRoleAction: string;
-    validatorName: string;
-    peAdvisor:
-      | {
-          recipientIsPeAdvisor: boolean;
-          firstName: string;
-          lastName: string;
-          email: string;
-        }
-      | undefined;
   };
   NEW_ESTABLISHMENT_CREATED_CONTACT_CONFIRMATION: {
     businessName: string;

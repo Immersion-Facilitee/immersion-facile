@@ -89,7 +89,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     expectArraysToEqualIgnoringOrder(
       gateways.notification.getSentEmails().map((email) => email.kind),
       [
-        "NEW_CONVENTION_AGENCY_NOTIFICATION",
         "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
         "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
       ],
@@ -178,7 +177,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     expect(res.status).toBe(200);
   };
 
-  const numberOfEmailInitialySent = 4;
+  const numberOfEmailInitialySent = 3;
 
   const beneficiarySubmitsApplicationForTheFirstTime = async (
     {
@@ -213,7 +212,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
 
     await processEventsForEmailToBeSent(eventCrawler);
 
-    expect(inMemoryUow.notificationRepository.notifications).toHaveLength(3);
+    expect(inMemoryUow.notificationRepository.notifications).toHaveLength(2);
     const ftNotification =
       gateways.franceTravailGateway.broadcastParamsCalls[0];
     expectToEqual(ftNotification.eventType, "CONVENTION_UPDATED");
@@ -227,7 +226,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     expect(sentEmails).toHaveLength(numberOfEmailInitialySent - 1);
     expectArraysToEqualIgnoringOrder(
       sentEmails.map((e) => e.recipients),
-      [[VALID_EMAILS[2]], [VALID_EMAILS[0]], [VALID_EMAILS[1]]],
+      [[VALID_EMAILS[0]], [VALID_EMAILS[1]]],
     );
 
     const beneficiarySignEmail = expectEmailOfType(
@@ -365,12 +364,10 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     expectArraysToEqualIgnoringOrder(
       sentEmails.map((email) => email.kind),
       [
-        "NEW_CONVENTION_AGENCY_NOTIFICATION",
         "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
         "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
         "SIGNEE_HAS_SIGNED_CONVENTION",
         "SIGNEE_HAS_SIGNED_CONVENTION",
-        "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
       ],
     );
 
@@ -404,21 +401,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
           magicLink: manageConventionUrl("professional"),
         },
       ],
-    );
-
-    const needsReviewEmail = expectEmailOfType(
-      sentEmails[sentEmails.length - 1],
-      "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
-    );
-    expect(needsReviewEmail.recipients).toEqual([validator.email]);
-
-    expect(needsReviewEmail.params.manageConventionLink).toBe(
-      makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: initialConvention.id,
-        }),
-        baseUrl: appConfig.immersionFacileBaseUrl,
-      }),
     );
   };
 
@@ -475,12 +457,10 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     expectArraysToEqualIgnoringOrder(
       sentEmails.map((email) => email.kind),
       [
-        "NEW_CONVENTION_AGENCY_NOTIFICATION",
         "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
         "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
         "SIGNEE_HAS_SIGNED_CONVENTION",
         "SIGNEE_HAS_SIGNED_CONVENTION",
-        "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",

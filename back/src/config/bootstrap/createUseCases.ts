@@ -70,10 +70,8 @@ import { makeNotifyConventionDraftSaved } from "../../domains/convention/use-cas
 import { makeNotifyConventionReminder } from "../../domains/convention/use-cases/notifications/NotifyConventionReminder";
 import { makeNotifyEstablishmentThatAssessmentWasCreated } from "../../domains/convention/use-cases/notifications/NotifyEstablishmentThatAssessmentWasCreated";
 import { makeNotifyLastSigneeThatConventionHasBeenSigned } from "../../domains/convention/use-cases/notifications/NotifyLastSigneeThatConventionHasBeenSigned";
-import { makeNotifyNewConventionNeedsReview } from "../../domains/convention/use-cases/notifications/NotifyNewConventionNeedsReview";
 import { makeNotifySignatoriesThatConventionSubmittedNeedsSignature } from "../../domains/convention/use-cases/notifications/NotifySignatoriesThatConventionSubmittedNeedsSignature";
 import { makeNotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification } from "../../domains/convention/use-cases/notifications/NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification";
-import { makeNotifyToAgencyConventionSubmitted } from "../../domains/convention/use-cases/notifications/NotifyToAgencyConventionSubmitted";
 import { makeNotifyUserAgencyRightChanged } from "../../domains/convention/use-cases/notifications/NotifyUserAgencyRightChanged";
 import { makeNotifyUserAgencyRightRejected } from "../../domains/convention/use-cases/notifications/NotifyUserAgencyRightRejected";
 import { makeNotifyUserThatAgencyRegistrationRequestWasReceived } from "../../domains/convention/use-cases/notifications/NotifyUserThatAgencyRegistrationRequestWasReceived";
@@ -1253,13 +1251,6 @@ export const createUseCases = ({
           saveNotificationAndRelatedEvent,
         },
       }),
-    notifyNewConventionNeedsReview: makeNotifyNewConventionNeedsReview({
-      uowPerformer,
-      deps: {
-        saveNotificationAndRelatedEvent,
-        config,
-      },
-    }),
     notifySignatoriesThatConventionSubmittedNeedsSignature:
       makeNotifySignatoriesThatConventionSubmittedNeedsSignature({
         uowPerformer,
@@ -1285,13 +1276,6 @@ export const createUseCases = ({
           saveNotificationAndRelatedEvent,
         },
       }),
-    notifyToAgencyConventionSubmitted: makeNotifyToAgencyConventionSubmitted({
-      uowPerformer,
-      deps: {
-        saveNotificationAndRelatedEvent,
-        config,
-      },
-    }),
     notifyUserAgencyRightChanged: makeNotifyUserAgencyRightChanged({
       uowPerformer,
       deps: {
