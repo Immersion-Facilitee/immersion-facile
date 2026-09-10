@@ -72,13 +72,13 @@ export const LoginByEmailFeedbackPage = ({
             <a
               className={fr.cx("fr-link")}
               href={route.href}
-              id={domElementIds[page].login.retryButton}
+              id={domElementIds.login.retryButton}
             >
               Modifier mon email
             </a>{" "}
             ou{" "}
             <a
-              id={domElementIds[page].login.contactSupport}
+              id={domElementIds.login.contactSupport}
               className={fr.cx("fr-link")}
               href={immersionFacileSupportUrl}
               target="_blank"
@@ -93,7 +93,7 @@ export const LoginByEmailFeedbackPage = ({
         children: "Retourner sur la page d'accueil",
         className: fr.cx("fr-mt-2w"),
         onClick: () => frontRoutes.home().push(),
-        id: domElementIds[page].login.navigateToHome,
+        id: domElementIds.login.navigateToHome,
       },
     },
     failed: {
@@ -116,13 +116,13 @@ export const LoginByEmailFeedbackPage = ({
             <a
               className={fr.cx("fr-link")}
               href={route.href}
-              id={domElementIds[page].login.retryButton}
+              id={domElementIds.login.retryButton}
             >
               Modifier mon email
             </a>{" "}
             ou{" "}
             <a
-              id={domElementIds[page].login.contactSupport}
+              id={domElementIds.login.contactSupport}
               className={fr.cx("fr-link")}
               href={immersionFacileSupportUrl}
               target="_blank"

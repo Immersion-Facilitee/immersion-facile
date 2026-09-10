@@ -68,7 +68,7 @@ const loginWithIdentityProvider = async (
   const currentPage = await page.url();
 
   await expect(
-    page.locator(`#${domElementIds.loginPersona.radioButtons}-1`),
+    page.locator(`#${domElementIds.login.radioButtons}-1`),
   ).toBeChecked();
 
   const authButton = await page.locator(`#${proConnectLoginButtonId} .fr-btn`);
@@ -128,7 +128,7 @@ const buttonByRouteName = (
   return {
     agencyDashboard: {
       proConnectLoginButtonId:
-        domElementIds.agencyDashboard.login.proConnectButton,
+        domElementIds.login.professional.proConnectButton,
       navLink: domElementIds.header.navLinks.agency.dashboard,
       username,
       password,
@@ -136,14 +136,15 @@ const buttonByRouteName = (
     },
     establishmentDashboard: {
       proConnectLoginButtonId:
-        domElementIds.establishmentDashboard.login.proConnectButton,
+        domElementIds.login.professional.proConnectButton,
       navLink: domElementIds.header.navLinks.establishment.dashboard,
       username,
       password,
       headerNavLink: "fr-header-main-navigation-button-2",
     },
     admin: {
-      proConnectLoginButtonId: domElementIds.admin.login.proConnectButton,
+      proConnectLoginButtonId:
+        domElementIds.login.professional.proConnectButton,
       navLink: domElementIds.header.navLinks.admin.backOffice,
       username: adminUsername,
       password: adminPassword,
