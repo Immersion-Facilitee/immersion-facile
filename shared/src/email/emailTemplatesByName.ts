@@ -1518,6 +1518,23 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         subContent: defaultSignature("immersion"),
       }),
     },
+    CONVENTION_SUMMARY: {
+      niceName: "TODO",
+      tags: ["template:TODO"],
+      createEmailVariables: ({
+        conventionsToManage,
+        newConventions,
+        validatedConventions,
+      }) => ({
+        subject: "",
+        greetings: "",
+        content: `
+        conventionsToManage: ${conventionsToManage}
+        newConventions: ${newConventions}
+        validatedConventions: ${validatedConventions}
+`,
+      }),
+    },
     CONVENTION_TRANSFERRED_AGENCY_NOTIFICATION: {
       niceName: "Convention - Changement prescripteur pour agence",
       tags: [

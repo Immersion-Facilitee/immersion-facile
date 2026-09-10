@@ -4,6 +4,7 @@ import { triggerAssessmentReminder } from "./scheduledScripts/assessmentReminder
 import { triggerContactRequestReminder3Days } from "./scheduledScripts/contactRequestReminder3Days";
 import { triggerContactRequestReminder7Days } from "./scheduledScripts/contactRequestReminder7Days";
 import { triggerConventionReminder } from "./scheduledScripts/conventionReminder";
+import { triggerConventionSummaryNotificationsScript } from "./scheduledScripts/conventionSummaryNotifications";
 import { triggerDelegationConventionReminder } from "./scheduledScripts/delegationConventionReminder";
 import { triggerSendAssessmentNeededNotifications } from "./scheduledScripts/sendAssessmentNeededNotifications";
 
@@ -16,6 +17,7 @@ const main = async () => {
   await triggerDelegationConventionReminder({ exitOnFinish: false });
   await triggerContactRequestReminder3Days({ exitOnFinish: false });
   await triggerContactRequestReminder7Days({ exitOnFinish: false });
+  await triggerConventionSummaryNotificationsScript({ exitOnFinish: false });
 };
 
 main()
