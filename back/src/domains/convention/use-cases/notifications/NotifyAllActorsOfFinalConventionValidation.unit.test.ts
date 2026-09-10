@@ -6,23 +6,24 @@ import {
   type ConventionDto,
   ConventionDtoBuilder,
   type ConventionRole,
-  type EmailNotification,
   type EstablishmentRepresentative,
   type EstablishmentTutor,
   expectToEqual,
   type FtConnectIdentity,
   type FtConnectImmersionAdvisorDto,
+  frontRoutes,
+  makeRouteAbsoluteUrl,
   type ShortLinkId,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../../utils/agency";
 import { fakeGenerateMagicLinkUrlFn } from "../../../../utils/jwtTestHelper";
-import { expectEmailFinalValidationConfirmationParamsMatchingConvention } from "../../../core/notifications/adapters/InMemoryNotificationRepository";
 import {
-  makeSaveNotificationAndRelatedEvent,
-  type WithNotificationIdAndKind,
-} from "../../../core/notifications/helpers/Notification";
+  type ExpectSavedNotificationsAndEvents,
+  makeExpectSavedNotificationsAndEvents,
+} from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
+import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { DeterministShortLinkIdGeneratorGateway } from "../../../core/short-link/adapters/short-link-generator-gateway/DeterministShortLinkIdGeneratorGateway";
 import type { ShortLink } from "../../../core/short-link/ports/ShortLinkQuery";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
@@ -131,16 +132,21 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
   ).build();
 
   let uow: InMemoryUnitOfWork;
+  let config: AppConfig;
   let timeGateway: CustomTimeGateway;
   let notifyAllActorsOfFinalConventionValidation: NotifyAllActorsOfFinalConventionValidation;
-  let config: AppConfig;
   let shortLinkIdGenerator: DeterministShortLinkIdGeneratorGateway;
+  let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
 
   beforeEach(() => {
     config = new AppConfigBuilder({}).build();
     uow = createInMemoryUow();
     timeGateway = new CustomTimeGateway();
     shortLinkIdGenerator = new DeterministShortLinkIdGeneratorGateway();
+    expectSavedNotificationsAndEvents = makeExpectSavedNotificationsAndEvents(
+      uow.notificationRepository,
+      uow.outboxRepository,
+    );
     notifyAllActorsOfFinalConventionValidation =
       makeNotifyAllActorsOfFinalConventionValidation({
         uowPerformer: new InMemoryUowPerformer(uow),
@@ -161,7 +167,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         [counsellor.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
         [validator.id]: {
           isNotifiedByEmail: true,
-          roles: ["validator", "counsellor"],
+          roles: ["validator"],
         },
       }),
     ];
@@ -184,13 +190,6 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           email: establishmentRepresentativeEmail,
           conventionShortlinkId: "conventionShortlinkId_1",
           assessmentCreationLinkId: "assessmentCreationLinkId_1",
-        },
-
-        {
-          role: "validator",
-          email: validator.email,
-          conventionShortlinkId: "conventionShortlinkId_5",
-          assessmentCreationLinkId: undefined,
         },
         {
           role: "counsellor",
@@ -224,30 +223,52 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         ),
       );
 
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
+      const common = {
+        convention: validConventionWithSameTutorAndRepresentative,
+        agencyLogoUrl: defaultAgency.logoUrl ?? undefined,
+        agencyName: defaultAgency.name,
+      };
 
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(4);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          validConventionWithSameTutorAndRepresentative,
-          config,
-          actor.conventionShortlinkId,
-          actor.assessmentCreationLinkId,
-          actor.role,
-        );
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [
+              validConventionWithSameTutorAndRepresentative.signatories
+                .beneficiary.email,
+            ],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_0",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [establishmentRepresentativeEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_1",
+              assessmentMagicLink:
+                "http://localhost/api/to/assessmentCreationLinkId_1",
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [counsellor.email],
+            params: {
+              ...common,
+              magicLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId:
+                    validConventionWithSameTutorAndRepresentative.id,
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
+              assessmentMagicLink: undefined,
+            },
+          },
+        ],
       });
     });
 
@@ -271,12 +292,6 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           role: "beneficiary-current-employer",
           email: beneficiaryCurrentEmployerEmail,
           conventionShortlinkId: "conventionShortlinkId_3",
-          assessmentCreationLinkId: undefined,
-        },
-        {
-          role: "validator",
-          email: validator.email,
-          conventionShortlinkId: "conventionShortlinkId_5",
           assessmentCreationLinkId: undefined,
         },
         {
@@ -317,30 +332,60 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         ),
       );
 
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
+      const common = {
+        convention: conventionWithBeneficiaryCurrentEmployer,
+        agencyLogoUrl: defaultAgency.logoUrl ?? undefined,
+        agencyName: defaultAgency.name,
+      };
 
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(5);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          conventionWithBeneficiaryCurrentEmployer,
-          config,
-          actor.conventionShortlinkId,
-          actor.assessmentCreationLinkId,
-          actor.role,
-        );
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [
+              conventionWithBeneficiaryCurrentEmployer.signatories.beneficiary
+                .email,
+            ],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_0",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [establishmentRepresentativeEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_1",
+              assessmentMagicLink:
+                "http://localhost/api/to/assessmentCreationLinkId_1",
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [beneficiaryCurrentEmployerEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_3",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [counsellor.email],
+            params: {
+              ...common,
+              magicLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: conventionWithBeneficiaryCurrentEmployer.id,
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
+              assessmentMagicLink: undefined,
+            },
+          },
+        ],
       });
     });
 
@@ -367,12 +412,6 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           assessmentCreationLinkId: undefined,
         },
         {
-          role: "validator",
-          email: validator.email,
-          conventionShortlinkId: "conventionShortlinkId_5",
-          assessmentCreationLinkId: undefined,
-        },
-        {
           role: "counsellor",
           email: counsellor.email,
           conventionShortlinkId: "conventionShortlinkId_6",
@@ -380,7 +419,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         },
       ];
 
-      const conventionWithBeneficiaryCurrentEmployer = new ConventionDtoBuilder(
+      const conventionWithBeneficiaryRepresentative = new ConventionDtoBuilder(
         validConventionWithSameTutorAndRepresentative,
       )
         .withBeneficiaryRepresentative(beneficiaryRepresentative)
@@ -398,7 +437,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
       shortLinkIdGenerator.addMoreShortLinkIds(shortlinkIds);
 
       await notifyAllActorsOfFinalConventionValidation.execute({
-        convention: conventionWithBeneficiaryCurrentEmployer,
+        convention: conventionWithBeneficiaryRepresentative,
       });
 
       expectToEqual(
@@ -410,30 +449,60 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         ),
       );
 
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
+      const common = {
+        convention: conventionWithBeneficiaryRepresentative,
+        agencyLogoUrl: defaultAgency.logoUrl ?? undefined,
+        agencyName: defaultAgency.name,
+      };
 
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(5);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          conventionWithBeneficiaryCurrentEmployer,
-          config,
-          actor.conventionShortlinkId,
-          actor.assessmentCreationLinkId,
-          actor.role,
-        );
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [
+              conventionWithBeneficiaryRepresentative.signatories.beneficiary
+                .email,
+            ],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_0",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [establishmentRepresentativeEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_1",
+              assessmentMagicLink:
+                "http://localhost/api/to/assessmentCreationLinkId_1",
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [beneficiaryRepresentativeEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_2",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [counsellor.email],
+            params: {
+              ...common,
+              magicLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: conventionWithBeneficiaryRepresentative.id,
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
+              assessmentMagicLink: undefined,
+            },
+          },
+        ],
       });
     });
 
@@ -458,12 +527,6 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           email: establishmentTutorEmail,
           conventionShortlinkId: "conventionShortlinkId_2",
           assessmentCreationLinkId: "assessmentCreationLinkId_1",
-        },
-        {
-          role: "validator",
-          email: validator.email,
-          conventionShortlinkId: "conventionShortlinkId_5",
-          assessmentCreationLinkId: undefined,
         },
         {
           role: "counsellor",
@@ -503,30 +566,62 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         ),
       );
 
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
-
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(5);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
+      const common = {
+        convention:
           conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative,
-          config,
-          actor.conventionShortlinkId,
-          actor.assessmentCreationLinkId,
-          actor.role,
-        );
+        agencyLogoUrl: defaultAgency.logoUrl ?? undefined,
+        agencyName: defaultAgency.name,
+      };
+
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [
+              conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative
+                .signatories.beneficiary.email,
+            ],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_0",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [establishmentRepresentativeEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_1",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [establishmentTutorEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_2",
+              assessmentMagicLink:
+                "http://localhost/api/to/assessmentCreationLinkId_1",
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [counsellor.email],
+            params: {
+              ...common,
+              magicLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId:
+                    conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative.id,
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
+              assessmentMagicLink: undefined,
+            },
+          },
+        ],
       });
     });
 
@@ -545,12 +640,6 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           email: establishmentRepresentativeEmail,
           conventionShortlinkId: "conventionShortlinkId_1",
           assessmentCreationLinkId: "assessmentCreationLinkId_1",
-        },
-        {
-          role: "validator",
-          email: validator.email,
-          conventionShortlinkId: "conventionShortlinkId_5",
-          assessmentCreationLinkId: undefined,
         },
         {
           role: "counsellor",
@@ -594,30 +683,64 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         ),
       );
 
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
+      const common = {
+        convention: conventionWithFederatedIdentity,
+        agencyLogoUrl: defaultAgency.logoUrl ?? undefined,
+        agencyName: defaultAgency.name,
+      };
 
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(5);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          validConventionWithSameTutorAndRepresentative,
-          config,
-          actor.conventionShortlinkId,
-          actor.assessmentCreationLinkId,
-          actor.role,
-        );
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [
+              conventionWithFederatedIdentity.signatories.beneficiary.email,
+            ],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_0",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [establishmentRepresentativeEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_1",
+              assessmentMagicLink:
+                "http://localhost/api/to/assessmentCreationLinkId_1",
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [counsellor.email],
+            params: {
+              ...common,
+              magicLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: conventionWithFederatedIdentity.id,
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [ftAdvisor.email],
+            params: {
+              ...common,
+              magicLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: conventionWithFederatedIdentity.id,
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
+              assessmentMagicLink: undefined,
+            },
+          },
+        ],
       });
     });
 
@@ -647,12 +770,6 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           email: establishmentRepresentativeEmail,
           conventionShortlinkId: "conventionShortlinkId_1",
           assessmentCreationLinkId: "assessmentCreationLinkId_1",
-        },
-        {
-          role: "validator",
-          email: validator.email,
-          conventionShortlinkId: "conventionShortlinkId_5",
-          assessmentCreationLinkId: undefined,
         },
         {
           role: "counsellor",
@@ -690,30 +807,51 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
         ),
       );
 
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
+      const common = {
+        convention: conventionWithFederatedIdentityButNoAdvisor,
+        agencyLogoUrl: defaultAgency.logoUrl ?? undefined,
+        agencyName: defaultAgency.name,
+      };
 
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(4);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          conventionWithFederatedIdentityButNoAdvisor,
-          config,
-          actor.conventionShortlinkId,
-          actor.assessmentCreationLinkId,
-          actor.role,
-        );
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [
+              conventionWithFederatedIdentityButNoAdvisor.signatories
+                .beneficiary.email,
+            ],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_0",
+              assessmentMagicLink: undefined,
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [establishmentRepresentativeEmail],
+            params: {
+              ...common,
+              magicLink: "http://localhost/api/to/conventionShortlinkId_1",
+              assessmentMagicLink:
+                "http://localhost/api/to/assessmentCreationLinkId_1",
+            },
+          },
+          {
+            kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+            recipients: [counsellor.email],
+            params: {
+              ...common,
+              magicLink: makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConventionConnectedUser({
+                  conventionId: conventionWithFederatedIdentityButNoAdvisor.id,
+                }),
+                baseUrl: config.immersionFacileBaseUrl,
+              }),
+              assessmentMagicLink: undefined,
+            },
+          },
+        ],
       });
     });
   });

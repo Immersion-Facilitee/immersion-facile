@@ -59,23 +59,25 @@ export const agencyWithRightToAgencyDto = async (
   uow: UnitOfWork,
   { usersRights, ...rest }: AgencyWithUsersRights,
 ): Promise<AgencyDto> => {
-  const { counsellorIds, validatorIds } = toPairs(usersRights).reduce<{
-    counsellorIds: UserId[];
-    validatorIds: UserId[];
+  const { notifiedCounsellorIds, notifiedValidatorIds } = toPairs(
+    usersRights,
+  ).reduce<{
+    notifiedCounsellorIds: UserId[];
+    notifiedValidatorIds: UserId[];
   }>(
     (acc, item) => {
       const [userId, userRights] = item;
 
       return {
-        counsellorIds: [
-          ...acc.counsellorIds,
+        notifiedCounsellorIds: [
+          ...acc.notifiedCounsellorIds,
           ...(userRights?.roles.includes("counsellor") &&
           userRights?.isNotifiedByEmail
             ? [userId]
             : []),
         ],
-        validatorIds: [
-          ...acc.validatorIds,
+        notifiedValidatorIds: [
+          ...acc.notifiedValidatorIds,
           ...(userRights?.roles.includes("validator") &&
           userRights?.isNotifiedByEmail
             ? [userId]
@@ -83,17 +85,21 @@ export const agencyWithRightToAgencyDto = async (
         ],
       };
     },
-    { counsellorIds: [], validatorIds: [] },
+    { notifiedCounsellorIds: [], notifiedValidatorIds: [] },
   );
 
-  const counsellors = await uow.userRepository.getByIds(counsellorIds);
-
-  const validators = await uow.userRepository.getByIds(validatorIds);
+  const users = await uow.userRepository.getByIds(
+    uniq([...notifiedCounsellorIds, ...notifiedValidatorIds]),
+  );
 
   return {
     ...rest,
-    counsellorEmails: counsellors.map(({ email }) => email),
-    validatorEmails: validators.map(({ email }) => email),
+    counsellorEmails: users
+      .filter(({ id }) => notifiedCounsellorIds.includes(id))
+      .map(({ email }) => email),
+    validatorEmails: users
+      .filter(({ id }) => notifiedValidatorIds.includes(id))
+      .map(({ email }) => email),
   };
 };
 

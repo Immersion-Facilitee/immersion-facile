@@ -1,4 +1,3 @@
-import { parseISO } from "date-fns";
 import { uniqBy } from "ramda";
 import {
   type AgencyDto,
@@ -6,11 +5,9 @@ import {
   agencyModifierRoles,
   type ConventionDto,
   type ConventionRole,
-  displayEmergencyContactInfos,
   type Email,
   errors,
   frontRoutes,
-  getFormattedFirstnameAndLastname,
   isEstablishmentTutorIsEstablishmentRepresentative,
   makeRouteAbsoluteUrl,
   type TemplatedEmail,
@@ -52,9 +49,10 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
       throw errors.agency.notFound({ agencyId: convention.agencyId });
 
     const agency = await agencyWithRightToAgencyDto(uow, agencyWithRights);
+
     const conventionBeneficiaryAdvisor =
       convention.signatories.beneficiary.federatedIdentity?.payload?.advisor;
-    const conventionBeneficiaryAdvisorRole: ConventionRole = "validator";
+
     const recipientsRoleAndEmail: { role: ConventionRole; email: Email }[] =
       uniqBy(
         (recipient) => recipient.email,
@@ -72,26 +70,20 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
                 },
               ]
             : []),
-          ...agency.validatorEmails.map(
-            (validatorEmail): { role: ConventionRole; email: Email } => ({
-              role: "validator",
-              email: validatorEmail,
-            }),
-          ),
           ...agency.counsellorEmails.map(
             (counsellorEmail): { role: ConventionRole; email: Email } => ({
               role: "counsellor",
               email: counsellorEmail,
             }),
           ),
-          ...(conventionBeneficiaryAdvisor
+          ...((conventionBeneficiaryAdvisor
             ? [
                 {
                   email: conventionBeneficiaryAdvisor.email,
-                  role: conventionBeneficiaryAdvisorRole,
+                  role: "validator",
                 },
               ]
-            : []),
+            : []) satisfies { role: ConventionRole; email: Email }[]),
         ],
       );
 
@@ -150,29 +142,7 @@ const prepareEmail = async ({
     kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
     recipients: [email],
     params: {
-      conventionId: convention.id,
-      internshipKind: convention.internshipKind,
-      beneficiaryFirstName: getFormattedFirstnameAndLastname({
-        firstname: convention.signatories.beneficiary.firstName,
-      }),
-      beneficiaryLastName: getFormattedFirstnameAndLastname({
-        lastname: convention.signatories.beneficiary.lastName,
-      }),
-      beneficiaryBirthdate: convention.signatories.beneficiary.birthdate,
-      dateStart: parseISO(convention.dateStart).toLocaleDateString("fr"),
-      dateEnd: parseISO(convention.dateEnd).toLocaleDateString("fr"),
-      establishmentTutorName: getFormattedFirstnameAndLastname({
-        firstname: convention.establishmentTutor.firstName,
-        lastname: convention.establishmentTutor.lastName,
-      }),
-      businessName: convention.businessName,
-      immersionAppellationLabel:
-        convention.immersionAppellation.appellationLabel,
-      emergencyContactInfos: displayEmergencyContactInfos({
-        beneficiaryRepresentative:
-          convention.signatories.beneficiaryRepresentative,
-        beneficiary: convention.signatories.beneficiary,
-      }),
+      convention,
       agencyLogoUrl: agency.logoUrl ?? undefined,
       magicLink: agencyModifierRoles.includes(role as AgencyModifierRole)
         ? makeRouteAbsoluteUrl({
@@ -192,14 +162,6 @@ const prepareEmail = async ({
           })
         : undefined,
       agencyName: agency.name,
-      agencyReferentName: convention.agencyReferent
-        ? getFormattedFirstnameAndLastname(convention.agencyReferent)
-        : undefined,
-      validatorName: convention.validators?.agencyValidator
-        ? getFormattedFirstnameAndLastname(
-            convention.validators.agencyValidator,
-          )
-        : "",
     },
   };
 };

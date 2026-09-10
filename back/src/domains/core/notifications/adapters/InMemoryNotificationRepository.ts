@@ -1,16 +1,12 @@
-import { addDays, parseISO } from "date-fns";
+import { addDays } from "date-fns";
 import {
   type AgencyDto,
   type AgencyWithUsersRights,
   type ConventionDto,
-  type ConventionRole,
-  displayEmergencyContactInfos,
   type EmailNotification,
   errors,
   expectToEqual,
-  frontRoutes,
   getFormattedFirstnameAndLastname,
-  makeRouteAbsoluteUrl,
   type Notification,
   type NotificationId,
   type NotificationKind,
@@ -358,71 +354,6 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
       },
     });
   };
-
-export const expectEmailFinalValidationConfirmationParamsMatchingConvention = (
-  recipients: string[],
-  templatedEmails: TemplatedEmail,
-  agency: AgencyDto,
-  convention: ConventionDto,
-  config: AppConfig,
-  conventionToSignLinkId: ShortLinkId,
-  assessmentShortlink: ShortLinkId | undefined,
-  role: ConventionRole,
-) => {
-  const isAgencyModifierRole = role === "validator" || role === "counsellor";
-  const magicLink = isAgencyModifierRole
-    ? makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: convention.id,
-        }),
-        baseUrl: config.immersionFacileBaseUrl,
-      })
-    : makeShortLinkUrl(config, conventionToSignLinkId);
-
-  return expectToEqual(templatedEmails, {
-    kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
-    recipients,
-    params: {
-      conventionId: convention.id,
-      internshipKind: convention.internshipKind,
-      beneficiaryFirstName: getFormattedFirstnameAndLastname({
-        firstname: convention.signatories.beneficiary.firstName,
-      }),
-      beneficiaryLastName: getFormattedFirstnameAndLastname({
-        lastname: convention.signatories.beneficiary.lastName,
-      }),
-      beneficiaryBirthdate: convention.signatories.beneficiary.birthdate,
-      dateStart: parseISO(convention.dateStart).toLocaleDateString("fr"),
-      dateEnd: parseISO(convention.dateEnd).toLocaleDateString("fr"),
-      establishmentTutorName: getFormattedFirstnameAndLastname({
-        firstname: convention.establishmentTutor.firstName,
-        lastname: convention.establishmentTutor.lastName,
-      }),
-      businessName: convention.businessName,
-      immersionAppellationLabel:
-        convention.immersionAppellation.appellationLabel,
-      emergencyContactInfos: displayEmergencyContactInfos({
-        beneficiaryRepresentative:
-          convention.signatories.beneficiaryRepresentative,
-        beneficiary: convention.signatories.beneficiary,
-      }),
-      agencyLogoUrl: agency.logoUrl ?? undefined,
-      magicLink,
-      assessmentMagicLink: assessmentShortlink
-        ? makeShortLinkUrl(config, assessmentShortlink)
-        : undefined,
-      agencyName: agency.name,
-      agencyReferentName: convention.agencyReferent
-        ? getFormattedFirstnameAndLastname(convention.agencyReferent)
-        : undefined,
-      validatorName: convention.validators?.agencyValidator
-        ? getFormattedFirstnameAndLastname(
-            convention.validators.agencyValidator,
-          )
-        : "",
-    },
-  });
-};
 
 export const expectNotifyConventionRejected = (
   templatedEmail: TemplatedEmail,

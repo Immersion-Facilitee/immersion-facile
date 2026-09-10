@@ -374,7 +374,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
   };
 
   const validatorValidatesApplicationWhichTriggersConventionToBeSent = async (
-    { request, gateways, eventCrawler, inMemoryUow, appConfig }: TestAppAndDeps,
+    { request, gateways, eventCrawler, inMemoryUow }: TestAppAndDeps,
     validatorReviewJwt: string,
     initialConvention: ConventionDto,
   ) => {
@@ -434,26 +434,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
         "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
-        "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
       ],
-    );
-
-    const needsToTriggerConventionSentEmail = expectEmailOfType(
-      sentEmails[sentEmails.length - 1],
-      "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
-    );
-    expect(needsToTriggerConventionSentEmail.recipients).toEqual([
-      validator.email,
-    ]);
-
-    // Validators now get user-connected URLs instead of magic link shortlinks
-    expect(needsToTriggerConventionSentEmail.params.magicLink).toBe(
-      makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: initialConvention.id,
-        }),
-        baseUrl: appConfig.immersionFacileBaseUrl,
-      }),
     );
   };
 

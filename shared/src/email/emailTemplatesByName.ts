@@ -1,3 +1,4 @@
+import { parseISO } from "date-fns";
 import { createTemplatesByName } from "html-templates";
 import {
   type AbsoluteUrl,
@@ -17,9 +18,13 @@ import { isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistration
 import type { AgencyRole } from "../role/role.dto";
 import { titleByRole } from "../role/role.utils";
 import { frontRoutes, makeRouteAbsoluteUrl } from "../routes/routes";
+import { displayEmergencyContactInfos } from "../utils/beneficiary";
 import { isStringDate, toDisplayedDate } from "../utils/date";
 import { displayDuration, oneMinuteInSeconds } from "../utils/durations";
-import { joinWithCommasAnd } from "../utils/string";
+import {
+  getFormattedFirstnameAndLastname,
+  joinWithCommasAnd,
+} from "../utils/string";
 import { advices } from "./advices";
 import { defaultConventionFinalLegals } from "./defaultConventionFinalLegals";
 import type { EmailParamsByEmailType } from "./EmailParamsByEmailType";
@@ -3062,74 +3067,89 @@ L'équipe d'Immersion Facilitée`,
       ],
       createEmailVariables: ({
         agencyLogoUrl,
-        beneficiaryBirthdate,
-        beneficiaryFirstName,
-        beneficiaryLastName,
-        businessName,
-        conventionId,
-        dateEnd,
-        dateStart,
-        emergencyContactInfos,
-        establishmentTutorName,
-        immersionAppellationLabel,
-        internshipKind,
+        agencyName,
+        convention,
         magicLink,
         assessmentMagicLink,
-        agencyReferentName,
-        agencyName,
-        validatorName,
-      }) => ({
-        subject:
-          internshipKind === "immersion"
-            ? `Validation et convention de l'immersion pour observer l'activité de ${immersionAppellationLabel} au sein de ${businessName}`
-            : `Mini Stage - Validation et convention du mini stage pour observer l'activité de ${immersionAppellationLabel} au sein de ${businessName}`,
-        greetings: greetingsWithConventionId(conventionId),
-        content: `
+      }) => {
+        const emergencyContactInfos = displayEmergencyContactInfos({
+          beneficiaryRepresentative:
+            convention.signatories.beneficiaryRepresentative,
+          beneficiary: convention.signatories.beneficiary,
+        });
+
+        const beneficiaryFirstNameAndLastName =
+          getFormattedFirstnameAndLastname({
+            firstname: convention.signatories.beneficiary.firstName,
+            lastname: convention.signatories.beneficiary.lastName,
+          });
+
+        return {
+          subject:
+            convention.internshipKind === "immersion"
+              ? `Validation et convention de l'immersion pour observer l'activité de ${convention.immersionAppellation.appellationLabel} au sein de ${convention.businessName}`
+              : `Mini Stage - Validation et convention du mini stage pour observer l'activité de ${convention.immersionAppellation.appellationLabel} au sein de ${convention.businessName}`,
+          greetings: greetingsWithConventionId(convention.id),
+          content: `
       Bonne nouvelle ! 
 
-      La demande faite par ${beneficiaryFirstName} ${beneficiaryLastName} (né(e) le ${
-        isStringDate(beneficiaryBirthdate)
-          ? toDisplayedDate({ date: new Date(beneficiaryBirthdate) })
+      La demande faite par ${beneficiaryFirstNameAndLastName} (né(e) le ${
+        isStringDate(convention.signatories.beneficiary.birthdate)
+          ? toDisplayedDate({
+              date: new Date(convention.signatories.beneficiary.birthdate),
+            })
           : "Date invalide"
-      })${agencyReferentName ? `, suivi par ${agencyReferentName}` : ""} pour réaliser une immersion du ${dateStart} au ${dateEnd}, au sein de ${businessName} et encadrée par ${establishmentTutorName} a été validée par ${agencyName} représentée par ${validatorName} 
+      })${convention.agencyReferent ? `, suivi par ${getFormattedFirstnameAndLastname(convention.agencyReferent)}` : ""} pour réaliser une immersion du ${parseISO(convention.dateStart).toLocaleDateString("fr")} au ${parseISO(convention.dateEnd).toLocaleDateString("fr")}, au sein de ${convention.businessName} et encadrée par ${getFormattedFirstnameAndLastname(
+        {
+          firstname: convention.establishmentTutor.firstName,
+          lastname: convention.establishmentTutor.lastName,
+        },
+      )} a été validée par ${agencyName} représentée par ${
+        convention.validators?.agencyValidator
+          ? getFormattedFirstnameAndLastname(
+              convention.validators.agencyValidator,
+            )
+          : ""
+      } 
       et la convention est bien enregistrée. 
       
-      ${internshipKind === "immersion" ? "L'immersion" : "Le mini stage"} peut donc démarrer aux dates convenues.       
+      ${convention.internshipKind === "immersion" ? "L'immersion" : "Le mini stage"} peut donc démarrer aux dates convenues.       
       `,
-        buttons: [
-          {
-            label:
-              internshipKind === "immersion"
-                ? "Voir la convention d'immersion"
-                : "Voir la convention du mini-stage",
-            url: magicLink,
-          },
-        ],
-        subContent: `
-      ${defaultSignature(internshipKind)}
+          buttons: [
+            {
+              label:
+                convention.internshipKind === "immersion"
+                  ? "Voir la convention d'immersion"
+                  : "Voir la convention du mini-stage",
+              url: magicLink,
+            },
+          ],
+          subContent: `
+      ${defaultSignature(convention.internshipKind)}
 
 
       En cas de difficulté, prévenez au plus vite votre ${
-        internshipKind === "immersion"
+        convention.internshipKind === "immersion"
           ? "conseiller"
           : "conseiller de la Chambre consulaire ayant émis la convention"
       } pour qu'il vous conseille au mieux. 
       
       ${
         emergencyContactInfos
-          ? `Si la situation l'impose, le contact d'urgence de ${beneficiaryFirstName} ${beneficiaryLastName} : ${emergencyContactInfos}`
+          ? `Si la situation l'impose, le contact d'urgence de ${beneficiaryFirstNameAndLastName} : ${emergencyContactInfos}`
           : ""
       }`,
-        highlight: assessmentMagicLink
-          ? {
-              content: `
+          highlight: assessmentMagicLink
+            ? {
+                content: `
               Un imprévu ?
 
               Si l’immersion ne peut pas aller à son terme (abandon, arrêt anticipé, etc.), merci de nous le signaler dès que possible en <a href="${assessmentMagicLink}">déclarant une fin anticipée</a> , pour assurer un bon suivi.`,
-            }
-          : undefined,
-        agencyLogoUrl,
-      }),
+              }
+            : undefined,
+          agencyLogoUrl,
+        };
+      },
     },
     ACCOUNT_DELETION_WARNING: {
       niceName: "Compte - Avertissement de suppression pour inactivité",
