@@ -212,17 +212,12 @@ test.describe("Convention creation and modification workflow", () => {
 
     test.describe("convention review and validation", () => {
       test("reviews and validate convention", async ({ page }) => {
-        await page.goto("/");
-        const href = await getMagicLinkFromEmail({
-          page,
-          emailType: "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
-          elementIndex: 0,
-          label: "manageConventionLink",
-        });
-        expect(href).not.toBe(null);
-        if (!href)
-          throw new Error("Convention validation magic link not found");
-        await page.goto(href);
+        if (!conventionSubmitted) throw new Error("No convention submitted");
+        await page.goto(
+          frontRoutes.manageConventionConnectedUser({
+            conventionId: conventionSubmitted.conventionId,
+          }).href,
+        );
         await page
           .locator(
             `#${domElementIds.manageConvention.conventionValidationValidateButton}`,

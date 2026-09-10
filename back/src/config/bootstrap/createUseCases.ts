@@ -70,7 +70,6 @@ import { makeNotifyConventionDraftSaved } from "../../domains/convention/use-cas
 import { makeNotifyConventionReminder } from "../../domains/convention/use-cases/notifications/NotifyConventionReminder";
 import { makeNotifyEstablishmentThatAssessmentWasCreated } from "../../domains/convention/use-cases/notifications/NotifyEstablishmentThatAssessmentWasCreated";
 import { makeNotifyLastSigneeThatConventionHasBeenSigned } from "../../domains/convention/use-cases/notifications/NotifyLastSigneeThatConventionHasBeenSigned";
-import { makeNotifyNewConventionNeedsReview } from "../../domains/convention/use-cases/notifications/NotifyNewConventionNeedsReview";
 import { makeNotifySignatoriesThatConventionSubmittedNeedsSignature } from "../../domains/convention/use-cases/notifications/NotifySignatoriesThatConventionSubmittedNeedsSignature";
 import { makeNotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification } from "../../domains/convention/use-cases/notifications/NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification";
 import { makeNotifyUserAgencyRightChanged } from "../../domains/convention/use-cases/notifications/NotifyUserAgencyRightChanged";
@@ -1252,13 +1251,6 @@ export const createUseCases = ({
           saveNotificationAndRelatedEvent,
         },
       }),
-    notifyNewConventionNeedsReview: makeNotifyNewConventionNeedsReview({
-      uowPerformer,
-      deps: {
-        saveNotificationAndRelatedEvent,
-        config,
-      },
-    }),
     notifySignatoriesThatConventionSubmittedNeedsSignature:
       makeNotifySignatoriesThatConventionSubmittedNeedsSignature({
         uowPerformer,

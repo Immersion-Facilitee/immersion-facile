@@ -117,7 +117,6 @@ const getUseCasesByTopics = (
   ],
   ConventionFullySigned: [
     useCases.notifyLastSigneeThatConventionHasBeenSigned,
-    useCases.notifyNewConventionNeedsReview,
     useCases.notifyFranceTravailUserAdvisorOnConventionFullySigned,
     extractConventionIdFromConvention(
       useCases.broadcastToFranceTravailOnConventionUpdates,
@@ -127,7 +126,6 @@ const getUseCasesByTopics = (
     ),
   ],
   ConventionAcceptedByCounsellor: [
-    useCases.notifyNewConventionNeedsReview,
     extractConventionIdFromConvention(
       useCases.broadcastToFranceTravailOnConventionUpdates,
     ),
