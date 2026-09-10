@@ -1536,6 +1536,94 @@ describe.each(adapterKind)(
         });
       });
 
+      describe("filter updatedAtBefore", () => {
+        const baseDate = new Date("2024-01-15T10:00:00Z");
+        const dateBefore = subDays(baseDate, 5); // 2024-01-10
+        const dateAfter = subDays(baseDate, -5); // 2024-01-20
+
+        const agencyUpdatedBefore = toAgencyWithRights(
+          agency1builder
+            .withId("00000000-0000-0000-0000-000000000010")
+            .withAgencySiret("00000000000010")
+            .withUpdatedAt(dateBefore)
+            .build(),
+          {
+            [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+          },
+        );
+
+        const agencyUpdatedOnDate = toAgencyWithRights(
+          agency1builder
+            .withId("00000000-0000-0000-0000-000000000011")
+            .withAgencySiret("00000000000011")
+            .withUpdatedAt(baseDate)
+            .build(),
+          {
+            [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+          },
+        );
+
+        const agencyUpdatedAfter = toAgencyWithRights(
+          agency1builder
+            .withId("00000000-0000-0000-0000-000000000012")
+            .withAgencySiret("00000000000012")
+            .withUpdatedAt(dateAfter)
+            .build(),
+          {
+            [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+          },
+        );
+
+        beforeEach(async () => {
+          await Promise.all([
+            agencyRepository.insert(agencyUpdatedBefore),
+            agencyRepository.insert(agencyUpdatedOnDate),
+            agencyRepository.insert(agencyUpdatedAfter),
+          ]);
+        });
+
+        it("returns only agencies updated before or on the specified date", async () => {
+          const { data: agencies } = await agencyRepository.getAgencies({
+            filters: { updatedAtBefore: baseDate },
+          });
+
+          expectToEqual(agencies, [agencyUpdatedBefore, agencyUpdatedOnDate]);
+        });
+
+        it("returns nothing when filter date is before all agencies", async () => {
+          const veryOldDate = subDays(dateBefore, 10);
+          const { data: agencies } = await agencyRepository.getAgencies({
+            filters: { updatedAtBefore: veryOldDate },
+          });
+
+          expect(agencies).toEqual([]);
+        });
+
+        it("returns all agencies when filter date is after all agencies", async () => {
+          const futureDate = subDays(dateAfter, -10);
+          const { data: agencies } = await agencyRepository.getAgencies({
+            filters: { updatedAtBefore: futureDate },
+          });
+
+          expectToEqual(agencies, [
+            agencyUpdatedBefore,
+            agencyUpdatedOnDate,
+            agencyUpdatedAfter,
+          ]);
+        });
+
+        it("works in combination with other filters", async () => {
+          const { data: agencies } = await agencyRepository.getAgencies({
+            filters: {
+              updatedAtBefore: baseDate,
+              status: activeAgencyStatuses,
+            },
+          });
+
+          expectToEqual(agencies, [agencyUpdatedBefore, agencyUpdatedOnDate]);
+        });
+      });
+
       describe("filter userIds", () => {
         const agencyWithUsers_1_2 = toAgencyWithRights(
           agency1builder
