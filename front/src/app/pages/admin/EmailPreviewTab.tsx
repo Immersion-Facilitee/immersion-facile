@@ -595,7 +595,7 @@ export const defaultEmailValueByEmailKind: {
     conventionId: "CONVENTION_ID",
     beneficiaryFirstName: "BENEFICIARY_FIRST_NAME",
     beneficiaryLastName: "BENEFICIARY_LAST_NAME",
-    magicLink: "http://MAGIC_LINK",
+    assessmentDocumentLink: "http://ASSESSMENT_DOCUMENT_LINK",
   },
   ASSESSMENT_NEEDS_SIGNATURE_BENEFICIARY_NOTIFICATION: {
     conventionId: "CONVENTION_ID",

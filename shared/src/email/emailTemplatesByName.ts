@@ -823,7 +823,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         conventionId,
         beneficiaryFirstName,
         beneficiaryLastName,
-        magicLink,
+        assessmentDocumentLink,
       }) => {
         return {
           subject: `Immersion Facilitée - Le bilan de votre ${
@@ -843,7 +843,9 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           
           Nous vous invitons à télécharger dès maintenant en cliquant sur le bouton ci-dessous.
           `,
-          buttons: [{ label: "Consulter mon bilan", url: magicLink }],
+          buttons: [
+            { label: "Consulter mon bilan", url: assessmentDocumentLink },
+          ],
           subContent: `
           Nous vous encourageons à intégrer ce document dans vos candidatures afin de valoriser votre expérience auprès de vos futurs employeurs.
           

@@ -216,6 +216,8 @@ const loginPersonaSerializer: ValueSerializer<"beneficiary" | "professional"> =
     stringify: (value) => value,
   };
 
+const loginPersona = param.query.optional.ofType(loginPersonaSerializer);
+
 export const {
   RouteProvider,
   useRoute,
@@ -308,7 +310,7 @@ export const {
       jwt: param.query.optional.string,
       conventionId: param.query.optional.string,
       ...acquisitionParams,
-      loginPersona: param.query.optional.ofType(loginPersonaSerializer),
+      loginPersona,
     },
     () => "/bilan-document",
   ),
@@ -480,7 +482,7 @@ export const {
       ...connectedUserParams,
       conventionId: param.query.optional.string,
       ...acquisitionParams,
-      loginPersona: param.query.optional.ofType(loginPersonaSerializer),
+      loginPersona,
     },
     () => "/pilotage-convention-inclusion-connect",
   ),

@@ -39,7 +39,7 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
       establishmentSiret: convention.siret,
     };
 
-    const magicLink = makeRouteAbsoluteUrl({
+    const assessmentDocumentLink = makeRouteAbsoluteUrl({
       route: frontRoutes.assessmentDocument({
         conventionId: convention.id,
         loginPersona: "beneficiary",
@@ -61,7 +61,7 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
           beneficiaryFirstName: getFormattedFirstnameAndLastname({
             firstname: convention.signatories.beneficiary.firstName,
           }),
-          magicLink,
+          assessmentDocumentLink,
         },
       },
       followedIds,
@@ -85,7 +85,7 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
             beneficiaryFirstName: getFormattedFirstnameAndLastname({
               firstname: convention.signatories.beneficiary.firstName,
             }),
-            magicLink,
+            assessmentDocumentLink,
           },
         },
         followedIds,
