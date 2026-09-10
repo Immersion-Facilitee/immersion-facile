@@ -669,7 +669,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
             )}
           </>
         }
-        className={fr.cx("fr-mt-2w")}
+        className={fr.cx("fr-mt-md-2w", "fr-mt-1w")}
       />
       {createPortal(
         <DiscussionSummaryModal title="Résumé de la candidature" size="large">
