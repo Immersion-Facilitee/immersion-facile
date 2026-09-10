@@ -4,6 +4,7 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button, { type ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
+import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DOMPurify from "dompurify";
 import { useEffect, useState } from "react";
@@ -32,6 +33,7 @@ import {
   type DiscussionReadDto,
   domElementIds,
   type ExchangeFromDashboard,
+  type ExchangeRead,
   type ExchangeRole,
   emailExchangeSplitters,
   escapeHtml,
@@ -39,6 +41,7 @@ import {
   frontRoutes,
   getFormattedFirstnameAndLastname,
   getLastExchange,
+  immersionDurationLabels,
   makeEmptyConventionInitialValues,
   shouldEstablishmentBeReminded,
   splitTextOnFirstSeparator,
@@ -82,6 +85,9 @@ import { contactModeToBadgeOptions } from "../../immersion-offer/CreateDiscussio
 type DiscussionManageContentProps = WithDiscussionId & {
   viewer: ExchangeRole;
 };
+
+const { Component: DiscussionSummaryModal, open: openDiscussionSummaryModal } =
+  createModal({ isOpenedByDefault: false, id: "discussion-summary-modal" });
 
 export const DiscussionManageContent = ({
   discussionId,
@@ -351,10 +357,14 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
   const discussionEstablishmentContactInfo = useAppSelector(
     discussionSelectors.discussionEstablishmentContactInfo,
   );
-  const relatedOffer = useAppSelector(searchSelectors.currentSearchResult);
   const [shouldShowContactInfo, setShouldShowContactInfo] =
     useState<boolean>(false);
   const { isLayoutDesktop } = useLayout();
+
+  const [_firstExchange, ...restSortedExchanges] = [
+    ...discussion.exchanges,
+  ].sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+  const shouldShowFullSummary = restSortedExchanges.length === 0;
 
   const saveConventionDraftThenRedirectRequested = ({
     conventionDraft,
@@ -405,6 +415,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           />
         )}
       />
+
       <header>
         <Button
           type="button"
@@ -568,18 +579,24 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
         content={match(discussion.contactMode)
           .with("EMAIL", () => (
             <>
-              <BorderedSection>
-                <DiscussionExchangeMessageForm
-                  discussionId={discussion.id}
-                  viewer={viewer}
-                />
-              </BorderedSection>
-              <BorderedSection className={fr.cx("fr-mt-2w")}>
-                <DiscussionExchangesList
+              {shouldShowFullSummary && (
+                <DiscussionSummary
+                  displayMode="full"
                   discussion={discussion}
                   viewer={viewer}
                 />
-              </BorderedSection>
+              )}
+              <DiscussionExchangeMessageForm
+                discussionId={discussion.id}
+                viewer={viewer}
+              />
+              {restSortedExchanges.length > 0 && (
+                <DiscussionExchangesList
+                  sortedExchanges={restSortedExchanges}
+                  potentialBeneficiary={discussion.potentialBeneficiary}
+                  viewer={viewer}
+                />
+              )}
             </>
           ))
           .with(P.union("PHONE", "IN_PERSON"), (contactMode) =>
@@ -613,66 +630,26 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           .exhaustive()}
         aside={
           <>
-            {discussion.kind === "IF" && (
-              <BorderedSection className={fr.cx("fr-p-2w", "fr-mb-2w")}>
-                {viewer === "potentialBeneficiary" ? (
-                  <>
-                    <h3 className={fr.cx("fr-h6")}>Entreprise</h3>
+            {match({ kind: discussion.kind, viewer, shouldShowFullSummary })
+              .with({ kind: "IF", viewer: "potentialBeneficiary" }, () => (
+                <EstablishmentSummary discussion={discussion} />
+              ))
+              .with(
+                {
+                  kind: "IF",
+                  viewer: "establishment",
+                  shouldShowFullSummary: false,
+                },
+                () => (
+                  <DiscussionSummary
+                    viewer={viewer}
+                    discussion={discussion}
+                    displayMode="preview"
+                  />
+                ),
+              )
+              .otherwise(() => null)}
 
-                    <ul className={fr.cx("fr-raw-list")}>
-                      {relatedOffer?.website && (
-                        <li className={fr.cx("fr-mb-1w")}>
-                          <a
-                            href={relatedOffer.website}
-                            title="Site web de l'entreprise"
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Site web de l'entreprise
-                          </a>
-                        </li>
-                      )}
-
-                      <li>{discussion.businessName}</li>
-
-                      <li className={fr.cx("fr-mt-1w")}>
-                        <a
-                          title="Offre d'immersion"
-                          target="_blank"
-                          rel="noreferrer"
-                          href={
-                            frontRoutes.searchResult({
-                              appellationCode: [
-                                discussion.appellation.appellationCode,
-                              ],
-                              siret: discussion.siret,
-                              location: discussion.locationId,
-                            }).href
-                          }
-                        >
-                          Voir l'offre
-                        </a>
-                      </li>
-                    </ul>
-                  </>
-                ) : (
-                  discussion.potentialBeneficiary.resumeLink && (
-                    <>
-                      <h3 className={fr.cx("fr-h6")}>Profil du candidat</h3>
-
-                      <a
-                        href={discussion.potentialBeneficiary.resumeLink}
-                        title="CV du candidat"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        CV
-                      </a>
-                    </>
-                  )
-                )}
-              </BorderedSection>
-            )}
             {isLayoutDesktop && discussion.kind === "IF" && (
               <>
                 {viewer === "establishment" && shouldShowDiscussionActions && (
@@ -694,6 +671,16 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
         }
         className={fr.cx("fr-mt-2w")}
       />
+      {createPortal(
+        <DiscussionSummaryModal title="Résumé de la candidature" size="large">
+          <DiscussionSummary
+            viewer={viewer}
+            displayMode="full"
+            discussion={discussion}
+          />
+        </DiscussionSummaryModal>,
+        document.body,
+      )}
 
       {createPortal(
         <RejectDiscussionModal discussion={discussion} />,
@@ -707,6 +694,152 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
     </>
   );
 };
+
+const EstablishmentSummary = ({
+  discussion,
+}: {
+  discussion: DiscussionReadDto;
+}) => {
+  const relatedOffer = useAppSelector(searchSelectors.currentSearchResult);
+
+  return (
+    <BorderedSection className={fr.cx("fr-mb-2w")}>
+      <h3 className={fr.cx("fr-h6")}>Entreprise</h3>
+
+      <ul className={fr.cx("fr-raw-list")}>
+        {relatedOffer?.website && (
+          <li className={fr.cx("fr-mb-1w")}>
+            <a
+              href={relatedOffer.website}
+              title="Site web de l'entreprise"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Site web de l'entreprise
+            </a>
+          </li>
+        )}
+
+        <li>{discussion.businessName}</li>
+
+        <li className={fr.cx("fr-mt-1w")}>
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={
+              frontRoutes.searchResult({
+                appellationCode: [discussion.appellation.appellationCode],
+                siret: discussion.siret,
+                location: discussion.locationId,
+              }).href
+            }
+            className={fr.cx("fr-link")}
+          >
+            Voir l'offre
+          </a>
+        </li>
+      </ul>
+    </BorderedSection>
+  );
+};
+
+const DiscussionSummary = ({
+  viewer,
+  displayMode,
+  discussion,
+}: {
+  viewer: ExchangeRole;
+  displayMode: "full" | "preview";
+  discussion: DiscussionReadDto;
+}) => (
+  <BorderedSection className={fr.cx("fr-mb-2w")}>
+    <h6 className={fr.cx("fr-h6", "fr-mb-2w")}>
+      {viewer === "potentialBeneficiary"
+        ? "Ma candidature"
+        : getFormattedFirstnameAndLastname({
+            firstname: discussion.potentialBeneficiary.firstName,
+            lastname: discussion.potentialBeneficiary.lastName,
+          })}
+    </h6>
+    <ul className={fr.cx("fr-raw-list", "fr-mb-2w")}>
+      <li>
+        <strong>
+          <span
+            className={fr.cx(
+              "fr-icon-calendar-line",
+              "fr-icon--sm",
+              "fr-mr-1w",
+            )}
+          />
+          Période
+        </strong>
+        &nbsp;: {discussion.potentialBeneficiary.datePreferences}
+      </li>
+      {discussion.kind === "IF" && (
+        <li>
+          <strong>
+            <span
+              className={fr.cx("fr-icon-time-line", "fr-icon--sm", "fr-mr-1w")}
+            />
+            Durée
+          </strong>
+          &nbsp;:{" "}
+          {
+            immersionDurationLabels[
+              discussion.potentialBeneficiary.immersionDuration
+            ]
+          }
+        </li>
+      )}
+    </ul>
+
+    {discussion.kind === "IF" && (
+      <>
+        {displayMode === "full" && (
+          <>
+            <div className={fr.cx("fr-mb-2w")}>
+              <strong>Pourquoi cette immersion</strong>
+              <p className={fr.cx("fr-mb-0")}>
+                {discussion.potentialBeneficiary.motivation}
+              </p>
+            </div>
+            <div className={fr.cx("fr-mb-2w")}>
+              <strong>Compétences, expériences et savoir-être</strong>
+              <p className={fr.cx("fr-mb-0")}>
+                {
+                  discussion.potentialBeneficiary
+                    .experienceAdditionalInformation
+                }
+              </p>
+            </div>
+          </>
+        )}
+        <a
+          href={discussion.potentialBeneficiary.resumeLink}
+          target="_blank"
+          rel="noreferrer"
+          className={fr.cx("fr-link")}
+        >
+          CV ou profil en ligne
+        </a>
+        {displayMode === "preview" && (
+          <div
+            className={fr.cx("fr-btns-group", "fr-btns-group--sm", "fr-mt-2w")}
+          >
+            <Button
+              size="small"
+              priority="tertiary"
+              onClick={openDiscussionSummaryModal}
+              className={fr.cx("fr-mb-0")}
+            >
+              En savoir plus
+            </Button>
+          </div>
+        )}
+      </>
+    )}
+  </BorderedSection>
+);
 
 const BeneficiaryGuideInformation = ({
   contactMode,
@@ -823,18 +956,17 @@ const EstablishmentContactInformation = ({
 };
 
 const DiscussionExchangesList = ({
-  discussion,
+  sortedExchanges,
+  potentialBeneficiary,
   viewer,
 }: {
-  discussion: DiscussionReadDto;
+  sortedExchanges: ExchangeRead[];
+  potentialBeneficiary: DiscussionReadDto["potentialBeneficiary"];
   viewer: ExchangeRole;
 }): JSX.Element => {
-  const sortedExchangesBySentAtDesc = [...discussion.exchanges].sort(
-    (a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime(),
-  );
   return (
-    <section>
-      {sortedExchangesBySentAtDesc.map((exchange) => {
+    <BorderedSection className={fr.cx("fr-mt-2w")}>
+      {sortedExchanges.map((exchange) => {
         const currentMessage = addLineBreakOnNewLines(
           convertHtmlToText(exchange.message),
         );
@@ -851,8 +983,8 @@ const DiscussionExchangesList = ({
               exchange.sender === "establishment"
                 ? `${exchange.firstname} ${exchange.lastname}`
                 : getFormattedFirstnameAndLastname({
-                    firstname: discussion.potentialBeneficiary.firstName,
-                    lastname: discussion.potentialBeneficiary.lastName,
+                    firstname: potentialBeneficiary.firstName,
+                    lastname: potentialBeneficiary.lastName,
                   })
             }
             sentAt={toDisplayedDate({
@@ -868,7 +1000,7 @@ const DiscussionExchangesList = ({
           </ExchangeMessage>
         );
       })}
-    </section>
+    </BorderedSection>
   );
 };
 
@@ -966,46 +1098,53 @@ const DiscussionExchangeMessageForm = ({
   );
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Feedback
-        topics={[
-          "establishment-dashboard-discussion-send-message",
-          "beneficiary-dashboard-discussion-send-message",
-        ]}
-        className={fr.cx("fr-mb-2w")}
-        closable
-      />
-      <input type="hidden" {...register("discussionId")} value={discussionId} />
-      <Input
-        textArea
-        label={
-          viewer === "establishment"
-            ? "Répondre au candidat"
-            : "Répondre à l'entreprise"
-        }
-        nativeTextAreaProps={{
-          id: domElementIds.establishmentDashboard.discussion.sendMessageInput,
-          rows: 5,
-          placeholder: "Rédigez votre message ici...",
-          ...register("message", {
-            setValueAs: escapeHtml,
-          }),
-        }}
-        {...getFieldError("message")}
-      />
-      <div className={fr.cx("fr-mt-2w")}>
-        <Button
-          id={
-            domElementIds.establishmentDashboard.discussion
-              .sendMessageSubmitButton
+    <BorderedSection>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Feedback
+          topics={[
+            "establishment-dashboard-discussion-send-message",
+            "beneficiary-dashboard-discussion-send-message",
+          ]}
+          className={fr.cx("fr-mb-2w")}
+          closable
+        />
+        <input
+          type="hidden"
+          {...register("discussionId")}
+          value={discussionId}
+        />
+        <Input
+          textArea
+          label={
+            viewer === "establishment"
+              ? "Répondre au candidat"
+              : "Répondre à l'entreprise"
           }
-          type="submit"
-          disabled={formState.isSubmitting || message.trim().length === 0}
-          size="small"
-        >
-          Envoyer un message
-        </Button>
-      </div>
-    </form>
+          nativeTextAreaProps={{
+            id: domElementIds.establishmentDashboard.discussion
+              .sendMessageInput,
+            rows: 5,
+            placeholder: "Rédigez votre message ici...",
+            ...register("message", {
+              setValueAs: escapeHtml,
+            }),
+          }}
+          {...getFieldError("message")}
+        />
+        <div className={fr.cx("fr-mt-2w")}>
+          <Button
+            id={
+              domElementIds.establishmentDashboard.discussion
+                .sendMessageSubmitButton
+            }
+            type="submit"
+            disabled={formState.isSubmitting || message.trim().length === 0}
+            size="small"
+          >
+            Envoyer un message
+          </Button>
+        </div>
+      </form>
+    </BorderedSection>
   );
 };
