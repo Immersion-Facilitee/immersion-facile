@@ -2484,69 +2484,6 @@ Tél : ${beneficiaryPhone}`,
         agencyLogoUrl,
       }),
     },
-    NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION: {
-      niceName: "Convention - Entièrement signée à traiter par l'agence",
-      tags: [
-        "template:notification conseiller demande d’immersion signée à valider",
-        "theme:convention",
-        "acteur:prescripteur",
-        "role:preValideur",
-        "role:valideur",
-      ],
-      createEmailVariables: ({
-        agencyLogoUrl,
-        agencyReferentName,
-        beneficiaryFirstName,
-        beneficiaryLastName,
-        businessName,
-        conventionId,
-        internshipKind,
-        manageConventionLink,
-        possibleRoleAction,
-        validatorName,
-        peAdvisor,
-      }) => ({
-        subject:
-          internshipKind === "immersion"
-            ? `Demande d'immersion à étudier: ${beneficiaryFirstName} ${beneficiaryLastName} - ${businessName}`
-            : `Mini Stage - Demande de mini stage à étudier: ${beneficiaryFirstName} ${beneficiaryLastName} - ${businessName}`,
-        greetings: greetingsWithConventionId(conventionId),
-        content: `
-      <strong>Une nouvelle demande ${
-        internshipKind === "immersion" ? "d'immersion" : "de mini stage"
-      } vous est envoyée${validatorName ? ` par ${validatorName} ` : " "}pour que vous l'examiniez.</strong>
-      
-      ${
-        peAdvisor && !peAdvisor.recipientIsPeAdvisor
-          ? `Vous recevez cet email en copie de ${peAdvisor.firstName} ${peAdvisor.lastName} (${peAdvisor.email}).
-      C'est à ce conseiller d'examiner cette demande d'immersion en priorité. En cas d'absence de sa part, un autre conseiller peut l'examiner afin de ne pas retarder le candidat.`
-          : ""
-      }
-      
-      Elle concerne le bénéficiaire ${beneficiaryFirstName} ${beneficiaryLastName} dans l'entreprise ${businessName} 
-      ${
-        agencyReferentName &&
-        `
-        <strong>Conseiller :</strong> ${agencyReferentName}
-        `
-      }
-      Nous vous remercions d'en prendre connaissance pour ${possibleRoleAction}.
-      `,
-        buttons: [
-          {
-            label: "Examiner la demande",
-            url: manageConventionLink,
-            target: "_blank",
-          },
-        ],
-        subContent: defaultSignature(internshipKind),
-        attachmentUrls:
-          internshipKind === "immersion"
-            ? [emailAttachements.memoAgencyGeneral]
-            : undefined,
-        agencyLogoUrl,
-      }),
-    },
     NEW_ESTABLISHMENT_CREATED_CONTACT_CONFIRMATION: {
       niceName: "Inscription - Entreprise - Référencement réussi",
       tags: [

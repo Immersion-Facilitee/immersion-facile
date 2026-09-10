@@ -368,7 +368,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
         "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
         "SIGNEE_HAS_SIGNED_CONVENTION",
         "SIGNEE_HAS_SIGNED_CONVENTION",
-        "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
       ],
     );
 
@@ -402,21 +401,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
           magicLink: manageConventionUrl("professional"),
         },
       ],
-    );
-
-    const needsReviewEmail = expectEmailOfType(
-      sentEmails[sentEmails.length - 1],
-      "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
-    );
-    expect(needsReviewEmail.recipients).toEqual([validator.email]);
-
-    expect(needsReviewEmail.params.manageConventionLink).toBe(
-      makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: initialConvention.id,
-        }),
-        baseUrl: appConfig.immersionFacileBaseUrl,
-      }),
     );
   };
 
@@ -477,7 +461,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
         "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
         "SIGNEE_HAS_SIGNED_CONVENTION",
         "SIGNEE_HAS_SIGNED_CONVENTION",
-        "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",

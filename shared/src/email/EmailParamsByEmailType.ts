@@ -459,26 +459,6 @@ export type EmailParamsByEmailType = {
     signatoryFirstName: string;
     signatoryLastName: string;
   };
-  NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION: {
-    agencyLogoUrl: AbsoluteUrl | undefined;
-    agencyReferentName: string | undefined;
-    beneficiaryFirstName: string;
-    beneficiaryLastName: string;
-    businessName: string;
-    conventionId: ConventionId;
-    internshipKind: InternshipKind;
-    manageConventionLink: string;
-    possibleRoleAction: string;
-    validatorName: string;
-    peAdvisor:
-      | {
-          recipientIsPeAdvisor: boolean;
-          firstName: string;
-          lastName: string;
-          email: string;
-        }
-      | undefined;
-  };
   NEW_ESTABLISHMENT_CREATED_CONTACT_CONFIRMATION: {
     businessName: string;
     businessAddresses: string[];
