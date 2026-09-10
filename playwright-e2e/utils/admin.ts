@@ -161,7 +161,7 @@ export const openConnectedConventionAsRecipient = async (
   await acceptCookiesIfBannerVisible(page);
 
   const byEmailButton = page.locator(
-    `#${domElementIds.manageConventionConnectedUser.login.byEmailButton}`,
+    `#${domElementIds.login.professional.byEmailButton}`,
   );
   await expect(byEmailButton).toBeVisible();
   await page.getByLabel("Email").fill(recipientEmail);

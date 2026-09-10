@@ -263,8 +263,8 @@ export const domElementIds = {
       proConnectButton: "im-login-form__oauth-connect-button--professional",
     },
     navigateToHome: "im-login-form__navigate-to-home-button--agency",
-    retryButton: "im-login-form__retry-login-button--agency",
-    contactSupport: "im-login-form__contact-support-link--agency",
+    retryButton: "im-login-form__retry-login-button",
+    contactSupport: "im-login-form__contact-support-link",
   },
   addAgency: {
     form: "im-form-add-agency",
