@@ -245,7 +245,7 @@ export const ConnectedPrivateRoutePage = ({
                   <h2 className={fr.cx("fr-h4", "fr-mb-2w")}>Vous êtes...</h2>
 
                   <RadioButtons
-                    id={domElementIds.loginPersona.radioButtons}
+                    id={domElementIds.login.radioButtons}
                     className={fr.cx("fr-mb-2w")}
                     classes={{
                       inputGroup: fr.cx("fr-col-12", "fr-col-lg-4"),
@@ -291,17 +291,19 @@ export const ConnectedPrivateRoutePage = ({
                   />
 
                   {match(selectedLoginPersona)
-                    .with("beneficiary", () => (
+                    .with("beneficiary", (selectedLoginPersona) => (
                       <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
-                        <LoginWithEmail page={page} />
+                        <LoginWithEmail loginPersona={selectedLoginPersona} />
                       </div>
                     ))
-                    .with("professional", () => (
+                    .with("professional", (selectedLoginPersona) => (
                       <SeparatedSection
-                        firstSection={<LoginWithEmail page={page} />}
+                        firstSection={
+                          <LoginWithEmail loginPersona={selectedLoginPersona} />
+                        }
                         secondSection={
                           <LoginWithProConnect
-                            page={page}
+                            loginPersona={selectedLoginPersona}
                             redirectUri={route.href}
                           />
                         }
@@ -516,7 +518,7 @@ const loginCardsByPersona: Record<LoginPersona, LoginPersonaCard[]> = {
   ],
 };
 
-const LoginWithEmail = ({ page }: { page: AllowedLoginSource }) => {
+const LoginWithEmail = ({ loginPersona }: { loginPersona: LoginPersona }) => {
   const route = useRoute();
   const methods = useForm<{
     email: Email;
@@ -583,7 +585,7 @@ const LoginWithEmail = ({ page }: { page: AllowedLoginSource }) => {
               onEmailValidationFeedback={setEmailValidationFeedback}
             />
             <Button
-              id={domElementIds[page].login.byEmailButton}
+              id={domElementIds.login[loginPersona].byEmailButton}
               nativeButtonProps={{
                 onMouseDown: (event) => {
                   event.preventDefault();
@@ -601,10 +603,10 @@ const LoginWithEmail = ({ page }: { page: AllowedLoginSource }) => {
 
 const LoginWithProConnect = ({
   redirectUri,
-  page,
+  loginPersona,
 }: {
   redirectUri: string;
-  page: AllowedLoginSource;
+  loginPersona: LoginPersona;
 }) => {
   const isRedirectUriAllowed = withRedirectUriSchema.safeParse({
     redirectUri,
@@ -624,7 +626,7 @@ const LoginWithProConnect = ({
       </p>
       <div className={fr.cx("fr-my-2w")}>
         <ProConnectButton
-          id={domElementIds[page].login.proConnectButton}
+          id={domElementIds.login[loginPersona].proConnectButton}
           url={makeUrlWithQueryParams(
             `/api${authRoutes.initiateLoginByOAuth.url}`,
             {

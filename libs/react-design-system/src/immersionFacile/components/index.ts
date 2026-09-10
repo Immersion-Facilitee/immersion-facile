@@ -25,7 +25,6 @@ export * from "./inputs";
 export * from "./label";
 export * from "./link";
 export * from "./loader";
-export * from "./login-form";
 export * from "./main-wrapper";
 export * from "./maintenance-callout";
 export * from "./ministere-emploi-logo";

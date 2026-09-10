@@ -5,7 +5,7 @@ type FrontRoutesKeys =
   | "home"
   | "header"
   | "footer"
-  | "loginPersona";
+  | "login";
 
 type FrontRouteParametrizedKeys =
   | "mode"
@@ -126,11 +126,6 @@ export const domElementIds = {
       resourcesAndWebinars: buildFooterNavLinkId("resources-and-webinars"),
     },
   },
-
-  loginPersona: {
-    radioButtons: "im-login-form__persona-radio-buttons",
-  },
-
   home: {
     heroHeader: {
       candidate: buildHeroHeaderId("home-candidate"),
@@ -257,14 +252,21 @@ export const domElementIds = {
     contactByMailButton:
       "im-contact-establishment__contact-email-button--external",
   },
-  addAgency: {
-    login: {
-      byEmailButton: "im-login-form__connect-button--agency-email",
-      proConnectButton: "im-login-form__inclusion-connect-button--agency",
-      navigateToHome: "im-login-form__navigate-to-home-button--agency",
-      retryButton: "im-login-form__retry-login-button--agency",
-      contactSupport: "im-login-form__contact-support-link--agency",
+  login: {
+    radioButtons: "im-login-form__persona-radio-buttons",
+    beneficiary: {
+      byEmailButton: "im-login-form__connect-button--beneficiary",
+      proConnectButton: "im-login-form__oauth-connect-button--beneficiary",
     },
+    professional: {
+      byEmailButton: "im-login-form__connect-button--professional",
+      proConnectButton: "im-login-form__oauth-connect-button--professional",
+    },
+    navigateToHome: "im-login-form__navigate-to-home-button--agency",
+    retryButton: "im-login-form__retry-login-button",
+    contactSupport: "im-login-form__contact-support-link",
+  },
+  addAgency: {
     form: "im-form-add-agency",
     uploadLogoInput: "im-form-add-agency__file-upload-logo",
     id: "im-form-add-agency__id",
@@ -582,14 +584,6 @@ export const domElementIds = {
   formEstablishment: {
     offerModal: "im-offer-modal",
     offerModalSubmitButton: "im-offer-modal__submit-button",
-    login: {
-      byEmailButton: "im-login-form__connect-button--establishment-email",
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--establishment",
-      navigateToHome: "im-login-form__navigate-to-home-button--establishment",
-      retryButton: "im-login-form__retry-login-button--establishment",
-      contactSupport: "im-login-form__contact-support-link--establishment",
-    },
     create: {
       form: "im-form-create-establishment",
       addOfferButton: "im-form-create-establishment__add-offer-button",
@@ -870,13 +864,6 @@ export const domElementIds = {
       renewApiConsumerKeyModal:
         "im-technical-options__renew-api-consumer-key-modal",
     },
-    login: {
-      proConnectButton: "im-login-form__inclusion-connect-button--admin",
-      byEmailButton: "im-login-form__connect-button--admin-email",
-      navigateToHome: "im-login-form__navigate-to-home-button--admin",
-      retryButton: "im-login-form__retry-login-button--admin",
-      contactSupport: "im-login-form__contact-support-link--admin",
-    },
     agencyTab: {
       openManageUserModalButton:
         "im-form-edit-agency__add-user-to-agency-button",
@@ -968,18 +955,6 @@ export const domElementIds = {
       "im-profile-form-edit-agency__users-submit-button",
     registerAgenciesSearchLink: "im-profile__register-agencies-search-link",
     registerAgencyButton: "im-profile__register-agency-button",
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--my-profile-establishment-registration",
-      byEmailButton:
-        "im-login-form__connect-button--my-profile-establishment-registration-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--my-profile-establishment-registration",
-      retryButton:
-        "im-login-form__retry-login-button--my-profile-establishment-registration",
-      contactSupport:
-        "im-login-form__contact-support-link--my-profile-establishment-registration",
-    },
   },
   myAccountEstablishmentRegistration: {
     registerEstablishmentButton: "im-profile__register-establishment-button",
@@ -991,16 +966,6 @@ export const domElementIds = {
     downloadPdfButton: "im-convention-document__download-pdf-button",
   },
   assessmentDocument: {
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--assessment-document",
-      byEmailButton: "im-login-form__connect-button--assessment-document-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--assessment-document",
-      retryButton: "im-login-form__retry-login-button--assessment-document",
-      contactSupport:
-        "im-login-form__contact-support-link--assessment-document",
-    },
     downloadPdfButton: "im-assessment-document__download-pdf-button",
     cancelSignAssessmentButton:
       "im-assessment-document__cancel-sign-assessment-button",
@@ -1020,13 +985,6 @@ export const domElementIds = {
   conventionMiniStage: {},
 
   agencyDashboard: {
-    login: {
-      proConnectButton: "im-login-form__inclusion-connect-button--agency",
-      byEmailButton: "im-login-form__connect-button--agency-email",
-      navigateToHome: "im-login-form__navigate-to-home-button--agency",
-      retryButton: "im-login-form__retry-login-button--agency",
-      contactSupport: "im-login-form__contact-support-link--agency",
-    },
     registerAgencies: {
       newAgencyButton: "im-register-agencies__new-agency-button",
       showRegistrationFormButton:
@@ -1077,18 +1035,6 @@ export const domElementIds = {
     },
   },
   manageConventionConnectedUser: {
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--manage-convention-user-connected",
-      byEmailButton:
-        "im-login-form__connect-button--manage-convention-user-connected-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--manage-convention-user-connected",
-      retryButton:
-        "im-login-form__retry-login-button--manage-convention-user-connected",
-      contactSupport:
-        "im-login-form__contact-support-link--manage-convention-user-connected",
-    },
     erroredConventionHandledModal:
       "im-errored-convention-handled-confirmation-modal",
     pilotConventionWithBroadcastErrorButton:
@@ -1098,17 +1044,7 @@ export const domElementIds = {
     pilotConventionWithUnfinalizedAssessmentButton:
       "im-manage-convention-user-connected__pilot-convention-with-unfinalized-assessment-button",
   },
-  establishmentDashboardDiscussions: {
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--manage-discussion",
-      byEmailButton: "im-login-form__connect-button--manage-discussion-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--manage-discussion",
-      retryButton: "im-login-form__retry-login-button--manage-discussion",
-      contactSupport: "im-login-form__contact-support-link--manage-discussion",
-    },
-  },
+  establishmentDashboardDiscussions: {},
   magicLinkInterstitial: {
     confirmLoginButton: "im-magic-link-interstitial__confirm-login-button",
     renewalButton: "im-magic-link-interstitial__renewal-button",
@@ -1130,17 +1066,6 @@ export const domElementIds = {
         "im-manage-establishment__initiate-convention-source-radio-buttons",
       templateRadioButtons:
         "im-manage-establishment__initiate-convention-template-radio-buttons",
-    },
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--establishment-dashboard",
-      byEmailButton:
-        "im-login-form__connect-button--establishment-dashboard-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--establishment-dashboard",
-      retryButton: "im-login-form__retry-login-button--establishment-dashboard",
-      contactSupport:
-        "im-login-form__contact-support-link--establishment-dashboard",
     },
     discussion: {
       acceptDiscussionForm: "im-manage-establishment__accept-discussion-form",
@@ -1220,17 +1145,6 @@ export const domElementIds = {
   },
   beneficiaryDashboard: {
     tabContainer: "im-beneficiary-dashboard__tab-container",
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--beneficiary-dashboard",
-      byEmailButton:
-        "im-login-form__connect-button--beneficiary-dashboard-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--beneficiary-dashboard",
-      retryButton: "im-login-form__retry-login-button--beneficiary-dashboard",
-      contactSupport:
-        "im-login-form__contact-support-link--beneficiary-dashboard",
-    },
     manageDiscussions: {
       goToDiscussionButton: "im-beneficiary-dashboard__go-to-discussion-button",
     },
@@ -1240,32 +1154,8 @@ export const domElementIds = {
       "im-beneficary-convention-list__no-convention-helpdesk-hint",
     goToConventionButton:
       "im-beneficiary-convention-list__see-convention-button",
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--beneficiary-dashboard-conventions",
-      byEmailButton:
-        "im-login-form__connect-button--beneficiary-dashboard-conventions-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--beneficiary-dashboard-conventions",
-      retryButton:
-        "im-login-form__retry-login-button--beneficiary-dashboard-conventions",
-      contactSupport:
-        "im-login-form__contact-support-link--beneficiary-dashboard-conventions",
-    },
   },
   beneficiaryDashboardDiscussions: {
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--beneficiary-dashboard-discussions",
-      byEmailButton:
-        "im-login-form__connect-button--beneficiary-dashboard-discussions-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--beneficiary-dashboard-discussions",
-      retryButton:
-        "im-login-form__retry-login-button--beneficiary-dashboard-discussions",
-      contactSupport:
-        "im-login-form__contact-support-link--beneficiary-dashboard-discussions",
-    },
     displayPhoneContactButton:
       "im-beneficiary-discussion_display-phone-contact-button",
   },
@@ -1291,32 +1181,8 @@ export const domElementIds = {
       newRequestButton:
         "im-archived-convention-request-success__new-request-button",
     },
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--archived-convention-request",
-      byEmailButton:
-        "im-login-form__connect-button--archived-convention-request-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--archived-convention-request",
-      retryButton:
-        "im-login-form__retry-login-button--archived-convention-request",
-      contactSupport:
-        "im-login-form__contact-support-link--archived-convention-request",
-    },
   },
   conventionTemplate: {
-    login: {
-      proConnectButton:
-        "im-login-form__pro-connect-button--agency-dashboard-convention-template",
-      byEmailButton:
-        "im-login-form__pro-connect-button--agency-dashboard-convention-template-email",
-      navigateToHome:
-        "im-login-form__navigate-to-home-button--agency-dashboard-convention-template",
-      retryButton:
-        "im-login-form__retry-login-button--agency-dashboard-convention-template",
-      contactSupport:
-        "im-login-form__contact-support-link--agency-dashboard-convention-template",
-    },
     form: {
       nameInput: "im-convention-template-form__name-input",
       submitFormButton: "im-convention-template-form__submit-button",
@@ -1386,16 +1252,7 @@ export const domElementIds = {
       modal: "im-agency-dashboard-agencies__user-registration-to-agency-modal",
     },
   },
-  agencyDashboardAgencyDetails: {
-    login: {
-      proConnectButton:
-        "im-login-form__inclusion-connect-button--agency-detail",
-      byEmailButton: "im-login-form__connect-button--agency-detail-email",
-      navigateToHome: "im-login-form__navigate-to-home-button--agency-detail",
-      retryButton: "im-login-form__retry-login-button--agency-detail",
-      contactSupport: "im-login-form__contact-support-link--agency-detail",
-    },
-  },
+  agencyDashboardAgencyDetails: {},
   conventionConfirmation: {},
   conventionImmersionForExternals: {},
   establishmentDashboardConventions: {},
