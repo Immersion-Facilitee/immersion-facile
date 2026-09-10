@@ -19,6 +19,7 @@ import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import type { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
+import type { GetAgenciesFilters } from "../ports/AgencyRepository";
 
 export type CloseInactiveAgenciesWithoutRecentConventionsInput = {
   numberOfMonthsWithoutConvention: number;
@@ -54,11 +55,10 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
     const now = deps.timeGateway.now();
     const noConventionSince = subMonths(now, numberOfMonthsWithoutConvention);
 
-    const filters = {
+    const filters: GetAgenciesFilters = {
       status: ["active", "from-api-PE"] satisfies AgencyStatus[],
       kinds: [
         "mission-locale",
-        "operateur-cep",
         "cap-emploi",
         "conseil-departemental",
         "structure-IAE",
@@ -68,7 +68,7 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
         "chambre-agriculture",
         "autre",
       ] satisfies AgencyKind[],
-      createdAtBefore: noConventionSince,
+      updatedAtBefore: noConventionSince,
     };
 
     const perPage = deps.batchSize;

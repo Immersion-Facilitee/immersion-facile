@@ -287,6 +287,7 @@ export class PgAgencyRepository implements AgencyRepository {
       sirets,
       status,
       createdAtBefore,
+      updatedAtBefore,
       userIds,
       delegationConventionEndDate,
       ...rest
@@ -347,6 +348,10 @@ export class PgAgencyRepository implements AgencyRepository {
       (b) =>
         createdAtBefore
           ? b.where("agencies.created_at", "<=", createdAtBefore)
+          : b,
+      (b) =>
+        updatedAtBefore
+          ? b.where("agencies.updated_at", "<=", updatedAtBefore)
           : b,
       (b) =>
         position
