@@ -93,7 +93,7 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
 
       await usecase.execute({ assessment });
 
-      const magicLink = makeRouteAbsoluteUrl({
+      const assessmentDocumentLink = makeRouteAbsoluteUrl({
         route: frontRoutes.assessmentDocument({
           conventionId: convention.id,
           loginPersona: "beneficiary",
@@ -114,7 +114,7 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
               beneficiaryLastName: getFormattedFirstnameAndLastname({
                 lastname: convention.signatories.beneficiary.lastName,
               }),
-              magicLink,
+              assessmentDocumentLink,
             },
             recipients: [convention.signatories.beneficiary.email],
           },
@@ -153,7 +153,7 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
 
       await usecase.execute({ assessment: miniStageAssessment });
 
-      const magicLink = makeRouteAbsoluteUrl({
+      const assessmentDocumentLink = makeRouteAbsoluteUrl({
         route: frontRoutes.assessmentDocument({
           conventionId: cciConventionWithRepresentative.id,
           loginPersona: "beneficiary",
@@ -172,7 +172,7 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
           lastname:
             cciConventionWithRepresentative.signatories.beneficiary.lastName,
         }),
-        magicLink,
+        assessmentDocumentLink,
       };
 
       expectSavedNotificationsAndEvents({

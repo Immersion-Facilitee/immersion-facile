@@ -155,7 +155,7 @@ export type EmailParamsByEmailType = {
     conventionId: ConventionId;
     beneficiaryFirstName: string;
     beneficiaryLastName: string;
-    magicLink: string;
+    assessmentDocumentLink: string;
   };
   ASSESSMENT_CREATED_ESTABLISHMENT_NOTIFICATION: {
     recipientFullName: string;
