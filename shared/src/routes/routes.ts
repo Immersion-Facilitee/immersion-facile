@@ -228,7 +228,10 @@ export const {
     () => "/ajouter-prescripteur",
   ),
   archivedConventionRequest: defineRoute(
-    connectedUserParams,
+    {
+      ...connectedUserParams,
+      conventionId: param.query.optional.string,
+    },
     () => "/demande-convention-archivee",
   ),
   admin,

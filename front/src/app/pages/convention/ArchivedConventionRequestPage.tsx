@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import {
   type ArchivedConventionRequestDto,
   archivedConventionRequestSchema,
+  type ConventionId,
   domElementIds,
   frontRoutes,
 } from "shared";
@@ -33,12 +34,16 @@ type ArchivedConventionRequestPageProps = {
   route: Route<typeof frontRoutes.archivedConventionRequest>;
 };
 
-const initialValues = (
-  id: string,
-): DefaultValues<ArchivedConventionRequestDto> => ({
+const initialValues = ({
+  id,
+  conventionId,
+}: {
+  id: string;
+  conventionId?: ConventionId;
+}): DefaultValues<ArchivedConventionRequestDto> => ({
   id,
   conventionSearchMethod: "withConventionId",
-  conventionId: "",
+  conventionId: conventionId ?? "",
 });
 
 export const ArchivedConventionRequestPage = ({
@@ -52,7 +57,10 @@ export const ArchivedConventionRequestPage = ({
   const methods = useForm<ArchivedConventionRequestDto>({
     resolver: zodResolver(archivedConventionRequestSchema),
     mode: "onTouched",
-    defaultValues: initialValues(uuidV4()),
+    defaultValues: initialValues({
+      id: uuidV4(),
+      conventionId: route.params.conventionId,
+    }),
   });
   const {
     formState: { errors },
@@ -126,7 +134,7 @@ export const ArchivedConventionRequestPage = ({
                   children: "Faire une autre demande",
                   priority: "secondary",
                   onClick: () => {
-                    reset(initialValues(uuidV4()));
+                    reset(initialValues({ id: uuidV4() }));
                     dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
                   },
                 },

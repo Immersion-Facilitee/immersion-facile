@@ -2,11 +2,12 @@ import { addDays, subDays, subMonths, subYears } from "date-fns";
 import {
   ConnectedUserBuilder,
   ConventionDtoBuilder,
+  defaultMonthsThresholdForConventionsListing,
   expectToEqual,
+  makeBooleanFeatureFlag,
   reasonableSchedule,
 } from "shared";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
-import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -20,18 +21,47 @@ describe("GetBeneficiaryConventionList", () => {
     .withEmail("beneficiary@mail.com")
     .build();
 
+  const now = new Date("2026-09-01T10:10:00.000Z");
+
   let getBeneficiaryConventionList: ReturnType<
     typeof makeGetBeneficiaryConventionList
   >;
   let uow: InMemoryUnitOfWork;
-  let timeGateway: TimeGateway;
+
+  const monthsAgo_25 = subMonths(
+    now,
+    defaultMonthsThresholdForConventionsListing,
+  );
+  const archivedBeneficiaryConvention = new ConventionDtoBuilder()
+    .withId("11111111-1111-4111-8111-111111111111")
+    .withBeneficiaryEmail(currentUser.email)
+    .withBusinessName("Beneficiary business")
+    .withStatus("ACCEPTED_BY_VALIDATOR")
+    .withDateSubmission(subDays(subDays(monthsAgo_25, 4), 2).toISOString())
+    .withDateStart(subDays(monthsAgo_25, 4).toISOString())
+    .withDateEnd(subDays(monthsAgo_25, 1).toISOString())
+    .withSchedule(reasonableSchedule)
+    .build();
+
+  const notArchivedBeneficiaryConvention = new ConventionDtoBuilder()
+    .withId("11111111-1111-4111-8111-111111111112")
+    .withBeneficiaryEmail(currentUser.email)
+    .withBeneficiaryBirthdate(
+      subYears(monthsAgo_25, 20).toISOString().split("T")[0],
+    )
+    .withBusinessName("Beneficiary business")
+    .withStatus("ACCEPTED_BY_VALIDATOR")
+    .withDateSubmission(subDays(addDays(monthsAgo_25, 1), 2).toISOString())
+    .withDateStart(addDays(monthsAgo_25, 1).toISOString())
+    .withDateEnd(addDays(monthsAgo_25, 4).toISOString())
+    .withSchedule(reasonableSchedule)
+    .build();
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    timeGateway = new CustomTimeGateway();
     getBeneficiaryConventionList = makeGetBeneficiaryConventionList({
       uowPerformer: new InMemoryUowPerformer(uow),
-      deps: { timeGateway },
+      deps: { timeGateway: new CustomTimeGateway(now) },
     });
   });
 
@@ -131,51 +161,65 @@ describe("GetBeneficiaryConventionList", () => {
     expectToEqual(result, []);
   });
 
-  it("avoid returning archived conventions (date end too old > 25 months)", async () => {
-    const monthsAgo_25 = subMonths(timeGateway.now(), 25);
+  describe("when enableRequestArchivedConvention is active", () => {
+    it(`returns archived conventions (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
 
-    const archivedBeneficiaryConvention = new ConventionDtoBuilder()
-      .withId("11111111-1111-4111-8111-111111111111")
-      .withBeneficiaryEmail(currentUser.email)
-      .withBusinessName("Beneficiary business")
-      .withStatus("ACCEPTED_BY_VALIDATOR")
-      .withDateStart(subDays(monthsAgo_25, 2).toISOString().split("T")[0])
-      .withDateEnd(monthsAgo_25.toISOString().split("T")[0])
-      .withSchedule(reasonableSchedule)
-      .build();
+      uow.conventionRepository.setConventions([
+        archivedBeneficiaryConvention,
+        notArchivedBeneficiaryConvention,
+      ]);
 
-    const notArchivedBeneficiaryConvention = new ConventionDtoBuilder()
-      .withId("11111111-1111-4111-8111-111111111112")
-      .withBeneficiaryEmail(currentUser.email)
-      .withBeneficiaryBirthdate(
-        subYears(monthsAgo_25, 20).toISOString().split("T")[0],
-      )
-      .withBusinessName("Beneficiary business")
-      .withStatus("ACCEPTED_BY_VALIDATOR")
-      .withDateStart(subDays(monthsAgo_25, 2).toISOString().split("T")[0])
-      .withDateEnd(addDays(monthsAgo_25, 1).toISOString().split("T")[0])
-      .withSchedule(reasonableSchedule)
-      .build();
+      const result = await getBeneficiaryConventionList.execute(
+        undefined,
+        currentUser,
+      );
 
-    uow.conventionRepository.setConventions([
-      archivedBeneficiaryConvention,
-      notArchivedBeneficiaryConvention,
-    ]);
+      expectToEqual(result, [
+        {
+          conventionId: notArchivedBeneficiaryConvention.id,
+          businessName: notArchivedBeneficiaryConvention.businessName,
+          status: notArchivedBeneficiaryConvention.status,
+          assessment: null,
+          dateStart: notArchivedBeneficiaryConvention.dateStart,
+          dateEnd: notArchivedBeneficiaryConvention.dateEnd,
+        },
+        {
+          conventionId: archivedBeneficiaryConvention.id,
+          businessName: archivedBeneficiaryConvention.businessName,
+          status: archivedBeneficiaryConvention.status,
+          assessment: null,
+          dateStart: archivedBeneficiaryConvention.dateStart,
+          dateEnd: archivedBeneficiaryConvention.dateEnd,
+        },
+      ]);
+    });
+  });
 
-    const result = await getBeneficiaryConventionList.execute(
-      undefined,
-      currentUser,
-    );
+  describe("when enableRequestArchivedConvention is inactive", () => {
+    it(`does not return archived conventions (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
+      uow.conventionRepository.setConventions([
+        archivedBeneficiaryConvention,
+        notArchivedBeneficiaryConvention,
+      ]);
 
-    expectToEqual(result, [
-      {
-        conventionId: notArchivedBeneficiaryConvention.id,
-        businessName: notArchivedBeneficiaryConvention.businessName,
-        status: notArchivedBeneficiaryConvention.status,
-        assessment: null,
-        dateStart: notArchivedBeneficiaryConvention.dateStart,
-        dateEnd: notArchivedBeneficiaryConvention.dateEnd,
-      },
-    ]);
+      const result = await getBeneficiaryConventionList.execute(
+        undefined,
+        currentUser,
+      );
+
+      expectToEqual(result, [
+        {
+          conventionId: notArchivedBeneficiaryConvention.id,
+          businessName: notArchivedBeneficiaryConvention.businessName,
+          status: notArchivedBeneficiaryConvention.status,
+          assessment: null,
+          dateStart: notArchivedBeneficiaryConvention.dateStart,
+          dateEnd: notArchivedBeneficiaryConvention.dateEnd,
+        },
+      ]);
+    });
   });
 });

@@ -1,5 +1,4 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { Fragment, useEffect } from "react";
 import { Loader, SectionHighlight } from "react-design-system";
@@ -7,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   type BeneficiaryConventionListDto,
   domElementIds,
-  frontRoutes,
   immersionFacileHelpdeskRootUrl,
 } from "shared";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
@@ -22,6 +20,7 @@ import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { ConventionAssessmentStatusBadge } from "../../convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "../../convention/ConventionDatesDisplay";
 import { ConventionStatusBadge } from "../../convention/ConventionStatusBadge";
+import { UnarchivedOrManageConventionButton } from "../../convention/UnarchivedOrManageConventionButton";
 import { WithFeedbackReplacer } from "../../feedback/WithFeedbackReplacer";
 
 export const BeneficiaryConventionList = (): React.ReactNode => {
@@ -131,30 +130,11 @@ const conventionListToTableData = (
         dateEnd={convention.dateEnd}
       />
     </Fragment>,
-    isBeneficiaryManageConventionEnabled ? (
-      <Button
-        key={convention.conventionId}
-        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
-        size="small"
-        priority="secondary"
-        linkProps={{
-          ...frontRoutes.manageConventionConnectedUser({
-            conventionId: convention.conventionId,
-          }).link,
-          target: "_blank",
-        }}
-      >
-        Voir la convention
-      </Button>
-    ) : (
-      <Button
-        disabled
-        size="small"
-        priority="secondary"
-        key={convention.conventionId}
-        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
-      >
-        Voir la convention
-      </Button>
-    ),
+    <UnarchivedOrManageConventionButton
+      label="Voir la convention"
+      key={convention.conventionId}
+      conventionId={convention.conventionId}
+      conventionDateEnd={convention.dateEnd}
+      isDisabled={!isBeneficiaryManageConventionEnabled}
+    />,
   ]);
