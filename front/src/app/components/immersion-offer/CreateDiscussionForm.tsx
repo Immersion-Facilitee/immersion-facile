@@ -221,7 +221,9 @@ export const CreateDiscussionForm = ({
             </>
           ))
           .exhaustive()}
-        <h2 className={fr.cx("fr-h6")}>Vos informations de contact</h2>
+        <h2 className={fr.cx("fr-h6", "fr-mb-1w")}>
+          Vos informations de contact
+        </h2>
         <p className={fr.cx("fr-hint-text")}>
           Pour permettre à l’entreprise de vous recontacter.
         </p>
@@ -269,7 +271,7 @@ export const CreateDiscussionForm = ({
           }}
           {...getFieldError("potentialBeneficiaryPhone")}
         />
-        <h2 className={fr.cx("fr-h6", "fr-mt-3w")}>
+        <h2 className={fr.cx("fr-h6", "fr-mt-4w", "fr-mb-1w")}>
           {route.name === "searchResult" ? "Votre immersion" : "Votre stage"}
         </h2>
         <p className={fr.cx("fr-hint-text")}>
@@ -318,6 +320,7 @@ export const CreateDiscussionForm = ({
           }}
           {...getFieldError("datePreferences")}
         />
+
         {route.name === "searchResult" && (
           <>
             <Select
@@ -329,10 +332,19 @@ export const CreateDiscussionForm = ({
               }}
               {...getFieldError("immersionDuration")}
             />
+
+            <h2 className={fr.cx("fr-h6", "fr-mt-4w", "fr-mb-1w")}>
+              Votre profil et vos motivations
+            </h2>
+            <p className={fr.cx("fr-hint-text")}>
+              Prenez quelques minutes pour remplir ces champs. C'est le meilleur
+              moyen de montrer votre motivation à l'entreprise et de lui donner
+              envie de vous accueillir&nbsp;!
+            </p>
             <Input
               label={inputsLabelsByKey.motivation}
               hintText={
-                "Exemple : “J'aime beaucoup le contact avec les gens. Je pense que ce métier est fait pour moi et je veux le vérifier.” ou “J'habite près de chez vous et j'aime beaucoup ce que vous faites. J'aimerais beaucoup apprendre avec votre équipe.”"
+                "Expliquez en quelques mots ce qui vous attire dans ce métier et/ou pourquoi vous avez choisi de contacter cette entreprise en particulier."
               }
               nativeTextAreaProps={{
                 ...register("motivation"),
@@ -340,29 +352,10 @@ export const CreateDiscussionForm = ({
               {...getFieldError("motivation")}
               textArea
             />
-            <h2 className={fr.cx("fr-h6", "fr-mt-3w")}>
-              Vos expériences et compétences
-            </h2>
-            <p className={fr.cx("fr-hint-text")}>
-              N’hésitez pas à détailler vos compétences, cela augmentera vos
-              chances de recevoir une réponse positive de l’entreprise.
-            </p>
             <Input
               label={inputsLabelsByKey.experienceAdditionalInformation}
               hintText={
-                "Exemple : “Je suis de nature très manuelle et je bricole beaucoup chez moi (menuiserie, petites réparations). Je n'ai pas de diplôme dans ce secteur, mais j'ai une grande capacité d'adaptation et le goût du travail bien fait.”"
-              }
-              state="info"
-              stateRelatedMessage={
-                <span>
-                  <strong>Protection de vos données personnelles :</strong> Nous
-                  vous invitons à partager uniquement les informations utiles à
-                  la compréhension de votre parcours. Évitez d'inclure des
-                  informations trop personnelles (comme vos opinions
-                  philosophiques, syndicales, politiques ou des éléments liés à
-                  votre vie sexuelle). Ces données sensibles ne sont pas
-                  nécessaires et nous souhaitons les protéger.
-                </span>
+                "N'hésitez pas à mentionner vos centres d'intérêts, d'anciens stages, ce que vous connaissez déjà de leur activité, ou vos qualités personnelles (ex: sens du contact, patience, ponctualité). L'entreprise souhaite simplement savoir d'où vous partez."
               }
               nativeTextAreaProps={{
                 ...register("experienceAdditionalInformation"),
@@ -379,8 +372,22 @@ export const CreateDiscussionForm = ({
             />
           </>
         )}
+        <Alert
+          severity="info"
+          title="Protection de vos données personnelles"
+          className={fr.cx("fr-mb-2w")}
+          description={
+            <>
+              Nous vous invitons à partager uniquement les informations utiles à
+              la compréhension de votre parcours. Évitez d'inclure des
+              informations trop personnelles (comme vos opinions philosophiques,
+              syndicales, politiques ou des éléments liés à votre vie sexuelle).
+              Ces données sensibles ne sont pas nécessaires et nous souhaitons
+              les protéger.
+            </>
+          }
+        />
         <ButtonsGroup
-          className={fr.cx()}
           alignment="right"
           inlineLayoutWhen="always"
           buttons={[
