@@ -78,15 +78,16 @@ describe("GetConventionsForAgencyUser", () => {
       });
 
       it(`should include archived conventions (older than ${defaultMonthsThresholdForConventionsListing} months) by default`, async () => {
-        const archivedConventionDateEnd = subMonths(
-          now,
-          defaultMonthsThresholdForConventionsListing + 1,
-        ).toISOString();
         const archivedConvention = new ConventionDtoBuilder()
           .withId("convention-id-1")
           .withAgencyId(agency.id)
           .withStatus("ACCEPTED_BY_VALIDATOR")
-          .withDateEnd(archivedConventionDateEnd)
+          .withDateEnd(
+            subMonths(
+              now,
+              defaultMonthsThresholdForConventionsListing + 1,
+            ).toISOString(),
+          )
           .build();
         const nonArchivedConvention = new ConventionDtoBuilder()
           .withId("convention-id-2")

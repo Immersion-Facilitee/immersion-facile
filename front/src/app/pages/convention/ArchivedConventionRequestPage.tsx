@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import {
   type ArchivedConventionRequestDto,
   archivedConventionRequestSchema,
+  type ConventionId,
   domElementIds,
   frontRoutes,
 } from "shared";
@@ -38,7 +39,7 @@ const initialValues = ({
   conventionId,
 }: {
   id: string;
-  conventionId?: string;
+  conventionId?: ConventionId;
 }): DefaultValues<ArchivedConventionRequestDto> => ({
   id,
   conventionSearchMethod: "withConventionId",
