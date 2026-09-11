@@ -1555,6 +1555,20 @@ describe("editConventionWithFinalStatusFormSchema", () => {
     );
   });
 
+  it("accepts form values with beneficiary only", () => {
+    expectDtoToBeValid(editConventionWithFinalStatusFormSchema, {
+      conventionId,
+      beneficiary: validFormValues.beneficiary,
+    });
+  });
+
+  it("accepts form values with establishment tutor only", () => {
+    expectDtoToBeValid(editConventionWithFinalStatusFormSchema, {
+      conventionId,
+      establishmentTutor: validFormValues.establishmentTutor,
+    });
+  });
+
   it("rejects empty establishment tutor lastname", () => {
     expect(() =>
       editConventionWithFinalStatusFormSchema.parse({

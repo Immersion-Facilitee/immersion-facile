@@ -587,7 +587,7 @@ export type EditConventionWithFinalStatusRequestDto = WithConventionId & {
 };
 
 export type EditConventionWithFinalStatusFormValues = WithConventionId & {
-  establishmentTutor: WithFirstnameAndLastname & {
+  establishmentTutor?: WithFirstnameAndLastname & {
     job: string;
     email: Email;
     phone: PhoneNumber;
