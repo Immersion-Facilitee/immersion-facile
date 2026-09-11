@@ -1,17 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { Fragment, useEffect } from "react";
 import { Loader, SectionHighlight } from "react-design-system";
 import { useDispatch, useSelector } from "react-redux";
 import {
   type BeneficiaryConventionListDto,
-  type ConventionId,
-  type DateString,
   domElementIds,
-  frontRoutes,
   immersionFacileHelpdeskRootUrl,
-  isConventionArchived,
 } from "shared";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -25,6 +20,7 @@ import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { ConventionAssessmentStatusBadge } from "../../convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "../../convention/ConventionDatesDisplay";
 import { ConventionStatusBadge } from "../../convention/ConventionStatusBadge";
+import { UnarchivedOrManageConventionButton } from "../../convention/UnarchivedOrManageConventionButton";
 import { WithFeedbackReplacer } from "../../feedback/WithFeedbackReplacer";
 
 export const BeneficiaryConventionList = (): React.ReactNode => {
@@ -134,65 +130,11 @@ const conventionListToTableData = (
         dateEnd={convention.dateEnd}
       />
     </Fragment>,
-    <ConventionActionButton
+    <UnarchivedOrManageConventionButton
+      label="Voir la convention"
       key={convention.conventionId}
       conventionId={convention.conventionId}
       conventionDateEnd={convention.dateEnd}
-      isBeneficiaryManageConventionEnabled={
-        isBeneficiaryManageConventionEnabled
-      }
+      isDisabled={!isBeneficiaryManageConventionEnabled}
     />,
   ]);
-
-const ConventionActionButton = ({
-  conventionId,
-  conventionDateEnd,
-  isBeneficiaryManageConventionEnabled,
-}: {
-  conventionId: ConventionId;
-  conventionDateEnd: DateString;
-  isBeneficiaryManageConventionEnabled: boolean;
-}): React.ReactNode => {
-  if (!isBeneficiaryManageConventionEnabled)
-    return (
-      <Button
-        disabled
-        size="small"
-        priority="secondary"
-        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${conventionId}`}
-      >
-        Voir la convention
-      </Button>
-    );
-
-  return isConventionArchived({
-    dateEnd: conventionDateEnd,
-    now: new Date(),
-  }) ? (
-    <Button
-      id={`${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${conventionId}`}
-      size="small"
-      priority="secondary"
-      linkProps={{
-        ...frontRoutes.archivedConventionRequest({ conventionId }).link,
-        target: "_blank",
-      }}
-    >
-      Désarchiver
-    </Button>
-  ) : (
-    <Button
-      id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${conventionId}`}
-      size="small"
-      priority="secondary"
-      linkProps={{
-        ...frontRoutes.manageConventionConnectedUser({
-          conventionId,
-        }).link,
-        target: "_blank",
-      }}
-    >
-      Voir la convention
-    </Button>
-  );
-};
