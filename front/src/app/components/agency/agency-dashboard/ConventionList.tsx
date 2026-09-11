@@ -1,5 +1,4 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
 import { Checkbox, type CheckboxProps } from "@codegouvfr/react-dsfr/Checkbox";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import RadioButtons, {
@@ -11,16 +10,11 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { HeadingSection, RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
-  type ConventionId,
   type ConventionStatus,
   conventionStatuses,
-  type DateString,
   defaultPerPageInWebPagination,
-  domElementIds,
   type FlatGetConventionsForAgencyUserParams,
-  frontRoutes,
   getFormattedFirstnameAndLastname,
-  isConventionArchived,
   isNotEmptyArray,
 } from "shared";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
@@ -41,6 +35,7 @@ import { useStyles } from "tss-react/dsfr";
 import { ConventionAssessmentStatusBadge } from "../../convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "../../convention/ConventionDatesDisplay";
 import { ConventionStatusBadge } from "../../convention/ConventionStatusBadge";
+import { UnarchivedOrManageConventionButton } from "../../convention/UnarchivedOrManageConventionButton";
 
 type DateFilterType = keyof Pick<
   FlatGetConventionsForAgencyUserParams,
@@ -399,10 +394,12 @@ export const ConventionList = () => {
                   />
                 </Fragment>,
 
-                <ConventionActionButton
+                <UnarchivedOrManageConventionButton
+                  label="Piloter"
                   key={`${convention.id}-actions`}
                   conventionId={convention.id}
                   conventionDateEnd={convention.dateEnd}
+                  isDisabled={false}
                 />,
               ])}
               dropdownFilters={{
@@ -721,41 +718,6 @@ export const ConventionList = () => {
     </HeadingSection>
   );
 };
-
-const ConventionActionButton = ({
-  conventionId,
-  conventionDateEnd,
-}: {
-  conventionId: ConventionId;
-  conventionDateEnd: DateString;
-}): React.ReactNode =>
-  isConventionArchived({ dateEnd: conventionDateEnd, now: new Date() }) ? (
-    <Button
-      id={`${domElementIds.agencyDashboard.dashboard.unarchiveConventionButton}--${conventionId}`}
-      size="small"
-      priority="secondary"
-      linkProps={{
-        ...frontRoutes.archivedConventionRequest({ conventionId }).link,
-        target: "_blank",
-      }}
-    >
-      Désarchiver
-    </Button>
-  ) : (
-    <Button
-      id={`${domElementIds.agencyDashboard.dashboard.goToConventionButton}--${conventionId}`}
-      size="small"
-      priority="secondary"
-      linkProps={{
-        ...frontRoutes.manageConventionConnectedUser({
-          conventionId,
-        }).link,
-        target: "_blank",
-      }}
-    >
-      Piloter
-    </Button>
-  );
 
 const isStringConventionStatus = (value: string): value is ConventionStatus => {
   return conventionStatuses.includes(value as ConventionStatus);

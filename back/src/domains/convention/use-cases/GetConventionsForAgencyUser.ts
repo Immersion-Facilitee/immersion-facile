@@ -12,6 +12,7 @@ import {
   type GetPaginatedConventionsSortBy,
   getConventionsForAgencyUserParamsSchema,
   getPaginationParamsForWeb,
+  isConventionArchived,
   type WithSort,
 } from "shared";
 import { conventionDtosToAgencyUserConventionListDtos } from "../../../utils/convention";
@@ -127,20 +128,17 @@ const computeDateEnd = (
   to: shouldIgnoreDateEndTo(dateEnd?.to, now) ? undefined : dateEnd?.to,
 });
 
+const isRequestingArchivedConventions = isConventionArchived;
+
 const shouldUseDefaultDateEndFrom = (
   dateEndFrom: DateString | undefined,
   now: Date,
 ): boolean =>
-  dateEndFrom
-    ? new Date(dateEndFrom) <=
-      subMonths(now, defaultMonthsThresholdForConventionsListing)
-    : true;
+  !dateEndFrom ||
+  isRequestingArchivedConventions({ dateEnd: dateEndFrom, now });
 
 const shouldIgnoreDateEndTo = (
   dateEndTo: DateString | undefined,
   now: Date,
 ): boolean =>
-  dateEndTo
-    ? new Date(dateEndTo) <=
-      subMonths(now, defaultMonthsThresholdForConventionsListing)
-    : false;
+  !!dateEndTo && isRequestingArchivedConventions({ dateEnd: dateEndTo, now });
