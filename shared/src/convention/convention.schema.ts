@@ -307,7 +307,7 @@ export const editConventionWithFinalStatusFormSchema: ZodSchemaWithInputMatching
   z.object({
     conventionId: conventionIdSchema,
     establishmentTutor:
-      editConventionWithFinalStatusFormEstablishmentTutorSchema,
+      editConventionWithFinalStatusFormEstablishmentTutorSchema.optional(),
     beneficiary: editConventionWithFinalStatusFormBeneficiarySchema.optional(),
   });
 

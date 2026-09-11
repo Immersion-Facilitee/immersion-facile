@@ -28,6 +28,11 @@ import {
   throwErrorOnConventionIdMismatch,
 } from "../entities/Convention";
 
+export const allowedConventionStatusesForEditWithFinalStatus =
+  conventionStatuses.filter(
+    (status) => !conventionStatusesAllowedForModification.includes(status),
+  );
+
 export type EditConventionWithFinalStatus = ReturnType<
   typeof makeEditConventionWithFinalStatus
 >;
@@ -62,9 +67,7 @@ export const makeEditConventionWithFinalStatus = useCaseBuilder(
 
     throwErrorIfConventionStatusNotAllowed(
       convention.status,
-      conventionStatuses.filter(
-        (status) => !conventionStatusesAllowedForModification.includes(status),
-      ),
+      allowedConventionStatusesForEditWithFinalStatus,
       errors.convention.editConventionWithFinalStatusNotAllowedForStatus({
         status: convention.status,
         conventionId: convention.id,
@@ -99,6 +102,18 @@ export const makeEditConventionWithFinalStatus = useCaseBuilder(
       !hasAtLeastOneDefinedValueInPartialUpdate(inputParams.beneficiary)
     )
       return;
+
+    if (
+      hasAtLeastOneDefinedValueInPartialUpdate(
+        inputParams.establishmentTutor,
+      ) &&
+      convention.status !== "ACCEPTED_BY_VALIDATOR"
+    ) {
+      throw errors.convention.editConventionWithFinalStatusNotAllowedForStatus({
+        status: convention.status,
+        conventionId: convention.id,
+      });
+    }
 
     const updatedEstablishmentTutor = inputParams.establishmentTutor
       ? {
