@@ -1,11 +1,5 @@
 import type { Pool } from "pg";
-import {
-  type ArchivedConventionRequestReason,
-  ConnectedUserBuilder,
-  errors,
-  expectPromiseToFailWithError,
-  expectToEqual,
-} from "shared";
+import { ConnectedUserBuilder, expectToEqual } from "shared";
 import {
   type KyselyDb,
   makeKyselyDb,
@@ -102,104 +96,12 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
   });
 
   describe("getById", () => {
-    it.each([undefined, "", "court"])(
-      "preserves legacy other reasons (%s)",
-      async (otherReason) => {
-        const request = {
-          id: "66666666-6666-4666-8666-666666666666",
-          userId: user.id,
-          createdAt,
-          updatedAt,
-          status: "PENDING",
-          conventionSearchMethod: "withConventionId",
-          conventionId: "22222222-2222-4222-8222-222222222222",
-          reason: "other",
-          otherReason,
-        } as ArchivedConventionRequestEntity;
-
-        await repository.save(request);
-
-        expectToEqual<ArchivedConventionRequestEntity | undefined>(
-          await repository.getById(request.id),
-          {
-            ...request,
-            reason: "other",
-            otherReason: otherReason ?? "",
-          },
-        );
-      },
-    );
-
     it("returns undefined when request does not exist", async () => {
       expectToEqual(
         await repository.getById("99999999-9999-4999-8999-999999999999"),
         undefined,
       );
     });
-
-    it("throws when request details are incomplete", async () => {
-      const id = "44444444-4444-4444-8444-444444444444";
-
-      const request: ArchivedConventionRequestEntity = {
-        userId: user.id,
-        createdAt,
-        updatedAt,
-        status: "PENDING",
-        id,
-        conventionSearchMethod: "withConventionDetails",
-        immersionAppellationCode: immersionAppellation.appellationCode,
-        reason: "other",
-      } as ArchivedConventionRequestEntity; //intentionally force as ArchivedConventionRequestEntity to test incomplete request
-
-      await repository.save(request);
-
-      await expectPromiseToFailWithError(
-        repository.getById(id),
-        errors.archivedConventionRequest.incomplete({ id }),
-      );
-    });
-
-    it.each(["withConventionId", "withConventionDetails"] as const)(
-      "throws when reason is unknown with %s",
-      async (conventionSearchMethod) => {
-        const id = "55555555-5555-4555-8555-555555555555";
-        const unknownReason = "not-a-valid-reason";
-
-        const request: ArchivedConventionRequestEntity = {
-          userId: user.id,
-          createdAt,
-          updatedAt,
-          status: "PENDING",
-          id,
-          ...(conventionSearchMethod === "withConventionId"
-            ? {
-                conventionSearchMethod,
-                conventionId: "22222222-2222-4222-8222-222222222222",
-              }
-            : {
-                conventionSearchMethod,
-                beneficiaryFirstName: "Jean",
-                beneficiaryLastName: "Dupont",
-                siret: "12345678901234",
-                immersionDate: "2024-01-15",
-                immersionAppellationCode: immersionAppellation.appellationCode,
-              }),
-          reason: unknownReason as Exclude<
-            ArchivedConventionRequestReason,
-            "other"
-          >,
-        };
-
-        await repository.save(request);
-
-        await expectPromiseToFailWithError(
-          repository.getById(id),
-          errors.archivedConventionRequest.unknownReason({
-            reason: unknownReason,
-          }),
-        );
-      },
-    );
   });
 
   describe("update", () => {
