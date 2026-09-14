@@ -6,7 +6,7 @@ import type {
 import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
 import {
   type ArchivedConventionRequestEntity,
-  toArchivedConventionRequestEntity,
+  validateArchivedConventionRequestEntity,
 } from "../../entities/ArchivedConventionRequestEntity";
 import type { ArchivedConventionRequestRepository } from "../../ports/ArchivedConventionRequestRepository";
 
@@ -76,3 +76,47 @@ export class PgArchivedConventionRequestRepository
       .execute();
   }
 }
+
+type ArchivedConventionRequestRow = {
+  id: string;
+  user_id: string;
+  created_at: Date;
+  updated_at: Date;
+  status: ArchivedConventionRequestStatus;
+  convention_id: string | null;
+  beneficiary_first_name: string | null;
+  beneficiary_last_name: string | null;
+  siret: string | null;
+  immersion_date: string | null;
+  immersion_appellation_code: number | null;
+  reason: string;
+  other_reason: string | null;
+};
+
+export const toArchivedConventionRequestEntity = (
+  row: ArchivedConventionRequestRow,
+): ArchivedConventionRequestEntity => {
+  const request = {
+    id: row.id,
+    userId: row.user_id,
+    createdAt: row.created_at.toISOString(),
+    updatedAt: row.updated_at.toISOString(),
+    status: row.status,
+    reason: row.reason,
+    otherReason: row.other_reason ?? undefined,
+    ...(row.convention_id
+      ? {
+          conventionSearchMethod: "withConventionId",
+          conventionId: row.convention_id,
+        }
+      : {
+          conventionSearchMethod: "withConventionDetails",
+          beneficiaryFirstName: row.beneficiary_first_name,
+          beneficiaryLastName: row.beneficiary_last_name,
+          siret: row.siret,
+          immersionDate: row.immersion_date,
+          immersionAppellationCode: row.immersion_appellation_code?.toString(),
+        }),
+  };
+  return validateArchivedConventionRequestEntity(request);
+};

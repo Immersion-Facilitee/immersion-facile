@@ -5,7 +5,7 @@ import type {
 } from "shared";
 import {
   type ArchivedConventionRequestEntity,
-  toArchivedConventionRequestEntity,
+  validateArchivedConventionRequestEntity,
 } from "../../entities/ArchivedConventionRequestEntity";
 import type { ArchivedConventionRequestRepository } from "../../ports/ArchivedConventionRequestRepository";
 
@@ -23,34 +23,7 @@ export class InMemoryArchivedConventionRequestRepository
     const request = this.archivedConventionRequests[id];
     if (!request) return undefined;
 
-    return toArchivedConventionRequestEntity({
-      id: request.id,
-      user_id: request.userId,
-      created_at: new Date(request.createdAt),
-      updated_at: new Date(request.updatedAt),
-      status: request.status,
-      ...(request.conventionSearchMethod === "withConventionDetails"
-        ? {
-            convention_id: null,
-            beneficiary_first_name: request.beneficiaryFirstName ?? null,
-            beneficiary_last_name: request.beneficiaryLastName ?? null,
-            siret: request.siret ?? null,
-            immersion_date: request.immersionDate ?? null,
-            immersion_appellation_code: request.immersionAppellationCode
-              ? Number.parseInt(request.immersionAppellationCode, 10)
-              : null,
-          }
-        : {
-            convention_id: request.conventionId,
-            beneficiary_first_name: null,
-            beneficiary_last_name: null,
-            siret: null,
-            immersion_date: null,
-            immersion_appellation_code: null,
-          }),
-      reason: request.reason,
-      other_reason: request.otherReason ?? null,
-    });
+    return validateArchivedConventionRequestEntity(request);
   }
 
   public async save(
