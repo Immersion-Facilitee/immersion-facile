@@ -1102,7 +1102,6 @@ export const domElementIds = {
         "im-manage-establishment__reject-discussion-cancel-button",
       statusBadge: "im-manage-establishment__discussion-status-badge",
       followUpBadge: "im-manage-establishment__discussion-follow-up-badge",
-      merBadge: "im-manage-establishment__discussion-mer-badge",
       copyEmailButton: "im-manage-establishment__discussion-copy-email-button",
       sendMessageInput:
         "im-manage-establishment__discussion-send-message-input",
@@ -1149,6 +1148,10 @@ export const domElementIds = {
     tabContainer: "im-beneficiary-dashboard__tab-container",
     manageDiscussions: {
       goToDiscussionButton: "im-beneficiary-dashboard__go-to-discussion-button",
+    },
+    discussion: {
+      sendMessageSubmitButton:
+        "im-beneficiary-dashboard__discussion-send-message-submit-button",
     },
   },
   beneficiaryDashboardConventions: {
