@@ -3,10 +3,7 @@ import type {
   ArchivedConventionRequestStatus,
   DateString,
 } from "shared";
-import {
-  type ArchivedConventionRequestEntity,
-  validateArchivedConventionRequestEntity,
-} from "../../entities/ArchivedConventionRequestEntity";
+import type { ArchivedConventionRequestEntity } from "../../entities/ArchivedConventionRequestEntity";
 import type { ArchivedConventionRequestRepository } from "../../ports/ArchivedConventionRequestRepository";
 
 export class InMemoryArchivedConventionRequestRepository
@@ -20,10 +17,7 @@ export class InMemoryArchivedConventionRequestRepository
   public async getById(
     id: ArchivedConventionRequestId,
   ): Promise<ArchivedConventionRequestEntity | undefined> {
-    const request = this.archivedConventionRequests[id];
-    if (!request) return undefined;
-
-    return validateArchivedConventionRequestEntity(request);
+    return this.archivedConventionRequests[id];
   }
 
   public async save(

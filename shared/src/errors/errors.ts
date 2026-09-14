@@ -701,12 +701,6 @@ export const errors = {
       new NotFoundError(
         `Aucune demande de convention archivée trouvée avec l'identifiant '${id}'.`,
       ),
-    unknownReason: ({ reason }: { reason: string }) =>
-      new Error(
-        `La raison de la demande de convention archivée est inconnue : ${reason}`,
-      ),
-    incomplete: ({ id }: { id: string }) =>
-      new Error(`La demande de convention archivée est incomplète pour ${id}`),
     alreadyHandled: ({ id }: { id: string }) =>
       new ConflictError(
         `La demande de convention archivée '${id}' a déjà été traitée.`,
