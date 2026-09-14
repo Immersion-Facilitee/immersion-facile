@@ -1268,7 +1268,7 @@ const discussionInListFromDiscussionReadDto = (
       hasEstablishmentAnswered: exchanges.some(
         (exchange) => exchange.sender === "establishment",
       ),
-      lastExchange: exchanges.sort(orderExchanges)[0],
+      lastExchange: [...exchanges].sort(orderExchanges)[0],
     },
   };
 };
