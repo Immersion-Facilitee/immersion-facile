@@ -1,4 +1,5 @@
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { expect, type Page, test as setup } from "@playwright/test";
 import { domElementIds, frontRoutes } from "shared";
 import { testConfig } from "../custom.config";
@@ -25,6 +26,7 @@ setup("authenticate as admin", async ({ page }) => {
     label: "assessmentCreationLink",
   });
   if (!assessmentLink) throw new Error("Missing seeded assessment link");
+  await mkdir(dirname(testConfig.assessmentLinkFile), { recursive: true });
   await writeFile(testConfig.assessmentLinkFile, assessmentLink);
 });
 

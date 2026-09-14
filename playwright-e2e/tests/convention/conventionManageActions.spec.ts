@@ -25,8 +25,6 @@ import {
   remoteModeIndexMap,
 } from "../../utils/utils";
 
-// Actions use distinct seeded conventions. A failed action must not replay
-// successful state transitions against conventions already modified in the DB.
 test.describe.configure({ mode: "default" });
 
 test.describe("Convention manage actions from prescriber dashboard", () => {

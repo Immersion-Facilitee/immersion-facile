@@ -18,7 +18,6 @@ test("finds a convention outside the first dashboard page", async ({
 }) => {
   const endpoint =
     authenticatedConventionRoutes.getConventionsForAgencyUser.url;
-  // Keep the real backend and data, but force pagination without racing writers.
   await page.route(`**${endpoint}*`, async (route) => {
     const url = new URL(route.request().url());
     url.searchParams.set("perPage", "1");

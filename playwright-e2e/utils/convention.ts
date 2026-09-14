@@ -564,7 +564,6 @@ export const openManageConventionPageFromDashboard = async (
   page: Page,
   conventionId: ConventionId,
 ): Promise<Page> => {
-  // Concurrent workflows can push seeded conventions beyond the first page.
   await page
     .getByRole("search", { name: "Rechercher", exact: true })
     .fill(conventionId);
