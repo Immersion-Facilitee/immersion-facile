@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   answer:
-    if: vars.AGENT_EXPLO_ENABLED == 'true' && github.event.sender.type == 'User'
+    if: vars.AGENT_EXPLO_MODEL != '' && github.event.sender.type == 'User'
     runs-on: ubuntu-24.04
     timeout-minutes: 18
     steps:
