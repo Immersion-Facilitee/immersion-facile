@@ -5,6 +5,7 @@ import { triggerContactRequestReminder3Days } from "./scheduledScripts/contactRe
 import { triggerContactRequestReminder7Days } from "./scheduledScripts/contactRequestReminder7Days";
 import { triggerConventionReminder } from "./scheduledScripts/conventionReminder";
 import { triggerDelegationConventionReminder } from "./scheduledScripts/delegationConventionReminder";
+import { triggerNotifyConventionSummaryScript } from "./scheduledScripts/notifyConventionSummary";
 import { triggerSendAssessmentNeededNotifications } from "./scheduledScripts/sendAssessmentNeededNotifications";
 
 const logger = createLogger(__filename);
@@ -16,6 +17,7 @@ const main = async () => {
   await triggerDelegationConventionReminder({ exitOnFinish: false });
   await triggerContactRequestReminder3Days({ exitOnFinish: false });
   await triggerContactRequestReminder7Days({ exitOnFinish: false });
+  await triggerNotifyConventionSummaryScript({ exitOnFinish: false });
 };
 
 main()

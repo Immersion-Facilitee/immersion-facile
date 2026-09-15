@@ -1518,6 +1518,47 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         subContent: defaultSignature("immersion"),
       }),
     },
+    CONVENTION_SUMMARY: {
+      niceName: "Convention - Récapitulatif quotidien agence",
+      tags: [
+        "template:récapitulatif quotidien agence",
+        "theme:convention",
+        "acteur:prescripteur",
+        "role:preValideur",
+        "role:valideur",
+      ],
+      createEmailVariables: ({
+        conventionsToManage,
+        newConventions,
+        validatedConventions,
+        agencyName,
+        domain,
+      }) => ({
+        subject: "Vos conventions d'immersion à traiter aujourd'hui",
+        greetings: "Bonjour,",
+        content: `Voici le récapitulatif quotidien des conventions d'immersion à traiter par votre agence : ${agencyName}.`,
+        highlight: {
+          kind: "info",
+          content: `<strong>${conventionsToManage} convention(s) à traiter</strong>
+        Ces conventions à pré-valider et/ou à valider nécéssitent votre action.`,
+        },
+        buttons: [
+          {
+            label: "Accéder au tableau de bord",
+            url: makeRouteAbsoluteUrl({
+              route: frontRoutes.establishmentDashboard(),
+              baseUrl: `https://${domain}`,
+            }),
+          },
+        ],
+        subContent: `<strong>🆕 ${newConventions} nouvelle(s) convention(s)</strong>
+        ${newConventions} nouvelles conventions sont disponibles dans votre tableau de bord. Vous pouvez dès maintenant vérifier les informations renseignées et suivre leur signature.
+
+        <strong>🚀 ${validatedConventions} nouvelle(s) immersions sont désormais confirmées</strong>
+        ${validatedConventions} covention(s) ont été validées par votre agence au cours des dernières 24 heures.
+        `,
+      }),
+    },
     CONVENTION_TRANSFERRED_AGENCY_NOTIFICATION: {
       niceName: "Convention - Changement prescripteur pour agence",
       tags: [
