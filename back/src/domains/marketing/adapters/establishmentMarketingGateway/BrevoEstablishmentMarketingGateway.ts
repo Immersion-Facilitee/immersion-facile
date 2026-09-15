@@ -192,6 +192,9 @@ export class BrevoEstablishmentMarketingGateway
         if (response.status === 200)
           return this.#makeContactFromGetContactResponse(response.body);
         if (response.status === 404) return;
+        throw new Error(
+          `Get contact failed with unexpected status '${response.status}'`,
+        );
       });
   }
 
