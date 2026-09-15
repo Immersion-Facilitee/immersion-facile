@@ -11,6 +11,7 @@
 
   &__aside {
     order: 1;
+    flex-direction: column;
 
     @include for-screen-min($bp-lg) {
       order: 2;
