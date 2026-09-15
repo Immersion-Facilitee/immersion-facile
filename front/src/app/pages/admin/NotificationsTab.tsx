@@ -151,9 +151,10 @@ const Email = ({ email }: { email: EmailNotification }) => (
   <DisplayedNotification notification={email}>
     <TextCell
       title="Destinataires"
-      contents={email.templatedContent.recipients.join(", ")}
+      contents={email.templatedContent.recipients?.join(", ")}
     />
     <TextCell title="CC" contents={email.templatedContent.cc?.join(", ")} />
+    <TextCell title="BCC" contents={email.templatedContent.bcc?.join(", ")} />
     <TextCell
       title="Paramètres"
       contents={

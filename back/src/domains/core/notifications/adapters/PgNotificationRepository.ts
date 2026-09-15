@@ -415,7 +415,7 @@ export class PgNotificationRepository implements NotificationRepository {
     notifications: EmailNotification[],
   ): Promise<void> {
     const recipients = notifications.flatMap((notification) => [
-      ...notification.templatedContent.recipients.map((recipient) => ({
+      ...(notification.templatedContent.recipients ?? []).map((recipient) => ({
         notifications_email_id: notification.id,
         email: recipient,
         recipient_type: "to" as const,
@@ -424,6 +424,11 @@ export class PgNotificationRepository implements NotificationRepository {
         notifications_email_id: notification.id,
         email: ccRecipient,
         recipient_type: "cc" as const,
+      })),
+      ...(notification.templatedContent.bcc ?? []).map((ccRecipient) => ({
+        notifications_email_id: notification.id,
+        email: ccRecipient,
+        recipient_type: "bcc" as const,
       })),
     ]);
 
@@ -629,14 +634,19 @@ const getEmailsNotificationBuilder = (transaction: KyselyDb) =>
 const dedupRecipientsAndCc = (
   emailNotification: EmailNotification,
 ): EmailNotification => {
-  const recipients = uniq(emailNotification.templatedContent.recipients);
+  const recipients = uniq(emailNotification.templatedContent.recipients ?? []);
+  const ccEmails = uniq(emailNotification.templatedContent.cc ?? []).filter(
+    (ccEmail) => !recipients.includes(ccEmail),
+  );
   return {
     ...emailNotification,
     templatedContent: {
       ...emailNotification.templatedContent,
       recipients,
-      cc: uniq(emailNotification.templatedContent.cc ?? []).filter(
-        (ccEmail) => !recipients.includes(ccEmail),
+      cc: ccEmails,
+      bcc: uniq(emailNotification.templatedContent.bcc ?? []).filter(
+        (bccEmail) =>
+          !recipients.includes(bccEmail) && !ccEmails.includes(bccEmail),
       ),
     },
   };

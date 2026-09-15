@@ -232,7 +232,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     const beneficiarySignEmail = expectEmailOfType(
       // biome-ignore lint/style/noNonNullAssertion: email is found by recipient
       sentEmails.find((email) =>
-        email.recipients.includes(convention.signatories.beneficiary.email),
+        email.recipients?.includes(convention.signatories.beneficiary.email),
       )!,
       "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
     );
@@ -251,7 +251,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     const establishmentSignEmail = expectEmailOfType(
       // biome-ignore lint/style/noNonNullAssertion: email is found by recipient
       sentEmails.find((email) =>
-        email.recipients.includes(
+        email.recipients?.includes(
           convention.signatories.establishmentRepresentative.email,
         ),
       )!,
