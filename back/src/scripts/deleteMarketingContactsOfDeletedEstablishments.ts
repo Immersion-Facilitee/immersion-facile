@@ -9,7 +9,11 @@ import { createAxiosSharedClient } from "shared-routes/axios";
 import { AppConfig } from "../config/bootstrap/appConfig";
 import { logPartnerResponses } from "../config/bootstrap/logPartnerResponses";
 import { partnerNames } from "../config/bootstrap/partnerNames";
-import { type KyselyDb, makeKyselyDb } from "../config/pg/kysely/kyselyUtils";
+import {
+  isInArray,
+  type KyselyDb,
+  makeKyselyDb,
+} from "../config/pg/kysely/kyselyUtils";
 import { createMakeScriptPgPool } from "../config/pg/pgPool";
 import { createPgUow } from "../domains/core/unit-of-work/adapters/createPgUow";
 import { PgUowPerformer } from "../domains/core/unit-of-work/adapters/PgUowPerformer";
@@ -79,18 +83,19 @@ const findMarketingContactsOfDeletedOrBannedEstablishments = async (
 const findEmailsSharedBySeveralSirets = async (
   db: KyselyDb,
   emails: Email[],
-): Promise<Email[]> => {
-  if (emails.length === 0) return [];
+): Promise<Set<Email>> => {
+  const distinctEmails = [...new Set(emails)];
+  if (distinctEmails.length === 0) return new Set();
 
   const rows = await db
     .selectFrom("marketing_establishment_contacts")
     .select("email")
-    .where("email", "in", emails)
+    .where((eb) => isInArray(eb, "email", distinctEmails))
     .groupBy("email")
     .having((eb) => eb.fn.count("siret"), ">", 1)
     .execute();
 
-  return rows.map(({ email }) => email);
+  return new Set(rows.map(({ email }) => email));
 };
 
 export const deleteMarketingContactsOfDeletedEstablishments = async ({
@@ -115,10 +120,10 @@ export const deleteMarketingContactsOfDeletedEstablishments = async ({
   );
 
   const skippedForEmailSharedWithAnotherSiret = candidates.filter(({ email }) =>
-    sharedEmails.includes(email),
+    sharedEmails.has(email),
   );
   const contactsToDelete = candidates.filter(
-    ({ email }) => !sharedEmails.includes(email),
+    ({ email }) => !sharedEmails.has(email),
   );
 
   if (dryRun)

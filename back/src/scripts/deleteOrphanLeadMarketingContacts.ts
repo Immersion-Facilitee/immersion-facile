@@ -61,10 +61,10 @@ const findObsoleteMarketingContacts = async (
       obsolete.email as obsolete_email
     from marketing_establishment_contacts contacts,
     lateral (
-      select distinct (element ->> 'email') as email
+      select distinct lower(element ->> 'email') as email
       from jsonb_array_elements(contacts.contact_history) as element
     ) obsolete
-    where obsolete.email <> contacts.email
+    where obsolete.email <> lower(contacts.email)
       and not exists (
         select 1
         from marketing_establishment_contacts others
