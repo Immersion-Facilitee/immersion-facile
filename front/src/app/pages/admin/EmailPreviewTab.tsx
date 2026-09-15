@@ -439,6 +439,13 @@ export const defaultEmailValueByEmailKind: {
     potentialBeneficiaryFirstName: "POTENTIAL_BENEFICIARY_FIRST_NAME",
     potentialBeneficiaryLastName: "POTENTIAL_BENEFICIARY_LAST_NAME",
   },
+  CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY: {
+    conventionsToManage: 666,
+    newConventions: 1,
+    validatedConventions: 40,
+    agencyName: "AGENCY_NAME",
+    domain: "DOMAIN",
+  },
   CONVENTION_TRANSFERRED_AGENCY_NOTIFICATION: {
     conventionId: "CONVENTION_ID",
     beneficiaryFirstName: "BENEFICIARY_FIRST_NAME",

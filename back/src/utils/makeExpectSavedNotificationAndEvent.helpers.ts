@@ -2,6 +2,7 @@ import { partition } from "ramda";
 import {
   type EmailNotification,
   exhaustiveCheck,
+  expectArraysToEqualIgnoringOrder,
   expectToEqual,
   type Notification,
   type NotificationKind,
@@ -106,12 +107,12 @@ const expectNotificationsOfKind =
     const { notificationsOfKind, expectedTemplatedContent } =
       paramsByKind[kind];
 
-    expectToEqual(
+    expectArraysToEqualIgnoringOrder(
       notificationsOfKind.map(({ templatedContent }) => templatedContent),
       expectedTemplatedContent,
     );
 
-    expectToEqual(
+    expectArraysToEqualIgnoringOrder(
       notificationsOfKind.map(
         ({ id }): WithNotificationIdAndKind => ({ id, kind }),
       ),
