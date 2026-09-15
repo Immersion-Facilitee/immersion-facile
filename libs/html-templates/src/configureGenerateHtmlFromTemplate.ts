@@ -8,6 +8,7 @@ import {
   renderHighlight,
   renderLegals,
 } from "./components/email";
+import { renderHighlightContentWithCTA } from "./components/email/highlightContentWithCTA";
 import type { HtmlTemplateEmailData } from "./createTemplatesByName";
 import { ignoreTabs } from "./helpers/formatters";
 
@@ -72,6 +73,7 @@ export const configureGenerateHtmlFromTemplate =
       legals,
       attachmentUrls,
       bypassLayout,
+      highlightContentWithCTA,
     } = createEmailVariables(params as any);
 
     const doctype =
@@ -89,6 +91,9 @@ export const configureGenerateHtmlFromTemplate =
       content: renderContent(content),
       buttons: renderButton(buttons),
       highlight: renderHighlight(highlight),
+      highlightContentWithCTA: renderHighlightContentWithCTA(
+        highlightContentWithCTA,
+      ),
       subContent: renderContent(subContent),
       legals: renderLegals(legals),
       footer: renderFooter(customParts.footer),

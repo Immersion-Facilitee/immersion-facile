@@ -9,6 +9,10 @@ type CreateEmailVariable<P> = (params: P) => {
     kind?: "success" | "error" | "warning" | "info";
     content?: string;
   };
+  highlightContentWithCTA?: {
+    content?: string;
+    button?: EmailButtonProps;
+  };
   subContent?: string;
   legals?: string;
   agencyLogoUrl?: string;
