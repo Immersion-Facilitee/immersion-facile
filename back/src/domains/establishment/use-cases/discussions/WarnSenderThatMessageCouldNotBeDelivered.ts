@@ -71,7 +71,8 @@ export const makeWarnSenderThatMessageCouldNotBeDelivered = useCaseBuilder(
           kind: "WARN_DISCUSSION_DELIVERY_FAILED",
           recipients: [senderEmail],
           params: {
-            recipientsInEmailInError: notification.templatedContent.recipients,
+            recipientsInEmailInError:
+              notification.templatedContent.recipients ?? [],
             errorMessage: `${errored.message} (status: ${errored.httpStatus})`,
           },
         },

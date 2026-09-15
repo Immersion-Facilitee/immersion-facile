@@ -741,7 +741,7 @@ interface NotificationsEmailAttachments {
   attachment: Json;
 }
 
-type RecipientType = "cc" | "to";
+type RecipientType = "cc" | "to" | "bcc";
 
 interface NotificationsEmailRecipients {
   notifications_email_id: string; // TODO : on delete cascade constraint

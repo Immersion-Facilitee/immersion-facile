@@ -12,8 +12,9 @@ export type GenericTemplatedEmail<
     name: string;
     email: Email;
   };
-  recipients: string[];
+  recipients?: string[];
   cc?: string[];
+  bcc?: string[];
   replyTo?: { name: string; email: Email };
   attachments?: EmailAttachment[];
 };

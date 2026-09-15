@@ -10,9 +10,9 @@ import type {
   SendTransactEmailResponseBody,
 } from "./BrevoNotificationGateway.schemas";
 
-const sender = { name: "bob", email: "Machin@mail.com" };
-
 describe("BrevoNotificationGateway unit", () => {
+  const sender = { name: "bob", email: "Machin@mail.com" };
+
   describe("sendEmail with skipEmailAllowList false", () => {
     let fakeHttpClient: HttpClient<BrevoNotificationGatewayRoutes>;
     let allowListPredicate: (email: string) => boolean;
@@ -361,6 +361,7 @@ describe("BrevoNotificationGateway unit", () => {
         kind: "AGENCY_WAS_ACTIVATED",
         recipients: ["toto-test@mail.fr", "jean-louis@hotmail.fr"],
         cc: ["cc@live.fr"],
+        bcc: ["bcc@live.fr"],
         params: {
           agencyName: "AGENCY_NAME",
           agencyLogoUrl: "https://beta.gouv.fr/img/logo_twitter_image-2019.jpg",
@@ -371,9 +372,45 @@ describe("BrevoNotificationGateway unit", () => {
         },
       });
 
-      expect(sentEmails[0]?.body.to[0].email).toBe("toto-test@mail.fr");
-      expect(sentEmails[0]?.body.to[1].email).toBe("jean-louis@hotmail.fr");
+      expect(sentEmails[0]?.body.to?.[0].email).toBe("toto-test@mail.fr");
+      expect(sentEmails[0]?.body.to?.[1].email).toBe("jean-louis@hotmail.fr");
       expect(sentEmails[0]?.body.cc?.[0].email).toBe("cc@live.fr");
+      expect(sentEmails[0]?.body.bcc?.[0].email).toBe("bcc@live.fr");
+    });
+
+    it("should throw when no recipients at all : to, cc , bcc", async () => {
+      await expectPromiseToFailWithError(
+        notificationGateway.sendEmail(
+          {
+            kind: "TEST_EMAIL",
+            params: {
+              input1: "",
+              input2: "",
+              url: "http://",
+            },
+          },
+          "id",
+        ),
+        errors.notification.missingRecipient({ notificationId: "id" }),
+      );
+
+      await expectPromiseToFailWithError(
+        notificationGateway.sendEmail(
+          {
+            kind: "TEST_EMAIL",
+            recipients: [],
+            cc: [],
+            bcc: [],
+            params: {
+              input1: "",
+              input2: "",
+              url: "http://",
+            },
+          },
+          "id",
+        ),
+        errors.notification.missingRecipient({ notificationId: "id" }),
+      );
     });
   });
 });
