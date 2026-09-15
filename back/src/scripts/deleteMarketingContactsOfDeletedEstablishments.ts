@@ -25,41 +25,49 @@ import { handleCRONScript } from "./handleCRONScript";
 const logger = createLogger(__filename);
 const config = AppConfig.createFromEnv();
 
-type MarketingContactOfDeletedEstablishment = {
+type MarketingContactOfDeletedOrBannedEstablishment = {
   siret: SiretDto;
   email: Email;
 };
 
-export type DeleteMarketingContactsOfDeletedEstablishmentsResult = {
+export type DeleteMarketingContactsOfDeletedOrBannedEstablishmentsResult = {
   dryRun: boolean;
-  candidates: MarketingContactOfDeletedEstablishment[];
-  skippedForEmailSharedWithAnotherSiret: MarketingContactOfDeletedEstablishment[];
-  deleted: MarketingContactOfDeletedEstablishment[];
-  errors: (MarketingContactOfDeletedEstablishment & { error: Error })[];
+  candidates: MarketingContactOfDeletedOrBannedEstablishment[];
+  skippedForEmailSharedWithAnotherSiret: MarketingContactOfDeletedOrBannedEstablishment[];
+  deleted: MarketingContactOfDeletedOrBannedEstablishment[];
+  errors: (MarketingContactOfDeletedOrBannedEstablishment & { error: Error })[];
 };
 
-const findMarketingContactsOfDeletedEstablishments = async (
+const findMarketingContactsOfDeletedOrBannedEstablishments = async (
   db: KyselyDb,
   limit: number | undefined,
-): Promise<MarketingContactOfDeletedEstablishment[]> => {
+): Promise<MarketingContactOfDeletedOrBannedEstablishment[]> => {
   const query = db
     .selectFrom("marketing_establishment_contacts as contacts")
     .select(["contacts.siret", "contacts.email"])
     .where((eb) =>
-      eb.and([
-        eb.exists(
-          eb
-            .selectFrom("establishments_deleted as deletedEstablishments")
-            .select("deletedEstablishments.siret")
-            .whereRef("deletedEstablishments.siret", "=", "contacts.siret"),
-        ),
-        eb.not(
+      eb.or([
+        eb.and([
           eb.exists(
             eb
-              .selectFrom("establishments")
-              .select("establishments.siret")
-              .whereRef("establishments.siret", "=", "contacts.siret"),
+              .selectFrom("establishments_deleted as deletedEstablishments")
+              .select("deletedEstablishments.siret")
+              .whereRef("deletedEstablishments.siret", "=", "contacts.siret"),
           ),
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom("establishments")
+                .select("establishments.siret")
+                .whereRef("establishments.siret", "=", "contacts.siret"),
+            ),
+          ),
+        ]),
+        eb.exists(
+          eb
+            .selectFrom("banned_establishments as bannedEstablishments")
+            .select("bannedEstablishments.siret")
+            .whereRef("bannedEstablishments.siret", "=", "contacts.siret"),
         ),
       ]),
     )
@@ -95,8 +103,8 @@ export const deleteMarketingContactsOfDeletedEstablishments = async ({
   establishmentMarketingGateway: EstablishmentMarketingGateway;
   dryRun: boolean;
   limit?: number;
-}): Promise<DeleteMarketingContactsOfDeletedEstablishmentsResult> => {
-  const candidates = await findMarketingContactsOfDeletedEstablishments(
+}): Promise<DeleteMarketingContactsOfDeletedOrBannedEstablishmentsResult> => {
+  const candidates = await findMarketingContactsOfDeletedOrBannedEstablishments(
     db,
     limit,
   );
@@ -133,7 +141,7 @@ export const deleteMarketingContactsOfDeletedEstablishments = async ({
     (
       contact,
     ): Promise<
-      MarketingContactOfDeletedEstablishment & { error: Error | null }
+      MarketingContactOfDeletedOrBannedEstablishment & { error: Error | null }
     > =>
       deleteEstablishmentMarketingContact
         .execute({ siret: contact.siret })
@@ -185,7 +193,7 @@ const makeEstablishmentMarketingGateway = (
 };
 
 const runScript =
-  async (): Promise<DeleteMarketingContactsOfDeletedEstablishmentsResult> => {
+  async (): Promise<DeleteMarketingContactsOfDeletedOrBannedEstablishmentsResult> => {
     const args = process.argv.slice(2);
     const limitArg = args.find((arg) => arg.startsWith("--limit="));
 
@@ -207,7 +215,7 @@ const runScript =
   };
 
 const formatSirets = (
-  contacts: MarketingContactOfDeletedEstablishment[],
+  contacts: MarketingContactOfDeletedOrBannedEstablishment[],
 ): string => contacts.map(({ siret }) => siret).join(", ");
 
 if (require.main === module) {
@@ -224,7 +232,7 @@ if (require.main === module) {
     }) =>
       [
         `Mode: ${dryRun ? "dry run (nothing deleted, use --apply to delete)" : "apply"}`,
-        `Marketing contacts of deleted establishments found: ${candidates.length}`,
+        `Marketing contacts of deleted or banned establishments found: ${candidates.length}`,
         `Skipped because email is shared with another siret: ${skippedForEmailSharedWithAnotherSiret.length}`,
         ...(skippedForEmailSharedWithAnotherSiret.length > 0
           ? [`  ${formatSirets(skippedForEmailSharedWithAnotherSiret)}`]

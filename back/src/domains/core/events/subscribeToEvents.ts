@@ -216,6 +216,7 @@ const getUseCasesByTopics = (
   EstablishmentBanned: [
     useCases.notifyThatReferencedEstablishmentIsBanned,
     useCases.notifyThatEstablishmentFromConventionIsBanned,
+    useCases.deleteEstablishmentMarketingContact,
   ],
   EstablishmentDeleted: [useCases.deleteEstablishmentMarketingContact],
   MarketingEstablishmentContactDeletionRequested: [
