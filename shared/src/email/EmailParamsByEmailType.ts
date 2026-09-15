@@ -293,6 +293,13 @@ export type EmailParamsByEmailType = {
     potentialBeneficiaryFirstName: string;
     potentialBeneficiaryLastName: string;
   };
+  CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY: {
+    agencyName: string;
+    conventionsToManage: number;
+    newConventions: number;
+    validatedConventions: number;
+    domain: string;
+  };
   CONVENTION_TRANSFERRED_AGENCY_NOTIFICATION: {
     previousAgencyName: string;
     justification: string;

@@ -77,6 +77,7 @@ export type GetConventionIdsParams = {
     withDateSubmission?: OptionalDateRange;
     withEndDate?: OptionalDateRange;
     withUpdateDate?: OptionalDateRange;
+    withValidationDate?: OptionalDateRange;
     withSirets?: SiretDto[];
     withStatuses?: ConventionStatus[];
     withEmail?: Email;

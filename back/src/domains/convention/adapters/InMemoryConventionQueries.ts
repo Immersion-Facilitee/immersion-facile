@@ -32,7 +32,6 @@ import { getAgencyValidationSteps } from "../../../utils/agency";
 import { assesmentEntityToConventionAssessmentFields } from "../../../utils/convention";
 import { createLogger } from "../../../utils/logger";
 import type { InMemoryAgencyRepository } from "../../agency/adapters/InMemoryAgencyRepository";
-import type { InMemoryUserRepository } from "../../core/authentication/connected-user/adapters/InMemoryUserRepository";
 import type { InMemoryBroadcastFeedbacksRepository } from "../../core/saved-errors/adapters/InMemoryBroadcastFeedbacksRepository";
 import {
   broadcastToFtConsumerName,
@@ -59,7 +58,6 @@ export class InMemoryConventionQueries implements ConventionQueries {
   constructor(
     private readonly conventionRepository: InMemoryConventionRepository,
     private readonly agencyRepository: InMemoryAgencyRepository,
-    private readonly userRepository: InMemoryUserRepository,
     private readonly assessmentRepository: InMemoryAssessmentRepository,
     private readonly broadcastFeedbacksRepository: InMemoryBroadcastFeedbacksRepository,
     private readonly bannedEstablishmentRepository: InMemoryBannedEstablishmentRepository,
@@ -556,6 +554,7 @@ const makeApplyFiltersToGetConventionIds =
     withSirets,
     withStatuses,
     withEmail,
+    withValidationDate,
   }: GetConventionIdsParams["filters"]) =>
   (convention: ConventionDto) =>
     (
@@ -573,13 +572,29 @@ const makeApplyFiltersToGetConventionIds =
             ? new Date(dateSubmission) <= withDateSubmission.to
             : true,
         ({ dateStart }) =>
-          withDateStart?.to ? dateStart <= withDateStart : true,
+          withDateStart?.to ? new Date(dateStart) <= withDateStart.to : true,
         ({ dateStart }) =>
-          withDateStart?.from ? dateStart >= withDateStart : true,
+          withDateStart?.from
+            ? new Date(dateStart) >= withDateStart.from
+            : true,
         ({ dateEnd }) =>
           withEndDate?.to ? new Date(dateEnd) <= withEndDate.to : true,
         ({ dateEnd }) =>
           withEndDate?.from ? new Date(dateEnd) >= withEndDate.from : true,
+        ({ dateValidation }) => {
+          if (withValidationDate?.to)
+            return dateValidation
+              ? new Date(dateValidation) <= withValidationDate.to
+              : false;
+          return true;
+        },
+        ({ dateValidation }) => {
+          if (withValidationDate?.from)
+            return dateValidation
+              ? new Date(dateValidation) >= withValidationDate.from
+              : false;
+          return true;
+        },
         ({ updatedAt }) =>
           withUpdateDate?.to && updatedAt
             ? new Date(updatedAt) <= withUpdateDate.to
