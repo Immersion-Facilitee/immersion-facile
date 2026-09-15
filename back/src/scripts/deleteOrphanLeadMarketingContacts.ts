@@ -1,5 +1,6 @@
 import "./instrumentSentryCron";
 import { sql } from "kysely";
+import { uniqBy } from "ramda";
 import {
   castError,
   type Email,
@@ -81,12 +82,7 @@ const findObsoleteMarketingContacts = async (
 const keepFirstContactPerEmail = (
   contacts: ObsoleteMarketingContact[],
 ): ObsoleteMarketingContact[] =>
-  contacts.filter(
-    (contact, index) =>
-      contacts.findIndex(
-        ({ obsoleteEmail }) => obsoleteEmail === contact.obsoleteEmail,
-      ) === index,
-  );
+  uniqBy(({ obsoleteEmail }) => obsoleteEmail, contacts);
 
 export const deleteOrphanLeadMarketingContacts = async ({
   db,
