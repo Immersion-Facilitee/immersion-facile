@@ -46,6 +46,7 @@ describe("PgNotificationRepository", () => {
         kind: "AGENCY_WAS_ACTIVATED",
         recipients: ["bob@mail.com"],
         cc: [],
+        bcc: [],
         params: {
           agencyName: "My agency",
           agencyLogoUrl: "http://logo.com",
@@ -71,6 +72,7 @@ describe("PgNotificationRepository", () => {
         kind: "TEST_EMAIL",
         recipients: ["lulu@mail.com"],
         cc: ["bob@mail.com"],
+        bcc: ["bcc@mail.com"],
         params: {
           url: "https://google.com",
           input1: "test input 1",
@@ -92,6 +94,7 @@ describe("PgNotificationRepository", () => {
         kind: "AGENCY_LAST_REMINDER",
         recipients: ["yo@remind.com"],
         cc: ["yala@jo.com"],
+        bcc: [],
         params: {
           agencyReferentName: "Agency Referent Name",
           conventionId: "",
@@ -347,6 +350,7 @@ describe("PgNotificationRepository", () => {
       const emailNotification = createTemplatedEmailNotification({
         recipients: ["bob@mail.com", "jane@mail.com"],
         cc: ["copy@mail.com"],
+        bcc: [],
         sender,
       });
 
@@ -362,9 +366,15 @@ describe("PgNotificationRepository", () => {
     it("save and eliminates duplicates when they exit", async () => {
       const recipients = ["bob@mail.com", "jane@mail.com", "bob@mail.com"];
       const cc = ["copy@mail.com", "jane@mail.com"];
+      const bcc = [
+        "bob@mail.com",
+        "copy@mail.com",
+        "blind-carbon-copy@mail.com",
+      ];
       const emailNotification = createTemplatedEmailNotification({
         recipients,
         cc,
+        bcc,
         sender,
       });
 
@@ -380,6 +390,7 @@ describe("PgNotificationRepository", () => {
           ...emailNotification.templatedContent,
           recipients: ["bob@mail.com", "jane@mail.com"],
           cc: ["copy@mail.com"],
+          bcc: ["blind-carbon-copy@mail.com"],
         },
         ...withToBeSendState,
       });
@@ -415,6 +426,7 @@ describe("PgNotificationRepository", () => {
           templatedContent: {
             ...emailWithUserId.templatedContent,
             cc: [],
+            bcc: [],
           },
           ...withToBeSendState,
         },
@@ -425,10 +437,12 @@ describe("PgNotificationRepository", () => {
       );
     });
 
-    it("save and eliminates duplicates when cc ends up empty after de-duplication", async () => {
+    it("save and eliminates duplicates when cc and bcc ends up empty after de-duplication", async () => {
+      const sameEmail = "bob@mail.com";
       const emailNotification = createTemplatedEmailNotification({
-        recipients: ["bob@mail.com"],
-        cc: ["bob@mail.com"],
+        recipients: [sameEmail],
+        cc: [sameEmail],
+        bcc: [sameEmail],
         sender,
       });
 
@@ -444,6 +458,7 @@ describe("PgNotificationRepository", () => {
           ...emailNotification.templatedContent,
           recipients: ["bob@mail.com"],
           cc: [],
+          bcc: [],
         },
         ...withToBeSendState,
       });
@@ -579,6 +594,7 @@ describe("PgNotificationRepository", () => {
               name: "Fake name",
             },
             cc: [],
+            bcc: [],
             params: {
               beneficiaryFirstName: "Bob",
               beneficiaryLastName: "L'éponge",
@@ -619,7 +635,8 @@ describe("PgNotificationRepository", () => {
               email: "fake-email@email.com",
               name: "Fake name",
             },
-            cc: [],
+            cc: ["cc@mail.com"],
+            bcc: ["bcc@mail.com"],
             params: {
               beneficiaryFirstName: "Bob",
               beneficiaryLastName: "L'éponge",
@@ -646,6 +663,7 @@ describe("PgNotificationRepository", () => {
               name: "Fake name",
             },
             cc: [],
+            bcc: [],
             params: {
               beneficiaryFirstName: "Bob",
               beneficiaryLastName: "L'éponge",
@@ -728,6 +746,7 @@ describe("PgNotificationRepository", () => {
               kind: "TEST_EMAIL",
               recipients: ["today@mail.com"],
               cc: [],
+              bcc: [],
               params: {
                 url: "https://google.com",
                 input1: "test input 1",
@@ -744,6 +763,7 @@ describe("PgNotificationRepository", () => {
               kind: "TEST_EMAIL",
               recipients: ["yesterday@mail.com"],
               cc: [],
+              bcc: [],
               params: {
                 url: "https://google.com",
                 input1: "test input 1",
@@ -851,6 +871,7 @@ describe("PgNotificationRepository", () => {
         recipients: ["bob@mail.com"],
         sender,
         cc: [],
+        bcc: [],
         attachments: [
           { name: "myFile.pdf", content: "myFile content as base64" },
         ],
@@ -864,6 +885,7 @@ describe("PgNotificationRepository", () => {
           recipients: ["bob@mail.com"],
           sender,
           cc: [],
+          bcc: [],
           attachments: [{ url: "www.truc.com" }],
         });
 
@@ -881,6 +903,7 @@ describe("PgNotificationRepository", () => {
           {
             ...emailNotification,
             templatedContent: {
+              bcc: [],
               ...emailNotification.templatedContent,
               attachments: [
                 {
@@ -1192,12 +1215,14 @@ describe("PgNotificationRepository", () => {
 const createTemplatedEmailNotification = ({
   recipients,
   cc,
+  bcc,
   sender,
   attachments,
   id,
 }: {
   recipients: string[];
   cc?: string[];
+  bcc?: string[];
   sender: {
     email: string;
     name: string;
@@ -1215,6 +1240,7 @@ const createTemplatedEmailNotification = ({
       recipients,
       sender,
       cc,
+      bcc,
       params: {
         agencyName: "My agency",
         statusJustification: "Justification",

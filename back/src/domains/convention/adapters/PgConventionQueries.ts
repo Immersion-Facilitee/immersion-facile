@@ -85,6 +85,7 @@ export class PgConventionQueries implements ConventionQueries {
       withSirets,
       withStatuses,
       withEmail,
+      withValidationDate,
     },
     limit,
   }: GetConventionIdsParams): Promise<ConventionId[]> {
@@ -102,6 +103,7 @@ export class PgConventionQueries implements ConventionQueries {
         withDateSubmission,
         withEndDate,
         withUpdateDate,
+        withValidationDate,
       }),
       (qb) =>
         withAppelationCodes
@@ -994,6 +996,7 @@ const addDateFilters =
     withDateSubmission,
     withEndDate,
     withUpdateDate,
+    withValidationDate,
   }: {
     withDateStart?: {
       from?: Date | string;
@@ -1008,6 +1011,10 @@ const addDateFilters =
       to?: Date | string;
     };
     withUpdateDate?: {
+      from?: Date | string;
+      to?: Date | string;
+    };
+    withValidationDate?: {
       from?: Date | string;
       to?: Date | string;
     };
@@ -1050,6 +1057,18 @@ const addDateFilters =
       (b) =>
         withUpdateDate?.to
           ? b.where("conventions.updated_at", "<=", withUpdateDate.to)
+          : b,
+      (b) =>
+        withValidationDate?.from
+          ? b.where(
+              "conventions.date_validation",
+              ">=",
+              withValidationDate.from,
+            )
+          : b,
+      (b) =>
+        withValidationDate?.to
+          ? b.where("conventions.date_validation", "<=", withValidationDate.to)
           : b,
     );
 

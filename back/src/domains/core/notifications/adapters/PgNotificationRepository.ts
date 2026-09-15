@@ -608,6 +608,7 @@ const getEmailsNotificationBuilder = (transaction: KyselyDb) =>
             .end(),
           recipients: sql`ARRAY_REMOVE(ARRAY_AGG(CASE WHEN r.recipient_type = 'to' THEN r.email ELSE NULL END), NULL)`,
           cc: sql`ARRAY_REMOVE(ARRAY_AGG(CASE WHEN r.recipient_type = 'cc' THEN r.email ELSE NULL END), NULL)`,
+          bcc: sql`ARRAY_REMOVE(ARRAY_AGG(CASE WHEN r.recipient_type = 'bcc' THEN r.email ELSE NULL END), NULL)`,
           params: ref("params").$castTo<any>(),
           sender: eb
             .case()
