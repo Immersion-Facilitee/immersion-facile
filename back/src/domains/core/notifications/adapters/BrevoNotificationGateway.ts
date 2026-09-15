@@ -98,15 +98,18 @@ export class BrevoNotificationGateway implements NotificationGateway {
     email: TemplatedEmail,
     notificationId?: NotificationId,
   ): Promise<SendNotificationResult> {
-    if (email.recipients.length === 0) {
+    if (!email.recipients?.length && !email.cc?.length && !email.bcc?.length)
       throw errors.notification.missingRecipient({ notificationId });
-    }
+
+    const to = this.#filterAllowListAndConvertToRecipients(email.recipients);
     const cc = this.#filterAllowListAndConvertToRecipients(email.cc);
+    const bcc = this.#filterAllowListAndConvertToRecipients(email.bcc);
 
     const emailData: SendTransactEmailRequestBody = {
-      to: this.#filterAllowListAndConvertToRecipients(email.recipients),
-      ...(email.replyTo ? { replyTo: email.replyTo } : {}),
+      ...(to.length ? { to } : {}),
       ...(cc.length ? { cc } : {}),
+      ...(bcc.length ? { bcc } : {}),
+      ...(email.replyTo ? { replyTo: email.replyTo } : {}),
       ...(email.attachments ? { attachment: email.attachments } : {}),
       ...configureGenerateHtmlFromTemplate(
         emailTemplatesByName,
@@ -121,7 +124,14 @@ export class BrevoNotificationGateway implements NotificationGateway {
       sender: email.sender ?? this.config.defaultSender,
     };
 
-    if (emailData.to.length === 0) return { isOk: true, messageIds: [] };
+    if (
+      [
+        ...(emailData.to ? emailData.to : []),
+        ...(emailData.cc ? emailData.cc : []),
+        ...(emailData.bcc ? emailData.bcc : []),
+      ].length === 0
+    )
+      return { isOk: true, messageIds: [] };
 
     return this.#sendTransacEmail(emailData);
   }

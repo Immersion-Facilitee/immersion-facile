@@ -2,6 +2,7 @@ import { prop } from "ramda";
 import {
   type DateString,
   errors,
+  type NotificationId,
   type TemplatedEmail,
   type TemplatedSms,
 } from "shared";
@@ -56,8 +57,11 @@ export class InMemoryNotificationGateway implements NotificationGateway {
 
   public async sendEmail(
     templatedEmail: TemplatedEmail,
+    notificationId?: NotificationId,
   ): Promise<SendNotificationResult> {
-    if (templatedEmail.recipients.includes(emailThatTriggerSendEmailError400)) {
+    if (
+      templatedEmail.recipients?.includes(emailThatTriggerSendEmailError400)
+    ) {
       return {
         isOk: false,
         error: {
@@ -66,8 +70,21 @@ export class InMemoryNotificationGateway implements NotificationGateway {
         },
       };
     }
+    if (
+      !templatedEmail.recipients?.length &&
+      !templatedEmail.cc?.length &&
+      !templatedEmail.bcc?.length
+    )
+      throw errors.notification.missingRecipient({ notificationId });
     this.#pushEmail(templatedEmail);
-    return { isOk: true, messageIds: templatedEmail.recipients };
+    return {
+      isOk: true,
+      messageIds: [
+        ...(templatedEmail.recipients ?? []),
+        ...(templatedEmail.cc ?? []),
+        ...(templatedEmail.bcc ?? []),
+      ],
+    };
   }
 
   public async sendSms(sms: TemplatedSms): Promise<SendNotificationResult> {

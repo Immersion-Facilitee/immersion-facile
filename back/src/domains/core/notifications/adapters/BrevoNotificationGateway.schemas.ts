@@ -22,8 +22,9 @@ const recipientOrSenderSchema: ZodSchemaWithInputMatchingOutput<RecipientOrSende
   });
 
 export type SendTransactEmailRequestBody = {
-  to: RecipientOrSender[];
+  to?: RecipientOrSender[];
   cc?: RecipientOrSender[];
+  bcc?: RecipientOrSender[];
   replyTo?: RecipientOrSender;
   htmlContent: string;
   sender: RecipientOrSender;
@@ -34,9 +35,10 @@ export type SendTransactEmailRequestBody = {
 
 export const sendTransactEmailRequestBodySchema: ZodSchemaWithInputMatchingOutput<SendTransactEmailRequestBody> =
   z.object({
-    to: z.array(recipientOrSenderSchema),
-    replyTo: recipientOrSenderSchema.optional(),
+    to: z.array(recipientOrSenderSchema).optional(),
     cc: z.array(recipientOrSenderSchema).optional(),
+    bcc: z.array(recipientOrSenderSchema).optional(),
+    replyTo: recipientOrSenderSchema.optional(),
     htmlContent: z.string(),
     sender: recipientOrSenderSchema,
     subject: z.string(),

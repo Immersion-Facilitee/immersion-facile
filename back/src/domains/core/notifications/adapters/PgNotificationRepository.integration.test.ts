@@ -557,7 +557,7 @@ describe("PgNotificationRepository", () => {
       it("returns matching email when required filters match", async () => {
         const emailNotification = emailNotifications[0];
         const response = await pgNotificationRepository.getEmailsByFilters({
-          email: emailNotification.templatedContent.recipients[0],
+          email: emailNotification.templatedContent.recipients?.[0],
           emailType: emailNotification.templatedContent.kind,
         });
         expectToEqual(response, [
@@ -595,7 +595,7 @@ describe("PgNotificationRepository", () => {
         await pgNotificationRepository.save(emailNotification);
 
         const response = await pgNotificationRepository.getEmailsByFilters({
-          email: emailNotification.templatedContent.recipients[0],
+          email: emailNotification.templatedContent.recipients?.[0],
           emailType: emailNotification.templatedContent.kind,
           conventionId: emailNotification.followedIds.conventionId,
         });
@@ -665,7 +665,7 @@ describe("PgNotificationRepository", () => {
         ]);
 
         const response = await pgNotificationRepository.getEmailsByFilters({
-          email: emailNotification.templatedContent.recipients[0],
+          email: emailNotification.templatedContent.recipients?.[0],
           emailType: emailNotification.templatedContent.kind,
           createdAt: today,
         });

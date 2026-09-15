@@ -92,7 +92,7 @@ export class InMemoryNotificationRepository implements NotificationRepository {
       (notification): notification is EmailNotification => {
         if (notification.kind !== "email") return false;
         if (
-          !notification.templatedContent.recipients.includes(
+          !notification.templatedContent.recipients?.includes(
             filters.recipientEmail,
           )
         )
@@ -132,7 +132,7 @@ export class InMemoryNotificationRepository implements NotificationRepository {
 
         if (
           filters.email &&
-          !notification.templatedContent.recipients.includes(filters.email)
+          !notification.templatedContent.recipients?.includes(filters.email)
         )
           return false;
 
@@ -199,10 +199,13 @@ export class InMemoryNotificationRepository implements NotificationRepository {
   public async save(notification: Notification): Promise<void> {
     if (
       notification.kind === "email" &&
-      !notification.templatedContent.recipients.length &&
-      !notification.templatedContent.cc?.length
+      !notification.templatedContent.recipients?.length &&
+      !notification.templatedContent.cc?.length &&
+      !notification.templatedContent.bcc?.length
     )
-      throw new Error("Email notification without recipients not allowed.");
+      throw errors.notification.missingRecipient({
+        notificationId: notification.id,
+      });
 
     this.notifications.push(notification);
   }
