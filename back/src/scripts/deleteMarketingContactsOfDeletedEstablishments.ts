@@ -172,9 +172,13 @@ const makeEstablishmentMarketingGateway = (
       axiosWithValidateStatus,
       {
         skipResponseValidation: true,
-        onResponseSideEffect: logPartnerResponses({
-          partnerName: partnerNames.brevoEstablishmentMarketing,
-        }),
+        // l'input des routes contact Brevo contient toujours l'email du contact
+        // (urlParams.identifier, body.email, body.emails), qui ne doit pas être
+        // écrit dans les logs : on ne transmet au logger que la réponse, sans input
+        onResponseSideEffect: ({ route, durationInMs, response }) =>
+          logPartnerResponses({
+            partnerName: partnerNames.brevoEstablishmentMarketing,
+          })?.({ route, durationInMs, response, input: {} }),
       },
     ),
   });
@@ -227,7 +231,7 @@ if (require.main === module) {
           : []),
         `Deleted: ${deleted.length}`,
         `Errors: ${errors.length}`,
-        ...errors.map(({ siret, error }) => `  - ${siret} : ${error.message}`),
+        ...(errors.length > 0 ? [`  ${formatSirets(errors)}`] : []),
       ].join("\n"),
     logger,
   });
