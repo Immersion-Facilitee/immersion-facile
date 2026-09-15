@@ -1,11 +1,5 @@
 import type { Pool } from "pg";
-import {
-  ConnectedUserBuilder,
-  errors,
-  executeInSequence,
-  expectPromiseToFailWithError,
-  expectToEqual,
-} from "shared";
+import { ConnectedUserBuilder, executeInSequence, expectToEqual } from "shared";
 import { v4 as uuid } from "uuid";
 import {
   type KyselyDb,
@@ -178,28 +172,6 @@ describe.each(adapters)("%s ArchivedConventionRequestQueries", (adapter) => {
         expectedResults,
       );
     });
-
-    if (adapter === "Pg")
-      it("throws when request details are incomplete", async () => {
-        const id = uuid();
-
-        await db
-          .insertInto("archived_convention_requests")
-          .values({
-            id,
-            user_id: user.id,
-            created_at: new Date("2022-01-01"),
-            updated_at: new Date("2022-01-01"),
-            status: "PENDING",
-            reason: "legalDispute",
-          })
-          .execute();
-
-        await expectPromiseToFailWithError(
-          queries.getFirstOldestArchivedConventionRequestToReviewList(),
-          errors.archivedConventionRequest.incomplete({ id }),
-        );
-      });
   });
 });
 

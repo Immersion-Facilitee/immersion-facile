@@ -1,13 +1,24 @@
-import type {
-  ArchivedConventionRequestId,
-  ArchivedConventionRequestStatus,
-  DateString,
-} from "shared";
-import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
+import type { Selectable } from "kysely";
 import {
-  type ArchivedConventionRequestEntity,
-  toArchivedConventionRequestEntity,
-} from "../../entities/ArchivedConventionRequestEntity";
+  type ArchivedConventionRequestId,
+  type ArchivedConventionRequestStatus,
+  appellationCodeSchema,
+  archivedConventionRequestReasons,
+  archivedConventionRequestStatusSchema,
+  conventionIdSchema,
+  type DateString,
+  firstnameMandatorySchema,
+  lastnameMandatorySchema,
+  makeDateStringSchema,
+  siretSchema,
+  zStringMinLength1Max255,
+  zStringPossiblyEmptyWithMax,
+  zUuidLike,
+} from "shared";
+import { z } from "zod";
+import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
+import type { Database } from "../../../../config/pg/kysely/model/database";
+import type { ArchivedConventionRequestEntity } from "../../entities/ArchivedConventionRequestEntity";
 import type { ArchivedConventionRequestRepository } from "../../ports/ArchivedConventionRequestRepository";
 
 export class PgArchivedConventionRequestRepository
@@ -76,3 +87,70 @@ export class PgArchivedConventionRequestRepository
       .execute();
   }
 }
+
+export const toArchivedConventionRequestEntity = (
+  row: Selectable<Database["archived_convention_requests"]>,
+): ArchivedConventionRequestEntity =>
+  archivedConventionRequestEntitySchema.parse({
+    id: row.id,
+    userId: row.user_id,
+    createdAt: row.created_at.toISOString(),
+    updatedAt: row.updated_at.toISOString(),
+    status: row.status,
+    reason: row.reason,
+    otherReason: row.other_reason ?? undefined,
+    ...(row.convention_id
+      ? {
+          conventionSearchMethod: "withConventionId",
+          conventionId: row.convention_id,
+        }
+      : {
+          conventionSearchMethod: "withConventionDetails",
+          beneficiaryFirstName: row.beneficiary_first_name,
+          beneficiaryLastName: row.beneficiary_last_name,
+          siret: row.siret,
+          immersionDate: row.immersion_date,
+          immersionAppellationCode: row.immersion_appellation_code?.toString(),
+        }),
+  });
+
+const archivedConventionRequestEntitySchema: z.ZodType<ArchivedConventionRequestEntity> =
+  z
+    .object({
+      id: zUuidLike,
+      userId: zUuidLike,
+      createdAt: makeDateStringSchema(),
+      updatedAt: makeDateStringSchema(),
+      status: archivedConventionRequestStatusSchema,
+    })
+    .and(
+      z.discriminatedUnion("conventionSearchMethod", [
+        z.object({
+          conventionSearchMethod: z.literal("withConventionId"),
+          conventionId: conventionIdSchema,
+        }),
+        z.object({
+          conventionSearchMethod: z.literal("withConventionDetails"),
+          beneficiaryFirstName: firstnameMandatorySchema,
+          beneficiaryLastName: lastnameMandatorySchema,
+          siret: siretSchema,
+          immersionDate: zStringMinLength1Max255,
+          immersionAppellationCode: appellationCodeSchema,
+        }),
+      ]),
+    )
+    .and(
+      z.discriminatedUnion("reason", [
+        z.object({
+          reason: z.literal("other"),
+          otherReason: zStringPossiblyEmptyWithMax(100).default(""),
+        }),
+        z.object({
+          reason: z.enum(
+            archivedConventionRequestReasons.filter(
+              (reason) => reason !== "other",
+            ),
+          ),
+        }),
+      ]),
+    );

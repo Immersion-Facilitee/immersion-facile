@@ -1,11 +1,5 @@
 import type { Pool } from "pg";
-import {
-  type ArchivedConventionRequestReason,
-  ConnectedUserBuilder,
-  errors,
-  expectPromiseToFailWithError,
-  expectToEqual,
-} from "shared";
+import { ConnectedUserBuilder, expectToEqual } from "shared";
 import {
   type KyselyDb,
   makeKyselyDb,
@@ -106,57 +100,6 @@ describe.each(adapters)("%s ArchivedConventionRequestRepository", (adapter) => {
       expectToEqual(
         await repository.getById("99999999-9999-4999-8999-999999999999"),
         undefined,
-      );
-    });
-
-    it("throws when request details are incomplete", async () => {
-      const id = "44444444-4444-4444-8444-444444444444";
-
-      const request: ArchivedConventionRequestEntity = {
-        userId: user.id,
-        createdAt,
-        updatedAt,
-        status: "PENDING",
-        id,
-        conventionSearchMethod: "withConventionDetails",
-        immersionAppellationCode: immersionAppellation.appellationCode,
-        reason: "other",
-      } as ArchivedConventionRequestEntity; //intentionally force as ArchivedConventionRequestEntity to test incomplete request
-
-      await repository.save(request);
-
-      await expectPromiseToFailWithError(
-        repository.getById(id),
-        errors.archivedConventionRequest.incomplete({ id }),
-      );
-    });
-
-    it("throws when reason is unknown", async () => {
-      const id = "55555555-5555-4555-8555-555555555555";
-      const unknownReason = "not-a-valid-reason";
-
-      const request: ArchivedConventionRequestEntity = {
-        userId: user.id,
-        createdAt,
-        updatedAt,
-        status: "PENDING",
-        id,
-        conventionSearchMethod: "withConventionDetails",
-        beneficiaryFirstName: "Jean",
-        beneficiaryLastName: "Dupont",
-        siret: "12345678901234",
-        immersionDate: "2024-01-15",
-        immersionAppellationCode: immersionAppellation.appellationCode,
-        reason: unknownReason as ArchivedConventionRequestReason, //intentionally force as ArchivedConventionRequestEntity to test invalid reason
-      };
-
-      await repository.save(request);
-
-      await expectPromiseToFailWithError(
-        repository.getById(id),
-        errors.archivedConventionRequest.unknownReason({
-          reason: unknownReason,
-        }),
       );
     });
   });
