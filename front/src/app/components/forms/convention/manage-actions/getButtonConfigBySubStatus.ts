@@ -14,6 +14,7 @@ import {
   type EditConventionCounsellorNameRequestDto,
   type EditConventionWithFinalStatusRequestDto,
   establishmentsRoles,
+  hasAgencyAllowedRolesToUpdateBeneficiaryBirthdateWithFinalStatus,
   hasAllowedRole,
   hasAllowedRoleOnAssessment,
   isConventionEndingInOneDayOrMore,
@@ -399,9 +400,19 @@ const createButtonPropsByVerificationAction = (
         ...agencyModifierRoles,
       ]));
 
+  const isBackofficeAdmin = currentUser?.isBackofficeAdmin ?? false;
+  const canEditTutor = convention.status === "ACCEPTED_BY_VALIDATOR";
+  const canEditBeneficiary =
+    isBackofficeAdmin ||
+    hasAgencyAllowedRolesToUpdateBeneficiaryBirthdateWithFinalStatus({
+      agencyRights: currentUser?.agencyRights ?? [],
+      agencyId: convention.agencyId,
+    });
+
   const shouldShowEditConventionWithFinalStatusButton =
     !conventionStatusesAllowedForModification.includes(convention.status) &&
-    canEditConventionWithFinalStatus;
+    canEditConventionWithFinalStatus &&
+    (canEditTutor || canEditBeneficiary);
 
   const shouldShowCancelButton =
     isAllowedConventionTransition(convention, "CANCELLED", requesterRoles) &&
