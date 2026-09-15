@@ -20,6 +20,19 @@ import { makeAxiosInstances } from "../utils/axiosUtils";
 import { createLogger } from "../utils/logger";
 import { handleCRONScript } from "./handleCRONScript";
 
+// Script usage examples
+//
+// Dry run by default (nothing is deleted, only the candidates are listed):
+// pnpm back delete-orphan-lead-marketing-contacts
+//
+// Actually delete the contacts in Brevo:
+// pnpm back delete-orphan-lead-marketing-contacts --apply
+//
+// Delete only the first 100 candidates, to check the result on a small batch first:
+// pnpm back delete-orphan-lead-marketing-contacts --apply --limit=100
+//
+// --limit has no effect in dry run: all the candidates are always listed.
+
 const logger = createLogger(__filename);
 const config = AppConfig.createFromEnv();
 
