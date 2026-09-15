@@ -5,11 +5,15 @@ import {
   appellationCodeSchema,
   archivedConventionRequestReasons,
   archivedConventionRequestStatusSchema,
+  conventionIdSchema,
   type DateString,
   firstnameMandatorySchema,
   lastnameMandatorySchema,
+  makeDateStringSchema,
   siretSchema,
   zStringMinLength1Max255,
+  zStringPossiblyEmptyWithMax,
+  zUuidLike,
 } from "shared";
 import { z } from "zod";
 import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
@@ -113,17 +117,17 @@ export const toArchivedConventionRequestEntity = (
 const archivedConventionRequestEntitySchema: z.ZodType<ArchivedConventionRequestEntity> =
   z
     .object({
-      id: z.string(),
-      userId: z.string(),
-      createdAt: z.string(),
-      updatedAt: z.string(),
+      id: zUuidLike,
+      userId: zUuidLike,
+      createdAt: makeDateStringSchema(),
+      updatedAt: makeDateStringSchema(),
       status: archivedConventionRequestStatusSchema,
     })
     .and(
       z.discriminatedUnion("conventionSearchMethod", [
         z.object({
           conventionSearchMethod: z.literal("withConventionId"),
-          conventionId: z.string().min(1),
+          conventionId: conventionIdSchema,
         }),
         z.object({
           conventionSearchMethod: z.literal("withConventionDetails"),
@@ -139,7 +143,7 @@ const archivedConventionRequestEntitySchema: z.ZodType<ArchivedConventionRequest
       z.discriminatedUnion("reason", [
         z.object({
           reason: z.literal("other"),
-          otherReason: z.string().default(""),
+          otherReason: zStringPossiblyEmptyWithMax(100).default(""),
         }),
         z.object({
           reason: z.enum(
