@@ -37,11 +37,15 @@ describe("deleteOrphanLeadMarketingContacts", () => {
     establishmentMarketingGateway = new InMemoryEstablishmentMarketingGateway();
   });
 
-  const saveMarketingContactWithHistory = async (
-    contactSiret: SiretDto,
-    currentEmail: Email,
-    previousEmails: Email[],
-  ) => {
+  const saveMarketingContactWithHistory = async ({
+    contactSiret,
+    currentEmail,
+    previousEmails,
+  }: {
+    contactSiret: SiretDto;
+    currentEmail: Email;
+    previousEmails: Email[];
+  }) => {
     await establishmentMarketingRepository.save({
       siret: contactSiret,
       contactEmail: currentEmail,
@@ -71,9 +75,11 @@ describe("deleteOrphanLeadMarketingContacts", () => {
   };
 
   it("deletes from Brevo an obsolete email present only in a contact history", async () => {
-    await saveMarketingContactWithHistory(siret, currentContactEmail, [
-      obsoleteEmail,
-    ]);
+    await saveMarketingContactWithHistory({
+      contactSiret: siret,
+      currentEmail: currentContactEmail,
+      previousEmails: [obsoleteEmail],
+    });
 
     const result = await deleteOrphanLeadMarketingContacts({
       db,
@@ -92,10 +98,16 @@ describe("deleteOrphanLeadMarketingContacts", () => {
   });
 
   it("keeps an obsolete email which is the current contact email of another siret", async () => {
-    await saveMarketingContactWithHistory(siret, currentContactEmail, [
-      obsoleteEmail,
-    ]);
-    await saveMarketingContactWithHistory(otherSiret, obsoleteEmail, []);
+    await saveMarketingContactWithHistory({
+      contactSiret: siret,
+      currentEmail: currentContactEmail,
+      previousEmails: [obsoleteEmail],
+    });
+    await saveMarketingContactWithHistory({
+      contactSiret: otherSiret,
+      currentEmail: obsoleteEmail,
+      previousEmails: [],
+    });
 
     const result = await deleteOrphanLeadMarketingContacts({
       db,
@@ -114,9 +126,11 @@ describe("deleteOrphanLeadMarketingContacts", () => {
   });
 
   it("deletes nothing on dry run", async () => {
-    await saveMarketingContactWithHistory(siret, currentContactEmail, [
-      obsoleteEmail,
-    ]);
+    await saveMarketingContactWithHistory({
+      contactSiret: siret,
+      currentEmail: currentContactEmail,
+      previousEmails: [obsoleteEmail],
+    });
 
     const result = await deleteOrphanLeadMarketingContacts({
       db,
@@ -132,14 +146,16 @@ describe("deleteOrphanLeadMarketingContacts", () => {
   });
 
   it("deletes an obsolete email only once when it appears in the history of several sirets", async () => {
-    await saveMarketingContactWithHistory(siret, currentContactEmail, [
-      obsoleteEmail,
-    ]);
-    await saveMarketingContactWithHistory(
-      otherSiret,
-      otherCurrentContactEmail,
-      [obsoleteEmail],
-    );
+    await saveMarketingContactWithHistory({
+      contactSiret: siret,
+      currentEmail: currentContactEmail,
+      previousEmails: [obsoleteEmail],
+    });
+    await saveMarketingContactWithHistory({
+      contactSiret: otherSiret,
+      currentEmail: otherCurrentContactEmail,
+      previousEmails: [obsoleteEmail],
+    });
 
     const result = await deleteOrphanLeadMarketingContacts({
       db,
@@ -159,10 +175,11 @@ describe("deleteOrphanLeadMarketingContacts", () => {
   });
 
   it("deletes several obsolete emails present in a single contact history", async () => {
-    await saveMarketingContactWithHistory(siret, currentContactEmail, [
-      obsoleteEmail,
-      secondObsoleteEmail,
-    ]);
+    await saveMarketingContactWithHistory({
+      contactSiret: siret,
+      currentEmail: currentContactEmail,
+      previousEmails: [obsoleteEmail, secondObsoleteEmail],
+    });
 
     const result = await deleteOrphanLeadMarketingContacts({
       db,
@@ -184,10 +201,11 @@ describe("deleteOrphanLeadMarketingContacts", () => {
   });
 
   it("caps the number of deletions to the given limit but still reports every candidate", async () => {
-    await saveMarketingContactWithHistory(siret, currentContactEmail, [
-      obsoleteEmail,
-      secondObsoleteEmail,
-    ]);
+    await saveMarketingContactWithHistory({
+      contactSiret: siret,
+      currentEmail: currentContactEmail,
+      previousEmails: [obsoleteEmail, secondObsoleteEmail],
+    });
 
     const result = await deleteOrphanLeadMarketingContacts({
       db,
