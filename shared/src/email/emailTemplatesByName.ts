@@ -1518,6 +1518,45 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         subContent: defaultSignature("immersion"),
       }),
     },
+    CONVENTION_SUMMARY: {
+      niceName: "Convention - Récapitulatif quotidien agence",
+      tags: [
+        "template:récapitulatif quotidien agence",
+        "theme:convention",
+        "acteur:prescripteur",
+        "role:preValideur",
+        "role:valideur",
+      ],
+      createEmailVariables: ({
+        conventionsToManage,
+        newConventions,
+        validatedConventions,
+        agencyName,
+        domain,
+      }) => ({
+        subject: "Vos conventions d'immersion à traiter aujourd'hui",
+        greetings: "Bonjour,",
+        content: `Voici le récapitulatif quotidien des conventions d'immersion à traiter par votre agence : ${agencyName}.`,
+        highlightContentWithCTA: {
+          button: {
+            label: "Accéder au tableau de bord",
+            url: makeRouteAbsoluteUrl({
+              route: frontRoutes.agencyDashboard({}),
+              baseUrl: `https://${domain}`,
+            }),
+            target: "_blank",
+          },
+          content: `<strong>${conventionsToManage} convention(s) à traiter</strong>
+        Ces conventions à pré-valider et/ou à valider nécéssitent votre action.`,
+        },
+        subContent: `<strong>🆕 ${newConventions} nouvelle(s) convention(s)</strong>
+        ${newConventions} nouvelles conventions sont disponibles dans votre tableau de bord. Vous pouvez dès maintenant vérifier les informations renseignées et suivre leur signature.
+
+        <strong>🚀 ${validatedConventions} nouvelle(s) immersions sont désormais confirmées</strong>
+        ${validatedConventions} covention(s) ont été validées par votre agence au cours des dernières 24 heures.
+        `,
+      }),
+    },
     CONVENTION_TRANSFERRED_AGENCY_NOTIFICATION: {
       niceName: "Convention - Changement prescripteur pour agence",
       tags: [
@@ -2339,81 +2378,6 @@ Tél : ${beneficiaryPhone}`,
         },
       }),
     },
-    NEW_CONVENTION_AGENCY_NOTIFICATION: {
-      niceName: "Convention - Nouvelle convention à traiter par l'agence",
-      tags: [
-        "template:notification conseiller création demande d’immersion",
-        "theme:convention",
-        "acteur:prescripteur",
-        "role:preValideur",
-        "role:valideur",
-      ],
-      createEmailVariables: ({
-        agencyLogoUrl,
-        agencyName,
-        agencyReferentName,
-        businessName,
-        conventionId,
-        dateEnd,
-        dateStart,
-        firstName,
-        internshipKind,
-        lastName,
-        manageConventionLink,
-        warning,
-      }) => ({
-        subject:
-          internshipKind === "immersion"
-            ? `Une demande de convention d'immersion est déposée : ${firstName}, ${lastName} - ${businessName} - ${agencyName}.`
-            : `Mini Stage - une demande de convention de mini stage est déposée : ${firstName}, ${lastName} - ${businessName} - ${agencyName}.`,
-        greetings: greetingsWithConventionId(conventionId),
-        content: `
-      <strong>Une nouvelle demande ${
-        internshipKind === "immersion"
-          ? "d'immersion professionnelle"
-          : "de mini stage"
-      } a été enregistrée.</strong>
-
-      
-
-      Vous pouvez prendre connaissance de la demande en <a href="${manageConventionLink}" target="_blank">cliquant ici</a>.
-      <ul>
-        <li>Vous pouvez renvoyer un lien de signature par mail ou par SMS si son numéro de mobile est renseigné. Il vous suffit de cliquer sur le bouton "Relancer" dans l'encadré correspondant au signataire auquel vous souhaitez adresser le mail ou le SMS.</li>
-        <li>Vous pouvez dès maintenant demander des modifications ou la refuser si nécessaire.</li>   
-        <li>Vous ne pouvez pas la valider tant que le bénéficiaire et l'entreprise n'ont pas confirmé chacun leur accord pour cette demande.</li>
-      </ul> 
-      <strong>Dates ${
-        internshipKind === "immersion" ? "de l'immersion" : "du mini stage"
-      } :</strong> 
-      - du ${displayDate(dateStart)}
-      - au ${displayDate(dateEnd)} 
-
-      <strong>Bénéficiaire :</strong> 
-      ${firstName} ${lastName}    
-      ${
-        agencyReferentName &&
-        `
-        <strong>Conseiller :</strong>
-        ${agencyReferentName}
-        `
-      }
-      <strong>Entreprise :</strong>
-      ${businessName}      
-
-      <strong>Structure d'accompagnement :</strong>
-      ${agencyName}
-      `,
-        highlight: {
-          content: warning,
-        },
-        subContent: defaultSignature(internshipKind),
-        attachmentUrls:
-          internshipKind === "immersion"
-            ? [emailAttachements.memoAgencyGeneral]
-            : undefined,
-        agencyLogoUrl,
-      }),
-    },
     NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE: {
       niceName: "Convention - Demande de signature",
       tags: [
@@ -2556,69 +2520,6 @@ Tél : ${beneficiaryPhone}`,
 
         ${defaultSignature(internshipKind)}
         `,
-        agencyLogoUrl,
-      }),
-    },
-    NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION: {
-      niceName: "Convention - Entièrement signée à traiter par l'agence",
-      tags: [
-        "template:notification conseiller demande d’immersion signée à valider",
-        "theme:convention",
-        "acteur:prescripteur",
-        "role:preValideur",
-        "role:valideur",
-      ],
-      createEmailVariables: ({
-        agencyLogoUrl,
-        agencyReferentName,
-        beneficiaryFirstName,
-        beneficiaryLastName,
-        businessName,
-        conventionId,
-        internshipKind,
-        manageConventionLink,
-        possibleRoleAction,
-        validatorName,
-        peAdvisor,
-      }) => ({
-        subject:
-          internshipKind === "immersion"
-            ? `Demande d'immersion à étudier: ${beneficiaryFirstName} ${beneficiaryLastName} - ${businessName}`
-            : `Mini Stage - Demande de mini stage à étudier: ${beneficiaryFirstName} ${beneficiaryLastName} - ${businessName}`,
-        greetings: greetingsWithConventionId(conventionId),
-        content: `
-      <strong>Une nouvelle demande ${
-        internshipKind === "immersion" ? "d'immersion" : "de mini stage"
-      } vous est envoyée${validatorName ? ` par ${validatorName} ` : " "}pour que vous l'examiniez.</strong>
-      
-      ${
-        peAdvisor && !peAdvisor.recipientIsPeAdvisor
-          ? `Vous recevez cet email en copie de ${peAdvisor.firstName} ${peAdvisor.lastName} (${peAdvisor.email}).
-      C'est à ce conseiller d'examiner cette demande d'immersion en priorité. En cas d'absence de sa part, un autre conseiller peut l'examiner afin de ne pas retarder le candidat.`
-          : ""
-      }
-      
-      Elle concerne le bénéficiaire ${beneficiaryFirstName} ${beneficiaryLastName} dans l'entreprise ${businessName} 
-      ${
-        agencyReferentName &&
-        `
-        <strong>Conseiller :</strong> ${agencyReferentName}
-        `
-      }
-      Nous vous remercions d'en prendre connaissance pour ${possibleRoleAction}.
-      `,
-        buttons: [
-          {
-            label: "Examiner la demande",
-            url: manageConventionLink,
-            target: "_blank",
-          },
-        ],
-        subContent: defaultSignature(internshipKind),
-        attachmentUrls:
-          internshipKind === "immersion"
-            ? [emailAttachements.memoAgencyGeneral]
-            : undefined,
         agencyLogoUrl,
       }),
     },

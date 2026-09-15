@@ -207,6 +207,7 @@ export const submitBasicConventionForm = async (
   const agencyId = await goToFormPageAndFillConventionForm(page);
   expect(agencyId).not.toBeFalsy();
   if (!agencyId) return;
+
   const conventionId = await confirmCreateConventionFormSubmit(
     page,
     tomorrowDateDisplayed,

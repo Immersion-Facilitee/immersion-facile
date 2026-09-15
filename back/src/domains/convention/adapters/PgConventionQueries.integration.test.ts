@@ -816,18 +816,21 @@ describe("Pg implementation of ConventionQueries", () => {
       const conventionFrom15To25 = new ConventionDtoBuilder()
         .withId("a56ce4c4-0fe9-49f8-b1fb-e84d9994a1f0")
         .withAgencyId(agency.id)
+        .withDateValidation("2026-01-14")
         .withDateStart("2026-01-15")
         .withDateEnd("2026-01-25")
         .build();
       const conventionFrom10To20 = new ConventionDtoBuilder()
         .withId("dc5d0d4f-6f49-4658-9075-6f4ff7f0d4ca")
         .withAgencyId(agency.id)
+        .withDateValidation("2026-01-09")
         .withDateStart("2026-01-10")
         .withDateEnd("2026-01-20")
         .build();
       const conventionFrom20To30 = new ConventionDtoBuilder()
         .withId("5e7eb66f-854f-4e99-83e9-f348ac767f45")
         .withAgencyId(agency.id)
+        .withDateValidation("2026-01-19")
         .withDateStart("2026-01-20")
         .withDateEnd("2026-01-30")
         .build();
@@ -881,6 +884,20 @@ describe("Pg implementation of ConventionQueries", () => {
             filters: {
               withUpdateDate: {
                 from: new Date("2026-01-15"),
+                to: new Date("2026-01-18"),
+              },
+            },
+          }),
+          [conventionFrom15To25.id],
+        );
+      });
+
+      it("filters by withValidationDate range", async () => {
+        expectToEqual(
+          await conventionQueries.getConventionIdsByFilters({
+            filters: {
+              withValidationDate: {
+                from: new Date("2026-01-14"),
                 to: new Date("2026-01-18"),
               },
             },

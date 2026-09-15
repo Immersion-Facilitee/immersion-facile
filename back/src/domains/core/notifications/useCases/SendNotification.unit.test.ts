@@ -243,7 +243,8 @@ describe("SendNotification UseCase", () => {
                 status: "accepted",
                 occurredAt: now.toISOString(),
                 messageIds:
-                  alreadyErroredEmailNotif.templatedContent.recipients,
+                  // biome-ignore lint/style/noNonNullAssertion: included on test
+                  alreadyErroredEmailNotif.templatedContent.recipients!,
               },
             },
           ]);
