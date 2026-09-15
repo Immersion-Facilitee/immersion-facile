@@ -1537,20 +1537,18 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         subject: "Vos conventions d'immersion à traiter aujourd'hui",
         greetings: "Bonjour,",
         content: `Voici le récapitulatif quotidien des conventions d'immersion à traiter par votre agence : ${agencyName}.`,
-        highlight: {
-          kind: "info",
+        highlightContentWithCTA: {
+          button: {
+            label: "Accéder au tableau de bord",
+            url: makeRouteAbsoluteUrl({
+              route: frontRoutes.agencyDashboard({}),
+              baseUrl: `https://${domain}`,
+            }),
+            target: "_blank",
+          },
           content: `<strong>${conventionsToManage} convention(s) à traiter</strong>
         Ces conventions à pré-valider et/ou à valider nécéssitent votre action.`,
         },
-        buttons: [
-          {
-            label: "Accéder au tableau de bord",
-            url: makeRouteAbsoluteUrl({
-              route: frontRoutes.establishmentDashboard(),
-              baseUrl: `https://${domain}`,
-            }),
-          },
-        ],
         subContent: `<strong>🆕 ${newConventions} nouvelle(s) convention(s)</strong>
         ${newConventions} nouvelles conventions sont disponibles dans votre tableau de bord. Vous pouvez dès maintenant vérifier les informations renseignées et suivre leur signature.
 

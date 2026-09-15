@@ -4,7 +4,7 @@ export type EmailButtonProps = {
   target?: "_blank" | "_self";
 };
 
-const getButtonStyle = (index: number) =>
+export const getButtonStyle = (index: number) =>
   `text-decoration: none; display: inline-block; padding: 10px 20px; text-align: center; ${
     index === 0
       ? "background-color: #000091; color: #fff;"
