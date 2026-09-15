@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { type BrowserContext, expect, type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import { addBusinessDays, format } from "date-fns";
 import {
   type AgencyId,
@@ -11,7 +11,6 @@ import {
   frontRoutes,
   SEED_FT_AGENCY_ID,
   technicalRoutes,
-  zUuidLike,
 } from "shared";
 import {
   getMagicLinkAndRecipientFromEmail,
@@ -204,7 +203,6 @@ export const goToFormPageAndFillConventionForm = async (
 
 export const submitBasicConventionForm = async (
   page: Page,
-  context: BrowserContext,
 ): Promise<ConventionSubmitted | void> => {
   const agencyId = await goToFormPageAndFillConventionForm(page);
   expect(agencyId).not.toBeFalsy();
@@ -212,7 +210,6 @@ export const submitBasicConventionForm = async (
 
   const conventionId = await confirmCreateConventionFormSubmit(
     page,
-    context,
     tomorrowDateDisplayed,
   );
 
@@ -520,7 +517,6 @@ export const checkConventionSummary = async (
 
 export const confirmCreateConventionFormSubmit = async (
   page: Page,
-  context: BrowserContext,
   dateEndDisplayed: string,
 ): Promise<ConventionId> => {
   await page.click(`#${domElementIds.conventionImmersion.submitFormButton}`);
@@ -533,15 +529,11 @@ export const confirmCreateConventionFormSubmit = async (
     page,
     `#${domElementIds.conventionImmersion.conventionConfirmation.copyConventionIdButton}`,
   );
-  await page.click(
-    `#${domElementIds.conventionImmersion.conventionConfirmation.copyConventionIdButton}`,
-  );
-  await context.grantPermissions(["clipboard-read"]);
-  const handle = await page.evaluateHandle(() =>
-    navigator.clipboard.readText(),
-  );
-  const clipboardContent = await handle.jsonValue();
-  return zUuidLike.parse(clipboardContent);
+  const conventionId = new URL(page.url()).pathname.split("/").at(-1);
+  expect(conventionId).toBeDefined();
+  if (!conventionId)
+    throw new Error("Convention id not found in confirmation URL");
+  return conventionId as ConventionId;
 };
 
 export const shareConventionDraftByEmail = async (page: Page) => {

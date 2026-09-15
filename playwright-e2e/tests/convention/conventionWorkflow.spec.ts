@@ -29,10 +29,7 @@ test.describe.configure({ mode: "parallel" });
 test.describe("Convention can be created from shared draft", () => {
   test.use({ storageState: testConfig.adminAuthFile });
 
-  test("creates a new convention from shared draft", async ({
-    page,
-    context,
-  }) => {
+  test("creates a new convention from shared draft", async ({ page }) => {
     await goToFormPageAndFillConventionForm(page);
     await shareConventionDraftByEmail(page);
     await goToAdminTab(page, "adminNotifications");
@@ -47,11 +44,7 @@ test.describe("Convention can be created from shared draft", () => {
     await page.click(
       `#${domElementIds.conventionImmersion.fromSharedConventionContinueButton}`,
     );
-    await confirmCreateConventionFormSubmit(
-      page,
-      context,
-      tomorrowDateDisplayed,
-    );
+    await confirmCreateConventionFormSubmit(page, tomorrowDateDisplayed);
   });
 });
 
@@ -66,8 +59,8 @@ test.describe("Convention creation and modification workflow", () => {
     return conventionSubmitted.conventionId;
   };
 
-  test("creates a new convention", async ({ page, context }) => {
-    conventionSubmitted = await submitBasicConventionForm(page, context);
+  test("creates a new convention", async ({ page }) => {
+    conventionSubmitted = await submitBasicConventionForm(page);
     await page.waitForTimeout(testConfig.timeForEventCrawler);
   });
 
@@ -261,8 +254,7 @@ test.describe("Convention creation and modification workflow in Martinique", () 
   });
   test("creates a new convention on a client in Martinique", async ({
     page,
-    context,
   }) => {
-    await submitBasicConventionForm(page, context);
+    await submitBasicConventionForm(page);
   });
 });
