@@ -74,6 +74,41 @@ describe("deleteOrphanLeadMarketingContacts", () => {
     ];
   };
 
+  const saveMarketingContactWithMixedCaseHistory = async ({
+    contactSiret,
+    currentEmail,
+    historyEmails,
+  }: {
+    contactSiret: SiretDto;
+    currentEmail: Email;
+    historyEmails: string[];
+  }) => {
+    await establishmentMarketingRepository.save({
+      siret: contactSiret,
+      contactEmail: currentEmail,
+      nafCode: null,
+      emailContactHistory: historyEmails.map((email, index) => ({
+        email,
+        firstName: "Jean",
+        lastName: "Bidule",
+        createdAt: new Date(2024, index, 1),
+      })),
+    });
+
+    establishmentMarketingGateway.marketingEstablishments = [
+      ...establishmentMarketingGateway.marketingEstablishments,
+      {
+        siret: contactSiret,
+        email: currentEmail,
+        firstName: "Jean",
+        lastName: "Bidule",
+        conventions: { numberOfValidatedConvention: 1 },
+        hasIcAccount: false,
+        isRegistered: false as const,
+      },
+    ];
+  };
+
   it("deletes from Brevo an obsolete email present only in a contact history", async () => {
     await saveMarketingContactWithHistory({
       contactSiret: siret,
@@ -122,6 +157,29 @@ describe("deleteOrphanLeadMarketingContacts", () => {
         .map(({ email }) => email)
         .sort(),
       [currentContactEmail, obsoleteEmail].sort(),
+    );
+  });
+
+  it("keeps a history email which only differs by case from the current contact email", async () => {
+    await saveMarketingContactWithMixedCaseHistory({
+      contactSiret: siret,
+      currentEmail: currentContactEmail,
+      historyEmails: ["Current-Contact@Mail.com"],
+    });
+
+    const result = await deleteOrphanLeadMarketingContacts({
+      db,
+      establishmentMarketingGateway,
+      dryRun: false,
+    });
+
+    expectToEqual(result.candidates, []);
+    expectToEqual(result.deleted, []);
+    expectToEqual(
+      establishmentMarketingGateway.marketingEstablishments.map(
+        ({ email }) => email,
+      ),
+      [currentContactEmail],
     );
   });
 
