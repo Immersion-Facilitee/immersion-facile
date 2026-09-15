@@ -140,9 +140,10 @@ const makeEstablishmentMarketingGateway = (
       axiosWithValidateStatus,
       {
         skipResponseValidation: true,
-        onResponseSideEffect: logPartnerResponses({
-          partnerName: partnerNames.brevoEstablishmentMarketing,
-        }),
+        onResponseSideEffect: ({ route, durationInMs, response }) =>
+          logPartnerResponses({
+            partnerName: partnerNames.brevoEstablishmentMarketing,
+          })?.({ route, durationInMs, response, input: {} }), // On ne log pas input car il y a des emails dedans
       },
     ),
   });
@@ -185,7 +186,7 @@ if (require.main === module) {
         ...(candidates.length > 0 ? [`  ${formatSirets(candidates)}`] : []),
         `Deleted: ${deleted.length}`,
         `Errors: ${errors.length}`,
-        ...errors.map(({ siret, error }) => `  - ${siret} : ${error.message}`),
+        ...(errors.length > 0 ? [`  ${formatSirets(errors)}`] : []),
       ].join("\n"),
     logger,
   });
