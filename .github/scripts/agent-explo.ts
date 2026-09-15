@@ -35,7 +35,6 @@ type PullRequest = {
 };
 type FileChange = { filename: string; status: string; patch?: string };
 
-// Two workflow steps: authorize with the membership token, then answer on the runner.
 async function runWorkflowStep(step: string) {
   const event: IssueCommentEvent = JSON.parse(
     await readFile(process.env.GITHUB_EVENT_PATH!, "utf8"),
@@ -64,15 +63,18 @@ export async function answerRequest(event: IssueCommentEvent) {
   let answer: string | undefined;
   try {
     await setReaction(event, "eyes");
+    const model = process.env.OPENCODE_MODEL;
+    const key = process.env.OPENCODE_API_KEY;
+    if (!model || !/^opencode-go\/[a-zA-Z0-9._-]+$/.test(model))
+      throw new Error(
+        "AGENT_EXPLO_MODEL obligatoire au format opencode-go/<modèle>",
+      );
+    if (!key) throw new Error("OPENCODE_API_KEY obligatoire");
     const context = await collectContext(event);
     await writeFile(".agent-explo-context.json", JSON.stringify(context));
     await install();
     const home = temporary("agent-explo-home");
     await mkdir(home, { recursive: true });
-    const model = process.env.OPENCODE_MODEL;
-    const key = process.env.OPENCODE_API_KEY;
-    if (!model || !/^opencode-go\/[a-zA-Z0-9._-]+$/.test(model) || !key)
-      throw new Error("Configuration fournisseur manquante");
     const output = await runAgent(
       temporary("agent-explo-bin/opencode"),
       process.cwd(),
@@ -81,7 +83,6 @@ export async function answerRequest(event: IssueCommentEvent) {
     );
     answer = extractFinalAnswer(output);
   } finally {
-    // Publish the failure too, including installation errors and the agent timeout.
     await publishAnswer(event, answer);
   }
 }
@@ -196,7 +197,6 @@ async function collectPullRequestChanges(number: number) {
   };
 }
 
-// CI only: no local OpenCode configuration is changed or inherited.
 export const readOnlyConfig = {
   autoupdate: false,
   share: "disabled",
@@ -406,7 +406,6 @@ export const listGitHubPages = async <T>(
 
 if (process.argv[1]?.endsWith("/agent-explo.ts")) {
   runWorkflowStep(process.argv[2]).catch(() => {
-    // Provider exceptions can contain the prompt: keep them out of Actions logs.
     console.error("agent-explo : échec technique");
     process.exitCode = 1;
   });

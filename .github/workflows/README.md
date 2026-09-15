@@ -7,6 +7,9 @@ commençant par `@Immersion-Facilitee/agent-explo`. Il explore la branche par d�
 et le web en lecture seule, puis publie sa réponse via une GitHub App dédiée.
 Le [prompt](../scripts/agent-explo.prompt.md) définit ses consignes.
 
+L’événement GitHub `issue_comment` couvre les issues et l’onglet **Conversation**
+des PR. Les commentaires de review sur les lignes du diff ne déclenchent pas l’agent.
+
 Les réactions indiquent l’état : 👀 en cours, 👍 réponse publiée, 😕 échec.
 Une relance du workflow met à jour la même réponse.
 
@@ -27,10 +30,14 @@ Configurer les variables :
 | --- | --- |
 | `AGENT_EXPLO_APP_CLIENT_ID` | Client ID de l’App |
 | `AGENT_EXPLO_ALLOWED_TEAM` | `immersion-facilitee` |
-| `AGENT_EXPLO_MODEL` | `opencode-go/gpt-5.6-luna` (obligatoire, sans repli) |
-| `AGENT_EXPLO_ENABLED` | `true` pour activer, `false` pour désactiver |
+| `AGENT_EXPLO_MODEL` | Identifiant du modèle au format `opencode-go/<modèle>` (obligatoire, sans valeur par défaut) |
 
 Le futur agent-code aura sa propre App et ses variables `AGENT_CODE_*`.
+
+L’agent est actif lorsque la variable `AGENT_EXPLO_MODEL` est renseignée.
+Supprimer cette variable désactive l’agent.
+Si le secret `OPENCODE_API_KEY` est absent ou si le modèle ne respecte pas
+le format attendu, l’exploration échoue.
 
 ### Recette et limites
 
