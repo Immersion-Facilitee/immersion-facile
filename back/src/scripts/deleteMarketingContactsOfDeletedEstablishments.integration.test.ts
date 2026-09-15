@@ -4,6 +4,7 @@ import { v4 as uuid } from "uuid";
 import { type KyselyDb, makeKyselyDb } from "../config/pg/kysely/kyselyUtils";
 import { makeTestPgPool } from "../config/pg/pgPool";
 import { PgUserRepository } from "../domains/core/authentication/connected-user/adapters/PgUserRepository";
+import { PgBannedEstablishmentRepository } from "../domains/establishment/adapters/PgBannedEstablishmentRepository";
 import { PgDeletedEstablishmentRepository } from "../domains/establishment/adapters/PgDeletedEstablishmentRepository";
 import { PgEstablishmentAggregateRepository } from "../domains/establishment/adapters/PgEstablishmentAggregateRepository";
 import type { EstablishmentUserRight } from "../domains/establishment/entities/EstablishmentAggregate";
@@ -23,6 +24,8 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
   const leadEmail: Email = "lead@mail.com";
   const secondDeletedEstablishmentSiret: SiretDto = "00000000000004";
   const secondDeletedEstablishmentEmail: Email = "deleted-2@mail.com";
+  const bannedEstablishmentSiret: SiretDto = "00000000000005";
+  const bannedEstablishmentEmail: Email = "banned@mail.com";
 
   const establishmentAdmin = new UserBuilder().withId(uuid()).build();
   const establishmentAdminRight: EstablishmentUserRight = {
@@ -39,6 +42,7 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
   let db: KyselyDb;
   let establishmentMarketingRepository: PgEstablishmentMarketingRepository;
   let deletedEstablishmentRepository: PgDeletedEstablishmentRepository;
+  let bannedEstablishmentRepository: PgBannedEstablishmentRepository;
   let establishmentAggregateRepository: PgEstablishmentAggregateRepository;
   let establishmentMarketingGateway: InMemoryEstablishmentMarketingGateway;
 
@@ -54,6 +58,7 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
   beforeEach(async () => {
     await db.deleteFrom("marketing_establishment_contacts").execute();
     await db.deleteFrom("establishments_deleted").execute();
+    await db.deleteFrom("banned_establishments").execute();
     await db.deleteFrom("establishments__users").execute();
     await db.deleteFrom("immersion_offers").execute();
     await db.deleteFrom("establishments_location_infos").execute();
@@ -67,6 +72,7 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
       db,
     );
     deletedEstablishmentRepository = new PgDeletedEstablishmentRepository(db);
+    bannedEstablishmentRepository = new PgBannedEstablishmentRepository(db);
     establishmentAggregateRepository = new PgEstablishmentAggregateRepository(
       db,
     );
@@ -113,6 +119,12 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
       siret,
       createdAt: new Date("2024-01-01"),
       deletedAt: new Date("2024-06-01"),
+    });
+
+  const saveBannedEstablishment = (siret: SiretDto) =>
+    bannedEstablishmentRepository.banEstablishment({
+      siret,
+      establishmentBannishmentJustification: "Le cidre n'est pas breton",
     });
 
   const saveEstablishment = (siret: SiretDto) =>
@@ -174,6 +186,52 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
     );
     expectToEqual(establishmentMarketingGateway.marketingEstablishments, [
       marketingEstablishment,
+    ]);
+  });
+
+  it("deletes the marketing contact of a banned establishment, even though it is still registered", async () => {
+    await saveMarketingContact(
+      bannedEstablishmentSiret,
+      bannedEstablishmentEmail,
+    );
+    await saveEstablishment(bannedEstablishmentSiret);
+    await saveBannedEstablishment(bannedEstablishmentSiret);
+
+    const result = await deleteMarketingContactsOfDeletedEstablishments({
+      db,
+      establishmentMarketingGateway,
+      dryRun: false,
+    });
+
+    expectToEqual(result.deleted, [
+      { siret: bannedEstablishmentSiret, email: bannedEstablishmentEmail },
+    ]);
+    expectToEqual(result.errors, []);
+    expectToEqual(
+      await establishmentMarketingRepository.getBySiret(
+        bannedEstablishmentSiret,
+      ),
+      undefined,
+    );
+    expectToEqual(establishmentMarketingGateway.marketingEstablishments, []);
+  });
+
+  it("lists only once the marketing contact of an establishment which is both deleted and banned", async () => {
+    await saveMarketingContact(
+      deletedEstablishmentSiret,
+      deletedEstablishmentEmail,
+    );
+    await saveDeletedEstablishment(deletedEstablishmentSiret);
+    await saveBannedEstablishment(deletedEstablishmentSiret);
+
+    const result = await deleteMarketingContactsOfDeletedEstablishments({
+      db,
+      establishmentMarketingGateway,
+      dryRun: true,
+    });
+
+    expectToEqual(result.candidates, [
+      { siret: deletedEstablishmentSiret, email: deletedEstablishmentEmail },
     ]);
   });
 
