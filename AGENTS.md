@@ -19,4 +19,6 @@ Relevant accepted ADRs are linked from those skills. Do not treat records marked
 
 Prefer the patterns already used by the nearest code in the same domain. Keep changes scoped to the request and preserve existing public contracts unless the task requires changing them.
 
+Follow the accepted [code comments ADR](doc/adr/code/comments.md): do not add comments describing code behavior; express intent through naming. Only linter-ignore comments and technical-adapter comments linking third-party documentation or highlighting a point of attention are allowed. Do not add TODO comments. Replace any existing TODO encountered during development with a TECH task.
+
 Run `pnpm fullcheck` after significant changes before handing off.
