@@ -26,6 +26,8 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
   const secondDeletedEstablishmentEmail: Email = "deleted-2@mail.com";
   const bannedEstablishmentSiret: SiretDto = "00000000000005";
   const bannedEstablishmentEmail: Email = "banned@mail.com";
+  const bannedLeadSiret: SiretDto = "00000000000006";
+  const bannedLeadEmail: Email = "banned-lead@mail.com";
 
   const establishmentAdmin = new UserBuilder().withId(uuid()).build();
   const establishmentAdminRight: EstablishmentUserRight = {
@@ -211,6 +213,27 @@ describe("deleteMarketingContactsOfDeletedEstablishments", () => {
       await establishmentMarketingRepository.getBySiret(
         bannedEstablishmentSiret,
       ),
+      undefined,
+    );
+    expectToEqual(establishmentMarketingGateway.marketingEstablishments, []);
+  });
+
+  it("deletes the marketing contact of a banned siret which is not a registered establishment", async () => {
+    await saveMarketingContact(bannedLeadSiret, bannedLeadEmail);
+    await saveBannedEstablishment(bannedLeadSiret);
+
+    const result = await deleteMarketingContactsOfDeletedEstablishments({
+      db,
+      establishmentMarketingGateway,
+      dryRun: false,
+    });
+
+    expectToEqual(result.deleted, [
+      { siret: bannedLeadSiret, email: bannedLeadEmail },
+    ]);
+    expectToEqual(result.errors, []);
+    expectToEqual(
+      await establishmentMarketingRepository.getBySiret(bannedLeadSiret),
       undefined,
     );
     expectToEqual(establishmentMarketingGateway.marketingEstablishments, []);
