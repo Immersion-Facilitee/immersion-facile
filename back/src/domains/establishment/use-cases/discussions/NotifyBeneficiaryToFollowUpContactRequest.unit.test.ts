@@ -6,7 +6,6 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
 } from "shared";
-import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { makeSaveNotificationsBatchAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {
@@ -55,7 +54,6 @@ describe("NotifyBeneficiaryToFollowUpContactRequest", () => {
               uuidGenerator,
               new CustomTimeGateway(),
             ),
-          config: new AppConfigBuilder().build(),
         },
       });
 

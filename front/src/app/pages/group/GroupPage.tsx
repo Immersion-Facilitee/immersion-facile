@@ -18,6 +18,7 @@ import type {
   InternalOfferDto,
 } from "shared";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
+import { groupMetaContent } from "src/app/contents/meta/metaContents";
 import { outOfReduxDependencies } from "src/config/dependencies";
 import { makeStyles } from "tss-react/dsfr";
 import type { Route } from "type-route";

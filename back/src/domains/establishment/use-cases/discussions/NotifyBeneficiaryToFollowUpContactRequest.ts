@@ -1,5 +1,4 @@
 import { type DiscussionStatus, errors, withDiscussionIdSchema } from "shared";
-import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import type { SaveNotificationsBatchAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
@@ -13,7 +12,6 @@ export const makeNotifyBeneficiaryToFollowUpContactRequest = useCaseBuilder(
   .withInput(withDiscussionIdSchema)
   .withDeps<{
     saveNotificationsBatchAndRelatedEvent: SaveNotificationsBatchAndRelatedEvent;
-    config: AppConfig;
   }>()
   .build(async ({ inputParams: { discussionId }, uow, deps }) => {
     const discussion = await uow.discussionRepository.getById(discussionId);
@@ -33,8 +31,8 @@ export const makeNotifyBeneficiaryToFollowUpContactRequest = useCaseBuilder(
     if (!establishment)
       throw errors.establishment.notFound({ siret: discussion.siret });
 
-    const userRightToContact = establishment.userRights.find((userRight) =>
-      userRight.isMainContactByPhone ? userRight : null,
+    const userRightToContact = establishment.userRights.find(
+      (userRight) => userRight.isMainContactByPhone,
     );
     if (!userRightToContact)
       throw errors.establishment.contactUserNotFound({
