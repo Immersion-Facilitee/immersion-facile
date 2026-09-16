@@ -1,4 +1,4 @@
-import { addDays, subDays, subMonths } from "date-fns";
+import { addDays, startOfDay, subDays, subMonths } from "date-fns";
 import { toPairs } from "ramda";
 import {
   type AgencyId,
@@ -145,7 +145,7 @@ const getNewConventions = (
     filters: {
       withAgencyIds: [agencyId],
       withStatuses: ["PARTIALLY_SIGNED", "READY_TO_SIGN"],
-      withDateSubmission: { from: subDays(now, 1) },
+      withDateSubmission: { from: startOfDay(subDays(now, 1)) },
     },
   });
 

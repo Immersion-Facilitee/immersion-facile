@@ -1,6 +1,7 @@
 import {
   addDays,
   addMilliseconds,
+  startOfDay,
   subDays,
   subMilliseconds,
   subMonths,
@@ -33,7 +34,7 @@ import {
   type NotifyConventionSummaryToAgency,
 } from "./NotifyConventionSummaryToAgency";
 
-describe("NotifyConventionSummary", () => {
+describe("NotifyConventionSummaryToAgency", () => {
   const now = new Date();
   const inFiveDays = addDays(now, 5);
   const afterFiveDays = addMilliseconds(inFiveDays, 1);
@@ -163,7 +164,7 @@ describe("NotifyConventionSummary", () => {
         validatedConventionOneDayAgo,
       )
         .withId(uuid())
-        .withDateValidation(beforeOneMonthAgo.toISOString())
+        .withDateValidation(beforeOneDayAgo.toISOString())
         .build();
 
       uow.conventionRepository.setConventions([
@@ -221,30 +222,33 @@ describe("NotifyConventionSummary", () => {
   });
 
   describe("new conventions", () => {
+    const startOfOneDayAgo = startOfDay(oneDayAgo);
+    const beforeStartOfOneDayAgo = subMilliseconds(startOfOneDayAgo, 1);
+
     it("include conventions only with status PARTIALLY_SIGNED or READY_TO_SIGN submitted from one day ago", async () => {
       const partiallySignedConventionOneDayAgo = new ConventionDtoBuilder()
         .withId(uuid())
         .withStatus("PARTIALLY_SIGNED")
-        .withDateSubmission(oneDayAgo.toISOString())
+        .withDateSubmission(startOfOneDayAgo.toISOString())
         .build();
 
       const readyToSignConventionOneDayAgo = new ConventionDtoBuilder()
         .withId(uuid())
         .withStatus("READY_TO_SIGN")
-        .withDateSubmission(oneDayAgo.toISOString())
+        .withDateSubmission(startOfOneDayAgo.toISOString())
         .build();
 
       const partiallySignedConventionBeforeOneDayAgo =
         new ConventionDtoBuilder()
           .withId(uuid())
           .withStatus("PARTIALLY_SIGNED")
-          .withDateSubmission(beforeOneDayAgo.toISOString())
+          .withDateSubmission(beforeStartOfOneDayAgo.toISOString())
           .build();
 
       const readyToSignConventionBeforeOneDayAgo = new ConventionDtoBuilder()
         .withId(uuid())
         .withStatus("READY_TO_SIGN")
-        .withDateSubmission(beforeOneDayAgo.toISOString())
+        .withDateSubmission(beforeStartOfOneDayAgo.toISOString())
         .build();
 
       uow.conventionRepository.setConventions([
@@ -286,7 +290,7 @@ describe("NotifyConventionSummary", () => {
         const submittedConventionOneDayAgoWithStatus =
           new ConventionDtoBuilder()
             .withId(uuid())
-            .withDateSubmission(oneDayAgo.toISOString())
+            .withDateSubmission(startOfOneDayAgo.toISOString())
             .withStatus(status)
             .build();
 
