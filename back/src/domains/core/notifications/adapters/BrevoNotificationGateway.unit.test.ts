@@ -77,7 +77,7 @@ describe("BrevoNotificationGateway unit", () => {
 
     it("should not send email if recipient are not in white list", async () => {
       await notificationGateway.sendEmail({
-        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        kind: "TEST_EMAIL",
         recipients: ["i-am-not-allowed@mail.net"],
         params: {
           scheduleText: "",
@@ -89,7 +89,7 @@ describe("BrevoNotificationGateway unit", () => {
 
     it("should filter emails according to predicate", async () => {
       await notificationGateway.sendEmail({
-        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        kind: "TEST_EMAIL",
         recipients: [
           "beneficiary@gmail.com",
           "advisor@gmail.com",

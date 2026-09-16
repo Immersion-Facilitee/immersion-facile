@@ -483,7 +483,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
         "NEW_CONVENTION_REVIEW_FOR_ELIGIBILITY_OR_VALIDATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
         "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
-        "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
       ],
     );
 
@@ -505,7 +504,13 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
         )
         .map((email) => ({
           recipients: email.recipients,
-          magicLink: email.params.magicLink,
+          magicLink: makeRouteAbsoluteUrl({
+            baseUrl: email.params.baseUrl,
+            route: frontRoutes.manageConventionConnectedUser({
+              conventionId: email.params.convention.id,
+              loginPersona: email.params.loginPersona,
+            }),
+          }),
         })),
       [
         {
@@ -516,10 +521,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
           recipients: [
             initialConvention.signatories.establishmentRepresentative.email,
           ],
-          magicLink: manageConventionUrl("professional"),
-        },
-        {
-          recipients: [validator.email],
           magicLink: manageConventionUrl("professional"),
         },
       ],

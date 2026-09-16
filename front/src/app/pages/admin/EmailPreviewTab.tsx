@@ -10,6 +10,7 @@ import { useState } from "react";
 import { ImmersionTextField } from "react-design-system";
 import {
   addressDtoToString,
+  ConventionDtoBuilder,
   domElementIds,
   type EmailTemplatesByName,
   emailTemplatesByName,
@@ -735,20 +736,10 @@ export const defaultEmailValueByEmailKind: {
   },
   VALIDATED_CONVENTION_FINAL_CONFIRMATION: {
     agencyLogoUrl: defaultEmailPreviewUrl,
-    beneficiaryBirthdate: "BENEFICIARY_BIRTHDATE",
-    beneficiaryFirstName: "BENEFICIARY_FIRST_NAME",
-    beneficiaryLastName: "BENEFICIARY_LAST_NAME",
-    businessName: "BUSINESS_NAME",
-    conventionId: "CONVENTION_ID",
-    dateEnd: "DATE_END",
-    dateStart: "DATE_START",
-    emergencyContactInfos: "EMERGENCY_CONTACT_INFOS",
-    establishmentTutorName: "ESTABLISHMENT_TUTOR_NAME",
-    immersionAppellationLabel: "IMMERSION_APPELLATION_LABEL",
-    internshipKind: "immersion",
-    magicLink: "MAGIC_LINK",
-    validatorName: "VALIDATOR_NAME",
+    baseUrl: "http://IMMERSION_FACILE_BASE_URL",
+    loginPersona: "beneficiary",
     agencyName: "AGENCY_NAME",
+    convention: new ConventionDtoBuilder().build(),
   },
   ESTABLISHMENT_USER_RIGHTS_UPDATED: {
     businessName: "BUSINESS_NAME",
