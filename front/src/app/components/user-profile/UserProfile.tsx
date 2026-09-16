@@ -10,7 +10,7 @@ import {
   type ConnectedUser,
   domElementIds,
   frontRoutes,
-  partitionEstablishmentRightsByStatus,
+  partitionUserEstablishmentRightsByStatus,
   type UserId,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
@@ -121,12 +121,12 @@ export const UserProfile = ({
 
   useScrollTo(!!useFeedbackTopic("agency-user-right-self"));
 
-  const { acceptedEstablishmentRights, pendingEstablishmentRights } =
-    partitionEstablishmentRightsByStatus(userWithRights.establishments);
+  const { acceptedUserEstablishmentsRights, pendingUserEstablishmentsRights } =
+    partitionUserEstablishmentRightsByStatus(userWithRights.establishments);
 
   const allDisplayedEstablishmentsRights = [
-    ...acceptedEstablishmentRights,
-    ...pendingEstablishmentRights,
+    ...acceptedUserEstablishmentsRights,
+    ...pendingUserEstablishmentsRights,
   ];
 
   const userAgenciesRights = userWithRights.agencyRights;
@@ -195,24 +195,24 @@ export const UserProfile = ({
                 </Button>
               </div>
             )}
-            {pendingEstablishmentRights.length > 0 && (
+            {pendingUserEstablishmentsRights.length > 0 && (
               <>
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
                   Mes demandes d'accès envoyées
                 </h3>
                 <EstablishmentsTablesSection
-                  withEstablishmentData={pendingEstablishmentRights}
+                  withEstablishmentData={pendingUserEstablishmentsRights}
                   isBackofficeAdmin={currentUser?.isBackofficeAdmin}
                 />
               </>
             )}
-            {acceptedEstablishmentRights.length > 0 && (
+            {acceptedUserEstablishmentsRights.length > 0 && (
               <>
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
                   Mes rattachements entreprises
                 </h3>
                 <EstablishmentsTablesSection
-                  withEstablishmentData={acceptedEstablishmentRights}
+                  withEstablishmentData={acceptedUserEstablishmentsRights}
                   isBackofficeAdmin={currentUser?.isBackofficeAdmin}
                 />
               </>

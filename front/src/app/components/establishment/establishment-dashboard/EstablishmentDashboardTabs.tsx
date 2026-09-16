@@ -14,7 +14,7 @@ import {
   frontRoutes,
   immersionFacileHelpdeskRootUrl,
   onlyAdminUserRightsWithStatusAccepted,
-  partitionEstablishmentRightsByStatus,
+  partitionUserEstablishmentRightsByStatus,
   type UserEstablishmentRightDetails,
 } from "shared";
 import { ConventionTemplatesList } from "src/app/components/agency/agency-dashboard/ConventionTemplatesList";
@@ -141,8 +141,8 @@ const makeEstablishmentDashboardTabs = (
   const establishmentsArray = establishments
     ? establishments.filter(filterActiveEstablishmentsForUser)
     : [];
-  const { acceptedEstablishmentRights, pendingEstablishmentRights } =
-    partitionEstablishmentRightsByStatus(establishmentsArray);
+  const { acceptedUserEstablishmentsRights, pendingUserEstablishmentsRights } =
+    partitionUserEstablishmentRightsByStatus(establishmentsArray);
   const userIsOnboarding = establishmentsArray.length === 0;
   const userCanManageEstablishments = establishmentsArray.length > 0;
 
@@ -194,8 +194,8 @@ const makeEstablishmentDashboardTabs = (
             tabId: "fiche-entreprise",
             content: (
               <ManageEstablishmentsTab
-                establishments={acceptedEstablishmentRights}
-                pendingEstablishmentRights={pendingEstablishmentRights}
+                establishments={acceptedUserEstablishmentsRights}
+                pendingEstablishmentRights={pendingUserEstablishmentsRights}
                 isBackofficeAdmin={isBackofficeAdmin}
               />
             ),
