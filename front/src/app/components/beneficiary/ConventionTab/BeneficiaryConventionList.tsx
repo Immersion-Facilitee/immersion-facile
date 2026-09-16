@@ -136,5 +136,6 @@ const conventionListToTableData = (
       conventionId={convention.conventionId}
       conventionDateEnd={convention.dateEnd}
       isDisabled={!isBeneficiaryManageConventionEnabled}
+      id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
     />,
   ]);
