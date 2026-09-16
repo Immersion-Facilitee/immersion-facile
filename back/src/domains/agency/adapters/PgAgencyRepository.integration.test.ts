@@ -1,4 +1,4 @@
-import { addMilliseconds, subDays, subMilliseconds } from "date-fns";
+import { addDays, addMilliseconds, subDays, subMilliseconds } from "date-fns";
 import type { Pool } from "pg";
 import {
   AgencyDtoBuilder,
@@ -1538,8 +1538,8 @@ describe.each(adapterKind)(
 
       describe("filter updatedAtBefore", () => {
         const baseDate = new Date("2024-01-15T10:00:00Z");
-        const dateBefore = subDays(baseDate, 5); // 2024-01-10
-        const dateAfter = subDays(baseDate, -5); // 2024-01-20
+        const dateBefore = subDays(baseDate, 5);
+        const dateAfter = addDays(baseDate, 5);
 
         const agencyUpdatedBefore = toAgencyWithRights(
           agency1builder
@@ -1600,7 +1600,7 @@ describe.each(adapterKind)(
         });
 
         it("returns all agencies when filter date is after all agencies", async () => {
-          const futureDate = subDays(dateAfter, -10);
+          const futureDate = addDays(dateAfter, 10);
           const { data: agencies } = await agencyRepository.getAgencies({
             filters: { updatedAtBefore: futureDate },
           });

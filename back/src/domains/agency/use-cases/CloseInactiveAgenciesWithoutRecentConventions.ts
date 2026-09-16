@@ -53,7 +53,10 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
     const { uowPerformer } = deps;
     const { numberOfMonthsWithoutConvention } = inputParams;
     const now = deps.timeGateway.now();
-    const noConventionSince = subMonths(now, numberOfMonthsWithoutConvention);
+    const agencyNotUpdatedOrNoConventionSince = subMonths(
+      now,
+      numberOfMonthsWithoutConvention,
+    );
 
     const filters: GetAgenciesFilters = {
       status: ["active", "from-api-PE"] satisfies AgencyStatus[],
@@ -68,7 +71,7 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
         "chambre-agriculture",
         "autre",
       ] satisfies AgencyKind[],
-      updatedAtBefore: noConventionSince,
+      updatedAtBefore: agencyNotUpdatedOrNoConventionSince,
     };
 
     const perPage = deps.batchSize;
@@ -85,7 +88,11 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
           });
         totalPages = pagination.totalPages;
         agenciesToClose.push(
-          ...(await getAgenciesToClose(activeAgencies, uow, noConventionSince)),
+          ...(await getAgenciesToClose(
+            activeAgencies,
+            uow,
+            agencyNotUpdatedOrNoConventionSince,
+          )),
         );
       });
       page += 1;
