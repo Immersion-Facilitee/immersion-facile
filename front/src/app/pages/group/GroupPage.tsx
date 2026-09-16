@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { Loader, MainWrapper, SectionTextEmbed } from "react-design-system";
+import { Helmet } from "react-helmet-async";
 import type {
   frontRoutes,
   Group,
@@ -121,8 +122,14 @@ const GroupPageContent = ({ group, results }: GroupWithResults) => {
     }
   };
 
+  const { title, description } = groupMetaContent(group.name);
+
   return (
     <>
+      <Helmet>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+      </Helmet>
       <section
         className={cx(fr.cx("fr-py-8w", "fr-py-md-16w"), classes.heroHeader)}
       >
