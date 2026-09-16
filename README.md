@@ -3,7 +3,7 @@
 Le but du projet immersion facile est de faciliter les immersions professionnelles.
 Il y a pour cela plusieurs axes de travail :
 
-- Dématérialiser entièrement les demandes d'immersion et les interactions des conseillers pôle emploi, missions locales, etc.
+- Dématérialiser entièrement les demandes d'immersion et les interactions des conseillers France travail, Missions locales, etc.
 - Constituer un annuaire des entreprises qui sont susceptible d'accueillir en immersion
 - Rendre les immersions recherchables par les bénéficiaires
 
