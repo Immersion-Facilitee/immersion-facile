@@ -73,7 +73,7 @@ export const EstablishmentDashboardTabs = ({
     !currentUser.establishments?.some(
       (establishment) =>
         establishment.siret === route.params.siret &&
-        establishment.role === "establishment-admin",
+        onlyAdminUserRightsWithStatusAccepted(establishment),
     );
 
   if (shouldRedirectToMainTab) {
@@ -140,8 +140,8 @@ const makeEstablishmentDashboardTabs = (
   const establishmentsArray = establishments
     ? establishments.filter(filterActiveEstablishmentsForUser)
     : [];
-  const { pendingEstablishmentRights } =
-    partitionEstablishmentRightsByStatus(establishments);
+  const { acceptedEstablishmentRights, pendingEstablishmentRights } =
+    partitionEstablishmentRightsByStatus(establishmentsArray);
   const userIsOnboarding = establishmentsArray.length === 0;
   const userCanManageEstablishments = establishmentsArray.length > 0;
 
@@ -193,10 +193,7 @@ const makeEstablishmentDashboardTabs = (
             tabId: "fiche-entreprise",
             content: (
               <ManageEstablishmentsTab
-                establishments={establishmentsArray.filter(
-                  (establishment) =>
-                    establishment.role === "establishment-admin",
-                )}
+                establishments={acceptedEstablishmentRights}
                 pendingEstablishmentRights={pendingEstablishmentRights}
                 isBackofficeAdmin={isBackofficeAdmin}
               />
