@@ -1,5 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
+import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Highlight from "@codegouvfr/react-dsfr/Highlight";
 import Tabs from "@codegouvfr/react-dsfr/Tabs";
 import { equals } from "ramda";
@@ -255,20 +256,17 @@ const isEstablishmentDashboardTab = (
 const OnboardingTabContent = () => (
   <section className={fr.cx("fr-grid-row", "fr-grid-row--center")}>
     <div className={fr.cx("fr-col-12", "fr-col-lg-7")}>
-      <h3>Accès limité</h3>
-      <p>
-        Cet onglet n’est pas accessible car aucune entreprise n’est actuellement
-        rattachée à ce compte.
-      </p>
+      <h5 className={fr.cx("fr-h5")}>
+        Vous n’êtes rattaché·e à aucun établissement pour le moment
+      </h5>
       <p>Cette situation peut se produire dans les cas suivants :</p>
       <ul>
-        <li>l’entreprise n’a pas encore été créée sur Immersion Facilitée,</li>
         <li>
-          une autre adresse email est enregistrée comme contact de l’entreprise,
+          l'établissement n’a pas encore été créé sur Immersion Facilitée,
         </li>
         <li>
-          un administrateur de l’entreprise ne vous a pas encore ajouté comme
-          utilisateur.
+          une autre adresse email est enregistrée comme contact de
+          l'établissement,
         </li>
       </ul>
       <p>
@@ -290,17 +288,37 @@ const OnboardingTabContent = () => (
           target="_blank"
           rel="noreferrer"
         >
-          le référencement d’une entreprise
+          le référencement d’un établissement
         </a>
         .
       </Highlight>
-      <Button
-        {...frontRoutes.formEstablishment().link}
-        iconId="fr-icon-add-line"
-        iconPosition="left"
-      >
-        Créer une entreprise
-      </Button>
+      <ButtonsGroup
+        buttons={[
+          {
+            id: domElementIds.establishmentDashboard.manageEstablishments
+              .createEstablishment,
+            priority: "secondary",
+            onClick: () => {
+              frontRoutes.formEstablishment().push();
+            },
+            iconId: "fr-icon-add-line",
+            children: "Créer un nouvel établissement",
+          },
+          {
+            id: domElementIds.myAccountEstablishmentRegistration
+              .registerEstablishmentButton,
+
+            priority: "primary",
+            onClick: () => {
+              frontRoutes.myAccountEstablishmentRegistration().push();
+            },
+            iconId: "fr-icon-add-line",
+            children: "Se rattacher à un établissement",
+          },
+        ]}
+        inlineLayoutWhen="always"
+        className={fr.cx("fr-ml-auto")}
+      />
     </div>
     <div
       className={fr.cx(
