@@ -149,6 +149,7 @@ import { makeAddExchangeToDiscussion } from "../../domains/establishment/use-cas
 import { makeGetDiscussionById } from "../../domains/establishment/use-cases/discussions/GetDiscussionById";
 import { makeGetDiscussionEstablishmentContactInfo } from "../../domains/establishment/use-cases/discussions/GetDiscussionEstablishmentContactInfo";
 import { makeGetDiscussionsForUser } from "../../domains/establishment/use-cases/discussions/GetDiscussionsForUser";
+import { makeGetDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents } from "../../domains/establishment/use-cases/discussions/GetDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents";
 import { makeMarkDiscussionDeprecatedAndNotify } from "../../domains/establishment/use-cases/discussions/MarkDiscussionDeprecatedAndNotify";
 import { makeMarkDiscussionLinkedToConvention } from "../../domains/establishment/use-cases/discussions/MarkDiscussionLinkedToConvention";
 import { makeNotifyBeneficiaryToFollowUpContactRequest } from "../../domains/establishment/use-cases/discussions/NotifyBeneficiaryToFollowUpContactRequest";
@@ -1166,7 +1167,12 @@ export const createUseCases = ({
     notifyBeneficiaryToFollowUpContactRequest:
       makeNotifyBeneficiaryToFollowUpContactRequest({
         uowPerformer,
-        deps: { saveNotificationsBatchAndRelatedEvent, config },
+        deps: { saveNotificationsBatchAndRelatedEvent },
+      }),
+    getDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents:
+      makeGetDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents({
+        uowPerformer,
+        deps: { timeGateway, createNewEvent },
       }),
     getConventionDraftById: makeGetConventionDraftById({ uowPerformer }),
     deleteConventionDraft: makeDeleteConventionDraft({ uowPerformer }),

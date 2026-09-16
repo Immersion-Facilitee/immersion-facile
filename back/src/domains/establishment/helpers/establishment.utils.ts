@@ -5,8 +5,8 @@ export const isEstablishmentReachableByPhoneAfter15Days = (
 ): boolean => {
   return (
     establishmentAggregate.establishment.contactMode === "EMAIL" &&
-    establishmentAggregate.userRights.some(
+    !!establishmentAggregate.userRights.find(
       (right) => right.isMainContactByPhone,
-    )
+    )?.phone
   );
 };
