@@ -10,17 +10,17 @@ export type PendingUserEstablishmentRightDetails = Extract<
   { status: "PENDING" }
 >;
 
-export const partitionEstablishmentRightsByStatus = (
-  establishments: UserEstablishmentRightDetails[] = [],
+export const partitionUserEstablishmentRightsByStatus = (
+  establishmentUserRights: UserEstablishmentRightDetails[] = [],
 ): {
-  acceptedEstablishmentRights: AcceptedUserEstablishmentRightDetails[];
-  pendingEstablishmentRights: PendingUserEstablishmentRightDetails[];
+  acceptedUserEstablishmentsRights: AcceptedUserEstablishmentRightDetails[];
+  pendingUserEstablishmentsRights: PendingUserEstablishmentRightDetails[];
 } => ({
-  acceptedEstablishmentRights: establishments.filter(
+  acceptedUserEstablishmentsRights: establishmentUserRights.filter(
     (establishment): establishment is AcceptedUserEstablishmentRightDetails =>
       establishment.status === "ACCEPTED",
   ),
-  pendingEstablishmentRights: establishments.filter(
+  pendingUserEstablishmentsRights: establishmentUserRights.filter(
     (establishment): establishment is PendingUserEstablishmentRightDetails =>
       establishment.status === "PENDING",
   ),
