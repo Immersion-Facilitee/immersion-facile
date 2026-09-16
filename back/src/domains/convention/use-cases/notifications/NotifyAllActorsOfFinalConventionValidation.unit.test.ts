@@ -1,24 +1,27 @@
 import {
+  type AgencyDto,
   AgencyDtoBuilder,
   type BeneficiaryCurrentEmployer,
   type BeneficiaryRepresentative,
   ConnectedUserBuilder,
+  type ConventionDto,
   ConventionDtoBuilder,
-  type ConventionRole,
-  type EmailNotification,
+  type Email,
+  type EmailParamsByEmailType,
   type EstablishmentRepresentative,
   type EstablishmentTutor,
   type FtConnectIdentity,
   type FtConnectImmersionAdvisorDto,
+  type LoginPersona,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../../utils/agency";
-import { expectEmailFinalValidationConfirmationParamsMatchingConvention } from "../../../core/notifications/adapters/InMemoryNotificationRepository";
 import {
-  makeSaveNotificationAndRelatedEvent,
-  type WithNotificationIdAndKind,
-} from "../../../core/notifications/helpers/Notification";
+  type ExpectSavedNotificationsAndEvents,
+  makeExpectSavedNotificationsAndEvents,
+} from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
+import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
@@ -32,10 +35,6 @@ import {
 } from "./NotifyAllActorsOfFinalConventionValidation";
 
 describe("NotifyAllActorsOfFinalConventionValidation", () => {
-  type ActorForNotification = {
-    role: ConventionRole;
-    email: string;
-  };
   const establishmentTutorEmail = "establishment-tutor@mail.com";
   const establishmentRepresentativeEmail =
     "establishment-representativ@gmail.com";
@@ -118,392 +117,340 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
     .withFederatedIdentity(federatedIdentity)
     .build();
 
-  const defaultAgency = AgencyDtoBuilder.create(
+  const agency = AgencyDtoBuilder.create(
     validConventionWithSameTutorAndRepresentative.agencyId,
   ).build();
 
   let uow: InMemoryUnitOfWork;
   let notifyAllActorsOfFinalConventionValidation: NotifyAllActorsOfFinalConventionValidation;
   let config: AppConfig;
+  let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
 
   beforeEach(() => {
     config = new AppConfigBuilder({}).build();
     uow = createInMemoryUow();
-    const timeGateway = new CustomTimeGateway();
+    expectSavedNotificationsAndEvents = makeExpectSavedNotificationsAndEvents(
+      uow.notificationRepository,
+      uow.outboxRepository,
+    );
     notifyAllActorsOfFinalConventionValidation =
       makeNotifyAllActorsOfFinalConventionValidation({
         uowPerformer: new InMemoryUowPerformer(uow),
         deps: {
           saveNotificationAndRelatedEvent: makeSaveNotificationAndRelatedEvent(
             new UuidV4Generator(),
-            timeGateway,
+            new CustomTimeGateway(),
           ),
           config,
         },
       });
 
     uow.agencyRepository.agencies = [
-      toAgencyWithRights(defaultAgency, {
+      toAgencyWithRights(agency, {
         [counsellor.id]: { isNotifiedByEmail: true, roles: ["counsellor"] },
         [validator.id]: {
           isNotifiedByEmail: true,
-          roles: ["validator", "counsellor"],
+          roles: ["validator"],
         },
       }),
     ];
     uow.userRepository.users = [counsellor, validator];
   });
 
-  describe("NotifyAllActorsOfFinalApplicationValidation sends confirmation email to all actors", () => {
-    it("Notify Default actors: beneficiary, establishment representative, agency counsellor, agency validator that convention is validated.", async () => {
-      const actors: ActorForNotification[] = [
-        {
-          role: "beneficiary",
-          email:
-            validConventionWithSameTutorAndRepresentative.signatories
-              .beneficiary.email,
-        },
-        {
-          role: "establishment-representative",
-          email: establishmentRepresentativeEmail,
-        },
-        {
-          role: "validator",
-          email: validator.email,
-        },
-        {
-          role: "counsellor",
-          email: counsellor.email,
-        },
-      ];
-
-      await notifyAllActorsOfFinalConventionValidation.execute({
-        convention: validConventionWithSameTutorAndRepresentative,
-      });
-
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
-
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(4);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          validConventionWithSameTutorAndRepresentative,
-          config,
-          actor.role,
-        );
-      });
+  it("Notify Default actors: beneficiary, establishment representative, agency counsellor, agency validator that convention is validated.", async () => {
+    await notifyAllActorsOfFinalConventionValidation.execute({
+      convention: validConventionWithSameTutorAndRepresentative,
     });
 
-    it("With beneficiary current employer", async () => {
-      const actors: ActorForNotification[] = [
-        {
-          role: "beneficiary",
-          email:
-            validConventionWithSameTutorAndRepresentative.signatories
-              .beneficiary.email,
-        },
-        {
-          role: "establishment-representative",
-          email: establishmentRepresentativeEmail,
-        },
-        {
-          role: "beneficiary-current-employer",
-          email: beneficiaryCurrentEmployerEmail,
-        },
-        {
-          role: "validator",
-          email: validator.email,
-        },
-        {
-          role: "counsellor",
-          email: counsellor.email,
-        },
-      ];
+    const expectedEmailsAndPersonas: {
+      email: Email;
+      loginPersona: LoginPersona;
+    }[] = [
+      {
+        email:
+          validConventionWithSameTutorAndRepresentative.signatories.beneficiary
+            .email,
+        loginPersona: "beneficiary",
+      },
+      {
+        email: establishmentRepresentativeEmail,
+        loginPersona: "professional",
+      },
+      {
+        email: counsellor.email,
+        loginPersona: "professional",
+      },
+    ];
 
-      const conventionWithBeneficiaryCurrentEmployer = new ConventionDtoBuilder(
-        validConventionWithSameTutorAndRepresentative,
-      )
-        .withBeneficiaryCurrentEmployer(currentEmployer)
+    expectSavedNotificationsAndEvents({
+      emails: expectedEmailsAndPersonas.map(({ email, loginPersona }) => ({
+        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        recipients: [email],
+        params: makeExpectedParams({
+          convention: validConventionWithSameTutorAndRepresentative,
+          agency,
+          config,
+          loginPersona,
+        }),
+      })),
+    });
+  });
+
+  it("With beneficiary current employer", async () => {
+    const conventionWithBeneficiaryCurrentEmployer = new ConventionDtoBuilder(
+      validConventionWithSameTutorAndRepresentative,
+    )
+      .withBeneficiaryCurrentEmployer(currentEmployer)
+      .build();
+
+    await notifyAllActorsOfFinalConventionValidation.execute({
+      convention: conventionWithBeneficiaryCurrentEmployer,
+    });
+
+    const expectedEmailsAndPersonas: {
+      email: Email;
+      loginPersona: LoginPersona;
+    }[] = [
+      {
+        email:
+          conventionWithBeneficiaryCurrentEmployer.signatories.beneficiary
+            .email,
+        loginPersona: "beneficiary",
+      },
+      {
+        email: establishmentRepresentativeEmail,
+        loginPersona: "professional",
+      },
+      {
+        email: beneficiaryCurrentEmployerEmail,
+        loginPersona: "beneficiary",
+      },
+      {
+        email: counsellor.email,
+        loginPersona: "professional",
+      },
+    ];
+
+    expectSavedNotificationsAndEvents({
+      emails: expectedEmailsAndPersonas.map(({ email, loginPersona }) => ({
+        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        recipients: [email],
+        params: makeExpectedParams({
+          convention: conventionWithBeneficiaryCurrentEmployer,
+          agency,
+          config,
+          loginPersona,
+        }),
+      })),
+    });
+  });
+
+  it("With beneficiary representative", async () => {
+    const conventionWithBeneficiaryRepresentative = new ConventionDtoBuilder(
+      validConventionWithSameTutorAndRepresentative,
+    )
+      .withBeneficiaryRepresentative(beneficiaryRepresentative)
+      .build();
+
+    await notifyAllActorsOfFinalConventionValidation.execute({
+      convention: conventionWithBeneficiaryRepresentative,
+    });
+
+    const expectedEmailsAndPersonas: {
+      email: Email;
+      loginPersona: LoginPersona;
+    }[] = [
+      {
+        email:
+          conventionWithBeneficiaryRepresentative.signatories.beneficiary.email,
+        loginPersona: "beneficiary",
+      },
+      {
+        email: establishmentRepresentativeEmail,
+        loginPersona: "professional",
+      },
+      {
+        email: beneficiaryRepresentativeEmail,
+        loginPersona: "beneficiary",
+      },
+      {
+        email: counsellor.email,
+        loginPersona: "professional",
+      },
+    ];
+
+    expectSavedNotificationsAndEvents({
+      emails: expectedEmailsAndPersonas.map(({ email, loginPersona }) => ({
+        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        recipients: [email],
+        params: makeExpectedParams({
+          convention: conventionWithBeneficiaryRepresentative,
+          agency,
+          config,
+          loginPersona,
+        }),
+      })),
+    });
+  });
+
+  it("With different establishment tutor and establishment representative", async () => {
+    const conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative =
+      new ConventionDtoBuilder(validConventionWithSameTutorAndRepresentative)
+        .withEstablishmentTutor(establishmentTutor)
         .build();
 
-      await notifyAllActorsOfFinalConventionValidation.execute({
-        convention: conventionWithBeneficiaryCurrentEmployer,
-      });
-
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
-
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(5);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          conventionWithBeneficiaryCurrentEmployer,
-          config,
-          actor.role,
-        );
-      });
+    await notifyAllActorsOfFinalConventionValidation.execute({
+      convention:
+        conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative,
     });
 
-    it("With beneficiary representative", async () => {
-      const actors: ActorForNotification[] = [
-        {
-          role: "beneficiary",
-          email:
-            validConventionWithSameTutorAndRepresentative.signatories
-              .beneficiary.email,
-        },
-        {
-          role: "establishment-representative",
-          email: establishmentRepresentativeEmail,
-        },
-        {
-          role: "beneficiary-representative",
-          email: beneficiaryRepresentativeEmail,
-        },
-        {
-          role: "validator",
-          email: validator.email,
-        },
-        {
-          role: "counsellor",
-          email: counsellor.email,
-        },
-      ];
+    const expectedEmailsAndPersonas: {
+      email: Email;
+      loginPersona: LoginPersona;
+    }[] = [
+      {
+        email:
+          conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative
+            .signatories.beneficiary.email,
+        loginPersona: "beneficiary",
+      },
+      {
+        email: establishmentRepresentativeEmail,
+        loginPersona: "professional",
+      },
+      {
+        email: establishmentTutorEmail,
+        loginPersona: "professional",
+      },
+      {
+        email: counsellor.email,
+        loginPersona: "professional",
+      },
+    ];
 
-      const conventionWithBeneficiaryRepresentative = new ConventionDtoBuilder(
-        validConventionWithSameTutorAndRepresentative,
-      )
-        .withBeneficiaryRepresentative(beneficiaryRepresentative)
+    expectSavedNotificationsAndEvents({
+      emails: expectedEmailsAndPersonas.map(({ email, loginPersona }) => ({
+        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        recipients: [email],
+        params: makeExpectedParams({
+          convention:
+            conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative,
+          agency,
+          config,
+          loginPersona,
+        }),
+      })),
+    });
+  });
+
+  it("With ftConnect Federated identity: beneficiary, establishment representative, agency counsellor & validator, and dedicated advisor", async () => {
+    await notifyAllActorsOfFinalConventionValidation.execute({
+      convention: conventionWithFederatedIdentity,
+    });
+
+    const expectedEmailsAndPersonas: {
+      email: Email;
+      loginPersona: LoginPersona;
+    }[] = [
+      {
+        email: conventionWithFederatedIdentity.signatories.beneficiary.email,
+        loginPersona: "beneficiary",
+      },
+      {
+        email: establishmentRepresentativeEmail,
+        loginPersona: "professional",
+      },
+
+      {
+        email: counsellor.email,
+        loginPersona: "professional",
+      },
+      {
+        email: ftAdvisor.email,
+        loginPersona: "professional",
+      },
+    ];
+
+    expectSavedNotificationsAndEvents({
+      emails: expectedEmailsAndPersonas.map(({ email, loginPersona }) => ({
+        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        recipients: [email],
+        params: makeExpectedParams({
+          convention: conventionWithFederatedIdentity,
+          agency,
+          config,
+          loginPersona,
+        }),
+      })),
+    });
+  });
+
+  it("With ftConnect Federated identity: beneficiary, establishment tutor, agency counsellor & validator, and no advisor", async () => {
+    const conventionWithFederatedIdentityButNoAdvisor =
+      new ConventionDtoBuilder(conventionWithFederatedIdentity)
+        .withFederatedIdentity({
+          provider: "ftConnect",
+          token: userFtExternalId,
+          payload: {
+            advisor: undefined,
+          },
+        })
         .build();
 
-      await notifyAllActorsOfFinalConventionValidation.execute({
-        convention: conventionWithBeneficiaryRepresentative,
-      });
-
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
-
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(5);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          conventionWithBeneficiaryRepresentative,
-          config,
-          actor.role,
-        );
-      });
+    await notifyAllActorsOfFinalConventionValidation.execute({
+      convention: conventionWithFederatedIdentityButNoAdvisor,
     });
 
-    it("With different establishment tutor and establishment representative", async () => {
-      const actors: ActorForNotification[] = [
-        {
-          role: "beneficiary",
-          email:
-            validConventionWithSameTutorAndRepresentative.signatories
-              .beneficiary.email,
-        },
-        {
-          role: "establishment-representative",
-          email: establishmentRepresentativeEmail,
-        },
-        {
-          role: "establishment-tutor",
-          email: establishmentTutorEmail,
-        },
-        {
-          role: "validator",
-          email: validator.email,
-        },
-        {
-          role: "counsellor",
-          email: counsellor.email,
-        },
-      ];
+    const expectedEmailsAndPersonas: {
+      email: Email;
+      loginPersona: LoginPersona;
+    }[] = [
+      {
+        email:
+          conventionWithFederatedIdentityButNoAdvisor.signatories.beneficiary
+            .email,
+        loginPersona: "beneficiary",
+      },
+      {
+        email: establishmentRepresentativeEmail,
+        loginPersona: "professional",
+      },
 
-      const conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative =
-        new ConventionDtoBuilder(validConventionWithSameTutorAndRepresentative)
-          .withEstablishmentTutor(establishmentTutor)
-          .build();
+      {
+        email: counsellor.email,
+        loginPersona: "professional",
+      },
+    ];
 
-      await notifyAllActorsOfFinalConventionValidation.execute({
-        convention:
-          conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative,
-      });
-
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
-
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(5);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          conventionWithDifferentEstablishmentTutorAndEstablishmentRepresentative,
+    expectSavedNotificationsAndEvents({
+      emails: expectedEmailsAndPersonas.map(({ email, loginPersona }) => ({
+        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        recipients: [email],
+        params: makeExpectedParams({
+          convention: conventionWithFederatedIdentityButNoAdvisor,
+          agency,
           config,
-          actor.role,
-        );
-      });
+          loginPersona,
+        }),
+      })),
     });
+  });
 
-    it("With ftConnect Federated identity: beneficiary, establishment representative, agency counsellor & validator, and dedicated advisor", async () => {
-      const actors: ActorForNotification[] = [
-        {
-          role: "beneficiary",
-          email:
-            validConventionWithSameTutorAndRepresentative.signatories
-              .beneficiary.email,
-        },
-        {
-          role: "establishment-representative",
-          email: establishmentRepresentativeEmail,
-        },
-        {
-          role: "validator",
-          email: validator.email,
-        },
-        {
-          role: "counsellor",
-          email: counsellor.email,
-        },
-        {
-          role: "validator",
-          email: peAdvisorEmail,
-        },
-      ];
-
-      await notifyAllActorsOfFinalConventionValidation.execute({
-        convention: conventionWithFederatedIdentity,
-      });
-
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
-
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(5);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          validConventionWithSameTutorAndRepresentative,
-          config,
-          actor.role,
-        );
-      });
-    });
-
-    it("With ftConnect Federated identity: beneficiary, establishment tutor, agency counsellor & validator, and no advisor", async () => {
-      const conventionWithFederatedIdentityButNoAdvisor =
-        new ConventionDtoBuilder(conventionWithFederatedIdentity)
-          .withFederatedIdentity({
-            provider: "ftConnect",
-            token: userFtExternalId,
-            payload: {
-              advisor: undefined,
-            },
-          })
-          .build();
-
-      const actors: ActorForNotification[] = [
-        {
-          role: "beneficiary",
-          email:
-            validConventionWithSameTutorAndRepresentative.signatories
-              .beneficiary.email,
-        },
-        {
-          role: "establishment-representative",
-          email: establishmentRepresentativeEmail,
-        },
-        {
-          role: "validator",
-          email: validator.email,
-        },
-        {
-          role: "counsellor",
-          email: counsellor.email,
-        },
-      ];
-
-      await notifyAllActorsOfFinalConventionValidation.execute({
-        convention: conventionWithFederatedIdentityButNoAdvisor,
-      });
-
-      const emailNotifications =
-        uow.notificationRepository.notifications.filter(
-          (notification): notification is EmailNotification =>
-            notification.kind === "email",
-        );
-
-      expect(uow.outboxRepository.events.map(({ payload }) => payload)).toEqual(
-        emailNotifications.map(
-          ({ id }): WithNotificationIdAndKind => ({ id, kind: "email" }),
-        ),
-      );
-      expect(emailNotifications).toHaveLength(4);
-
-      actors.forEach((actor, index) => {
-        expectEmailFinalValidationConfirmationParamsMatchingConvention(
-          [actor.email],
-          emailNotifications[index].templatedContent,
-          defaultAgency,
-          conventionWithFederatedIdentityButNoAdvisor,
-          config,
-          actor.role,
-        );
-      });
-    });
+  const makeExpectedParams = ({
+    agency,
+    config,
+    convention,
+    loginPersona,
+  }: {
+    convention: ConventionDto;
+    agency: AgencyDto;
+    config: AppConfig;
+    loginPersona: LoginPersona;
+  }): EmailParamsByEmailType["VALIDATED_CONVENTION_FINAL_CONFIRMATION"] => ({
+    convention: convention,
+    agencyLogoUrl: agency.logoUrl ?? undefined,
+    agencyName: agency.name,
+    baseUrl: config.immersionFacileBaseUrl,
+    loginPersona,
   });
 });

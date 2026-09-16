@@ -1,16 +1,10 @@
-import { parseISO } from "date-fns";
 import { uniqBy } from "ramda";
 import {
-  type AgencyDto,
-  type ConventionDto,
   type ConventionRole,
-  displayEmergencyContactInfos,
   type Email,
   errors,
-  frontRoutes,
-  getFormattedFirstnameAndLastname,
+  executeInSequence,
   loginPersonaByConventionRole,
-  makeRouteAbsoluteUrl,
   type TemplatedEmail,
   withConventionSchema,
 } from "shared";
@@ -28,6 +22,11 @@ type Deps = {
   config: AppConfig;
 };
 
+type EmailAndRole = {
+  role: ConventionRole;
+  email: Email;
+};
+
 export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
   "NotifyAllActorsOfFinalConventionValidation",
 )
@@ -42,124 +41,62 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
       throw errors.agency.notFound({ agencyId: convention.agencyId });
 
     const agency = await agencyWithRightToAgencyDto(uow, agencyWithRights);
+
     const conventionBeneficiaryAdvisor =
       convention.signatories.beneficiary.federatedIdentity?.payload?.advisor;
-    const conventionBeneficiaryAdvisorRole: ConventionRole = "validator";
-    const recipientsRoleAndEmail: { role: ConventionRole; email: Email }[] =
-      uniqBy(
-        (recipient) => recipient.email,
-        [
-          ...Object.values(convention.signatories).map((signatory) => ({
-            role: signatory.role,
-            email: signatory.email,
-          })),
-          ...(convention.signatories.establishmentRepresentative.email !==
-          convention.establishmentTutor.email
-            ? [
-                {
-                  role: convention.establishmentTutor.role,
-                  email: convention.establishmentTutor.email,
-                },
-              ]
-            : []),
-          ...agency.validatorEmails.map(
-            (validatorEmail): { role: ConventionRole; email: Email } => ({
-              role: "validator",
-              email: validatorEmail,
-            }),
-          ),
-          ...agency.counsellorEmails.map(
-            (counsellorEmail): { role: ConventionRole; email: Email } => ({
-              role: "counsellor",
-              email: counsellorEmail,
-            }),
-          ),
-          ...(conventionBeneficiaryAdvisor
-            ? [
-                {
-                  email: conventionBeneficiaryAdvisor.email,
-                  role: conventionBeneficiaryAdvisorRole,
-                },
-              ]
-            : []),
-        ],
-      );
 
-    for (const { email, role } of recipientsRoleAndEmail) {
-      await deps.saveNotificationAndRelatedEvent(uow, {
-        kind: "email",
-        templatedContent: prepareEmail({
-          email,
-          role,
+    const recipientsRoleAndEmail: EmailAndRole[] = uniqBy(
+      (recipient) => recipient.email,
+      [
+        ...Object.values(convention.signatories).map((signatory) => ({
+          role: signatory.role,
+          email: signatory.email,
+        })),
+        ...(convention.signatories.establishmentRepresentative.email !==
+        convention.establishmentTutor.email
+          ? [
+              {
+                role: convention.establishmentTutor.role,
+                email: convention.establishmentTutor.email,
+              },
+            ]
+          : []),
+        ...agency.counsellorEmails.map<EmailAndRole>((counsellorEmail) => ({
+          role: "counsellor",
+          email: counsellorEmail,
+        })),
+        ...(conventionBeneficiaryAdvisor
+          ? [
+              {
+                email: conventionBeneficiaryAdvisor.email,
+                role: "validator",
+              } satisfies EmailAndRole,
+            ]
+          : []),
+      ],
+    );
+
+    await executeInSequence(
+      recipientsRoleAndEmail.map<TemplatedEmail>(({ email, role }) => ({
+        kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
+        recipients: [email],
+        params: {
           convention,
-          config: deps.config,
-          agency,
-        }),
-        followedIds: {
-          conventionId: convention.id,
-          agencyId: convention.agencyId,
-          establishmentSiret: convention.siret,
+          agencyLogoUrl: agency.logoUrl ?? undefined,
+          loginPersona: loginPersonaByConventionRole(role),
+          baseUrl: deps.config.immersionFacileBaseUrl,
+          agencyName: agency.name,
         },
-      });
-    }
-  });
-
-const prepareEmail = ({
-  convention,
-  config,
-  agency,
-  email,
-  role,
-}: {
-  role: ConventionRole;
-  email: Email;
-  convention: ConventionDto;
-  config: AppConfig;
-  agency: AgencyDto;
-}): TemplatedEmail => {
-  const loginPersona = loginPersonaByConventionRole(role);
-
-  return {
-    kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
-    recipients: [email],
-    params: {
-      conventionId: convention.id,
-      internshipKind: convention.internshipKind,
-      beneficiaryFirstName: getFormattedFirstnameAndLastname({
-        firstname: convention.signatories.beneficiary.firstName,
-      }),
-      beneficiaryLastName: getFormattedFirstnameAndLastname({
-        lastname: convention.signatories.beneficiary.lastName,
-      }),
-      beneficiaryBirthdate: convention.signatories.beneficiary.birthdate,
-      dateStart: parseISO(convention.dateStart).toLocaleDateString("fr"),
-      dateEnd: parseISO(convention.dateEnd).toLocaleDateString("fr"),
-      establishmentTutorName: getFormattedFirstnameAndLastname({
-        firstname: convention.establishmentTutor.firstName,
-        lastname: convention.establishmentTutor.lastName,
-      }),
-      businessName: convention.businessName,
-      immersionAppellationLabel:
-        convention.immersionAppellation.appellationLabel,
-      emergencyContactInfos: displayEmergencyContactInfos({
-        beneficiaryRepresentative:
-          convention.signatories.beneficiaryRepresentative,
-        beneficiary: convention.signatories.beneficiary,
-      }),
-      agencyLogoUrl: agency.logoUrl ?? undefined,
-      magicLink: makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: convention.id,
-          loginPersona,
+      })),
+      (templatedContent) =>
+        deps.saveNotificationAndRelatedEvent(uow, {
+          kind: "email",
+          templatedContent,
+          followedIds: {
+            conventionId: convention.id,
+            agencyId: convention.agencyId,
+            establishmentSiret: convention.siret,
+          },
         }),
-        baseUrl: config.immersionFacileBaseUrl,
-      }),
-      agencyName: agency.name,
-      validatorName: convention.validators?.agencyValidator
-        ? getFormattedFirstnameAndLastname(
-            convention.validators.agencyValidator,
-          )
-        : "",
-    },
-  };
-};
+    );
+  });

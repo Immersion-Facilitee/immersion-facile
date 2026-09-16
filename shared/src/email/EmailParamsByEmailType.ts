@@ -9,9 +9,11 @@ import type {
   AssessmentDtoPartiallyCompleted,
 } from "../assessment/assessment.dto";
 import type {
+  ConventionDto,
   ConventionId,
   ImmersionObjective,
   InternshipKind,
+  LoginPersona,
   Renewed,
 } from "../convention/convention.dto";
 import type {
@@ -560,21 +562,11 @@ export type EmailParamsByEmailType = {
     url: AbsoluteUrl;
   };
   VALIDATED_CONVENTION_FINAL_CONFIRMATION: {
-    agencyLogoUrl: AbsoluteUrl | undefined;
-    beneficiaryBirthdate: string;
-    beneficiaryFirstName: string;
-    beneficiaryLastName: string;
-    businessName: string;
-    conventionId: ConventionId;
-    dateStart: string;
-    dateEnd: string;
-    emergencyContactInfos: string;
-    establishmentTutorName: string;
-    immersionAppellationLabel: string;
-    internshipKind: InternshipKind;
-    magicLink: string;
-    validatorName: string;
+    convention: ConventionDto;
     agencyName: string;
+    agencyLogoUrl: AbsoluteUrl | undefined;
+    loginPersona: LoginPersona;
+    baseUrl: AbsoluteUrl;
   };
   ACCOUNT_DELETION_WARNING: {
     fullName: string;

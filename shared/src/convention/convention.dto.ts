@@ -409,9 +409,11 @@ export const signatoryKeys: (keyof Signatories)[] = [
 export const isSignatoryRole = (role: Role): role is SignatoryRole =>
   allSignatoryRoles.includes(role as SignatoryRole);
 
+export type LoginPersona = "beneficiary" | "professional";
+
 export const loginPersonaByConventionRole = (
   role: ConventionRole,
-): "beneficiary" | "professional" =>
+): LoginPersona =>
   role === "beneficiary" ||
   role === "beneficiary-representative" ||
   role === "beneficiary-current-employer"
