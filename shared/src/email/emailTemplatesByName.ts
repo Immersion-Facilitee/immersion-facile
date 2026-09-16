@@ -1696,7 +1696,7 @@ Tél : ${beneficiaryPhone}`,
       }),
     },
     DISCUSSION_BENEFICIARY_FOLLOW_UP: {
-      niceName: "Établissement - MER - Relance par téléphone pour candidat",
+      niceName: "MER - Candidat - Relance par téléphone",
       tags: [
         "template:mer_candidat_relanceParTelephone",
         "theme:MER",
@@ -1715,8 +1715,6 @@ Tél : ${beneficiaryPhone}`,
         subject: `Toujours pas de réponse de l’entreprise ${businessName} ?`,
         greetings: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},`,
         content: `
-        Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},
-
         Vous avez contacté l’entreprise ${businessName} il y a 15 jours par email pour demander une immersion, mais vous n’avez pas encore reçu de réponse.
 
         Vous pouvez relancer l’entreprise par téléphone :
