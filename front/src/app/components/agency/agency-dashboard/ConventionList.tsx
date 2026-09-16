@@ -13,6 +13,7 @@ import {
   type ConventionStatus,
   conventionStatuses,
   defaultPerPageInWebPagination,
+  domElementIds,
   type FlatGetConventionsForAgencyUserParams,
   getFormattedFirstnameAndLastname,
   isNotEmptyArray,
@@ -400,6 +401,7 @@ export const ConventionList = () => {
                   conventionId={convention.id}
                   conventionDateEnd={convention.dateEnd}
                   isDisabled={false}
+                  id={`${domElementIds.agencyDashboard.dashboard.goToConventionButton}--${convention.id}`}
                 />,
               ])}
               dropdownFilters={{

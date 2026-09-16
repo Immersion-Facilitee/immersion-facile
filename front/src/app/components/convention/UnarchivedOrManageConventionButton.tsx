@@ -12,20 +12,17 @@ export const UnarchivedOrManageConventionButton = ({
   conventionId,
   conventionDateEnd,
   isDisabled,
+  id,
 }: {
   label: string;
   conventionId: ConventionId;
   conventionDateEnd: DateString;
   isDisabled: boolean;
+  id: string;
 }): React.ReactNode => {
   if (isDisabled)
     return (
-      <Button
-        disabled
-        size="small"
-        priority="secondary"
-        id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${conventionId}`}
-      >
+      <Button disabled size="small" priority="secondary" id={id}>
         {label}
       </Button>
     );
@@ -47,7 +44,7 @@ export const UnarchivedOrManageConventionButton = ({
     </Button>
   ) : (
     <Button
-      id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${conventionId}`}
+      id={id}
       size="small"
       priority="secondary"
       linkProps={{
