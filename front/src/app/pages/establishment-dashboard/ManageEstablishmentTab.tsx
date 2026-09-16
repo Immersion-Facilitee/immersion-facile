@@ -5,10 +5,10 @@ import Select from "@codegouvfr/react-dsfr/SelectNext";
 import { HeadingSection } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
+  type AcceptedUserEstablishmentRightDetails,
   domElementIds,
   frontRoutes,
   type PendingUserEstablishmentRightDetails,
-  type UserEstablishmentRightDetails,
 } from "shared";
 import { EstablishmentsTablesSection } from "src/app/components/establishment/establishments-table/EstablishmentsTablesSection";
 import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
@@ -19,7 +19,7 @@ import { geocodingSlice } from "src/core-logic/domain/geocoding/geocoding.slice"
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 
 type ManageEstablishmentTabProps = {
-  establishments: UserEstablishmentRightDetails[];
+  establishments: AcceptedUserEstablishmentRightDetails[];
   pendingEstablishmentRights: PendingUserEstablishmentRightDetails[];
   isBackofficeAdmin: boolean | undefined;
 };
@@ -85,9 +85,11 @@ export const ManageEstablishmentsTab = ({
           />
         }
       >
-        <h4 className={fr.cx("fr-h6", "fr-mt-4w")}>
-          Mes demandes d'accès envoyées
-        </h4>
+        {pendingEstablishmentRights.length > 0 && (
+          <h4 className={fr.cx("fr-h6", "fr-mt-4w")}>
+            Mes demandes d'accès envoyées
+          </h4>
+        )}
         <EstablishmentsTablesSection
           withEstablishmentData={pendingEstablishmentRights}
           isBackofficeAdmin={isBackofficeAdmin}
