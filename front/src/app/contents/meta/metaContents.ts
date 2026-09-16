@@ -191,6 +191,6 @@ export const standardMetaContent: Record<StandardPageSlugs, MetaContentType> = {
 };
 
 export const groupMetaContent = (groupName: GroupName): MetaContentType => ({
-  title: `${groupName} - toutes les immersions`,
+  title: `${groupName} - Toutes les immersions`,
   description: `Toutes les immersions proposées par ${groupName}`,
 });
