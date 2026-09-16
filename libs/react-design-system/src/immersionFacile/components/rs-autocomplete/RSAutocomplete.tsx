@@ -47,23 +47,23 @@ const frenchAriaLiveMessages = {
       props;
     switch (context) {
       case "menu":
-        return `Utilisez Haut et Bas pour choisir une option, appuyez sur Entrée pour sélectionner l'option actuellement focalisée, appuyez sur Échap pour quitter le menu${
+        return `Utilisez Haut et Bas pour choisir une option, appuyez sur Entrée pour sélectionner l'option parcourue, appuyez sur Échap pour quitter le menu${
           tabSelectsValue
             ? ", appuyez sur Tabulation pour sélectionner l'option et quitter le menu"
             : ""
         }.`;
       case "input":
         return isInitialFocus
-          ? `${props["aria-label"] || "Sélection"} est focalisé${
+          ? `${props["aria-label"] || "Sélection"} est parcouru${
               isSearchable ? ", saisissez pour affiner la liste" : ""
             }, appuyez sur Bas pour ouvrir le menu, ${
               isMulti
-                ? " appuyez sur Gauche pour focaliser les valeurs sélectionnées"
+                ? " appuyez sur Gauche pour déplacer l'option parcourue sur les valeurs sélectionnées"
                 : ""
             }`
           : "";
       case "value":
-        return "Utilisez Gauche et Droite pour basculer entre les valeurs focalisées, appuyez sur Retour arrière pour supprimer la valeur actuellement focalisée";
+        return "Utilisez Gauche et Droite pour naviguer entre les valeurs parcourues, appuyez sur Retour arrière pour supprimer la valeur actuellement ciblée";
       default:
         return "";
     }
@@ -114,7 +114,7 @@ const frenchAriaLiveMessages = {
       arr && arr.length ? `${arr.indexOf(item) + 1} sur ${arr.length}` : "";
 
     if (context === "value" && selectValue) {
-      return `valeur ${label} focalisée, ${getArrayIndex(selectValue, focused)}.`;
+      return `valeur ${label} est parcourue, ${getArrayIndex(selectValue, focused)}.`;
     }
 
     if (context === "menu" && isAppleDevice) {
