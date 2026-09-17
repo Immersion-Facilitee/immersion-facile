@@ -275,18 +275,6 @@ export type EmailParamsByEmailType = {
     potentialBeneficiaryPhone: PhoneNumber;
     potentialBeneficiaryResumeLink: string | undefined;
   };
-  CONTACT_BY_EMAIL_REQUEST_LEGACY: {
-    businessName: string;
-    businessAddress: string;
-    appellationLabel: string;
-    potentialBeneficiaryFirstName: string;
-    potentialBeneficiaryLastName: string;
-    potentialBeneficiaryPhone: string;
-    immersionObjective: ImmersionObjective | undefined;
-    potentialBeneficiaryResumeLink?: string;
-    message: string;
-    replyToEmail: Email;
-  };
   CONTACT_BY_PHONE_INSTRUCTIONS: {
     businessName: string;
     contactFirstName?: string;
