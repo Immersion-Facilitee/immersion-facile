@@ -1,0 +1,251 @@
+import "./instrumentSentryCron";
+import {
+  castError,
+  type Email,
+  executeInSequence,
+  type SiretDto,
+} from "shared";
+import { createAxiosSharedClient } from "shared-routes/axios";
+import { AppConfig } from "../config/bootstrap/appConfig";
+import { logPartnerResponses } from "../config/bootstrap/logPartnerResponses";
+import { partnerNames } from "../config/bootstrap/partnerNames";
+import {
+  isInArray,
+  type KyselyDb,
+  makeKyselyDb,
+} from "../config/pg/kysely/kyselyUtils";
+import { createMakeScriptPgPool } from "../config/pg/pgPool";
+import { createPgUow } from "../domains/core/unit-of-work/adapters/createPgUow";
+import { PgUowPerformer } from "../domains/core/unit-of-work/adapters/PgUowPerformer";
+import { brevoContactRoutes } from "../domains/marketing/adapters/establishmentMarketingGateway/BrevoContact.routes";
+import { BrevoEstablishmentMarketingGateway } from "../domains/marketing/adapters/establishmentMarketingGateway/BrevoEstablishmentMarketingGateway";
+import { InMemoryEstablishmentMarketingGateway } from "../domains/marketing/adapters/establishmentMarketingGateway/InMemoryEstablishmentMarketingGateway";
+import type { EstablishmentMarketingGateway } from "../domains/marketing/ports/EstablishmentMarketingGateway";
+import { makeDeleteEstablishmentMarketingContact } from "../domains/marketing/use-cases/DeleteEstablishmentMarketingContact";
+import { makeAxiosInstances } from "../utils/axiosUtils";
+import { createLogger } from "../utils/logger";
+import { handleCRONScript } from "./handleCRONScript";
+
+const logger = createLogger(__filename);
+const config = AppConfig.createFromEnv();
+
+type MarketingContactOfDeletedOrBannedEstablishment = {
+  siret: SiretDto;
+  email: Email;
+};
+
+export type DeleteMarketingContactsOfDeletedOrBannedEstablishmentsResult = {
+  dryRun: boolean;
+  candidates: MarketingContactOfDeletedOrBannedEstablishment[];
+  skippedForEmailSharedWithAnotherSiret: MarketingContactOfDeletedOrBannedEstablishment[];
+  deleted: MarketingContactOfDeletedOrBannedEstablishment[];
+  errors: (MarketingContactOfDeletedOrBannedEstablishment & { error: Error })[];
+};
+
+const findMarketingContactsOfDeletedOrBannedEstablishments = async (
+  db: KyselyDb,
+  limit: number | undefined,
+): Promise<MarketingContactOfDeletedOrBannedEstablishment[]> => {
+  const query = db
+    .selectFrom("marketing_establishment_contacts as contacts")
+    .select(["contacts.siret", "contacts.email"])
+    .where((eb) =>
+      eb.or([
+        eb.and([
+          eb.exists(
+            eb
+              .selectFrom("establishments_deleted as deletedEstablishments")
+              .select("deletedEstablishments.siret")
+              .whereRef("deletedEstablishments.siret", "=", "contacts.siret"),
+          ),
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom("establishments")
+                .select("establishments.siret")
+                .whereRef("establishments.siret", "=", "contacts.siret"),
+            ),
+          ),
+        ]),
+        eb.exists(
+          eb
+            .selectFrom("banned_establishments as bannedEstablishments")
+            .select("bannedEstablishments.siret")
+            .whereRef("bannedEstablishments.siret", "=", "contacts.siret"),
+        ),
+      ]),
+    )
+    .orderBy("contacts.siret");
+
+  return limit === undefined ? query.execute() : query.limit(limit).execute();
+};
+
+const findEmailsSharedBySeveralSirets = async (
+  db: KyselyDb,
+  emails: Email[],
+): Promise<Set<Email>> => {
+  const distinctEmails = [...new Set(emails)];
+  if (distinctEmails.length === 0) return new Set();
+
+  const rows = await db
+    .selectFrom("marketing_establishment_contacts")
+    .select("email")
+    .where((eb) => isInArray(eb, "email", distinctEmails))
+    .groupBy("email")
+    .having((eb) => eb.fn.count("siret"), ">", 1)
+    .execute();
+
+  return new Set(rows.map(({ email }) => email));
+};
+
+export const deleteMarketingContactsOfDeletedEstablishments = async ({
+  db,
+  establishmentMarketingGateway,
+  dryRun,
+  limit,
+}: {
+  db: KyselyDb;
+  establishmentMarketingGateway: EstablishmentMarketingGateway;
+  dryRun: boolean;
+  limit?: number;
+}): Promise<DeleteMarketingContactsOfDeletedOrBannedEstablishmentsResult> => {
+  const candidates = await findMarketingContactsOfDeletedOrBannedEstablishments(
+    db,
+    limit,
+  );
+
+  const sharedEmails = await findEmailsSharedBySeveralSirets(
+    db,
+    candidates.map(({ email }) => email),
+  );
+
+  const skippedForEmailSharedWithAnotherSiret = candidates.filter(({ email }) =>
+    sharedEmails.has(email),
+  );
+  const contactsToDelete = candidates.filter(
+    ({ email }) => !sharedEmails.has(email),
+  );
+
+  if (dryRun)
+    return {
+      dryRun,
+      candidates,
+      skippedForEmailSharedWithAnotherSiret,
+      deleted: [],
+      errors: [],
+    };
+
+  const deleteEstablishmentMarketingContact =
+    makeDeleteEstablishmentMarketingContact({
+      uowPerformer: new PgUowPerformer(db, createPgUow),
+      deps: { establishmentMarketingGateway },
+    });
+
+  const results = await executeInSequence(
+    contactsToDelete,
+    (
+      contact,
+    ): Promise<
+      MarketingContactOfDeletedOrBannedEstablishment & { error: Error | null }
+    > =>
+      deleteEstablishmentMarketingContact
+        .execute({ siret: contact.siret })
+        .then(() => ({ ...contact, error: null }))
+        .catch((error) => ({ ...contact, error: castError(error) })),
+  );
+
+  return {
+    dryRun,
+    candidates,
+    skippedForEmailSharedWithAnotherSiret,
+    deleted: results.flatMap(({ siret, email, error }) =>
+      error ? [] : [{ siret, email }],
+    ),
+    errors: results.flatMap(({ siret, email, error }) =>
+      error ? [{ siret, email, error }] : [],
+    ),
+  };
+};
+
+const makeEstablishmentMarketingGateway = (
+  appConfig: AppConfig,
+): EstablishmentMarketingGateway => {
+  if (appConfig.establishmentMarketingGateway !== "BREVO")
+    return new InMemoryEstablishmentMarketingGateway();
+
+  const { axiosWithValidateStatus } = makeAxiosInstances(
+    appConfig.externalAxiosTimeout,
+  );
+
+  return new BrevoEstablishmentMarketingGateway({
+    apiKey: appConfig.apiKeyBrevo,
+    establishmentContactListId: appConfig.brevoEstablishmentContactListId,
+    httpClient: createAxiosSharedClient(
+      brevoContactRoutes,
+      axiosWithValidateStatus,
+      {
+        skipResponseValidation: true,
+        // l'input des routes contact Brevo contient toujours l'email du contact
+        // (urlParams.identifier, body.email, body.emails), qui ne doit pas être
+        // écrit dans les logs : on ne transmet au logger que la réponse, sans input
+        onResponseSideEffect: ({ route, durationInMs, response }) =>
+          logPartnerResponses({
+            partnerName: partnerNames.brevoEstablishmentMarketing,
+          })?.({ route, durationInMs, response, input: {} }),
+      },
+    ),
+  });
+};
+
+const runScript =
+  async (): Promise<DeleteMarketingContactsOfDeletedOrBannedEstablishmentsResult> => {
+    const args = process.argv.slice(2);
+    const limitArg = args.find((arg) => arg.startsWith("--limit="));
+
+    const pool = createMakeScriptPgPool(config)();
+
+    try {
+      return await deleteMarketingContactsOfDeletedEstablishments({
+        db: makeKyselyDb(pool),
+        establishmentMarketingGateway:
+          makeEstablishmentMarketingGateway(config),
+        dryRun: !args.includes("--apply"),
+        limit: limitArg
+          ? Number.parseInt(limitArg.replace("--limit=", ""), 10)
+          : undefined,
+      });
+    } finally {
+      await pool.end();
+    }
+  };
+
+const formatSirets = (
+  contacts: MarketingContactOfDeletedOrBannedEstablishment[],
+): string => contacts.map(({ siret }) => siret).join(", ");
+
+if (require.main === module) {
+  handleCRONScript({
+    name: "deleteMarketingContactsOfDeletedEstablishments",
+    config,
+    script: runScript,
+    handleResults: ({
+      dryRun,
+      candidates,
+      skippedForEmailSharedWithAnotherSiret,
+      deleted,
+      errors,
+    }) =>
+      [
+        `Mode: ${dryRun ? "dry run (nothing deleted, use --apply to delete)" : "apply"}`,
+        `Marketing contacts of deleted or banned establishments found: ${candidates.length}`,
+        `Skipped because email is shared with another siret: ${skippedForEmailSharedWithAnotherSiret.length}`,
+        ...(skippedForEmailSharedWithAnotherSiret.length > 0
+          ? [`  ${formatSirets(skippedForEmailSharedWithAnotherSiret)}`]
+          : []),
+        `Deleted: ${deleted.length}`,
+        `Errors: ${errors.length}`,
+        ...(errors.length > 0 ? [`  ${formatSirets(errors)}`] : []),
+      ].join("\n"),
+    logger,
+  });
+}

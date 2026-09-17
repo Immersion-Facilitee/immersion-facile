@@ -105,9 +105,13 @@ export class BrevoEstablishmentMarketingGateway
   async delete(contactEmail: Email): Promise<void> {
     const existingContact = await this.getContactByEmail(contactEmail);
 
-    return !existingContact ||
-      (existingContact?.lists.length === 1 &&
-        existingContact?.lists.at(0) === this.#establishmentContactListId)
+    if (
+      !existingContact ||
+      !existingContact.lists.includes(this.#establishmentContactListId)
+    )
+      return;
+
+    return existingContact.lists.length === 1
       ? this.#deleteContactByEmail(contactEmail)
       : this.#createContact({
           attributes: {
@@ -188,6 +192,9 @@ export class BrevoEstablishmentMarketingGateway
         if (response.status === 200)
           return this.#makeContactFromGetContactResponse(response.body);
         if (response.status === 404) return;
+        throw new Error(
+          `Get contact failed with unexpected status '${response.status}'`,
+        );
       });
   }
 
