@@ -9,7 +9,7 @@
       "size": "M"
     },
     {
-      "command": "45 23 * * * pnpm back run trigger-contact-request-beneficiary-reminder-15-days",
+      "command": "45 23 * * * pnpm back run trigger-contact-request-beneficiary-reminder-15d",
       "size": "M"
     },
     {

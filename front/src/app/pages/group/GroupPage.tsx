@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { Loader, MainWrapper, SectionTextEmbed } from "react-design-system";
+import { Helmet } from "react-helmet-async";
 import type {
   frontRoutes,
   Group,
@@ -18,6 +19,7 @@ import type {
   InternalOfferDto,
 } from "shared";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
+import { groupMetaContent } from "src/app/contents/meta/metaContents";
 import { outOfReduxDependencies } from "src/config/dependencies";
 import { makeStyles } from "tss-react/dsfr";
 import type { Route } from "type-route";
@@ -120,8 +122,14 @@ const GroupPageContent = ({ group, results }: GroupWithResults) => {
     }
   };
 
+  const { title, description } = groupMetaContent(group.name);
+
   return (
     <>
+      <Helmet>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+      </Helmet>
       <section
         className={cx(fr.cx("fr-py-8w", "fr-py-md-16w"), classes.heroHeader)}
       >
