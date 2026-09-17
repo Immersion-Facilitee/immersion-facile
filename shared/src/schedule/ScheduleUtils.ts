@@ -6,6 +6,7 @@ import {
   getDay,
   isWithinInterval,
   parseISO,
+  startOfDay,
   subDays,
 } from "date-fns";
 import { clone, prop, uniq } from "ramda";
@@ -521,6 +522,7 @@ export const makeComplexSchedule = (
   excludedDays?: Weekday[],
 ): DailyScheduleDto[] => {
   const complexSchedules: DailyScheduleDto[] = [];
+
   const excludedDayNumbers =
     excludedDays?.map(
       (weekday) =>
@@ -530,7 +532,7 @@ export const makeComplexSchedule = (
 
   for (
     let currentDate = start;
-    currentDate <= end;
+    startOfDay(currentDate) <= startOfDay(end);
     currentDate = addHours(currentDate, 24)
   ) {
     if (!excludedDayNumbers.includes(getDay(currentDate)))
