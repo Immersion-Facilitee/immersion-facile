@@ -385,18 +385,6 @@ export const defaultEmailValueByEmailKind: {
     dateEnd: "DATE_END",
     justification: "JUSTIFICATION",
   },
-  CONTACT_BY_EMAIL_REQUEST_LEGACY: {
-    replyToEmail: "REPLY_TO_EMAIL",
-    appellationLabel: "APPELLATION_LABEL",
-    businessName: "BUSINESS_NAME",
-    immersionObjective: "Découvrir un métier ou un secteur d'activité",
-    message: "MESSAGE",
-    potentialBeneficiaryFirstName: "POTENTIAL_BENEFICIARY_FIRST_NAME",
-    potentialBeneficiaryLastName: "POTENTIAL_BENEFICIARY_LAST_NAME",
-    potentialBeneficiaryPhone: "POTENTIAL_BENEFICIARY_PHONE",
-    potentialBeneficiaryResumeLink: "POTENTIAL_BENEFICIARY_CV_OR_LINKEDIN",
-    businessAddress: "BUSINESS_ADDRESS",
-  },
   CONTACT_BY_EMAIL_MINISTAGE: {
     appellationLabel: "APPELLATION_LABEL",
     businessAddress: "BUSINESS_ADDRESS",

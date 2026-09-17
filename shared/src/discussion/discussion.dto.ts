@@ -161,7 +161,6 @@ export type CreateDiscussionDto =
 export type ContactEstablishmentEventPayload = {
   discussionId: DiscussionId;
   siret: SiretDto;
-  isLegacy?: boolean;
 };
 
 type WithDiscussionKindProps<D extends DiscussionKind> = D extends "IF"

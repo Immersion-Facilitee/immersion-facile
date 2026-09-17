@@ -1463,68 +1463,6 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
         };
       },
     },
-    CONTACT_BY_EMAIL_REQUEST_LEGACY: {
-      niceName: "Établissement - MER - instructions par mail (Legacy)",
-      tags: [
-        "template:mise en relation mail",
-        "theme:MER",
-        "acteur:entreprise",
-        "role:admin",
-        "role:contact",
-      ],
-      createEmailVariables: ({
-        appellationLabel,
-        businessName,
-        immersionObjective,
-        message,
-        potentialBeneficiaryFirstName,
-        potentialBeneficiaryLastName,
-        businessAddress,
-        potentialBeneficiaryPhone,
-        potentialBeneficiaryResumeLink,
-        replyToEmail,
-      }) => ({
-        subject: `${potentialBeneficiaryFirstName} ${potentialBeneficiaryLastName} vous contacte pour une demande d'immersion sur le métier de ${appellationLabel}`,
-        greetings: "Bonjour,",
-        content: `
-        Un candidat souhaite faire une immersion ${
-          immersionObjective
-            ? `pour "${immersionObjective?.toLowerCase()}"`
-            : ""
-        } sur le métier de <strong>${appellationLabel}</strong> dans votre entreprise ${businessName} (${businessAddress}).
-
-        Voici son message:
-
-      "${message}"
-
-      ${potentialBeneficiaryFirstName} 
-      ${potentialBeneficiaryLastName}
-
-      ${
-        potentialBeneficiaryResumeLink
-          ? `Plus d'info sur ce candidat: <a href="${potentialBeneficiaryResumeLink}">${potentialBeneficiaryResumeLink}</a>`
-          : ""
-      }
-      
-      `,
-        buttons: [
-          {
-            label: "Écrire au candidat",
-            url: `mailto:${replyToEmail}`,
-          },
-        ],
-        highlight: {
-          content: `
-          Ce candidat attend une réponse, vous pouvez :
-
-          - répondre directement à cet email, il lui sera transmis. ${transferReplyWarning}
-
-          - en cas d'absence de réponse par email, vous pouvez essayer de le contacter par tel : ${potentialBeneficiaryPhone}`,
-        },
-        subContent: `Vous pouvez préparer votre échange grâce à notre <a href="https://immersion-facile.beta.gouv.fr/aide/article/etudier-une-demande-dimmersion-professionnelle-1ehkehm/">page d'aide</a>.
-        ${defaultSignature("immersion")}`,
-      }),
-    },
     CONTACT_BY_PHONE_INSTRUCTIONS: {
       niceName: "Établissement - MER - instructions par téléphone",
       tags: [
