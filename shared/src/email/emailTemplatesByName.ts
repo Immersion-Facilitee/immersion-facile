@@ -14,6 +14,7 @@ import type {
   DiscussionExchangeForbiddenReason,
   ExchangeRole,
 } from "../discussion/discussion.dto";
+import { labelsForContactLevelOfEducation } from "../discussion/discussion.dto";
 import { isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl } from "../discussion/discussion.schema";
 import type { AgencyRole } from "../role/role.dto";
 import { titleByRole } from "../role/role.utils";
@@ -1326,70 +1327,139 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           ${defaultSignature("immersion")}`,
       }),
     },
-    CONTACT_BY_EMAIL_REQUEST: {
-      niceName: "Établissement - MER - instructions par mail",
+    CONTACT_BY_EMAIL_MINISTAGE: {
+      niceName: "MER - Entreprises - Demande de mini-stage",
       tags: [
-        "template:mise en relation mail",
+        "template:demandeStage",
         "theme:MER",
         "acteur:entreprise",
         "role:admin",
         "role:contact",
       ],
-      createEmailVariables: (params) => {
-        const hasAdditionnalInformation =
-          params.kind === "IF" &&
-          params.potentialBeneficiaryExperienceAdditionalInformation;
-        const hasLevelOfEducation =
-          params.kind === "1_ELEVE_1_STAGE" && params.levelOfEducation;
-        const hasResumeLink =
-          params.kind === "IF" && params.potentialBeneficiaryResumeLink;
+      createEmailVariables: ({
+        appellationLabel,
+        businessAddress,
+        businessName,
+        discussionUrl,
+        levelOfEducation,
+        potentialBeneficiaryDatePreferences,
+        potentialBeneficiaryFirstName,
+        potentialBeneficiaryLastName,
+        potentialBeneficiaryPhone,
+      }) => {
+        const details = [
+          `<strong>Métier :</strong> ${appellationLabel}`,
+          potentialBeneficiaryDatePreferences &&
+            `<strong>Période :</strong> ${potentialBeneficiaryDatePreferences}`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const profile = [
+          levelOfEducation &&
+            `• <strong>Classe :</strong> ${labelsForContactLevelOfEducation[levelOfEducation]}`,
+        ]
+          .filter(Boolean)
+          .join("\n");
 
         return {
-          subject: `${params.potentialBeneficiaryFirstName} ${params.potentialBeneficiaryLastName} vous contacte pour une demande d'immersion sur le métier de ${params.appellationLabel}`,
+          subject: `${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })} vous contacte pour une demande de stage sur le métier de ${appellationLabel}`,
           greetings: "Bonjour,",
-          content: `Un candidat souhaite faire une immersion dans votre entreprise ${params.businessName} (${params.businessAddress}).
+          content: `Vous avez reçu une nouvelle demande de stage via Immersion Facilitée pour votre entreprise <strong>${businessName}</strong> (${businessAddress}) :
 
-<strong>Immersion souhaitée :</strong>
-    • Métier : ${params.appellationLabel}.
-    • Dates d’immersion envisagées : ${params.potentialBeneficiaryDatePreferences}.
-    • ${
-      params.immersionObjective
-        ? `But de l'immersion : ${labelsForImmersionObjective[params.immersionObjective]}.`
-        : ""
-    }
+<strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>
 
-    ${[
-      hasAdditionnalInformation || hasLevelOfEducation || hasResumeLink
-        ? "<strong>Profil du candidat :</strong>\n"
-        : "",
-
-      hasAdditionnalInformation &&
-        `• Informations supplémentaires sur l'expérience du candidat : ${params.potentialBeneficiaryExperienceAdditionalInformation}.\n`,
-      hasLevelOfEducation && `• Je suis en ${params.levelOfEducation}.\n`,
-      hasResumeLink &&
-        `• CV du candidat : ${params.potentialBeneficiaryResumeLink}.`,
-    ]
-      .filter(Boolean)
-      .join("")}`,
+${details}
+${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` : ""}`,
           buttons: [
             {
-              label: "Répondre au candidat via mon espace",
+              label: `Répondre à ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} via mon espace`,
               target: "_blank",
-              url: params.discussionUrl,
+              url: discussionUrl,
             },
           ],
-          highlight: {
-            content: `
-          Ce candidat attend une réponse, vous pouvez :
+          subContent: `Cette personne attend votre réponse. Vous pouvez lui répondre directement depuis cet email (ou utiliser le bouton ci-dessus) : votre message lui sera transmis.
 
-          - répondre directement à cet email, il lui sera transmis. ${transferReplyWarning}
+          ${transferReplyWarning}
 
-          - en cas d'absence de réponse par email, vous pouvez essayer de le contacter par tel : ${params.potentialBeneficiaryPhone}`,
-          },
-          subContent: `<strong>Si la connexion ne fonctionne pas et que vous ne recevez pas le lien de réinitialisation du mot de passe, c'est que vous n'avez pas encore créé votre compte</strong>.
-        Créer votre compte avec le même mail que celui avec lequel les candidats vous contactent.
+          En cas d'absence de réponse par email, vous pouvez aussi appeler ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} directement par téléphone : ${potentialBeneficiaryPhone}.
 
-        ${defaultSignature("immersion")}`,
+          À bientôt,
+          L'équipe Immersion Facilitée`,
+        };
+      },
+    },
+    CONTACT_BY_EMAIL_REQUEST_IMMERSION: {
+      niceName: "MER - Entreprises - Demande d'immersion",
+      tags: [
+        "template:demandeImmersion",
+        "theme:MER",
+        "acteur:entreprise",
+        "role:admin",
+        "role:contact",
+      ],
+      createEmailVariables: ({
+        appellationLabel,
+        businessAddress,
+        businessName,
+        discussionUrl,
+        immersionObjective,
+        potentialBeneficiaryDatePreferences,
+        potentialBeneficiaryDurationPreferences,
+        potentialBeneficiaryExperienceAdditionalInformation,
+        potentialBeneficiaryFirstName,
+        potentialBeneficiaryLastName,
+        potentialBeneficiaryMotivation,
+        potentialBeneficiaryPhone,
+        potentialBeneficiaryResumeLink,
+      }) => {
+        const details = [
+          `<strong>Métier :</strong> ${appellationLabel}`,
+          immersionObjective &&
+            `<strong>Objectif :</strong> ${labelsForImmersionObjective[immersionObjective]}`,
+          potentialBeneficiaryDatePreferences &&
+            `<strong>Période :</strong> ${potentialBeneficiaryDatePreferences}`,
+          potentialBeneficiaryDurationPreferences &&
+            `<strong>Durée :</strong> ${potentialBeneficiaryDurationPreferences}`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const profile = [
+          potentialBeneficiaryMotivation &&
+            `• <strong>Pourquoi cette immersion :</strong> ${potentialBeneficiaryMotivation}`,
+          potentialBeneficiaryExperienceAdditionalInformation &&
+            `• <strong>Compétences, expériences et savoirs-être :</strong> ${potentialBeneficiaryExperienceAdditionalInformation}`,
+          potentialBeneficiaryResumeLink &&
+            `• <strong>CV ou profil en ligne :</strong> ${potentialBeneficiaryResumeLink}`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        return {
+          subject: `${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })} vous contacte pour une demande d'immersion sur le métier de ${appellationLabel}`,
+          greetings: "Bonjour,",
+          content: `Vous avez reçu une nouvelle demande d'immersion via Immersion Facilitée pour votre entreprise <strong>${businessName}</strong> (${businessAddress}) :
+
+<strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>
+
+${details}
+${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` : ""}`,
+          buttons: [
+            {
+              label: `Répondre à ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} via mon espace`,
+              target: "_blank",
+              url: discussionUrl,
+            },
+          ],
+          subContent: `Cette personne attend votre réponse. Vous pouvez lui répondre directement depuis cet email (ou utiliser le bouton ci-dessus) : votre message lui sera transmis.
+
+          ${transferReplyWarning}
+
+          En cas d'absence de réponse par email, vous pouvez aussi appeler ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} directement par téléphone : ${potentialBeneficiaryPhone}.
+
+          À bientôt,
+          L'équipe Immersion Facilitée`,
         };
       },
     },
