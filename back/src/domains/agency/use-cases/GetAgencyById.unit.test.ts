@@ -1,6 +1,7 @@
 import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
+  closedOrRejectedAgencyStatuses,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
@@ -76,6 +77,13 @@ describe("getAgencyByIdForDashboard", () => {
   const connectedAgencyAdminUser = agencyAdminBuilder.build();
   const agencyAdminUser = agencyAdminBuilder.buildUser();
 
+  const backofficeAdminBuilder = new ConnectedUserBuilder()
+    .withId("backoffice-admin-id")
+    .withEmail("backoffice-admin@email.com")
+    .withIsAdmin(true);
+  const connectedBackofficeAdmin = backofficeAdminBuilder.build();
+  const backofficeAdminUser = backofficeAdminBuilder.buildUser();
+
   const notAgencyAdminUser = new ConnectedUserBuilder()
     .withId("notAgencyAdminUser")
     .withEmail("not-agencyAdminUser@email.com")
@@ -91,6 +99,7 @@ describe("getAgencyByIdForDashboard", () => {
       validator,
       counsellor2,
       agencyAdminUser,
+      backofficeAdminUser,
     ];
     uow.agencyRepository.agencies = [
       toAgencyWithRights(ftAgency, {
@@ -149,6 +158,38 @@ describe("getAgencyByIdForDashboard", () => {
         },
       );
     });
+
+    it.each(closedOrRejectedAgencyStatuses)(
+      "backoffice admin can get a %s agency",
+      async (status) => {
+        const agency = new AgencyDtoBuilder(agencyWithRefersTo)
+          .withStatus(status)
+          .withStatusJustification("some reason")
+          .build();
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [counsellor2.id]: {
+              isNotifiedByEmail: true,
+              roles: ["counsellor"],
+            },
+            [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+            [agencyAdminUser.id]: {
+              isNotifiedByEmail: true,
+              roles: ["agency-admin"],
+            },
+          }),
+        ];
+
+        expectToEqual(
+          await getAgencyById.execute(agency.id, connectedBackofficeAdmin),
+          {
+            ...agency,
+            counsellorEmails: [counsellor2.email],
+            validatorEmails: [validator.email],
+          },
+        );
+      },
+    );
   });
 
   describe("wrong paths", () => {
@@ -184,5 +225,46 @@ describe("getAgencyByIdForDashboard", () => {
         }),
       );
     });
+
+    it.each(closedOrRejectedAgencyStatuses)(
+      "throws Forbidden if current user is not backoffice admin and agency is %s",
+      async (status) => {
+        const agency = new AgencyDtoBuilder(agencyWithRefersTo)
+          .withStatus(status)
+          .withStatusJustification("some reason")
+          .build();
+        const connectedUserWithAgencyRights = new ConnectedUserBuilder(
+          connectedAgencyAdminUser,
+        )
+          .withAgencyRights([
+            {
+              agency: toAgencyDtoForAgencyUsersAndAdmins(agency, [
+                "test@test.com",
+              ]),
+              isNotifiedByEmail: true,
+              roles: ["agency-admin"],
+            },
+          ])
+          .build();
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [counsellor2.id]: {
+              isNotifiedByEmail: true,
+              roles: ["counsellor"],
+            },
+            [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+            [agencyAdminUser.id]: {
+              isNotifiedByEmail: true,
+              roles: ["agency-admin"],
+            },
+          }),
+        ];
+
+        await expectPromiseToFailWithError(
+          getAgencyById.execute(agency.id, connectedUserWithAgencyRights),
+          errors.user.forbidden({ userId: agencyAdminUser.id }),
+        );
+      },
+    );
   });
 });
