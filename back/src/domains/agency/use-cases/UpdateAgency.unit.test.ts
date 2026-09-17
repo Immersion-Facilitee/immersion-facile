@@ -4,6 +4,7 @@ import {
   BadRequestError,
   type ConnectedUser,
   ConnectedUserBuilder,
+  closedOrRejectedAgencyStatuses,
   type DelegationAgencyInfo,
   errors,
   expectArraysToMatch,
@@ -91,6 +92,43 @@ describe("Update agency", () => {
         errors.user.forbidden({ userId: notAdmin.id }),
       );
     });
+
+    it.each(closedOrRejectedAgencyStatuses)(
+      "throws Forbidden if current user is not backoffice admin and agency is %s",
+      async (status) => {
+        const agency = new AgencyDtoBuilder(initialAgencyInRepo)
+          .withStatus(status)
+          .withStatusJustification("some reason")
+          .build();
+        const connectedUserWithAgencyRights = new ConnectedUserBuilder(
+          connectedAgencyAdmin,
+        )
+          .withAgencyRights([
+            {
+              agency: toAgencyDtoForAgencyUsersAndAdmins(agency, [
+                "test@test.com",
+              ]),
+              isNotifiedByEmail: true,
+              roles: ["agency-admin"],
+            },
+          ])
+          .build();
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+        uow.userRepository.users = [agencyAdmin];
+
+        const updatedAgency = new AgencyDtoBuilder(agency)
+          .withName("Trying to update")
+          .build();
+
+        await expectPromiseToFailWithError(
+          updateAgency.execute(
+            { ...updatedAgency, validatorEmails: ["mail@mail.com"] },
+            connectedUserWithAgencyRights,
+          ),
+          errors.user.forbidden({ userId: agencyAdmin.id }),
+        );
+      },
+    );
 
     it("Fails trying to update if no matching agency was found", async () => {
       const agency = new AgencyDtoBuilder().build();
@@ -221,6 +259,44 @@ describe("Update agency", () => {
       kind: "connected-user",
       userId: connectedAdmin.id,
     } as const;
+
+    it.each(closedOrRejectedAgencyStatuses)(
+      "backoffice admin can update a %s agency",
+      async (status) => {
+        const agency = new AgencyDtoBuilder()
+          .withStatus(status)
+          .withStatusJustification("some reason")
+          .build();
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, usersRightsWithAdmin),
+        ];
+
+        const updatedAgency = new AgencyDtoBuilder(agency)
+          .withName("Updated name")
+          .build();
+
+        await updateAgency.execute(
+          { ...updatedAgency, validatorEmails: ["validator@mail.com"] },
+          connectedAdmin,
+        );
+
+        expectToEqual(uow.agencyRepository.agencies, [
+          toAgencyWithRights(
+            { ...updatedAgency, updatedAt: timeGateway.now().toISOString() },
+            usersRightsWithAdmin,
+          ),
+        ]);
+        expectArraysToMatch(uow.outboxRepository.events, [
+          {
+            topic: "AgencyUpdated",
+            payload: {
+              agencyId: updatedAgency.id,
+              triggeredBy: triggeredByAdmin,
+            },
+          },
+        ]);
+      },
+    );
 
     it("backoffice admin activating a needsReview agency clears status justification and emits AgencyUpdated then AgencyActivated", async () => {
       const needsReviewAgency = new AgencyDtoBuilder()

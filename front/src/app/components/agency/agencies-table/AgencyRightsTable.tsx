@@ -11,6 +11,7 @@ import {
   type AgencyRight,
   addressDtoToString,
   agencyKindToLabelIncludingIFAndPrepa,
+  closedOrRejectedAgencyStatuses,
   frontRoutes,
   type User,
   type UserParamsForAgency,
@@ -186,59 +187,64 @@ const AgencyRightLine = ({
   onUpdateClicked?: (agencyRight: AgencyRight) => void;
   onRegistrationCancelledClicked?: (agencyRight: AgencyRight) => void;
   isBackofficeAdmin?: boolean;
-}) => [
-  <Fragment key={`${agencyRight.agency.id}-agency-infos`}>
-    <AgencyTag refersToAgencyName={agencyRight.agency.refersToAgencyName} />
-    <AgencyStatusBadge status={agencyRight.agency.status} />
-    <br />
-    <span>{agencyRight.agency.name}</span>
-    <br />
-    <span className={fr.cx("fr-hint-text", "fr-mb-1w")}>
-      {addressDtoToString(agencyRight.agency.address)}
-    </span>
-    {agencyRight.roles.includes("agency-admin") && (
-      <Button
-        key={`${agencyRight.agency.id}-see-agency-link`}
-        linkProps={
-          frontRoutes.agencyDashboardAgencyDetails({
-            agencyId: agencyRight.agency.id,
-          }).link
-        }
-        size="small"
-        priority="secondary"
-        iconId="fr-icon-arrow-right-line"
-      >
-        Voir l'organisme
-      </Button>
-    )}
-  </Fragment>,
-  agencyKindToLabelIncludingIFAndPrepa[agencyRight.agency.kind],
+}) => {
+  const shouldShowLinkButton =
+    agencyRight.roles.includes("agency-admin") &&
+    !closedOrRejectedAgencyStatuses.includes(agencyRight.agency.status);
+  return [
+    <Fragment key={`${agencyRight.agency.id}-agency-infos`}>
+      <AgencyTag refersToAgencyName={agencyRight.agency.refersToAgencyName} />
+      <AgencyStatusBadge status={agencyRight.agency.status} />
+      <br />
+      <span>{agencyRight.agency.name}</span>
+      <br />
+      <span className={fr.cx("fr-hint-text", "fr-mb-1w")}>
+        {addressDtoToString(agencyRight.agency.address)}
+      </span>
+      {shouldShowLinkButton && (
+        <Button
+          key={`${agencyRight.agency.id}-see-agency-link`}
+          linkProps={
+            frontRoutes.agencyDashboardAgencyDetails({
+              agencyId: agencyRight.agency.id,
+            }).link
+          }
+          size="small"
+          priority="secondary"
+          iconId="fr-icon-arrow-right-line"
+        >
+          Voir l'organisme
+        </Button>
+      )}
+    </Fragment>,
+    agencyKindToLabelIncludingIFAndPrepa[agencyRight.agency.kind],
 
-  <AgencyLineAdminEmails
-    key={`${agencyRight.agency.id}-admin-emails`}
-    agencyRight={agencyRight}
-  />,
-
-  <Fragment key={`${agencyRight.agency.id}-agency-infos`}>
-    {mode === "other-rights" && (
-      <>
-        <div className={fr.cx("fr-mb-1w")}>
-          {agencyRight.roles
-            .map((role) => agencyRolesToDisplay[role].label)
-            .join(", ")}
-        </div>
-        <div className={fr.cx("fr-mb-1w")}>
-          <NotificationIndicator isNotified={agencyRight.isNotifiedByEmail} />
-        </div>
-      </>
-    )}
-    <AgencyLineRightsCTAs
-      key={`${agencyRight.agency.id}-rights-ctas`}
+    <AgencyLineAdminEmails
+      key={`${agencyRight.agency.id}-admin-emails`}
       agencyRight={agencyRight}
-      onUpdateClicked={onUpdateClicked}
-      onRegistrationCancelledClicked={onRegistrationCancelledClicked}
-      user={user}
-      isBackofficeAdmin={isBackofficeAdmin}
-    />
-  </Fragment>,
-];
+    />,
+
+    <Fragment key={`${agencyRight.agency.id}-agency-infos`}>
+      {mode === "other-rights" && (
+        <>
+          <div className={fr.cx("fr-mb-1w")}>
+            {agencyRight.roles
+              .map((role) => agencyRolesToDisplay[role].label)
+              .join(", ")}
+          </div>
+          <div className={fr.cx("fr-mb-1w")}>
+            <NotificationIndicator isNotified={agencyRight.isNotifiedByEmail} />
+          </div>
+        </>
+      )}
+      <AgencyLineRightsCTAs
+        key={`${agencyRight.agency.id}-rights-ctas`}
+        agencyRight={agencyRight}
+        onUpdateClicked={onUpdateClicked}
+        onRegistrationCancelledClicked={onRegistrationCancelledClicked}
+        user={user}
+        isBackofficeAdmin={isBackofficeAdmin}
+      />
+    </Fragment>,
+  ];
+};

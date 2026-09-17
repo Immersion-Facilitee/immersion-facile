@@ -7,6 +7,7 @@ import {
   type ConventionDomainJwtPayload,
   type ConventionDto,
   type ConventionRelatedJwtPayload,
+  closedOrRejectedAgencyStatuses,
   errors,
   getConventionManageAllowedRoles,
   type Role,
@@ -39,10 +40,10 @@ export const throwIfNotAgencyAdminOrBackofficeAdmin = ({
     currentUser.agencyRights.some(
       (agencyRight) =>
         agencyRight.agency.id === agencyId &&
-        agencyRight.roles.includes("agency-admin"),
+        agencyRight.roles.includes("agency-admin") &&
+        !closedOrRejectedAgencyStatuses.includes(agencyRight.agency.status),
     ),
   );
-
   if (!hasPermission) throw errors.user.forbidden({ userId: currentUser.id });
 };
 
