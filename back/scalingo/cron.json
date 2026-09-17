@@ -49,6 +49,10 @@
       "size": "M"
     },
     {
+      "command": "00 6 * * * pnpm back run trigger-notify-convention-summary-to-agency",
+      "size": "M"
+    },
+    {
       "command": "30 6 * * * pnpm back run trigger-delete-inactive-users",
       "size": "M"
     },

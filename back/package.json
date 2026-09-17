@@ -56,6 +56,7 @@
     "trigger-refresh-materialized-views": "tsx src/scripts/triggerRefreshMaterializedViews.ts",
     "trigger-resync-old-conventions-to-pe": "tsx src/scripts/triggerResyncOldConventionsToPe.ts",
     "trigger-assessment-reminders": "tsx src/scripts/triggerAssessmentReminder.ts",
+    "trigger-notify-convention-summary-to-agency": "tsx src/scripts/triggerNotifyConventionSummaryToAgency.ts",
     "trigger-remind-agency-admin-that-new-user-request-agency-right": "tsx src/scripts/triggerRemindAgencyAdminThatNewUserRequestAgencyRight.ts",
     "trigger-warn-inactive-users": "tsx src/scripts/triggerWarnInactiveUsers.ts",
     "trigger-delete-inactive-users": "tsx src/scripts/triggerDeleteInactiveUsers.ts",
