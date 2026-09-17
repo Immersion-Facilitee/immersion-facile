@@ -1,4 +1,3 @@
-import { ascend, prop, sort } from "ramda";
 import {
   addressDtoToString,
   type ContactEstablishmentEventPayload,
@@ -60,7 +59,6 @@ export const makeNotifyContactRequest = useCaseBuilder("NotifyContactRequest")
           uow,
           discussion,
           establishment,
-          isLegacy: inputParams.isLegacy,
           deps,
         })
       : notifyOnOtherContactMode({ uow, discussion, establishment, deps });
@@ -115,13 +113,11 @@ const notifyOnEmailContactMode = async ({
   deps,
   discussion,
   establishment,
-  isLegacy,
 }: {
   uow: UnitOfWork;
   deps: Deps;
   discussion: DiscussionDto;
   establishment: EstablishmentAggregate;
-  isLegacy: boolean | undefined;
 }): Promise<void> => {
   const appellations =
     await uow.romeRepository.getAppellationAndRomeDtosFromAppellationCodesIfExist(
@@ -157,30 +153,16 @@ const notifyOnEmailContactMode = async ({
       email: opaqueEmail,
       name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
     },
-    kind: "CONTACT_BY_EMAIL_REQUEST",
-    params: {
-      ...(await makeContactByEmailRequestParams({
-        appellation,
-        discussion,
-        immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
-      })),
-      replyToEmail: opaqueEmail,
-    },
+    ...makeContactByEmailRequestParams({
+      appellation,
+      discussion,
+      immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
+    }),
   };
 
   await deps.saveNotificationAndRelatedEvent(uow, {
     kind: "email",
-    templatedContent: isLegacy
-      ? {
-          ...templatedContent,
-          kind: "CONTACT_BY_EMAIL_REQUEST_LEGACY",
-          params: {
-            ...templatedContent.params,
-            message: sort(ascend(prop("sentAt")), discussion.exchanges)[0]
-              .message,
-          },
-        }
-      : templatedContent,
+    templatedContent,
     followedIds: { establishmentSiret: discussion.siret },
   });
 };

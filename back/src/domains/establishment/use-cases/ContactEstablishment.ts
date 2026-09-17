@@ -133,7 +133,6 @@ export const makeContactEstablishment = useCaseBuilder("ContactEstablishment")
             siret: discussion.siret,
             discussionId: discussion.id,
             triggeredBy: null,
-            isLegacy: false,
           },
         }),
       );
@@ -339,24 +338,22 @@ const makeDiscussionDto = async ({
         [discussion.appellationCode],
       );
 
+    const { kind, params } = makeContactByEmailRequestParams({
+      discussion,
+      immersionFacileBaseUrl,
+      appellation,
+    });
+
     const emailContent = configureGenerateHtmlFromTemplate(
       emailTemplatesByName,
       {
         header: undefined,
         footer: undefined,
       },
-    )(
-      "CONTACT_BY_EMAIL_REQUEST",
-      makeContactByEmailRequestParams({
-        discussion,
-        immersionFacileBaseUrl,
-        appellation,
-      }),
-      { showContentParts: true },
-    );
+    )(kind, params, { showContentParts: true });
 
     if (!emailContent.contentParts)
-      throw errors.email.missingContentParts("CONTACT_BY_EMAIL_REQUEST");
+      throw errors.email.missingContentParts(kind);
 
     return {
       ...discussion,

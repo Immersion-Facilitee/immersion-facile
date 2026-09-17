@@ -129,7 +129,10 @@ describe("Contact establishment public v2 e2e", () => {
       expect(sentEmails).toHaveLength(2);
       expectArraysToEqualIgnoringOrder(
         sentEmails.map((email) => email.kind),
-        ["CONTACT_BY_EMAIL_REQUEST", "CONTACT_BY_EMAIL_CANDIDATE_CONFIRMATION"],
+        [
+          "CONTACT_BY_EMAIL_REQUEST_IMMERSION",
+          "CONTACT_BY_EMAIL_CANDIDATE_CONFIRMATION",
+        ],
       );
 
       expect(inMemoryUow.discussionRepository.discussions).toHaveLength(1);
