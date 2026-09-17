@@ -17,6 +17,7 @@ import {
   calculateTotalImmersionHoursFromComplexSchedule,
   calculateWeeklyHoursFromSchedule,
   isSundayInSchedule,
+  makeComplexSchedule,
   makeDailySchedule,
   makeImmersionTimetable,
   makeWeeklySchedule,
@@ -1351,6 +1352,41 @@ jeudi : 09:00-12:45, 13:15-17:00`,
             "samedi : libre",
           ],
           weeklyHours: 1,
+        },
+      ]);
+    });
+  });
+  describe("makeComplexSchedule", () => {
+    it("should keep the last day in interval", () => {
+      const complexSchedule = makeComplexSchedule(
+        {
+          start: new Date(
+            "Thu Sep 17 2026 12:00 GMT+0200 (heure d’été d’Europe centrale)",
+          ),
+          end: new Date(
+            "Sun Sep 20 2026 02:00:00 GMT+0200 (heure d’été d’Europe centrale)",
+          ),
+        },
+        [],
+        [],
+      );
+      expect(complexSchedule.length).toBe(4);
+      expectToEqual(complexSchedule, [
+        {
+          date: new Date("2026-09-17T10:00:00.000Z").toISOString(),
+          timePeriods: [],
+        },
+        {
+          date: new Date("2026-09-18T10:00:00.000Z").toISOString(),
+          timePeriods: [],
+        },
+        {
+          date: new Date("2026-09-19T10:00:00.000Z").toISOString(),
+          timePeriods: [],
+        },
+        {
+          date: new Date("2026-09-20T10:00:00.000Z").toISOString(),
+          timePeriods: [],
         },
       ]);
     });

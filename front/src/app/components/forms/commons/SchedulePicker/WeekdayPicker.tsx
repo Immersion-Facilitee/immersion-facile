@@ -26,6 +26,28 @@ type WeekdayPickerProps = {
   internshipKind: InternshipKind;
 };
 
+const isDayDisabled = (
+  day: WeekdayNumber,
+  { start, end }: DateIntervalDto,
+  internshipKind: InternshipKind,
+) => {
+  const startEndDiff = differenceInCalendarDays(end, start);
+  if (startEndDiff > maximumCalendarDayByInternshipKind[internshipKind])
+    return false;
+  const uniqueWeekDaysOnInterval = uniq(
+    arrayFromNumber(startEndDiff + 1).map(
+      (dayIndex) =>
+        frenchDayMapping(
+          addDays(
+            convertLocaleDateToUtcTimezoneDate(new Date(start)),
+            dayIndex,
+          ).toISOString(),
+        ).frenchDay,
+    ),
+  );
+  return !uniqueWeekDaysOnInterval.includes(day);
+};
+
 export const WeekdayPicker = ({
   onValueChange,
   availableWeekDays,
@@ -40,26 +62,6 @@ export const WeekdayPicker = ({
       : [...selectedDays, day];
     onValueChange(newDaysSelected);
   };
-  const isDayDisabled = (
-    day: WeekdayNumber,
-    { start, end }: DateIntervalDto,
-  ) => {
-    const startEndDiff = differenceInCalendarDays(end, start);
-    if (startEndDiff > maximumCalendarDayByInternshipKind[internshipKind])
-      return false;
-    const uniqueWeekDaysOnInterval = uniq(
-      arrayFromNumber(startEndDiff + 1).map(
-        (dayIndex) =>
-          frenchDayMapping(
-            addDays(
-              convertLocaleDateToUtcTimezoneDate(new Date(start)),
-              dayIndex,
-            ).toISOString(),
-          ).frenchDay,
-      ),
-    );
-    return !uniqueWeekDaysOnInterval.includes(day);
-  };
 
   return (
     <div className={cx("schedule-picker__section")}>
@@ -70,21 +72,23 @@ export const WeekdayPicker = ({
           "schedule-picker--regular",
         )}
       >
-        {availableWeekDays.map((dayName, index) => (
-          <DayCircle
-            // biome-ignore lint/suspicious/noArrayIndexKey: Index is ok here
-            key={dayName + index}
-            name={dayName}
-            disabled={isDayDisabled(index as WeekdayNumber, interval)}
-            dayStatus={
-              selectedDays.includes(index as WeekdayNumber)
-                ? "hasTime"
-                : "empty"
-            }
-            onClick={() => onDayClick(index as WeekdayNumber)}
-          />
-        ))}
+        {availableWeekDays.map((dayName, index) => {
+          if (!isWeekDayNumber(index)) return null;
+          return (
+            <DayCircle
+              // biome-ignore lint/suspicious/noArrayIndexKey: Index is ok here
+              key={dayName + index}
+              name={dayName}
+              disabled={isDayDisabled(index, interval, internshipKind)}
+              dayStatus={selectedDays.includes(index) ? "hasTime" : "empty"}
+              onClick={() => onDayClick(index)}
+            />
+          );
+        })}
       </div>
     </div>
   );
 };
+
+const isWeekDayNumber = (value: number): value is WeekdayNumber =>
+  value >= 0 && value <= 6;
