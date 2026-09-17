@@ -36,17 +36,11 @@ const notifyConventionSummaryToAgencyScript = async () => {
   return { notifications };
 };
 
-export const triggerNotifyConventionSummaryToAgencyScript = ({
-  exitOnFinish,
-}: {
-  exitOnFinish: boolean;
-}) =>
-  handleCRONScript({
-    name: "conventionSummaryNotificationsScript",
-    config,
-    script: notifyConventionSummaryToAgencyScript,
-    handleResults: ({ notifications }) =>
-      `${notifications} notifications has been prepared to be sent to notified agence users`,
-    logger,
-    exitOnFinish,
-  });
+handleCRONScript({
+  name: "conventionSummaryNotificationsScript",
+  config,
+  script: notifyConventionSummaryToAgencyScript,
+  handleResults: ({ notifications }) =>
+    `${notifications} notifications has been prepared to be sent to notified agence users`,
+  logger,
+});
