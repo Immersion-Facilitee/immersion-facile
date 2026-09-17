@@ -397,22 +397,35 @@ export const defaultEmailValueByEmailKind: {
     potentialBeneficiaryResumeLink: "POTENTIAL_BENEFICIARY_CV_OR_LINKEDIN",
     businessAddress: "BUSINESS_ADDRESS",
   },
-  CONTACT_BY_EMAIL_REQUEST: {
-    replyToEmail: "REPLY_TO_EMAIL",
+  CONTACT_BY_EMAIL_MINISTAGE: {
     appellationLabel: "APPELLATION_LABEL",
+    businessAddress: "BUSINESS_ADDRESS",
     businessName: "BUSINESS_NAME",
-    immersionObjective: "Découvrir un métier ou un secteur d'activité",
+    discussionUrl: "https://immersion-facile.beta.gouv.fr",
+    levelOfEducation: "3ème",
+    potentialBeneficiaryDatePreferences:
+      "POTENTIAL_BENEFICIARY_DATE_PREFERENCES",
     potentialBeneficiaryFirstName: "POTENTIAL_BENEFICIARY_FIRST_NAME",
     potentialBeneficiaryLastName: "POTENTIAL_BENEFICIARY_LAST_NAME",
     potentialBeneficiaryPhone: "POTENTIAL_BENEFICIARY_PHONE",
-    potentialBeneficiaryResumeLink: "POTENTIAL_BENEFICIARY_CV_OR_LINKEDIN",
+  },
+  CONTACT_BY_EMAIL_REQUEST_IMMERSION: {
+    appellationLabel: "APPELLATION_LABEL",
     businessAddress: "BUSINESS_ADDRESS",
+    businessName: "BUSINESS_NAME",
+    discussionUrl: "https://immersion-facile.beta.gouv.fr",
+    immersionObjective: "Découvrir un métier ou un secteur d'activité",
     potentialBeneficiaryDatePreferences:
       "POTENTIAL_BENEFICIARY_DATE_PREFERENCES",
+    potentialBeneficiaryDurationPreferences:
+      "POTENTIAL_BENEFICIARY_DURATION_PREFERENCES",
     potentialBeneficiaryExperienceAdditionalInformation:
       "POTENTIAL_BENEFICIARY_EXPERIENCE_ADDITIONAL_INFORMATION",
-    discussionUrl: "https://immersion-facile.beta.gouv.fr",
-    kind: "IF",
+    potentialBeneficiaryFirstName: "POTENTIAL_BENEFICIARY_FIRST_NAME",
+    potentialBeneficiaryLastName: "POTENTIAL_BENEFICIARY_LAST_NAME",
+    potentialBeneficiaryMotivation: "POTENTIAL_BENEFICIARY_MOTIVATION",
+    potentialBeneficiaryPhone: "POTENTIAL_BENEFICIARY_PHONE",
+    potentialBeneficiaryResumeLink: "POTENTIAL_BENEFICIARY_CV_OR_LINKEDIN",
   },
   CONTACT_BY_EMAIL_CANDIDATE_CONFIRMATION: {
     businessName: "BUSINESS_NAME",
