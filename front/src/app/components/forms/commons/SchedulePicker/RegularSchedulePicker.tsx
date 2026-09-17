@@ -43,95 +43,91 @@ export const RegularSchedulePicker = (props: RegularSchedulePickerProps) => {
   );
 
   return (
-    <>
+    <div
+      className={cx(
+        fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-mb-2w"),
+        "schedule-picker",
+        "schedule-picker--regular",
+      )}
+    >
       <div
         className={cx(
-          fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-mb-2w"),
-          "schedule-picker",
-          "schedule-picker--regular",
+          fr.cx("fr-col-12", "fr-col-lg-8"),
+          "schedule-picker__inner",
         )}
       >
-        <div
-          className={cx(
-            fr.cx("fr-col-12", "fr-col-lg-8"),
-            "schedule-picker__inner",
+        <WeekdayPicker
+          name={name}
+          availableWeekDays={availableWeekDays}
+          selectedDays={selectedDaysFromComplexSchedule(
+            values.schedule.complexSchedule,
           )}
-        >
-          <WeekdayPicker
-            name={name}
-            availableWeekDays={availableWeekDays}
-            selectedDays={selectedDaysFromComplexSchedule(
-              values.schedule.complexSchedule,
-            )}
-            internshipKind={values.internshipKind}
-            onValueChange={(newSelectedDays: SelectedDaysOfTheWeekDto) => {
-              const newSchedule = new ScheduleDtoBuilder(values.schedule)
-                .withDateInterval(props.interval)
-                .withRegularSchedule({
-                  selectedDays: newSelectedDays,
-                  timePeriods: regularTimePeriods(selectedHours),
-                })
-                .build();
-              setValue(name, newSchedule);
-            }}
-            interval={props.interval}
-            disabled={props.disabled}
-          />
+          internshipKind={values.internshipKind}
+          onValueChange={(newSelectedDays: SelectedDaysOfTheWeekDto) => {
+            const newSchedule = new ScheduleDtoBuilder(values.schedule)
+              .withDateInterval(props.interval)
+              .withRegularSchedule({
+                selectedDays: newSelectedDays,
+                timePeriods: regularTimePeriods(selectedHours),
+              })
+              .build();
+            setValue(name, newSchedule);
+          }}
+          interval={props.interval}
+          disabled={props.disabled}
+        />
 
-          <p className={fr.cx("fr-h5", "fr-mt-2w")}>
-            Sélectionnez les horaires
-          </p>
+        <p className={fr.cx("fr-h5", "fr-mt-2w")}>Sélectionnez les horaires</p>
 
-          <HourPicker
-            name={name}
-            timePeriods={regularTimePeriods(selectedHours)}
-            onValueChange={(newHours) => {
-              const complexSchedule = values.schedule.complexSchedule.map(
-                (dailySchedule): DailyScheduleDto => ({
-                  date: dailySchedule.date,
-                  timePeriods: newHours,
-                }),
-              );
-              const schedule: ScheduleDto = {
-                ...values.schedule,
-                complexSchedule,
-              };
-              schedule.totalHours =
-                calculateTotalImmersionHoursFromComplexSchedule(
-                  schedule.complexSchedule,
-                );
-              schedule.workedDays = calculateNumberOfWorkedDays(
+        <HourPicker
+          name={name}
+          timePeriods={regularTimePeriods(selectedHours)}
+          onValueChange={(newHours) => {
+            const complexSchedule = values.schedule.complexSchedule.map(
+              (dailySchedule): DailyScheduleDto => ({
+                date: dailySchedule.date,
+                timePeriods: newHours,
+              }),
+            );
+            const schedule: ScheduleDto = {
+              ...values.schedule,
+              complexSchedule,
+            };
+            schedule.totalHours =
+              calculateTotalImmersionHoursFromComplexSchedule(
                 schedule.complexSchedule,
               );
-              setValue(name, schedule, {
-                shouldValidate: true,
-              });
-            }}
-            disabled={props.disabled}
-          />
-        </div>
-        <div
-          className={cx(
-            fr.cx("fr-col-12", "fr-col-lg-4"),
-            "schedule-picker__week-hours-summary",
-          )}
-        >
-          <p className={fr.cx("fr-text--sm", "fr-mb-1w")}>
-            <strong>Récapitulatif hebdomadaire</strong>
-          </p>
-          <hr className={fr.cx("fr-hr", "fr-pb-1w")} />
-          <WeeksHoursIndicator
-            schedule={values.schedule}
-            interval={{
-              start: convertLocaleDateToUtcTimezoneDate(
-                new Date(values.dateStart),
-              ),
-              end: convertLocaleDateToUtcTimezoneDate(new Date(values.dateEnd)),
-            }}
-          />
-        </div>
+            schedule.workedDays = calculateNumberOfWorkedDays(
+              schedule.complexSchedule,
+            );
+            setValue(name, schedule, {
+              shouldValidate: true,
+            });
+          }}
+          disabled={props.disabled}
+        />
       </div>
-    </>
+      <div
+        className={cx(
+          fr.cx("fr-col-12", "fr-col-lg-4"),
+          "schedule-picker__week-hours-summary",
+        )}
+      >
+        <p className={fr.cx("fr-text--sm", "fr-mb-1w")}>
+          <strong>Récapitulatif hebdomadaire</strong>
+        </p>
+        <hr className={fr.cx("fr-hr", "fr-pb-1w")} />
+        <WeeksHoursIndicator
+          schedule={values.schedule}
+          interval={{
+            start: convertLocaleDateToUtcTimezoneDate(
+              new Date(values.dateStart),
+            ),
+            end: convertLocaleDateToUtcTimezoneDate(new Date(values.dateEnd)),
+          }}
+        />
+      </div>
+    </div>
   );
 };
 
