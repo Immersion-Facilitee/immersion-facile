@@ -20,11 +20,19 @@ import type {
   ContactLevelOfEducation,
   DiscussionExchangeForbiddenParams,
   DiscussionKind,
+  ImmersionDuration,
+  immersionDurationLabels,
 } from "../discussion/discussion.dto";
+import type {
+  BusinessAddress,
+  BusinessName,
+} from "../establishment/establishment.dto";
 import type { EstablishmentUserRightStatus } from "../formEstablishment/FormEstablishment.dto";
+import type { PhoneNumber } from "../phone/phone.dto";
 import type { AgencyRole, EstablishmentRole } from "../role/role.dto";
 import type { AppellationLabel } from "../romeAndAppellationDtos/romeAndAppellation.dto";
 import type { SiretDto } from "../siret/siret";
+import type { Firstname, Lastname } from "../user/user.dto";
 import type { DateString } from "../utils/date";
 import type { Email } from "./email.dto";
 
@@ -241,28 +249,32 @@ export type EmailParamsByEmailType = {
     businessName: string;
     beneficiaryDashboardUrl: AbsoluteUrl;
   };
-  CONTACT_BY_EMAIL_REQUEST: {
-    businessName: string;
-    businessAddress: string;
-    appellationLabel: string;
-    immersionObjective: ImmersionObjective | undefined;
-    replyToEmail: Email;
-    potentialBeneficiaryFirstName: string;
-    potentialBeneficiaryLastName: string;
-    potentialBeneficiaryPhone: string;
-    potentialBeneficiaryDatePreferences: string;
+  CONTACT_BY_EMAIL_MINISTAGE: {
+    appellationLabel: AppellationLabel;
+    businessAddress: BusinessAddress;
+    businessName: BusinessName;
     discussionUrl: AbsoluteUrl;
-  } & (
-    | {
-        kind: "IF";
-        potentialBeneficiaryExperienceAdditionalInformation?: string;
-        potentialBeneficiaryResumeLink?: string;
-      }
-    | {
-        kind: "1_ELEVE_1_STAGE";
-        levelOfEducation: ContactLevelOfEducation;
-      }
-  );
+    levelOfEducation: ContactLevelOfEducation;
+    potentialBeneficiaryDatePreferences: string;
+    potentialBeneficiaryFirstName: Firstname;
+    potentialBeneficiaryLastName: Lastname;
+    potentialBeneficiaryPhone: PhoneNumber;
+  };
+  CONTACT_BY_EMAIL_REQUEST_IMMERSION: {
+    appellationLabel: AppellationLabel;
+    businessAddress: BusinessAddress;
+    businessName: BusinessName;
+    discussionUrl: AbsoluteUrl;
+    immersionObjective: ImmersionObjective | undefined;
+    potentialBeneficiaryDatePreferences: string;
+    potentialBeneficiaryDurationPreferences: (typeof immersionDurationLabels)[ImmersionDuration];
+    potentialBeneficiaryExperienceAdditionalInformation: string;
+    potentialBeneficiaryFirstName: Firstname;
+    potentialBeneficiaryLastName: Lastname;
+    potentialBeneficiaryMotivation: string;
+    potentialBeneficiaryPhone: PhoneNumber;
+    potentialBeneficiaryResumeLink: string | undefined;
+  };
   CONTACT_BY_EMAIL_REQUEST_LEGACY: {
     businessName: string;
     businessAddress: string;
