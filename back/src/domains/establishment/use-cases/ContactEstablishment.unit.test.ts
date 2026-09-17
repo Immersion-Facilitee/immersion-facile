@@ -350,7 +350,7 @@ describe("ContactEstablishment", () => {
 <table width="600">
   <tr>
     <td>
-      <p>Un candidat souhaite faire une immersion dans votre entreprise Company inside repository (24 rue des bouchers 67000 Strasbourg).<br/><br/><strong>Immersion souhaitée :</strong><br/>• Métier : ${immersionOffer.appellationLabel}.<br/>• Dates d’immersion envisagées : fake date preferences.<br/>• But de l'immersion : Je compte me former à ce métier.<br/><br/><strong>Profil du candidat :</strong><br/>• Informations supplémentaires sur l'expérience du candidat : fake experience additional information.</p>
+      <p>Vous avez reçu une nouvelle demande d'immersion via Immersion Facilitée pour votre entreprise <strong>Company inside repository</strong> (24 rue des bouchers 67000 Strasbourg) :<br/><br/><strong>Billy IDOL</strong><br/><br/><strong>Métier :</strong> ${immersionOffer.appellationLabel}<br/><strong>Objectif :</strong> Je compte me former à ce métier<br/><strong>Période :</strong> fake date preferences<br/><strong>Durée :</strong> 1 semaine<br/><br/><strong>En savoir plus sur son profil :</strong><br/><br/>• <strong>Pourquoi cette immersion :</strong> Je sais faire des crêpes<br/>• <strong>Compétences, expériences et savoirs-être :</strong> fake experience additional information</p>
     </td>
   </tr>
 </table>
@@ -358,7 +358,7 @@ describe("ContactEstablishment", () => {
 <table width="600">
   <tr>
     <td>
-      <p><strong>Si la connexion ne fonctionne pas et que vous ne recevez pas le lien de réinitialisation du mot de passe, c'est que vous n'avez pas encore créé votre compte</strong>.<br/>Créer votre compte avec le même mail que celui avec lequel les candidats vous contactent.<br/><br/><br/>Bonne journée,<br/>L'équipe Immersion Facilitée</p>
+      <p>Cette personne attend votre réponse. Vous pouvez lui répondre directement depuis cet email (ou utiliser le bouton ci-dessus) : votre message lui sera transmis.<br/><br/>Seule la personne destinataire de cet email est autorisée à répondre via Immersion Facilitée. Merci de ne pas transférer ce message : toute réponse envoyée depuis un autre compte ne pourra pas être transmise.<br/><br/>En cas d'absence de réponse par email, vous pouvez aussi appeler Billy directement par téléphone : +33654783402.<br/><br/>À bientôt,<br/>L'équipe Immersion Facilitée</p>
     </td>
   </tr>
 </table>`,
@@ -488,14 +488,14 @@ describe("ContactEstablishment", () => {
               },
               exchanges: [
                 {
-                  subject: `Billy IDOL vous contacte pour une demande d'immersion sur le métier de ${immersionOffer.appellationLabel}`,
+                  subject: `Billy IDOL vous contacte pour une demande de stage sur le métier de ${immersionOffer.appellationLabel}`,
                   sentAt: timeGateway.now().toISOString(),
                   message: `<p>Bonjour,</p>
               
 <table width="600">
   <tr>
     <td>
-      <p>Un candidat souhaite faire une immersion dans votre entreprise Company inside repository (24 rue des bouchers 67000 Strasbourg).<br/><br/><strong>Immersion souhaitée :</strong><br/>• Métier : ${immersionOffer.appellationLabel}.<br/>• Dates d’immersion envisagées : fake date preferences.<br/>• But de l'immersion : J'en suis au premier stade de mon orientation et je veux en savoir plus sur ce métier.<br/><br/><strong>Profil du candidat :</strong><br/>• Je suis en 2nde.</p>
+      <p>Vous avez reçu une nouvelle demande de stage via Immersion Facilitée pour votre entreprise <strong>Company inside repository</strong> (24 rue des bouchers 67000 Strasbourg) :<br/><br/><strong>Billy IDOL</strong><br/><br/><strong>Métier :</strong> ${immersionOffer.appellationLabel}<br/><strong>Période :</strong> fake date preferences<br/><br/><strong>En savoir plus sur son profil :</strong><br/><br/>• <strong>Classe :</strong> Seconde</p>
     </td>
   </tr>
 </table>
@@ -503,7 +503,7 @@ describe("ContactEstablishment", () => {
 <table width="600">
   <tr>
     <td>
-      <p><strong>Si la connexion ne fonctionne pas et que vous ne recevez pas le lien de réinitialisation du mot de passe, c'est que vous n'avez pas encore créé votre compte</strong>.<br/>Créer votre compte avec le même mail que celui avec lequel les candidats vous contactent.<br/><br/><br/>Bonne journée,<br/>L'équipe Immersion Facilitée</p>
+      <p>Cette personne attend votre réponse. Vous pouvez lui répondre directement depuis cet email (ou utiliser le bouton ci-dessus) : votre message lui sera transmis.<br/><br/>Seule la personne destinataire de cet email est autorisée à répondre via Immersion Facilitée. Merci de ne pas transférer ce message : toute réponse envoyée depuis un autre compte ne pourra pas être transmise.<br/><br/>En cas d'absence de réponse par email, vous pouvez aussi appeler Billy directement par téléphone : +33654783402.<br/><br/>À bientôt,<br/>L'équipe Immersion Facilitée</p>
     </td>
   </tr>
 </table>`,

@@ -150,37 +150,53 @@ const notifyOnEmailContactMode = async ({
     )
   ).map((user) => user.email);
 
-  const templatedContent: TemplatedEmail = {
+  const commonTemplatedContent = {
     sender: discussionEmailSender,
     recipients: notifiedRecipients,
     replyTo: {
       email: opaqueEmail,
       name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
     },
-    kind: "CONTACT_BY_EMAIL_REQUEST",
-    params: {
-      ...(await makeContactByEmailRequestParams({
-        appellation,
-        discussion,
-        immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
-      })),
-      replyToEmail: opaqueEmail,
-    },
   };
+
+  const templatedContent: TemplatedEmail = isLegacy
+    ? {
+        ...commonTemplatedContent,
+        kind: "CONTACT_BY_EMAIL_REQUEST_LEGACY",
+        params: {
+          appellationLabel: appellation.appellationLabel,
+          businessName: discussion.businessName,
+          businessAddress: addressDtoToString(discussion.address),
+          immersionObjective:
+            discussion.potentialBeneficiary.immersionObjective ?? undefined,
+          potentialBeneficiaryFirstName: getFormattedFirstnameAndLastname({
+            firstname: discussion.potentialBeneficiary.firstName,
+          }),
+          potentialBeneficiaryLastName: getFormattedFirstnameAndLastname({
+            lastname: discussion.potentialBeneficiary.lastName,
+          }),
+          potentialBeneficiaryPhone: discussion.potentialBeneficiary.phone,
+          potentialBeneficiaryResumeLink:
+            discussion.kind === "IF"
+              ? discussion.potentialBeneficiary.resumeLink
+              : undefined,
+          message: sort(ascend(prop("sentAt")), discussion.exchanges)[0]
+            .message,
+          replyToEmail: opaqueEmail,
+        },
+      }
+    : {
+        ...commonTemplatedContent,
+        ...makeContactByEmailRequestParams({
+          appellation,
+          discussion,
+          immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
+        }),
+      };
 
   await deps.saveNotificationAndRelatedEvent(uow, {
     kind: "email",
-    templatedContent: isLegacy
-      ? {
-          ...templatedContent,
-          kind: "CONTACT_BY_EMAIL_REQUEST_LEGACY",
-          params: {
-            ...templatedContent.params,
-            message: sort(ascend(prop("sentAt")), discussion.exchanges)[0]
-              .message,
-          },
-        }
-      : templatedContent,
+    templatedContent,
     followedIds: { establishmentSiret: discussion.siret },
   });
 };
