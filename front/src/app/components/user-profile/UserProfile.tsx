@@ -10,6 +10,7 @@ import {
   type ConnectedUser,
   domElementIds,
   frontRoutes,
+  partitionUserEstablishmentRightsByStatus,
   type UserId,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
@@ -120,15 +121,8 @@ export const UserProfile = ({
 
   useScrollTo(!!useFeedbackTopic("agency-user-right-self"));
 
-  const acceptedUserEstablishmentsRights =
-    userWithRights.establishments?.filter(
-      (userEstablishment) => userEstablishment.status === "ACCEPTED",
-    ) || [];
-
-  const pendingUserEstablishmentsRights =
-    userWithRights.establishments?.filter(
-      (userEstablishment) => userEstablishment.status === "PENDING",
-    ) || [];
+  const { acceptedUserEstablishmentsRights, pendingUserEstablishmentsRights } =
+    partitionUserEstablishmentRightsByStatus(userWithRights.establishments);
 
   const allDisplayedEstablishmentsRights = [
     ...acceptedUserEstablishmentsRights,
@@ -204,7 +198,7 @@ export const UserProfile = ({
             {pendingUserEstablishmentsRights.length > 0 && (
               <>
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
-                  Demandes d'accès en cours
+                  Mes demandes d'accès envoyées
                 </h3>
                 <EstablishmentsTablesSection
                   withEstablishmentData={pendingUserEstablishmentsRights}
