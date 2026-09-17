@@ -133,7 +133,6 @@ export const makeContactEstablishment = useCaseBuilder("ContactEstablishment")
             siret: discussion.siret,
             discussionId: discussion.id,
             triggeredBy: null,
-            isLegacy: false,
           },
         }),
       );

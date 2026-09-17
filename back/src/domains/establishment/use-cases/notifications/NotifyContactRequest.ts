@@ -1,4 +1,3 @@
-import { ascend, prop, sort } from "ramda";
 import {
   addressDtoToString,
   type ContactEstablishmentEventPayload,
@@ -60,7 +59,6 @@ export const makeNotifyContactRequest = useCaseBuilder("NotifyContactRequest")
           uow,
           discussion,
           establishment,
-          isLegacy: inputParams.isLegacy,
           deps,
         })
       : notifyOnOtherContactMode({ uow, discussion, establishment, deps });
@@ -115,13 +113,11 @@ const notifyOnEmailContactMode = async ({
   deps,
   discussion,
   establishment,
-  isLegacy,
 }: {
   uow: UnitOfWork;
   deps: Deps;
   discussion: DiscussionDto;
   establishment: EstablishmentAggregate;
-  isLegacy: boolean | undefined;
 }): Promise<void> => {
   const appellations =
     await uow.romeRepository.getAppellationAndRomeDtosFromAppellationCodesIfExist(
@@ -150,49 +146,19 @@ const notifyOnEmailContactMode = async ({
     )
   ).map((user) => user.email);
 
-  const commonTemplatedContent = {
+  const templatedContent: TemplatedEmail = {
     sender: discussionEmailSender,
     recipients: notifiedRecipients,
     replyTo: {
       email: opaqueEmail,
       name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
     },
+    ...makeContactByEmailRequestParams({
+      appellation,
+      discussion,
+      immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
+    }),
   };
-
-  const templatedContent: TemplatedEmail = isLegacy
-    ? {
-        ...commonTemplatedContent,
-        kind: "CONTACT_BY_EMAIL_REQUEST_LEGACY",
-        params: {
-          appellationLabel: appellation.appellationLabel,
-          businessName: discussion.businessName,
-          businessAddress: addressDtoToString(discussion.address),
-          immersionObjective:
-            discussion.potentialBeneficiary.immersionObjective ?? undefined,
-          potentialBeneficiaryFirstName: getFormattedFirstnameAndLastname({
-            firstname: discussion.potentialBeneficiary.firstName,
-          }),
-          potentialBeneficiaryLastName: getFormattedFirstnameAndLastname({
-            lastname: discussion.potentialBeneficiary.lastName,
-          }),
-          potentialBeneficiaryPhone: discussion.potentialBeneficiary.phone,
-          potentialBeneficiaryResumeLink:
-            discussion.kind === "IF"
-              ? discussion.potentialBeneficiary.resumeLink
-              : undefined,
-          message: sort(ascend(prop("sentAt")), discussion.exchanges)[0]
-            .message,
-          replyToEmail: opaqueEmail,
-        },
-      }
-    : {
-        ...commonTemplatedContent,
-        ...makeContactByEmailRequestParams({
-          appellation,
-          discussion,
-          immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
-        }),
-      };
 
   await deps.saveNotificationAndRelatedEvent(uow, {
     kind: "email",
