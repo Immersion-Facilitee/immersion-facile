@@ -7,6 +7,7 @@ import type {
   DiscussionDisplayStatus,
   DiscussionFollowUp,
   DiscussionInList,
+  DiscussionReadDto,
   ExchangeRead,
   ExchangeRole,
 } from "./discussion.dto";
@@ -18,7 +19,7 @@ export const getLastExchange = (
     (a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime(),
   )[exchanges.length - 1];
 
-export const shouldEstablishmentBeReminded = ({
+export const makeShouldEstablishmentBeReminded = ({
   lastExchangeSender,
   discussionUpdatedAt,
   contactMode,
@@ -28,14 +29,11 @@ export const shouldEstablishmentBeReminded = ({
   discussionUpdatedAt: DateString;
   contactMode: ContactMode;
   isEstablishmentReachableByPhoneAfter15Days: boolean;
-}): boolean => {
-  return (
-    lastExchangeSender === "potentialBeneficiary" &&
-    new Date(discussionUpdatedAt) < subDays(Date.now(), 15) &&
-    contactMode === "EMAIL" &&
-    isEstablishmentReachableByPhoneAfter15Days
-  );
-};
+}): boolean =>
+  lastExchangeSender === "potentialBeneficiary" &&
+  new Date(discussionUpdatedAt) < subDays(Date.now(), 15) &&
+  contactMode === "EMAIL" &&
+  isEstablishmentReachableByPhoneAfter15Days;
 
 export const getDiscussionDisplayStatus = ({
   discussion,
@@ -103,3 +101,23 @@ export const emailExchangeSplitters = [
   /<br>\s*(De(?:&nbsp;|\u00A0|\s)*:|Le(?:&nbsp;|\u00A0|\s).*?,)?\s*Immersion Facilitée\s*(?:<|&lt;)ne-pas-ecrire-a-cet-email@immersion-facile\.beta\.gouv\.fr(?:>|&gt;)[^<]*(?:&nbsp;|\u00A0|\s)*a\s*écrit(?:&nbsp;|\u00A0|\s)*:[^<]*<br>/i,
   emailReplySeparator,
 ];
+
+export const discussionInListFromDiscussionReadDto = (
+  discussionRead: DiscussionReadDto,
+) => {
+  const { createdAt, status, exchanges } = discussionRead;
+  return {
+    createdAt,
+    status,
+    exchangesData: {
+      count: exchanges.length,
+      hasEstablishmentAnswered: exchanges.some(
+        (exchange) => exchange.sender === "establishment",
+      ),
+      lastExchange: [...exchanges].sort(orderExchanges)[0],
+    },
+  };
+};
+
+const orderExchanges = (a: ExchangeRead, b: ExchangeRead) =>
+  new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime();

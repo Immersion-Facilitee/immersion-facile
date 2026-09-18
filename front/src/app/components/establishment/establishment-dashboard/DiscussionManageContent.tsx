@@ -33,6 +33,7 @@ import {
   type DiscussionFollowUp,
   type DiscussionId,
   type DiscussionReadDto,
+  discussionInListFromDiscussionReadDto,
   domElementIds,
   type ExchangeFromDashboard,
   type ExchangeRead,
@@ -48,7 +49,7 @@ import {
   immersionDurationLabels,
   isNotEmptyArray,
   makeEmptyConventionInitialValues,
-  shouldEstablishmentBeReminded,
+  makeShouldEstablishmentBeReminded,
   splitTextOnFirstSeparator,
   toConventionDraftDto,
   toDisplayedDate,
@@ -309,14 +310,7 @@ const getDiscussionActionsButtons = ({
       },
       () => actionsFullSet,
     )
-    .with(
-      {
-        viewer: "potentialBeneficiary",
-        displayStatus: "pending",
-        followUp: "to-remind",
-      },
-      () => [displayContactButton(() => alert("clicked"))],
-    )
+
     .with(
       {
         viewer: "establishment",
@@ -587,7 +581,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
 
       {discussionEstablishmentContactInfo &&
         viewer === "potentialBeneficiary" &&
-        shouldEstablishmentBeReminded({
+        makeShouldEstablishmentBeReminded({
           contactMode: discussion.contactMode,
           discussionUpdatedAt: discussion.updatedAt,
           isEstablishmentReachableByPhoneAfter15Days:
@@ -649,23 +643,19 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
           />
         )}
 
-      {!isLayoutDesktop &&
-        shouldShowDiscussionActions &&
-        discussionActionsButtons && (
-          <div
-            className={fr.cx("fr-grid-row", "fr-grid-row--right", "fr-mt-2w")}
-          >
-            <ButtonWithSubMenu
-              navItems={discussionActionsButtons}
-              priority="primary"
-              buttonLabel={"Actions"}
-              buttonIconId={"fr-icon-more-fill"}
-              iconPosition="right"
-              position="bottom-right"
-              floatingMenuOnMobile
-            />
-          </div>
-        )}
+      {!isLayoutDesktop && shouldShowDiscussionActions && (
+        <div className={fr.cx("fr-grid-row", "fr-grid-row--right", "fr-mt-2w")}>
+          <ButtonWithSubMenu
+            navItems={discussionActionsButtons}
+            priority="primary"
+            buttonLabel={"Actions"}
+            buttonIconId={"fr-icon-more-fill"}
+            iconPosition="right"
+            position="bottom-right"
+            floatingMenuOnMobile
+          />
+        </div>
+      )}
 
       <DiscussionContentContainer
         content={match(discussion.contactMode)
@@ -747,24 +737,18 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
 
             {isLayoutDesktop &&
               discussion.kind === "IF" &&
-              discussionActionsButtons &&
               isNotEmptyArray(discussionActionsButtons) && (
-                <>
-                  {viewer === "establishment" &&
-                    shouldShowDiscussionActions && (
-                      <BorderedSection>
-                        <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                        <ButtonsGroup buttons={discussionActionsButtons} />
-                      </BorderedSection>
-                    )}
-                  {viewer === "potentialBeneficiary" &&
-                    shouldShowDiscussionActions && (
-                      <BorderedSection className={fr.cx("fr-p-2w", "fr-mt-2w")}>
-                        <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                        <ButtonsGroup buttons={discussionActionsButtons} />
-                      </BorderedSection>
-                    )}
-                </>
+                <BorderedSection
+                  className={
+                    viewer === "potentialBeneficiary" &&
+                    shouldShowDiscussionActions
+                      ? fr.cx("fr-p-2w", "fr-mt-2w")
+                      : undefined
+                  }
+                >
+                  <h3 className={fr.cx("fr-h6")}>Actions</h3>
+                  <ButtonsGroup buttons={discussionActionsButtons} />
+                </BorderedSection>
               )}
           </>
         }
@@ -1054,9 +1038,6 @@ const EstablishmentContactInformation = ({
   );
 };
 
-const orderExchanges = (a: ExchangeRead, b: ExchangeRead) =>
-  new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime();
-
 const DiscussionExchangesList = ({
   sortedExchanges,
   potentialBeneficiary,
@@ -1252,23 +1233,4 @@ const DiscussionExchangeMessageForm = ({
       </form>
     </BorderedSection>
   );
-};
-
-const discussionInListFromDiscussionReadDto = (
-  discussionRead: DiscussionReadDto,
-) => {
-  const { createdAt, status, exchanges } = discussionRead;
-  return {
-    createdAt,
-    status,
-
-    // pas fan de ce qui suit...
-    exchangesData: {
-      count: exchanges.length,
-      hasEstablishmentAnswered: exchanges.some(
-        (exchange) => exchange.sender === "establishment",
-      ),
-      lastExchange: [...exchanges].sort(orderExchanges)[0],
-    },
-  };
 };
