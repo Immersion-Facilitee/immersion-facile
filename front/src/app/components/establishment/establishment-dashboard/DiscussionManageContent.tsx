@@ -28,9 +28,12 @@ import {
   type ContactMode,
   type ConventionDraftDto,
   type CreateConventionPresentationInitialValues,
+  type DiscussionDisplayStatus,
   type DiscussionEstablishmentContactInfo,
+  type DiscussionFollowUp,
   type DiscussionId,
   type DiscussionReadDto,
+  discussionInListFromDiscussionReadDto,
   domElementIds,
   type ExchangeFromDashboard,
   type ExchangeRead,
@@ -39,11 +42,14 @@ import {
   escapeHtml,
   exchangeMessageFromDashboardSchema,
   frontRoutes,
+  getDiscussionDisplayStatus,
+  getDiscussionFollowUp,
   getFormattedFirstnameAndLastname,
   getLastExchange,
   immersionDurationLabels,
+  isNotEmptyArray,
   makeEmptyConventionInitialValues,
-  shouldEstablishmentBeReminded,
+  makeShouldEstablishmentBeReminded,
   splitTextOnFirstSeparator,
   toConventionDraftDto,
   toDisplayedDate,
@@ -237,11 +243,40 @@ const getActivateDraftConventionButtonProps = ({
   } satisfies ButtonPropsWithId;
 };
 
+const acceptButton = {
+  id: domElementIds.establishmentDashboard.discussion.acceptDiscussionButton,
+  priority: "secondary",
+  type: "button",
+  onClick: openAcceptDiscussionModal,
+  children: "Marquer comme acceptée",
+} satisfies ButtonPropsWithId;
+
+const rejectButton = {
+  id: domElementIds.establishmentDashboard.discussion.rejectDiscussionButton,
+  priority: "tertiary",
+  type: "button",
+  onClick: openRejectDiscussionModal,
+  children: "Marquer comme refusée",
+} satisfies ButtonPropsWithId;
+
+const displayContactButton = (onClick: ButtonPropsWithId["onClick"]) =>
+  ({
+    id: domElementIds.beneficiaryDashboardDiscussions.displayPhoneContactButton,
+    iconId: "ri-eye-line",
+    priority: "secondary",
+    type: "button",
+    onClick,
+    className: fr.cx("fr-my-1w"),
+    children: "Afficher les informations de contact",
+  }) satisfies ButtonPropsWithId;
+
 const getDiscussionActionsButtons = ({
   discussion,
   connectedUser,
   viewer,
   makeInitiateConventionDraftButtonProps,
+  displayStatus,
+  followUp,
 }: {
   discussion: DiscussionReadDto;
   connectedUser: ConnectedUser;
@@ -249,42 +284,84 @@ const getDiscussionActionsButtons = ({
   makeInitiateConventionDraftButtonProps: (
     props: ActivateConventionDraftButtonProps,
   ) => ButtonPropsWithId;
-}): [ButtonPropsWithId, ...ButtonPropsWithId[]] => {
-  const acceptButton = {
-    id: domElementIds.establishmentDashboard.discussion.acceptDiscussionButton,
-    priority: "secondary",
-    type: "button",
-    onClick: openAcceptDiscussionModal,
-    children: "Marquer comme acceptée",
-  } satisfies ButtonPropsWithId;
-
-  const rejectButton = {
-    id: domElementIds.establishmentDashboard.discussion.rejectDiscussionButton,
-    priority: "tertiary",
-    type: "button",
-    onClick: openRejectDiscussionModal,
-    children: "Marquer comme refusée",
-  } satisfies ButtonPropsWithId;
-
-  return match(viewer)
+  displayStatus: DiscussionDisplayStatus;
+  followUp?: DiscussionFollowUp;
+}): ButtonPropsWithId[] => {
+  const initiateConventionButton = makeInitiateConventionDraftButtonProps({
+    discussion,
+    connectedUser,
+  });
+  const actionsFullSet =
+    discussion.kind === "IF"
+      ? [initiateConventionButton, acceptButton, rejectButton]
+      : [acceptButton, rejectButton];
+  return match({ viewer, displayStatus, followUp })
     .with(
-      "potentialBeneficiary",
-      (): [ButtonPropsWithId, ...ButtonPropsWithId[]] => [
-        makeInitiateConventionDraftButtonProps({ discussion, connectedUser }),
-      ],
+      {
+        viewer: "potentialBeneficiary",
+        displayStatus: "new",
+      },
+      () => [],
     )
-    .with("establishment", (): [ButtonPropsWithId, ...ButtonPropsWithId[]] =>
-      discussion.kind === "IF"
-        ? [
-            makeInitiateConventionDraftButtonProps({
-              discussion,
-              connectedUser,
-            }),
-            acceptButton,
-            rejectButton,
-          ]
-        : [acceptButton, rejectButton],
+    .with(
+      {
+        viewer: "establishment",
+        displayStatus: "new",
+      },
+      () => actionsFullSet,
     )
+
+    .with(
+      {
+        viewer: "establishment",
+        displayStatus: "pending",
+        followUp: "to-remind",
+      },
+      () => actionsFullSet,
+    )
+    .with(
+      {
+        viewer: "potentialBeneficiary",
+        displayStatus: "pending",
+      },
+      () => [],
+    )
+    .with(
+      {
+        viewer: "establishment",
+        displayStatus: "pending",
+      },
+      () => actionsFullSet,
+    )
+    .with(
+      {
+        viewer: "potentialBeneficiary",
+        displayStatus: "accepted",
+      },
+      () => [initiateConventionButton],
+    )
+    .with(
+      {
+        viewer: "establishment",
+        displayStatus: "accepted",
+      },
+      () => [initiateConventionButton],
+    )
+    .with(
+      {
+        viewer: "potentialBeneficiary",
+        displayStatus: "rejected",
+      },
+      () => [],
+    )
+    .with(
+      {
+        viewer: "establishment",
+        displayStatus: "rejected",
+      },
+      () => [],
+    )
+
     .exhaustive();
 };
 
@@ -382,10 +459,22 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
       }),
     );
 
+  const displayStatus = getDiscussionDisplayStatus({
+    discussion: discussionInListFromDiscussionReadDto(discussion),
+  });
+  const followUp = getDiscussionFollowUp({
+    discussion: discussionInListFromDiscussionReadDto(discussion),
+    isEstablishmentReachableByPhoneAfter15Days: true,
+    now: new Date(),
+    viewer,
+  });
+
   const discussionActionsButtons = getDiscussionActionsButtons({
     discussion,
     connectedUser,
     viewer,
+    displayStatus,
+    followUp,
     makeInitiateConventionDraftButtonProps: (discussionProps) =>
       getActivateDraftConventionButtonProps({
         ...discussionProps,
@@ -397,6 +486,8 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
     discussion,
     viewer,
   });
+  const isViewerBeneficiaryAndDiscussionRejected =
+    viewer === "potentialBeneficiary" && discussion.status === "REJECTED";
 
   return (
     <>
@@ -490,7 +581,7 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
 
       {discussionEstablishmentContactInfo &&
         viewer === "potentialBeneficiary" &&
-        shouldEstablishmentBeReminded({
+        makeShouldEstablishmentBeReminded({
           contactMode: discussion.contactMode,
           discussionUpdatedAt: discussion.updatedAt,
           isEstablishmentReachableByPhoneAfter15Days:
@@ -541,19 +632,10 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
                   </>
                 ) : (
                   <Button
-                    id={
-                      domElementIds.beneficiaryDashboardDiscussions
-                        .displayPhoneContactButton
-                    }
-                    iconId="ri-eye-line"
-                    iconPosition="left"
-                    priority="secondary"
-                    type="button"
-                    onClick={() => setShouldShowContactInfo(true)}
-                    className={fr.cx("fr-my-1w")}
-                  >
-                    Afficher les informations de contact
-                  </Button>
+                    {...displayContactButton(() =>
+                      setShouldShowContactInfo(true),
+                    )}
+                  />
                 )}
               </>
             }
@@ -586,10 +668,13 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
                   viewer={viewer}
                 />
               )}
-              <DiscussionExchangeMessageForm
-                discussionId={discussion.id}
-                viewer={viewer}
-              />
+              {!isViewerBeneficiaryAndDiscussionRejected && (
+                <DiscussionExchangeMessageForm
+                  discussionId={discussion.id}
+                  viewer={viewer}
+                />
+              )}
+
               {restSortedExchanges.length > 0 && (
                 <DiscussionExchangesList
                   sortedExchanges={restSortedExchanges}
@@ -650,23 +735,21 @@ const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
               )
               .otherwise(() => null)}
 
-            {isLayoutDesktop && discussion.kind === "IF" && (
-              <>
-                {viewer === "establishment" && shouldShowDiscussionActions && (
-                  <BorderedSection>
-                    <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                    <ButtonsGroup buttons={discussionActionsButtons} />
-                  </BorderedSection>
-                )}
-                {viewer === "potentialBeneficiary" &&
-                  shouldShowDiscussionActions && (
-                    <BorderedSection className={fr.cx("fr-p-2w", "fr-mt-2w")}>
-                      <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                      <ButtonsGroup buttons={discussionActionsButtons} />
-                    </BorderedSection>
-                  )}
-              </>
-            )}
+            {isLayoutDesktop &&
+              discussion.kind === "IF" &&
+              isNotEmptyArray(discussionActionsButtons) && (
+                <BorderedSection
+                  className={
+                    viewer === "potentialBeneficiary" &&
+                    shouldShowDiscussionActions
+                      ? fr.cx("fr-p-2w", "fr-mt-2w")
+                      : undefined
+                  }
+                >
+                  <h3 className={fr.cx("fr-h6")}>Actions</h3>
+                  <ButtonsGroup buttons={discussionActionsButtons} />
+                </BorderedSection>
+              )}
           </>
         }
         className={fr.cx("fr-mt-md-2w", "fr-mt-1w")}
@@ -1134,8 +1217,11 @@ const DiscussionExchangeMessageForm = ({
         <div className={fr.cx("fr-mt-2w")}>
           <Button
             id={
-              domElementIds.establishmentDashboard.discussion
-                .sendMessageSubmitButton
+              domElementIds[
+                viewer === "establishment"
+                  ? "establishmentDashboard"
+                  : "beneficiaryDashboard"
+              ].discussion.sendMessageSubmitButton
             }
             type="submit"
             disabled={formState.isSubmitting || message.trim().length === 0}
