@@ -1018,6 +1018,7 @@ const executeGetDiscussionsStats = (
       ),
       ref("discussions_with_convention").as("discussions_with_convention"),
     ])
+    .orderBy("siret", "asc")
     .execute()
     .then((results) =>
       results.map((r) => ({ ...r, creation_date: r.creation_date })),
