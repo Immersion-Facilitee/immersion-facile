@@ -22,6 +22,7 @@ import type { AppConfig } from "../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
+import { fakeGenerateMagicLinkUrlFn } from "../../../utils/jwtTestHelper";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import { makeSaveNotificationAndRelatedEvent } from "../../core/notifications/helpers/Notification";
 import { DeterministShortLinkIdGeneratorGateway } from "../../core/short-link/adapters/short-link-generator-gateway/DeterministShortLinkIdGeneratorGateway";
@@ -99,6 +100,7 @@ describe("SendAssessmentSignatureReminder", () => {
           uuidGenerator,
           timeGateway,
         ),
+        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
         timeGateway,
         shortLinkIdGeneratorGateway,
         config,
@@ -207,13 +209,16 @@ describe("SendAssessmentSignatureReminder", () => {
     expectToEqual(uow.shortLinkQuery.getShortLinks(), [
       {
         id: shortLinkId,
-        url: makeRouteAbsoluteUrl({
-          route: frontRoutes.assessmentDocument({
-            conventionId: convention.id,
-            loginPersona: "beneficiary",
+        url: fakeGenerateMagicLinkUrlFn({
+          id: convention.id,
+          role: "beneficiary",
+          email: convention.signatories.beneficiary.email,
+          now: timeGateway.now(),
+          targetRoute: "assessmentDocument",
+          lifetime: "2Days",
+          extraQueryParams: {
             at_campaign: "sms-assessment-signature-reminder",
-          }),
-          baseUrl: config.immersionFacileBaseUrl,
+          },
         }),
         lastUsedAt: null,
       },
