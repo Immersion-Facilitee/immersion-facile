@@ -2539,12 +2539,12 @@ describe("PgEstablishmentAggregateRepository", () => {
 
     describe("updateEstablishmentAggregate", () => {
       const user = new UserBuilder()
-        .withId(uuid())
+        .withId("11111111-1111-4111-8111-111111111111")
         .withEmail("email@mail.com")
         .build();
 
       const user2 = new UserBuilder()
-        .withId(uuid())
+        .withId("22222222-2222-4222-8222-222222222222")
         .withEmail("email2@mail.com")
         .build();
 

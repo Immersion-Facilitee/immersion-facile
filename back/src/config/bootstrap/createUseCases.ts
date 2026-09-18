@@ -1075,6 +1075,7 @@ export const createUseCases = ({
         timeGateway,
         config,
         saveNotificationAndRelatedEvent,
+        generateConventionMagicLinkUrl,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         createNewEvent,
       },
@@ -1096,6 +1097,7 @@ export const createUseCases = ({
         timeGateway,
         config,
         saveNotificationAndRelatedEvent,
+        generateConventionMagicLinkUrl,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         createNewEvent,
       },
@@ -1239,8 +1241,10 @@ export const createUseCases = ({
       uowPerformer,
       deps: {
         config,
+        generateConventionMagicLinkUrl,
         saveNotificationsBatchAndRelatedEvent,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
+        timeGateway,
       },
     }),
     notifyLastSigneeThatConventionHasBeenSigned:

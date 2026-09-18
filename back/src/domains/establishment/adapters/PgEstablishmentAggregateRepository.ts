@@ -953,7 +953,8 @@ const establishmentByFiltersQueryBuilder = (db: KyselyDb) =>
                   isMainContactInPerson: ref("eu.is_main_contact_in_person"),
                   status: sql<EstablishmentUserRightStatus>`${ref("eu.status")}`,
                 }).as("userRight"),
-              ),
+              )
+              .orderBy("eu.user_id", "asc"),
           ),
         }),
       ).as("aggregate"),

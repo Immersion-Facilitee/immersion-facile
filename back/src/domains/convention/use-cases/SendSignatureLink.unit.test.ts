@@ -16,7 +16,6 @@ import {
   expectToEqual,
   frontRoutes,
   getFormattedFirstnameAndLastname,
-  loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
   type Notification,
   type SignatoryRole,
@@ -26,6 +25,7 @@ import {
 import { AppConfigBuilder } from "../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
+import { fakeGenerateMagicLinkUrlFn } from "../../../utils/jwtTestHelper";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import {
   makeSaveNotificationAndRelatedEvent,
@@ -173,6 +173,7 @@ describe("Send signature link", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         saveNotificationAndRelatedEvent,
+        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
         timeGateway,
         shortLinkIdGeneratorGateway,
         config,
@@ -683,13 +684,14 @@ describe("Send signature link", () => {
           expectToEqual(uow.shortLinkQuery.getShortLinks(), [
             {
               id: shortLinkId,
-              url: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "professional",
-                  at_campaign: "sms-signature-link",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
+              url: fakeGenerateMagicLinkUrlFn({
+                id: convention.id,
+                role: convention.signatories.establishmentRepresentative.role,
+                email: convention.signatories.establishmentRepresentative.email,
+                now: timeGateway.now(),
+                targetRoute: "conventionToSign",
+                lifetime: "2Days",
+                extraQueryParams: { at_campaign: "sms-signature-link" },
               }),
               lastUsedAt: null,
             },
@@ -787,13 +789,14 @@ describe("Send signature link", () => {
           expectToEqual(uow.shortLinkQuery.getShortLinks(), [
             {
               id: shortLinkId,
-              url: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: conventionWithAllSignatories.id,
-                  loginPersona: loginPersonaByConventionRole(signatoryRole),
-                  at_campaign: "sms-signature-link",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
+              url: fakeGenerateMagicLinkUrlFn({
+                id: conventionWithAllSignatories.id,
+                role: recipient.role,
+                email: recipient.email,
+                now: timeGateway.now(),
+                targetRoute: "conventionToSign",
+                lifetime: "2Days",
+                extraQueryParams: { at_campaign: "sms-signature-link" },
               }),
               lastUsedAt: null,
             },
