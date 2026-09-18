@@ -26,6 +26,7 @@ import {
   type TemplatedSms,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
+import type { GenerateConventionMagicLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
 import { conventionReminderPayloadSchema } from "../../../core/events/eventPayload.schema";
 import type {
@@ -33,7 +34,8 @@ import type {
   SaveNotificationsBatchAndRelatedEvent,
 } from "../../../core/notifications/helpers/Notification";
 import type { ShortLinkIdGeneratorGateway } from "../../../core/short-link/ports/ShortLinkIdGeneratorGateway";
-import { makeShortLink } from "../../../core/short-link/ShortLink";
+import { prepareConventionMagicShortLinkMaker } from "../../../core/short-link/ShortLink";
+import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
@@ -53,7 +55,9 @@ export type NotifyConventionReminder = ReturnType<
 
 type Deps = {
   saveNotificationsBatchAndRelatedEvent: SaveNotificationsBatchAndRelatedEvent;
+  generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
   shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
+  timeGateway: TimeGateway;
   config: AppConfig;
 };
 
@@ -238,7 +242,7 @@ const makeSignatoryReminderEmail = ({
 });
 
 const prepareSmsReminderParams = async ({
-  actor: { role, phone },
+  actor: { role, email, phone },
   convention,
   uow,
   reminderKind,
@@ -250,17 +254,22 @@ const prepareSmsReminderParams = async ({
   reminderKind: SignatoriesReminderKind;
   deps: Deps;
 }): Promise<TemplatedSms> => {
-  const shortLink = await makeShortLink({
-    uow,
-    shortLinkIdGeneratorGateway: deps.shortLinkIdGeneratorGateway,
+  const makeShortMagicLink = prepareConventionMagicShortLinkMaker({
     config: deps.config,
-    longLink: makeRouteAbsoluteUrl({
-      route: frontRoutes.manageConventionConnectedUser({
-        conventionId: convention.id,
-        loginPersona: loginPersonaByConventionRole(role),
-      }),
-      baseUrl: deps.config.immersionFacileBaseUrl,
-    }),
+    conventionMagicLinkPayload: {
+      id: convention.id,
+      role,
+      email,
+      now: deps.timeGateway.now(),
+    },
+    generateConventionMagicLinkUrl: deps.generateConventionMagicLinkUrl,
+    shortLinkIdGeneratorGateway: deps.shortLinkIdGeneratorGateway,
+    uow,
+  });
+
+  const shortLink = await makeShortMagicLink({
+    targetRoute: "conventionToSign",
+    lifetime: "1Month",
   });
 
   return {
