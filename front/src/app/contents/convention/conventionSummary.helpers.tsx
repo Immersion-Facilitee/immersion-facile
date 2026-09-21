@@ -545,7 +545,7 @@ const makeBeneficiarySubSections = (
           ),
         }),
       },
-{
+      {
         key: "beneficiaryRqth",
         label: "RQTH",
         value: convention.signatories.beneficiary.isRqth ? "Oui" : "Non",
@@ -623,7 +623,6 @@ const makeBeneficiarySubSections = (
     ],
   },
 ];
-
 
 const makeEstablishmentSubSections = (
   convention: ConventionReadDto,
