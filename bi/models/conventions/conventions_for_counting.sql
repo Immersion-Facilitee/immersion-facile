@@ -6,7 +6,6 @@
       "CREATE INDEX IF NOT EXISTS idx_conv_count_status ON {{ this }} (status_technical)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_agency_status ON {{ this }} (agency_status)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_date_start ON {{ this }} (date_start)",
-      "CREATE INDEX IF NOT EXISTS idx_conv_count_date_validation ON {{ this }} (date_validation)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_validation_siret ON {{ this }} (date_validation) INCLUDE (siret)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_department ON {{ this }} (agency_department_name)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_region ON {{ this }} (agency_region_name)",
