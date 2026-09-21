@@ -291,6 +291,8 @@ models:
         description: SIRET of the business hosting the immersion
       - name: business_name
         description: Name of the business
+      - name: establishment_number_employees
+        description: Employee count range declared on the convention
       - name: agency_id
         description: Foreign key to agencies
       - name: agency_name
@@ -326,9 +328,9 @@ models:
       - name: establishment_region_name
         description: Region name of the establishment
       - name: establishment_naf_code
-        description: NAF/APE code of the establishment
+        description: NAF/APE code from marketing contacts, falling back to the referenced establishment when null, matching the conventions model
       - name: establishment_naf_label
-        description: Label of the establishment NAF/APE code
+        description: NAF nomenclature label for the normalized establishment_naf_code
       - name: immersion_objective
         description: Objective of the immersion (e.g., "Confirmer un projet professionnel", "Découvrir un métier ou un secteur d'activité", "Initier une démarche de recrutement")
       - name: is_referenced_establishment
@@ -347,6 +349,8 @@ models:
         description: Total hours extracted from schedule JSON
       - name: immersion_postal_code
         description: 5-digit postal code extracted from immersion address via regex
+      - name: immersion_city
+        description: Text following the postal code in the immersion address, extracted with the existing Metabase regex; may include address suffixes and is null when no match is found
       - name: establishment_postcode
         description: Postal code of the referenced establishment
       - name: beneficiary_birthdate

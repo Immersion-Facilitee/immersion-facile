@@ -303,3 +303,4 @@ inner join {{ source('immersion', 'convention_status_translations') }} as cst
     on c.status = cst.status
 
 where c.date_end >= (current_date - interval '25 months')
+order by c.date_validation nulls last
