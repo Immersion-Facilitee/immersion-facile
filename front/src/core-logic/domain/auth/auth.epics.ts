@@ -152,12 +152,12 @@ const logoutEpic: AuthEpic = (
     filter(authSlice.actions.fetchLogoutUrlRequested.match),
     switchMap((action) =>
       getLogoutUrl$(action, state$.value.auth, authGateway).pipe(
-        map((logoutUrl) => {
-          return authSlice.actions.fetchLogoutUrlSucceeded({
+        map((logoutUrl) =>
+          authSlice.actions.fetchLogoutUrlSucceeded({
             url: logoutUrl,
             feedbackTopic: action.payload.feedbackTopic,
-          });
-        }),
+          }),
+        ),
         catchEpicError((_error) => {
           removeFederatedIdentityFromDevice({ localDeviceRepository });
           return authSlice.actions.fetchLogoutUrlFailed({

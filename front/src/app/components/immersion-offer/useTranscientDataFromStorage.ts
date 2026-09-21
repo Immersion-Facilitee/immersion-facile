@@ -40,9 +40,8 @@ const filterDataInScope = <T extends ContactTranscientData>(data: T) =>
     return acc;
   }, {} as T);
 
-const isStringTranscientData = (data: object): data is TranscientData => {
-  return data && typeof data === "object" && "contact-establishment" in data;
-};
+const isStringTranscientData = (data: object): data is TranscientData =>
+  data && typeof data === "object" && "contact-establishment" in data;
 
 export const useTranscientDataFromStorage = (
   scope: keyof TranscientData,
@@ -129,9 +128,8 @@ export const useTranscientDataFromStorage = (
       }
       return data;
     };
-  const getPreferUseTranscientDataForScope = (): boolean | null => {
-    return preferUseTranscientData?.[scope] ?? null;
-  };
+  const getPreferUseTranscientDataForScope = (): boolean | null =>
+    preferUseTranscientData?.[scope] ?? null;
   return {
     getPreferUseTranscientDataForScope,
     setPreferUseTranscientDataForScope,

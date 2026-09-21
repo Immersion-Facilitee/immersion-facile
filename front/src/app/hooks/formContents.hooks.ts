@@ -118,9 +118,8 @@ type RootError = {
   };
 };
 
-const isRootError = (error: unknown): error is RootError => {
-  return !!(error && typeof error === "object" && "root" in error);
-};
+const isRootError = (error: unknown): error is RootError =>
+  !!(error && typeof error === "object" && "root" in error);
 
 const getErrorMessage = (error: unknown): string => {
   if (isRootError(error)) {

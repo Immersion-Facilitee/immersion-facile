@@ -546,31 +546,29 @@ const buildEstablishmentNotificationFrom = ({
 }: {
   convention: ConventionDto;
   createdAt: DateString;
-}): Notification => {
-  return {
-    id: "22222222-2222-4444-2222-222222222222",
-    kind: "email",
-    followedIds: {
+}): Notification => ({
+  id: "22222222-2222-4444-2222-222222222222",
+  kind: "email",
+  followedIds: {
+    conventionId: convention.id,
+  },
+  createdAt: createdAt,
+  templatedContent: {
+    kind: "ASSESSMENT_ESTABLISHMENT_NOTIFICATION",
+    recipients: [convention.establishmentTutor.email],
+    sender: {
+      email: "recette@immersion-facile.beta.gouv.fr",
+      name: "Recette Immersion Facile",
+    },
+    cc: [],
+    params: {
+      agencyLogoUrl: undefined,
+      beneficiaryFirstName: convention.signatories.beneficiary.firstName,
+      beneficiaryLastName: convention.signatories.beneficiary.lastName,
+      establishmentTutorName: `${convention.establishmentTutor.firstName} ${convention.establishmentTutor.lastName}`,
       conventionId: convention.id,
+      internshipKind: convention.internshipKind,
+      assessmentCreationLink: "old-link",
     },
-    createdAt: createdAt,
-    templatedContent: {
-      kind: "ASSESSMENT_ESTABLISHMENT_NOTIFICATION",
-      recipients: [convention.establishmentTutor.email],
-      sender: {
-        email: "recette@immersion-facile.beta.gouv.fr",
-        name: "Recette Immersion Facile",
-      },
-      cc: [],
-      params: {
-        agencyLogoUrl: undefined,
-        beneficiaryFirstName: convention.signatories.beneficiary.firstName,
-        beneficiaryLastName: convention.signatories.beneficiary.lastName,
-        establishmentTutorName: `${convention.establishmentTutor.firstName} ${convention.establishmentTutor.lastName}`,
-        conventionId: convention.id,
-        internshipKind: convention.internshipKind,
-        assessmentCreationLink: "old-link",
-      },
-    },
-  };
-};
+  },
+});

@@ -539,41 +539,35 @@ describe("Sign convention", () => {
         "ACCEPTED_BY_VALIDATOR",
         "ACCEPTED_BY_COUNSELLOR",
         "IN_REVIEW",
-        () => {
-          return {
-            agency,
-            convention: conventionBuilder
-              .withBeneficiarySignedAt(new Date())
-              .withEstablishmentRepresentative({
-                ...establishmentRepresentative,
-                signedAt: new Date().toISOString(),
-              })
-              .withBeneficiaryRepresentative({
-                ...beneficiaryRepresentative,
-                signedAt: new Date().toISOString(),
-              })
-              .withBeneficiaryCurrentEmployer({
-                ...beneficiaryCurrentEmployer,
-                signedAt: new Date().toISOString(),
-              })
-              .build(),
-          };
-        },
-      )
-      .with("PARTIALLY_SIGNED", () => {
-        return {
+        () => ({
           agency,
           convention: conventionBuilder
             .withBeneficiarySignedAt(new Date())
+            .withEstablishmentRepresentative({
+              ...establishmentRepresentative,
+              signedAt: new Date().toISOString(),
+            })
+            .withBeneficiaryRepresentative({
+              ...beneficiaryRepresentative,
+              signedAt: new Date().toISOString(),
+            })
+            .withBeneficiaryCurrentEmployer({
+              ...beneficiaryCurrentEmployer,
+              signedAt: new Date().toISOString(),
+            })
             .build(),
-        };
-      })
-      .with("READY_TO_SIGN", "REJECTED", "CANCELLED", "DEPRECATED", () => {
-        return {
-          agency,
-          convention: conventionBuilder.notSigned().build(),
-        };
-      })
+        }),
+      )
+      .with("PARTIALLY_SIGNED", () => ({
+        agency,
+        convention: conventionBuilder
+          .withBeneficiarySignedAt(new Date())
+          .build(),
+      }))
+      .with("READY_TO_SIGN", "REJECTED", "CANCELLED", "DEPRECATED", () => ({
+        agency,
+        convention: conventionBuilder.notSigned().build(),
+      }))
       .exhaustive();
   };
 

@@ -29,13 +29,14 @@ export const WithFeedbackReplacer = ({
   const feedbacks = useAppSelector(feedbacksSelectors.feedbacks);
   const feedback = feedbacks[topic];
   const dispatch = useDispatch();
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (feedback) {
         dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
       }
-    };
-  }, [dispatch, feedback]);
+    },
+    [dispatch, feedback],
+  );
   if (!feedback && children) return children;
   if (level && feedback && feedback.level !== level) return children;
   return renderFeedback && feedback ? (

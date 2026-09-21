@@ -19,8 +19,8 @@ export const createAuthRouter = (deps: AppDependencies) => {
     ),
   );
 
-  authSharedRouter.afterLogin(async (req, res) => {
-    return sendHttpResponse(req, res, async () => {
+  authSharedRouter.afterLogin(async (req, res) =>
+    sendHttpResponse(req, res, async () => {
       try {
         const result = await deps.useCases.afterOAuthSuccessRedirection.execute(
           req.query,
@@ -42,8 +42,8 @@ export const createAuthRouter = (deps: AppDependencies) => {
 
         throw error;
       }
-    });
-  });
+    }),
+  );
 
   authSharedRouter.initiateLoginByEmail((req, res) =>
     sendHttpResponse(req, res, () =>

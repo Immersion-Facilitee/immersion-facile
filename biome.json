@@ -37,6 +37,7 @@
       "style": {
         "noParameterAssign": "error",
         "useAsConstAssertion": "error",
+        "useConsistentArrowReturn": "error",
         "useDefaultParameterLast": "error",
         "useEnumInitializers": "error",
         "useSelfClosingElements": "error",

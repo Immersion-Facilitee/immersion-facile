@@ -354,9 +354,10 @@ export const territoriesByCountryCode: Record<
 
 export const getSupportedCountryCodesForCountry = (
   countryCode: SupportedCountryCode,
-): CountryCode[] => {
-  return [...(territoriesByCountryCode[countryCode] ?? []), countryCode];
-};
+): CountryCode[] => [
+  ...(territoriesByCountryCode[countryCode] ?? []),
+  countryCode,
+];
 
 export const isSupportedCountryCode = (
   code: string,

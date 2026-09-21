@@ -284,6 +284,5 @@ const handleError =
     };
   };
 
-const isRetryable = (httpResponse: HttpResponse<number, unknown>) => {
-  return httpResponse.status === 429 || httpResponse.status === 503;
-};
+const isRetryable = (httpResponse: HttpResponse<number, unknown>) =>
+  httpResponse.status === 429 || httpResponse.status === 503;

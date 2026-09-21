@@ -58,9 +58,8 @@ const makeOnlyTargetRoleAndAcceptedStatus =
   (statusAndRole: {
     status: EstablishmentUserRightStatus;
     role: EstablishmentRole;
-  }): boolean => {
-    return statusAndRole.role === role && statusAndRole.status === "ACCEPTED";
-  };
+  }): boolean =>
+    statusAndRole.role === role && statusAndRole.status === "ACCEPTED";
 
 export const onlyAdminUserRightsWithStatusAccepted =
   makeOnlyTargetRoleAndAcceptedStatus("establishment-admin");

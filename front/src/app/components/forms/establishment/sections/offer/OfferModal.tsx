@@ -22,9 +22,8 @@ import { appellationSlice } from "src/core-logic/domain/appellation/appellation.
 import { v4 as uuidV4 } from "uuid";
 import type { $ZodIssue } from "zod/v4/core";
 
-const getIssueForField = <T,>(issues: $ZodIssue[], field: keyof T) => {
-  return issues.find((issue) => issue.path.join(".") === field);
-};
+const getIssueForField = <T,>(issues: $ZodIssue[], field: keyof T) =>
+  issues.find((issue) => issue.path.join(".") === field);
 
 const getIssueForAppellationAndRome = (issues: $ZodIssue[]) =>
   getIssueForField<EstablishmentFormOffer>(issues, "appellationCode") ||

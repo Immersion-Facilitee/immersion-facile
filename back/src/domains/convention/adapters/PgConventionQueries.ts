@@ -838,11 +838,10 @@ const filterHasErroredFeedback =
   () =>
   (
     builder: BroadcastFeedbackBaseQueryBuilder,
-  ): BroadcastFeedbackBaseQueryBuilder => {
-    return builder
+  ): BroadcastFeedbackBaseQueryBuilder =>
+    builder
       .where("cf.subscriberErrorFeedback", "is not", null)
       .where("cf.handledByAgency", "=", false);
-  };
 
 const filterSearchForBroadcastFeedback =
   (search: string | undefined) =>

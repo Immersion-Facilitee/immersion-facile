@@ -33,23 +33,21 @@ export const toConventionTemplate = ({
   establishmentNumberEmployeesRange: NumberEmployeesRange | undefined;
   selectedAgencyKind: AgencyKind | undefined;
   fromConventionTemplateId: ConventionTemplateId | undefined;
-}): ConventionTemplate => {
-  return {
-    ...convention,
-    id: fromConventionTemplateId ?? uuidV4(),
-    userId,
-    agencyDepartment: convention.agencyDepartment ?? "",
-    workConditions: undefinedIfEmptyString(convention.workConditions),
-    agencyReferent: {
-      firstname: undefinedIfEmptyString(convention.agencyReferent?.firstname),
-      lastname: undefinedIfEmptyString(convention.agencyReferent?.lastname),
-    },
-    establishmentNumberEmployeesRange:
-      establishmentNumberEmployeesRange === ""
-        ? undefined
-        : establishmentNumberEmployeesRange,
-    agencyKind: selectedAgencyKind,
-    agencyContactEmail: "",
-    assessment: null,
-  };
-};
+}): ConventionTemplate => ({
+  ...convention,
+  id: fromConventionTemplateId ?? uuidV4(),
+  userId,
+  agencyDepartment: convention.agencyDepartment ?? "",
+  workConditions: undefinedIfEmptyString(convention.workConditions),
+  agencyReferent: {
+    firstname: undefinedIfEmptyString(convention.agencyReferent?.firstname),
+    lastname: undefinedIfEmptyString(convention.agencyReferent?.lastname),
+  },
+  establishmentNumberEmployeesRange:
+    establishmentNumberEmployeesRange === ""
+      ? undefined
+      : establishmentNumberEmployeesRange,
+  agencyKind: selectedAgencyKind,
+  agencyContactEmail: "",
+  assessment: null,
+});

@@ -86,11 +86,10 @@ export type VerificationActionParams = BaseVerificationActionParams &
 const verificationActionWithOnClick = ["DUPLICATE_CONVENTION"] as const;
 const isVerificationActionWithOnClick = (
   action: VerificationAction,
-): action is VerificationActionWithOnClick => {
-  return verificationActionWithOnClick.some(
+): action is VerificationActionWithOnClick =>
+  verificationActionWithOnClick.some(
     (verificationAction) => verificationAction === action,
   );
-};
 
 const verificationActionsWithModal = [
   "ACCEPT_COUNSELLOR",
@@ -110,11 +109,10 @@ const verificationActionsWithModal = [
 ] as const;
 const isVerificationActionWithModal = (
   action: VerificationAction,
-): action is VerificationActionWithModal => {
-  return verificationActionsWithModal.some(
+): action is VerificationActionWithModal =>
+  verificationActionsWithModal.some(
     (verificationAction) => verificationAction === action,
   );
-};
 
 const verificationActionsWithLink = [
   "ACCESS_CONVENTION",
@@ -125,11 +123,10 @@ const verificationActionsWithLink = [
 ] as const;
 const isVerificationActionWithLink = (
   action: VerificationAction,
-): action is VerificationActionWithLink => {
-  return verificationActionsWithLink.some(
+): action is VerificationActionWithLink =>
+  verificationActionsWithLink.some(
     (verificationAction) => verificationAction === action,
   );
-};
 
 const allVerificationActions = [
   ...verificationActionsWithModal,

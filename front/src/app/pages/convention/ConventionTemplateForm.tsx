@@ -49,11 +49,12 @@ export const ConventionTemplateForm = ({
     );
   }, [dispatch, connectedUserJwt]);
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
-    };
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   if (!fromRoute) throw frontErrors.generic.pageNotFound();
 

@@ -678,8 +678,8 @@ const getRouteToRedirectAfterSubmit = ({
   userRolesOnConvention: Role[];
   route: SupportedConventionRoutes;
   fetchedConvention: { id: string } | null;
-}) => {
-  return match({
+}) =>
+  match({
     mode,
     userRolesOnConvention,
     route,
@@ -751,4 +751,3 @@ const getRouteToRedirectAfterSubmit = ({
       },
     )
     .otherwise(() => undefined);
-};

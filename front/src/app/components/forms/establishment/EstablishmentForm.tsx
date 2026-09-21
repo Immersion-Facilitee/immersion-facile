@@ -309,11 +309,12 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
     }
   }, [isEstablishmentCreation, initialFormEstablishment, dispatch]);
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       dispatch(establishmentSlice.actions.clearEstablishmentRequested());
-    };
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   const onSubmit: SubmitHandler<FormEstablishmentDto> = (formEstablishment) =>
     match({ route, connectedUserJwt })
@@ -420,26 +421,24 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
   return (
     <WithFeedbackReplacer
       topic="form-establishment"
-      renderFeedback={() => {
-        return (
-          <>
-            <Feedback topics={["form-establishment"]} />
-            {mode !== "create" && (
-              <Button
-                onClick={() => {
-                  dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
-                }}
-                className={fr.cx("fr-mt-2w")}
-                size="small"
-                type="button"
-                priority="secondary"
-              >
-                Revenir à la fiche entreprise
-              </Button>
-            )}
-          </>
-        );
-      }}
+      renderFeedback={() => (
+        <>
+          <Feedback topics={["form-establishment"]} />
+          {mode !== "create" && (
+            <Button
+              onClick={() => {
+                dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
+              }}
+              className={fr.cx("fr-mt-2w")}
+              size="small"
+              type="button"
+              priority="secondary"
+            >
+              Revenir à la fiche entreprise
+            </Button>
+          )}
+        </>
+      )}
     >
       {/** biome-ignore lint/complexity/noUselessFragments: BUG BIOME */}
       <>

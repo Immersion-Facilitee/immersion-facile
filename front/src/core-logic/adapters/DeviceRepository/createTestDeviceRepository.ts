@@ -12,9 +12,7 @@ export const createTestDeviceRepository = <
     delete(key): void {
       delete fakeStorage[key];
     },
-    get(key) {
-      return fakeStorage[key];
-    },
+    get: (key) => fakeStorage[key],
     set: ((key: string, value: any) => {
       fakeStorage[key] = value;
     }) as any,

@@ -299,13 +299,12 @@ export const frontErrors = {
         buttons: [HomeButton, ContactUsButton()],
       });
     },
-    expiredLink: () => {
-      return new FrontSpecificError({
+    expiredLink: () =>
+      new FrontSpecificError({
         title: "Lien périmé",
         description: `Nous n'utilisons plus de lien magique pour vous permettre de modifier votre fiche établissement. Pour effectuer cette action, connectez-vous à votre espace entreprise.`,
         buttons: [EstablishmentDashboardButton],
-      });
-    },
+      }),
   },
 };
 
@@ -335,17 +334,15 @@ export const HomeButton: ErrorButton = (
 
 export const ContactUsButton = ({
   priority = "secondary",
-}: ContactErrorInformation = {}) => {
-  return (
-    <Button
-      priority={priority}
-      linkProps={{
-        href: `${immersionFacileSupportUrl}`,
-        target: "_blank",
-        id: domElementIds.temporaryError.contactUsButton,
-      }}
-    >
-      Contactez-nous
-    </Button>
-  );
-};
+}: ContactErrorInformation = {}) => (
+  <Button
+    priority={priority}
+    linkProps={{
+      href: `${immersionFacileSupportUrl}`,
+      target: "_blank",
+      id: domElementIds.temporaryError.contactUsButton,
+    }}
+  >
+    Contactez-nous
+  </Button>
+);

@@ -95,31 +95,29 @@ export const ButtonWithSubMenu = ({
             Styles.list,
           )}
         >
-          {navItems.map((item) => {
-            return (
-              <li key={item.id} className={fr.cx("fr-p-0")}>
-                {item.linkProps ? (
-                  <a
-                    className={fr.cx("fr-nav__link")}
-                    {...item.linkProps}
-                    id={`${item.linkProps.id ?? item.id}${mobileSuffix}`}
-                  >
-                    {item.children}
-                  </a>
-                ) : (
-                  <button
-                    type="button"
-                    className={fr.cx("fr-nav__link")}
-                    {...item.nativeButtonProps}
-                    onClick={item?.onClick ? item?.onClick : undefined}
-                    id={`${item.id}${mobileSuffix}`}
-                  >
-                    {item.children}
-                  </button>
-                )}
-              </li>
-            );
-          })}
+          {navItems.map((item) => (
+            <li key={item.id} className={fr.cx("fr-p-0")}>
+              {item.linkProps ? (
+                <a
+                  className={fr.cx("fr-nav__link")}
+                  {...item.linkProps}
+                  id={`${item.linkProps.id ?? item.id}${mobileSuffix}`}
+                >
+                  {item.children}
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className={fr.cx("fr-nav__link")}
+                  {...item.nativeButtonProps}
+                  onClick={item?.onClick ? item?.onClick : undefined}
+                  id={`${item.id}${mobileSuffix}`}
+                >
+                  {item.children}
+                </button>
+              )}
+            </li>
+          ))}
         </ul>
       </div>
     </div>

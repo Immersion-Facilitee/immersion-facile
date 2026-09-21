@@ -49,8 +49,8 @@ const appellationRequestEpic: AppEpic<AppellationAction> = (
 ) =>
   action$.pipe(
     filter(appellationSlice.actions.fetchSuggestionsRequested.match),
-    mergeMap((action) => {
-      return formCompletionGateway
+    mergeMap((action) =>
+      formCompletionGateway
         .getAppellationDtoMatching$({
           searchText: action.payload.lookup,
           fetchAppellationsFromNaturalLanguage: true,
@@ -66,8 +66,8 @@ const appellationRequestEpic: AppEpic<AppellationAction> = (
               locator: action.payload.locator,
             }),
           ),
-        );
-    }),
+        ),
+    ),
   );
 
 export const appellationEpics = [appellationQueryEpic, appellationRequestEpic];

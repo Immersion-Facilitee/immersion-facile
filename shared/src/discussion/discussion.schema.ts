@@ -499,9 +499,8 @@ export const contactEstablishmentEventPayloadSchema: ZodSchemaWithInputMatchingO
 export const isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl =
   (
     params: DiscussionExchangeForbiddenParams,
-  ): params is DiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl => {
-    return params.reason === discussionUserMissingReason;
-  };
+  ): params is DiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl =>
+    params.reason === discussionUserMissingReason;
 
 export const withUserRoleSchema: ZodSchemaWithInputMatchingOutput<WithUserRole> =
   z.object({

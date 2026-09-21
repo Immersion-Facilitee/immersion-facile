@@ -7,9 +7,8 @@ export const convertHtmlToText = (message: string): string => {
   return body.replace(/<(?!br\s*\/?)[^>]+>/g, "") || "Pas de contenu";
 };
 
-export const addLineBreakOnNewLines = (text: string): string => {
-  return cleanTextWithSingleLineBreaks(text).replace(/(?:\r\n|\r|\n)/g, "<br>");
-};
+export const addLineBreakOnNewLines = (text: string): string =>
+  cleanTextWithSingleLineBreaks(text).replace(/(?:\r\n|\r|\n)/g, "<br>");
 
 const cleanTextWithSingleLineBreaks = (text: string): string => {
   let cleanedText = text.replace(/(\r\n|\r|\n){2,}/g, "\n");

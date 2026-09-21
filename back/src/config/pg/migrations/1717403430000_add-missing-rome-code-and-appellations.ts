@@ -495,8 +495,8 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
             appellationCode,
             libelleAppellationLong,
             libelleAppellationCourt,
-          }) => {
-            return pgm.db.query(
+          }) =>
+            pgm.db.query(
               `
               INSERT INTO public_appellations_data
               (ogr_appellation, code_rome, libelle_appellation_long, libelle_appellation_court, libelle_appellation_long_tsvector, libelle_appellation_long_without_special_char)
@@ -509,8 +509,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
                 libelleAppellationLong,
                 libelleAppellationCourt,
               ],
-            );
-          },
+            ),
         ),
       );
     }),

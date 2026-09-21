@@ -189,18 +189,20 @@ export const SearchPage = ({
   );
 
   const [tempValue, setTempValue] = useState<SearchPageParams>(initialValues);
-  const filterFormValues = useCallback((values: SearchPageParams) => {
-    return keys(values).reduce((acc, key) => {
-      const shouldKeepValue = isKeyInObjectAndValueNotUndefinedNorEmpty(
-        key,
-        values,
-      );
-      return {
-        ...acc,
-        ...(shouldKeepValue ? { [key]: values[key] } : {}),
-      };
-    }, {} as SearchPageParams);
-  }, []);
+  const filterFormValues = useCallback(
+    (values: SearchPageParams) =>
+      keys(values).reduce((acc, key) => {
+        const shouldKeepValue = isKeyInObjectAndValueNotUndefinedNorEmpty(
+          key,
+          values,
+        );
+        return {
+          ...acc,
+          ...(shouldKeepValue ? { [key]: values[key] } : {}),
+        };
+      }, {} as SearchPageParams),
+    [],
+  );
   const routeParams = route.params as Partial<SearchPageParams>;
   const buildValuesFromRouteParams = useCallback(
     (paramsFromRoute: Partial<SearchPageParams>): SearchPageParams =>
@@ -275,16 +277,17 @@ export const SearchPage = ({
     initialValues,
   ]);
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       setSearchMade(null);
       dispatch(
         geosearchSlice.actions.emptyQueryRequested({
           locator: "search-form-place",
         }),
       );
-    };
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   useEffect(() => {
     dispatch(nafSlice.actions.getAllSectionsRequested());

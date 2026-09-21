@@ -191,53 +191,51 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
 const mapToEntity = (
   conventionDraft: ConventionDraftDto,
   now: DateString,
-): InsertExpression<Database, "convention_drafts"> => {
-  return {
-    id: conventionDraft.id,
-    agency_id: conventionDraft.agencyId,
-    agency_kind: conventionDraft.agencyKind,
-    agency_department: conventionDraft.agencyDepartment,
-    date_start: conventionDraft.dateStart,
-    date_end: conventionDraft.dateEnd,
-    siret: conventionDraft.siret,
-    business_name: conventionDraft.businessName,
-    business_name_customized: conventionDraft.businessNameCustomized,
-    schedule: conventionDraft.schedule
-      ? sql`${JSON.stringify(conventionDraft.schedule)}`
-      : null,
-    individual_protection: conventionDraft.individualProtection,
-    individual_protection_description:
-      conventionDraft.individualProtectionDescription,
-    sanitary_prevention: conventionDraft.sanitaryPrevention,
-    sanitary_prevention_description:
-      conventionDraft.sanitaryPreventionDescription,
-    remote_work_mode: conventionDraft.remoteWorkMode,
-    immersion_address: conventionDraft.immersionAddress,
-    immersion_objective: conventionDraft.immersionObjective,
-    immersion_appellation: sql`${conventionDraft.immersionAppellation?.appellationCode}`,
-    immersion_activities: conventionDraft.immersionActivities,
-    immersion_skills: conventionDraft.immersionSkills,
-    work_conditions: conventionDraft.workConditions,
-    internship_kind: conventionDraft.internshipKind,
-    business_advantages: conventionDraft.businessAdvantages,
-    acquisition_campaign: conventionDraft.acquisitionCampaign,
-    acquisition_keyword: conventionDraft.acquisitionKeyword,
-    acquisition_medium: conventionDraft.acquisitionMedium,
-    establishment_number_employees:
-      conventionDraft.establishmentNumberEmployeesRange,
-    agency_referent_first_name: conventionDraft.agencyReferent?.firstname,
-    agency_referent_last_name: conventionDraft.agencyReferent?.lastname,
-    ft_connect_id:
-      conventionDraft.signatories?.beneficiary?.federatedIdentity?.provider ===
-      "ftConnect"
-        ? conventionDraft.signatories?.beneficiary?.federatedIdentity?.token
-        : undefined,
-    establishment_tutor: conventionDraft.establishmentTutor
-      ? sql`${JSON.stringify(conventionDraft.establishmentTutor)}`
-      : null,
-    signatories: conventionDraft.signatories
-      ? sql`${JSON.stringify(conventionDraft.signatories)}`
-      : null,
-    updated_at: now,
-  };
-};
+): InsertExpression<Database, "convention_drafts"> => ({
+  id: conventionDraft.id,
+  agency_id: conventionDraft.agencyId,
+  agency_kind: conventionDraft.agencyKind,
+  agency_department: conventionDraft.agencyDepartment,
+  date_start: conventionDraft.dateStart,
+  date_end: conventionDraft.dateEnd,
+  siret: conventionDraft.siret,
+  business_name: conventionDraft.businessName,
+  business_name_customized: conventionDraft.businessNameCustomized,
+  schedule: conventionDraft.schedule
+    ? sql`${JSON.stringify(conventionDraft.schedule)}`
+    : null,
+  individual_protection: conventionDraft.individualProtection,
+  individual_protection_description:
+    conventionDraft.individualProtectionDescription,
+  sanitary_prevention: conventionDraft.sanitaryPrevention,
+  sanitary_prevention_description:
+    conventionDraft.sanitaryPreventionDescription,
+  remote_work_mode: conventionDraft.remoteWorkMode,
+  immersion_address: conventionDraft.immersionAddress,
+  immersion_objective: conventionDraft.immersionObjective,
+  immersion_appellation: sql`${conventionDraft.immersionAppellation?.appellationCode}`,
+  immersion_activities: conventionDraft.immersionActivities,
+  immersion_skills: conventionDraft.immersionSkills,
+  work_conditions: conventionDraft.workConditions,
+  internship_kind: conventionDraft.internshipKind,
+  business_advantages: conventionDraft.businessAdvantages,
+  acquisition_campaign: conventionDraft.acquisitionCampaign,
+  acquisition_keyword: conventionDraft.acquisitionKeyword,
+  acquisition_medium: conventionDraft.acquisitionMedium,
+  establishment_number_employees:
+    conventionDraft.establishmentNumberEmployeesRange,
+  agency_referent_first_name: conventionDraft.agencyReferent?.firstname,
+  agency_referent_last_name: conventionDraft.agencyReferent?.lastname,
+  ft_connect_id:
+    conventionDraft.signatories?.beneficiary?.federatedIdentity?.provider ===
+    "ftConnect"
+      ? conventionDraft.signatories?.beneficiary?.federatedIdentity?.token
+      : undefined,
+  establishment_tutor: conventionDraft.establishmentTutor
+    ? sql`${JSON.stringify(conventionDraft.establishmentTutor)}`
+    : null,
+  signatories: conventionDraft.signatories
+    ? sql`${JSON.stringify(conventionDraft.signatories)}`
+    : null,
+  updated_at: now,
+});

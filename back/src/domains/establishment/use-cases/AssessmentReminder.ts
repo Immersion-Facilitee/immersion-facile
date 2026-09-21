@@ -186,38 +186,36 @@ const createTutorNotification = ({
 }: {
   convention: ConventionDto;
   assessmentCreationLink: AbsoluteUrl;
-}): NotificationContentAndFollowedIds => {
-  return {
-    followedIds: {
-      agencyId: convention.agencyId,
+}): NotificationContentAndFollowedIds => ({
+  followedIds: {
+    agencyId: convention.agencyId,
+    conventionId: convention.id,
+    establishmentSiret: convention.siret,
+  },
+  kind: "email",
+  templatedContent: {
+    kind: "ASSESSMENT_ESTABLISHMENT_REMINDER",
+    params: {
+      beneficiaryFirstName: getFormattedFirstnameAndLastname({
+        firstname: convention.signatories.beneficiary.firstName,
+      }),
+      beneficiaryLastName: getFormattedFirstnameAndLastname({
+        lastname: convention.signatories.beneficiary.lastName,
+      }),
       conventionId: convention.id,
-      establishmentSiret: convention.siret,
+      internshipKind: convention.internshipKind,
+      establishmentTutorFirstName: getFormattedFirstnameAndLastname({
+        firstname: convention.establishmentTutor.firstName,
+      }),
+      establishmentTutorLastName: getFormattedFirstnameAndLastname({
+        lastname: convention.establishmentTutor.lastName,
+      }),
+      assessmentCreationLink,
     },
-    kind: "email",
-    templatedContent: {
-      kind: "ASSESSMENT_ESTABLISHMENT_REMINDER",
-      params: {
-        beneficiaryFirstName: getFormattedFirstnameAndLastname({
-          firstname: convention.signatories.beneficiary.firstName,
-        }),
-        beneficiaryLastName: getFormattedFirstnameAndLastname({
-          lastname: convention.signatories.beneficiary.lastName,
-        }),
-        conventionId: convention.id,
-        internshipKind: convention.internshipKind,
-        establishmentTutorFirstName: getFormattedFirstnameAndLastname({
-          firstname: convention.establishmentTutor.firstName,
-        }),
-        establishmentTutorLastName: getFormattedFirstnameAndLastname({
-          lastname: convention.establishmentTutor.lastName,
-        }),
-        assessmentCreationLink,
-      },
-      recipients: [convention.establishmentTutor.email],
-      sender: immersionFacileNoReplyEmailSender,
-    },
-  };
-};
+    recipients: [convention.establishmentTutor.email],
+    sender: immersionFacileNoReplyEmailSender,
+  },
+});
 
 const sendAssessmentReminders = async ({
   uow,

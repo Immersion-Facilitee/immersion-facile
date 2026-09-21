@@ -36,12 +36,8 @@ const triggerSiretFetchEpic: SiretEpic = (action$) =>
     }),
   );
 
-const getSiretEpic: SiretEpic = (
-  action$,
-  state$,
-  { formCompletionGateway },
-) => {
-  return action$.pipe(
+const getSiretEpic: SiretEpic = (action$, state$, { formCompletionGateway }) =>
+  action$.pipe(
     filter(siretSlice.actions.siretInfoRequested.match),
     switchMap((action) =>
       formCompletionGateway
@@ -79,7 +75,6 @@ const getSiretEpic: SiretEpic = (
         ),
     ),
   );
-};
 
 export const siretEpics = [
   triggerSiretFetchEpic,

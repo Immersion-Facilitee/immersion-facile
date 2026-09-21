@@ -437,20 +437,19 @@ export const BeneficiaryFormSection = ({
 
 const hasBeneficiaryRepresentativeData = (
   beneficiaryRepresentative: BeneficiaryRepresentative | undefined,
-): beneficiaryRepresentative is BeneficiaryRepresentative => {
-  return !!(
+): beneficiaryRepresentative is BeneficiaryRepresentative =>
+  !!(
     beneficiaryRepresentative &&
     (beneficiaryRepresentative.firstName ||
       beneficiaryRepresentative.lastName ||
       beneficiaryRepresentative.phone ||
       beneficiaryRepresentative.email)
   );
-};
 
 const hasBeneficiaryCurrentEmployerData = (
   beneficiaryCurrentEmployer: BeneficiaryCurrentEmployer | undefined,
-): beneficiaryCurrentEmployer is BeneficiaryCurrentEmployer => {
-  return !!(
+): beneficiaryCurrentEmployer is BeneficiaryCurrentEmployer =>
+  !!(
     beneficiaryCurrentEmployer &&
     (beneficiaryCurrentEmployer.firstName ||
       beneficiaryCurrentEmployer.lastName ||
@@ -461,4 +460,3 @@ const hasBeneficiaryCurrentEmployerData = (
       beneficiaryCurrentEmployer.job ||
       beneficiaryCurrentEmployer.businessAddress)
   );
-};

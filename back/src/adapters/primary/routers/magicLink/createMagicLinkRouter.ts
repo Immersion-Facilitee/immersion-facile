@@ -108,15 +108,15 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   sharedRouter.getConventionStatusDashboard(
     deps.conventionMagicLinkAuthMiddleware,
     (req, res) =>
-      sendHttpResponse(req, res, () => {
-        return deps.useCases.getDashboard.execute(
+      sendHttpResponse(req, res, () =>
+        deps.useCases.getDashboard.execute(
           {
             ...req.params,
             name: "conventionStatus",
           },
           getGenericAuthOrThrow(req.payloads?.convention),
-        );
-      }),
+        ),
+      ),
   );
 
   sharedRouter.renewConvention(

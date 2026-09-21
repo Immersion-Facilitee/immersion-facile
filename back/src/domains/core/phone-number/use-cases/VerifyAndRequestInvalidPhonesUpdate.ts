@@ -173,9 +173,8 @@ const fixPhoneNumberCountryCode = (phoneNumber: string): string | undefined => {
   const phoneNumberWithoutCountryCode = `0${parsePhoneNumber(phoneNumber).nationalNumber.toString()}`;
 
   const newCountryCode = getSupportedCountryCodesForCountry("FR").find(
-    (countryCode) => {
-      return isValidPhoneNumber(phoneNumberWithoutCountryCode, countryCode);
-    },
+    (countryCode) =>
+      isValidPhoneNumber(phoneNumberWithoutCountryCode, countryCode),
   );
 
   if (!newCountryCode) {

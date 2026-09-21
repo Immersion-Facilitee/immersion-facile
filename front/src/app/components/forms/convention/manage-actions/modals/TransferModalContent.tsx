@@ -68,9 +68,9 @@ export const TransferModalContent = ({
     [dispatch, convention.internshipKind],
   );
 
-  const filteredAgencyOptions = agencyOptions.filter((agency) => {
-    return agency.id !== convention.agencyId;
-  });
+  const filteredAgencyOptions = agencyOptions.filter(
+    (agency) => agency.id !== convention.agencyId,
+  );
   const { formId } = useFormModal();
   return (
     <FormProvider {...methods}>

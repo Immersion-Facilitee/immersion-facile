@@ -713,9 +713,8 @@ export const getExactAge = ({
 }: {
   birthDate: Date;
   referenceDate: Date;
-}): number => {
-  return differenceInYears(startOfDay(referenceDate), startOfDay(birthDate));
-};
+}): number =>
+  differenceInYears(startOfDay(referenceDate), startOfDay(birthDate));
 
 export const assessmentCompletionStatusFilters = [
   "finalized",

@@ -746,57 +746,55 @@ const establishmentsEqual = (
 
 const makeEstablishmentAggregateFromDb = (
   aggregate: any, // TODO Enlever le any
-): EstablishmentAggregate => {
-  return {
-    establishment: {
-      ...aggregate.establishment,
-      locations: aggregate.establishment.locations.map(
-        (location: any) => location.location,
-      ),
-      updatedAt: aggregate.establishment.updatedAt
-        ? new Date(aggregate.establishment.updatedAt)
-        : undefined,
-      createdAt: new Date(aggregate.establishment.createdAt),
-      lastInseeCheckDate: aggregate.establishment.lastInseeCheckDate
-        ? new Date(aggregate.establishment.lastInseeCheckDate)
-        : undefined,
-      voluntaryToImmersion: true,
-      potentialBeneficiaryWelcomeAddress: aggregate.establishment
-        .potentialBeneficiaryWelcomeAddress
-        ? {
-            address: {
-              streetNumberAndAddress:
-                aggregate.establishment.potentialBeneficiaryWelcomeAddress
-                  .address.streetNumberAndAddress,
-              postcode:
-                aggregate.establishment.potentialBeneficiaryWelcomeAddress
-                  .address.postcode,
-              city: aggregate.establishment.potentialBeneficiaryWelcomeAddress
-                .address.city,
-              departmentCode:
-                aggregate.establishment.potentialBeneficiaryWelcomeAddress
-                  .address.departmentCode,
-            },
-            position: {
-              lat: aggregate.establishment.potentialBeneficiaryWelcomeAddress
-                .position.lat,
-              lon: aggregate.establishment.potentialBeneficiaryWelcomeAddress
-                .position.lon,
-            },
-          }
-        : undefined,
-    },
-    offers: aggregate.immersionOffers.map(
-      (immersionOfferWithStringDate: any) => ({
-        ...immersionOfferWithStringDate.offer,
-        createdAt: new Date(immersionOfferWithStringDate.offer.createdAt),
-      }),
+): EstablishmentAggregate => ({
+  establishment: {
+    ...aggregate.establishment,
+    locations: aggregate.establishment.locations.map(
+      (location: any) => location.location,
     ),
-    userRights: aggregate.userRights?.map(
-      (userRight: any) => userRight.userRight,
-    ),
-  };
-};
+    updatedAt: aggregate.establishment.updatedAt
+      ? new Date(aggregate.establishment.updatedAt)
+      : undefined,
+    createdAt: new Date(aggregate.establishment.createdAt),
+    lastInseeCheckDate: aggregate.establishment.lastInseeCheckDate
+      ? new Date(aggregate.establishment.lastInseeCheckDate)
+      : undefined,
+    voluntaryToImmersion: true,
+    potentialBeneficiaryWelcomeAddress: aggregate.establishment
+      .potentialBeneficiaryWelcomeAddress
+      ? {
+          address: {
+            streetNumberAndAddress:
+              aggregate.establishment.potentialBeneficiaryWelcomeAddress.address
+                .streetNumberAndAddress,
+            postcode:
+              aggregate.establishment.potentialBeneficiaryWelcomeAddress.address
+                .postcode,
+            city: aggregate.establishment.potentialBeneficiaryWelcomeAddress
+              .address.city,
+            departmentCode:
+              aggregate.establishment.potentialBeneficiaryWelcomeAddress.address
+                .departmentCode,
+          },
+          position: {
+            lat: aggregate.establishment.potentialBeneficiaryWelcomeAddress
+              .position.lat,
+            lon: aggregate.establishment.potentialBeneficiaryWelcomeAddress
+              .position.lon,
+          },
+        }
+      : undefined,
+  },
+  offers: aggregate.immersionOffers.map(
+    (immersionOfferWithStringDate: any) => ({
+      ...immersionOfferWithStringDate.offer,
+      createdAt: new Date(immersionOfferWithStringDate.offer.createdAt),
+    }),
+  ),
+  userRights: aggregate.userRights?.map(
+    (userRight: any) => userRight.userRight,
+  ),
+});
 
 export type SearchImmersionFilters = {
   appellationCodes?: AppellationCode[];

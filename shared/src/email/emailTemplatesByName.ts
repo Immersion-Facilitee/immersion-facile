@@ -46,11 +46,10 @@ const defaultSignature = (internshipKind?: InternshipKind) =>
     L'équipe Immersion Facilitée
     `;
 
-const displayDate = (date: string) => {
-  return isStringDate(date)
+const displayDate = (date: string) =>
+  isStringDate(date)
     ? toDisplayedDate({ date: new Date(date) })
     : "DATE INVALIDE";
-};
 
 // to add a new EmailType, or changes the params of one, edit first EmailParamsByEmailType and let types guide you
 export const emailTemplatesByName =
@@ -830,16 +829,15 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         beneficiaryFirstName,
         beneficiaryLastName,
         assessmentDocumentLink,
-      }) => {
-        return {
-          subject: `Immersion Facilitée - Le bilan de votre ${
-            internshipKind === "immersion" ? "immersion" : "mini-stage"
-          } est disponible !`,
-          greetings: greetingsWithConventionId(
-            conventionId,
-            `${beneficiaryFirstName} ${beneficiaryLastName}`,
-          ),
-          content: `
+      }) => ({
+        subject: `Immersion Facilitée - Le bilan de votre ${
+          internshipKind === "immersion" ? "immersion" : "mini-stage"
+        } est disponible !`,
+        greetings: greetingsWithConventionId(
+          conventionId,
+          `${beneficiaryFirstName} ${beneficiaryLastName}`,
+        ),
+        content: `
           Vous avez signé le bilan de votre période ${
             internshipKind === "immersion" ? "d'immersion" : "de mini-stage"
           }.
@@ -849,18 +847,17 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           
           Nous vous invitons à télécharger dès maintenant en cliquant sur le bouton ci-dessous.
           `,
-          buttons: [
-            { label: "Consulter mon bilan", url: assessmentDocumentLink },
-          ],
-          subContent: `
+        buttons: [
+          { label: "Consulter mon bilan", url: assessmentDocumentLink },
+        ],
+        subContent: `
           Nous vous encourageons à intégrer ce document dans vos candidatures afin de valoriser votre expérience auprès de vos futurs employeurs.
           
           N'hésitez pas à revenir vers nous si vous avez des questions ou besoin d'aide supplémentaire.
            
           ${defaultSignature(internshipKind)}
           `,
-        };
-      },
+      }),
     },
     ASSESSMENT_CREATED_ESTABLISHMENT_NOTIFICATION: {
       niceName: "Bilan - Établissement - Bilan complété",
@@ -1028,15 +1025,14 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         immersionObjective,
         internshipKind,
         immersionAppellationLabel,
-      }) => {
-        return {
-          subject: `Pour information : évaluation ${
-            internshipKind === "immersion" ? "de l'immersion" : "du mini-stage"
-          } de ${beneficiaryFirstName} ${beneficiaryLastName}`,
-          greetings: greetingsWithConventionId(conventionId),
-          content: `${
-            internshipKind === "immersion" ? "L'immersion" : "Le mini-stage"
-          } prévue pour ${beneficiaryFirstName} ${beneficiaryLastName}, au sein de l'entreprise ${businessName} n'a pas eu lieu.
+      }) => ({
+        subject: `Pour information : évaluation ${
+          internshipKind === "immersion" ? "de l'immersion" : "du mini-stage"
+        } de ${beneficiaryFirstName} ${beneficiaryLastName}`,
+        greetings: greetingsWithConventionId(conventionId),
+        content: `${
+          internshipKind === "immersion" ? "L'immersion" : "Le mini-stage"
+        } prévue pour ${beneficiaryFirstName} ${beneficiaryLastName}, au sein de l'entreprise ${businessName} n'a pas eu lieu.
   
           <strong>Métier observé : ${immersionAppellationLabel}</strong>
           <strong>Objectif ${
@@ -1054,9 +1050,8 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           }
           `,
 
-          subContent: defaultSignature(internshipKind),
-        };
-      },
+        subContent: defaultSignature(internshipKind),
+      }),
     },
     ASSESSMENT_ESTABLISHMENT_NOTIFICATION: {
       niceName: "Bilan - Entreprise - Lien de creation du bilan",
