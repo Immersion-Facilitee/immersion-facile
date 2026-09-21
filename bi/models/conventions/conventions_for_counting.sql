@@ -22,6 +22,8 @@
       "CREATE INDEX IF NOT EXISTS idx_conv_count_rome_label ON {{ this }} (rome_label)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_appellation_label ON {{ this }} (appellation_label)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_immersion_postal_code ON {{ this }} (immersion_postal_code)",
+      "CREATE INDEX IF NOT EXISTS idx_conv_count_immersion_department ON {{ this }} (immersion_department_name)",
+      "CREATE INDEX IF NOT EXISTS idx_conv_count_immersion_region ON {{ this }} (immersion_region_name)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_establishment_postcode ON {{ this }} (establishment_postcode)",
     ]
   )
@@ -62,10 +64,10 @@ select
     end as is_referenced_establishment,
     b.email as beneficiary_email,
     (c.schedule ->> 'totalHours')::numeric as schedule_total_hours,
-    (
-        regexp_match(c.immersion_address, '\d{5}')
-    ) [1] as immersion_postal_code,
+    immersion_address.postal_code as immersion_postal_code,
     substring(c.immersion_address from '[0-9]{5}\s+(.*)') as immersion_city,
+    dept_immersion.department_name as immersion_department_name,
+    dept_immersion.region_name as immersion_region_name,
     estab.welcome_address_postcode as establishment_postcode,
     (
         b.extra_fields ->> 'birthdate'
@@ -76,6 +78,17 @@ select
     estab.fit_for_disabled_workers as establishment_fit_for_disabled_workers,
     c.source_convention_draft_id
 from {{ source('immersion', 'conventions') }} as c
+cross join lateral (
+    select (regexp_match(c.immersion_address, '\d{5}'))[1] as postal_code
+) as immersion_address
+left join {{ source('immersion', 'public_department_region') }} as dept_immersion
+    on dept_immersion.department_code = case
+        when left(immersion_address.postal_code, 3) in ('200', '201') then '2A'
+        when left(immersion_address.postal_code, 3) in ('202', '206') then '2B'
+        when left(immersion_address.postal_code, 3) in ('971', '972', '973', '974', '975', '976')
+            then left(immersion_address.postal_code, 3)
+        else left(immersion_address.postal_code, 2)
+    end
 inner join {{ source('immersion', 'agencies') }} as a
     on a.id = c.agency_id
 left join {{ source('immersion', 'public_department_region') }} as pdr
