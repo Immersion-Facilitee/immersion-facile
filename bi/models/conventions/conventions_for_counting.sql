@@ -7,6 +7,7 @@
       "CREATE INDEX IF NOT EXISTS idx_conv_count_agency_status ON {{ this }} (agency_status)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_date_start ON {{ this }} (date_start)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_date_validation ON {{ this }} (date_validation)",
+      "CREATE INDEX IF NOT EXISTS idx_conv_count_validation_siret ON {{ this }} (date_validation) INCLUDE (siret)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_department ON {{ this }} (agency_department_name)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_region ON {{ this }} (agency_region_name)",
       "CREATE INDEX IF NOT EXISTS idx_conv_count_establishment_department_code ON {{ this }} (establishment_department_code)",
@@ -31,6 +32,7 @@ select
     c.id,
     c.siret::text as siret,
     c.business_name,
+    c.establishment_number_employees,
     a.id as agency_id,
     a.name as agency_name,
     c.status as status_technical,
@@ -48,7 +50,7 @@ select
     estab.welcome_address_department_code as establishment_department_code,
     dept_estab.department_name as establishment_department_name,
     dept_estab.region_name as establishment_region_name,
-    estab.naf_code as establishment_naf_code,
+    coalesce(mec.naf_code, estab.naf_code) as establishment_naf_code,
     naf.naf_label as establishment_naf_label,
     c.internship_kind,
     c.immersion_objective,
@@ -64,6 +66,7 @@ select
     (
         regexp_match(c.immersion_address, '\d{5}')
     ) [1] as immersion_postal_code,
+    substring(c.immersion_address from '[0-9]{5}\s+(.*)') as immersion_city,
     estab.welcome_address_postcode as establishment_postcode,
     (
         b.extra_fields ->> 'birthdate'
@@ -82,13 +85,16 @@ inner join {{ source('immersion', 'public_appellations_data') }} as pad
     on pad.ogr_appellation = c.immersion_appellation
 inner join {{ source('immersion', 'public_romes_data') }} as prd
     on pad.code_rome::bpchar = prd.code_rome
+left join {{ source('immersion', 'marketing_establishment_contacts') }} as mec
+    on mec.siret = c.siret
 left join {{ source('immersion', 'establishments') }} as estab
     on estab.siret = c.siret
 left join {{ source('immersion', 'public_department_region') }} as dept_estab
     on dept_estab.department_code = estab.welcome_address_department_code
 left join {{ ref('naf_nomenclature') }} as naf
-    on naf.naf_code = regexp_replace(upper(estab.naf_code), '[^0-9A-Z]', '', 'g')
+    on naf.naf_code = regexp_replace(upper(coalesce(mec.naf_code, estab.naf_code)), '[^0-9A-Z]', '', 'g')
 left join {{ source('immersion', 'immersion_assessments') }} as ass
     on ass.convention_id = c.id
 inner join {{ source('immersion', 'actors') }} as b
     on c.beneficiary_id = b.id
+order by c.date_validation nulls last

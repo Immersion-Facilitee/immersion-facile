@@ -74,3 +74,13 @@ jobs:
                   ./run_dbt.sh run &&
                 echo \"> \$(date) - DBT run completed successfully\" &&
                   exit 0"
+
+      - name: Vacuum and analyze nightly database
+        run: |
+          scalingo --region osc-secnum-fr1 --app if-prod-nightly-db run --size XL -- bash -c '
+            set -e
+            dbclient-fetcher pgsql 17
+            echo "> $(date -u) - Starting VACUUM ANALYZE"
+            /app/bin/psql "$SCALINGO_POSTGRESQL_URL" -v ON_ERROR_STOP=1 -c "VACUUM (ANALYZE);"
+            echo "> $(date -u) - VACUUM ANALYZE completed successfully"
+          '
