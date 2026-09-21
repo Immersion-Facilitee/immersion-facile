@@ -351,6 +351,10 @@ models:
         description: 5-digit postal code extracted from immersion address via regex
       - name: immersion_city
         description: Text following the postal code in the immersion address, extracted with the existing Metabase regex; may include address suffixes and is null when no match is found
+      - name: immersion_department_name
+        description: Department name inferred from the immersion postal code using the application rules for Corsica and overseas departments; null when no department matches
+      - name: immersion_region_name
+        description: Region name of the department inferred from the immersion postal code; null when no department matches
       - name: establishment_postcode
         description: Postal code of the referenced establishment
       - name: beneficiary_birthdate
