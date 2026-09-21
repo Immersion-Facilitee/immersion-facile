@@ -2,6 +2,7 @@
   &__menu {
     width: 100% !important;
     background-color: var(--grey-1000-100);
+    z-index: 20 !important;
 
     &-list {
       width: 100% !important;
