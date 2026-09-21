@@ -390,8 +390,8 @@ const shouldShowDiscussionActionButtons = ({
 
 const getDiscussionStatusUpdatedFeedbackMessage = (
   discussion: DiscussionReadDto,
-): string => {
-  return match(discussion)
+): string =>
+  match(discussion)
     .with({ status: "PENDING" }, () => "")
     .with(
       { status: "ACCEPTED" },
@@ -423,7 +423,6 @@ const getDiscussionStatusUpdatedFeedbackMessage = (
         "Candidature automatiquement refusée par manque de réponse de votre part dans un délai de 3 mois.",
     )
     .exhaustive();
-};
 
 const DiscussionDetails = (props: DiscussionDetailsProps): JSX.Element => {
   const dispatch = useDispatch();
@@ -1046,46 +1045,44 @@ const DiscussionExchangesList = ({
   sortedExchanges: ExchangeRead[];
   potentialBeneficiary: DiscussionReadDto["potentialBeneficiary"];
   viewer: ExchangeRole;
-}): JSX.Element => {
-  return (
-    <BorderedSection className={fr.cx("fr-mt-2w")}>
-      {sortedExchanges.map((exchange) => {
-        const currentMessage = addLineBreakOnNewLines(
-          convertHtmlToText(exchange.message),
-        );
-        const messageToDisplay = splitTextOnFirstSeparator(
-          currentMessage,
-          emailExchangeSplitters,
-        );
-        return (
-          <ExchangeMessage
-            key={exchange.sentAt}
-            viewer={viewer}
-            sender={exchange.sender}
-            title={
-              exchange.sender === "establishment"
-                ? `${exchange.firstname} ${exchange.lastname}`
-                : getFormattedFirstnameAndLastname({
-                    firstname: potentialBeneficiary.firstName,
-                    lastname: potentialBeneficiary.lastName,
-                  })
-            }
-            sentAt={toDisplayedDate({
-              date: new Date(exchange.sentAt),
-              withHours: true,
-            })}
-          >
-            <div
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(messageToDisplay[0]),
-              }}
-            />
-          </ExchangeMessage>
-        );
-      })}
-    </BorderedSection>
-  );
-};
+}): JSX.Element => (
+  <BorderedSection className={fr.cx("fr-mt-2w")}>
+    {sortedExchanges.map((exchange) => {
+      const currentMessage = addLineBreakOnNewLines(
+        convertHtmlToText(exchange.message),
+      );
+      const messageToDisplay = splitTextOnFirstSeparator(
+        currentMessage,
+        emailExchangeSplitters,
+      );
+      return (
+        <ExchangeMessage
+          key={exchange.sentAt}
+          viewer={viewer}
+          sender={exchange.sender}
+          title={
+            exchange.sender === "establishment"
+              ? `${exchange.firstname} ${exchange.lastname}`
+              : getFormattedFirstnameAndLastname({
+                  firstname: potentialBeneficiary.firstName,
+                  lastname: potentialBeneficiary.lastName,
+                })
+          }
+          sentAt={toDisplayedDate({
+            date: new Date(exchange.sentAt),
+            withHours: true,
+          })}
+        >
+          <div
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(messageToDisplay[0]),
+            }}
+          />
+        </ExchangeMessage>
+      );
+    })}
+  </BorderedSection>
+);
 
 const makeConventionFromDiscussion = ({
   initialConvention,

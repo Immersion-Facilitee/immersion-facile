@@ -95,8 +95,8 @@ export const makeAfterOAuthSuccess = useCaseBuilder("AfterOAuthSuccess")
       )
       .with(
         { provider: "ftConnect" },
-        async (ftConnectOngoinOAuth: FTConnectOngoingAuth) => {
-          return saveFTConnectAuthenticationDataAndReturnRedirectURI({
+        async (ftConnectOngoinOAuth: FTConnectOngoingAuth) =>
+          saveFTConnectAuthenticationDataAndReturnRedirectURI({
             uow,
             deps,
             ...(await onFTConnectProvider({
@@ -104,8 +104,7 @@ export const makeAfterOAuthSuccess = useCaseBuilder("AfterOAuthSuccess")
               ftConnectOngoinOAuth: ftConnectOngoinOAuth,
               code,
             })),
-          });
-        },
+          }),
       )
       .exhaustive();
   });

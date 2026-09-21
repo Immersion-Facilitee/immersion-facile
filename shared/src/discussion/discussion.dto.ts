@@ -405,9 +405,7 @@ export type FlatGetPaginatedDiscussionsParams = {
 
 export const isDiscussionInList = (
   discussion: DiscussionReadDto | DiscussionInList,
-): discussion is DiscussionInList => {
-  return "exchangesData" in discussion;
-};
+): discussion is DiscussionInList => "exchangesData" in discussion;
 
 export const discussionToExchangesData = (
   discussion: DiscussionDto | DiscussionReadDto,

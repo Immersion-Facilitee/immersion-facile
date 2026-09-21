@@ -103,17 +103,15 @@ export const toFtConnectUserDto = (
     birthdate: DateString;
     phone?: PhoneNumber;
   },
-): FtConnectUserDto => {
-  return {
-    isJobseeker: externalFtConnectUser.isUserJobseeker,
-    email: externalFtConnectUser.email,
-    firstName: externalFtConnectUser.given_name,
-    lastName: externalFtConnectUser.family_name,
-    birthdate: externalFtConnectUser.birthdate,
-    phone: externalFtConnectUser.phone,
-    ftExternalId: externalFtConnectUser.idIdentiteExterne,
-  };
-};
+): FtConnectUserDto => ({
+  isJobseeker: externalFtConnectUser.isUserJobseeker,
+  email: externalFtConnectUser.email,
+  firstName: externalFtConnectUser.given_name,
+  lastName: externalFtConnectUser.family_name,
+  birthdate: externalFtConnectUser.birthdate,
+  phone: externalFtConnectUser.phone,
+  ftExternalId: externalFtConnectUser.idIdentiteExterne,
+});
 
 export const toAccessToken = (
   externalAccessToken: ExternalAccessToken,

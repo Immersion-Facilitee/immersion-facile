@@ -6,12 +6,10 @@ type NotificationIndicatorProps = {
 
 export const NotificationIndicator = ({
   isNotified,
-}: NotificationIndicatorProps) => {
-  return (
-    <span className={fr.cx("fr-text--xs")}>
-      {isNotified
-        ? "✅ Reçoit les notifications"
-        : "❌ Ne reçoit pas les notifications"}
-    </span>
-  );
-};
+}: NotificationIndicatorProps) => (
+  <span className={fr.cx("fr-text--xs")}>
+    {isNotified
+      ? "✅ Reçoit les notifications"
+      : "❌ Ne reçoit pas les notifications"}
+  </span>
+);

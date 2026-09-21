@@ -146,11 +146,12 @@ export const ConventionTemplatesList = ({
     }
   }, [connectedUserJwt, dispatch]);
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
-    };
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   const hasMiniStageAgencyOnly =
     currentUser?.agencyRights.some((agency) =>

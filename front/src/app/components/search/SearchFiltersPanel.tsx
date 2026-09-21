@@ -413,15 +413,13 @@ export const SearchFiltersPanel = ({
   );
 };
 
-const FilterSection = ({ title, children, id }: FilterSectionProps) => {
-  return (
-    <section id={id}>
-      <h2 className={fr.cx("fr-h6")}>{title}</h2>
-      {children}
-      <hr className={fr.cx("fr-hr", "fr-mt-2w")} />
-    </section>
-  );
-};
+const FilterSection = ({ title, children, id }: FilterSectionProps) => (
+  <section id={id}>
+    <h2 className={fr.cx("fr-h6")}>{title}</h2>
+    {children}
+    <hr className={fr.cx("fr-hr", "fr-mt-2w")} />
+  </section>
+);
 
 const rqthLabel = "Personnes en situation de handicap bienvenues";
 

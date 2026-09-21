@@ -47,46 +47,42 @@ const createAxiosHttpClientOnSlashApi = <
     skipResponseValidationForStatuses: [500],
   });
 
-export const createHttpDependencies = (): Dependencies => {
-  return {
-    ...createCommonDependencies(),
-    addressGateway: new HttpAddressGateway(
-      createAxiosHttpClientOnSlashApi(addressRoutes),
-    ),
-    adminGateway: new HttpAdminGateway(
-      createAxiosHttpClientOnSlashApi(adminRoutes),
-    ),
-    authGateway: new HttpAuthGateway(
-      createAxiosHttpClientOnSlashApi(authRoutes),
-    ),
-    agencyGateway: new HttpAgencyGateway(
-      createAxiosHttpClientOnSlashApi(agencyRoutes),
-    ),
-    assessmentGateway: new HttpAssessmentGateway(
-      createAxiosHttpClientOnSlashApi(conventionMagicLinkRoutes),
-    ),
-    conventionGateway: new HttpConventionGateway(
-      createAxiosHttpClientOnSlashApi(conventionMagicLinkRoutes),
-      createAxiosHttpClientOnSlashApi(unauthenticatedConventionRoutes),
-      createAxiosHttpClientOnSlashApi(authenticatedConventionRoutes),
-    ),
-    establishmentGateway: new HttpEstablishmentGateway(
-      createAxiosHttpClientOnSlashApi(establishmentRoutes),
-    ),
-    establishmentLeadGateway: new HttpEstablishmentLeadGateway(
-      createAxiosHttpClientOnSlashApi(establishmentLeadRoutes),
-    ),
-    formCompletionGateway: new HttpFormCompletionGateway(
-      createAxiosHttpClientOnSlashApi(formCompletionRoutes),
-    ),
-    searchGateway: new HttpSearchGateway(
-      createAxiosHttpClientOnSlashApi(searchImmersionRoutes),
-    ),
-    technicalGateway: new HttpTechnicalGateway(
-      createAxiosHttpClientOnSlashApi(technicalRoutes),
-      axiosOnSlashApi,
-    ),
-    nafGateway: new HttpNafGateway(createAxiosHttpClientOnSlashApi(nafRoutes)),
-    jwtValidator: new DecodeJwtValidator(),
-  };
-};
+export const createHttpDependencies = (): Dependencies => ({
+  ...createCommonDependencies(),
+  addressGateway: new HttpAddressGateway(
+    createAxiosHttpClientOnSlashApi(addressRoutes),
+  ),
+  adminGateway: new HttpAdminGateway(
+    createAxiosHttpClientOnSlashApi(adminRoutes),
+  ),
+  authGateway: new HttpAuthGateway(createAxiosHttpClientOnSlashApi(authRoutes)),
+  agencyGateway: new HttpAgencyGateway(
+    createAxiosHttpClientOnSlashApi(agencyRoutes),
+  ),
+  assessmentGateway: new HttpAssessmentGateway(
+    createAxiosHttpClientOnSlashApi(conventionMagicLinkRoutes),
+  ),
+  conventionGateway: new HttpConventionGateway(
+    createAxiosHttpClientOnSlashApi(conventionMagicLinkRoutes),
+    createAxiosHttpClientOnSlashApi(unauthenticatedConventionRoutes),
+    createAxiosHttpClientOnSlashApi(authenticatedConventionRoutes),
+  ),
+  establishmentGateway: new HttpEstablishmentGateway(
+    createAxiosHttpClientOnSlashApi(establishmentRoutes),
+  ),
+  establishmentLeadGateway: new HttpEstablishmentLeadGateway(
+    createAxiosHttpClientOnSlashApi(establishmentLeadRoutes),
+  ),
+  formCompletionGateway: new HttpFormCompletionGateway(
+    createAxiosHttpClientOnSlashApi(formCompletionRoutes),
+  ),
+  searchGateway: new HttpSearchGateway(
+    createAxiosHttpClientOnSlashApi(searchImmersionRoutes),
+  ),
+  technicalGateway: new HttpTechnicalGateway(
+    createAxiosHttpClientOnSlashApi(technicalRoutes),
+    axiosOnSlashApi,
+  ),
+  nafGateway: new HttpNafGateway(createAxiosHttpClientOnSlashApi(nafRoutes)),
+  jwtValidator: new DecodeJwtValidator(),
+});

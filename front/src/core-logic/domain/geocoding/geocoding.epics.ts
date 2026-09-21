@@ -87,15 +87,15 @@ const geocodingFromSiretInfoEpic: AppEpic<GeocodingAction> = (action$) =>
         };
       } => action.payload.addressAutocompleteLocator !== null,
     ),
-    map((action) => {
-      return geocodingSlice.actions.fetchSuggestionsRequested({
+    map((action) =>
+      geocodingSlice.actions.fetchSuggestionsRequested({
         locator: action.payload.addressAutocompleteLocator,
         lookup: action.payload.siretEstablishment
           .businessAddress as LookupAddress,
         selectFirstSuggestion: true,
         countryCode: action.payload.countryCode,
-      });
-    }),
+      }),
+    ),
   );
 
 export const geocodingEpics = [

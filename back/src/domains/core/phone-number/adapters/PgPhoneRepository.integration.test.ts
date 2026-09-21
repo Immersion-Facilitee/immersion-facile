@@ -124,9 +124,8 @@ describe("PgPhoneRepository", () => {
     await pool.end();
   });
 
-  const generateRandomSiret = () => {
-    return (Math.floor(Math.random() * 9e13) + 1e13).toString();
-  };
+  const generateRandomSiret = () =>
+    (Math.floor(Math.random() * 9e13) + 1e13).toString();
 
   const insertPhone = async (phoneToInsert: Phone): Promise<void> => {
     await db

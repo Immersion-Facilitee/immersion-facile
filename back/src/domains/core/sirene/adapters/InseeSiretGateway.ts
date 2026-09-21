@@ -205,8 +205,8 @@ export class InseeSiretGateway implements SiretGateway {
       },
       cb: () =>
         this.#retryStrategy.apply(() =>
-          this.#tokenLimiter.schedule(() => {
-            return this.#httpClient
+          this.#tokenLimiter.schedule(() =>
+            this.#httpClient
               .getAccessToken({
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
@@ -226,8 +226,8 @@ export class InseeSiretGateway implements SiretGateway {
                     response?.status
                   }. Body: ${JSON.stringify(response?.body)}`,
                 );
-              });
-          }),
+              }),
+          ),
         ),
     })(this.#config.clientId);
   }

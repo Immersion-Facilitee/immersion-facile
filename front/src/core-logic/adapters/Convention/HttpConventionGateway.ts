@@ -257,13 +257,13 @@ export class HttpConventionGateway implements ConventionGateway {
           urlParams: { conventionId: params.conventionId },
           headers: { authorization: jwt },
         })
-        .then((response) => {
-          return match(response)
+        .then((response) =>
+          match(response)
             .with({ status: 200 }, ({ body }) => body)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: P.union(401, 403, 404) }, logBodyAndThrow)
-            .otherwise(otherwiseThrow);
-        }),
+            .otherwise(otherwiseThrow),
+        ),
     );
   }
 

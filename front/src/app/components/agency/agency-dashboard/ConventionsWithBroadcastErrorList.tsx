@@ -112,28 +112,30 @@ export const ConventionsWithBroadcastErrorList = ({
     [tempFilters.broadcastErrorKind],
   );
 
-  const statusOptions: CheckboxProps["options"] = useMemo(() => {
-    return conventionStatuses.map((status) => ({
-      label: labelAndSeverityByStatus[status].label.agency,
-      nativeInputProps: {
-        value: status,
-        checked: tempFilters.conventionStatus?.includes(status) ?? false,
-        onChange: () => {
-          setTempFilters((prev) => {
-            const currentStatuses = prev.conventionStatus ?? [];
-            const newStatuses = currentStatuses.includes(status)
-              ? currentStatuses.filter((s) => s !== status)
-              : [...currentStatuses, status];
-            return {
-              ...prev,
-              conventionStatus:
-                newStatuses.length > 0 ? newStatuses : undefined,
-            };
-          });
+  const statusOptions: CheckboxProps["options"] = useMemo(
+    () =>
+      conventionStatuses.map((status) => ({
+        label: labelAndSeverityByStatus[status].label.agency,
+        nativeInputProps: {
+          value: status,
+          checked: tempFilters.conventionStatus?.includes(status) ?? false,
+          onChange: () => {
+            setTempFilters((prev) => {
+              const currentStatuses = prev.conventionStatus ?? [];
+              const newStatuses = currentStatuses.includes(status)
+                ? currentStatuses.filter((s) => s !== status)
+                : [...currentStatuses, status];
+              return {
+                ...prev,
+                conventionStatus:
+                  newStatuses.length > 0 ? newStatuses : undefined,
+              };
+            });
+          },
         },
-      },
-    }));
-  }, [tempFilters.conventionStatus]);
+      })),
+    [tempFilters.conventionStatus],
+  );
 
   const onSubmit = useCallback(
     (filtersToUse = tempFilters, searchQuery?: string) => {

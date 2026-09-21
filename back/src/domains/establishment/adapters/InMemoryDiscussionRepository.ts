@@ -209,9 +209,9 @@ export class InMemoryDiscussionRepository implements DiscussionRepository {
     olderThan: Date;
   }): Promise<DiscussionId[]> {
     return Object.values(this._discussions)
-      .filter((discussion) => {
-        return isBefore(new Date(discussion.createdAt), params.olderThan);
-      })
+      .filter((discussion) =>
+        isBefore(new Date(discussion.createdAt), params.olderThan),
+      )
       .filter((discussion) => discussion.status === "PENDING")
       .filter((discussion) => discussion.exchanges.length === 1)
       .map((discussion) => discussion.id);

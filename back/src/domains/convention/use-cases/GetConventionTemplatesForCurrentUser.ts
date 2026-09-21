@@ -8,8 +8,8 @@ export const makeGetConventionTemplatesForCurrentUser = useCaseBuilder(
   .withInput<void>(z.void())
   .withOutput<ConventionTemplate[]>()
   .withCurrentUser<ConnectedUser>()
-  .build(async ({ uow, currentUser }) => {
-    return uow.conventionTemplateQueries.get({
+  .build(async ({ uow, currentUser }) =>
+    uow.conventionTemplateQueries.get({
       userIds: [currentUser.id],
-    });
-  });
+    }),
+  );

@@ -529,337 +529,329 @@ const makeSignatoriesSubsections = (
 
 const makeBeneficiarySubSections = (
   convention: ConventionReadDto,
-): ConventionSummarySubSection[] => {
-  return [
-    {
-      key: "beneficiairy",
-      header: {
-        title: "Bénéficiaire",
-      },
-      fields: removeEmptyValue([
-        {
-          key: "beneficiaryBirthdate",
-          label: "Date de naissance",
-          value: toDisplayedDate({
-            date: convertLocaleDateToUtcTimezoneDate(
-              new Date(convention.signatories.beneficiary.birthdate),
-            ),
-          }),
-        },
-        {
-          key: "beneficiaryRqth",
-          label: "RQTH",
-          value: convention.signatories.beneficiary.isRqth ? "Oui" : "Non",
-        },
-        {
-          key: "beneficiaryFinanciaryHelp",
-          label: "Aide matérielle",
-          value: convention.signatories.beneficiary.financiaryHelp || "Aucune",
-        },
-        convention.internshipKind === "mini-stage-cci" &&
-        convention.signatories.beneficiary.address
-          ? {
-              key: "beneficiaryAddress",
-              label: "Adresse du candidat",
-              value:
-                convention.internshipKind === "mini-stage-cci" &&
-                convention.signatories.beneficiary.address &&
-                addressDtoToString(convention.signatories.beneficiary.address),
-            }
-          : null,
-        convention.internshipKind === "mini-stage-cci" &&
-        convention.signatories.beneficiary.levelOfEducation
-          ? {
-              key: "beneficiaryLevelOfEducation",
-              label: "Niveau d'études",
-              value: convention.signatories.beneficiary.levelOfEducation,
-            }
-          : null,
-        convention.internshipKind === "mini-stage-cci" &&
-        convention.signatories.beneficiary.schoolName
-          ? {
-              key: "beneficiarySchoolName",
-              label: "Établissement",
-              value: convention.signatories.beneficiary.schoolName,
-            }
-          : null,
-        convention.internshipKind === "mini-stage-cci" &&
-        convention.signatories.beneficiary.schoolPostcode
-          ? {
-              key: "beneficiarySchoolName",
-              label: "Code postal de l'établissement",
-              value: convention.signatories.beneficiary.schoolPostcode,
-            }
-          : null,
-      ]),
+): ConventionSummarySubSection[] => [
+  {
+    key: "beneficiairy",
+    header: {
+      title: "Bénéficiaire",
     },
-    {
-      key: "emergencyContact",
-      header: { title: "Contact d'urgence" },
-      fields: [
-        {
-          key: "emergencyContactName",
-          label: "Prénom et nom",
-          value: convention.signatories.beneficiary.emergencyContact || "-",
-        },
-        {
-          key: "emergencyContactEmail",
-          label: "Email",
-          value: convention.signatories.beneficiary.emergencyContactEmail ? (
-            <a
-              href={`mailto:${convention.signatories.beneficiary.emergencyContactEmail}`}
-              title={convention.signatories.beneficiary.emergencyContactEmail}
-            >
-              {convention.signatories.beneficiary.emergencyContactEmail}
-            </a>
-          ) : (
-            "-"
+    fields: removeEmptyValue([
+      {
+        key: "beneficiaryBirthdate",
+        label: "Date de naissance",
+        value: toDisplayedDate({
+          date: convertLocaleDateToUtcTimezoneDate(
+            new Date(convention.signatories.beneficiary.birthdate),
           ),
-        },
-        {
-          key: "emergencyContactPhone",
-          label: "Téléphone",
-          value:
-            convention.signatories.beneficiary.emergencyContactPhone || "-",
-        },
-      ],
-    },
-  ];
-};
+        }),
+      },
+      {
+        key: "beneficiaryRqth",
+        label: "RQTH",
+        value: convention.signatories.beneficiary.isRqth ? "Oui" : "Non",
+      },
+      {
+        key: "beneficiaryFinanciaryHelp",
+        label: "Aide matérielle",
+        value: convention.signatories.beneficiary.financiaryHelp || "Aucune",
+      },
+      convention.internshipKind === "mini-stage-cci" &&
+      convention.signatories.beneficiary.address
+        ? {
+            key: "beneficiaryAddress",
+            label: "Adresse du candidat",
+            value:
+              convention.internshipKind === "mini-stage-cci" &&
+              convention.signatories.beneficiary.address &&
+              addressDtoToString(convention.signatories.beneficiary.address),
+          }
+        : null,
+      convention.internshipKind === "mini-stage-cci" &&
+      convention.signatories.beneficiary.levelOfEducation
+        ? {
+            key: "beneficiaryLevelOfEducation",
+            label: "Niveau d'études",
+            value: convention.signatories.beneficiary.levelOfEducation,
+          }
+        : null,
+      convention.internshipKind === "mini-stage-cci" &&
+      convention.signatories.beneficiary.schoolName
+        ? {
+            key: "beneficiarySchoolName",
+            label: "Établissement",
+            value: convention.signatories.beneficiary.schoolName,
+          }
+        : null,
+      convention.internshipKind === "mini-stage-cci" &&
+      convention.signatories.beneficiary.schoolPostcode
+        ? {
+            key: "beneficiarySchoolName",
+            label: "Code postal de l'établissement",
+            value: convention.signatories.beneficiary.schoolPostcode,
+          }
+        : null,
+    ]),
+  },
+  {
+    key: "emergencyContact",
+    header: { title: "Contact d'urgence" },
+    fields: [
+      {
+        key: "emergencyContactName",
+        label: "Prénom et nom",
+        value: convention.signatories.beneficiary.emergencyContact || "-",
+      },
+      {
+        key: "emergencyContactEmail",
+        label: "Email",
+        value: convention.signatories.beneficiary.emergencyContactEmail ? (
+          <a
+            href={`mailto:${convention.signatories.beneficiary.emergencyContactEmail}`}
+            title={convention.signatories.beneficiary.emergencyContactEmail}
+          >
+            {convention.signatories.beneficiary.emergencyContactEmail}
+          </a>
+        ) : (
+          "-"
+        ),
+      },
+      {
+        key: "emergencyContactPhone",
+        label: "Téléphone",
+        value: convention.signatories.beneficiary.emergencyContactPhone || "-",
+      },
+    ],
+  },
+];
+
 
 const makeEstablishmentSubSections = (
   convention: ConventionReadDto,
   assesmentReminderButtonProps?: (phone: PhoneNumber) => ButtonProps,
-): ConventionSummarySubSection[] => {
-  return [
-    {
-      key: "establishment",
-      header: {
-        title: "Entreprise",
-        badge: !convention.isEstablishmentBanned
-          ? undefined
-          : ({
-              severity: "error",
-              small: true,
-              children: "ENTREPRISE BANNIE",
-            } satisfies BadgeProps),
-      },
-      fields: removeEmptyValue([
-        {
-          key: "siret",
-          label: "SIRET",
-          value: renderSiret(convention.siret),
-        },
-        {
-          key: "businessName",
-          label: "Nom (raison sociale)",
-          value: convention.businessName,
-        },
-        convention.businessNameCustomized
-          ? {
-              key: "businessNameCustomized",
-              label: "Nom d'enseigne",
-              value: convention.businessNameCustomized,
-            }
-          : null,
-      ]),
+): ConventionSummarySubSection[] => [
+  {
+    key: "establishment",
+    header: {
+      title: "Entreprise",
+      badge: !convention.isEstablishmentBanned
+        ? undefined
+        : ({
+            severity: "error",
+            small: true,
+            children: "ENTREPRISE BANNIE",
+          } satisfies BadgeProps),
     },
-    {
-      key: "establishmentTutor",
-      header: {
-        title: "Tuteur",
-        action: assesmentReminderButtonProps
-          ? assesmentReminderButtonProps(convention.establishmentTutor.phone)
-          : undefined,
+    fields: removeEmptyValue([
+      {
+        key: "siret",
+        label: "SIRET",
+        value: renderSiret(convention.siret),
       },
-      fields: [
-        {
-          key: "establishmentTutorFirstname",
-          label: "Prénom",
-          value: getFormattedFirstnameAndLastname({
-            firstname: convention.establishmentTutor.firstName,
-          }),
-        },
-        {
-          key: "establishmentTutorLastname",
-          label: "Nom",
-          value: getFormattedFirstnameAndLastname({
-            lastname: convention.establishmentTutor.lastName,
-          }),
-        },
-        {
-          key: "establishmentTutorJob",
-          label: "Poste",
-          value: convention.establishmentTutor.job,
-        },
-        {
-          key: "establishmentTutorEmail",
-          label: "Email",
-          value: (
-            <a
-              href={`mailto:${convention.establishmentTutor.email}`}
-              title={convention.establishmentTutor.email}
-            >
-              {convention.establishmentTutor.email}
-            </a>
-          ),
-          copyButton: (
-            <CopyButton
-              withIcon={true}
-              textToCopy={convention.establishmentTutor.email}
-              label="Copier l'email du tuteur"
-              iconOnly
-              className="fr-ml-1v"
-            />
-          ),
-        },
-        {
-          key: "establishmentTutorPhone",
-          label: "Téléphone",
-          value: convention.establishmentTutor.phone,
-        },
-      ],
+      {
+        key: "businessName",
+        label: "Nom (raison sociale)",
+        value: convention.businessName,
+      },
+      convention.businessNameCustomized
+        ? {
+            key: "businessNameCustomized",
+            label: "Nom d'enseigne",
+            value: convention.businessNameCustomized,
+          }
+        : null,
+    ]),
+  },
+  {
+    key: "establishmentTutor",
+    header: {
+      title: "Tuteur",
+      action: assesmentReminderButtonProps
+        ? assesmentReminderButtonProps(convention.establishmentTutor.phone)
+        : undefined,
     },
-  ];
-};
+    fields: [
+      {
+        key: "establishmentTutorFirstname",
+        label: "Prénom",
+        value: getFormattedFirstnameAndLastname({
+          firstname: convention.establishmentTutor.firstName,
+        }),
+      },
+      {
+        key: "establishmentTutorLastname",
+        label: "Nom",
+        value: getFormattedFirstnameAndLastname({
+          lastname: convention.establishmentTutor.lastName,
+        }),
+      },
+      {
+        key: "establishmentTutorJob",
+        label: "Poste",
+        value: convention.establishmentTutor.job,
+      },
+      {
+        key: "establishmentTutorEmail",
+        label: "Email",
+        value: (
+          <a
+            href={`mailto:${convention.establishmentTutor.email}`}
+            title={convention.establishmentTutor.email}
+          >
+            {convention.establishmentTutor.email}
+          </a>
+        ),
+        copyButton: (
+          <CopyButton
+            withIcon={true}
+            textToCopy={convention.establishmentTutor.email}
+            label="Copier l'email du tuteur"
+            iconOnly
+            className="fr-ml-1v"
+          />
+        ),
+      },
+      {
+        key: "establishmentTutorPhone",
+        label: "Téléphone",
+        value: convention.establishmentTutor.phone,
+      },
+    ],
+  },
+];
 
 const makeImmersionSubSections = (
   convention: ConventionReadDto,
-): ConventionSummarySubSection[] => {
-  return [
-    {
-      key: "immersionAddress",
-      isFullWidthDisplay: true,
-      fields: [
-        {
-          key: "immersionAddress",
-          label: "Lieu où se fera l'immersion",
-          value: convention.immersionAddress,
-        },
-      ],
-    },
-    {
-      key: "immersion",
-      header: {
-        title: `Métier observé : ${convention.immersionAppellation.appellationLabel}`,
+): ConventionSummarySubSection[] => [
+  {
+    key: "immersionAddress",
+    isFullWidthDisplay: true,
+    fields: [
+      {
+        key: "immersionAddress",
+        label: "Lieu où se fera l'immersion",
+        value: convention.immersionAddress,
       },
-      isFullWidthDisplay: true,
-      fields: [
-        {
-          key: "immersionObjective",
-          label: `Objectif ${
-            convention.internshipKind === "immersion"
-              ? "de l'immersion"
-              : "du mini-stage"
-          }`,
-          value: convention.immersionObjective,
-        },
-        {
-          key: "immersionActivities",
-          label: "Activités observées",
-          value: convention.immersionActivities,
-        },
-        {
-          key: "immersionSkills",
-          label: "Compétences évaluées",
-          value: convention.immersionSkills || "-",
-        },
-        {
-          key: "remoteWorkMode",
-          label: "Modalité de l'immersion",
-          value: remoteWorkModeLabels[convention.remoteWorkMode].label,
-        },
-        {
-          key: "workConditions",
-          label: "Conditions de travail (propres au métier observé)",
-          value: convention.workConditions || "-",
-        },
-        {
-          key: "businessAdvantages",
-          label: "Avantages proposés par l'établissement d'accueil",
-          value: convention.businessAdvantages || "-",
-        },
-      ],
+    ],
+  },
+  {
+    key: "immersion",
+    header: {
+      title: `Métier observé : ${convention.immersionAppellation.appellationLabel}`,
     },
-    {
-      key: "period",
-      header: { title: "Emploi du temps" },
-      isFullWidthDisplay: true,
-      fields: [
-        {
-          key: "dateStart",
-          label: "Date de début",
-          value: toDisplayedDate({
-            date: convertLocaleDateToUtcTimezoneDate(
-              new Date(convention.dateStart),
-            ),
-          }),
-        },
-        {
-          key: "dateEnd",
-          label: "Date de fin",
-          value: toDisplayedDate({
-            date: convertLocaleDateToUtcTimezoneDate(
-              new Date(convention.dateEnd),
-            ),
-          }),
-        },
-      ],
-    },
-    {
-      key: "schedule",
-      fields: [
-        {
-          key: "schedule",
-          value: printWeekSchedule({
-            schedule: convention.schedule,
-            dateStart: convention.dateStart,
-            dateEnd: convention.dateEnd,
-            useWrapper: false,
-          }),
-        },
-      ],
-      isFullWidthDisplay: true,
-      hasBackgroundColor: true,
-      isSchedule: true,
-    },
-  ];
-};
+    isFullWidthDisplay: true,
+    fields: [
+      {
+        key: "immersionObjective",
+        label: `Objectif ${
+          convention.internshipKind === "immersion"
+            ? "de l'immersion"
+            : "du mini-stage"
+        }`,
+        value: convention.immersionObjective,
+      },
+      {
+        key: "immersionActivities",
+        label: "Activités observées",
+        value: convention.immersionActivities,
+      },
+      {
+        key: "immersionSkills",
+        label: "Compétences évaluées",
+        value: convention.immersionSkills || "-",
+      },
+      {
+        key: "remoteWorkMode",
+        label: "Modalité de l'immersion",
+        value: remoteWorkModeLabels[convention.remoteWorkMode].label,
+      },
+      {
+        key: "workConditions",
+        label: "Conditions de travail (propres au métier observé)",
+        value: convention.workConditions || "-",
+      },
+      {
+        key: "businessAdvantages",
+        label: "Avantages proposés par l'établissement d'accueil",
+        value: convention.businessAdvantages || "-",
+      },
+    ],
+  },
+  {
+    key: "period",
+    header: { title: "Emploi du temps" },
+    isFullWidthDisplay: true,
+    fields: [
+      {
+        key: "dateStart",
+        label: "Date de début",
+        value: toDisplayedDate({
+          date: convertLocaleDateToUtcTimezoneDate(
+            new Date(convention.dateStart),
+          ),
+        }),
+      },
+      {
+        key: "dateEnd",
+        label: "Date de fin",
+        value: toDisplayedDate({
+          date: convertLocaleDateToUtcTimezoneDate(
+            new Date(convention.dateEnd),
+          ),
+        }),
+      },
+    ],
+  },
+  {
+    key: "schedule",
+    fields: [
+      {
+        key: "schedule",
+        value: printWeekSchedule({
+          schedule: convention.schedule,
+          dateStart: convention.dateStart,
+          dateEnd: convention.dateEnd,
+          useWrapper: false,
+        }),
+      },
+    ],
+    isFullWidthDisplay: true,
+    hasBackgroundColor: true,
+    isSchedule: true,
+  },
+];
 
 const makeAdditionalInformationSubSections = (
   convention: ConventionReadDto,
-): ConventionSummarySubSection[] => {
-  return [
-    {
-      key: "additionalInformation",
-      isFullWidthDisplay: true,
-      fields: [
-        {
-          key: "individualProtection",
-          label: "Protection individuelle",
-          value: convention.individualProtection
-            ? `Oui${
-                convention.individualProtectionDescription
-                  ? ` : ${convention.individualProtectionDescription}`
-                  : ""
-              }`
-            : "Non",
-        },
-        {
-          key: "sanitaryPreventionDescription",
-          label: "Mesures de prévention sanitaire",
-          value: convention.sanitaryPrevention
-            ? `Oui${
-                convention.sanitaryPreventionDescription
-                  ? ` : ${convention.sanitaryPreventionDescription}`
-                  : ""
-              }`
-            : "Non",
-        },
-      ],
-    },
-  ];
-};
+): ConventionSummarySubSection[] => [
+  {
+    key: "additionalInformation",
+    isFullWidthDisplay: true,
+    fields: [
+      {
+        key: "individualProtection",
+        label: "Protection individuelle",
+        value: convention.individualProtection
+          ? `Oui${
+              convention.individualProtectionDescription
+                ? ` : ${convention.individualProtectionDescription}`
+                : ""
+            }`
+          : "Non",
+      },
+      {
+        key: "sanitaryPreventionDescription",
+        label: "Mesures de prévention sanitaire",
+        value: convention.sanitaryPrevention
+          ? `Oui${
+              convention.sanitaryPreventionDescription
+                ? ` : ${convention.sanitaryPreventionDescription}`
+                : ""
+            }`
+          : "Non",
+      },
+    ],
+  },
+];
 
 export const makeConventionSections = (
   convention: ConventionReadDto,
@@ -871,37 +863,35 @@ export const makeConventionSections = (
   ) => ButtonProps | null,
   assesmentReminderButtonProps?: (phone: PhoneNumber) => ButtonProps,
   assessmentSignatureReminderButtonProps?: () => ButtonProps | null,
-): ConventionSummarySection[] => {
-  return [
-    {
-      title: "Signataires de la convention",
-      subSections: makeSignatoriesSubsections(
-        convention,
-        signatoriesSubsectionButtonProps,
-        assessmentSignatureReminderButtonProps,
-      ),
-    },
-    {
-      title: "Informations sur le bénéficiaire",
-      subSections: makeBeneficiarySubSections(convention),
-    },
-    {
-      title: "Informations de l'entreprise",
-      subSections: makeEstablishmentSubSections(
-        convention,
-        assesmentReminderButtonProps,
-      ),
-    },
-    {
-      title: "Informations sur l'immersion",
-      subSections: makeImmersionSubSections(convention),
-    },
-    {
-      title: "Informations complémentaires",
-      subSections: makeAdditionalInformationSubSections(convention),
-    },
-  ];
-};
+): ConventionSummarySection[] => [
+  {
+    title: "Signataires de la convention",
+    subSections: makeSignatoriesSubsections(
+      convention,
+      signatoriesSubsectionButtonProps,
+      assessmentSignatureReminderButtonProps,
+    ),
+  },
+  {
+    title: "Informations sur le bénéficiaire",
+    subSections: makeBeneficiarySubSections(convention),
+  },
+  {
+    title: "Informations de l'entreprise",
+    subSections: makeEstablishmentSubSections(
+      convention,
+      assesmentReminderButtonProps,
+    ),
+  },
+  {
+    title: "Informations sur l'immersion",
+    subSections: makeImmersionSubSections(convention),
+  },
+  {
+    title: "Informations complémentaires",
+    subSections: makeAdditionalInformationSubSections(convention),
+  },
+];
 
 export const printWeekSchedule = ({
   schedule,

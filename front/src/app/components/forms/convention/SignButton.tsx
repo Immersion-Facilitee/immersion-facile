@@ -40,8 +40,8 @@ export const SignButton = ({
   onOpenSignModal,
   onSubmit,
 }: SignButtonProps) => {
-  const customSignModalButtons: ButtonProps[] = useMemo(() => {
-    return [
+  const customSignModalButtons: ButtonProps[] = useMemo(
+    () => [
       {
         children: "Annuler",
         type: "button",
@@ -59,8 +59,9 @@ export const SignButton = ({
         priority: "primary",
         onClick: onSubmit,
       },
-    ];
-  }, [onCloseSignModalWithoutSignature, onSubmit]);
+    ],
+    [onCloseSignModalWithoutSignature, onSubmit],
+  );
   return (
     <>
       <Button

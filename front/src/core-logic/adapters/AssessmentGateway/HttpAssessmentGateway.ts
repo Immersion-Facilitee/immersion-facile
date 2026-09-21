@@ -98,15 +98,15 @@ export class HttpAssessmentGateway implements AssessmentGateway {
           headers: { authorization: jwt },
           urlParams: { conventionId },
         })
-        .then((response) => {
-          return match(response)
+        .then((response) =>
+          match(response)
             .with({ status: 200 }, ({ body }) => body)
             .with({ status: 404, body: { message: P.not(P.nullish) } }, () => {
               throw errors.assessment.notFound(conventionId);
             })
             .with({ status: P.union(400, 401, 403, 404) }, logBodyAndThrow)
-            .otherwise(otherwiseThrow);
-        }),
+            .otherwise(otherwiseThrow),
+        ),
     );
   }
 

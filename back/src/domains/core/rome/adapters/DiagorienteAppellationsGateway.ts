@@ -77,11 +77,9 @@ export class DiagorienteAppellationsGateway implements AppellationsGateway {
               Authorization: `Bearer ${tokenData.access_token}`,
             },
           })
-          .then(({ status, body }) => {
-            return status === 200
-              ? diagorienteRawResponseToAppellationsDto(body)
-              : [];
-          })
+          .then(({ status, body }) =>
+            status === 200 ? diagorienteRawResponseToAppellationsDto(body) : [],
+          )
           .catch(() =>
             // Must not throw since usecase make a failback to internal appellation search
             [],

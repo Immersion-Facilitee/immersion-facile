@@ -135,20 +135,21 @@ const getImmersionAppellation = async ({
   return conventionRead.immersionAppellation;
 };
 
-const notifySubscriber = ({
-  uow,
-  conventionRead,
-  deps,
-}: {
-  uow: UnitOfWork;
-  conventionRead: ConventionReadDto;
-  deps: {
-    subscribersGateway: SubscribersGateway;
-    timeGateway: TimeGateway;
-    consumerNamesUsingRomeV3: ApiConsumerName[];
-  };
-}) => {
-  return async (apiConsumer: ApiConsumer) => {
+const notifySubscriber =
+  ({
+    uow,
+    conventionRead,
+    deps,
+  }: {
+    uow: UnitOfWork;
+    conventionRead: ConventionReadDto;
+    deps: {
+      subscribersGateway: SubscribersGateway;
+      timeGateway: TimeGateway;
+      consumerNamesUsingRomeV3: ApiConsumerName[];
+    };
+  }) =>
+  async (apiConsumer: ApiConsumer) => {
     const immersionAppellation = await getImmersionAppellation({
       uow,
       conventionRead,
@@ -246,4 +247,3 @@ const notifySubscriber = ({
 
     logger.info({ subscriberResponse: response });
   };
-};

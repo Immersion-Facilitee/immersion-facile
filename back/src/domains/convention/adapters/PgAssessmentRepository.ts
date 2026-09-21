@@ -14,8 +14,8 @@ import { assessmentEntitySchema } from "../../../utils/assessment";
 import type { AssessmentEntity } from "../entities/AssessmentEntity";
 import type { AssessmentRepository } from "../ports/AssessmentRepository";
 
-const createAssessmentQueryBuilder = (transaction: KyselyDb) => {
-  return transaction.selectFrom("immersion_assessments").select((eb) => [
+const createAssessmentQueryBuilder = (transaction: KyselyDb) =>
+  transaction.selectFrom("immersion_assessments").select((eb) => [
     jsonBuildObject({
       conventionId: eb.ref("convention_id"),
       status: eb.ref("status").$castTo<AssessmentStatus[]>(),
@@ -33,7 +33,6 @@ const createAssessmentQueryBuilder = (transaction: KyselyDb) => {
       createdAt: sql<DateTimeIsoString>`date_to_iso(created_at)`,
     }).as("assessment"),
   ]);
-};
 
 const parseAssessmentEntitySchema = (assessment: any) =>
   assessmentEntitySchema.parse({

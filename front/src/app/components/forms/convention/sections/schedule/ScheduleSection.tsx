@@ -55,12 +55,9 @@ export const ScheduleSection = ({
 
   const getFieldError = makeFieldError(formState);
 
-  const shouldUpdateDateAndSchedule = (dateStart: Date, dateEnd: Date) => {
-    return (
-      differenceInCalendarDays(dateEnd, dateStart) <=
-      maximumCalendarDayByInternshipKind[internshipKind]
-    );
-  };
+  const shouldUpdateDateAndSchedule = (dateStart: Date, dateEnd: Date) =>
+    differenceInCalendarDays(dateEnd, dateStart) <=
+    maximumCalendarDayByInternshipKind[internshipKind];
 
   const [dateStartInputValue, setDateStartInputValue] = useState<string>(
     values.dateStart,

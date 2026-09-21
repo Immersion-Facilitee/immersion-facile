@@ -602,18 +602,16 @@ describe("Discussion slice", () => {
   };
   const discussionToDiscussionInList = (
     discussion: DiscussionReadDto,
-  ): DiscussionInList => {
-    return {
-      ...discussion,
-      potentialBeneficiary: {
-        firstName: discussion.potentialBeneficiary.firstName,
-        lastName: discussion.potentialBeneficiary.lastName,
-        phone: null,
-      },
-      city: discussion.address.city,
-      immersionObjective: null,
-      exchangesData: discussionToExchangesData(discussion),
-      isEstablishmentReachableByPhoneAfter15Days: false,
-    };
-  };
+  ): DiscussionInList => ({
+    ...discussion,
+    potentialBeneficiary: {
+      firstName: discussion.potentialBeneficiary.firstName,
+      lastName: discussion.potentialBeneficiary.lastName,
+      phone: null,
+    },
+    city: discussion.address.city,
+    immersionObjective: null,
+    exchangesData: discussionToExchangesData(discussion),
+    isEstablishmentReachableByPhoneAfter15Days: false,
+  });
 });

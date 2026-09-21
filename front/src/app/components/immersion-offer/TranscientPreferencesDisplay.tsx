@@ -150,8 +150,8 @@ export const TranscientPreferencesDisplay = (
 const renderTranscientKeyValues = (
   data: ContactTranscientData,
   kind: DiscussionKind,
-) => {
-  return keys(data).map((key) => {
+) =>
+  keys(data).map((key) => {
     const label = makeContactInputsLabelsByKey(kind)[key];
     const value = data[key];
     return value ? (
@@ -160,7 +160,6 @@ const renderTranscientKeyValues = (
       </li>
     ) : null;
   });
-};
 
 const renderValue = (
   key: keyof ContactTranscientData,

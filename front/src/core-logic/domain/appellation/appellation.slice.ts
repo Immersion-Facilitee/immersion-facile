@@ -213,6 +213,5 @@ const getMultipleAppellationLocatorIndex = (
   locator:
     | MultipleAppellationAutocompleteLocator
     | AppellationAutocompleteLocator,
-): number => {
-  return Number.parseInt(locator.substring(locator.lastIndexOf("-") + 1), 10);
-};
+): number =>
+  Number.parseInt(locator.substring(locator.lastIndexOf("-") + 1), 10);

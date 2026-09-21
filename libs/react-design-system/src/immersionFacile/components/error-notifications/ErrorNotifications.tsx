@@ -38,16 +38,14 @@ export const ErrorNotifications = ({
       className={cx(componentName, fr.cx("fr-my-2w"))}
       description={
         <ul className={`${componentName}__error-list`}>
-          {errorsWithLabels.map((errorWithLabel) => {
-            return (
-              <li
-                key={errorWithLabel.error.field}
-                className={`${componentName}__error-wrapper`}
-              >
-                <ErrorMessage {...errorWithLabel} />
-              </li>
-            );
-          })}
+          {errorsWithLabels.map((errorWithLabel) => (
+            <li
+              key={errorWithLabel.error.field}
+              className={`${componentName}__error-wrapper`}
+            >
+              <ErrorMessage {...errorWithLabel} />
+            </li>
+          ))}
         </ul>
       }
     />

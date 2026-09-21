@@ -641,8 +641,8 @@ const getBannedEstablishmentInfoFromPgDiscussion = (
 
 const getWithDiscussionStatusFromPgDiscussion = (
   discussion: GetDiscussionsResults[number]["discussion"],
-): WithDiscussionStatus => {
-  return match(discussion)
+): WithDiscussionStatus =>
+  match(discussion)
     .with({ status: "PENDING" }, ({ status }) => ({ status }))
     .with({ status: "REJECTED", rejectionKind: P.nullish }, (discussion) => {
       throw new Error(
@@ -714,7 +714,6 @@ const getWithDiscussionStatusFromPgDiscussion = (
       candidateWarnedMethod: discussion.candidateWarnedMethod ?? null,
     }))
     .exhaustive();
-};
 
 const makeDiscussionDtoFromPgDiscussion = (
   results: GetDiscussionsResults,

@@ -64,45 +64,49 @@ export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
       >
     >(defaultFilters);
 
-  const statusOptions: CheckboxProps["options"] = useMemo(() => {
-    return discussionStatuses.map((status) => ({
-      label: displayedStatuses[status],
-      nativeInputProps: {
-        value: status,
-        onChange: (event) => {
-          const existingStatuses = tempFilters.statuses ?? [];
-          setTempFilters({
-            ...tempFilters,
-            statuses:
-              event.currentTarget.checked &&
-              isStringDiscussionStatus(event.currentTarget.value)
-                ? [...existingStatuses, event.currentTarget.value]
-                : existingStatuses.filter(
-                    (status) => status !== event.currentTarget.value,
-                  ),
-          });
-        },
-      },
-    }));
-  }, [tempFilters]);
-
-  const dateOptions: RadioButtonsProps["options"] = useMemo(() => {
-    return Object.entries(displayedOrderDirections).map(
-      ([orderDirection, label]) => ({
-        label,
+  const statusOptions: CheckboxProps["options"] = useMemo(
+    () =>
+      discussionStatuses.map((status) => ({
+        label: displayedStatuses[status],
         nativeInputProps: {
-          value: orderDirection,
-          defaultChecked: orderDirection === filters.orderDirection,
-          onChange: () => {
+          value: status,
+          onChange: (event) => {
+            const existingStatuses = tempFilters.statuses ?? [];
             setTempFilters({
               ...tempFilters,
-              orderDirection: orderDirection as DiscussionOrderDirection,
+              statuses:
+                event.currentTarget.checked &&
+                isStringDiscussionStatus(event.currentTarget.value)
+                  ? [...existingStatuses, event.currentTarget.value]
+                  : existingStatuses.filter(
+                      (status) => status !== event.currentTarget.value,
+                    ),
             });
           },
         },
-      }),
-    );
-  }, [tempFilters, filters]);
+      })),
+    [tempFilters],
+  );
+
+  const dateOptions: RadioButtonsProps["options"] = useMemo(
+    () =>
+      Object.entries(displayedOrderDirections).map(
+        ([orderDirection, label]) => ({
+          label,
+          nativeInputProps: {
+            value: orderDirection,
+            defaultChecked: orderDirection === filters.orderDirection,
+            onChange: () => {
+              setTempFilters({
+                ...tempFilters,
+                orderDirection: orderDirection as DiscussionOrderDirection,
+              });
+            },
+          },
+        }),
+      ),
+    [tempFilters, filters],
+  );
   useEffect(() => {
     if (connectedUserJwt) {
       dispatch(
@@ -206,9 +210,8 @@ const displayedOrderDirections: Record<DiscussionOrderDirection, string> = {
   asc: "Du plus ancien au plus récent",
 };
 
-const isStringDiscussionStatus = (value: string): value is DiscussionStatus => {
-  return discussionStatuses.includes(value as DiscussionStatus);
-};
+const isStringDiscussionStatus = (value: string): value is DiscussionStatus =>
+  discussionStatuses.includes(value as DiscussionStatus);
 
 const EstablishmentDiscussionTable = ({
   discussions,

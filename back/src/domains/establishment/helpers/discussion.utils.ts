@@ -62,9 +62,8 @@ export const processInboundParsingEmailMessage = (item: BrevoEmailItem) => {
   return cleanContactEmailFromMessage(emailContent);
 };
 
-export const getSubjectFromEmail = (item: BrevoEmailItem) => {
-  return item.Subject || defaultSubject;
-};
+export const getSubjectFromEmail = (item: BrevoEmailItem) =>
+  item.Subject || defaultSubject;
 
 export const hasUserRightToAccessDiscussion = async (
   user: User,

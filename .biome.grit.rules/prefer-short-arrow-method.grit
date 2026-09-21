@@ -1,23 +1,26 @@
 // Source rule : https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/prefer-short-arrow-method.md
 
-language js(typescript, jsx);
+engine biome(1.0)
+language js(typescript, jsx)
 
 JsMethodObjectMember(
   name = $name,
   parameters = $params,
-  body = $body
+  body = JsFunctionBody(statements = [JsReturnStatement(argument = $expr)])
 ) as $method where {
-
+  $expr <: r".+",
+  $method <: not r"(?s)\*.*",
   $name <: not `__proto__`,
-  $method <: not contains `*`,
-
-  $body <: `{ return $expr; }`,
-  $expr <: not ``,
-
-  $params <: not contains `this`,
-  $body <: not contains `this`,
-  $body <: not contains `super`,
-  $body <: not contains `arguments`,
+  $name <: not `"__proto__"`,
+  $name <: not `'__proto__'`,
+  $method <: not contains TsThisParameter(),
+  $method <: not contains `this`,
+  $method <: not contains `super`,
+  $method <: not contains `arguments`,
+  $method <: not contains `new.target`,
+  $method <: not contains `eval(`,
+  $method <: not contains TsTypeParameters(),
+  $method <: not contains TsReturnTypeAnnotation(),
 
   register_diagnostic(
     span = $method,
@@ -26,13 +29,18 @@ JsMethodObjectMember(
     fix_kind = "safe"
   ),
 
-  if ($expr <: or { `{ $... }`, `$x as $t`, `$x satisfies $t` }) {
+  if ($expr <: or {
+    `{ $... }`,
+    `$x as $t`,
+    `$x satisfies $t`,
+    JsSequenceExpression()
+  }) {
     $wrapped = `($expr)`
   } else {
     $wrapped = $expr
   },
 
-  if ($method <: contains `async`) {
+  if ($method <: r"(?s)async.*") {
     $method => `$name: async $params => $wrapped`
   } else {
     $method => `$name: $params => $wrapped`

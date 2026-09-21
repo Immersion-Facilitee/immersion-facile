@@ -8,8 +8,8 @@ export const renderHighlightContentWithCTA = (
         button?: EmailButtonProps;
       }
     | undefined,
-): string | undefined => {
-  return props
+): string | undefined =>
+  props
     ? `<table style="margin-top: 5px; margin-bottom: 25px; border-collapse: collapse; border-spacing: 0;">
     ${
       props.content
@@ -35,4 +35,3 @@ export const renderHighlightContentWithCTA = (
     }
   </table>`
     : "";
-};

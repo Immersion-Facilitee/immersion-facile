@@ -447,11 +447,10 @@ const getFeedBackContent = (
   currentUser: ConnectedUser | null,
   onGoBackClick: () => void,
   contactMode?: ContactMode,
-): CreateDiscussionFeedbackContent | null => {
-  return contactMode
+): CreateDiscussionFeedbackContent | null =>
+  contactMode
     ? feedbackMessageByContactMode({ currentUser, onGoBackClick })[contactMode]
     : null;
-};
 
 const feedbackMessageByContactMode = ({
   currentUser,

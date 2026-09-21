@@ -264,6 +264,4 @@ export const geocodingSlice = createSlice({
 
 const getMultipleAddressLocatorIndex = (
   locator: MultipleAddressAutocompleteLocator,
-): number => {
-  return Number.parseInt(locator.substring(locator.lastIndexOf("-") + 1));
-};
+): number => Number.parseInt(locator.substring(locator.lastIndexOf("-") + 1));

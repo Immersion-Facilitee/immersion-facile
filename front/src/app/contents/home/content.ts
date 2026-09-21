@@ -62,152 +62,150 @@ export const ressourcesAndWebinarsUrl =
 
 export const heroHeaderNavCards: (
   storeDispatch: Dispatch,
-) => Record<UserType, HeroHeaderNavCard[]> = (storeDispatch: Dispatch) => {
-  return {
-    default: [
-      {
-        overtitle: "Candidat",
-        title: "Vous êtes candidat pour une immersion",
-        icon: "fr-icon-user-line",
-        type: "candidate",
-        id: domElementIds.home.heroHeader.candidate,
-        link: frontRoutes.homeCandidates().link,
-      },
-      {
-        overtitle: "Entreprise",
-        title: "Vous représentez une entreprise",
-        icon: "fr-icon-building-line",
-        id: domElementIds.home.heroHeader.establishment,
-        type: "establishment",
-        link: frontRoutes.homeEstablishments().link,
-      },
-      {
-        overtitle: "Prescripteur",
-        title: "Vous êtes prescripteur",
-        icon: "fr-icon-map-pin-user-line",
-        id: domElementIds.home.heroHeader.agency,
-        type: "agency",
-        link: frontRoutes.homeAgencies().link,
-      },
-    ],
-    candidate: [
-      {
-        title: "Rechercher une entreprise accueillante",
-        icon: "fr-icon-search-line",
-        type: "candidate",
-        id: domElementIds.homeCandidates.heroHeader.search,
-        link: frontRoutes.search().link,
-      },
-      {
-        title: "Remplir la demande de convention",
-        icon: "fr-icon-draft-line",
-        type: "candidate",
-        id: domElementIds.homeCandidates.heroHeader.formConvention,
-        link: frontRoutes.initiateConvention({ skipFirstStep: true }).link,
-        alternateTitle:
-          "Remplir la demande de convention : en quelques minutes, sans avoir besoin de créer un compte.",
-      },
-      {
-        title: "Mon espace",
-        icon: "fr-icon-admin-line",
-        type: "candidate",
-        id: domElementIds.homeCandidates.heroHeader.dashboard,
-        link: frontRoutes.beneficiaryDashboard().link,
-        alternateTitle:
-          "Mon espace : espace personnel nominatif où retrouver mes échanges avec les entreprises, etc.",
-      },
-    ],
-    establishment: [
-      {
-        title: "Inscrire une entreprise",
-        icon: "fr-icon-award-line",
-        type: "establishment",
-        id: domElementIds.homeEstablishments.heroHeader.addEstablishmentForm,
-        link: frontRoutes.formEstablishment().link,
-        alternateTitle:
-          "Inscrire une entreprise : mon entreprise apparaîtra dans les résultats de recherche des candidats.",
-      },
-      {
-        title: "Remplir la demande de convention",
-        icon: "fr-icon-draft-line",
-        type: "establishment",
-        id: domElementIds.homeEstablishments.heroHeader.formConvention,
-        link: {
-          href: "",
-          onClick: (event) => {
-            event.preventDefault();
-            storeDispatch(
-              authSlice.actions.federatedIdentityProvided({
-                federatedIdentity: null,
-                feedbackTopic: "auth-global",
-              }),
-            );
-            frontRoutes.conventionImmersion().push();
-          },
+) => Record<UserType, HeroHeaderNavCard[]> = (storeDispatch: Dispatch) => ({
+  default: [
+    {
+      overtitle: "Candidat",
+      title: "Vous êtes candidat pour une immersion",
+      icon: "fr-icon-user-line",
+      type: "candidate",
+      id: domElementIds.home.heroHeader.candidate,
+      link: frontRoutes.homeCandidates().link,
+    },
+    {
+      overtitle: "Entreprise",
+      title: "Vous représentez une entreprise",
+      icon: "fr-icon-building-line",
+      id: domElementIds.home.heroHeader.establishment,
+      type: "establishment",
+      link: frontRoutes.homeEstablishments().link,
+    },
+    {
+      overtitle: "Prescripteur",
+      title: "Vous êtes prescripteur",
+      icon: "fr-icon-map-pin-user-line",
+      id: domElementIds.home.heroHeader.agency,
+      type: "agency",
+      link: frontRoutes.homeAgencies().link,
+    },
+  ],
+  candidate: [
+    {
+      title: "Rechercher une entreprise accueillante",
+      icon: "fr-icon-search-line",
+      type: "candidate",
+      id: domElementIds.homeCandidates.heroHeader.search,
+      link: frontRoutes.search().link,
+    },
+    {
+      title: "Remplir la demande de convention",
+      icon: "fr-icon-draft-line",
+      type: "candidate",
+      id: domElementIds.homeCandidates.heroHeader.formConvention,
+      link: frontRoutes.initiateConvention({ skipFirstStep: true }).link,
+      alternateTitle:
+        "Remplir la demande de convention : en quelques minutes, sans avoir besoin de créer un compte.",
+    },
+    {
+      title: "Mon espace",
+      icon: "fr-icon-admin-line",
+      type: "candidate",
+      id: domElementIds.homeCandidates.heroHeader.dashboard,
+      link: frontRoutes.beneficiaryDashboard().link,
+      alternateTitle:
+        "Mon espace : espace personnel nominatif où retrouver mes échanges avec les entreprises, etc.",
+    },
+  ],
+  establishment: [
+    {
+      title: "Inscrire une entreprise",
+      icon: "fr-icon-award-line",
+      type: "establishment",
+      id: domElementIds.homeEstablishments.heroHeader.addEstablishmentForm,
+      link: frontRoutes.formEstablishment().link,
+      alternateTitle:
+        "Inscrire une entreprise : mon entreprise apparaîtra dans les résultats de recherche des candidats.",
+    },
+    {
+      title: "Remplir la demande de convention",
+      icon: "fr-icon-draft-line",
+      type: "establishment",
+      id: domElementIds.homeEstablishments.heroHeader.formConvention,
+      link: {
+        href: "",
+        onClick: (event) => {
+          event.preventDefault();
+          storeDispatch(
+            authSlice.actions.federatedIdentityProvided({
+              federatedIdentity: null,
+              feedbackTopic: "auth-global",
+            }),
+          );
+          frontRoutes.conventionImmersion().push();
         },
-        alternateTitle:
-          "Remplir la demande de convention : en quelques minutes, sans avoir besoin de créer un compte.",
       },
-      {
-        title: "Mon espace",
-        icon: "fr-icon-admin-line",
-        type: "establishment",
-        id: domElementIds.homeEstablishments.heroHeader.establishmentDashboard,
-        link: frontRoutes.establishmentDashboardConventions().link,
-        alternateTitle:
-          "Mon espace : espace personnel nominatif où retrouver mes conventions, échanges avec les candidats, etc.",
-      },
-    ],
-    agency: [
-      {
-        title: "Inscrire mon organisme",
-        icon: "fr-icon-hotel-line",
-        type: "agency",
-        id: domElementIds.homeAgencies.heroHeader.addAgencyForm,
-        link: frontRoutes.agencyDashboardAgencies().link,
-      },
-      {
-        title: "Remplir la demande de convention",
-        icon: "fr-icon-draft-line",
-        id: domElementIds.homeAgencies.heroHeader.formConvention,
-        type: "agency",
-        link: {
-          href: "",
-          onClick: (event) => {
-            event.preventDefault();
-            storeDispatch(
-              authSlice.actions.federatedIdentityProvided({
-                federatedIdentity: null,
-                feedbackTopic: "auth-global",
-              }),
-            );
-            frontRoutes.conventionImmersion().push();
-          },
+      alternateTitle:
+        "Remplir la demande de convention : en quelques minutes, sans avoir besoin de créer un compte.",
+    },
+    {
+      title: "Mon espace",
+      icon: "fr-icon-admin-line",
+      type: "establishment",
+      id: domElementIds.homeEstablishments.heroHeader.establishmentDashboard,
+      link: frontRoutes.establishmentDashboardConventions().link,
+      alternateTitle:
+        "Mon espace : espace personnel nominatif où retrouver mes conventions, échanges avec les candidats, etc.",
+    },
+  ],
+  agency: [
+    {
+      title: "Inscrire mon organisme",
+      icon: "fr-icon-hotel-line",
+      type: "agency",
+      id: domElementIds.homeAgencies.heroHeader.addAgencyForm,
+      link: frontRoutes.agencyDashboardAgencies().link,
+    },
+    {
+      title: "Remplir la demande de convention",
+      icon: "fr-icon-draft-line",
+      id: domElementIds.homeAgencies.heroHeader.formConvention,
+      type: "agency",
+      link: {
+        href: "",
+        onClick: (event) => {
+          event.preventDefault();
+          storeDispatch(
+            authSlice.actions.federatedIdentityProvided({
+              federatedIdentity: null,
+              feedbackTopic: "auth-global",
+            }),
+          );
+          frontRoutes.conventionImmersion().push();
         },
-        alternateTitle:
-          "Remplir la demande de convention : en quelques minutes, sans avoir besoin de créer un compte.",
       },
-      {
-        title: "Mon espace",
-        icon: "fr-icon-admin-line",
-        type: "agency",
-        id: domElementIds.homeAgencies.heroHeader.agencyDashboard,
-        link: frontRoutes.agencyDashboardMain().link,
-        alternateTitle:
-          "Mon espace : espace personnel nominatif où retrouver mes conventions et statistiques.",
-      },
-      {
-        title: "Ressources et webinaires",
-        icon: "fr-icon-book-2-line",
-        type: "agency",
-        id: domElementIds.home.heroHeader.resourcesAndWebinars,
-        link: { href: ressourcesAndWebinarsUrl },
-        alternateTitle:
-          "Ressources et webinaires : découvrez nos ressources dédiées pour guider et être guidé.",
-      },
-    ],
-  };
-};
+      alternateTitle:
+        "Remplir la demande de convention : en quelques minutes, sans avoir besoin de créer un compte.",
+    },
+    {
+      title: "Mon espace",
+      icon: "fr-icon-admin-line",
+      type: "agency",
+      id: domElementIds.homeAgencies.heroHeader.agencyDashboard,
+      link: frontRoutes.agencyDashboardMain().link,
+      alternateTitle:
+        "Mon espace : espace personnel nominatif où retrouver mes conventions et statistiques.",
+    },
+    {
+      title: "Ressources et webinaires",
+      icon: "fr-icon-book-2-line",
+      type: "agency",
+      id: domElementIds.home.heroHeader.resourcesAndWebinars,
+      link: { href: ressourcesAndWebinarsUrl },
+      alternateTitle:
+        "Ressources et webinaires : découvrez nos ressources dédiées pour guider et être guidé.",
+    },
+  ],
+});
 export const sectionStatsData: Record<UserType, Stat[]> = {
   default: [
     {

@@ -134,19 +134,17 @@ export const ConventionSummary = ({
             {section.title}
           </h2>
           <div className={fr.cx("fr-grid-row")}>
-            {section.subSections.map((subSection, index) => {
-              return (
-                <SubSection
-                  key={subSection.key}
-                  subSection={subSection}
-                  index={index}
-                  isNextSubsectionFullwidth={isNextSubsectionFullwidth(
-                    section.subSections,
-                    index,
-                  )}
-                />
-              );
-            })}
+            {section.subSections.map((subSection, index) => (
+              <SubSection
+                key={subSection.key}
+                subSection={subSection}
+                index={index}
+                isNextSubsectionFullwidth={isNextSubsectionFullwidth(
+                  section.subSections,
+                  index,
+                )}
+              />
+            ))}
           </div>
           {sectionIndex === 0 && (
             <ConventionAgencySubSection {...agencySubSection} />

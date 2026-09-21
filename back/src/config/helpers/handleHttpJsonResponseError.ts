@@ -18,15 +18,14 @@ export const handleHttpJsonResponseError = (
   req: Request,
   res: Response,
   error: any,
-): Response<any, Record<string, ErrorObject>> => {
-  return error instanceof HttpError
+): Response<any, Record<string, ErrorObject>> =>
+  error instanceof HttpError
     ? res.status(error.httpCode).json({
         ...(error.issues ? { issues: error.issues } : {}),
         message: error.message,
         status: error.httpCode,
       } satisfies HttpErrorResponseBody)
     : onNotHttpError(error, req, res);
-};
 
 export class UnhandledError extends Error {
   constructor(

@@ -1735,15 +1735,13 @@ describe("PgEstablishmentAggregateRepository", () => {
       describe("sorting.date", () => {
         const testEstablishmentAggregates: EstablishmentAggregate[] =
           baseTestEstablishmentAggregates
-            .map((establishmentAggregate, index) => {
-              return {
-                ...establishmentAggregate,
-                establishment: {
-                  ...establishmentAggregate.establishment,
-                  updatedAt: subDays(new Date(), index),
-                },
-              };
-            })
+            .map((establishmentAggregate, index) => ({
+              ...establishmentAggregate,
+              establishment: {
+                ...establishmentAggregate.establishment,
+                updatedAt: subDays(new Date(), index),
+              },
+            }))
             .sort(randomizeTestEstablishmentAggregates);
 
         beforeEach(async () => {
@@ -1770,13 +1768,11 @@ describe("PgEstablishmentAggregateRepository", () => {
           ];
 
           const expectedResultsSiretsAndDate = expectedSortedResults.map(
-            (establishmentAggregate) => {
-              return {
-                siret: establishmentAggregate.establishment.siret,
-                updatedAt:
-                  establishmentAggregate.establishment.updatedAt.toISOString(),
-              };
-            },
+            (establishmentAggregate) => ({
+              siret: establishmentAggregate.establishment.siret,
+              updatedAt:
+                establishmentAggregate.establishment.updatedAt.toISOString(),
+            }),
           );
 
           expectArraysToEqual(
@@ -1839,15 +1835,13 @@ describe("PgEstablishmentAggregateRepository", () => {
       describe("sorting.score", () => {
         const testEstablishmentAggregates: EstablishmentAggregate[] =
           baseTestEstablishmentAggregates
-            .map((establishmentAggregate, index) => {
-              return {
-                ...establishmentAggregate,
-                establishment: {
-                  ...establishmentAggregate.establishment,
-                  score: index,
-                },
-              };
-            })
+            .map((establishmentAggregate, index) => ({
+              ...establishmentAggregate,
+              establishment: {
+                ...establishmentAggregate.establishment,
+                score: index,
+              },
+            }))
             .sort(randomizeTestEstablishmentAggregates);
 
         beforeEach(async () => {

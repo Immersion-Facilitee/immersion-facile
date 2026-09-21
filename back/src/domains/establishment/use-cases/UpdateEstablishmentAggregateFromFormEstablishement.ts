@@ -258,20 +258,19 @@ export const makeUpdateEstablishmentAggregateFromForm = useCaseBuilder(
 const getUserRightsAdded = (
   updatedFormEstablishment: EstablishmentAggregate,
   initialEstablishmentAggregate: EstablishmentAggregate,
-): EstablishmentUserRight[] => {
-  return updatedFormEstablishment.userRights.filter(
+): EstablishmentUserRight[] =>
+  updatedFormEstablishment.userRights.filter(
     (userRight) =>
       !initialEstablishmentAggregate.userRights.some(
         (existingUserRight) => existingUserRight.userId === userRight.userId,
       ),
   );
-};
 
 const getUserRightsUpdatedWithSameStatus = (
   updatedEstablishmentAggregate: EstablishmentAggregate,
   initialEstablishmentAggregate: EstablishmentAggregate,
-): EstablishmentUserRight[] => {
-  return updatedEstablishmentAggregate.userRights.filter((userRight) =>
+): EstablishmentUserRight[] =>
+  updatedEstablishmentAggregate.userRights.filter((userRight) =>
     initialEstablishmentAggregate.userRights.some(
       (existingUserRight) =>
         existingUserRight.userId === userRight.userId &&
@@ -279,20 +278,18 @@ const getUserRightsUpdatedWithSameStatus = (
         !equals(existingUserRight, userRight),
     ),
   );
-};
 
 const getUserRightsUpdatedWithNewStatus = (
   updatedEstablishmentAggregate: EstablishmentAggregate,
   initialEstablishmentAggregate: EstablishmentAggregate,
-): EstablishmentUserRight[] => {
-  return updatedEstablishmentAggregate.userRights.filter((userRight) =>
+): EstablishmentUserRight[] =>
+  updatedEstablishmentAggregate.userRights.filter((userRight) =>
     initialEstablishmentAggregate.userRights.some(
       (existingUserRight) =>
         existingUserRight.userId === userRight.userId &&
         existingUserRight.status !== userRight.status,
     ),
   );
-};
 
 const getPendingUserRightsRemoved = (
   updatedEstablishmentAggregate: EstablishmentAggregate,

@@ -32,11 +32,13 @@ export const SignConventionModalContent = ({
     }
   };
 
-  useEffect(() => {
-    return modalOnCancelCallback(() => {
-      onCancel();
-    });
-  }, [modalOnCancelCallback, onCancel]);
+  useEffect(
+    () =>
+      modalOnCancelCallback(() => {
+        onCancel();
+      }),
+    [modalOnCancelCallback, onCancel],
+  );
 
   return (
     <>

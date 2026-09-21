@@ -200,12 +200,12 @@ const getConventionEpic: ConventionEpic = (
               feedbackTopic: action.payload.feedbackTopic,
             }),
           ),
-          catchEpicError((error: Error) => {
-            return conventionSlice.actions.fetchConventionFailed({
+          catchEpicError((error: Error) =>
+            conventionSlice.actions.fetchConventionFailed({
               errorMessage: error.message,
               feedbackTopic: action.payload.feedbackTopic,
-            });
-          }),
+            }),
+          ),
         );
     }),
     filter((action): action is ConventionAction => action !== undefined),

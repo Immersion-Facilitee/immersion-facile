@@ -110,11 +110,12 @@ export const AgencyAdminUsersToReview = ({
     );
   };
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
-    };
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   return (
     <>

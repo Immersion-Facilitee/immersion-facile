@@ -40,12 +40,12 @@ const makeConventionStatusChangeEpic =
           .updateConventionStatus$(payload.updateStatusParams, payload.jwt)
           .pipe(
             map(() => successAction(payload)),
-            catchEpicError((error: Error) => {
-              return failedAction({
+            catchEpicError((error: Error) =>
+              failedAction({
                 errorMessage: error.message,
                 feedbackTopic: payload.feedbackTopic,
-              });
-            }),
+              }),
+            ),
           ),
       ),
     );
@@ -191,16 +191,14 @@ const broadcastConventionAgainEpic: ConventionActionEpic = (
               },
             ),
           ),
-          catchEpicError((error: Error) => {
-            return conventionActionSlice.actions.broadcastConventionToPartnerFailed(
-              {
-                errorMessage: isStringJson(error.message[0])
-                  ? JSON.parse(error.message).message
-                  : error.message,
-                feedbackTopic: payload.feedbackTopic,
-              },
-            );
-          }),
+          catchEpicError((error: Error) =>
+            conventionActionSlice.actions.broadcastConventionToPartnerFailed({
+              errorMessage: isStringJson(error.message[0])
+                ? JSON.parse(error.message).message
+                : error.message,
+              feedbackTopic: payload.feedbackTopic,
+            }),
+          ),
         ),
     ),
   );

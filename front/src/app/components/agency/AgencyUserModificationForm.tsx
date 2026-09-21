@@ -80,27 +80,25 @@ export const AgencyUserModificationForm = ({
     (role) =>
       role !== "to-review" && (isFTAgency ? role !== "counsellor" : true),
   );
-  const checkboxOptions = availableRoles.map((availableRole) => {
-    return {
-      label: agencyRolesToDisplay[availableRole].label,
-      nativeInputProps: {
-        name: register("roles").name,
-        checked: values.roles.includes(availableRole),
-        onChange: () => {
-          const rolesToSet = values.roles.includes(availableRole)
-            ? values.roles.filter((role) => role !== availableRole)
-            : [...values.roles, availableRole];
-          setValue("roles", rolesToSet, {
-            shouldValidate: true,
-          });
-          setDisplayFirstCounsellorInformation(
-            !hasCounsellorRoles && rolesToSet.includes("counsellor"),
-          );
-        },
+  const checkboxOptions = availableRoles.map((availableRole) => ({
+    label: agencyRolesToDisplay[availableRole].label,
+    nativeInputProps: {
+      name: register("roles").name,
+      checked: values.roles.includes(availableRole),
+      onChange: () => {
+        const rolesToSet = values.roles.includes(availableRole)
+          ? values.roles.filter((role) => role !== availableRole)
+          : [...values.roles, availableRole];
+        setValue("roles", rolesToSet, {
+          shouldValidate: true,
+        });
+        setDisplayFirstCounsellorInformation(
+          !hasCounsellorRoles && rolesToSet.includes("counsellor"),
+        );
       },
-      hintText: agencyRolesToDisplay[availableRole].description,
-    };
-  });
+    },
+    hintText: agencyRolesToDisplay[availableRole].description,
+  }));
 
   const checkboxOptionsWithFilter = () => {
     if (agencyHasRefersTo)

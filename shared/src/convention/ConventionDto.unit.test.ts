@@ -787,8 +787,8 @@ describe("conventionDtoSchema", () => {
           submissionDate: DateString;
           workedDaysCount: number;
           beneficiaryBirthdate: DateString;
-        }) => {
-          return new ConventionDtoBuilder()
+        }) =>
+          new ConventionDtoBuilder()
             .withInternshipKind("mini-stage-cci")
             .withDateStart(conventionStartDate.toISOString())
             .withDateEnd(
@@ -799,7 +799,6 @@ describe("conventionDtoSchema", () => {
             .withBeneficiaryRepresentative(beneficiaryRepresentative)
             .withSchedule(reasonableSchedule)
             .build();
-        };
 
         describe("when beneficiary is under 15yo", () => {
           const beneficiaryBirthdayDate_14yo = subYears(

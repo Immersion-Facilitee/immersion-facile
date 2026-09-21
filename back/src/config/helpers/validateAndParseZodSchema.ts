@@ -56,11 +56,10 @@ const flattenZodIssue = (
   if (issue.code === "invalid_union" && issue.errors) {
     const unionErrors = flatten(issue.errors);
     const unionMessages = unionErrors.reduce<string[]>(
-      (unionMsgs: string[], currentIssue: $ZodIssue) => {
-        return unionMsgs.concat(
+      (unionMsgs: string[], currentIssue: $ZodIssue) =>
+        unionMsgs.concat(
           flattenZodIssue(currentIssue, [...path, ...currentIssue.path]),
-        );
-      },
+        ),
       [],
     );
     return unionMessages;

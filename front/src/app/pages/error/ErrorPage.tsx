@@ -43,15 +43,13 @@ export const ErrorPage = ({
   title,
   buttons,
   feedbackTopic,
-}: ErrorPageProperties): ReactElement => {
-  return (
-    <HeaderFooterLayout>
-      <MainWrapper layout="default">
-        <ErrorPageContent
-          {...getPageContentProps(error, title, buttons)}
-          feedbackTopic={feedbackTopic}
-        />
-      </MainWrapper>
-    </HeaderFooterLayout>
-  );
-};
+}: ErrorPageProperties): ReactElement => (
+  <HeaderFooterLayout>
+    <MainWrapper layout="default">
+      <ErrorPageContent
+        {...getPageContentProps(error, title, buttons)}
+        feedbackTopic={feedbackTopic}
+      />
+    </MainWrapper>
+  </HeaderFooterLayout>
+);

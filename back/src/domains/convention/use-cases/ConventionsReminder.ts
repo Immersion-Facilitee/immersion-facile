@@ -124,15 +124,13 @@ const makeConventionReminderRequiredEvent = ({
   id: ConventionId;
   reminderKind: ReminderKind;
   deps: Deps;
-}): EventWithConventionId => {
-  return {
-    id,
-    event: deps.createNewEvent({
-      topic: "ConventionReminderRequired",
-      payload: {
-        conventionId: id,
-        reminderKind,
-      },
-    }),
-  };
-};
+}): EventWithConventionId => ({
+  id,
+  event: deps.createNewEvent({
+    topic: "ConventionReminderRequired",
+    payload: {
+      conventionId: id,
+      reminderKind,
+    },
+  }),
+});

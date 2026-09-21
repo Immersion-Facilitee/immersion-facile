@@ -100,12 +100,10 @@ describe("makeConventionPresentationSchemaWithNormalizedInput", () => {
 
     const buildConventionInitialValuesFromConventionDto = (
       convention: ConventionDto,
-    ): ConventionFormInitialValues => {
-      return {
-        ...convention,
-        agencyDepartment: "",
-      };
-    };
+    ): ConventionFormInitialValues => ({
+      ...convention,
+      agencyDepartment: "",
+    });
 
     it.each([
       buildConventionInitialValuesFromConventionDto(

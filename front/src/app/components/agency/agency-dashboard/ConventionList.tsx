@@ -167,30 +167,32 @@ export const ConventionList = () => {
     [tempFilters.assessmentCompletionStatus],
   );
 
-  const statusOptions: CheckboxProps["options"] = useMemo(() => {
-    return conventionStatuses.map((status) => ({
-      label: labelAndSeverityByStatus[status].label.agency,
-      nativeInputProps: {
-        value: status,
-        checked: tempFilters.statuses?.includes(status) ?? false,
-        onChange: (event) => {
-          const existingStatuses = tempFilters.statuses ?? [];
-          const newStatuses =
-            event.currentTarget.checked &&
-            isStringConventionStatus(event.currentTarget.value)
-              ? [...existingStatuses, event.currentTarget.value]
-              : existingStatuses.filter(
-                  (status) => status !== event.currentTarget.value,
-                );
+  const statusOptions: CheckboxProps["options"] = useMemo(
+    () =>
+      conventionStatuses.map((status) => ({
+        label: labelAndSeverityByStatus[status].label.agency,
+        nativeInputProps: {
+          value: status,
+          checked: tempFilters.statuses?.includes(status) ?? false,
+          onChange: (event) => {
+            const existingStatuses = tempFilters.statuses ?? [];
+            const newStatuses =
+              event.currentTarget.checked &&
+              isStringConventionStatus(event.currentTarget.value)
+                ? [...existingStatuses, event.currentTarget.value]
+                : existingStatuses.filter(
+                    (status) => status !== event.currentTarget.value,
+                  );
 
-          setTempFilters({
-            ...tempFilters,
-            statuses: isNotEmptyArray(newStatuses) ? newStatuses : undefined,
-          });
+            setTempFilters({
+              ...tempFilters,
+              statuses: isNotEmptyArray(newStatuses) ? newStatuses : undefined,
+            });
+          },
         },
-      },
-    }));
-  }, [tempFilters]);
+      })),
+    [tempFilters],
+  );
 
   const agencyOptions: CheckboxProps["options"] = useMemo(() => {
     if (!hasManyAgencies || !currentUser?.agencyRights) return [];
@@ -721,9 +723,8 @@ export const ConventionList = () => {
   );
 };
 
-const isStringConventionStatus = (value: string): value is ConventionStatus => {
-  return conventionStatuses.includes(value as ConventionStatus);
-};
+const isStringConventionStatus = (value: string): value is ConventionStatus =>
+  conventionStatuses.includes(value as ConventionStatus);
 
 const createDateOptions = (
   filterType: "dateStart" | "dateEnd",

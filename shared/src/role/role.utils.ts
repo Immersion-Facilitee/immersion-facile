@@ -83,12 +83,9 @@ export const hasAgencyAllowedRolesToUpdateBeneficiaryBirthdateWithFinalStatus =
   }: {
     agencyRights: AgencyRight[];
     agencyId: AgencyId;
-  }): boolean => {
-    return (
-      agencyRights
-        .find((agencyRight) => agencyRight.agency.id === agencyId)
-        ?.roles.some((role) =>
-          [...agencyModifierRoles, "agency-admin"].includes(role),
-        ) ?? false
-    );
-  };
+  }): boolean =>
+    agencyRights
+      .find((agencyRight) => agencyRight.agency.id === agencyId)
+      ?.roles.some((role) =>
+        [...agencyModifierRoles, "agency-admin"].includes(role),
+      ) ?? false;

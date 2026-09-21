@@ -71,39 +71,37 @@ export const makeRemoveUserAgencyRightsModalProps = ({
   userRightToRemove: UserRightToRemove;
   onSubmitted: (userRightToRemove: UserRightToRemove) => void;
   onCancel: () => void;
-}): ModalProps => {
-  return {
-    title:
-      userRightToRemove.isSelfRemoval === true
-        ? `Se détacher de ${userRightToRemove.agencyRight.agency.name}`
-        : "Confirmer la suppression",
-    children: (
-      <>
-        {makeDescriptionFromUserRightToRemove(userRightToRemove)}
+}): ModalProps => ({
+  title:
+    userRightToRemove.isSelfRemoval === true
+      ? `Se détacher de ${userRightToRemove.agencyRight.agency.name}`
+      : "Confirmer la suppression",
+  children: (
+    <>
+      {makeDescriptionFromUserRightToRemove(userRightToRemove)}
 
-        <ButtonsGroup
-          inlineLayoutWhen="always"
-          buttons={[
-            {
-              priority: "secondary",
-              children: "Annuler",
-              onClick: onCancel,
-            },
-            {
-              id: domElementIds.admin.agencyTab
-                .editAgencyRemoveUserConfirmationButton,
-              priority: "primary",
-              children: userRightToRemove.isSelfRemoval
-                ? "Me détacher"
-                : "Supprimer le rattachement",
-              onClick: () => onSubmitted(userRightToRemove),
-            },
-          ]}
-        />
-      </>
-    ),
-  };
-};
+      <ButtonsGroup
+        inlineLayoutWhen="always"
+        buttons={[
+          {
+            priority: "secondary",
+            children: "Annuler",
+            onClick: onCancel,
+          },
+          {
+            id: domElementIds.admin.agencyTab
+              .editAgencyRemoveUserConfirmationButton,
+            priority: "primary",
+            children: userRightToRemove.isSelfRemoval
+              ? "Me détacher"
+              : "Supprimer le rattachement",
+            onClick: () => onSubmitted(userRightToRemove),
+          },
+        ]}
+      />
+    </>
+  ),
+});
 
 const makeDescriptionFromUserRightToRemove = (
   userRightToRemove: UserRightToRemove,

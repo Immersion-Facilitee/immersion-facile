@@ -140,15 +140,14 @@ type RenderedButtons = {
 
 const getAreasConfig = (
   buttonsConfig: ButtonConfiguration[],
-): Record<ButtonArea, ButtonConfiguration[]> => {
-  return allAreas.reduce(
+): Record<ButtonArea, ButtonConfiguration[]> =>
+  allAreas.reduce(
     (acc, area) => {
       acc[area] = buttonsConfig.filter((item) => item.buttonArea === area);
       return acc;
     },
     {} as Record<ButtonArea, ButtonConfiguration[]>,
   );
-};
 
 const getRightAndLeftAreas = ({
   buttonsConfig,

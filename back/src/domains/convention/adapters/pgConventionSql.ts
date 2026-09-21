@@ -77,8 +77,8 @@ export type ConventionsWithErroredBroadcastFeedbackBuilder = ReturnType<
 // Function to create the common selection part with proper return type
 const createConventionSelection = (
   builder: ConventionBaseQueryBuilder,
-): ConventionQueryBuilder => {
-  return builder.select(({ ref, ...eb }) =>
+): ConventionQueryBuilder =>
+  builder.select(({ ref, ...eb }) =>
     jsonStripNulls(
       jsonBuildObject({
         id: ref("conventions.id"),
@@ -280,7 +280,6 @@ const createConventionSelection = (
       }),
     ).as("dto"),
   );
-};
 
 const withActorJoins = (
   builder: SelectQueryBuilder<ConventionQueryBuilderDb, "conventions", any>,

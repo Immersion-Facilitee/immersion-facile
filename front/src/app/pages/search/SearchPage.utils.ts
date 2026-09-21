@@ -12,24 +12,18 @@ import type { SearchPageParams } from "src/core-logic/domain/search/search.slice
 
 export const areValidGeoParams = (
   geoParams: Partial<LatLonDistance>,
-): geoParams is LatLonDistance => {
-  return (
-    geoParams.latitude !== undefined &&
-    geoParams.longitude !== undefined &&
-    geoParams.distanceKm !== undefined &&
-    geoParams.distanceKm > 0
-  );
-};
+): geoParams is LatLonDistance =>
+  geoParams.latitude !== undefined &&
+  geoParams.longitude !== undefined &&
+  geoParams.distanceKm !== undefined &&
+  geoParams.distanceKm > 0;
 
 export const areEmptyGeoParams = (
   geoParams: Partial<LatLonDistance>,
-): geoParams is Partial<LatLonDistance> => {
-  return (
-    geoParams.latitude === undefined &&
-    geoParams.longitude === undefined &&
-    geoParams.distanceKm === undefined
-  );
-};
+): geoParams is Partial<LatLonDistance> =>
+  geoParams.latitude === undefined &&
+  geoParams.longitude === undefined &&
+  geoParams.distanceKm === undefined;
 
 export const canSubmitSearch = (values: SearchPageParams) => {
   const geoParams = {

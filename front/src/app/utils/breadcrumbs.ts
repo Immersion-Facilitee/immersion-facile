@@ -98,6 +98,5 @@ const formatToBreadcrumbsSegments = <T>(
   return [ancestorSegment, ...childSegments];
 };
 
-const getRoute = <T>(route: Route<T> | (() => Route<T>)): Route<T> => {
-  return isFunction(route) ? route() : route;
-};
+const getRoute = <T>(route: Route<T> | (() => Route<T>)): Route<T> =>
+  isFunction(route) ? route() : route;
