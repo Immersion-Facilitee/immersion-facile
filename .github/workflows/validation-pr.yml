@@ -6,9 +6,6 @@ on:
       - opened
       - synchronize
       - ready_for_review
-concurrency:
-  group: review-app-${{ github.event.number }}
-  cancel-in-progress: true
 
 jobs:
   fullcheck:
@@ -35,26 +32,3 @@ jobs:
           cache: "pnpm"
       - run: |
           pnpm back verify-migrations-order
-
-  add-deploy-link:
-    if: github.event.action == 'opened'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/github-script@v9
-        with:
-          script: |
-            const workflowUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/review-app-trigger.yml`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `📌 Deploy a review app for this PR:
-
-              ➡️ [Click here to deploy review app](${workflowUrl}?ref=${context.payload.pull_request.head.ref})
-
-              When clicking the link above:
-              1. Click the "Run workflow" button
-              2. Enter this PR number: ${context.issue.number}
-              3. Click "Run workflow" to start the deployment`
-            });
