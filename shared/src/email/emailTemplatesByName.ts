@@ -2972,7 +2972,6 @@ L'équipe d'Immersion Facilitée`,
         "role:representantEntreprise",
         "role:tuteur",
         "role:preValideur",
-        "role:valideur",
       ],
       createEmailVariables: ({
         agencyLogoUrl,
