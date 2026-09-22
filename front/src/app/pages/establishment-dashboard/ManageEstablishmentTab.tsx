@@ -69,7 +69,7 @@ export const ManageEstablishmentsTab = ({
                 children: "Créer un nouvel établissement",
               },
               {
-                id: domElementIds.myAccountEstablishmentRegistration
+                id: domElementIds.establishmentDashboard.manageEstablishments
                   .registerEstablishmentButton,
 
                 priority: "primary",
