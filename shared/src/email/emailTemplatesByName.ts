@@ -1644,6 +1644,62 @@ Tél : ${beneficiaryPhone}`,
       `,
       }),
     },
+    DEMO_EMAIL_COMPONENTS: {
+      niceName: "[DEMO] Tous les composants email",
+      tags: ["template:demo_email_components"],
+      createEmailVariables: ({
+        agencyLogoUrl,
+        demoUrl,
+        highlightKind,
+        internshipKind,
+      }) => ({
+        subject: `[DEMO] Tous les composants email (${internshipKind})`,
+        agencyLogoUrl,
+        greetings: `<strong>SLOT 2 — greetings</strong>
+        Rendu par renderGreetings : un unique paragraphe, chaque retour à la ligne devient un br.`,
+        content: `<strong>SLOT 3 — content</strong>
+        Rendu par renderContent, enveloppé dans une table de 600px.
+
+        Le slot n'accepte qu'une string : toute structure doit être écrite en HTML à la main, directement dans le template.
+        <ul>
+          <li>une liste, écrite en ul/li dans la string</li>
+          <li>du <strong>gras</strong> et de l'<em>italique</em></li>
+          <li>un <a href="${demoUrl}">lien</a></li>
+        </ul>
+        La ligne vide au-dessus de la liste produit deux br successifs : c'est le seul moyen d'espacer deux paragraphes.`,
+        buttons: [
+          {
+            label: "SLOT 4 — bouton principal",
+            url: demoUrl,
+            target: "_blank",
+          },
+          {
+            label: "Bouton secondaire",
+            url: demoUrl,
+            target: "_blank",
+          },
+        ],
+        highlight: {
+          kind: highlightKind,
+          content: `SLOT 5 — highlight (kind : ${highlightKind})
+          Barre de couleur à gauche, texte en gras. Un seul highlight possible par email : les quatre kinds (success, error, warning, info) ne peuvent pas être affichés ensemble.`,
+        },
+        highlightContentWithCTA: {
+          content:
+            "SLOT 6 — highlightContentWithCTA : encadré sur fond bleu clair, collé à son bouton.",
+          button: {
+            label: "Bouton de l'encadré",
+            url: demoUrl,
+            target: "_blank",
+          },
+        },
+        subContent: `<strong>SLOT 7 — subContent</strong>
+        Même renderer que content : ce slot existe uniquement pour pouvoir écrire du texte après les boutons et les encadrés, dont la position est figée.
+        ${defaultSignature(internshipKind)}`,
+        legals: `SLOT 8 — legals : texte gris en petit corps, précédé d'un filet bleu clair. Utilisé par 3 templates sur 69.`,
+        attachmentUrls: [emailAttachements.memoBeneficiary],
+      }),
+    },
     DEPRECATED_CONVENTION_NOTIFICATION: {
       niceName: "Convention - Obsolète",
       tags: [

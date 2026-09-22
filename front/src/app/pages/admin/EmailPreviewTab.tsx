@@ -208,6 +208,12 @@ export const defaultEmailValueByEmailKind: {
     loginLink: "https://google.com",
     fullname: "BOB",
   },
+  DEMO_EMAIL_COMPONENTS: {
+    internshipKind: "immersion",
+    agencyLogoUrl: undefined,
+    highlightKind: "info",
+    demoUrl: "https://immersion-facile.beta.gouv.fr",
+  },
   TEST_EMAIL: {
     input1: "input1",
     input2: "input2",

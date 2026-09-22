@@ -322,6 +322,12 @@ export type EmailParamsByEmailType = {
     manageConventionLink: AbsoluteUrl;
     conventionId: ConventionId;
   };
+  DEMO_EMAIL_COMPONENTS: {
+    internshipKind: InternshipKind;
+    agencyLogoUrl: AbsoluteUrl | undefined;
+    highlightKind: "success" | "error" | "warning" | "info";
+    demoUrl: AbsoluteUrl;
+  };
   DEPRECATED_CONVENTION_NOTIFICATION: {
     beneficiaryFirstName: string;
     beneficiaryLastName: string;
