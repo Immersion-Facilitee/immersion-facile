@@ -1127,6 +1127,8 @@ export const domElementIds = {
         "im-manage-establishment__validate-user-right-button",
       rejectUserRightButton:
         "im-manage-establishment__reject-user-right-button",
+      registerEstablishmentButton:
+        "im-manage-establishment__register-establishment-button",
     },
   },
   initiateConvention: {
