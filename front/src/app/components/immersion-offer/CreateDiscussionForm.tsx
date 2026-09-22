@@ -344,7 +344,7 @@ export const CreateDiscussionForm = ({
             <Input
               label={inputsLabelsByKey.motivation}
               hintText={
-                "Expliquez en quelques mots ce qui vous attire dans ce métier et/ou pourquoi vous avez choisi de contacter cette entreprise en particulier."
+                "Exemple : “J'aime beaucoup le contact avec les gens. Je pense que ce métier est fait pour moi et je veux le vérifier.” ou “J'habite près de chez vous et j'aime beaucoup ce que vous faites. J'aimerais beaucoup apprendre avec votre équipe.”"
               }
               nativeTextAreaProps={{
                 ...register("motivation"),
@@ -355,7 +355,7 @@ export const CreateDiscussionForm = ({
             <Input
               label={inputsLabelsByKey.experienceAdditionalInformation}
               hintText={
-                "N'hésitez pas à mentionner vos centres d'intérêts, d'anciens stages, ce que vous connaissez déjà de leur activité, ou vos qualités personnelles (ex: sens du contact, patience, ponctualité). L'entreprise souhaite simplement savoir d'où vous partez."
+                "Exemple : “Je suis de nature très manuelle et je bricole beaucoup chez moi (menuiserie, petites réparations). Je n'ai pas de diplôme dans ce secteur, mais j'ai une grande capacité d'adaptation et le goût du travail bien fait.”"
               }
               nativeTextAreaProps={{
                 ...register("experienceAdditionalInformation"),
