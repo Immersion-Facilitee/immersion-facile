@@ -1,4 +1,4 @@
-import { addMinutes, subDays, subMinutes } from "date-fns";
+import { addMilliseconds, subDays, subMilliseconds } from "date-fns";
 import { DiscussionBuilder, expectToEqual } from "shared";
 import {
   defaultPriority,
@@ -40,29 +40,50 @@ describe("GetDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents", () => {
       });
   });
 
-  it("emits an event for discussion created between 15 and 16 days ago whose establishment has a main contact reachable by phone", async () => {
+  it("emits an event only for discussions created between 15 and 16 days ago whose establishment has a main contact reachable by phone", async () => {
     const discussionCreatedJustInsideRecentBound = new DiscussionBuilder()
       .withId("aaaaad2c-6f02-11ec-90d6-0242ac120008")
       .withSiret(siret)
-      .withCreatedAt(subMinutes(subDays(timeGateway.now(), 15), 1))
+      .withCreatedAt(subMilliseconds(subDays(timeGateway.now(), 15), 1))
+      .build();
+
+    const discussionCreatedJustOutsideRecentBound = new DiscussionBuilder()
+      .withId("aaaaad2c-6f02-11ec-90d6-0242ac120002")
+      .withSiret(siret)
+      .withCreatedAt(addMilliseconds(subDays(timeGateway.now(), 15), 1))
       .build();
 
     const discussionCreatedJustInsideOldestBound = new DiscussionBuilder()
       .withId("aaaaad2c-6f02-11ec-90d6-0242ac120009")
       .withSiret(siret)
-      .withCreatedAt(addMinutes(subDays(timeGateway.now(), 16), 1))
+      .withCreatedAt(addMilliseconds(subDays(timeGateway.now(), 16), 1))
       .build();
 
-    const discussionCreatedJustBeforeOldestBound = new DiscussionBuilder()
+    const discussionCreatedJustOutsideOldestBound = new DiscussionBuilder()
       .withId("aaaaad2c-6f02-11ec-90d6-0242ac120010")
       .withSiret(siret)
-      .withCreatedAt(subMinutes(subDays(timeGateway.now(), 16), 1))
+      .withCreatedAt(subMilliseconds(subDays(timeGateway.now(), 16), 1))
+      .build();
+
+    const discussionCreatedTenDaysAgo = new DiscussionBuilder()
+      .withId("aaaaad2c-6f02-11ec-90d6-0242ac120003")
+      .withSiret(siret)
+      .withCreatedAt(subDays(timeGateway.now(), 10))
+      .build();
+
+    const discussionCreatedTwentyDaysAgo = new DiscussionBuilder()
+      .withId("aaaaad2c-6f02-11ec-90d6-0242ac120011")
+      .withSiret(siret)
+      .withCreatedAt(subDays(timeGateway.now(), 20))
       .build();
 
     uow.discussionRepository.discussions = [
+      discussionCreatedTenDaysAgo,
+      discussionCreatedJustOutsideRecentBound,
       discussionCreatedJustInsideRecentBound,
       discussionCreatedJustInsideOldestBound,
-      discussionCreatedJustBeforeOldestBound,
+      discussionCreatedJustOutsideOldestBound,
+      discussionCreatedTwentyDaysAgo,
     ];
     uow.establishmentAggregateRepository.establishmentAggregates = [
       new EstablishmentAggregateBuilder()
@@ -115,47 +136,6 @@ describe("GetDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents", () => {
         priority: defaultPriority,
       },
     ]);
-  });
-
-  it("ignores discussions created outside of the 15 days window", async () => {
-    const tenDaysAgo = subDays(timeGateway.now(), 10);
-    const twentyDaysAgo = subDays(timeGateway.now(), 20);
-
-    uow.discussionRepository.discussions = [
-      new DiscussionBuilder()
-        .withId("aaaaad2c-6f02-11ec-90d6-0242ac120002")
-        .withSiret(siret)
-        .withCreatedAt(tenDaysAgo)
-        .build(),
-      new DiscussionBuilder()
-        .withId("aaaaad2c-6f02-11ec-90d6-0242ac120003")
-        .withSiret(siret)
-        .withCreatedAt(twentyDaysAgo)
-        .build(),
-    ];
-    uow.establishmentAggregateRepository.establishmentAggregates = [
-      new EstablishmentAggregateBuilder()
-        .withEstablishmentSiret(siret)
-        .withContactMode("EMAIL")
-        .withUserRights([
-          {
-            role: "establishment-contact",
-            status: "ACCEPTED",
-            userId: "contact-user-id",
-            job: "Crêpier",
-            phone: "+33123456789",
-            isMainContactByPhone: true,
-            shouldReceiveDiscussionNotifications: false,
-          },
-        ])
-        .build(),
-    ];
-
-    expectToEqual(
-      await getDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents.execute(),
-      { numberOfDiscussionsToFollowUp: 0 },
-    );
-    expectToEqual(uow.outboxRepository.events, []);
   });
 
   it("ignores a discussion already answered by the establishment", async () => {
