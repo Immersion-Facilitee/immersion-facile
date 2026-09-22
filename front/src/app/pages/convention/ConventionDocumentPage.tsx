@@ -305,9 +305,14 @@ export const ConventionDocumentPage = ({
               <strong>
                 représentant de{" "}
                 {convention.businessNameCustomized?.trim()
-                  ? `${convention.businessNameCustomized.trim()}, dont la raison sociale est ${convention.businessName}`
+                  ? convention.businessNameCustomized.trim()
                   : convention.businessName}
               </strong>
+              {convention.businessNameCustomized?.trim() && (
+                <span>
+                  , dont la raison sociale est {convention.businessName}
+                </span>
+              )}
               <ul>
                 <li>tel.&nbsp;: {establishmentRepresentative.phone}</li>
                 <li>email&nbsp;: {establishmentRepresentative.email}</li>
@@ -444,9 +449,12 @@ export const ConventionDocumentPage = ({
           se déroulera au sein de{" "}
           <strong>
             {convention.businessNameCustomized?.trim()
-              ? `${convention.businessNameCustomized.trim()}, dont la raison sociale est ${convention.businessName}`
+              ? convention.businessNameCustomized.trim()
               : convention.businessName}
           </strong>{" "}
+          {convention.businessNameCustomized?.trim() && (
+            <span>, dont la raison sociale est {convention.businessName}</span>
+          )}
           (Siret n°
           <a
             href={makeSiretDescriptionLink(convention.siret)}
