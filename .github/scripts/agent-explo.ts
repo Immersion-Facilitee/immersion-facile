@@ -99,12 +99,9 @@ export function extractQuestion(
     event.sender.id !== event.comment.user.id
   )
     return;
-  return (
-    event.comment.body
-      .trimStart()
-      .match(/^@Immersion-Facilitee\/agent-explo\s+([\s\S]*)$/)?.[1]
-      .trim() || undefined
-  );
+  const mention = "@Immersion-Facilitee/agent-explo";
+  if (!event.comment.body.includes(mention)) return;
+  return event.comment.body.replace(mention, "").trim() || undefined;
 }
 export async function isActiveTeamMember(
   author: string,

@@ -14,18 +14,28 @@ concurrency:
 
 jobs:
   answer:
-    if: vars.AGENT_EXPLO_MODEL != '' && github.event.sender.type == 'User'
+    if: >-
+      vars.AGENT_EXPLO_MODEL != '' &&
+      vars.AGENT_EXPLO_APP_CLIENT_ID != '' &&
+      vars.AGENT_EXPLO_ALLOWED_TEAM != '' &&
+      github.event.sender.type == 'User' &&
+      contains(github.event.comment.body, '@Immersion-Facilitee/agent-explo')
     runs-on: ubuntu-24.04
     timeout-minutes: 18
+    env:
+      AGENT_CONFIGURED: ${{ secrets.AGENT_EXPLO_APP_PRIVATE_KEY != '' && secrets.OPENCODE_API_KEY != '' }}
     steps:
       - uses: actions/checkout@v7
+        if: env.AGENT_CONFIGURED == 'true'
         with:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - uses: actions/setup-node@v7
+        if: env.AGENT_CONFIGURED == 'true'
         with:
           node-version: '24.14.0'
       - uses: actions/create-github-app-token@v3
+        if: env.AGENT_CONFIGURED == 'true'
         id: membership
         with:
           client-id: ${{ vars.AGENT_EXPLO_APP_CLIENT_ID }}
@@ -34,6 +44,7 @@ jobs:
           repositories: ${{ github.event.repository.name }}
           permission-members: read
       - name: Authorize question and active team member
+        if: env.AGENT_CONFIGURED == 'true'
         id: authorize
         run: node .github/scripts/agent-explo.ts authorize
         env:
