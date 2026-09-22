@@ -51,7 +51,7 @@ export const ManageEstablishmentsTab = ({
   return (
     <>
       <HeadingSection
-        title="Piloter votre établissement"
+        title="Piloter votre entreprise"
         description="Les entreprises auxquelles vous êtes rattaché·e et vos demandes en cours."
         titleAs="h2"
         className={fr.cx("fr-mt-0", "fr-mb-4w")}
@@ -66,7 +66,7 @@ export const ManageEstablishmentsTab = ({
                   frontRoutes.formEstablishment().push();
                 },
                 iconId: "fr-icon-add-line",
-                children: "Créer un nouvel établissement",
+                children: "Créer une nouvelle entreprise",
               },
               {
                 id: domElementIds.establishmentDashboard.manageEstablishments
@@ -77,7 +77,7 @@ export const ManageEstablishmentsTab = ({
                   frontRoutes.myAccountEstablishmentRegistration().push();
                 },
                 iconId: "fr-icon-add-line",
-                children: "Se rattacher à un établissement",
+                children: "Se rattacher à une entreprise",
               },
             ]}
             inlineLayoutWhen="always"
@@ -98,14 +98,14 @@ export const ManageEstablishmentsTab = ({
       <div className={fr.cx("fr-mb-4w")}>
         {establishments.length > 1 && (
           <Select
-            label={"Sélectionner un établissement"}
+            label={"Sélectionner une entreprise"}
             options={[
               ...establishments.map((establishment) => ({
                 value: establishment.siret,
                 label: `${establishment.businessName}`,
               })),
             ]}
-            placeholder="Sélectionner un établissement"
+            placeholder="Sélectionner une entreprise"
             nativeSelectProps={{
               defaultValue: "",
               value: siret,
