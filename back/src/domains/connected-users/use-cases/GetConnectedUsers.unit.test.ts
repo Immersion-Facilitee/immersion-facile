@@ -3,6 +3,7 @@ import {
   type AgencyRight,
   type AgencyUserRight,
   ConnectedUserBuilder,
+  closedOrRejectedAgencyStatuses,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
@@ -196,44 +197,46 @@ describe("GetConnectedUsers", () => {
         errors.user.forbidden({ userId: agencyAdminUser.id }),
       );
     });
+
+    it.each(closedOrRejectedAgencyStatuses)(
+      "throws Forbidden if current user is not backoffice admin and agency to get by id is %s",
+      async (status) => {
+        const agencyWithStatus = new AgencyDtoBuilder(agency1)
+          .withStatus(status)
+          .withStatusJustification("some reason")
+          .build();
+
+        uow.userRepository.users = [agencyAdmin];
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agencyWithStatus, {
+            [agencyAdmin.id]: {
+              isNotifiedByEmail: true,
+              roles: ["validator", "agency-admin"],
+            },
+          }),
+        ];
+
+        await expectPromiseToFailWithError(
+          getConnectedUsers.execute(
+            {
+              agencyIds: [agency1.id],
+            },
+            agencyAdmin,
+          ),
+          errors.user.forbidden({ userId: agencyAdminUser.id }),
+        );
+      },
+    );
   });
 
-  describe("params", () => {
-    it("gets the users by agencyRole which have at least one agency with the given role", async () => {
-      uow.userRepository.users = [johnUser, paulUser, backOfficeUser];
-      uow.agencyRepository.agencies = [agency1WithRights, agency2WithRights];
-
-      const users = await getConnectedUsers.execute(
-        { agencyRole: "to-review" },
-        connectedBackOffice,
-      );
-
-      expectToEqual(users, [
-        {
-          ...connectedJohnUser,
-          agencyRights: [
-            {
-              agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
-              isNotifiedByEmail: true,
-              roles: ["to-review"],
-            },
-            {
-              agency: toAgencyDtoForAgencyUsersAndAdmins(agency2, []),
-              isNotifiedByEmail: true,
-              roles: ["validator"],
-            },
-          ],
-        },
-      ]);
-    });
-
-    describe("byAgencyId", () => {
-      it("gets the users by agencyId which have at least one agency with the given role", async () => {
+  describe("right paths", () => {
+    describe("params", () => {
+      it("gets the users by agencyRole which have at least one agency with the given role", async () => {
         uow.userRepository.users = [johnUser, paulUser, backOfficeUser];
         uow.agencyRepository.agencies = [agency1WithRights, agency2WithRights];
 
         const users = await getConnectedUsers.execute(
-          { agencyIds: [agency1.id] },
+          { agencyRole: "to-review" },
           connectedBackOffice,
         );
 
@@ -246,89 +249,27 @@ describe("GetConnectedUsers", () => {
                 isNotifiedByEmail: true,
                 roles: ["to-review"],
               },
-            ],
-          },
-          {
-            ...connectedPaulUser,
-            agencyRights: [
               {
-                agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
+                agency: toAgencyDtoForAgencyUsersAndAdmins(agency2, []),
                 isNotifiedByEmail: true,
-                roles: ["counsellor"],
+                roles: ["validator"],
               },
             ],
           },
         ]);
       });
 
-      it("gets the users by agencyId when agency admin request it", async () => {
-        uow.userRepository.users = [
-          johnUser,
-          paulUser,
-          backOfficeUser,
-          agencyAdminUser,
-        ];
-        uow.agencyRepository.agencies = [
-          agency1WithRights,
-          agency2WithRights,
-          agencyWithRefersToWithRights,
-        ];
-
-        const users = await getConnectedUsers.execute(
-          { agencyIds: [agencyWithRefersToWithRights.id] },
-          agencyAdmin,
-        );
-
-        expectToEqual(users, [
-          {
-            ...agencyAdmin,
-            agencyRights: [
-              {
-                agency: toAgencyDtoForAgencyUsersAndAdmins(agencyWithRefersTo, [
-                  agencyAdminUser.email,
-                ]),
-                isNotifiedByEmail: true,
-                roles: ["agency-admin"],
-              },
-            ],
-          },
-        ]);
-      });
-    });
-
-    describe("byAgencyRoleAndAgencyIds", () => {
-      it.each([
-        {
-          currentUserLabel: "backoffice admin",
-          currentUser: connectedBackOffice,
-        },
-        {
-          currentUserLabel: "agency admin",
-          currentUser: agencyAdmin,
-        },
-      ])(
-        "gets the users by agencyRole and agencyIds when $currentUserLabel requests it",
-        async ({ currentUser }) => {
-          uow.userRepository.users = [
-            johnUser,
-            paulUser,
-            backOfficeUser,
-            agencyAdminUser,
-          ];
+      describe("byAgencyId", () => {
+        it("gets the users by agencyId which have at least one agency with the given role", async () => {
+          uow.userRepository.users = [johnUser, paulUser, backOfficeUser];
           uow.agencyRepository.agencies = [
-            toAgencyWithRights(agencyWithRefersTo, {
-              [johnUser.id]: toReviewAndNotifiedUserRight,
-              [agencyAdminUser.id]: {
-                roles: ["agency-admin"],
-                isNotifiedByEmail: true,
-              },
-            }),
+            agency1WithRights,
             agency2WithRights,
           ];
 
           const users = await getConnectedUsers.execute(
-            { agencyRole: "to-review", agencyIds: [agencyWithRefersTo.id] },
-            currentUser,
+            { agencyIds: [agency1.id] },
+            connectedBackOffice,
           );
 
           expectToEqual(users, [
@@ -336,129 +277,270 @@ describe("GetConnectedUsers", () => {
               ...connectedJohnUser,
               agencyRights: [
                 {
-                  agency: toAgencyDtoForAgencyUsersAndAdmins(
-                    agencyWithRefersTo,
-                    [agencyAdminUser.email],
-                  ),
+                  agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
                   isNotifiedByEmail: true,
                   roles: ["to-review"],
                 },
               ],
             },
+            {
+              ...connectedPaulUser,
+              agencyRights: [
+                {
+                  agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
+                  isNotifiedByEmail: true,
+                  roles: ["counsellor"],
+                },
+              ],
+            },
           ]);
-        },
-      );
+        });
+
+        it("gets the users by agencyId when agency admin request it", async () => {
+          uow.userRepository.users = [
+            johnUser,
+            paulUser,
+            backOfficeUser,
+            agencyAdminUser,
+          ];
+          uow.agencyRepository.agencies = [
+            agency1WithRights,
+            agency2WithRights,
+            agencyWithRefersToWithRights,
+          ];
+
+          const users = await getConnectedUsers.execute(
+            { agencyIds: [agencyWithRefersToWithRights.id] },
+            agencyAdmin,
+          );
+
+          expectToEqual(users, [
+            {
+              ...agencyAdmin,
+              agencyRights: [
+                {
+                  agency: toAgencyDtoForAgencyUsersAndAdmins(
+                    agencyWithRefersTo,
+                    [agencyAdminUser.email],
+                  ),
+                  isNotifiedByEmail: true,
+                  roles: ["agency-admin"],
+                },
+              ],
+            },
+          ]);
+        });
+
+        it.each(closedOrRejectedAgencyStatuses)(
+          "when current user is backoffice admin and agency is %s",
+          async (status) => {
+            const agencyWithStatus = new AgencyDtoBuilder(agency1)
+              .withStatus(status)
+              .withStatusJustification("some reason")
+              .build();
+
+            uow.userRepository.users = [agencyAdmin, backOfficeUser];
+            uow.agencyRepository.agencies = [
+              toAgencyWithRights(agencyWithStatus, {
+                [agencyAdmin.id]: {
+                  isNotifiedByEmail: true,
+                  roles: ["validator", "agency-admin"],
+                },
+              }),
+            ];
+
+            const users = await getConnectedUsers.execute(
+              { agencyIds: [agencyWithStatus.id] },
+              connectedBackOffice,
+            );
+
+            expectToEqual(users, [
+              {
+                ...agencyAdmin,
+                agencyRights: [
+                  {
+                    agency: toAgencyDtoForAgencyUsersAndAdmins(
+                      agencyWithStatus,
+                      [agencyAdmin.email],
+                    ),
+                    isNotifiedByEmail: true,
+                    roles: ["validator", "agency-admin"],
+                  },
+                ],
+              },
+            ]);
+          },
+        );
+      });
+
+      describe("byAgencyRoleAndAgencyIds", () => {
+        it.each([
+          {
+            currentUserLabel: "backoffice admin",
+            currentUser: connectedBackOffice,
+          },
+          {
+            currentUserLabel: "agency admin",
+            currentUser: agencyAdmin,
+          },
+        ])(
+          "gets the users by agencyRole and agencyIds when $currentUserLabel requests it",
+          async ({ currentUser }) => {
+            uow.userRepository.users = [
+              johnUser,
+              paulUser,
+              backOfficeUser,
+              agencyAdminUser,
+            ];
+            uow.agencyRepository.agencies = [
+              toAgencyWithRights(agencyWithRefersTo, {
+                [johnUser.id]: toReviewAndNotifiedUserRight,
+                [agencyAdminUser.id]: {
+                  roles: ["agency-admin"],
+                  isNotifiedByEmail: true,
+                },
+              }),
+              agency2WithRights,
+            ];
+
+            const users = await getConnectedUsers.execute(
+              { agencyRole: "to-review", agencyIds: [agencyWithRefersTo.id] },
+              currentUser,
+            );
+
+            expectToEqual(users, [
+              {
+                ...connectedJohnUser,
+                agencyRights: [
+                  {
+                    agency: toAgencyDtoForAgencyUsersAndAdmins(
+                      agencyWithRefersTo,
+                      [agencyAdminUser.email],
+                    ),
+                    isNotifiedByEmail: true,
+                    roles: ["to-review"],
+                  },
+                ],
+              },
+            ]);
+          },
+        );
+      });
     });
-  });
 
-  describe("sort users, by priorities", () => {
-    it("people with no firstnames should be first, ordered alphabetically by email", async () => {
-      const noNamesUserBuilderA = new ConnectedUserBuilder()
-        .withId("noNameA")
-        .withFirstName("")
-        .withLastName("LastNameA")
-        .withEmail("a@mail.com")
-        .withCreatedAt(new Date());
+    describe("sort users, by priorities", () => {
+      it("people with no firstnames should be first, ordered alphabetically by email", async () => {
+        const noNamesUserBuilderA = new ConnectedUserBuilder()
+          .withId("noNameA")
+          .withFirstName("")
+          .withLastName("LastNameA")
+          .withEmail("a@mail.com")
+          .withCreatedAt(new Date());
 
-      const noNamesUserBuilderB = new ConnectedUserBuilder()
-        .withId("noNameB")
-        .withFirstName("")
-        .withLastName("")
-        .withEmail("b@mail.com")
-        .withCreatedAt(new Date());
+        const noNamesUserBuilderB = new ConnectedUserBuilder()
+          .withId("noNameB")
+          .withFirstName("")
+          .withLastName("")
+          .withEmail("b@mail.com")
+          .withCreatedAt(new Date());
 
-      const noNamesUserA = noNamesUserBuilderA.buildUser();
-      const noNamesConnectedUserA = noNamesUserBuilderA.build();
-      const noNamesUserB = noNamesUserBuilderB.buildUser();
-      const noNamesConnectedUserB = noNamesUserBuilderB.build();
+        const noNamesUserA = noNamesUserBuilderA.buildUser();
+        const noNamesConnectedUserA = noNamesUserBuilderA.build();
+        const noNamesUserB = noNamesUserBuilderB.buildUser();
+        const noNamesConnectedUserB = noNamesUserBuilderB.build();
 
-      uow.userRepository.users = [noNamesUserB, johnUser, noNamesUserA];
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency1, {
-          [johnUser.id]: toReviewAndNotifiedUserRight,
-          [noNamesUserB.id]: toReviewAndNotifiedUserRight,
-          [noNamesUserA.id]: toReviewAndNotifiedUserRight,
-        }),
-      ];
+        uow.userRepository.users = [noNamesUserB, johnUser, noNamesUserA];
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency1, {
+            [johnUser.id]: toReviewAndNotifiedUserRight,
+            [noNamesUserB.id]: toReviewAndNotifiedUserRight,
+            [noNamesUserA.id]: toReviewAndNotifiedUserRight,
+          }),
+        ];
 
-      const users = await getConnectedUsers.execute(
-        { agencyIds: [agency1.id] },
-        connectedBackOffice,
-      );
-
-      const commonAgencyRight: AgencyRight = {
-        agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
-        ...toReviewAndNotifiedUserRight,
-      };
-
-      expectToEqual(users, [
-        {
-          ...noNamesConnectedUserA,
-          agencyRights: [commonAgencyRight],
-        },
-        {
-          ...noNamesConnectedUserB,
-          agencyRights: [commonAgencyRight],
-        },
-        {
-          ...connectedJohnUser,
-          agencyRights: [commonAgencyRight],
-        },
-      ]);
-    });
-
-    it("people with firstnames are ordered alphabetically, and last name alphabeticaly when same firstname", async () => {
-      const billyElliotUserBuilder = new ConnectedUserBuilder()
-        .withId("billyA")
-        .withFirstName("Billy")
-        .withLastName("Elliot")
-        .withEmail("");
-
-      const billyMartinsUserBuilder = new ConnectedUserBuilder()
-        .withId("billyB")
-        .withFirstName("Billy")
-        .withLastName("Martins")
-        .withEmail("");
-
-      const billyElliotUser = billyElliotUserBuilder.buildUser();
-      const billyElliotConnectedUser = billyElliotUserBuilder.build();
-      const billyMartinsUser = billyMartinsUserBuilder.buildUser();
-      const billyMartinsConnectedUser = billyMartinsUserBuilder.build();
-
-      uow.userRepository.users = [johnUser, billyMartinsUser, billyElliotUser];
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency1, {
-          [johnUser.id]: toReviewAndNotifiedUserRight,
-          [billyMartinsUser.id]: toReviewAndNotifiedUserRight,
-          [billyElliotUser.id]: toReviewAndNotifiedUserRight,
-        }),
-      ];
-
-      const commonAgencyRight: AgencyRight = {
-        agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
-        ...toReviewAndNotifiedUserRight,
-      };
-
-      expectToEqual(
-        await getConnectedUsers.execute(
+        const users = await getConnectedUsers.execute(
           { agencyIds: [agency1.id] },
           connectedBackOffice,
-        ),
-        [
+        );
+
+        const commonAgencyRight: AgencyRight = {
+          agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
+          ...toReviewAndNotifiedUserRight,
+        };
+
+        expectToEqual(users, [
           {
-            ...billyElliotConnectedUser,
+            ...noNamesConnectedUserA,
             agencyRights: [commonAgencyRight],
           },
           {
-            ...billyMartinsConnectedUser,
+            ...noNamesConnectedUserB,
             agencyRights: [commonAgencyRight],
           },
           {
             ...connectedJohnUser,
             agencyRights: [commonAgencyRight],
           },
-        ],
-      );
+        ]);
+      });
+
+      it("people with firstnames are ordered alphabetically, and last name alphabeticaly when same firstname", async () => {
+        const billyElliotUserBuilder = new ConnectedUserBuilder()
+          .withId("billyA")
+          .withFirstName("Billy")
+          .withLastName("Elliot")
+          .withEmail("");
+
+        const billyMartinsUserBuilder = new ConnectedUserBuilder()
+          .withId("billyB")
+          .withFirstName("Billy")
+          .withLastName("Martins")
+          .withEmail("");
+
+        const billyElliotUser = billyElliotUserBuilder.buildUser();
+        const billyElliotConnectedUser = billyElliotUserBuilder.build();
+        const billyMartinsUser = billyMartinsUserBuilder.buildUser();
+        const billyMartinsConnectedUser = billyMartinsUserBuilder.build();
+
+        uow.userRepository.users = [
+          johnUser,
+          billyMartinsUser,
+          billyElliotUser,
+        ];
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency1, {
+            [johnUser.id]: toReviewAndNotifiedUserRight,
+            [billyMartinsUser.id]: toReviewAndNotifiedUserRight,
+            [billyElliotUser.id]: toReviewAndNotifiedUserRight,
+          }),
+        ];
+
+        const commonAgencyRight: AgencyRight = {
+          agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
+          ...toReviewAndNotifiedUserRight,
+        };
+
+        expectToEqual(
+          await getConnectedUsers.execute(
+            { agencyIds: [agency1.id] },
+            connectedBackOffice,
+          ),
+          [
+            {
+              ...billyElliotConnectedUser,
+              agencyRights: [commonAgencyRight],
+            },
+            {
+              ...billyMartinsConnectedUser,
+              agencyRights: [commonAgencyRight],
+            },
+            {
+              ...connectedJohnUser,
+              agencyRights: [commonAgencyRight],
+            },
+          ],
+        );
+      });
     });
   });
 });
