@@ -605,8 +605,16 @@ const makeBeneficiarySubSections = (
         {
           key: "emergencyContactEmail",
           label: "Email",
-          value:
-            convention.signatories.beneficiary.emergencyContactEmail || "-",
+          value: convention.signatories.beneficiary.emergencyContactEmail ? (
+            <a
+              href={`mailto:${convention.signatories.beneficiary.emergencyContactEmail}`}
+              title={convention.signatories.beneficiary.emergencyContactEmail}
+            >
+              {convention.signatories.beneficiary.emergencyContactEmail}
+            </a>
+          ) : (
+            "-"
+          ),
         },
         {
           key: "emergencyContactPhone",
