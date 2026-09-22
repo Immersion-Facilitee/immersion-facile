@@ -120,6 +120,9 @@ export type EmailParamsByEmailType = {
     agencyName: string;
     numberOfMonthsWithoutConvention: number;
   };
+  AGENCY_INACTIVITY_WARNING: {
+    agencyName: string;
+  };
   AGENCY_WITH_REFERS_TO_ACTIVATED: {
     nameOfAgencyRefering: string;
     refersToAgencyName: string;
