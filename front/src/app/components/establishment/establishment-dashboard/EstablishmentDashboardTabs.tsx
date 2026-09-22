@@ -189,8 +189,8 @@ const makeEstablishmentDashboardTabs = (
           {
             label:
               establishmentsArray.length > 1
-                ? "Mes établissements"
-                : "Mon établissement",
+                ? "Mes entreprises"
+                : "Mon entreprise",
             tabId: "fiche-entreprise",
             content: (
               <ManageEstablishmentsTab
@@ -210,7 +210,7 @@ const makeEstablishmentDashboardTabs = (
             content: <OnboardingTabContent />,
           },
           {
-            label: "Mon établissement",
+            label: "Mon entreprise",
             tabId: "fiche-entreprise",
             content: <OnboardingTabContent />,
           },
@@ -257,16 +257,13 @@ const OnboardingTabContent = () => (
   <section className={fr.cx("fr-grid-row", "fr-grid-row--center")}>
     <div className={fr.cx("fr-col-12", "fr-col-lg-7")}>
       <h5 className={fr.cx("fr-h5")}>
-        Vous n’êtes rattaché·e à aucun établissement pour le moment
+        Vous n’êtes rattaché·e à aucune entreprise pour le moment
       </h5>
       <p>Cette situation peut se produire dans les cas suivants :</p>
       <ul>
+        <li>l'entreprise n’a pas encore été créée sur Immersion Facilitée,</li>
         <li>
-          l'établissement n’a pas encore été créé sur Immersion Facilitée,
-        </li>
-        <li>
-          une autre adresse email est enregistrée comme contact de
-          l'établissement,
+          une autre adresse email est enregistrée comme contact de l'entreprise,
         </li>
       </ul>
       <p>
@@ -288,7 +285,7 @@ const OnboardingTabContent = () => (
           target="_blank"
           rel="noreferrer"
         >
-          le référencement d’un établissement
+          le référencement d’une entreprise
         </a>
         .
       </Highlight>
@@ -302,7 +299,7 @@ const OnboardingTabContent = () => (
               frontRoutes.formEstablishment().push();
             },
             iconId: "fr-icon-add-line",
-            children: "Créer un nouvel établissement",
+            children: "Créer une nouvelle entreprise",
           },
           {
             id: domElementIds.myAccountEstablishmentRegistration
@@ -313,7 +310,7 @@ const OnboardingTabContent = () => (
               frontRoutes.myAccountEstablishmentRegistration().push();
             },
             iconId: "fr-icon-add-line",
-            children: "Se rattacher à un établissement",
+            children: "Se rattacher à une entreprise",
           },
         ]}
         inlineLayoutWhen="always"
