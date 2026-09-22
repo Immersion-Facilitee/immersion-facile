@@ -3,6 +3,7 @@ import {
   AgencyDtoBuilder,
   type AgencyRole,
   ConnectedUserBuilder,
+  closedOrRejectedAgencyStatuses,
   errors,
   expectArraysToMatch,
   expectPromiseToFailWithError,
@@ -282,6 +283,56 @@ describe("RemoveUserFromAgency", () => {
         errors.agency.notEnoughCounsellors(inputParams),
       );
     });
+
+    it.each(closedOrRejectedAgencyStatuses)(
+      "throws Forbidden if current user is not backoffice admin and agency is %s",
+      async (status) => {
+        const agencyWithStatus = new AgencyDtoBuilder(agency)
+          .withStatus(status)
+          .withStatusJustification("some reason")
+          .build();
+        const connectedUserWithAgencyRights = new ConnectedUserBuilder(
+          agencyAdminUser,
+        )
+          .withAgencyRights([
+            {
+              agency: toAgencyDtoForAgencyUsersAndAdmins(agencyWithStatus, [
+                agencyAdminUser.email,
+              ]),
+              isNotifiedByEmail: true,
+              roles: ["agency-admin"],
+            },
+          ])
+          .build();
+
+        uow.userRepository.users = [notAdminUser, agencyAdminUser];
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agencyWithStatus, {
+            [notAdminUser.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+            [agencyAdminUser.id]: {
+              roles: ["validator", "agency-admin"],
+              isNotifiedByEmail: true,
+            },
+          }),
+        ];
+
+        const inputParams: WithAgencyIdAndUserId = {
+          agencyId: agencyWithStatus.id,
+          userId: notAdmin.id,
+        };
+
+        await expectPromiseToFailWithError(
+          removeUserFromAgency.execute(
+            inputParams,
+            connectedUserWithAgencyRights,
+          ),
+          errors.user.forbidden({ userId: connectedUserWithAgencyRights.id }),
+        );
+      },
+    );
   });
 
   describe("Right paths", () => {
@@ -453,6 +504,68 @@ describe("RemoveUserFromAgency", () => {
           },
         ]);
       });
+
+      it.each(closedOrRejectedAgencyStatuses)(
+        "when current user is backoffice admin and agency is %s",
+        async (status) => {
+          const agencyWithStatus = new AgencyDtoBuilder(agency)
+            .withStatus(status)
+            .withStatusJustification("some reason")
+            .build();
+
+          uow.userRepository.users = [
+            notAdminUser,
+            agencyAdminUser,
+            connectedAdmin,
+          ];
+          uow.agencyRepository.agencies = [
+            toAgencyWithRights(agencyWithStatus, {
+              [notAdminUser.id]: {
+                roles: ["validator"],
+                isNotifiedByEmail: false,
+              },
+              [agencyAdminUser.id]: {
+                roles: ["validator", "agency-admin"],
+                isNotifiedByEmail: true,
+              },
+            }),
+          ];
+
+          const inputParams: WithAgencyIdAndUserId = {
+            agencyId: agencyWithStatus.id,
+            userId: notAdmin.id,
+          };
+
+          await removeUserFromAgency.execute(inputParams, connectedAdmin);
+
+          expectToEqual(uow.agencyRepository.agencies, [
+            toAgencyWithRights(
+              new AgencyDtoBuilder(agencyWithStatus)
+                .withUpdatedAt(timeGateway.now())
+                .build(),
+              {
+                [agencyAdminUser.id]: {
+                  roles: ["validator", "agency-admin"],
+                  isNotifiedByEmail: true,
+                },
+              },
+            ),
+          ]);
+
+          expectArraysToMatch(uow.outboxRepository.events, [
+            {
+              topic: "ConnectedUserAgencyRightChanged",
+              payload: {
+                ...inputParams,
+                triggeredBy: {
+                  kind: "connected-user",
+                  userId: connectedAdmin.id,
+                },
+              },
+            },
+          ]);
+        },
+      );
     });
   });
 });

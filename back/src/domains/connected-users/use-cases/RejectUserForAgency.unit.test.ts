@@ -2,6 +2,7 @@ import {
   AgencyDtoBuilder,
   type ConnectedUser,
   ConnectedUserBuilder,
+  closedOrRejectedAgencyStatuses,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
@@ -183,6 +184,52 @@ describe("RejectUserForAgency", () => {
     );
   });
 
+  it.each(closedOrRejectedAgencyStatuses)(
+    "throws Forbidden if current user is not backoffice admin and agency is %s",
+    async (status) => {
+      const agency = new AgencyDtoBuilder(agency1)
+        .withStatus(status)
+        .withStatusJustification("some reason")
+        .build();
+      const connectedUserWithAgencyRights = new ConnectedUserBuilder(
+        connectedAgency1Admin,
+      )
+        .withAgencyRights([
+          {
+            agency: toAgencyDtoForAgencyUsersAndAdmins(agency, [
+              "test@test.com",
+            ]),
+            isNotifiedByEmail: true,
+            roles: ["agency-admin"],
+          },
+        ])
+        .build();
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agency1, {
+          [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+          [notAdmin.id]: { roles: ["validator"], isNotifiedByEmail: false },
+        }),
+        toAgencyWithRights(agency2, {
+          [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+        }),
+      ];
+
+      uow.userRepository.users = [agency1Admin, user];
+
+      await expectPromiseToFailWithError(
+        rejectUserForAgencyUsecase.execute(
+          {
+            userId: user.id,
+            agencyId: agency1.id,
+            justification: "osef",
+          },
+          connectedUserWithAgencyRights,
+        ),
+        errors.user.forbidden({ userId: connectedUserWithAgencyRights.id }),
+      );
+    },
+  );
+
   it.each([
     {
       currentUserLabel: "backoffice admin",
@@ -244,6 +291,73 @@ describe("RejectUserForAgency", () => {
             triggeredBy: {
               kind: "connected-user",
               userId: currentUser.id,
+            },
+          },
+          publications: [],
+          status: "never-published",
+          wasQuarantined: false,
+          priority: defaultPriority,
+        },
+      ]);
+    },
+  );
+
+  it.each(closedOrRejectedAgencyStatuses)(
+    "Remove agency right for IcUser when backoffice admin requests it and agency is %s",
+    async (status) => {
+      const agency = new AgencyDtoBuilder(agency1)
+        .withStatus(status)
+        .withStatusJustification("some reason")
+        .build();
+
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+          [agency1Admin.id]: { roles: ["validator"], isNotifiedByEmail: false },
+        }),
+        toAgencyWithRights(agency2, {
+          [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+        }),
+      ];
+
+      uow.userRepository.users = [user, admin];
+
+      await rejectUserForAgencyUsecase.execute(
+        {
+          userId: user.id,
+          agencyId: agency.id,
+          justification: "osef",
+        },
+        connectedAdmin,
+      );
+
+      expectToEqual(uow.agencyRepository.agencies, [
+        toAgencyWithRights(
+          new AgencyDtoBuilder(agency).withUpdatedAt(timeGateway.now()).build(),
+          {
+            [agency1Admin.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: false,
+            },
+          },
+        ),
+        toAgencyWithRights(agency2, {
+          [user.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+        }),
+      ]);
+
+      expectToEqual(uow.outboxRepository.events, [
+        {
+          id: uuidGenerator.new(),
+          occurredAt: timeGateway.now().toISOString(),
+          topic: "ConnectedUserAgencyRightRejected",
+          payload: {
+            userId: user.id,
+            agencyId: agency.id,
+            justification: "osef",
+            triggeredBy: {
+              kind: "connected-user",
+              userId: admin.id,
             },
           },
           publications: [],
