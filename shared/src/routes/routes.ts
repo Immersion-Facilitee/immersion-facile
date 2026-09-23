@@ -274,8 +274,6 @@ export const {
   establishmentManagement: agencyDashboard.extend("/pilotage-entreprises"),
 
   myAccount,
-  myAccountAgencies: myAccount.extend("/mes-agences"),
-  myAccountEstablishments: myAccount.extend("/mes-etablissements"),
   agencyRegistration: myAccount.extend(
     {
       fromRoute: param.query.optional.ofType(

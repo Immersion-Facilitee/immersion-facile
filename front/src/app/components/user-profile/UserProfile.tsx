@@ -1,6 +1,4 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Highlight from "@codegouvfr/react-dsfr/Highlight";
 import Tabs from "@codegouvfr/react-dsfr/Tabs";
 import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import type { ReactNode } from "react";
@@ -11,13 +9,10 @@ import {
   domElementIds,
   frontRoutes,
   partitionUserEstablishmentRightsByStatus,
-  type UserId,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
-import { ressourcesAndWebinarsUrl } from "src/app/contents/home/content";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { commonIllustrations } from "src/assets/img/illustrations";
 import { connectedUsersAdminSelectors } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.selectors";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
@@ -31,8 +26,6 @@ import { PersonnalInformationsSection } from "./PersonnalInformationsSection";
 type UserProfileAllowedRouteNames = Route<
   | typeof frontRoutes.adminUserDetailAgencies
   | typeof frontRoutes.adminUserDetailEstablishments
-  | typeof frontRoutes.myAccountAgencies
-  | typeof frontRoutes.myAccountEstablishments
 >["name"];
 
 type UserProfileTabId = "establishments" | "agencies";
@@ -43,17 +36,9 @@ type UserProfileTab = {
   content: ReactNode;
 };
 
-type RouteConfig = {
-  tabId: UserProfileTabId;
-  showRegistrationButtons: boolean;
-  onTabChange: (tabId: UserProfileTabId) => void;
-  emptyContent: Record<UserProfileTabId, ReactNode>;
-};
-
 type UserProfileProps = {
   title: string;
   userWithRights: ConnectedUser;
-  editInformationsLink?: string;
   routeName: UserProfileAllowedRouteNames;
 };
 
@@ -69,48 +54,15 @@ const adminTabChange =
       )
       .exhaustive();
 
-const myProfileTabChange = (tabId: UserProfileTabId): void =>
-  match(tabId)
-    .with("agencies", () => frontRoutes.myAccountAgencies().push())
-    .with("establishments", () => frontRoutes.myAccountEstablishments().push())
-    .exhaustive();
-
-const getRouteConfig = (
-  routeName: UserProfileAllowedRouteNames,
-  userId: UserId,
-): RouteConfig =>
-  match(routeName)
-    .returnType<RouteConfig>()
-    .with("adminUserDetailAgencies", () => ({
-      tabId: "agencies",
-      showRegistrationButtons: false,
-      onTabChange: adminTabChange(userId),
-      emptyContent: adminEmptyContent,
-    }))
-    .with("adminUserDetailEstablishments", () => ({
-      tabId: "establishments",
-      showRegistrationButtons: false,
-      onTabChange: adminTabChange(userId),
-      emptyContent: adminEmptyContent,
-    }))
-    .with("myAccountAgencies", () => ({
-      tabId: "agencies",
-      showRegistrationButtons: true,
-      onTabChange: myProfileTabChange,
-      emptyContent: myProfileEmptyContent,
-    }))
-    .with("myAccountEstablishments", () => ({
-      tabId: "establishments",
-      showRegistrationButtons: true,
-      onTabChange: myProfileTabChange,
-      emptyContent: myProfileEmptyContent,
-    }))
-    .exhaustive();
+const tabIdByRouteName: Record<UserProfileAllowedRouteNames, UserProfileTabId> =
+  {
+    adminUserDetailAgencies: "agencies",
+    adminUserDetailEstablishments: "establishments",
+  };
 
 export const UserProfile = ({
   title,
   userWithRights,
-  editInformationsLink,
   routeName,
 }: UserProfileProps) => {
   const dispatch = useDispatch();
@@ -131,12 +83,8 @@ export const UserProfile = ({
 
   const userAgenciesRights = userWithRights.agencyRights;
 
-  const {
-    tabId: currentTab,
-    showRegistrationButtons: showAddButtons,
-    onTabChange,
-    emptyContent,
-  } = getRouteConfig(routeName, userWithRights.id);
+  const currentTab = tabIdByRouteName[routeName];
+  const onTabChange = adminTabChange(userWithRights.id);
 
   const tabs: UserProfileTab[] = [
     {
@@ -144,24 +92,9 @@ export const UserProfile = ({
       label: `Organismes (${userAgenciesRights.length})`,
       content:
         userAgenciesRights.length === 0 ? (
-          emptyContent.agencies
+          adminEmptyContent.agencies
         ) : (
           <>
-            {showAddButtons && (
-              <div className={fr.cx("fr-grid-row")}>
-                <Button
-                  id={domElementIds.myAccount.registerAgenciesSearchLink}
-                  priority="primary"
-                  linkProps={{
-                    href: `${frontRoutes.agencyRegistration({ fromRoute: "myAccount" }).href}`,
-                  }}
-                  iconId="fr-icon-add-line"
-                  className={fr.cx("fr-ml-auto")}
-                >
-                  Se rattacher à un organisme
-                </Button>
-              </div>
-            )}
             <AgenciesTablesSection
               user={userWithRights}
               agencyRights={userWithRights.agencyRights}
@@ -174,27 +107,9 @@ export const UserProfile = ({
       label: `Entreprises (${allDisplayedEstablishmentsRights.length})`,
       content:
         allDisplayedEstablishmentsRights.length === 0 ? (
-          emptyContent.establishments
+          adminEmptyContent.establishments
         ) : (
           <>
-            {showAddButtons && (
-              <div className={fr.cx("fr-grid-row")}>
-                <Button
-                  id={
-                    domElementIds.myAccountEstablishmentRegistration
-                      .registerEstablishmentButton
-                  }
-                  priority="primary"
-                  linkProps={
-                    frontRoutes.myAccountEstablishmentRegistration().link
-                  }
-                  className={fr.cx("fr-ml-auto")}
-                  iconId="fr-icon-add-line"
-                >
-                  Se rattacher à une entreprise
-                </Button>
-              </div>
-            )}
             {pendingUserEstablishmentsRights.length > 0 && (
               <>
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
@@ -222,10 +137,7 @@ export const UserProfile = ({
     },
   ];
 
-  const showPreventToDeleteToggle =
-    (routeName === "adminUserDetailAgencies" ||
-      routeName === "adminUserDetailEstablishments") &&
-    !!currentUser?.isBackofficeAdmin;
+  const showPreventToDeleteToggle = !!currentUser?.isBackofficeAdmin;
 
   return (
     <div>
@@ -265,10 +177,7 @@ export const UserProfile = ({
           />
         </div>
       )}
-      <PersonnalInformationsSection
-        user={userWithRights}
-        editInformationsLink={editInformationsLink}
-      />
+      <PersonnalInformationsSection user={userWithRights} />
       <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>Mes rattachements</h2>
       <Tabs
         onTabChange={(tabId) => onTabChange(tabId as UserProfileTabId)}
@@ -287,113 +196,4 @@ export const UserProfile = ({
 const adminEmptyContent: Record<UserProfileTabId, ReactNode> = {
   agencies: <p>Cet utilisateur n'est rattaché à aucune agence</p>,
   establishments: <p>Cet utilisateur n'est rattaché à aucune entreprise</p>,
-};
-
-const myProfileEmptyContent: Record<UserProfileTabId, ReactNode> = {
-  agencies: (
-    <div
-      className={fr.cx(
-        "fr-grid-row",
-        "fr-grid-row--gutters",
-        "fr-grid-row--middle",
-      )}
-    >
-      <div className={fr.cx("fr-col-12", "fr-col-md-8")}>
-        <h2 className={fr.cx("fr-h4", "fr-mt-2w")}>
-          Vous n'êtes rattaché(e) à aucun organisme
-        </h2>
-        <p>Vous n'êtes actuellement rattaché(e) à aucun organisme.</p>
-        <p>
-          Un organisme (France Travail, Mission Locale, Cap emploi, Conseil
-          Départemental, etc.) permet de valider les conventions d'immersion ou
-          encore de suivre les immersions.
-        </p>
-        <Highlight className={fr.cx("fr-ml-0")} size="sm">
-          Vous pourrez d'abord vérifier si votre organisme existe déjà pour
-          demander à y être rattaché(e). S'il n'existe pas encore, vous serez
-          guidé(e) vers le formulaire de création.
-        </Highlight>
-        <Button
-          id={domElementIds.myAccount.registerAgencyButton}
-          priority="primary"
-          linkProps={
-            frontRoutes.agencyRegistration({ fromRoute: "myAccount" }).link
-          }
-          className={fr.cx("fr-ml-auto")}
-          iconId="fr-icon-add-line"
-        >
-          Se rattacher à un organisme
-        </Button>
-      </div>
-      <div
-        className={fr.cx(
-          "fr-col-12",
-          "fr-col-md-4",
-          "fr-hidden",
-          "fr-unhidden-md",
-        )}
-      >
-        <img src={commonIllustrations.discussions} alt="Accès limité" />
-      </div>
-    </div>
-  ),
-  establishments: (
-    <div
-      className={fr.cx(
-        "fr-grid-row",
-        "fr-grid-row--gutters",
-        "fr-grid-row--middle",
-      )}
-    >
-      <div className={fr.cx("fr-col-12", "fr-col-md-8")}>
-        <h2 className={fr.cx("fr-h4", "fr-mt-2w")}>
-          Vous n'êtes rattaché(e) à aucune entreprise
-        </h2>
-        <p>
-          Vous n'êtes actuellement rattaché(e) à aucune entreprise accueillante.
-        </p>
-        <p>
-          Être rattaché(e) à une entreprise permet de gérer les offres
-          d'immersion, accéder aux mises en relation et suivre les immersions.
-        </p>
-        <Highlight className={fr.cx("fr-ml-0")} size="sm">
-          Vous pourrez d'abord vérifier si votre entreprise existe déjà pour
-          demander à y être rattaché(e). Si elle n'existe pas encore, vous serez
-          guidé(e) vers le formulaire de création.
-        </Highlight>
-        <p className={fr.cx("fr-text--xs")}>
-          Besoin d'aide pour référencer votre entreprise ?{" "}
-          <a
-            className={fr.cx("fr-download__link")}
-            href={ressourcesAndWebinarsUrl}
-            aria-label="Transcription textuelle, téléchargement en format texte"
-          >
-            Participez à notre webinaire
-          </a>
-        </p>
-        <Button
-          id={
-            domElementIds.myAccountEstablishmentRegistration
-              .registerEstablishmentButton
-          }
-          priority="primary"
-          linkProps={frontRoutes.myAccountEstablishmentRegistration().link}
-          className={fr.cx("fr-ml-auto")}
-          iconId="fr-icon-add-line"
-        >
-          Se rattacher à une entreprise
-        </Button>
-      </div>
-      <div
-        className={fr.cx(
-          "fr-col-12",
-          "fr-col-md-4",
-          "fr-hidden",
-          "fr-unhidden-md",
-        )}
-      >
-        <img src={commonIllustrations.structureAccueil} alt="Accès limité" />
-      </div>
-    </div>
-  ),
 };

@@ -40,7 +40,7 @@ import { EstablishmentLeadRegistrationRejectedPage } from "src/app/pages/establi
 import { EstablishmentDashboardMainTab } from "src/app/pages/establishment-dashboard/EstablishmentDashboardMainTab";
 import { StatsPage } from "src/app/pages/StatsPage";
 import { SearchPage } from "src/app/pages/search/SearchPage";
-import { MyProfileMainTab } from "src/app/pages/user/MyProfileMainTab";
+import { MyAccountPage } from "src/app/pages/user/MyAccountPage";
 import { RequestAgencyRegistrationTab } from "src/app/pages/user/tabs/RequestAgencyRegistrationTab";
 import { RequestEstablishmentRegistrationTab } from "src/app/pages/user/tabs/RequestEstablishmentRegistrationTab";
 import { store } from "src/config/dependencies";
@@ -90,13 +90,13 @@ const adminRoutes: {
 );
 
 const RedirectTo = ({ route }: { route: Route<typeof frontRoutes> }) => {
-  const routePush = useCallback(() => {
-    route.push();
+  const routeReplace = useCallback(() => {
+    route.replace();
   }, [route]);
 
   useEffect(() => {
-    routePush();
-  }, [routePush]);
+    routeReplace();
+  }, [routeReplace]);
 
   return null;
 };
@@ -307,27 +307,13 @@ const getPageByRouteName: {
     </ConnectedPrivateRoutePage>
   ),
   myAccount: (route) => (
-    <RedirectTo route={frontRoutes.myAccountAgencies(route.params)} />
-  ),
-  myAccountAgencies: (route) => (
     <ConnectedPrivateRoutePage
       route={route}
       oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
+        <PageHeader title="Vous devez vous connecter pour accéder à votre compte" />
       }
     >
-      <MyProfileMainTab route={route} />
-    </ConnectedPrivateRoutePage>
-  ),
-
-  myAccountEstablishments: (route) => (
-    <ConnectedPrivateRoutePage
-      route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
-      }
-    >
-      <MyProfileMainTab route={route} />
+      <MyAccountPage />
     </ConnectedPrivateRoutePage>
   ),
   agencyRegistration: (route) => (
