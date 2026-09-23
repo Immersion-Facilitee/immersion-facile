@@ -1,6 +1,7 @@
 import {
   renderButton,
   renderContent,
+  renderEmailBlock,
   renderFooter,
   renderGreetings,
   renderHead,
@@ -54,7 +55,10 @@ export const configureGenerateHtmlFromTemplate =
       content: string | undefined;
       buttons: string | undefined;
       highlight: string | undefined;
+      highlightContentWithCTA: string | undefined;
       subContent: string | undefined;
+      body: string | undefined;
+      signature: string | undefined;
       legals: string | undefined;
       footer: string | undefined;
     };
@@ -62,19 +66,34 @@ export const configureGenerateHtmlFromTemplate =
     attachment?: Attachement[];
   } => {
     const { createEmailVariables, tags } = templateByName[templateName];
+    const emailVariables = createEmailVariables(params);
     const {
       subject,
       agencyLogoUrl,
       greetings,
-      content,
-      buttons,
-      highlight,
-      subContent,
+      signature,
       legals,
       attachmentUrls,
       bypassLayout,
-      highlightContentWithCTA,
-    } = createEmailVariables(params as any);
+    } = emailVariables;
+    const orderedBody =
+      "blocks" in emailVariables
+        ? emailVariables.blocks.map(renderEmailBlock)
+        : undefined;
+    const rawContent =
+      "blocks" in emailVariables ? undefined : emailVariables.content;
+    const legacyParts =
+      "blocks" in emailVariables
+        ? undefined
+        : {
+            content: renderContent(emailVariables.content),
+            buttons: renderButton(emailVariables.buttons),
+            highlight: renderHighlight(emailVariables.highlight),
+            highlightContentWithCTA: renderHighlightContentWithCTA(
+              emailVariables.highlightContentWithCTA,
+            ),
+            subContent: renderContent(emailVariables.subContent),
+          };
 
     const doctype =
       '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
@@ -88,28 +107,42 @@ export const configureGenerateHtmlFromTemplate =
     const contentParts = {
       header: renderHeader(agencyLogoUrl, customParts.header),
       greetings: renderGreetings(greetings),
-      content: renderContent(content),
-      buttons: renderButton(buttons),
-      highlight: renderHighlight(highlight),
-      highlightContentWithCTA: renderHighlightContentWithCTA(
-        highlightContentWithCTA,
-      ),
-      subContent: renderContent(subContent),
+      content: legacyParts?.content,
+      buttons: legacyParts?.buttons,
+      highlight: legacyParts?.highlight,
+      highlightContentWithCTA: legacyParts?.highlightContentWithCTA,
+      subContent: legacyParts?.subContent,
+      body: orderedBody?.filter((block) => block).join("\n"),
+      signature: renderContent(signature),
       legals: renderLegals(legals),
       footer: renderFooter(customParts.footer),
     };
+    const rows = [
+      contentParts.header,
+      contentParts.greetings,
+      ...(orderedBody ?? [
+        contentParts.content,
+        contentParts.buttons,
+        contentParts.highlight,
+        contentParts.highlightContentWithCTA,
+        contentParts.subContent,
+      ]),
+      contentParts.signature,
+      contentParts.legals,
+      contentParts.footer,
+    ];
     const htmlContent = bypassLayout
       ? ignoreTabs(`
         ${replyHeader}
         
-        ${content ?? "Pas de contenu"}
+        ${rawContent ?? "Pas de contenu"}
       `)
       : ignoreTabs(
           `${options.skipHead ? "" : doctype}
         <html lang="fr">${options.skipHead ? "" : renderHead(subject)}
           <body>
             <table width="600" align="center" style="margin-top: 20px">
-              ${Object.values(contentParts).map(renderHTMLRow).join("")}       
+              ${rows.map(renderHTMLRow).join("")}       
             </table>
           </body>
         </html>

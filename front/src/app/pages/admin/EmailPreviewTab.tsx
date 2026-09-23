@@ -214,6 +214,11 @@ export const defaultEmailValueByEmailKind: {
     highlightKind: "info",
     demoUrl: "https://immersion-facile.beta.gouv.fr",
   },
+  DEMO_EMAIL_ORDERED_BLOCKS: {
+    internshipKind: "immersion",
+    agencyLogoUrl: undefined,
+    demoUrl: "https://immersion-facile.beta.gouv.fr",
+  },
   TEST_EMAIL: {
     input1: "input1",
     input2: "input2",

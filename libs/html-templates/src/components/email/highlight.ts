@@ -1,9 +1,11 @@
 import { ignoreTabs } from "../../helpers/formatters";
 
+export type HighlightKind = "success" | "error" | "warning" | "info";
+
 export const renderHighlight = (
   props:
     | {
-        kind?: "success" | "error" | "warning" | "info";
+        kind?: HighlightKind;
         content?: string;
       }
     | undefined,
@@ -29,7 +31,7 @@ export const renderHighlight = (
   );
 };
 
-const getHighlightColor = (kind: "success" | "error" | "warning" | "info") => {
+const getHighlightColor = (kind: HighlightKind) => {
   const colors = {
     success: "#00B500",
     error: "#FF0000",

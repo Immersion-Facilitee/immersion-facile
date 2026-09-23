@@ -1,12 +1,23 @@
-import type { EmailButtonProps } from "./components/email";
+import type {
+  EmailBlock,
+  EmailButtonProps,
+  HighlightKind,
+} from "./components/email";
 
-type CreateEmailVariable<P> = (params: P) => {
+type FixedEmailParts = {
   bypassLayout?: boolean;
   subject: string;
   greetings?: string;
+  signature?: string;
+  legals?: string;
+  agencyLogoUrl?: string;
+  attachmentUrls?: string[];
+};
+
+type LegacyBodyParts = {
   content?: string;
   highlight?: {
-    kind?: "success" | "error" | "warning" | "info";
+    kind?: HighlightKind;
     content?: string;
   };
   highlightContentWithCTA?: {
@@ -14,11 +25,16 @@ type CreateEmailVariable<P> = (params: P) => {
     button?: EmailButtonProps;
   };
   subContent?: string;
-  legals?: string;
-  agencyLogoUrl?: string;
   buttons?: EmailButtonProps[];
-  attachmentUrls?: string[];
 };
+
+type OrderedBodyParts = {
+  blocks: EmailBlock[];
+};
+
+export type LegacyEmailVariables = FixedEmailParts & LegacyBodyParts;
+
+export type OrderedEmailVariables = FixedEmailParts & OrderedBodyParts;
 
 type Theme =
   | "authentification"
@@ -55,10 +71,19 @@ type TemplateTag = `template:${string}`;
 
 type NormalizedEmailTag = ThemeTag | ActorTag | RoleTag | TemplateTag;
 
-export type HtmlTemplateEmailData<P> = {
+type EmailTemplateIdentity = {
   niceName: string;
   tags?: NormalizedEmailTag[];
-  createEmailVariables: CreateEmailVariable<P>;
+};
+
+export type HtmlTemplateEmailData<P> = EmailTemplateIdentity & {
+  createEmailVariables: (
+    params: P,
+  ) => LegacyEmailVariables | OrderedEmailVariables;
+};
+
+export type OrderedEmailTemplateData<P> = EmailTemplateIdentity & {
+  createEmailVariables: (params: P) => OrderedEmailVariables;
 };
 
 export const createTemplatesByName = <

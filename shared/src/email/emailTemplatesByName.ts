@@ -1,5 +1,5 @@
 import { parseISO } from "date-fns";
-import { createTemplatesByName } from "html-templates";
+import { createEmailTemplate, createTemplatesByName } from "html-templates";
 import {
   type AbsoluteUrl,
   immersionFacileHelpdeskRootUrl,
@@ -1700,6 +1700,121 @@ Tél : ${beneficiaryPhone}`,
         attachmentUrls: [emailAttachements.memoBeneficiary],
       }),
     },
+    DEMO_EMAIL_ORDERED_BLOCKS: createEmailTemplate({
+      niceName: "[DEMO] Composants email ordonnables",
+      tags: ["template:demo_email_ordered_blocks"],
+      createEmailVariables: ({ agencyLogoUrl, demoUrl, internshipKind }) => ({
+        subject: `[DEMO] Composants email ordonnables (${internshipKind})`,
+        agencyLogoUrl,
+        greetings: `<strong>[FIGE] greetings</strong>
+          Toujours juste sous le header, jamais déplaçable.`,
+        blocks: [
+          {
+            kind: "content",
+            content: `<strong>Comment ce template fonctionne</strong>
+
+            Un mail se déclare en deux parties.
+
+            <strong>Les slots figés</strong>, marqués <code>[FIGE]</code> ci-dessous : <code>greetings</code>, <code>signature</code>, <code>legals</code>. Ils gardent toujours la même place, en haut ou en bas. Le header et le footer sont ajoutés automatiquement et ne se déclarent pas.
+
+            <strong>Le corps</strong>, dans <code>blocks</code> : un tableau dont <em>l'ordre est l'ordre du mail</em>. Chaque entrée porte un <code>kind</code> qui choisit son rendu, et un même <code>kind</code> peut revenir autant de fois que voulu, à n'importe quelle position.
+            <ul>
+              <li><code>content</code> — un paragraphe de texte</li>
+              <li><code>buttons</code> — un ou plusieurs boutons</li>
+              <li><code>highlight</code> — un encadré à barre de couleur, 4 variantes</li>
+              <li><code>highlightContentWithCTA</code> — un encadré sur fond bleu avec son bouton</li>
+            </ul>
+            Pour déplacer un élément, on déplace sa ligne dans le tableau. Rien d'autre à changer.
+
+            Le reste de ce mail montre chaque composant, l'un après l'autre, dans tous ses états possibles.`,
+          },
+          {
+            kind: "content",
+            content: `<strong>content</strong>
+            Un seul état. Le texte accepte du HTML écrit à la main : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>, une liste.
+            Une ligne vide sépare deux paragraphes.`,
+          },
+          {
+            kind: "buttons",
+            buttons: [
+              {
+                label: "buttons — état 1 : seul",
+                url: demoUrl,
+                target: "_blank",
+              },
+            ],
+          },
+          {
+            kind: "buttons",
+            buttons: [
+              {
+                label: "buttons — état 2 : premier",
+                url: demoUrl,
+                target: "_blank",
+              },
+              { label: "deuxième", url: demoUrl, target: "_blank" },
+              { label: "troisième", url: demoUrl, target: "_blank" },
+            ],
+          },
+          {
+            kind: "content",
+            content: `Le premier bouton d'un groupe est toujours plein, les suivants sont en contour. Ce n'est pas réglable bouton par bouton : c'est la position dans le tableau qui décide.`,
+          },
+          {
+            kind: "highlight",
+            variant: "info",
+            content: "highlight — variante info (bleu)",
+          },
+          {
+            kind: "highlight",
+            variant: "success",
+            content: "highlight — variante success (vert)",
+          },
+          {
+            kind: "highlight",
+            variant: "warning",
+            content: "highlight — variante warning (orange)",
+          },
+          {
+            kind: "highlight",
+            variant: "error",
+            content: "highlight — variante error (rouge)",
+          },
+          {
+            kind: "highlight",
+            content: "highlight — variante omise : retombe sur info",
+          },
+          {
+            kind: "highlightContentWithCTA",
+            content: "highlightContentWithCTA — état 1 : texte et bouton",
+            button: {
+              label: "Bouton de l'encadré",
+              url: demoUrl,
+              target: "_blank",
+            },
+          },
+          {
+            kind: "highlightContentWithCTA",
+            content:
+              "highlightContentWithCTA — état 2 : texte seul, sans bouton",
+          },
+          {
+            kind: "highlightContentWithCTA",
+            button: {
+              label: "État 3 : bouton seul, sans texte",
+              url: demoUrl,
+              target: "_blank",
+            },
+          },
+        ],
+        signature: `<strong>[FIGE] signature</strong>
+          Toujours après le corps, avant les mentions légales.
+          ${defaultSignature(internshipKind)}`,
+        legals: `[FIGE] legals
+          Toujours en dernier, précédé d'un filet bleu clair. Le footer vient juste après, automatiquement.`,
+        attachmentUrls: [emailAttachements.memoBeneficiary],
+      }),
+    }),
     DEPRECATED_CONVENTION_NOTIFICATION: {
       niceName: "Convention - Obsolète",
       tags: [

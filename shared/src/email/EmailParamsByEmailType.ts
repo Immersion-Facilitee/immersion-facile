@@ -328,6 +328,11 @@ export type EmailParamsByEmailType = {
     highlightKind: "success" | "error" | "warning" | "info";
     demoUrl: AbsoluteUrl;
   };
+  DEMO_EMAIL_ORDERED_BLOCKS: {
+    internshipKind: InternshipKind;
+    agencyLogoUrl: AbsoluteUrl | undefined;
+    demoUrl: AbsoluteUrl;
+  };
   DEPRECATED_CONVENTION_NOTIFICATION: {
     beneficiaryFirstName: string;
     beneficiaryLastName: string;
