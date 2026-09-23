@@ -1,4 +1,4 @@
-import { subMonths } from "date-fns";
+import { startOfDay, subMonths } from "date-fns";
 import { toPairs, uniq } from "ramda";
 import {
   type AgencyWithUsersRights,
@@ -17,6 +17,7 @@ import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import type { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
+  doesWarnedAgencyRequiresWarningAgain,
   getInactiveAgenciesAmong,
   makeInactiveAgenciesFilters,
 } from "../helpers/inactiveAgencies.helpers";
@@ -75,13 +76,29 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
             pagination: { page, perPage },
           });
         totalPages = pagination.totalPages;
-        agenciesToClose.push(
-          ...(await getInactiveAgenciesAmong({
-            agencies: activeAgencies,
-            uow,
-            noConventionSince: agencyNotUpdatedOrNoConventionSince,
-          })),
-        );
+
+        const inactiveAgencies = await getInactiveAgenciesAmong({
+          agencies: activeAgencies,
+          uow,
+          noConventionSince: agencyNotUpdatedOrNoConventionSince,
+        });
+
+        const agenciesWithValidWarning = (
+          await executeInSequence(
+            inactiveAgencies,
+            async (agency): Promise<AgencyWithUsersRights | null> =>
+              (await hasValidWarningOldEnoughToClose({
+                agency,
+                uow,
+                warningMustHaveBeenSentBefore:
+                  agencyNotUpdatedOrNoConventionSince,
+              }))
+                ? agency
+                : null,
+          )
+        ).filter(isTruthy);
+
+        agenciesToClose.push(...agenciesWithValidWarning);
       });
       page += 1;
     }
@@ -114,6 +131,38 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
 
     return { numberOfAgenciesClosed };
   });
+
+const hasValidWarningOldEnoughToClose = async (params: {
+  agency: AgencyWithUsersRights;
+  uow: UnitOfWork;
+  warningMustHaveBeenSentBefore: Date;
+}): Promise<boolean> => {
+  const { agency, uow, warningMustHaveBeenSentBefore } = params;
+
+  const [lastWarning] = await uow.notificationRepository.getEmailsByFilters({
+    agencyId: agency.id,
+    emailType: "AGENCY_INACTIVITY_WARNING",
+    limit: 1,
+  });
+
+  if (!lastWarning) {
+    return false;
+  }
+
+  const lastWarningDate = new Date(lastWarning.createdAt);
+  const isWarningOldEnough =
+    startOfDay(lastWarningDate) <= startOfDay(warningMustHaveBeenSentBefore);
+
+  if (!isWarningOldEnough) {
+    return false;
+  }
+
+  return doesWarnedAgencyRequiresWarningAgain({
+    agency,
+    warningCreatedAt: lastWarningDate,
+    uow,
+  });
+};
 
 const getNotificationsForClosedAgencies = async (
   agencies: AgencyWithUsersRights[],
