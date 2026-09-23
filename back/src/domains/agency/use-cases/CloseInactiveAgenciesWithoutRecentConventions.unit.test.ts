@@ -1,10 +1,13 @@
-import { subDays, subMonths } from "date-fns";
+import { addDays, addMonths, subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
+  type AgencyId,
   type AgencyKind,
   ConnectedUserBuilder,
   ConventionDtoBuilder,
+  type Email,
   expectToEqual,
+  type Notification,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import {
@@ -25,7 +28,7 @@ import {
 } from "./CloseInactiveAgenciesWithoutRecentConventions";
 
 describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
-  const numberOfMonthsWithoutConvention = 6;
+  const numberOfMonthsWithoutConvention = 3;
   const defaultDate = new Date("2021-09-01T10:10:00.000Z");
 
   const admin1 = new ConnectedUserBuilder()
@@ -50,14 +53,34 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
   const agency1 = AgencyDtoBuilder.create("agency1-id")
     .withName("Agency 1")
     .withStatus("active")
-    .withUpdatedAt(subMonths(defaultDate, 7))
+    .withUpdatedAt(subMonths(defaultDate, 4))
     .build();
 
   const agency2 = AgencyDtoBuilder.create("agency2-id")
     .withName("Agency 2")
     .withStatus("active")
-    .withUpdatedAt(subMonths(defaultDate, 7))
+    .withUpdatedAt(subMonths(defaultDate, 4))
     .build();
+
+  const makeInactivityWarningNotification = (params: {
+    id: string;
+    agencyId: AgencyId;
+    agencyName: string;
+    createdAt: Date;
+    recipientEmail: Email;
+  }): Notification => ({
+    id: params.id,
+    createdAt: params.createdAt.toISOString(),
+    kind: "email" as const,
+    followedIds: { agencyId: params.agencyId },
+    templatedContent: {
+      kind: "AGENCY_INACTIVITY_WARNING" as const,
+      bcc: [params.recipientEmail],
+      params: {
+        agencyName: params.agencyName,
+      },
+    },
+  });
 
   let uow: InMemoryUnitOfWork;
   let closeInactiveAgenciesWithoutRecentConventions: CloseInactiveAgenciesWithoutRecentConventions;
@@ -66,10 +89,20 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    expectSavedNotificationsAndEvents = makeExpectSavedNotificationsAndEvents(
-      uow.notificationRepository,
-      uow.outboxRepository,
-    );
+    const expectSavedNotificationsAndEventsIncludingSeededWarnings =
+      makeExpectSavedNotificationsAndEvents(
+        uow.notificationRepository,
+        uow.outboxRepository,
+      );
+    expectSavedNotificationsAndEvents = (params) => {
+      uow.notificationRepository.notifications =
+        uow.notificationRepository.notifications.filter(
+          (notification) =>
+            notification.kind !== "email" ||
+            notification.templatedContent.kind !== "AGENCY_INACTIVITY_WARNING",
+        );
+      expectSavedNotificationsAndEventsIncludingSeededWarnings(params);
+    };
     timeGateway = new CustomTimeGateway(defaultDate);
     closeInactiveAgenciesWithoutRecentConventions =
       makeCloseInactiveAgenciesWithoutRecentConventions({
@@ -91,21 +124,21 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       const needsReviewAgency = AgencyDtoBuilder.create("needsReviewAgency-id")
         .withName("Agency 3")
         .withStatus("needsReview")
-        .withUpdatedAt(subMonths(defaultDate, 7))
+        .withUpdatedAt(subMonths(defaultDate, 4))
         .build();
 
       const closedAgency = AgencyDtoBuilder.create("closedAgency-id")
         .withName("Agency 4")
         .withStatus("closed")
         .withStatusJustification("Already closed")
-        .withUpdatedAt(subMonths(defaultDate, 7))
+        .withUpdatedAt(subMonths(defaultDate, 4))
         .build();
 
       const rejectedAgency = AgencyDtoBuilder.create("rejectedAgency-id")
         .withName("Agency 5")
         .withStatus("rejected")
         .withStatusJustification("Rejected")
-        .withUpdatedAt(subMonths(defaultDate, 7))
+        .withUpdatedAt(subMonths(defaultDate, 4))
         .build();
       uow.agencyRepository.agencies = [
         toAgencyWithRights(needsReviewAgency, {
@@ -154,12 +187,21 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         .withId("recent-convention-id")
         .withAgencyId(agency1.id)
         .withStatus("IN_REVIEW")
-        .withDateSubmission(subDays(new Date(), 30).toISOString())
+        .withDateSubmission(subDays(defaultDate, 30).toISOString())
         .build();
 
       uow.agencyRepository.agencies = [agency1WithRights];
       uow.userRepository.users = [admin1];
       uow.conventionRepository.setConventions([recentConvention]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-agency1",
+          agencyId: agency1.id,
+          agencyName: agency1.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin1.email,
+        }),
+      ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
@@ -173,6 +215,158 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         emails: [],
       });
       expectToEqual(uow.agencyRepository.agencies, [agency1WithRights]);
+    });
+
+    it("should not close inactive agencies without an inactivity warning", async () => {
+      const agency1WithRights = toAgencyWithRights(agency1, {
+        [admin1.id]: {
+          isNotifiedByEmail: true,
+          roles: ["agency-admin"],
+        },
+      });
+
+      uow.agencyRepository.agencies = [agency1WithRights];
+      uow.userRepository.users = [admin1];
+      uow.conventionRepository.setConventions([]);
+
+      const result =
+        await closeInactiveAgenciesWithoutRecentConventions.execute({
+          numberOfMonthsWithoutConvention,
+        });
+
+      expectToEqual(result, {
+        numberOfAgenciesClosed: 0,
+      });
+      expectToEqual(uow.agencyRepository.agencies, [agency1WithRights]);
+      expectSavedNotificationsAndEvents({
+        emails: [],
+      });
+    });
+
+    it("should not close inactive agencies whose inactivity warning is too recent", async () => {
+      const agency1WithRights = toAgencyWithRights(agency1, {
+        [admin1.id]: {
+          isNotifiedByEmail: true,
+          roles: ["agency-admin"],
+        },
+      });
+
+      uow.agencyRepository.agencies = [agency1WithRights];
+      uow.userRepository.users = [admin1];
+      uow.conventionRepository.setConventions([]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "recent-warning-agency1",
+          agencyId: agency1.id,
+          agencyName: agency1.name,
+          createdAt: subMonths(defaultDate, 1),
+          recipientEmail: admin1.email,
+        }),
+      ];
+
+      const result =
+        await closeInactiveAgenciesWithoutRecentConventions.execute({
+          numberOfMonthsWithoutConvention,
+        });
+
+      expectToEqual(result, {
+        numberOfAgenciesClosed: 0,
+      });
+      expectToEqual(uow.agencyRepository.agencies, [agency1WithRights]);
+      expectSavedNotificationsAndEvents({
+        emails: [],
+      });
+    });
+
+    it("should not close warned agencies which has been updated since the warning", async () => {
+      const warningDate = subMonths(defaultDate, 3);
+      const agencyUpdatedAfterWarning = AgencyDtoBuilder.create("agency1-id")
+        .withName("Agency 1")
+        .withStatus("active")
+        .withUpdatedAt(addDays(warningDate, 15))
+        .build();
+
+      const agencyWithRights = toAgencyWithRights(agencyUpdatedAfterWarning, {
+        [admin1.id]: {
+          isNotifiedByEmail: true,
+          roles: ["agency-admin"],
+        },
+      });
+
+      uow.agencyRepository.agencies = [agencyWithRights];
+      uow.userRepository.users = [admin1];
+      uow.conventionRepository.setConventions([]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "invalidated-warning-agency1",
+          agencyId: agencyUpdatedAfterWarning.id,
+          agencyName: agencyUpdatedAfterWarning.name,
+          createdAt: warningDate,
+          recipientEmail: admin1.email,
+        }),
+      ];
+
+      const result =
+        await closeInactiveAgenciesWithoutRecentConventions.execute({
+          numberOfMonthsWithoutConvention,
+        });
+
+      expectToEqual(result, {
+        numberOfAgenciesClosed: 0,
+      });
+      expectToEqual(uow.agencyRepository.agencies, [agencyWithRights]);
+      expectSavedNotificationsAndEvents({
+        emails: [],
+      });
+    });
+
+    it("should not close warned agencies which has new conventions since the warning", async () => {
+      const warningDate = subMonths(defaultDate, 5);
+      const veryOldAgency = AgencyDtoBuilder.create("agency1-id")
+        .withName("Agency 1")
+        .withStatus("active")
+        .withUpdatedAt(subMonths(defaultDate, 12))
+        .build();
+
+      const agencyWithRights = toAgencyWithRights(veryOldAgency, {
+        [admin1.id]: {
+          isNotifiedByEmail: true,
+          roles: ["agency-admin"],
+        },
+      });
+
+      const conventionAfterWarning = new ConventionDtoBuilder()
+        .withId("convention-after-warning-id")
+        .withAgencyId(veryOldAgency.id)
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .withDateSubmission(addMonths(warningDate, 2).toISOString())
+        .build();
+
+      uow.agencyRepository.agencies = [agencyWithRights];
+      uow.userRepository.users = [admin1];
+      uow.conventionRepository.setConventions([conventionAfterWarning]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "invalidated-warning-agency1",
+          agencyId: veryOldAgency.id,
+          agencyName: veryOldAgency.name,
+          createdAt: warningDate,
+          recipientEmail: admin1.email,
+        }),
+      ];
+
+      const result =
+        await closeInactiveAgenciesWithoutRecentConventions.execute({
+          numberOfMonthsWithoutConvention,
+        });
+
+      expectToEqual(result, {
+        numberOfAgenciesClosed: 0,
+      });
+      expectToEqual(uow.agencyRepository.agencies, [agencyWithRights]);
+      expectSavedNotificationsAndEvents({
+        emails: [],
+      });
     });
   });
 
@@ -197,6 +391,22 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       uow.agencyRepository.agencies = [agency1WithRights, agency2WithRights];
       uow.userRepository.users = [admin1, admin2, validator1];
       uow.conventionRepository.setConventions([]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-agency1",
+          agencyId: agency1.id,
+          agencyName: agency1.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin1.email,
+        }),
+        makeInactivityWarningNotification({
+          id: "warning-agency2",
+          agencyId: agency2.id,
+          agencyName: agency2.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin2.email,
+        }),
+      ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
@@ -263,12 +473,28 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         .withId("recent-convention-id")
         .withAgencyId(agency1.id)
         .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateSubmission(subDays(new Date(), 30).toISOString())
+        .withDateSubmission(subDays(defaultDate, 30).toISOString())
         .build();
 
       uow.agencyRepository.agencies = [agency1WithRights, agency2WithRights];
       uow.userRepository.users = [admin1, admin2];
       uow.conventionRepository.setConventions([recentConvention]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-agency1",
+          agencyId: agency1.id,
+          agencyName: agency1.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin1.email,
+        }),
+        makeInactivityWarningNotification({
+          id: "warning-agency2",
+          agencyId: agency2.id,
+          agencyName: agency2.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin2.email,
+        }),
+      ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
@@ -307,7 +533,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       const agency3 = AgencyDtoBuilder.create("agency3-id")
         .withName("Agency 3")
         .withStatus("active")
-        .withUpdatedAt(subMonths(defaultDate, 7))
+        .withUpdatedAt(subMonths(defaultDate, 4))
         .build();
 
       const referringAgency = AgencyDtoBuilder.create("referring-agency-id")
@@ -318,7 +544,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           refersToAgencyName: agency1.name,
           refersToAgencyContactEmail: agency1.contactEmail,
         })
-        .withUpdatedAt(subMonths(defaultDate, 7))
+        .withUpdatedAt(subMonths(defaultDate, 4))
         .build();
 
       const agency1WithRights = toAgencyWithRights(agency1, {
@@ -354,6 +580,22 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       ];
       uow.userRepository.users = [admin1, admin2];
       uow.conventionRepository.setConventions([recentConvention]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-agency1",
+          agencyId: agency1.id,
+          agencyName: agency1.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin1.email,
+        }),
+        makeInactivityWarningNotification({
+          id: "warning-agency3",
+          agencyId: agency3.id,
+          agencyName: agency3.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin1.email,
+        }),
+      ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
@@ -393,6 +635,22 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       ];
       uow.userRepository.users = [admin1];
       uow.conventionRepository.setConventions([]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-agency1",
+          agencyId: agency1.id,
+          agencyName: agency1.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin1.email,
+        }),
+        makeInactivityWarningNotification({
+          id: "warning-agency2",
+          agencyId: agency2.id,
+          agencyName: agency2.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin1.email,
+        }),
+      ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
@@ -425,7 +683,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       });
     });
 
-    it("should not close agencies that were updated recently (less than 6 months ago)", async () => {
+    it("should not close agencies that were updated recently (less than 3 months ago)", async () => {
       const recentlyUpdatedAgency = AgencyDtoBuilder.create("recent-agency-id")
         .withName("Recently updated Agency")
         .withStatus("active")
@@ -435,7 +693,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       const oldAgency = AgencyDtoBuilder.create("old-agency-id")
         .withName("Old Agency")
         .withStatus("active")
-        .withUpdatedAt(subMonths(defaultDate, 7))
+        .withUpdatedAt(subMonths(defaultDate, 4))
         .build();
 
       const recentlyUpdatedAgencyWithRights = toAgencyWithRights(
@@ -460,6 +718,15 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       ];
       uow.userRepository.users = [admin1, admin2];
       uow.conventionRepository.setConventions([]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-old-agency",
+          agencyId: oldAgency.id,
+          agencyName: oldAgency.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin2.email,
+        }),
+      ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
@@ -498,13 +765,13 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       const agency3 = AgencyDtoBuilder.create("agency3-id")
         .withName("Agency 3")
         .withStatus("active")
-        .withUpdatedAt(subMonths(defaultDate, 7))
+        .withUpdatedAt(subMonths(defaultDate, 4))
         .build();
 
       const agency4 = AgencyDtoBuilder.create("agency4-id")
         .withName("Agency 4")
         .withStatus("active")
-        .withUpdatedAt(subMonths(defaultDate, 7))
+        .withUpdatedAt(subMonths(defaultDate, 4))
         .build();
 
       const agency1WithRights = toAgencyWithRights(agency1, {
@@ -521,7 +788,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         .withId("convention-agency1-id")
         .withAgencyId(agency1.id)
         .withStatus("IN_REVIEW")
-        .withDateSubmission(subDays(new Date(), 30).toISOString())
+        .withDateSubmission(subDays(defaultDate, 30).toISOString())
         .build();
 
       uow.agencyRepository.agencies = [
@@ -531,6 +798,22 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
       ];
       uow.userRepository.users = [admin1, admin2];
       uow.conventionRepository.setConventions([recentConventionForAgency1]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-agency3",
+          agencyId: agency3.id,
+          agencyName: agency3.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin2.email,
+        }),
+        makeInactivityWarningNotification({
+          id: "warning-agency4",
+          agencyId: agency4.id,
+          agencyName: agency4.name,
+          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          recipientEmail: admin2.email,
+        }),
+      ];
 
       const closeInactiveAgenciesWithoutRecentConventions =
         makeCloseInactiveAgenciesWithoutRecentConventions({
@@ -596,7 +879,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           .withName(`Agency ${kind}`)
           .withStatus("active")
           .withKind(kind)
-          .withUpdatedAt(subMonths(defaultDate, 7))
+          .withUpdatedAt(subMonths(defaultDate, 4))
           .build();
 
         const agencyToKeepWithRights = toAgencyWithRights(agencyToKeep, {
@@ -618,6 +901,15 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         ];
         uow.userRepository.users = [admin1, admin2];
         uow.conventionRepository.setConventions([]);
+        uow.notificationRepository.notifications = [
+          makeInactivityWarningNotification({
+            id: "warning-agency1",
+            agencyId: agency1.id,
+            agencyName: agency1.name,
+            createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+            recipientEmail: admin2.email,
+          }),
+        ];
 
         const result =
           await closeInactiveAgenciesWithoutRecentConventions.execute({

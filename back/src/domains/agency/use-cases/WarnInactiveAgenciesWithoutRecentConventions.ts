@@ -18,7 +18,7 @@ import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import type { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
-  conventionStatusesPreventingAgencyClosure,
+  doesWarnedAgencyRequiresWarningAgain,
   getInactiveAgenciesAmong,
   makeInactiveAgenciesFilters,
 } from "../helpers/inactiveAgencies.helpers";
@@ -196,7 +196,7 @@ const buildWarningNotificationsForAgencies = async ({
     .filter(isTruthy);
 };
 
-const isAgencyAlreadyWarned = async (params: {
+const isWarningNeeded = async (params: {
   agency: AgencyWithUsersRights;
   uow: UnitOfWork;
   now: Date;
@@ -219,21 +219,11 @@ const isAgencyAlreadyWarned = async (params: {
 
   if (isWarnedRecently) return true;
 
-  const isAgencyUpdatedAfterLastWarning =
-    new Date(agency.updatedAt) > lastWarningDate;
-  if (isAgencyUpdatedAfterLastWarning) return false;
-
-  const conventionIdsAfterWarning =
-    await uow.conventionQueries.getConventionIdsByFilters({
-      filters: {
-        withAgencyIds: [agency.id],
-        withStatuses: [...conventionStatusesPreventingAgencyClosure],
-        withDateSubmission: { from: lastWarningDate },
-      },
-      limit: 1,
-    });
-
-  return conventionIdsAfterWarning.length === 0;
+  return doesWarnedAgencyRequiresWarningAgain({
+    agency,
+    warningCreatedAt: lastWarningDate,
+    uow,
+  });
 };
 
 const getAgenciesNeedingWarning = async ({
@@ -271,7 +261,7 @@ const getAgenciesNeedingWarning = async ({
       await executeInSequence(
         inactiveAgencies,
         async (agency): Promise<AgencyWithUsersRights | null> =>
-          (await isAgencyAlreadyWarned({
+          (await isWarningNeeded({
             agency,
             uow,
             now,
