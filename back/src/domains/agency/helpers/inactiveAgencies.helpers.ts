@@ -1,3 +1,4 @@
+import { startOfDay } from "date-fns";
 import {
   type AgencyKind,
   type AgencyStatus,
@@ -88,4 +89,30 @@ export const getInactiveAgenciesAmong = async (params: {
   );
 
   return inactiveAgenciesResults.filter(isTruthy);
+};
+
+export const doesWarnedAgencyRequiresWarningAgain = async (params: {
+  agency: AgencyWithUsersRights;
+  warningCreatedAt: Date;
+  uow: UnitOfWork;
+}): Promise<boolean> => {
+  const { agency, warningCreatedAt, uow } = params;
+
+  const isAgencyUpdatedAfterLastWarning =
+    startOfDay(new Date(agency.updatedAt)) >= startOfDay(warningCreatedAt);
+  if (isAgencyUpdatedAfterLastWarning) {
+    return false;
+  }
+
+  const conventionIdsAfterWarning =
+    await uow.conventionQueries.getConventionIdsByFilters({
+      filters: {
+        withAgencyIds: [agency.id],
+        withStatuses: [...conventionStatusesPreventingAgencyClosure],
+        withDateSubmission: { from: warningCreatedAt },
+      },
+      limit: 1,
+    });
+
+  return conventionIdsAfterWarning.length === 0;
 };

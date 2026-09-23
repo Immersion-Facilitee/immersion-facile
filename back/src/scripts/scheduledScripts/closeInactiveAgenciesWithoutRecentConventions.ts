@@ -10,7 +10,7 @@ import { handleCRONScript } from "../handleCRONScript";
 
 const logger = createLogger(__filename);
 const config = AppConfig.createFromEnv();
-export const numberOfMonthsWithoutConvention = 6;
+export const numberOfMonthsWithoutConvention = 3;
 
 const closeInactiveAgenciesWithoutRecentConventionsScript = async () => {
   const { uowPerformer } = createDbRelatedSystems(
@@ -49,7 +49,7 @@ export const triggerCloseInactiveAgenciesWithoutRecentConventions = ({
     config,
     script: closeInactiveAgenciesWithoutRecentConventionsScript,
     handleResults: ({ numberOfAgenciesClosed }) =>
-      `${numberOfAgenciesClosed} agencies were closed , because they had no conventions validated or to be validated since the past 6 months`,
+      `${numberOfAgenciesClosed} agencies were closed, because they had no conventions validated or to be validated since the last inactivity warning 3 months ago`,
     logger,
     exitOnFinish,
   });
