@@ -16,6 +16,7 @@ import type {
   LoginPersona,
   Renewed,
 } from "../convention/convention.dto";
+import type { ConventionDraftId } from "../convention/conventionDraftId";
 import type {
   ContactLevelOfEducation,
   DiscussionExchangeForbiddenParams,
@@ -503,10 +504,12 @@ export type EmailParamsByEmailType = {
     internshipKind: InternshipKind;
     additionalDetails: string | undefined;
     conventionFormUrl: string;
+    conventionDraftId: ConventionDraftId;
   };
   SHARE_CONVENTION_DRAFT_SENDER: {
     internshipKind: InternshipKind;
     conventionFormUrl: string;
+    conventionDraftId: ConventionDraftId;
   };
   SIGNATORY_REMINDER: {
     actorFirstName: string;

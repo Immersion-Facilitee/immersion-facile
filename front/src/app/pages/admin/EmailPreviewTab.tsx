@@ -678,10 +678,12 @@ export const defaultEmailValueByEmailKind: {
   SHARE_CONVENTION_DRAFT_RECIPIENT: {
     internshipKind: "immersion",
     additionalDetails: "ADDITIONAL_DETAILS",
+    conventionDraftId: "CONVENTION_DRAFT_ID",
     conventionFormUrl: "CONVENTION_FORM_URL",
   },
   SHARE_CONVENTION_DRAFT_SENDER: {
     internshipKind: "immersion",
+    conventionDraftId: "CONVENTION_DRAFT_ID",
     conventionFormUrl: "CONVENTION_FORM_URL",
   },
   SIGNATORY_REMINDER: {

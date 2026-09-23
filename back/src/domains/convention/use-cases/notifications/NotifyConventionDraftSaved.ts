@@ -89,6 +89,7 @@ export const makeNotifyConventionDraftSaved = useCaseBuilder(
             kind: "SHARE_CONVENTION_DRAFT_SENDER",
             recipients: [inputParams.senderEmail],
             params: {
+              conventionDraftId: draft.id,
               conventionFormUrl,
               internshipKind: draft.internshipKind,
             },
@@ -104,6 +105,7 @@ export const makeNotifyConventionDraftSaved = useCaseBuilder(
             recipients: [inputParams.recipientEmail],
             params: {
               additionalDetails: inputParams.details ?? undefined,
+              conventionDraftId: draft.id,
               conventionFormUrl,
               internshipKind: draft.internshipKind,
             },

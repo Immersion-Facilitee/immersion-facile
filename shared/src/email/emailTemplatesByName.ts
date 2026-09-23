@@ -9,6 +9,7 @@ import {
   type InternshipKind,
   labelsForImmersionObjective,
 } from "../convention/convention.dto";
+import type { ConventionDraftId } from "../convention/conventionDraftId";
 import type {
   DiscussionExchangeForbiddenParams,
   DiscussionExchangeForbiddenReason,
@@ -2701,13 +2702,14 @@ Tél : ${beneficiaryPhone}`,
       ],
       createEmailVariables: ({
         additionalDetails,
+        conventionDraftId,
         conventionFormUrl,
         internshipKind,
       }) => ({
         subject: `${
           internshipKind ? "Immersion Facilitée" : "Mini Stage"
         } - Pour action : une demande de convention préremplie vous est transmise pour que vous la complétiez`,
-        greetings: "Bonjour,",
+        greetings: greetingsWithConventionDraftId(conventionDraftId),
         content: `
         <strong>Une demande de convention ${
           internshipKind === "immersion" ? "d'immersion" : "de mini stage"
@@ -2732,9 +2734,13 @@ Tél : ${beneficiaryPhone}`,
         "theme:convention",
         "role:utilisateurInitiateur",
       ],
-      createEmailVariables: ({ conventionFormUrl, internshipKind }) => ({
+      createEmailVariables: ({
+        conventionDraftId,
+        conventionFormUrl,
+        internshipKind,
+      }) => ({
         subject: "Votre brouillon de convention",
-        greetings: "Bonjour,",
+        greetings: greetingsWithConventionDraftId(conventionDraftId),
         content: `
 Vous avez demandé à recevoir le lien vers votre brouillon de convention. Vous pouvez désormais y accéder pendant 30 jours grâce au lien ci-dessous :
       `,
@@ -3186,6 +3192,13 @@ const greetingsWithConventionId = (
   `<strong>Identifiant de la convention : ${conventionId}</strong>
         
 Bonjour${actor ? ` ${actor}` : ""},`;
+
+const greetingsWithConventionDraftId = (
+  conventionDraftId: ConventionDraftId,
+): string =>
+  `<strong>Identifiant du brouillon : ${conventionDraftId}</strong>
+
+Bonjour,`;
 
 const descriptionByRole: Record<AgencyRole, string> = {
   validator:

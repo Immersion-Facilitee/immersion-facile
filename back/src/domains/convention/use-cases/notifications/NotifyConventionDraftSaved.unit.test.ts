@@ -97,6 +97,7 @@ describe("NotifyConventionDraftSaved", () => {
             kind: "SHARE_CONVENTION_DRAFT_RECIPIENT",
             params: {
               additionalDetails: undefined,
+              conventionDraftId: conventionDraft.id,
               internshipKind: conventionDraft.internshipKind,
               conventionFormUrl: expectedShortLink,
             },
@@ -130,6 +131,7 @@ describe("NotifyConventionDraftSaved", () => {
             kind: "SHARE_CONVENTION_DRAFT_RECIPIENT",
             params: {
               internshipKind: conventionDraft.internshipKind,
+              conventionDraftId: conventionDraft.id,
               conventionFormUrl: expectedShortLink,
               additionalDetails: details,
             },
@@ -160,6 +162,7 @@ describe("NotifyConventionDraftSaved", () => {
           {
             kind: "SHARE_CONVENTION_DRAFT_SENDER",
             params: {
+              conventionDraftId: conventionDraft.id,
               internshipKind: conventionDraft.internshipKind,
               conventionFormUrl: expectedShortLink,
             },
@@ -190,6 +193,7 @@ describe("NotifyConventionDraftSaved", () => {
           {
             kind: "SHARE_CONVENTION_DRAFT_SENDER",
             params: {
+              conventionDraftId: conventionDraft.id,
               internshipKind: conventionDraft.internshipKind,
               conventionFormUrl: expectedShortLink,
             },
@@ -199,6 +203,7 @@ describe("NotifyConventionDraftSaved", () => {
             kind: "SHARE_CONVENTION_DRAFT_RECIPIENT",
             params: {
               additionalDetails: undefined,
+              conventionDraftId: conventionDraft.id,
               internshipKind: conventionDraft.internshipKind,
               conventionFormUrl: expectedShortLink,
             },
