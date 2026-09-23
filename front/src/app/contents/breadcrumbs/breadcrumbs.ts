@@ -98,7 +98,7 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
     route: frontRoutes.assessmentDocument({ jwt: "", conventionId: "" }),
   },
   myAccount: {
-    label: "Mon profil",
+    label: "Mon compte",
     route: frontRoutes.myAccount(),
     children: {
       agencyRegistration: {

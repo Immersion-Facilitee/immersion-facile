@@ -29,7 +29,7 @@ export const RequestEstablishmentRegistrationTab = () => {
             className={fr.cx("fr-mb-6w")}
             iconId="fr-icon-arrow-go-back-line"
           >
-            Retourner sur mon profil
+            Retourner sur mon compte
           </Button>
         }
       >

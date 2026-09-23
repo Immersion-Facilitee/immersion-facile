@@ -953,8 +953,9 @@ export const domElementIds = {
       "im-profile-edit-agency-user__is-notified-by-email-toggle",
     editAgencyUserRoleSubmitButton:
       "im-profile-form-edit-agency__users-submit-button",
-    registerAgenciesSearchLink: "im-profile__register-agencies-search-link",
-    registerAgencyButton: "im-profile__register-agency-button",
+    beneficiaryDashboardLink: "im-profile__beneficiary-dashboard-link",
+    establishmentDashboardLink: "im-profile__establishment-dashboard-link",
+    agencyDashboardLink: "im-profile__agency-dashboard-link",
   },
   myAccountEstablishmentRegistration: {
     registerEstablishmentButton: "im-profile__register-establishment-button",
@@ -1263,8 +1264,6 @@ export const domElementIds = {
   statsEstablishmentDetails: {},
   agencyManagement: {},
   establishmentManagement: {},
-  myAccountAgencies: {},
-  myAccountEstablishments: {},
   agencyRegistration: {
     backButton: "im-agency-registration__back-button",
   },

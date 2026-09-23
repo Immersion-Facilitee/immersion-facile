@@ -126,9 +126,7 @@ type ConnectPrivateRoute =
   | FrontDashboardRoute
   | Route<typeof frontRoutes.formEstablishment>
   | Route<typeof frontRoutes.myAccount>
-  | Route<typeof frontRoutes.myAccountAgencies>
   | Route<typeof frontRoutes.agencyRegistration>
-  | Route<typeof frontRoutes.myAccountEstablishments>
   | Route<typeof frontRoutes.myAccountEstablishmentRegistration>
   | Route<typeof frontRoutes.addAgency>
   | Route<typeof frontRoutes.archivedConventionRequest>

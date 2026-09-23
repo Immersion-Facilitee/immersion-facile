@@ -22,8 +22,8 @@ const agencyRegistrationOriginNavigation: Record<
   { backLabel: string; breadcrumbLabel: string }
 > = {
   myAccount: {
-    backLabel: "Retourner sur mon profil",
-    breadcrumbLabel: "Mon profil",
+    backLabel: "Retourner sur mon compte",
+    breadcrumbLabel: "Mon compte",
   },
   agencyDashboardAgencies: {
     backLabel: "Retour au tableau de bord",
