@@ -13,10 +13,6 @@ import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 
 const agencyStatuses: ConventionStatus[] = ["IN_REVIEW"];
-const signatoryStatuses: ConventionStatus[] = [
-  "PARTIALLY_SIGNED",
-  "READY_TO_SIGN",
-];
 
 const ZERO_DAYS = 0;
 const ONE_DAY = 1;
@@ -48,16 +44,6 @@ export const makeConventionsReminder = useCaseBuilder("ConventionsReminder")
   .build(async ({ uow, deps }) => {
     const now = deps.timeGateway.now();
 
-    const conventionsForLastSignatoryReminder =
-      await uow.conventionQueries.getConventions({
-        filters: {
-          startDateGreater: now,
-          startDateLessOrEqual: addBusinessDays(now, TWO_DAYS),
-          withStatuses: signatoryStatuses,
-        },
-        sortBy: "dateStart",
-      });
-
     const conventionsForAgencyReminders =
       await uow.conventionQueries.getConventions({
         filters: {
@@ -68,18 +54,9 @@ export const makeConventionsReminder = useCaseBuilder("ConventionsReminder")
         sortBy: "dateStart",
       });
 
-    const events = [
-      ...conventionsForLastSignatoryReminder.map(({ id }) =>
-        makeConventionReminderRequiredEvent({
-          id,
-          reminderKind: "ReminderForSignatories",
-          deps,
-        }),
-      ),
-      ...conventionsForAgencyReminders.flatMap((c) =>
-        makeAgencyReminders(c, deps),
-      ),
-    ];
+    const events = conventionsForAgencyReminders.flatMap((c) =>
+      makeAgencyReminders(c, deps),
+    );
 
     const results: { id: ConventionId; error?: Error }[] =
       await executeInSequence(events, ({ event, id }) =>
