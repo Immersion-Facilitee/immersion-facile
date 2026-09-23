@@ -2,8 +2,10 @@ import {
   type AppellationAndRomeDto,
   type DiscussionDto,
   type EmailParamsByEmailType,
+  type Firstname,
   frontRoutes,
   immersionDurationLabels,
+  type Lastname,
   makeRouteAbsoluteUrl,
 } from "shared";
 import type { AppConfig } from "../../../config/bootstrap/appConfig";
@@ -19,10 +21,14 @@ type ContactByEmailRequest =
     };
 
 export const makeContactByEmailRequestParams = ({
+  contactFirstName,
+  contactLastName,
   discussion,
   immersionFacileBaseUrl,
   appellation,
 }: {
+  contactFirstName?: Firstname;
+  contactLastName?: Lastname;
   discussion: DiscussionDto;
   immersionFacileBaseUrl: AppConfig["immersionFacileBaseUrl"];
   appellation: AppellationAndRomeDto;
@@ -31,6 +37,8 @@ export const makeContactByEmailRequestParams = ({
     appellationLabel: appellation.appellationLabel,
     businessName: discussion.businessName,
     businessAddress: `${discussion.address.streetNumberAndAddress} ${discussion.address.postcode} ${discussion.address.city}`,
+    contactFirstName,
+    contactLastName,
     discussionUrl: makeRouteAbsoluteUrl({
       route: frontRoutes.establishmentDashboardDiscussions({
         discussionId: discussion.id,

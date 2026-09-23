@@ -7,6 +7,7 @@ import {
   discussionEmailSender,
   type Email,
   errors,
+  executeInSequence,
   getFormattedFirstnameAndLastname,
   immersionFacileNoReplyEmailSender,
   type TemplatedEmail,
@@ -139,31 +140,33 @@ const notifyOnEmailContactMode = async ({
     replyDomain: `reply.${deps.domain}`,
   });
 
-  const notifiedRecipients = (
-    await getNotifiedUsersFromEstablishmentUserRights(
-      uow,
-      establishment.userRights,
-    )
-  ).map((user) => user.email);
+  const notifiedUsers = await getNotifiedUsersFromEstablishmentUserRights(
+    uow,
+    establishment.userRights,
+  );
 
-  const templatedContent: TemplatedEmail = {
-    sender: discussionEmailSender,
-    recipients: notifiedRecipients,
-    replyTo: {
-      email: opaqueEmail,
-      name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
-    },
-    ...makeContactByEmailRequestParams({
-      appellation,
-      discussion,
-      immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
-    }),
-  };
+  await executeInSequence(notifiedUsers, async (notifiedUser) => {
+    const templatedContent: TemplatedEmail = {
+      sender: discussionEmailSender,
+      recipients: [notifiedUser.email],
+      replyTo: {
+        email: opaqueEmail,
+        name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
+      },
+      ...makeContactByEmailRequestParams({
+        appellation,
+        contactFirstName: notifiedUser.firstName,
+        contactLastName: notifiedUser.lastName,
+        discussion,
+        immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
+      }),
+    };
 
-  await deps.saveNotificationAndRelatedEvent(uow, {
-    kind: "email",
-    templatedContent,
-    followedIds: { establishmentSiret: discussion.siret },
+    await deps.saveNotificationAndRelatedEvent(uow, {
+      kind: "email",
+      templatedContent,
+      followedIds: { establishmentSiret: discussion.siret },
+    });
   });
 };
 

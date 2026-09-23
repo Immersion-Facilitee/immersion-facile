@@ -19,6 +19,7 @@ import { isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistration
 import type { AgencyRole } from "../role/role.dto";
 import { titleByRole } from "../role/role.utils";
 import { frontRoutes, makeRouteAbsoluteUrl } from "../routes/routes";
+import type { Firstname, Lastname } from "../user/user.dto";
 import { displayEmergencyContactInfos } from "../utils/beneficiary";
 import { isStringDate, toDisplayedDate } from "../utils/date";
 import { displayDuration, oneMinuteInSeconds } from "../utils/durations";
@@ -1340,6 +1341,8 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         appellationLabel,
         businessAddress,
         businessName,
+        contactFirstName,
+        contactLastName,
         discussionUrl,
         levelOfEducation,
         potentialBeneficiaryDatePreferences,
@@ -1364,7 +1367,10 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 
         return {
           subject: `${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })} vous contacte pour une demande de stage sur le métier de ${appellationLabel}`,
-          greetings: "Bonjour,",
+          greetings: contactRequestGreetings({
+            contactFirstName,
+            contactLastName,
+          }),
           content: `Vous avez reçu une nouvelle demande de stage via Immersion Facilitée pour votre entreprise <strong>${businessName}</strong> (${businessAddress}) :
 
 <strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>
@@ -1402,6 +1408,8 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
         appellationLabel,
         businessAddress,
         businessName,
+        contactFirstName,
+        contactLastName,
         discussionUrl,
         immersionObjective,
         potentialBeneficiaryDatePreferences,
@@ -1438,7 +1446,10 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
 
         return {
           subject: `${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })} vous contacte pour une demande d'immersion sur le métier de ${appellationLabel}`,
-          greetings: "Bonjour,",
+          greetings: contactRequestGreetings({
+            contactFirstName,
+            contactLastName,
+          }),
           content: `Vous avez reçu une nouvelle demande d'immersion via Immersion Facilitée pour votre entreprise <strong>${businessName}</strong> (${businessAddress}) :
 
 <strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>
@@ -3367,6 +3378,21 @@ export const discussionExchangeForbiddenContents = (
 
 const transferReplyWarning =
   "Seule la personne destinataire de cet email est autorisée à répondre via Immersion Facilitée. Merci de ne pas transférer ce message : toute réponse envoyée depuis un autre compte ne pourra pas être transmise.";
+
+const contactRequestGreetings = ({
+  contactFirstName,
+  contactLastName,
+}: {
+  contactFirstName?: Firstname;
+  contactLastName?: Lastname;
+}): string => {
+  const contactName = getFormattedFirstnameAndLastname({
+    firstname: contactFirstName,
+    lastname: contactLastName,
+  });
+
+  return contactName ? `Bonjour ${contactName},` : "Bonjour,";
+};
 
 export const renderCTAInEmailContent = ({
   url,

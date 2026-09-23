@@ -43,10 +43,14 @@ describe("NotifyContactRequest", () => {
   const establishmentAdmin = new UserBuilder()
     .withId("admin")
     .withEmail("admin@mail.com")
+    .withFirstName("Jean")
+    .withLastName("Dupont")
     .build();
   const establishmentContact = new UserBuilder()
     .withId("contact")
     .withEmail("contact@mail.com")
+    .withFirstName("Marie")
+    .withLastName("Martin")
     .build();
   const adminPhone: PhoneNumber = "+66355445544";
 
@@ -222,7 +226,7 @@ describe("NotifyContactRequest", () => {
 
   describe("Right paths", () => {
     describe("Contact mode email", () => {
-      it("Sends CONTACT_BY_EMAIL_REQUEST_IMMERSION email to establishment users that are only notified and have ACCEPTED rights", async () => {
+      it("Sends one CONTACT_BY_EMAIL_REQUEST_IMMERSION email per establishment user that is notified and has ACCEPTED rights", async () => {
         const discussion = new DiscussionBuilder()
           .withSiret(establishmentAggregate.establishment.siret)
           .withContactMode("EMAIL")
@@ -243,10 +247,7 @@ describe("NotifyContactRequest", () => {
           emails: [
             {
               kind: "CONTACT_BY_EMAIL_REQUEST_IMMERSION",
-              recipients: [
-                establishmentAdmin.email,
-                establishmentContact.email,
-              ],
+              recipients: [establishmentAdmin.email],
               sender: discussionEmailSender,
               replyTo: {
                 email: `${discussion.potentialBeneficiary.firstName}_${discussion.potentialBeneficiary.lastName}__${discussion.id}_b@reply.reply.domain.com`,
@@ -256,6 +257,55 @@ describe("NotifyContactRequest", () => {
                 appellationLabel: TEST_APPELLATION_LABEL,
                 businessAddress: addressDtoToString(discussion.address),
                 businessName: discussion.businessName,
+                contactFirstName: establishmentAdmin.firstName,
+                contactLastName: establishmentAdmin.lastName,
+                discussionUrl: makeRouteAbsoluteUrl({
+                  route: frontRoutes.establishmentDashboardDiscussions({
+                    discussionId: discussion.id,
+                    at_campaign:
+                      "inbound-parsing-reponse-via-espace-entreprise",
+                    at_kwd: "inbound-parsing-reponse-via-espace-entreprise",
+                  }),
+                  baseUrl: immersionFacileBaseUrl,
+                }),
+                immersionObjective:
+                  discussion.potentialBeneficiary.immersionObjective ??
+                  undefined,
+                potentialBeneficiaryDatePreferences:
+                  discussion.potentialBeneficiary.datePreferences,
+                potentialBeneficiaryDurationPreferences:
+                  immersionDurationLabels[
+                    discussion.potentialBeneficiary.immersionDuration
+                  ],
+                potentialBeneficiaryExperienceAdditionalInformation:
+                  discussion.potentialBeneficiary
+                    .experienceAdditionalInformation,
+                potentialBeneficiaryFirstName:
+                  discussion.potentialBeneficiary.firstName,
+                potentialBeneficiaryLastName:
+                  discussion.potentialBeneficiary.lastName,
+                potentialBeneficiaryMotivation:
+                  discussion.potentialBeneficiary.motivation,
+                potentialBeneficiaryPhone:
+                  discussion.potentialBeneficiary.phone,
+                potentialBeneficiaryResumeLink:
+                  discussion.potentialBeneficiary.resumeLink,
+              },
+            },
+            {
+              kind: "CONTACT_BY_EMAIL_REQUEST_IMMERSION",
+              recipients: [establishmentContact.email],
+              sender: discussionEmailSender,
+              replyTo: {
+                email: `${discussion.potentialBeneficiary.firstName}_${discussion.potentialBeneficiary.lastName}__${discussion.id}_b@reply.reply.domain.com`,
+                name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
+              },
+              params: {
+                appellationLabel: TEST_APPELLATION_LABEL,
+                businessAddress: addressDtoToString(discussion.address),
+                businessName: discussion.businessName,
+                contactFirstName: establishmentContact.firstName,
+                contactLastName: establishmentContact.lastName,
                 discussionUrl: makeRouteAbsoluteUrl({
                   route: frontRoutes.establishmentDashboardDiscussions({
                     discussionId: discussion.id,
@@ -293,7 +343,7 @@ describe("NotifyContactRequest", () => {
         });
       });
 
-      it("Sends CONTACT_BY_EMAIL_MINISTAGE email to establishment users that are only notified and have ACCEPTED rights", async () => {
+      it("Sends one CONTACT_BY_EMAIL_MINISTAGE email per establishment user that is notified and has ACCEPTED rights", async () => {
         const discussion = new DiscussionBuilder()
           .withSiret(establishmentAggregate.establishment.siret)
           .withContactMode("EMAIL")
@@ -315,10 +365,7 @@ describe("NotifyContactRequest", () => {
           emails: [
             {
               kind: "CONTACT_BY_EMAIL_MINISTAGE",
-              recipients: [
-                establishmentAdmin.email,
-                establishmentContact.email,
-              ],
+              recipients: [establishmentAdmin.email],
               sender: discussionEmailSender,
               replyTo: {
                 email: `${discussion.potentialBeneficiary.firstName}_${discussion.potentialBeneficiary.lastName}__${discussion.id}_b@reply.reply.domain.com`,
@@ -328,6 +375,43 @@ describe("NotifyContactRequest", () => {
                 appellationLabel: TEST_APPELLATION_LABEL,
                 businessAddress: addressDtoToString(discussion.address),
                 businessName: discussion.businessName,
+                contactFirstName: establishmentAdmin.firstName,
+                contactLastName: establishmentAdmin.lastName,
+                discussionUrl: makeRouteAbsoluteUrl({
+                  route: frontRoutes.establishmentDashboardDiscussions({
+                    discussionId: discussion.id,
+                    at_campaign:
+                      "inbound-parsing-reponse-via-espace-entreprise",
+                    at_kwd: "inbound-parsing-reponse-via-espace-entreprise",
+                  }),
+                  baseUrl: immersionFacileBaseUrl,
+                }),
+                levelOfEducation:
+                  discussion.potentialBeneficiary.levelOfEducation,
+                potentialBeneficiaryDatePreferences:
+                  discussion.potentialBeneficiary.datePreferences,
+                potentialBeneficiaryFirstName:
+                  discussion.potentialBeneficiary.firstName,
+                potentialBeneficiaryLastName:
+                  discussion.potentialBeneficiary.lastName,
+                potentialBeneficiaryPhone:
+                  discussion.potentialBeneficiary.phone,
+              },
+            },
+            {
+              kind: "CONTACT_BY_EMAIL_MINISTAGE",
+              recipients: [establishmentContact.email],
+              sender: discussionEmailSender,
+              replyTo: {
+                email: `${discussion.potentialBeneficiary.firstName}_${discussion.potentialBeneficiary.lastName}__${discussion.id}_b@reply.reply.domain.com`,
+                name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
+              },
+              params: {
+                appellationLabel: TEST_APPELLATION_LABEL,
+                businessAddress: addressDtoToString(discussion.address),
+                businessName: discussion.businessName,
+                contactFirstName: establishmentContact.firstName,
+                contactLastName: establishmentContact.lastName,
                 discussionUrl: makeRouteAbsoluteUrl({
                   route: frontRoutes.establishmentDashboardDiscussions({
                     discussionId: discussion.id,
@@ -437,10 +521,10 @@ describe("NotifyContactRequest", () => {
                 params: {
                   businessName: discussion.businessName,
                   contactFirstName: getFormattedFirstnameAndLastname({
-                    firstname: establishmentAdmin.firstName,
+                    firstname: establishmentContact.firstName,
                   }),
                   contactLastName: getFormattedFirstnameAndLastname({
-                    lastname: establishmentAdmin.lastName,
+                    lastname: establishmentContact.lastName,
                   }),
                   welcomeAddress: addressDtoToString(discussion.address),
                   kind: discussion.kind,
