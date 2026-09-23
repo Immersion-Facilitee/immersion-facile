@@ -389,6 +389,8 @@ export const defaultEmailValueByEmailKind: {
     appellationLabel: "APPELLATION_LABEL",
     businessAddress: "BUSINESS_ADDRESS",
     businessName: "BUSINESS_NAME",
+    contactFirstName: "CONTACT_FIRST_NAME",
+    contactLastName: "CONTACT_LAST_NAME",
     discussionUrl: "https://immersion-facile.beta.gouv.fr",
     levelOfEducation: "3ème",
     potentialBeneficiaryDatePreferences:
@@ -401,6 +403,8 @@ export const defaultEmailValueByEmailKind: {
     appellationLabel: "APPELLATION_LABEL",
     businessAddress: "BUSINESS_ADDRESS",
     businessName: "BUSINESS_NAME",
+    contactFirstName: "CONTACT_FIRST_NAME",
+    contactLastName: "CONTACT_LAST_NAME",
     discussionUrl: "https://immersion-facile.beta.gouv.fr",
     immersionObjective: "Découvrir un métier ou un secteur d'activité",
     potentialBeneficiaryDatePreferences:

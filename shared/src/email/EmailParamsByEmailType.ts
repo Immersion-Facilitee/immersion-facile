@@ -254,6 +254,8 @@ export type EmailParamsByEmailType = {
     appellationLabel: AppellationLabel;
     businessAddress: BusinessAddress;
     businessName: BusinessName;
+    contactFirstName?: Firstname;
+    contactLastName?: Lastname;
     discussionUrl: AbsoluteUrl;
     levelOfEducation: ContactLevelOfEducation;
     potentialBeneficiaryDatePreferences: string;
@@ -265,6 +267,8 @@ export type EmailParamsByEmailType = {
     appellationLabel: AppellationLabel;
     businessAddress: BusinessAddress;
     businessName: BusinessName;
+    contactFirstName?: Firstname;
+    contactLastName?: Lastname;
     discussionUrl: AbsoluteUrl;
     immersionObjective: ImmersionObjective | undefined;
     potentialBeneficiaryDatePreferences: string;
