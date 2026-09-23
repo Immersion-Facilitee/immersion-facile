@@ -467,7 +467,7 @@ export const emailTemplatesByName =
             {
               label: isPlural ? "Suivre mes demandes" : "Suivre ma demande",
               url: makeRouteAbsoluteUrl({
-                route: frontRoutes.myAccountAgencies(),
+                route: frontRoutes.agencyDashboardAgencies(),
                 baseUrl: immersionBaseUrl,
               }),
             },

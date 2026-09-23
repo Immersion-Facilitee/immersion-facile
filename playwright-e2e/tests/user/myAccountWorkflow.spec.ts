@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import { domElementIds, SEED_FT_AGENCY_ID } from "shared";
+import { domElementIds, frontRoutes, SEED_FT_AGENCY_ID } from "shared";
 import { testConfig } from "../../custom.config";
 import { goToAdminTab } from "../../utils/admin";
 import { fillAutocomplete, test } from "../../utils/utils";
@@ -8,10 +8,26 @@ test.describe.configure({ mode: "serial" });
 
 const newAgencyUserEmail = testConfig.proConnect.username;
 
-const goToMyProfilePageFromHome = async (page: Page) => {
+const goToMyAccountPageFromHome = async (page: Page) => {
   await page.goto("/");
   await page.locator("#fr-header-quick-access-item-1").click();
 };
+
+const goToMyAgenciesFromHome = async (page: Page) => {
+  await goToMyAccountPageFromHome(page);
+  await page.locator(`#${domElementIds.myAccount.agencyDashboardLink}`).click();
+  await page.waitForURL(`**${frontRoutes.agencyDashboardMain().href}**`);
+  await page.goto(frontRoutes.agencyDashboardAgencies().href);
+};
+
+const agencyRightsModal = (page: Page) =>
+  page
+    .locator(`#${domElementIds.agencyDashboard.agencyTab.adminRightsModal}`)
+    .or(
+      page.locator(
+        `#${domElementIds.agencyDashboard.agencyTab.userRightsModal}`,
+      ),
+    );
 
 const goToFtAgencyAdminTabFromHome = async (page: Page) => {
   await page.goto("/");
@@ -53,25 +69,30 @@ test.describe("User workflow", () => {
   test.describe("Backoffice admin can go to MyProfile page", () => {
     test.use({ storageState: testConfig.adminAuthFile });
 
-    test("can access infos on MyProfile page", async ({ page }) => {
-      await goToMyProfilePageFromHome(page);
+    test("can access quick accesses on MyAccount page", async ({ page }) => {
+      await goToMyAccountPageFromHome(page);
 
-      const agenciesCount = await page
-        .locator(`[id^=${domElementIds.myAccount.editRoleButton}]`)
-        .count();
       await expect(
-        page.locator(`[id^=${domElementIds.myAccount.adminAgencyLink}]`),
-      ).toHaveCount(agenciesCount);
+        page.locator(`#${domElementIds.myAccount.beneficiaryDashboardLink}`),
+      ).toBeVisible();
+      await expect(
+        page.locator(`#${domElementIds.myAccount.establishmentDashboardLink}`),
+      ).toBeVisible();
+      await expect(
+        page.locator(`#${domElementIds.myAccount.agencyDashboardLink}`),
+      ).toBeVisible();
+    });
+
+    test("can update its agency rights from agency dashboard", async ({
+      page,
+    }) => {
+      await goToMyAgenciesFromHome(page);
 
       await page
         .locator(`[id^=${domElementIds.myAccount.editRoleButton}]`)
         .first()
         .click();
-      await expect(
-        page.locator(
-          `#${domElementIds.admin.agencyTab.editAgencyManageUserModal}`,
-        ),
-      ).toBeVisible();
+      await expect(agencyRightsModal(page)).toBeVisible();
       await expect(
         page.locator(`#${domElementIds.myAccount.editAgencyUserEmail}`),
       ).toBeDisabled();
@@ -127,11 +148,11 @@ test.describe("User workflow", () => {
     });
   });
 
-  test.describe("Agency-admin user can go to MyProfile page", () => {
+  test.describe("Agency-admin user can manage its agency rights", () => {
     test.use({ storageState: testConfig.agencyAuthFile });
 
-    test("can access infos on MyProfile page", async ({ page }) => {
-      await goToMyProfilePageFromHome(page);
+    test("can access its agencies from agency dashboard", async ({ page }) => {
+      await goToMyAgenciesFromHome(page);
 
       await expect(
         page.locator(`[id^=${domElementIds.myAccount.adminAgencyLink}]`),
@@ -142,7 +163,7 @@ test.describe("User workflow", () => {
     });
 
     test("can remove its own agency-admin right", async ({ page }) => {
-      await goToMyProfilePageFromHome(page);
+      await goToMyAgenciesFromHome(page);
 
       const ftAgencyEditRoleButton = page.locator(
         `#${domElementIds.myAccount.editRoleButton}-${SEED_FT_AGENCY_ID}`,
@@ -151,18 +172,9 @@ test.describe("User workflow", () => {
         .waitFor({ state: "visible", timeout: 5_000 })
         .then(() => false)
         .catch(() => true);
-      if (isAlreadyBasicAgencyUser) {
-        await expect(
-          page.locator(`#${domElementIds.myAccount.updateOwnInfosLink}`),
-        ).toBeVisible();
-        return;
-      }
+      if (isAlreadyBasicAgencyUser) return;
       await ftAgencyEditRoleButton.click();
-      await expect(
-        page.locator(
-          `#${domElementIds.admin.agencyTab.editAgencyManageUserModal}`,
-        ),
-      ).toBeVisible();
+      await expect(agencyRightsModal(page)).toBeVisible();
       await expect(
         page.locator(`#${domElementIds.myAccount.editAgencyUserEmail}`),
       ).toBeDisabled();
@@ -178,30 +190,26 @@ test.describe("User workflow", () => {
     });
   });
 
-  test.describe("Basic agency user can go to MyProfile page", () => {
+  test.describe("Basic agency user can go to MyAccount page", () => {
     test.use({ storageState: testConfig.agencyAuthFile });
 
-    test("can access infos on MyProfile page", async ({ page }) => {
-      await goToMyProfilePageFromHome(page);
+    test("can access ProConnect infos on MyAccount page", async ({ page }) => {
+      await goToMyAccountPageFromHome(page);
 
       await expect(
         page.locator(`#${domElementIds.myAccount.updateOwnInfosLink}`),
       ).toBeVisible();
-      await expect(
-        page.locator(`[id^=${domElementIds.myAccount.adminAgencyLink}]`),
-      ).toHaveCount(0);
     });
 
-    test("can request to register on agencies from MyProfile page", async ({
+    test("can request to register on agencies from agency dashboard", async ({
       page,
     }) => {
-      await goToMyProfilePageFromHome(page);
+      await goToMyAgenciesFromHome(page);
 
-      await expect(
-        page.locator(`#${domElementIds.myAccount.registerAgenciesSearchLink}`),
-      ).toBeVisible();
       await page
-        .locator(`#${domElementIds.myAccount.registerAgenciesSearchLink}`)
+        .locator(
+          `#${domElementIds.agencyDashboard.registerAgencies.newAgencyButton}`,
+        )
         .click();
 
       await expect(
@@ -233,17 +241,13 @@ test.describe("User workflow", () => {
     });
 
     test("has access to his notification preferences", async ({ page }) => {
-      await goToMyProfilePageFromHome(page);
+      await goToMyAgenciesFromHome(page);
 
       await page
         .locator(`[id^=${domElementIds.myAccount.editRoleButton}]`)
         .first()
         .click();
-      await expect(
-        page.locator(
-          `#${domElementIds.admin.agencyTab.editAgencyManageUserModal}`,
-        ),
-      ).toBeVisible();
+      await expect(agencyRightsModal(page)).toBeVisible();
       await expect(
         page.locator(`#${domElementIds.myAccount.editAgencyUserEmail}`),
       ).toBeDisabled();
