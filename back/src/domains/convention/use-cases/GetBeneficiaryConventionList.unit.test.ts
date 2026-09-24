@@ -117,36 +117,44 @@ describe("GetBeneficiaryConventionList", () => {
     uow.assessmentRepository.assessments = [assessment];
 
     const result = await getBeneficiaryConventionList.execute(
-      undefined,
+      { pagination: { page: 1, perPage: 10 } },
       currentUser,
     );
 
-    expectToEqual(result, [
-      {
-        conventionId: beneficiaryConventionWithAssessment.id,
-        businessName: beneficiaryConventionWithAssessment.businessName,
-        status: beneficiaryConventionWithAssessment.status,
-        assessment: {
-          status: assessment.status,
-          endedWithAJob: false,
-          signedAt: null,
-          createdAt: assessmentCreatedAt,
+    expectToEqual(result, {
+      data: [
+        {
+          conventionId: beneficiaryConventionWithAssessment.id,
+          businessName: beneficiaryConventionWithAssessment.businessName,
+          status: beneficiaryConventionWithAssessment.status,
+          assessment: {
+            status: assessment.status,
+            endedWithAJob: false,
+            signedAt: null,
+            createdAt: assessmentCreatedAt,
+          },
+          dateStart: beneficiaryConventionWithAssessment.dateStart,
+          dateEnd: beneficiaryConventionWithAssessment.dateEnd,
         },
-        dateStart: beneficiaryConventionWithAssessment.dateStart,
-        dateEnd: beneficiaryConventionWithAssessment.dateEnd,
+        {
+          conventionId: beneficiaryConvention.id,
+          businessName: beneficiaryConvention.businessName,
+          status: beneficiaryConvention.status,
+          assessment: null,
+          dateStart: beneficiaryConvention.dateStart,
+          dateEnd: beneficiaryConvention.dateEnd,
+        },
+      ],
+      pagination: {
+        totalRecords: 2,
+        currentPage: 1,
+        totalPages: 1,
+        numberPerPage: 10,
       },
-      {
-        conventionId: beneficiaryConvention.id,
-        businessName: beneficiaryConvention.businessName,
-        status: beneficiaryConvention.status,
-        assessment: null,
-        dateStart: beneficiaryConvention.dateStart,
-        dateEnd: beneficiaryConvention.dateEnd,
-      },
-    ]);
+    });
   });
 
-  it("returns an empty array when current user is not beneficiary of any convention", async () => {
+  it("returns an empty page when current user is not beneficiary of any convention", async () => {
     const convention = new ConventionDtoBuilder()
       .withBeneficiaryEmail("other-beneficiary@mail.com")
       .build();
@@ -154,11 +162,19 @@ describe("GetBeneficiaryConventionList", () => {
     uow.conventionRepository.setConventions([convention]);
 
     const result = await getBeneficiaryConventionList.execute(
-      undefined,
+      { pagination: { page: 1, perPage: 10 } },
       currentUser,
     );
 
-    expectToEqual(result, []);
+    expectToEqual(result, {
+      data: [],
+      pagination: {
+        totalRecords: 0,
+        currentPage: 1,
+        totalPages: 1,
+        numberPerPage: 10,
+      },
+    });
   });
 
   describe("when enableRequestArchivedConvention is active", () => {
@@ -173,28 +189,36 @@ describe("GetBeneficiaryConventionList", () => {
       ]);
 
       const result = await getBeneficiaryConventionList.execute(
-        undefined,
+        { pagination: { page: 1, perPage: 10 } },
         currentUser,
       );
 
-      expectToEqual(result, [
-        {
-          conventionId: notArchivedBeneficiaryConvention.id,
-          businessName: notArchivedBeneficiaryConvention.businessName,
-          status: notArchivedBeneficiaryConvention.status,
-          assessment: null,
-          dateStart: notArchivedBeneficiaryConvention.dateStart,
-          dateEnd: notArchivedBeneficiaryConvention.dateEnd,
+      expectToEqual(result, {
+        data: [
+          {
+            conventionId: notArchivedBeneficiaryConvention.id,
+            businessName: notArchivedBeneficiaryConvention.businessName,
+            status: notArchivedBeneficiaryConvention.status,
+            assessment: null,
+            dateStart: notArchivedBeneficiaryConvention.dateStart,
+            dateEnd: notArchivedBeneficiaryConvention.dateEnd,
+          },
+          {
+            conventionId: archivedBeneficiaryConvention.id,
+            businessName: archivedBeneficiaryConvention.businessName,
+            status: archivedBeneficiaryConvention.status,
+            assessment: null,
+            dateStart: archivedBeneficiaryConvention.dateStart,
+            dateEnd: archivedBeneficiaryConvention.dateEnd,
+          },
+        ],
+        pagination: {
+          totalRecords: 2,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
         },
-        {
-          conventionId: archivedBeneficiaryConvention.id,
-          businessName: archivedBeneficiaryConvention.businessName,
-          status: archivedBeneficiaryConvention.status,
-          assessment: null,
-          dateStart: archivedBeneficiaryConvention.dateStart,
-          dateEnd: archivedBeneficiaryConvention.dateEnd,
-        },
-      ]);
+      });
     });
   });
 
@@ -206,20 +230,238 @@ describe("GetBeneficiaryConventionList", () => {
       ]);
 
       const result = await getBeneficiaryConventionList.execute(
-        undefined,
+        { pagination: { page: 1, perPage: 10 } },
         currentUser,
       );
 
-      expectToEqual(result, [
-        {
-          conventionId: notArchivedBeneficiaryConvention.id,
-          businessName: notArchivedBeneficiaryConvention.businessName,
-          status: notArchivedBeneficiaryConvention.status,
-          assessment: null,
-          dateStart: notArchivedBeneficiaryConvention.dateStart,
-          dateEnd: notArchivedBeneficiaryConvention.dateEnd,
+      expectToEqual(result, {
+        data: [
+          {
+            conventionId: notArchivedBeneficiaryConvention.id,
+            businessName: notArchivedBeneficiaryConvention.businessName,
+            status: notArchivedBeneficiaryConvention.status,
+            assessment: null,
+            dateStart: notArchivedBeneficiaryConvention.dateStart,
+            dateEnd: notArchivedBeneficiaryConvention.dateEnd,
+          },
+        ],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
         },
+      });
+    });
+  });
+
+  describe("search", () => {
+    const bakeryConvention = new ConventionDtoBuilder()
+      .withId("11111111-1111-4111-8111-111111111111")
+      .withBeneficiaryEmail(currentUser.email)
+      .withBusinessName("Boulangerie Dupont")
+      .withStatus("ACCEPTED_BY_VALIDATOR")
+      .withDateStart("2026-03-01")
+      .withDateEnd("2026-03-05")
+      .withSourceConventionDraftId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
+      .withSchedule(reasonableSchedule)
+      .build();
+
+    const floristConvention = new ConventionDtoBuilder()
+      .withId("11111111-1111-4111-8111-111111111112")
+      .withBeneficiaryEmail(currentUser.email)
+      .withBusinessName("Fleuriste Martin")
+      .withStatus("ACCEPTED_BY_VALIDATOR")
+      .withDateStart("2026-02-01")
+      .withDateEnd("2026-02-05")
+      .withSchedule(reasonableSchedule)
+      .build();
+
+    const otherBeneficiaryConvention = new ConventionDtoBuilder()
+      .withId("22222222-2222-4222-8222-222222222222")
+      .withBeneficiaryEmail("other-beneficiary@mail.com")
+      .withBusinessName("Boulangerie Dupont")
+      .withStatus("ACCEPTED_BY_VALIDATOR")
+      .withDateStart("2026-03-10")
+      .withDateEnd("2026-03-15")
+      .withSchedule(reasonableSchedule)
+      .build();
+
+    beforeEach(() => {
+      uow.conventionRepository.setConventions([
+        bakeryConvention,
+        floristConvention,
+        otherBeneficiaryConvention,
       ]);
+    });
+
+    it("returns the matching convention when searching by id", async () => {
+      const result = await getBeneficiaryConventionList.execute(
+        {
+          filters: { search: bakeryConvention.id },
+          pagination: { page: 1, perPage: 10 },
+        },
+        currentUser,
+      );
+
+      expectToEqual(result, {
+        data: [
+          {
+            conventionId: bakeryConvention.id,
+            businessName: bakeryConvention.businessName,
+            status: bakeryConvention.status,
+            assessment: null,
+            dateStart: bakeryConvention.dateStart,
+            dateEnd: bakeryConvention.dateEnd,
+          },
+        ],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+        },
+      });
+    });
+
+    it("returns the matching convention when searching by businessName", async () => {
+      const result = await getBeneficiaryConventionList.execute(
+        {
+          filters: { search: "Fleuriste" },
+          pagination: { page: 1, perPage: 10 },
+        },
+        currentUser,
+      );
+
+      expectToEqual(result, {
+        data: [
+          {
+            conventionId: floristConvention.id,
+            businessName: floristConvention.businessName,
+            status: floristConvention.status,
+            assessment: null,
+            dateStart: floristConvention.dateStart,
+            dateEnd: floristConvention.dateEnd,
+          },
+        ],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+        },
+      });
+    });
+
+    it("returns the matching convention when searching by sourceConventionDraftId", async () => {
+      const result = await getBeneficiaryConventionList.execute(
+        {
+          filters: { search: bakeryConvention.sourceConventionDraftId },
+          pagination: { page: 1, perPage: 10 },
+        },
+        currentUser,
+      );
+
+      expectToEqual(result, {
+        data: [
+          {
+            conventionId: bakeryConvention.id,
+            businessName: bakeryConvention.businessName,
+            status: bakeryConvention.status,
+            assessment: null,
+            dateStart: bakeryConvention.dateStart,
+            dateEnd: bakeryConvention.dateEnd,
+          },
+        ],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+        },
+      });
+    });
+
+    it("returns an empty page when search has no match", async () => {
+      const result = await getBeneficiaryConventionList.execute(
+        {
+          filters: { search: "99999999-9999-4999-8999-999999999999" },
+          pagination: { page: 1, perPage: 10 },
+        },
+        currentUser,
+      );
+
+      expectToEqual(result, {
+        data: [],
+        pagination: {
+          totalRecords: 0,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+        },
+      });
+    });
+  });
+
+  describe("pagination", () => {
+    it("returns the second page when there are enough conventions", async () => {
+      const newestConvention = new ConventionDtoBuilder()
+        .withId("11111111-1111-4111-8111-111111111111")
+        .withBeneficiaryEmail(currentUser.email)
+        .withBusinessName("Newest")
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .withDateStart("2026-03-01")
+        .withDateEnd("2026-03-05")
+        .withSchedule(reasonableSchedule)
+        .build();
+      const middleConvention = new ConventionDtoBuilder()
+        .withId("11111111-1111-4111-8111-111111111112")
+        .withBeneficiaryEmail(currentUser.email)
+        .withBusinessName("Middle")
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .withDateStart("2026-02-01")
+        .withDateEnd("2026-02-05")
+        .withSchedule(reasonableSchedule)
+        .build();
+      const oldestConvention = new ConventionDtoBuilder()
+        .withId("11111111-1111-4111-8111-111111111113")
+        .withBeneficiaryEmail(currentUser.email)
+        .withBusinessName("Oldest")
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .withDateStart("2026-01-01")
+        .withDateEnd("2026-01-05")
+        .withSchedule(reasonableSchedule)
+        .build();
+
+      uow.conventionRepository.setConventions([
+        newestConvention,
+        middleConvention,
+        oldestConvention,
+      ]);
+
+      const result = await getBeneficiaryConventionList.execute(
+        { pagination: { page: 2, perPage: 2 } },
+        currentUser,
+      );
+
+      expectToEqual(result, {
+        data: [
+          {
+            conventionId: oldestConvention.id,
+            businessName: oldestConvention.businessName,
+            status: oldestConvention.status,
+            assessment: null,
+            dateStart: oldestConvention.dateStart,
+            dateEnd: oldestConvention.dateEnd,
+          },
+        ],
+        pagination: {
+          totalRecords: 3,
+          currentPage: 2,
+          totalPages: 2,
+          numberPerPage: 2,
+        },
+      });
     });
   });
 });

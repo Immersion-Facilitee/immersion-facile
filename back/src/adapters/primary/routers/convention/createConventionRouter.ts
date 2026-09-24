@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   authenticatedConventionRoutes,
+  flatParamsToGetBeneficiaryConventionListParams,
   flatParamsToGetConventionsForAgencyUserParams,
   flatParamsToGetConventionsWithErroredBroadcastFeedbackParams,
   flatParamsToGetConventionsWithUnfinalizedAssessmentParams,
@@ -102,7 +103,7 @@ export const createConventionRouter = (deps: AppDependencies) => {
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.getBeneficiaryConventionList.execute(
-          undefined,
+          flatParamsToGetBeneficiaryConventionListParams(req.query),
           getGenericAuthOrThrow(req.payloads?.currentUser),
         ),
       ),
