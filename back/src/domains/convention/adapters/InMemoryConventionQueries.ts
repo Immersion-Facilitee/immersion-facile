@@ -752,6 +752,7 @@ const makeApplyPaginatedFiltersToConventions =
     dateStart,
     dateEnd,
     dateSubmission,
+    beneficiaryEmail,
   }: GetPaginatedConventionsFilters) =>
   (convention: ConventionDto) => {
     const trimmedSearch = search?.trim();
@@ -761,6 +762,10 @@ const makeApplyPaginatedFiltersToConventions =
         () =>
           trimmedSearch
             ? matchesConventionSearch(convention, trimmedSearch)
+            : true,
+        ({ signatories }) =>
+          beneficiaryEmail
+            ? signatories.beneficiary.email === beneficiaryEmail
             : true,
         ({ dateStart: conventionDateStart }) =>
           matchesDateFilter(conventionDateStart, dateStart),
