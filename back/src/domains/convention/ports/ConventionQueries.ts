@@ -61,6 +61,7 @@ export type GetPaginatedConventionsFilters = {
   dateEnd?: DateFilter;
   dateSubmission?: DateFilter;
   assessmentCompletionStatus?: AssessmentCompletionStatusFilter[];
+  beneficiaryEmail?: Email;
 };
 
 export type GetPaginatedConventionsParams = {
