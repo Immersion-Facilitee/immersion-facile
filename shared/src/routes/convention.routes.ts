@@ -30,7 +30,10 @@ import {
   withConventionIdLegacySchema,
   withConventionIdSchema,
 } from "../convention/convention.schema";
-import { beneficiaryConventionListDtoSchema } from "../convention/conventionBeneficiaryList";
+import {
+  beneficiaryConventionListDtoSchema,
+  flatGetBeneficiaryConventionListParamsSchema,
+} from "../convention/conventionBeneficiaryList";
 import { conventionTemplateSchema } from "../convention/conventionTemplate.schema";
 import {
   flatGetConventionsWithErroredBroadcastFeedbackParamsSchema,
@@ -375,6 +378,7 @@ export const authenticatedConventionRoutes = defineRoutes({
     method: "get",
     url: "/conventions/beneficiary",
     ...withAuthorizationHeaders,
+    queryParamsSchema: flatGetBeneficiaryConventionListParamsSchema,
     responses: {
       200: beneficiaryConventionListDtoSchema,
       400: httpErrorSchema,
