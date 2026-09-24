@@ -77,6 +77,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
       firstname: "John",
       lastname: "Doe",
     })
+    .withSourceConventionDraftId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
     .withStatus("READY_TO_SIGN")
     .withDateSubmission("2025-01-02T00:00:00.000Z")
     .build();
@@ -416,6 +417,10 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
     {
       searchLabel: "convention ID",
       searchFilter: "id-1",
+    },
+    {
+      searchLabel: "source convention draft ID",
+      searchFilter: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
     },
     { searchLabel: "beneficiary firstname", searchFilter: "cam" },
     { searchLabel: "beneficiary lastname", searchFilter: "moulins" },

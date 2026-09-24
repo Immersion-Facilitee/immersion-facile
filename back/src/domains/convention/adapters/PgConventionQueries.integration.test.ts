@@ -1113,6 +1113,7 @@ describe("Pg implementation of ConventionQueries", () => {
           firstname: "Marie",
           lastname: "Dupont",
         })
+        .withSourceConventionDraftId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
         .withUpdatedAt(anyConventionUpdatedAt)
         .build();
 
@@ -1379,6 +1380,66 @@ describe("Pg implementation of ConventionQueries", () => {
           pagination: { page: 1, perPage: 10 },
           filters: {
             search: "00000000-0000-0000-0000-000000000000",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, []);
+      });
+
+      it("should filter conventions by source convention draft ID", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionA]);
+      });
+
+      it("should filter conventions by source convention draft ID fragment", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionA]);
+      });
+
+      it("should return no results for non-existent source convention draft ID", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, []);
+      });
+
+      it("should not match a convention without source convention draft ID", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            search: "99999999-9999-4999-8999-999999999999",
           },
           sort: {
             by: "dateSubmission",
@@ -3099,6 +3160,7 @@ describe("Pg implementation of ConventionQueries", () => {
           firstname: "John",
           lastname: "Doe",
         })
+        .withSourceConventionDraftId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
         .withAgencyId(agencyIdA)
         .withStatus("READY_TO_SIGN")
         .withDateSubmission("2025-01-02T00:00:00.000Z")
@@ -3399,6 +3461,10 @@ describe("Pg implementation of ConventionQueries", () => {
         {
           searchLabel: "convention ID",
           searchFilter: "aaaaac99-9c0b",
+        },
+        {
+          searchLabel: "source convention draft ID",
+          searchFilter: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         },
         { searchLabel: "beneficiary firstname", searchFilter: "cam" },
         { searchLabel: "beneficiary lastname", searchFilter: "moulins" },
@@ -4578,6 +4644,7 @@ describe("Pg implementation of ConventionQueries", () => {
           .withAgencyReferent({ firstname: "Marie", lastname: "Curie" })
           .withSiret("11111111111111")
           .withBusinessName("Alpha Corp")
+          .withSourceConventionDraftId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
           .build();
 
         const conventionB = new ConventionDtoBuilder()
@@ -4708,6 +4775,18 @@ describe("Pg implementation of ConventionQueries", () => {
           expectToEqual(
             result.data.map((convention) => convention.id),
             [conventionC.id],
+          );
+          expectToEqual(result.pagination.totalRecords, 1);
+        });
+
+        it("filters by source convention draft ID", async () => {
+          const result = await searchReminders({
+            search: conventionA.sourceConventionDraftId,
+          });
+
+          expectToEqual(
+            result.data.map((convention) => convention.id),
+            [conventionA.id],
           );
           expectToEqual(result.pagination.totalRecords, 1);
         });

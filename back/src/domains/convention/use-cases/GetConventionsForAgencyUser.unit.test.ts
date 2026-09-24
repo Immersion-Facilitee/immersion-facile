@@ -386,6 +386,63 @@ describe("GetConventionsForAgencyUser", () => {
         });
       });
     });
+
+    describe("search by source convention draft id", () => {
+      const sourceConventionDraftId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+      const unknownSourceConventionDraftId =
+        "ffffffff-ffff-4fff-8fff-ffffffffffff";
+
+      const conventionWithSourceDraftId = new ConventionDtoBuilder()
+        .withId("convention-with-source-draft-id")
+        .withAgencyId(agency.id)
+        .withSourceConventionDraftId(sourceConventionDraftId)
+        .build();
+
+      it("should return the convention matching the searched source convention draft id", async () => {
+        uow.conventionRepository.setConventions([conventionWithSourceDraftId]);
+
+        const result = await getConventionsForAgencyUser.execute(
+          {
+            filters: { search: sourceConventionDraftId },
+            pagination: { page: 1, perPage: 10 },
+          },
+          currentUser,
+        );
+
+        expectToEqual(
+          result.data.map(({ id }) => id),
+          [conventionWithSourceDraftId.id],
+        );
+        expectToEqual(result.pagination, {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        });
+      });
+
+      it("should return no convention when the searched source convention draft id matches none", async () => {
+        uow.conventionRepository.setConventions([conventionWithSourceDraftId]);
+
+        const result = await getConventionsForAgencyUser.execute(
+          {
+            filters: { search: unknownSourceConventionDraftId },
+            pagination: { page: 1, perPage: 10 },
+          },
+          currentUser,
+        );
+
+        expectToEqual(result, {
+          data: [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 0,
+          },
+        });
+      });
+    });
   });
 
   describe("Agency rights", () => {

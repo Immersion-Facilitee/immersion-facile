@@ -854,6 +854,7 @@ const filterSearchForBroadcastFeedback =
     return builder.where((eb) =>
       eb.or([
         sql<any>`CAST(${eb.ref("cf.conventionId")} AS text) LIKE ${pattern}`,
+        sql<any>`CAST(${eb.ref("cf.sourceConventionDraftId")} AS text) LIKE ${pattern}`,
         // Search in beneficiary names
         sql<any>`${eb.ref("cf.bLastName")} ILIKE ${pattern}`,
         sql<any>`${eb.ref("cf.bFirstName")} ILIKE ${pattern}`,
@@ -905,6 +906,7 @@ const filterSearch =
       eb.or([
         // Search in convention ID (cast UUID to text for pattern matching)
         sql<any>`CAST(${eb.ref("conventions.id")} AS text) LIKE ${pattern}`,
+        sql<any>`CAST(${eb.ref("conventions.source_convention_draft_id")} AS text) LIKE ${pattern}`,
         // Search in beneficiary names
         sql<any>`${eb.ref("b.first_name")} ILIKE ${pattern}`,
         sql<any>`${eb.ref("b.last_name")} ILIKE ${pattern}`,

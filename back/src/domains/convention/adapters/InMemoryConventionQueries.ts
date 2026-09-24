@@ -689,6 +689,7 @@ const matchesConventionSearch = (
 
   const searchableFields = [
     convention.id,
+    convention.sourceConventionDraftId,
     beneficiary.firstName,
     beneficiary.lastName,
     `${beneficiary.firstName} ${beneficiary.lastName}`,

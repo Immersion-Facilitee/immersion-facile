@@ -413,6 +413,7 @@ const createBroadcastFeedbackBaseBuilder = ({
         .innerJoin("broadcast_feedbacks as bf", "bf.convention_id", "c.id")
         .select((eb) => [
           eb.ref("c.id").as("conventionId"),
+          eb.ref("c.source_convention_draft_id").as("sourceConventionDraftId"),
           eb.ref("c.agency_id").as("agencyId"),
           eb.ref("c.status").as("status"),
           eb.ref("c.business_name").as("businessName"),
