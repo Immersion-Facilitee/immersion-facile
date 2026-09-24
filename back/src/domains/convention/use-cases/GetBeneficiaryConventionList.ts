@@ -4,6 +4,9 @@ import {
   type ConnectedUser,
   type ConventionId,
   defaultMonthsThresholdForConventionsListing,
+  type GetBeneficiaryConventionListParams,
+  getBeneficiaryConventionListParamsSchema,
+  getPaginationParamsForWeb,
 } from "shared";
 import { assesmentEntityToConventionAssessmentFields } from "../../../utils/convention";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
@@ -13,30 +16,37 @@ import type { AssessmentEntity } from "../entities/AssessmentEntity";
 export const makeGetBeneficiaryConventionList = useCaseBuilder(
   "GetBeneficiaryConventionList",
 )
+  .withInput<GetBeneficiaryConventionListParams>(
+    getBeneficiaryConventionListParamsSchema,
+  )
   .withOutput<BeneficiaryConventionListDto>()
   .withCurrentUser<ConnectedUser>()
   .withDeps<{ timeGateway: TimeGateway }>()
-  .build(async ({ uow, currentUser, deps }) => {
+  .build(async ({ inputParams, uow, currentUser, deps }) => {
     const featureFlags = await uow.featureFlagQueries.getAll();
+    const pagination = getPaginationParamsForWeb(inputParams.pagination);
 
-    const conventions = await uow.conventionQueries.getConventions({
+    const paginated = await uow.conventionQueries.getPaginatedConventions({
       filters: {
-        withBeneficiary: { email: currentUser.email },
+        search: inputParams.filters?.search,
+        beneficiaryEmail: currentUser.email,
         ...(featureFlags.enableRequestArchivedConvention.isActive
           ? {}
           : {
-              endDate: {
+              dateEnd: {
                 from: subMonths(
                   deps.timeGateway.now(),
                   defaultMonthsThresholdForConventionsListing,
-                ),
+                ).toISOString(),
               },
             }),
       },
-      sortBy: "dateStart",
+      sort: { by: "dateStart", direction: "desc" },
+      pagination,
     });
+
     const assessments = await uow.assessmentRepository.getByConventionIds(
-      conventions.map(({ id }) => id),
+      paginated.data.map(({ id }) => id),
     );
     const assessmentByConventionId: Record<ConventionId, AssessmentEntity> =
       assessments.reduce(
@@ -47,14 +57,17 @@ export const makeGetBeneficiaryConventionList = useCaseBuilder(
         {},
       );
 
-    return conventions.map((convention) => ({
-      conventionId: convention.id,
-      businessName: convention.businessName,
-      status: convention.status,
-      assessment: assesmentEntityToConventionAssessmentFields(
-        assessmentByConventionId[convention.id],
-      ).assessment,
-      dateStart: convention.dateStart,
-      dateEnd: convention.dateEnd,
-    }));
+    return {
+      data: paginated.data.map((convention) => ({
+        conventionId: convention.id,
+        businessName: convention.businessName,
+        status: convention.status,
+        assessment: assesmentEntityToConventionAssessmentFields(
+          assessmentByConventionId[convention.id],
+        ).assessment,
+        dateStart: convention.dateStart,
+        dateEnd: convention.dateEnd,
+      })),
+      pagination: paginated.pagination,
+    };
   });
