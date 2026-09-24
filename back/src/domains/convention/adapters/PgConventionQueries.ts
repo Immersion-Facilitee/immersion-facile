@@ -24,6 +24,7 @@ import {
   type DateFilter,
   type DateString,
   type DateTimeIsoString,
+  type Email,
   functionalBroadcastFeedbackErrorMessage,
   type GetPaginatedConventionsSortBy,
   type PaginationQueryParams,
@@ -273,6 +274,7 @@ export class PgConventionQueries implements ConventionQueries {
       dateEnd,
       dateSubmission,
       assessmentCompletionStatus,
+      beneficiaryEmail,
       ...rest
     } = filters;
 
@@ -294,6 +296,7 @@ export class PgConventionQueries implements ConventionQueries {
         transaction: this.transaction,
       }),
       filterByAgencyIds(agencyIds),
+      filterByBeneficiaryEmail(beneficiaryEmail),
       filterOmitStatusesForAgencies(omitStatusesForAgencies),
       filterSearch(trimmedSearch),
       filterDate("date_start", dateStart),
@@ -639,6 +642,11 @@ const filterByAgencyIds =
           sql<boolean>`conventions.agency_id = ANY(${agencyIds}::uuid[])`,
         )
       : builder;
+
+const filterByBeneficiaryEmail =
+  (email: Email | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
+    email ? builder.where("b.email", "=", email) : builder;
 
 const filterOmitStatusesForAgencies =
   (omitStatusesForAgencies: OmitStatusesForAgenciesFilter | undefined) =>

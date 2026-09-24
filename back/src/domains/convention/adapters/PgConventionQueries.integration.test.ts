@@ -1097,6 +1097,7 @@ describe("Pg implementation of ConventionQueries", () => {
           streetNumberAndAddress: "Rue de la République",
         })
         .build();
+      const conventionASourceDraftId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
       const conventionA = new ConventionDtoBuilder()
         .withId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
         .withSiret("12345678901235")
@@ -1113,7 +1114,7 @@ describe("Pg implementation of ConventionQueries", () => {
           firstname: "Marie",
           lastname: "Dupont",
         })
-        .withSourceConventionDraftId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee")
+        .withSourceConventionDraftId(conventionASourceDraftId)
         .withUpdatedAt(anyConventionUpdatedAt)
         .build();
 
@@ -1394,7 +1395,7 @@ describe("Pg implementation of ConventionQueries", () => {
         const result = await conventionQueries.getPaginatedConventions({
           pagination: { page: 1, perPage: 10 },
           filters: {
-            search: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+            search: conventionASourceDraftId,
           },
           sort: {
             by: "dateSubmission",
@@ -1409,7 +1410,7 @@ describe("Pg implementation of ConventionQueries", () => {
         const result = await conventionQueries.getPaginatedConventions({
           pagination: { page: 1, perPage: 10 },
           filters: {
-            search: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+            search: conventionASourceDraftId,
           },
           sort: {
             by: "dateSubmission",
@@ -1440,6 +1441,37 @@ describe("Pg implementation of ConventionQueries", () => {
           pagination: { page: 1, perPage: 10 },
           filters: {
             search: "99999999-9999-4999-8999-999999999999",
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, []);
+      });
+
+      it("should filter conventions by beneficiary email", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            beneficiaryEmail: conventionA.signatories.beneficiary.email,
+          },
+          sort: {
+            by: "dateSubmission",
+            direction: "desc",
+          },
+        });
+
+        expectToEqual(result.data, [conventionA]);
+      });
+
+      it("should not return another beneficiary convention when searching with beneficiaryEmail", async () => {
+        const result = await conventionQueries.getPaginatedConventions({
+          pagination: { page: 1, perPage: 10 },
+          filters: {
+            beneficiaryEmail: conventionA.signatories.beneficiary.email,
+            search: conventionD.id,
           },
           sort: {
             by: "dateSubmission",
