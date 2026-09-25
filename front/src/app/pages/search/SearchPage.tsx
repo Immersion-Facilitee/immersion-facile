@@ -433,6 +433,7 @@ export const SearchPage = ({
                 linkProps={{
                   href: "https://pages.immersion-facile.beta.gouv.fr/ressources-entreprises/groupes/",
                   rel: "noreferrer",
+                  id: domElementIds.search.groupPush,
                 }}
               />
               <SearchInfoSection />
