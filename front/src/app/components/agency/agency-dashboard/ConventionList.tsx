@@ -10,6 +10,8 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { HeadingSection, RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
+  type AssessmentCompletionStatusFilter,
+  assessmentCompletionStatusFilters,
   type ConventionStatus,
   conventionStatuses,
   defaultPerPageInWebPagination,
@@ -113,7 +115,7 @@ export const ConventionList = () => {
     },
   });
 
-  const assessmentOptions: RadioButtonsProps["options"] = useMemo(
+  const assessmentOptions: CheckboxProps["options"] = useMemo(
     () => [
       {
         label: getAssessmentLabelsAndSeverityByStatus({ isPlural: true })[
@@ -122,12 +124,25 @@ export const ConventionList = () => {
         nativeInputProps: {
           value: "to-complete",
           checked:
-            tempFilters.assessmentCompletionStatus?.includes("to-complete"),
-          onChange: () => {
-            setTempFilters((prev) => ({
-              ...prev,
-              assessmentCompletionStatus: ["to-complete"],
-            }));
+            tempFilters.assessmentCompletionStatus?.includes("to-complete") ??
+            false,
+          onChange: (event) => {
+            const existingStatuses =
+              tempFilters.assessmentCompletionStatus ?? [];
+            const newStatuses =
+              event.currentTarget.checked &&
+              isAssessmentCompletionStatusFilter(event.currentTarget.value)
+                ? [...existingStatuses, event.currentTarget.value]
+                : existingStatuses.filter(
+                    (status) => status !== event.currentTarget.value,
+                  );
+
+            setTempFilters({
+              ...tempFilters,
+              assessmentCompletionStatus: isNotEmptyArray(newStatuses)
+                ? newStatuses
+                : undefined,
+            });
           },
         },
       },
@@ -137,12 +152,26 @@ export const ConventionList = () => {
         ].longLabel,
         nativeInputProps: {
           value: "to-sign",
-          checked: tempFilters.assessmentCompletionStatus?.includes("to-sign"),
-          onChange: () => {
-            setTempFilters((prev) => ({
-              ...prev,
-              assessmentCompletionStatus: ["to-sign"],
-            }));
+          checked:
+            tempFilters.assessmentCompletionStatus?.includes("to-sign") ??
+            false,
+          onChange: (event) => {
+            const existingStatuses =
+              tempFilters.assessmentCompletionStatus ?? [];
+            const newStatuses =
+              event.currentTarget.checked &&
+              isAssessmentCompletionStatusFilter(event.currentTarget.value)
+                ? [...existingStatuses, event.currentTarget.value]
+                : existingStatuses.filter(
+                    (status) => status !== event.currentTarget.value,
+                  );
+
+            setTempFilters({
+              ...tempFilters,
+              assessmentCompletionStatus: isNotEmptyArray(newStatuses)
+                ? newStatuses
+                : undefined,
+            });
           },
         },
       },
@@ -154,17 +183,30 @@ export const ConventionList = () => {
         nativeInputProps: {
           value: "finalized",
           checked:
-            tempFilters.assessmentCompletionStatus?.includes("finalized"),
-          onChange: () => {
-            setTempFilters((prev) => ({
-              ...prev,
-              assessmentCompletionStatus: ["finalized"],
-            }));
+            tempFilters.assessmentCompletionStatus?.includes("finalized") ??
+            false,
+          onChange: (event) => {
+            const existingStatuses =
+              tempFilters.assessmentCompletionStatus ?? [];
+            const newStatuses =
+              event.currentTarget.checked &&
+              isAssessmentCompletionStatusFilter(event.currentTarget.value)
+                ? [...existingStatuses, event.currentTarget.value]
+                : existingStatuses.filter(
+                    (status) => status !== event.currentTarget.value,
+                  );
+
+            setTempFilters({
+              ...tempFilters,
+              assessmentCompletionStatus: isNotEmptyArray(newStatuses)
+                ? newStatuses
+                : undefined,
+            });
           },
         },
       },
     ],
-    [tempFilters.assessmentCompletionStatus],
+    [tempFilters],
   );
 
   const statusOptions: CheckboxProps["options"] = useMemo(
@@ -450,37 +492,26 @@ export const ConventionList = () => {
                     id: "assessment",
                     iconId: "fr-icon-checkbox-line",
                     defaultValue: "Tous les bilans",
-                    values: [
-                      (() => {
-                        if (
-                          tempFilters.assessmentCompletionStatus?.includes(
-                            "finalized",
-                          )
-                        ) {
-                          return `Bilan : ${getAssessmentLabelsAndSeverityByStatus({ isPlural: true }).finalized.longLabel}`;
-                        }
-                        if (
-                          tempFilters.assessmentCompletionStatus?.includes(
-                            "to-sign",
-                          )
-                        ) {
-                          return `Bilan : ${getAssessmentLabelsAndSeverityByStatus({ isPlural: true })["to-sign"].longLabel}`;
-                        }
-                        if (
-                          tempFilters.assessmentCompletionStatus?.includes(
-                            "to-complete",
-                          )
-                        ) {
-                          return `Bilan : ${getAssessmentLabelsAndSeverityByStatus({ isPlural: true })["to-complete"].longLabel}`;
-                        }
-                        return "Tous les bilans";
-                      })(),
-                    ],
+                    values:
+                      filters.assessmentCompletionStatus?.length &&
+                      filters.assessmentCompletionStatus.length !==
+                        assessmentCompletionStatusFilters.length
+                        ? [
+                            filters.assessmentCompletionStatus.length === 1
+                              ? `Bilan : ${
+                                  getAssessmentLabelsAndSeverityByStatus({
+                                    isPlural: true,
+                                  })[filters.assessmentCompletionStatus[0]]
+                                    .longLabel
+                                }`
+                              : `Bilans (${filters.assessmentCompletionStatus.length})`,
+                          ]
+                        : ["Tous les bilans"],
                     submenu: {
                       title: "Filtrer par statut du bilan",
                       content: (
                         <>
-                          <RadioButtons options={assessmentOptions} />
+                          <Checkbox options={assessmentOptions} />
                         </>
                       ),
                     },
@@ -725,6 +756,11 @@ export const ConventionList = () => {
 
 const isStringConventionStatus = (value: string): value is ConventionStatus =>
   conventionStatuses.includes(value as ConventionStatus);
+
+const isAssessmentCompletionStatusFilter = (
+  value: string,
+): value is AssessmentCompletionStatusFilter =>
+  assessmentCompletionStatusFilters.some((status) => status === value);
 
 const createDateOptions = (
   filterType: "dateStart" | "dateEnd",
