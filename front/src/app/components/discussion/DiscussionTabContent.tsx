@@ -1,11 +1,11 @@
 import type { ExchangeRole } from "shared";
-import { DiscussionList } from "src/app/components/establishment/establishment-dashboard/DiscussionList";
-import { DiscussionManageContent } from "src/app/components/establishment/establishment-dashboard/DiscussionManageContent";
 import type {
   BeneficiaryDashboardRouteName,
   EstablishmentDashboardRouteName,
 } from "src/app/pages/auth/ConnectedPrivateRoutePage";
 import { makeUseTypedRoute } from "src/app/routes/routes.hooks";
+import { DiscussionList } from "./DiscussionList";
+import { DiscussionManageContent } from "./DiscussionManageContent";
 
 const useDashboardDiscussionRoute = makeUseTypedRoute<
   EstablishmentDashboardRouteName | BeneficiaryDashboardRouteName
