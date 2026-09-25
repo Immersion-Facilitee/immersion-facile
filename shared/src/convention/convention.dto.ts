@@ -620,6 +620,7 @@ export type UpdateConventionStatusWithValidator = {
   conventionId: ConventionId;
   lastname: Lastname;
   firstname: Firstname;
+  isAlsoAgencyReferent?: boolean;
 };
 
 export type UpdateConventionStatusWithoutJustification = {

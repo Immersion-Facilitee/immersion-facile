@@ -686,7 +686,7 @@ export const updateConventionStatusWithJustificationSchema: ZodSchemaWithInputMa
 
 export type WithFirstnameAndLastname = OmitFromExistingKeys<
   UpdateConventionStatusWithValidator,
-  "conventionId" | "status"
+  "conventionId" | "status" | "isAlsoAgencyReferent"
 >;
 
 export const withFirstnameAndLastnameSchema: ZodSchemaWithInputMatchingOutput<WithFirstnameAndLastname> =
@@ -702,6 +702,7 @@ const updateConventionStatusWithValidatorSchema: ZodSchemaWithInputMatchingOutpu
         error: localization.invalidEnum,
       }),
       conventionId: conventionIdSchema,
+      isAlsoAgencyReferent: z.boolean().optional(),
     })
     .and(withFirstnameAndLastnameSchema);
 

@@ -30,6 +30,7 @@ import type {
   InternshipKind,
   Signatories,
   Signatory,
+  WithOptionalFirstnameAndLastname,
 } from "./convention.dto";
 
 export const allSignatoriesSigned = (signatories: Signatories) =>
@@ -355,3 +356,8 @@ export const isConventionArchived = ({
 }): boolean =>
   new Date(dateEnd) <
   subMonths(now, defaultMonthsThresholdForConventionsListing);
+
+export const hasCompleteAgencyReferent = (
+  agencyReferent?: WithOptionalFirstnameAndLastname,
+): boolean =>
+  !!agencyReferent?.firstname?.trim() && !!agencyReferent?.lastname?.trim();
