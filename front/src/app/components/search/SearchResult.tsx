@@ -33,13 +33,13 @@ const SearchResultComponent = ({
 }: EnterpriseSearchResultProps) => {
   const { cx } = useStyles();
   const {
-    siret,
     name,
     customizedName,
     address,
     romeLabel,
     appellations,
     voluntaryToImmersion,
+    locationId,
   } = searchResult;
   const isCustomizedNameValidToDisplay =
     customizedName &&
@@ -96,8 +96,8 @@ const SearchResultComponent = ({
       linkProps={{
         ...linkPropsHandlingNotAvailable,
         id: voluntaryToImmersion
-          ? `${domElementIds.search.searchResultButton}-${siret}`
-          : `${domElementIds.search.lbbSearchResultButton}-${siret}`,
+          ? `${domElementIds.search.searchResultButton}-${locationId}`
+          : `${domElementIds.search.lbbSearchResultButton}-${locationId}`,
       }}
       enlargeLink
       titleAs="h2"

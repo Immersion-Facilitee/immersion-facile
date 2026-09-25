@@ -40,28 +40,6 @@ export const { ConsentBannerAndConsentManagement, useConsent } =
               </>
             ),
           },
-          piano: {
-            title: "Piano Analytics",
-            description: (
-              <>
-                <p>
-                  Piano Analytics est un outil de mesure d’audience qui nous
-                  permet d’analyser la fréquentation du site et d’améliorer son
-                  contenu sur la base de données de navigation anonymes.
-                </p>
-                <p>
-                  <a
-                    href="https://www.piano.io/legal/privacy-policy/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Voir le site officiel
-                  </a>
-                  .
-                </p>
-              </>
-            ),
-          },
         },
       },
       support: {
@@ -95,13 +73,6 @@ export const { ConsentBannerAndConsentManagement, useConsent } =
     }),
     personalDataPolicyLinkProps: {
       href: "/pages/politique-de-confidentialite",
-    },
-    consentCallback: ({ finalityConsent }) => {
-      if (finalityConsent.statistics.piano) {
-        window.pianoConsent = {
-          pianoMode: finalityConsent.statistics.piano ? "optin" : "optout",
-        };
-      }
     },
   });
 
