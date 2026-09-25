@@ -368,6 +368,80 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         emails: [],
       });
     });
+
+    it("should not close warned agencies which has new conventions on a referring agency since the warning", async () => {
+      const warningDate = subMonths(defaultDate, 5);
+      const veryOldAgency = AgencyDtoBuilder.create("agency1-id")
+        .withName("Agency 1")
+        .withStatus("active")
+        .withUpdatedAt(subMonths(defaultDate, 12))
+        .build();
+
+      const referringAgency = AgencyDtoBuilder.create("referring-agency-id")
+        .withName("Referring Agency")
+        .withStatus("active")
+        .withRefersToAgencyInfo({
+          refersToAgencyId: veryOldAgency.id,
+          refersToAgencyName: veryOldAgency.name,
+          refersToAgencyContactEmail: veryOldAgency.contactEmail,
+        })
+        .withUpdatedAt(subMonths(defaultDate, 12))
+        .build();
+
+      const agencyWithRights = toAgencyWithRights(veryOldAgency, {
+        [admin1.id]: {
+          isNotifiedByEmail: true,
+          roles: ["agency-admin"],
+        },
+      });
+      const referringAgencyWithRights = toAgencyWithRights(referringAgency, {
+        [admin2.id]: {
+          isNotifiedByEmail: true,
+          roles: ["agency-admin"],
+        },
+      });
+
+      const conventionOnReferringAgencyAfterWarning = new ConventionDtoBuilder()
+        .withId("convention-referring-after-warning-id")
+        .withAgencyId(referringAgency.id)
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .withDateSubmission(addMonths(warningDate, 2).toISOString())
+        .build();
+
+      uow.agencyRepository.agencies = [
+        agencyWithRights,
+        referringAgencyWithRights,
+      ];
+      uow.userRepository.users = [admin1, admin2];
+      uow.conventionRepository.setConventions([
+        conventionOnReferringAgencyAfterWarning,
+      ]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "invalidated-warning-agency1",
+          agencyId: veryOldAgency.id,
+          agencyName: veryOldAgency.name,
+          createdAt: warningDate,
+          recipientEmail: admin1.email,
+        }),
+      ];
+
+      const result =
+        await closeInactiveAgenciesWithoutRecentConventions.execute({
+          numberOfMonthsWithoutConvention,
+        });
+
+      expectToEqual(result, {
+        numberOfAgenciesClosed: 0,
+      });
+      expectToEqual(uow.agencyRepository.agencies, [
+        agencyWithRights,
+        referringAgencyWithRights,
+      ]);
+      expectSavedNotificationsAndEvents({
+        emails: [],
+      });
+    });
   });
 
   describe("When there are agencies to close", () => {
