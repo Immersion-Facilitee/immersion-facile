@@ -23,6 +23,7 @@ import type {
   EditConventionCounsellorNameRequestDto,
   EditConventionWithFinalStatusRequestDto,
   FindSimilarConventionsParams,
+  FlatGetBeneficiaryConventionListParams,
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   FlatGetConventionsWithUnfinalizedAssessmentParams,
@@ -109,6 +110,7 @@ export interface ConventionGateway {
     jwt: string,
   ): Observable<DataWithPagination<AgencyUserConventionListDto>>;
   getBeneficiaryConventionList$(
+    params: FlatGetBeneficiaryConventionListParams,
     jwt: string,
   ): Observable<BeneficiaryConventionListDto>;
   getConventionLastBroadcastFeedback$(
