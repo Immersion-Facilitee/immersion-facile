@@ -18,8 +18,8 @@ import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import type { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
-  doesWarnedAgencyRequiresWarningAgain,
   getInactiveAgenciesAmong,
+  isAgencyActiveAfterWarning,
   makeInactiveAgenciesFilters,
 } from "../helpers/inactiveAgencies.helpers";
 import type { GetAgenciesFilters } from "../ports/AgencyRepository";
@@ -210,20 +210,20 @@ const isWarningNeeded = async (params: {
     limit: 1,
   });
 
-  if (!lastWarning) return false;
+  if (!lastWarning) return true;
 
   const lastWarningDate = new Date(lastWarning.createdAt);
   const isWarnedRecently =
     startOfDay(lastWarningDate) >=
     startOfDay(subMonths(now, numberOfMonthsWithoutConvention));
 
-  if (isWarnedRecently) return true;
+  if (isWarnedRecently) return false;
 
-  return doesWarnedAgencyRequiresWarningAgain({
+  return !(await isAgencyActiveAfterWarning({
     agency,
     warningCreatedAt: lastWarningDate,
     uow,
-  });
+  }));
 };
 
 const getAgenciesNeedingWarning = async ({
@@ -267,8 +267,8 @@ const getAgenciesNeedingWarning = async ({
             now,
             numberOfMonthsWithoutConvention,
           }))
-            ? null
-            : agency,
+            ? agency
+            : null,
       )
     ).filter(isTruthy);
 
