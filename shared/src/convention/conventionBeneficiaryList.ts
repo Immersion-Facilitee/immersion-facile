@@ -4,6 +4,14 @@ import type {
   BusinessName,
   BusinessNameCustomized,
 } from "../establishment/establishment.dto";
+import type {
+  DataWithPagination,
+  PaginationQueryParams,
+} from "../pagination/pagination.dto";
+import {
+  createPaginatedSchema,
+  paginationQueryParamsSchema,
+} from "../pagination/pagination.schema";
 import type { DateString } from "../utils/date";
 import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
 import type {
@@ -19,7 +27,7 @@ import {
   conventionStatusSchema,
 } from "./convention.schema";
 
-type BeneficiaryConvention = {
+export type BeneficiaryConvention = {
   conventionId: ConventionId;
   businessName: BusinessName | BusinessNameCustomized;
   status: ConventionStatus;
@@ -38,6 +46,54 @@ const beneficiaryConventionSchema: ZodSchemaWithInputMatchingOutput<BeneficiaryC
     dateEnd: conventionDateEndSchema,
   });
 
-export type BeneficiaryConventionListDto = BeneficiaryConvention[];
+export type FlatGetBeneficiaryConventionListParams = PaginationQueryParams & {
+  search?: string;
+};
+
+export type GetBeneficiaryConventionListParams = {
+  filters?: {
+    search?: string;
+  };
+  pagination?: PaginationQueryParams;
+};
+
+export type BeneficiaryConventionListDto =
+  DataWithPagination<BeneficiaryConvention>;
+
+export const flatGetBeneficiaryConventionListParamsSchema: ZodSchemaWithInputMatchingOutput<FlatGetBeneficiaryConventionListParams> =
+  paginationQueryParamsSchema.and(
+    z.object({
+      search: z.string().optional(),
+    }),
+  );
+
+export const getBeneficiaryConventionListParamsSchema: ZodSchemaWithInputMatchingOutput<GetBeneficiaryConventionListParams> =
+  z.object({
+    filters: z
+      .object({
+        search: z.string().optional(),
+      })
+      .optional(),
+    pagination: paginationQueryParamsSchema.optional(),
+  });
+
 export const beneficiaryConventionListDtoSchema: ZodSchemaWithInputMatchingOutput<BeneficiaryConventionListDto> =
-  z.array(beneficiaryConventionSchema);
+  createPaginatedSchema(beneficiaryConventionSchema);
+
+export const flatParamsToGetBeneficiaryConventionListParams = (
+  flatParams: FlatGetBeneficiaryConventionListParams,
+): GetBeneficiaryConventionListParams => {
+  const { search, page, perPage, ...rest } = flatParams;
+
+  rest satisfies Record<string, never>;
+
+  return {
+    filters: {
+      search,
+    },
+    pagination: {
+      page,
+      perPage,
+    },
+  };
+};

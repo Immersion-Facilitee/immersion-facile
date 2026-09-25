@@ -25,6 +25,7 @@ import type {
   EditConventionCounsellorNameRequestDto,
   EditConventionWithFinalStatusRequestDto,
   FindSimilarConventionsParams,
+  FlatGetBeneficiaryConventionListParams,
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   FlatGetConventionsWithUnfinalizedAssessmentParams,
@@ -59,11 +60,15 @@ export class HttpConventionGateway implements ConventionGateway {
   ) {}
 
   public getBeneficiaryConventionList$(
+    params: FlatGetBeneficiaryConventionListParams,
     jwt: string,
   ): Observable<BeneficiaryConventionListDto> {
     return from(
       this.authenticatedHttpClient
-        .getBeneficiaryConventionList({ headers: { authorization: jwt } })
+        .getBeneficiaryConventionList({
+          queryParams: params,
+          headers: { authorization: jwt },
+        })
         .then((response) =>
           match(response)
             .with({ status: 200 }, (response) => response.body)

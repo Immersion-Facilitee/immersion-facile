@@ -47,20 +47,27 @@ const fetchBeneficiaryConventionListEpic: ConnectedUserConventionListEpic = (
       conventionListSlice.actions.fetchBeneficiaryConventionListRequested.match,
     ),
     switchMap((action) =>
-      conventionGateway.getBeneficiaryConventionList$(action.payload.jwt).pipe(
-        map((beneficiaryConventionList) =>
-          conventionListSlice.actions.fetchBeneficiaryConventionListSucceeded({
-            beneficiaryConventionList,
-            feedbackTopic: action.payload.feedbackTopic,
-          }),
+      conventionGateway
+        .getBeneficiaryConventionList$(
+          action.payload.filters,
+          action.payload.jwt,
+        )
+        .pipe(
+          map((beneficiaryConventionList) =>
+            conventionListSlice.actions.fetchBeneficiaryConventionListSucceeded(
+              {
+                beneficiaryConventionList,
+                feedbackTopic: action.payload.feedbackTopic,
+              },
+            ),
+          ),
+          catchEpicError((error) =>
+            conventionListSlice.actions.fetchBeneficiaryConventionListFailed({
+              errorMessage: error.message,
+              feedbackTopic: action.payload.feedbackTopic,
+            }),
+          ),
         ),
-        catchEpicError((error) =>
-          conventionListSlice.actions.fetchBeneficiaryConventionListFailed({
-            errorMessage: error.message,
-            feedbackTopic: action.payload.feedbackTopic,
-          }),
-        ),
-      ),
     ),
   );
 
