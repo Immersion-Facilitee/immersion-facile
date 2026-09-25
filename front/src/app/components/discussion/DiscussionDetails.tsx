@@ -7,6 +7,7 @@ import {
   BorderedSection,
   ButtonWithSubMenu,
   DiscussionContentContainer,
+  DiscussionExchangesContainer,
   SectionHighlight,
   useLayout,
 } from "react-design-system";
@@ -367,8 +368,8 @@ export const DiscussionDetails = (
     discussion,
     viewer,
   });
-  const isViewerBeneficiaryAndDiscussionRejected =
-    viewer === "potentialBeneficiary" && discussion.status === "REJECTED";
+  const isViewerBeneficiaryOrDiscussionRejected =
+    viewer === "potentialBeneficiary" || discussion.status === "REJECTED";
 
   return (
     <>
@@ -549,20 +550,25 @@ export const DiscussionDetails = (
                   viewer={viewer}
                 />
               )}
-              {!isViewerBeneficiaryAndDiscussionRejected && (
-                <DiscussionExchangeMessageForm
-                  discussionId={discussion.id}
-                  viewer={viewer}
-                />
-              )}
-
-              {restSortedExchanges.length > 0 && (
-                <DiscussionExchangesList
-                  sortedExchanges={restSortedExchanges}
-                  potentialBeneficiary={discussion.potentialBeneficiary}
-                  viewer={viewer}
-                />
-              )}
+              <DiscussionExchangesContainer
+                exchangesComponent={
+                  restSortedExchanges.length > 0 && (
+                    <DiscussionExchangesList
+                      sortedExchanges={restSortedExchanges}
+                      potentialBeneficiary={discussion.potentialBeneficiary}
+                      viewer={viewer}
+                    />
+                  )
+                }
+                exchangeFormComponent={
+                  !isViewerBeneficiaryOrDiscussionRejected && (
+                    <DiscussionExchangeMessageForm
+                      discussionId={discussion.id}
+                      viewer={viewer}
+                    />
+                  )
+                }
+              />
             </>
           ))
           .with(P.union("PHONE", "IN_PERSON"), (contactMode) =>
