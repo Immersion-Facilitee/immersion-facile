@@ -2,11 +2,13 @@ import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
   type ConventionDomainJwtPayload,
+  type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
   errors,
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
+  expectToEqual,
   ForbiddenError,
   validSignatoryRoles,
 } from "shared";
@@ -14,10 +16,14 @@ import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
-import { createInMemoryUow } from "../../core/unit-of-work/adapters/createInMemoryUow";
+import {
+  createInMemoryUow,
+} from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { TestUuidGenerator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
-import { makeUpdateConventionStatus } from "./UpdateConventionStatus";
+import {
+  makeUpdateConventionStatus,
+} from "./UpdateConventionStatus";
 import {
   acceptStatusTransitionTests,
   conventionWithAgencyOneStepValidationId,
@@ -117,6 +123,7 @@ describe("UpdateConventionStatus", () => {
         conventionId: conventionWithAgencyTwoStepsValidationId,
         firstname: "Counsellor Firstname",
         lastname: "Counsellor Lastname",
+        isAlsoAgencyReferent: false,
       },
       updatedFields: {
         dateApproval: dateApproval.toISOString(),
@@ -138,6 +145,7 @@ describe("UpdateConventionStatus", () => {
         conventionId: conventionWithAgencyOneStepValidationId,
         firstname: "Counsellor Firstname",
         lastname: "Counsellor Lastname",
+        isAlsoAgencyReferent: false,
       },
       allowedMagicLinkRoles: ["counsellor"],
       allowedConnectedUsers: ["userWithRoleCounsellor"],
@@ -153,6 +161,7 @@ describe("UpdateConventionStatus", () => {
         conventionId: conventionWithAgencyOneStepValidationId,
         firstname: "Validator Firstname",
         lastname: "Validator Lastname",
+        isAlsoAgencyReferent: false,
       },
       expectedDomainTopic: "ConventionAcceptedByValidator",
       allowedMagicLinkRoles: ["validator"],
@@ -178,6 +187,7 @@ describe("UpdateConventionStatus", () => {
         conventionId: conventionWithAgencyOneStepValidationId,
         firstname: "Validator Firstname",
         lastname: "Validator Lastname",
+        isAlsoAgencyReferent: false,
       },
       allowedMagicLinkRoles: ["validator"],
       allowedConnectedUsers: [
@@ -194,6 +204,7 @@ describe("UpdateConventionStatus", () => {
           conventionId: conventionWithAgencyTwoStepsValidationId,
           firstname: "Validator Firstname",
           lastname: "Validator Lastname",
+          isAlsoAgencyReferent: false,
         },
         expectedDomainTopic: "ConventionAcceptedByValidator",
         allowedMagicLinkRoles: ["validator"],
@@ -237,6 +248,7 @@ describe("UpdateConventionStatus", () => {
               conventionId: conventionWithAgencyTwoStepsValidationId,
               firstname: "Validator Firstname",
               lastname: "Validator Lastname",
+              isAlsoAgencyReferent: false,
             },
             updateConventionStatusUseCase,
             conventionRepository,
@@ -281,6 +293,7 @@ describe("UpdateConventionStatus", () => {
             conventionId: convention.id,
             firstname: "Joe",
             lastname: "Validator",
+            isAlsoAgencyReferent: false,
           },
           validatorJwtPayload,
         );
@@ -475,6 +488,100 @@ describe("UpdateConventionStatus", () => {
     });
   });
 
+  describe("isAlsoAgencyReferent when accepting a convention", () => {
+    it("updates agencyReferent when not existing in convention and isAlsoAgencyReferent is true", async () => {
+      const storedConvention = await updateConventionStatusWithValidator({
+        conventionId: conventionWithAgencyOneStepValidationId,
+        status: "ACCEPTED_BY_VALIDATOR",
+        role: "validator",
+        isAlsoAgencyReferent: true,
+      });
+
+      expectToEqual(storedConvention.agencyReferent, {
+        firstname: "Actor Firstname",
+        lastname: "Actor Lastname",
+      });
+    });
+
+    it("updates agencyReferent on ACCEPTED_BY_COUNSELLOR when isAlsoAgencyReferent is true", async () => {
+      const storedConvention = await updateConventionStatusWithValidator({
+        conventionId: conventionWithAgencyTwoStepsValidationId,
+        status: "ACCEPTED_BY_COUNSELLOR",
+        role: "counsellor",
+        isAlsoAgencyReferent: true,
+      });
+
+      expectToEqual(storedConvention.agencyReferent, {
+        firstname: "Actor Firstname",
+        lastname: "Actor Lastname",
+      });
+    });
+
+    it("keeps agencyReferent unchanged when isAlsoAgencyReferent is false", async () => {
+      const storedConvention = await updateConventionStatusWithValidator({
+        conventionId: conventionWithAgencyOneStepValidationId,
+        status: "ACCEPTED_BY_VALIDATOR",
+        role: "validator",
+        isAlsoAgencyReferent: false,
+      });
+
+      expectToEqual(storedConvention.agencyReferent, undefined);
+    });
+
+    it("throw when isAlsoAgencyReferent is missing", async () => {
+      const {
+        originalConvention,
+        updateConventionStatusUseCase,
+        conventionRepository,
+        outboxRepository,
+        timeGateway,
+      } = setupInitialState({
+        initialStatus: "IN_REVIEW",
+        conventionId: conventionWithAgencyOneStepValidationId,
+      });
+
+      await expectPromiseToFailWithError(
+        updateConventionStatusUseCase.execute(
+          {
+            status: "ACCEPTED_BY_VALIDATOR",
+            conventionId: originalConvention.id,
+            firstname: "Actor Firstname",
+            lastname: "Actor Lastname",
+          },
+          createConventionMagicLinkPayload({
+            id: originalConvention.id,
+            role: "validator",
+            email: "",
+            now: timeGateway.now(),
+          }),
+        ),
+        errors.convention.isAlsoAgencyReferentRequired(),
+      );
+
+      expectToEqual(
+        await conventionRepository.getById(originalConvention.id),
+        originalConvention,
+      );
+      expectToEqual(outboxRepository.events, []);
+    });
+
+    it("keeps the existing agencyReferent when it is already complete", async () => {
+      const existingAgencyReferent = {
+        firstname: "Existing Firstname",
+        lastname: "Existing Lastname",
+      };
+      const storedConvention = await updateConventionStatusWithValidator({
+        conventionId: conventionWithAgencyOneStepValidationId,
+        status: "ACCEPTED_BY_VALIDATOR",
+        role: "validator",
+        isAlsoAgencyReferent: true,
+        agencyReferent: existingAgencyReferent,
+      });
+
+      expectToEqual(storedConvention.agencyReferent, existingAgencyReferent);
+    });
+  });
+
   it("fails for unknown convention ids", async () => {
     const missingConventionId: ConventionId =
       "add5c20e-6dd2-45af-affe-000000000000";
@@ -498,6 +605,7 @@ describe("UpdateConventionStatus", () => {
           conventionId: missingConventionId,
           firstname: "Validator Firstname",
           lastname: "Validator Lastname",
+          isAlsoAgencyReferent: false,
         },
         updateConventionStatusUseCase,
         conventionRepository,
@@ -528,6 +636,7 @@ describe("UpdateConventionStatus", () => {
           conventionId: fakeConventionId,
           firstname: "Validator Firstname",
           lastname: "Validator Lastname",
+          isAlsoAgencyReferent: false,
         },
         updateConventionStatusUseCase,
         conventionRepository,
@@ -560,4 +669,53 @@ const prepareUseCaseForStandAloneTests = () => {
     uow,
     updateConventionStatusUseCase,
   };
+};
+
+const updateConventionStatusWithValidator = async ({
+  conventionId,
+  status,
+  role,
+  isAlsoAgencyReferent,
+  agencyReferent,
+}: {
+  conventionId: ConventionId;
+  status: "ACCEPTED_BY_COUNSELLOR" | "ACCEPTED_BY_VALIDATOR";
+  role: "counsellor" | "validator";
+  isAlsoAgencyReferent: boolean;
+  agencyReferent?: { firstname: string; lastname: string };
+}): Promise<ConventionDto> => {
+  const {
+    originalConvention,
+    updateConventionStatusUseCase,
+    conventionRepository,
+    timeGateway,
+  } = setupInitialState({
+    initialStatus: "IN_REVIEW",
+    conventionId,
+  });
+
+  if (agencyReferent)
+    conventionRepository.setConventions([
+      new ConventionDtoBuilder(originalConvention)
+        .withAgencyReferent(agencyReferent)
+        .build(),
+    ]);
+
+  return executeUpdateConventionStatusUseCase({
+    jwtPayload: createConventionMagicLinkPayload({
+      id: originalConvention.id,
+      role,
+      email: "",
+      now: timeGateway.now(),
+    }),
+    updateStatusParams: {
+      status,
+      conventionId: originalConvention.id,
+      firstname: "Actor Firstname",
+      lastname: "Actor Lastname",
+      isAlsoAgencyReferent,
+    },
+    updateConventionStatusUseCase,
+    conventionRepository,
+  });
 };

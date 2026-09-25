@@ -7,8 +7,11 @@ import {
   type DateString,
   errors,
   getConventionManageAllowedRoles,
+  hasCompleteAgencyReferent,
   type Role,
   reviewedConventionStatuses,
+  type UpdateConventionStatusRequestDto,
+  type UpdateConventionStatusWithValidator,
   type UserWithRights,
   updateConventionStatusRequestSchema,
   validatedConventionStatuses,
@@ -105,6 +108,8 @@ export const makeUpdateConventionStatus = useCaseBuilder(
       hasAssessment: !!assessment,
     });
 
+    throwIfMissingIsAlsoAgencyReferent(convention, inputParams);
+
     const conventionUpdatedAt = deps.timeGateway.now().toISOString();
 
     const statusJustification =
@@ -121,6 +126,11 @@ export const makeUpdateConventionStatus = useCaseBuilder(
     const hasValidator =
       inputParams.status === "ACCEPTED_BY_VALIDATOR" &&
       (inputParams.lastname || inputParams.firstname);
+
+    const shouldCopyAcceptingPersonAsAgencyReferent =
+      isUpdateConventionStatusWithValidator(inputParams) &&
+      !hasCompleteAgencyReferent(convention.agencyReferent) &&
+      inputParams.isAlsoAgencyReferent === true;
 
     const getDateApproval = (): DateString | undefined => {
       if (reviewedConventionStatuses.includes(inputParams.status))
@@ -157,6 +167,14 @@ export const makeUpdateConventionStatus = useCaseBuilder(
                 firstname: inputParams.firstname,
                 lastname: inputParams.lastname,
               },
+            },
+          }
+        : {}),
+      ...(shouldCopyAcceptingPersonAsAgencyReferent
+        ? {
+            agencyReferent: {
+              firstname: inputParams.firstname,
+              lastname: inputParams.lastname,
             },
           }
         : {}),
@@ -197,6 +215,24 @@ export const makeUpdateConventionStatus = useCaseBuilder(
 
     return { id: updatedId };
   });
+
+const isUpdateConventionStatusWithValidator = (
+  inputParams: UpdateConventionStatusRequestDto,
+): inputParams is UpdateConventionStatusWithValidator =>
+  inputParams.status === "ACCEPTED_BY_COUNSELLOR" ||
+  inputParams.status === "ACCEPTED_BY_VALIDATOR";
+
+const throwIfMissingIsAlsoAgencyReferent = (
+  convention: ConventionDto,
+  inputParams: UpdateConventionStatusRequestDto,
+): void => {
+  if (!isUpdateConventionStatusWithValidator(inputParams)) return;
+  if (
+    !hasCompleteAgencyReferent(convention.agencyReferent) &&
+    inputParams.isAlsoAgencyReferent === undefined
+  )
+    throw errors.convention.isAlsoAgencyReferentRequired();
+};
 
 const getRoleInPayloadOrUser = async (
   uow: UnitOfWork,

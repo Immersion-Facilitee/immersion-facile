@@ -414,6 +414,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       conventionId: initialConvention.id,
       firstname: "John",
       lastname: "Doe",
+      isAlsoAgencyReferent: false,
     };
 
     gateways.timeGateway.setNextDate(validationDate);

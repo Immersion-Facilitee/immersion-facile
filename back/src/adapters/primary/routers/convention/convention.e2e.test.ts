@@ -965,6 +965,7 @@ describe("convention e2e", () => {
           conventionId: convention.id,
           firstname: "John",
           lastname: "Doe",
+          isAlsoAgencyReferent: false,
         },
       });
 
@@ -995,6 +996,7 @@ describe("convention e2e", () => {
           conventionId: convention.id,
           firstname: "John",
           lastname: "Doe",
+          isAlsoAgencyReferent: false,
         },
         headers: undefined as unknown as WithAuthorizationHeader,
       });
@@ -1019,6 +1021,7 @@ describe("convention e2e", () => {
           conventionId: convention.id,
           firstname: "John",
           lastname: "Doe",
+          isAlsoAgencyReferent: false,
         },
         headers: {
           authorization: generateConventionJwt(
@@ -1087,6 +1090,7 @@ describe("convention e2e", () => {
           conventionId: unknownId,
           firstname: "John",
           lastname: "Doe",
+          isAlsoAgencyReferent: false,
         },
         headers: {
           authorization: generateConventionJwt(
