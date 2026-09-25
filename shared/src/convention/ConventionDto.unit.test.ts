@@ -1699,6 +1699,27 @@ describe("updateConventionStatusRequestSchema", () => {
       }),
     ).toThrow(ZodError);
   });
+
+  it.each([
+    { isAlsoAgencyReferent: true },
+    { isAlsoAgencyReferent: false },
+    {},
+  ])(
+    "accepts ACCEPTED_BY_VALIDATOR body with isAlsoAgencyReferent $isAlsoAgencyReferent",
+    (isAlsoAgencyReferentField) => {
+      const conventionId = new ConventionDtoBuilder().build().id;
+
+      expect(() =>
+        updateConventionStatusRequestSchema.parse({
+          status: "ACCEPTED_BY_VALIDATOR",
+          conventionId,
+          firstname: "Jeanne",
+          lastname: "Validateur",
+          ...isAlsoAgencyReferentField,
+        }),
+      ).not.toThrow();
+    },
+  );
 });
 
 describe("loginPersonaByConventionRole", () => {
