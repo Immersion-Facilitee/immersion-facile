@@ -4,12 +4,14 @@ import {
   type DataWithPagination,
   defaultPerPageInWebPagination,
   expectToEqual,
+  type FlatGetBeneficiaryConventionListParams,
   type FlatGetConventionsForAgencyUserParams,
 } from "shared";
 import { conventionListSelectors } from "src/core-logic/domain/connected-user/conventionList/connectedUserConventionList.selectors";
 import {
   type ConventionListState,
   conventionListSlice,
+  initialBeneficiaryConventionList,
   initialConventionWithPagination,
 } from "src/core-logic/domain/connected-user/conventionList/connectedUserConventionList.slice";
 import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
@@ -30,7 +32,7 @@ describe("ConnectedUserConventionList", () => {
   const defaultConventionListState: ConventionListState = {
     isLoading: false,
     conventionsWithPagination: initialConventionWithPagination,
-    beneficiaryConventionList: null,
+    beneficiaryConventionList: initialBeneficiaryConventionList,
   };
   const jwt = "my-jwt";
 
@@ -285,14 +287,19 @@ describe("ConnectedUserConventionList", () => {
   describe("beneficiaryConventionList", () => {
     const feedbackTopic: FeedbackTopic =
       "connected-user-beneficiary-convention-list";
+    const defaultFilters: FlatGetBeneficiaryConventionListParams = {
+      page: 1,
+      perPage: defaultPerPageInWebPagination,
+    };
 
-    it("fetch list succedeed then cleared", () => {
+    it("fetches paginated list then clears it", () => {
       expectConventionListSelectors(defaultConventionListState);
 
       store.dispatch(
         conventionListSlice.actions.fetchBeneficiaryConventionListRequested({
           jwt,
-          feedbackTopic: "connected-user-beneficiary-convention-list",
+          filters: defaultFilters,
+          feedbackTopic,
         }),
       );
 
@@ -301,22 +308,33 @@ describe("ConnectedUserConventionList", () => {
         isLoading: true,
       });
 
-      const nextResult: BeneficiaryConventionListDto = [
-        {
-          conventionId: "id",
-          businessName: "Business name",
-          dateStart: "2023-02-06",
-          dateEnd: "2023-02-02",
-          status: "ACCEPTED_BY_VALIDATOR",
-          assessment: null,
+      const nextResult: BeneficiaryConventionListDto = {
+        data: [
+          {
+            conventionId: "id",
+            businessName: "Business name",
+            dateStart: "2023-02-06",
+            dateEnd: "2023-02-02",
+            status: "ACCEPTED_BY_VALIDATOR",
+            assessment: null,
+          },
+        ],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: defaultPerPageInWebPagination,
         },
-      ];
+      };
 
       feedGatewayWithBeneficiaryConventionListOrError(nextResult);
 
       expectConventionListSelectors({
         ...defaultConventionListState,
-        beneficiaryConventionList: nextResult,
+        beneficiaryConventionList: {
+          ...nextResult,
+          filters: defaultFilters,
+        },
       });
 
       expectToEqual(
@@ -341,13 +359,59 @@ describe("ConnectedUserConventionList", () => {
       );
     });
 
+    it("updates filters when fetching beneficiary convention list", () => {
+      const filters: FlatGetBeneficiaryConventionListParams = {
+        search: "acme",
+        page: 2,
+        perPage: defaultPerPageInWebPagination,
+      };
+
+      store.dispatch(
+        conventionListSlice.actions.fetchBeneficiaryConventionListRequested({
+          jwt,
+          filters,
+          feedbackTopic,
+        }),
+      );
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        isLoading: true,
+        beneficiaryConventionList: {
+          ...initialBeneficiaryConventionList,
+          filters,
+        },
+      });
+
+      const nextResult: BeneficiaryConventionListDto = {
+        data: [],
+        pagination: {
+          totalRecords: 0,
+          currentPage: 2,
+          totalPages: 1,
+          numberPerPage: defaultPerPageInWebPagination,
+        },
+      };
+
+      feedGatewayWithBeneficiaryConventionListOrError(nextResult);
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        beneficiaryConventionList: {
+          ...nextResult,
+          filters,
+        },
+      });
+    });
+
     it("fetch list failed with feedback then cleared", () => {
       expectConventionListSelectors(defaultConventionListState);
 
       store.dispatch(
         conventionListSlice.actions.fetchBeneficiaryConventionListRequested({
           jwt,
-          feedbackTopic: feedbackTopic,
+          filters: defaultFilters,
+          feedbackTopic,
         }),
       );
 
@@ -360,10 +424,7 @@ describe("ConnectedUserConventionList", () => {
 
       feedGatewayWithBeneficiaryConventionListOrError(error);
 
-      expectConventionListSelectors({
-        ...defaultConventionListState,
-        beneficiaryConventionList: [],
-      });
+      expectConventionListSelectors(defaultConventionListState);
 
       expectToEqual(
         feedbacksSelectors.feedbacks(store.getState())[feedbackTopic],
