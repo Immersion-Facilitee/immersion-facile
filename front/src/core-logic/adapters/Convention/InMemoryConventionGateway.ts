@@ -25,6 +25,7 @@ import {
   type EditConventionCounsellorNameRequestDto,
   type EditConventionWithFinalStatusRequestDto,
   type FindSimilarConventionsParams,
+  type FlatGetBeneficiaryConventionListParams,
   type FlatGetConventionsForAgencyUserParams,
   type FlatGetConventionsWithUnfinalizedAssessmentParams,
   type HandleArchivedConventionRequestDto,
@@ -140,6 +141,7 @@ export class InMemoryConventionGateway implements ConventionGateway {
   }
 
   getBeneficiaryConventionList$(
+    _params: FlatGetBeneficiaryConventionListParams,
     _jwt: string,
   ): Observable<BeneficiaryConventionListDto> {
     return this.getBeneficiaryConventionListResult$;
