@@ -4,6 +4,10 @@
   background: var(--background-default-grey-hover);
   padding: 1rem;
 
+  &:last-of-type {
+    margin-bottom: 0 !important;
+  }
+
   @include for-screen-min($bp-lg) {
     padding: 2rem;
   }

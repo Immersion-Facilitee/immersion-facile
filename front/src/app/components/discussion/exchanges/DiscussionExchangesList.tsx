@@ -1,6 +1,5 @@
-import { fr } from "@codegouvfr/react-dsfr";
 import DOMPurify from "dompurify";
-import { BorderedSection, ExchangeMessage } from "react-design-system";
+import { ExchangeMessage } from "react-design-system";
 import {
   type DiscussionReadDto,
   type ExchangeRead,
@@ -24,7 +23,7 @@ export const DiscussionExchangesList = ({
   potentialBeneficiary: DiscussionReadDto["potentialBeneficiary"];
   viewer: ExchangeRole;
 }): JSX.Element => (
-  <BorderedSection className={fr.cx("fr-mt-2w")}>
+  <>
     {sortedExchanges.map((exchange) => {
       const currentMessage = addLineBreakOnNewLines(
         convertHtmlToText(exchange.message),
@@ -59,5 +58,5 @@ export const DiscussionExchangesList = ({
         </ExchangeMessage>
       );
     })}
-  </BorderedSection>
+  </>
 );

@@ -2,7 +2,6 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BorderedSection } from "react-design-system";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
@@ -66,56 +65,49 @@ export const DiscussionExchangeMessageForm = ({
   );
 
   return (
-    <BorderedSection>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Feedback
-          topics={[
-            "establishment-dashboard-discussion-send-message",
-            "beneficiary-dashboard-discussion-send-message",
-          ]}
-          className={fr.cx("fr-mb-2w")}
-          closable
-        />
-        <input
-          type="hidden"
-          {...register("discussionId")}
-          value={discussionId}
-        />
-        <Input
-          textArea
-          label={
-            viewer === "establishment"
-              ? "Répondre au candidat"
-              : "Répondre à l'entreprise"
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Feedback
+        topics={[
+          "establishment-dashboard-discussion-send-message",
+          "beneficiary-dashboard-discussion-send-message",
+        ]}
+        className={fr.cx("fr-mb-2w")}
+        closable
+      />
+      <input type="hidden" {...register("discussionId")} value={discussionId} />
+      <Input
+        textArea
+        label={
+          viewer === "establishment"
+            ? "Répondre au candidat"
+            : "Répondre à l'entreprise"
+        }
+        nativeTextAreaProps={{
+          id: domElementIds.establishmentDashboard.discussion.sendMessageInput,
+          rows: 5,
+          placeholder: "Rédigez votre message ici...",
+          ...register("message", {
+            setValueAs: escapeHtml,
+          }),
+        }}
+        {...getFieldError("message")}
+      />
+      <div className={fr.cx("fr-mt-2w")}>
+        <Button
+          id={
+            domElementIds[
+              viewer === "establishment"
+                ? "establishmentDashboard"
+                : "beneficiaryDashboard"
+            ].discussion.sendMessageSubmitButton
           }
-          nativeTextAreaProps={{
-            id: domElementIds.establishmentDashboard.discussion
-              .sendMessageInput,
-            rows: 5,
-            placeholder: "Rédigez votre message ici...",
-            ...register("message", {
-              setValueAs: escapeHtml,
-            }),
-          }}
-          {...getFieldError("message")}
-        />
-        <div className={fr.cx("fr-mt-2w")}>
-          <Button
-            id={
-              domElementIds[
-                viewer === "establishment"
-                  ? "establishmentDashboard"
-                  : "beneficiaryDashboard"
-              ].discussion.sendMessageSubmitButton
-            }
-            type="submit"
-            disabled={formState.isSubmitting || message.trim().length === 0}
-            size="small"
-          >
-            Envoyer un message
-          </Button>
-        </div>
-      </form>
-    </BorderedSection>
+          type="submit"
+          disabled={formState.isSubmitting || message.trim().length === 0}
+          size="small"
+        >
+          Envoyer un message
+        </Button>
+      </div>
+    </form>
   );
 };
