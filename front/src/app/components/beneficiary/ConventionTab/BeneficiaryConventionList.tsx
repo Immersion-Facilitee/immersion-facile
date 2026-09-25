@@ -1,10 +1,10 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Table from "@codegouvfr/react-dsfr/Table";
 import { Fragment, useEffect } from "react";
-import { Loader, SectionHighlight } from "react-design-system";
-import { useDispatch, useSelector } from "react-redux";
+import { RichTable, SectionHighlight } from "react-design-system";
+import { useDispatch } from "react-redux";
 import {
-  type BeneficiaryConventionListDto,
+  type BeneficiaryConvention,
+  defaultPerPageInWebPagination,
   domElementIds,
   immersionFacileHelpdeskRootUrl,
 } from "shared";
@@ -29,85 +29,143 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
   const dispatch = useDispatch();
   const jwt = useAppSelector(authSelectors.connectedUserJwt);
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
-  const beneficiaryConventionList = useSelector(
-    conventionListSelectors.beneficiaryConventionList,
-  );
-  const isLoading = useSelector(conventionListSelectors.isLoading);
+  const {
+    data: conventions,
+    pagination,
+    filters,
+  } = useAppSelector(conventionListSelectors.beneficiaryConventionList);
+  const isLoading = useAppSelector(conventionListSelectors.isLoading);
   const feedback = useFeedbackTopic(feedbackTopic);
   const { enableBeneficiaryManageConvention } = useFeatureFlags();
+  const hasActiveSearch = !!filters.search;
+  const hasConventions = conventions.length > 0;
+  const showHelpdeskEmptyState =
+    !hasConventions &&
+    !hasActiveSearch &&
+    !!currentUser &&
+    feedback?.level === "success";
+  const showTable = !!jwt && (hasConventions || hasActiveSearch);
 
   useEffect(() => {
-    if (jwt && !isLoading && beneficiaryConventionList === null)
+    if (jwt)
       dispatch(
         conventionListSlice.actions.fetchBeneficiaryConventionListRequested({
           jwt,
+          filters: {
+            page: 1,
+            perPage: defaultPerPageInWebPagination,
+          },
           feedbackTopic,
         }),
       );
-  }, [jwt, isLoading, dispatch, beneficiaryConventionList]);
 
-  useEffect(
-    () => () => {
+    return () => {
       dispatch(
         conventionListSlice.actions.clearBeneficiaryConventionListRequested(),
       );
       dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
-    },
-    [dispatch],
-  );
+    };
+  }, [jwt, dispatch]);
 
   return (
     <>
-      {isLoading && <Loader />}
       <h1>Conventions</h1>
       <WithFeedbackReplacer topic={feedbackTopic} level="error" />
-      {beneficiaryConventionList !== null &&
-        beneficiaryConventionList.length > 0 && (
-          <Table
-            headers={["Entreprise", "Statut", "Bilan", "Dates", "Actions"]}
-            data={conventionListToTableData(
-              beneficiaryConventionList,
-              enableBeneficiaryManageConvention.isActive,
-            )}
-          />
-        )}
-      {beneficiaryConventionList?.length === 0 &&
-        currentUser &&
-        feedback?.level === "success" && (
-          <SectionHighlight priority="discrete">
-            <p>
-              Aucune convention associée à votre mail{" "}
-              <strong>{currentUser.email}</strong> n’a été trouvée.
-            </p>
-            <p>
-              Si vous avez déjà une convention en cours, vérifiez que vous vous
-              êtes connecté avec le même mail que celui renseigné sur vos
-              conventions.
-            </p>
-            <p>
-              Pour plus d’informations,{" "}
-              <a
-                id={
-                  domElementIds.beneficiaryDashboardConventions
-                    .beneficiaryConventionListHelpdeskNoConventionHint
-                }
-                href={`${immersionFacileHelpdeskRootUrl}/article/consulter-mes-conventions-dimmersion-12be20q/`}
-                className={fr.cx("fr-link")}
-                target="_blank"
-                rel="noreferrer"
-              >
-                consultez notre centre d’aide
-              </a>
-              .
-            </p>
-          </SectionHighlight>
-        )}
+      {showTable && (
+        <RichTable
+          headers={getTableHeaders(hasConventions)}
+          isLoading={isLoading}
+          data={conventionListToTableData(
+            conventions,
+            enableBeneficiaryManageConvention.isActive,
+          )}
+          searchBar={{
+            label: "Rechercher",
+            placeholder:
+              "Rechercher une convention (ID, entreprise, email, etc.)",
+            onSubmit: (query: string) => {
+              dispatch(
+                conventionListSlice.actions.fetchBeneficiaryConventionListRequested(
+                  {
+                    jwt,
+                    filters: {
+                      ...filters,
+                      search: query || undefined,
+                      page: 1,
+                      perPage: defaultPerPageInWebPagination,
+                    },
+                    feedbackTopic,
+                  },
+                ),
+              );
+            },
+          }}
+          pagination={{
+            count: pagination.totalPages,
+            defaultPage: pagination.currentPage,
+            showFirstLast: true,
+            getPageLinkProps: (pageNumber) => ({
+              title: `Résultats de recherche, page : ${pageNumber}`,
+              onClick: (event) => {
+                event.preventDefault();
+                dispatch(
+                  conventionListSlice.actions.fetchBeneficiaryConventionListRequested(
+                    {
+                      jwt,
+                      filters: { ...filters, page: pageNumber },
+                      feedbackTopic,
+                    },
+                  ),
+                );
+              },
+              href: "#",
+              key: `pagination-link-${pageNumber}`,
+            }),
+          }}
+        />
+      )}
+      {showHelpdeskEmptyState && currentUser && (
+        <SectionHighlight priority="discrete">
+          <p>
+            Aucune convention associée à votre mail{" "}
+            <strong>{currentUser.email}</strong> n’a été trouvée.
+          </p>
+          <p>
+            Si vous avez déjà une convention en cours, vérifiez que vous vous
+            êtes connecté avec le même mail que celui renseigné sur vos
+            conventions.
+          </p>
+          <p>
+            Pour plus d’informations,{" "}
+            <a
+              id={
+                domElementIds.beneficiaryDashboardConventions
+                  .beneficiaryConventionListHelpdeskNoConventionHint
+              }
+              href={`${immersionFacileHelpdeskRootUrl}/article/consulter-mes-conventions-dimmersion-12be20q/`}
+              className={fr.cx("fr-link")}
+              target="_blank"
+              rel="noreferrer"
+            >
+              consultez notre centre d’aide
+            </a>
+            .
+          </p>
+        </SectionHighlight>
+      )}
     </>
   );
 };
 
+const getTableHeaders = (hasConventions: boolean): React.ReactNode[] =>
+  hasConventions
+    ? ["Entreprise", "Statut", "Bilan", "Dates", "Actions"]
+    : [
+        "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche",
+      ];
+
 const conventionListToTableData = (
-  conventionList: BeneficiaryConventionListDto,
+  conventionList: BeneficiaryConvention[],
   isBeneficiaryManageConventionEnabled: boolean,
 ): React.ReactNode[][] =>
   conventionList.map<React.ReactNode[]>((convention) => [
