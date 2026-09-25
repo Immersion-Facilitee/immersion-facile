@@ -17,8 +17,8 @@ import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import type { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
-  doesWarnedAgencyRequiresWarningAgain,
   getInactiveAgenciesAmong,
+  isAgencyActiveAfterWarning,
   makeInactiveAgenciesFilters,
 } from "../helpers/inactiveAgencies.helpers";
 
@@ -157,11 +157,11 @@ const hasValidWarningOldEnoughToClose = async (params: {
     return false;
   }
 
-  return doesWarnedAgencyRequiresWarningAgain({
+  return !(await isAgencyActiveAfterWarning({
     agency,
     warningCreatedAt: lastWarningDate,
     uow,
-  });
+  }));
 };
 
 const getNotificationsForClosedAgencies = async (

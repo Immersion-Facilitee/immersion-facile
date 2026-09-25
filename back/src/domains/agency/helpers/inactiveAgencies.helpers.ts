@@ -1,5 +1,6 @@
 import { startOfDay } from "date-fns";
 import {
+  type AgencyId,
   type AgencyKind,
   type AgencyStatus,
   type AgencyWithUsersRights,
@@ -43,6 +44,49 @@ export const makeInactiveAgenciesFilters = (params: {
   updatedAtBefore: params.updatedAtBefore,
 });
 
+const hasAgencyOrReferringAgenciesConventionSince = async (params: {
+  agencyId: AgencyId;
+  since: Date;
+  uow: UnitOfWork;
+}): Promise<boolean> => {
+  const { agencyId, since, uow } = params;
+
+  const agencyConventionIds =
+    await uow.conventionQueries.getConventionIdsByFilters({
+      filters: {
+        withAgencyIds: [agencyId],
+        withStatuses: [...conventionStatusesPreventingAgencyClosure],
+        withDateSubmission: { from: since },
+      },
+      limit: 1,
+    });
+
+  if (agencyConventionIds.length > 0) {
+    return true;
+  }
+
+  const referringAgencies =
+    await uow.agencyRepository.getAgenciesRelatedToAgency(agencyId);
+
+  if (referringAgencies.length === 0) {
+    return false;
+  }
+
+  const referringAgenciesConventionIds =
+    await uow.conventionQueries.getConventionIdsByFilters({
+      filters: {
+        withAgencyIds: referringAgencies.map(
+          (referringAgency) => referringAgency.id,
+        ),
+        withStatuses: [...conventionStatusesPreventingAgencyClosure],
+        withDateSubmission: { from: since },
+      },
+      limit: 1,
+    });
+
+  return referringAgenciesConventionIds.length > 0;
+};
+
 export const getInactiveAgenciesAmong = async (params: {
   agencies: AgencyWithUsersRights[];
   uow: UnitOfWork;
@@ -52,46 +96,20 @@ export const getInactiveAgenciesAmong = async (params: {
 
   const inactiveAgenciesResults = await executeInSequence(
     agencies,
-    async (agency): Promise<AgencyWithUsersRights | null> => {
-      const agencyConventionIds =
-        await uow.conventionQueries.getConventionIdsByFilters({
-          filters: {
-            withAgencyIds: [agency.id],
-            withStatuses: [...conventionStatusesPreventingAgencyClosure],
-            withDateSubmission: { from: noConventionSince },
-          },
-          limit: 1,
-        });
-
-      if (agencyConventionIds.length === 0) {
-        const referringAgencies =
-          await uow.agencyRepository.getAgenciesRelatedToAgency(agency.id);
-
-        if (referringAgencies.length === 0) return agency;
-
-        const referringAgenciesConventionIds =
-          await uow.conventionQueries.getConventionIdsByFilters({
-            filters: {
-              withAgencyIds: referringAgencies.map(
-                (referringAgency) => referringAgency.id,
-              ),
-              withStatuses: [...conventionStatusesPreventingAgencyClosure],
-              withDateSubmission: { from: noConventionSince },
-            },
-            limit: 1,
-          });
-
-        if (referringAgenciesConventionIds.length === 0) return agency;
-      }
-
-      return null;
-    },
+    async (agency): Promise<AgencyWithUsersRights | null> =>
+      (await hasAgencyOrReferringAgenciesConventionSince({
+        agencyId: agency.id,
+        since: noConventionSince,
+        uow,
+      }))
+        ? null
+        : agency,
   );
 
   return inactiveAgenciesResults.filter(isTruthy);
 };
 
-export const doesWarnedAgencyRequiresWarningAgain = async (params: {
+export const isAgencyActiveAfterWarning = async (params: {
   agency: AgencyWithUsersRights;
   warningCreatedAt: Date;
   uow: UnitOfWork;
@@ -101,18 +119,12 @@ export const doesWarnedAgencyRequiresWarningAgain = async (params: {
   const isAgencyUpdatedAfterLastWarning =
     startOfDay(new Date(agency.updatedAt)) >= startOfDay(warningCreatedAt);
   if (isAgencyUpdatedAfterLastWarning) {
-    return false;
+    return true;
   }
 
-  const conventionIdsAfterWarning =
-    await uow.conventionQueries.getConventionIdsByFilters({
-      filters: {
-        withAgencyIds: [agency.id],
-        withStatuses: [...conventionStatusesPreventingAgencyClosure],
-        withDateSubmission: { from: warningCreatedAt },
-      },
-      limit: 1,
-    });
-
-  return conventionIdsAfterWarning.length === 0;
+  return hasAgencyOrReferringAgenciesConventionSince({
+    agencyId: agency.id,
+    since: warningCreatedAt,
+    uow,
+  });
 };
