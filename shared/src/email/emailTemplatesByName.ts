@@ -624,6 +624,48 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         subContent: defaultSignature("immersion"),
       }),
     },
+    AGENCY_INACTIVITY_WARNING: {
+      niceName: "Espace prescripteurs - Prévention fermeture automatique",
+      tags: [
+        "template:espacePrescripteur_preventionFermetureAutomatique",
+        "theme:espacePrescripteur",
+        "acteur:prescripteur",
+        "role:admin",
+        "role:preValideur",
+        "role:valideur",
+        "role:lecteur",
+      ],
+      createEmailVariables: ({ agencyName }) => ({
+        subject: `Votre organisme ${agencyName} risque d’être fermé pour inactivité`,
+        greetings: "Bonjour,",
+        content: `Nous constatons qu’<strong>aucune convention d’immersion n’a été validée (ou n'est en cours de validation) depuis 3 mois pour votre structure ${agencyName}</strong>.
+        
+        Vous rencontrez peut-être une difficulté pour :
+        <ul>
+          <li>utiliser la convention dématérialisée ;</li>
+          <li>comprendre le dispositif de l’immersion professionnelle ;</li>
+          <li>mobiliser Immersion Facilitée dans l’accompagnement de vos bénéficiaires.</li>
+        </ul>
+
+        Ou peut-être n’avez pas l’occasion de prescrire régulièrement des immersions.
+
+        Quelle que soit votre situation, <strong>notre équipe peut vous accompagner</strong>, répondre à vos questions ou vérifier avec vous si votre référencement est toujours adapté.
+        `,
+        buttons: [
+          {
+            label: "Contactez-nous",
+            url: immersionFacileHelpdeskRootUrl,
+            target: "_blank",
+          },
+        ],
+        subContent: `
+        <strong>À savoir :</strong> Sans nouvelle convention initiée au cours des 3 prochains mois, votre structure sera automatiquement fermée pour inactivité. Elle pourra être réactivée sur simple demande.
+
+        Des <a href="https://pages.immersion-facile.beta.gouv.fr/ressources-webinaires-prescripteurs-immersion-professionnelle-pmsmp/" target="_blank">ressources et webinaires</a> sont à votre disposition pour vous aider.
+
+        ${defaultSignature("immersion")}`,
+      }),
+    },
     AGENCY_WITH_REFERS_TO_ACTIVATED: {
       niceName:
         "Agence - notification de l'agence prescriptrice lors de l'activation d'une agence accompagnatrice",
