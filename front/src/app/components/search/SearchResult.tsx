@@ -33,6 +33,7 @@ const SearchResultComponent = ({
 }: EnterpriseSearchResultProps) => {
   const { cx } = useStyles();
   const {
+    siret,
     name,
     customizedName,
     address,
@@ -93,6 +94,11 @@ const SearchResultComponent = ({
       )}
       title={jobTitle}
       desc={establishmentName}
+      id={
+        voluntaryToImmersion
+          ? `${domElementIds.search.searchResultButton}-${siret}`
+          : `${domElementIds.search.lbbSearchResultButton}-${siret}`
+      }
       linkProps={{
         ...linkPropsHandlingNotAvailable,
         id: voluntaryToImmersion
