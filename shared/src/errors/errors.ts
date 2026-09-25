@@ -378,6 +378,10 @@ export const errors = {
       new BadRequestError(
         `Impossible de modifier le nom du conseiller pour les conventions ayant le statut "${status}".`,
       ),
+    isAlsoAgencyReferentRequired: () =>
+      new BadRequestError(
+        "Indiquez si vous êtes également le conseiller pour le suivi du bénéficiaire.",
+      ),
 
     editConventionWithFinalStatusNotAuthorizedForRole: () =>
       new ForbiddenError(
