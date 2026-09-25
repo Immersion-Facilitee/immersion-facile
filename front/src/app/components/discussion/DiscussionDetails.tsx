@@ -168,10 +168,7 @@ const getDiscussionActionsButtons = ({
     discussion,
     connectedUser,
   });
-  const actionsFullSet =
-    discussion.kind === "IF"
-      ? [initiateConventionButton, acceptButton, rejectButton]
-      : [acceptButton, rejectButton];
+  const actionsFullSet = [initiateConventionButton, acceptButton, rejectButton];
   return match({ viewer, displayStatus, followUp })
     .with(
       {
@@ -267,8 +264,8 @@ const shouldShowDiscussionActionButtons = ({
 
 const getDiscussionStatusUpdatedFeedbackMessage = (
   discussion: DiscussionReadDto,
-): string => {
-  return match(discussion)
+): string =>
+  match(discussion)
     .with({ status: "PENDING" }, () => "")
     .with(
       { status: "ACCEPTED" },
@@ -300,7 +297,6 @@ const getDiscussionStatusUpdatedFeedbackMessage = (
         "Candidature automatiquement refusée par manque de réponse de votre part dans un délai de 3 mois.",
     )
     .exhaustive();
-};
 
 type DiscussionDetailsProps = {
   discussion: DiscussionReadDto;
@@ -594,13 +590,12 @@ export const DiscussionDetails = (
           .exhaustive()}
         aside={
           <>
-            {match({ kind: discussion.kind, viewer, shouldShowFullSummary })
-              .with({ kind: "IF", viewer: "potentialBeneficiary" }, () => (
+            {match({ viewer, shouldShowFullSummary })
+              .with({ viewer: "potentialBeneficiary" }, () => (
                 <EstablishmentSummary discussion={discussion} />
               ))
               .with(
                 {
-                  kind: "IF",
                   viewer: "establishment",
                   shouldShowFullSummary: false,
                 },
@@ -614,21 +609,19 @@ export const DiscussionDetails = (
               )
               .otherwise(() => null)}
 
-            {isLayoutDesktop &&
-              discussion.kind === "IF" &&
-              isNotEmptyArray(discussionActionsButtons) && (
-                <BorderedSection
-                  className={
-                    viewer === "potentialBeneficiary" &&
-                    shouldShowDiscussionActions
-                      ? fr.cx("fr-p-2w", "fr-mt-2w")
-                      : undefined
-                  }
-                >
-                  <h3 className={fr.cx("fr-h6")}>Actions</h3>
-                  <ButtonsGroup buttons={discussionActionsButtons} />
-                </BorderedSection>
-              )}
+            {isLayoutDesktop && isNotEmptyArray(discussionActionsButtons) && (
+              <BorderedSection
+                className={
+                  viewer === "potentialBeneficiary" &&
+                  shouldShowDiscussionActions
+                    ? fr.cx("fr-p-2w", "fr-mt-2w")
+                    : undefined
+                }
+              >
+                <h3 className={fr.cx("fr-h6")}>Actions</h3>
+                <ButtonsGroup buttons={discussionActionsButtons} />
+              </BorderedSection>
+            )}
           </>
         }
         className={fr.cx("fr-mt-md-2w", "fr-mt-1w")}
