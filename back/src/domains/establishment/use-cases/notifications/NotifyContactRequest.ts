@@ -1,4 +1,3 @@
-import { ascend, prop, sort } from "ramda";
 import {
   addressDtoToString,
   type ContactEstablishmentEventPayload,
@@ -8,6 +7,7 @@ import {
   discussionEmailSender,
   type Email,
   errors,
+  executeInSequence,
   getFormattedFirstnameAndLastname,
   immersionFacileNoReplyEmailSender,
   type TemplatedEmail,
@@ -60,7 +60,6 @@ export const makeNotifyContactRequest = useCaseBuilder("NotifyContactRequest")
           uow,
           discussion,
           establishment,
-          isLegacy: inputParams.isLegacy,
           deps,
         })
       : notifyOnOtherContactMode({ uow, discussion, establishment, deps });
@@ -115,13 +114,11 @@ const notifyOnEmailContactMode = async ({
   deps,
   discussion,
   establishment,
-  isLegacy,
 }: {
   uow: UnitOfWork;
   deps: Deps;
   discussion: DiscussionDto;
   establishment: EstablishmentAggregate;
-  isLegacy: boolean | undefined;
 }): Promise<void> => {
   const appellations =
     await uow.romeRepository.getAppellationAndRomeDtosFromAppellationCodesIfExist(
@@ -143,45 +140,33 @@ const notifyOnEmailContactMode = async ({
     replyDomain: `reply.${deps.domain}`,
   });
 
-  const notifiedRecipients = (
-    await getNotifiedUsersFromEstablishmentUserRights(
-      uow,
-      establishment.userRights,
-    )
-  ).map((user) => user.email);
+  const notifiedUsers = await getNotifiedUsersFromEstablishmentUserRights(
+    uow,
+    establishment.userRights,
+  );
 
-  const templatedContent: TemplatedEmail = {
-    sender: discussionEmailSender,
-    recipients: notifiedRecipients,
-    replyTo: {
-      email: opaqueEmail,
-      name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
-    },
-    kind: "CONTACT_BY_EMAIL_REQUEST",
-    params: {
-      ...(await makeContactByEmailRequestParams({
+  await executeInSequence(notifiedUsers, async (notifiedUser) => {
+    const templatedContent: TemplatedEmail = {
+      sender: discussionEmailSender,
+      recipients: [notifiedUser.email],
+      replyTo: {
+        email: opaqueEmail,
+        name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
+      },
+      ...makeContactByEmailRequestParams({
         appellation,
+        contactFirstName: notifiedUser.firstName,
+        contactLastName: notifiedUser.lastName,
         discussion,
         immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
-      })),
-      replyToEmail: opaqueEmail,
-    },
-  };
+      }),
+    };
 
-  await deps.saveNotificationAndRelatedEvent(uow, {
-    kind: "email",
-    templatedContent: isLegacy
-      ? {
-          ...templatedContent,
-          kind: "CONTACT_BY_EMAIL_REQUEST_LEGACY",
-          params: {
-            ...templatedContent.params,
-            message: sort(ascend(prop("sentAt")), discussion.exchanges)[0]
-              .message,
-          },
-        }
-      : templatedContent,
-    followedIds: { establishmentSiret: discussion.siret },
+    await deps.saveNotificationAndRelatedEvent(uow, {
+      kind: "email",
+      templatedContent,
+      followedIds: { establishmentSiret: discussion.siret },
+    });
   });
 };
 
