@@ -67,7 +67,7 @@ describe("NotifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted", () 
       );
     });
 
-    it("throws when discussion is not rejected for establishment deletion", async () => {
+    it("throws when discussion is not rejected on establishment deletion", async () => {
       const pendingDiscussion = new DiscussionBuilder(discussion)
         .withStatus({ status: "PENDING" })
         .build();
@@ -86,7 +86,7 @@ describe("NotifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted", () 
   });
 
   describe("Right paths", () => {
-    it("notifies the beneficiary that the discussion was closed because the establishment unsubscribed", async () => {
+    it("notifies the beneficiary that the discussion was closed because the establishment has been deleted", async () => {
       await notifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted.execute(
         { discussionId: discussion.id },
       );

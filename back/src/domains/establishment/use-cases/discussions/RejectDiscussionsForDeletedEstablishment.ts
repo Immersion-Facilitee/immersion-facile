@@ -11,7 +11,7 @@ export type RejectDiscussionsForDeletedEstablishment = ReturnType<
 export const establishmentDeletedRejectionReason =
   "L'entreprise s'est désinscrite d'Immersion Facilitée";
 
-const maxDiscussionsToReject = 500;
+const maxDiscussionsToReject = 1000;
 
 export const makeRejectDiscussionsForDeletedEstablishment = useCaseBuilder(
   "RejectDiscussionsForDeletedEstablishment",
