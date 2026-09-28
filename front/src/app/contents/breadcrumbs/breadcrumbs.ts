@@ -101,10 +101,6 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
     label: "Mon compte",
     route: frontRoutes.myAccount(),
     children: {
-      agencyRegistration: {
-        label: "Demander l'accès à des organismes",
-        route: frontRoutes.agencyRegistration({ fromRoute: "myAccount" }),
-      },
       establishmentDashboard: {
         label: "Tableau de bord entreprise",
         route: frontRoutes.establishmentDashboard(),
@@ -140,6 +136,12 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
       agencyDashboardMain: {
         label: "Tableau de bord",
         route: frontRoutes.agencyDashboardMain(),
+        children: {
+          agencyDashboardRegistration: {
+            label: "Demander l'accès à des organismes",
+            route: frontRoutes.agencyDashboardRegistration(),
+          },
+        },
       },
       agencyDashboardAgencyDetails: {
         label: "Détail de l'organisme",

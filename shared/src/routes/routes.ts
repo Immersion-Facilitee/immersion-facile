@@ -179,32 +179,6 @@ export const conventionTemplateFromRouteSerializer: ValueSerializer<
   stringify: (value) => value,
 };
 
-const agencyRegistrationFromRouteValues = [
-  "myAccount",
-  "agencyDashboardAgencies",
-] as const satisfies FrontRouteKeys[];
-
-export type AgencyRegistrationFromRoute =
-  (typeof agencyRegistrationFromRouteValues)[number];
-
-export const isAgencyRegistrationFromRoute = (
-  value: unknown,
-): value is AgencyRegistrationFromRoute =>
-  typeof value === "string" &&
-  agencyRegistrationFromRouteValues.some((v) => v === value);
-
-export const agencyRegistrationFromRouteSerializer: ValueSerializer<
-  "myAccount" | "agencyDashboardAgencies"
-> = {
-  parse: (value) => {
-    if (isAgencyRegistrationFromRoute(value)) return value;
-    throw new Error(
-      `Invalid agency registration fromRoute: expected one of ${agencyRegistrationFromRouteValues.join(", ")}, got "${value}"`,
-    );
-  },
-  stringify: (value) => value,
-};
-
 const loginPersonaSerializer: ValueSerializer<"beneficiary" | "professional"> =
   {
     parse: (value) => {
@@ -272,16 +246,11 @@ export const {
   ),
   agencyManagement: agencyDashboard.extend("/pilotage-structure"),
   establishmentManagement: agencyDashboard.extend("/pilotage-entreprises"),
+  agencyDashboardRegistration: myAccount.extend(
+    "/tableau-de-bord-agence/rattachement-organisme",
+  ),
 
   myAccount,
-  agencyRegistration: myAccount.extend(
-    {
-      fromRoute: param.query.optional.ofType(
-        agencyRegistrationFromRouteSerializer,
-      ),
-    },
-    () => "/agency-registration",
-  ),
   agencyDashboardAgencies: agencyDashboardAgencies,
   agencyDashboardAgencyDetails: agencyDashboardAgencies.extend(
     { agencyId: param.path.optional.string },

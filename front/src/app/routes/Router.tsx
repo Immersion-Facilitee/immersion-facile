@@ -20,6 +20,7 @@ import { AdminTabs } from "src/app/pages/admin/AdminTabs";
 import { AdminUserDetail } from "src/app/pages/admin/AdminUserDetail";
 import { AddAgencyPage } from "src/app/pages/agency/AddAgencyPage";
 import { AgencyDashboardMainTab } from "src/app/pages/agency-dashboard/AgencyDashboardMainTab";
+import { AgencyRegistrationPage } from "src/app/pages/agency-dashboard/AgencyRegistrationPage";
 import { AdminPrivateRoutePage } from "src/app/pages/auth/AdminPrivateRoutePage";
 import { ConnectedPrivateRoutePage } from "src/app/pages/auth/ConnectedPrivateRoutePage";
 import { DashboardPrivateRoutePage } from "src/app/pages/auth/DashboardPrivateRoutePage";
@@ -42,7 +43,6 @@ import { EstablishmentRegistrationPage } from "src/app/pages/establishment-dashb
 import { StatsPage } from "src/app/pages/StatsPage";
 import { SearchPage } from "src/app/pages/search/SearchPage";
 import { MyAccountPage } from "src/app/pages/user/MyAccountPage";
-import { RequestAgencyRegistrationTab } from "src/app/pages/user/tabs/RequestAgencyRegistrationTab";
 import { store } from "src/config/dependencies";
 import { connectedUserSlice } from "src/core-logic/domain/connected-user/connectedUser.slice";
 import type { Route } from "type-route";
@@ -316,14 +316,14 @@ const getPageByRouteName: {
       <MyAccountPage />
     </ConnectedPrivateRoutePage>
   ),
-  agencyRegistration: (route) => (
+  agencyDashboardRegistration: (route) => (
     <ConnectedPrivateRoutePage
       route={route}
       oAuthConnectionPageHeader={
         <PageHeader title="Vous devez vous connecter pour accéder à votre compte" />
       }
     >
-      <RequestAgencyRegistrationTab route={route} />
+      <AgencyRegistrationPage />
     </ConnectedPrivateRoutePage>
   ),
 
