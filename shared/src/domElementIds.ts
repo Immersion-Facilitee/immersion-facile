@@ -565,6 +565,8 @@ export const domElementIds = {
       "im-convention-validation__transfer-agency-modal-form",
     validatorModalLastNameInput: "im-validator-modal__last-name-input",
     validatorModalFirstNameInput: "im-validator-modal__first-name-input",
+    validatorModalIsAlsoAgencyReferent:
+      "im-validator-modal__is-also-agency-referent",
     editCounsellorNameModalLastNameInput:
       "im-edit-counsellor-name-modal__last-name-input",
     editCounsellorNameModalFirstNameInput:

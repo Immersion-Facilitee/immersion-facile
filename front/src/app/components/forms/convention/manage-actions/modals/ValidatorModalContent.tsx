@@ -1,6 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Input from "@codegouvfr/react-dsfr/Input";
+import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { pick } from "ramda";
 import { type Dispatch, type SetStateAction, useEffect } from "react";
@@ -9,14 +10,35 @@ import {
   type ConventionReadDto,
   type ConventionStatusWithValidator,
   domElementIds,
+  getFormattedFirstnameAndLastname,
+  hasCompleteAgencyReferent,
+  localization,
   type UpdateConventionStatusRequestDto,
   type WithFirstnameAndLastname,
   withFirstnameAndLastnameSchema,
 } from "shared";
+import { booleanSelectOptions } from "src/app/contents/forms/common/values";
 import { makeFieldError } from "src/app/hooks/formContents.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useFormModal } from "src/app/utils/createFormModal";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
+import { z } from "zod";
+
+type ValidatorModalFormValues = WithFirstnameAndLastname & {
+  isAlsoAgencyReferent?: boolean;
+};
+
+const makeValidatorModalFormSchema = (showAgencyReferentQuestion: boolean) =>
+  showAgencyReferentQuestion
+    ? withFirstnameAndLastnameSchema.and(
+        z.object({
+          isAlsoAgencyReferent: z.boolean({
+            error: localization.expectedBoolean,
+          }),
+        }),
+      )
+    : withFirstnameAndLastnameSchema;
+
 
 export const ValidatorModalContent = ({
   onSubmit,
@@ -46,26 +68,34 @@ export const ValidatorModalContent = ({
           lastname: currentUser.lastName,
         })
       : undefined;
+  const showAgencyReferentQuestion = !hasCompleteAgencyReferent(
+    convention.agencyReferent,
+  );
 
-  const { register, handleSubmit, formState } =
-    useForm<WithFirstnameAndLastname>({
-      resolver: zodResolver(withFirstnameAndLastnameSchema),
+  const { register, handleSubmit, formState, watch, setValue } =
+    useForm<ValidatorModalFormValues>({
+      resolver: zodResolver(
+        makeValidatorModalFormSchema(showAgencyReferentQuestion),
+      ),
       mode: "onTouched",
       defaultValues: currentUserName,
     });
-  const onFormSubmit: SubmitHandler<WithFirstnameAndLastname> = ({
+  const onFormSubmit: SubmitHandler<ValidatorModalFormValues> = ({
     firstname,
     lastname,
+    isAlsoAgencyReferent,
   }) => {
     onSubmit({
       status: newStatus,
       conventionId: convention.id,
       firstname,
       lastname,
+      ...(showAgencyReferentQuestion ? { isAlsoAgencyReferent } : {}),
     });
     closeModal();
   };
   const getFieldError = makeFieldError(formState);
+  const isAlsoAgencyReferent = watch("isAlsoAgencyReferent");
 
   useEffect(() => {
     if (showSyncErrorWarningStep) return;
@@ -146,6 +176,34 @@ export const ValidatorModalContent = ({
         }}
         {...getFieldError("lastname")}
       />
+      {showAgencyReferentQuestion && (
+        <RadioButtons
+          legend={`Est-elle également le conseiller pour le suivi de ${getFormattedFirstnameAndLastname(
+            {
+              firstname: convention.signatories.beneficiary.firstName,
+              lastname: convention.signatories.beneficiary.lastName,
+            },
+          )} ? *`}
+          name="isAlsoAgencyReferent"
+          id={domElementIds.manageConvention.validatorModalIsAlsoAgencyReferent}
+          options={booleanSelectOptions.map((option) => ({
+            ...option,
+            nativeInputProps: {
+              ...option.nativeInputProps,
+              checked:
+                !!option.nativeInputProps.value === isAlsoAgencyReferent,
+              onChange: () => {
+                setValue(
+                  "isAlsoAgencyReferent",
+                  option.nativeInputProps.value === 1,
+                  { shouldValidate: true },
+                );
+              },
+            },
+          }))}
+          {...getFieldError("isAlsoAgencyReferent")}
+        />
+      )}
     </form>
   );
 };

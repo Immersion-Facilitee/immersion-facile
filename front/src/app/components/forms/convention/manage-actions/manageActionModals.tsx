@@ -106,6 +106,7 @@ const createCounsellorModalParams = {
   id: domElementIds.manageConvention.counsellorModal,
   isOpenedByDefault: false,
   formId: domElementIds.manageConvention.counsellorModalForm,
+  doSubmitClosesModal: false,
   submitButton: {
     id: domElementIds.manageConvention.counsellorModalSubmitButton,
     children: "Pré-valider la demande",
@@ -121,6 +122,7 @@ const createValidatorModalParams = {
   id: domElementIds.manageConvention.validatorModal,
   isOpenedByDefault: false,
   formId: domElementIds.manageConvention.validatorModalForm,
+  doSubmitClosesModal: false,
 };
 const {
   Component: ValidatorModal,
