@@ -239,6 +239,11 @@ test.describe("Convention creation and modification workflow", () => {
           .fill(faker.person.firstName());
         await page
           .locator(
+            `[for="${domElementIds.manageConvention.validatorModalIsAlsoAgencyReferent}-1"]`,
+          )
+          .click();
+        await page
+          .locator(
             `#${domElementIds.manageConvention.validatorModalSubmitButton}`,
           )
           .click();

@@ -39,7 +39,6 @@ const makeValidatorModalFormSchema = (showAgencyReferentQuestion: boolean) =>
       )
     : withFirstnameAndLastnameSchema;
 
-
 export const ValidatorModalContent = ({
   onSubmit,
   closeModal,
@@ -190,8 +189,7 @@ export const ValidatorModalContent = ({
             ...option,
             nativeInputProps: {
               ...option.nativeInputProps,
-              checked:
-                !!option.nativeInputProps.value === isAlsoAgencyReferent,
+              checked: !!option.nativeInputProps.value === isAlsoAgencyReferent,
               onChange: () => {
                 setValue(
                   "isAlsoAgencyReferent",
