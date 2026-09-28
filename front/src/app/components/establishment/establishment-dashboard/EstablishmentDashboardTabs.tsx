@@ -302,12 +302,12 @@ const OnboardingTabContent = () => (
             children: "Créer une nouvelle entreprise",
           },
           {
-            id: domElementIds.myAccountEstablishmentRegistration
+            id: domElementIds.establishmentDashboardRegistration
               .registerEstablishmentButton,
 
             priority: "primary",
             onClick: () => {
-              frontRoutes.myAccountEstablishmentRegistration().push();
+              frontRoutes.establishmentDashboardRegistration().push();
             },
             iconId: "fr-icon-add-line",
             children: "Se rattacher à une entreprise",

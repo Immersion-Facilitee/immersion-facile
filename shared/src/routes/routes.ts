@@ -282,10 +282,6 @@ export const {
     },
     () => "/agency-registration",
   ),
-  myAccountEstablishmentRegistration: myAccount.extend(
-    { siret: param.query.optional.string },
-    () => "/rattachement-entreprise",
-  ),
   agencyDashboardAgencies: agencyDashboardAgencies,
   agencyDashboardAgencyDetails: agencyDashboardAgencies.extend(
     { agencyId: param.path.optional.string },
@@ -400,6 +396,13 @@ export const {
       discussionId: param.path.optional.string,
     },
     ({ discussionId }) => `/discussions/${discussionId}`,
+  ),
+  establishmentDashboardRegistration: myAccount.extend(
+    { siret: param.query.optional.string },
+    () => [
+      "/tableau-de-bord-etablissement/rattachement-entreprise",
+      "/rattachement-entreprise",
+    ],
   ),
   formEstablishment: defineRoute(
     {

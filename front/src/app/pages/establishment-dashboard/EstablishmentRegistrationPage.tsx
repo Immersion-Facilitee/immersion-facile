@@ -8,7 +8,7 @@ import { RequestRegisterEstablishmentsForUserForm } from "src/app/components/for
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 
-export const RequestEstablishmentRegistrationTab = () => {
+export const EstablishmentRegistrationPage = () => {
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isLoading = useAppSelector(connectedUserSelectors.isLoading);
   if (isLoading) {
@@ -23,13 +23,13 @@ export const RequestEstablishmentRegistrationTab = () => {
         breadcrumbs={<Breadcrumbs />}
         badge={
           <Button
-            linkProps={frontRoutes.myAccount().link}
+            linkProps={frontRoutes.establishmentDashboard().link}
             priority={"secondary"}
             size="small"
             className={fr.cx("fr-mb-6w")}
             iconId="fr-icon-arrow-go-back-line"
           >
-            Retourner sur mon compte
+            Retour au tableau de bord
           </Button>
         }
       >
@@ -39,7 +39,7 @@ export const RequestEstablishmentRegistrationTab = () => {
       </PageHeader>
       <div className={fr.cx("fr-container", "fr-mt-2w", "fr-mb-8w")}>
         <Feedback
-          topics={["my-profile-establishment-registration"]}
+          topics={["establishment-dashboard-registration"]}
           closable
           className={fr.cx("fr-mb-2w")}
         />

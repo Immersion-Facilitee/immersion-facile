@@ -455,7 +455,7 @@ describe("Establishment", () => {
 
       store.dispatch(
         establishmentSlice.actions.fetchEstablishmentPublicOptionsRequested({
-          feedbackTopic: "my-profile-establishment-registration",
+          feedbackTopic: "establishment-dashboard-registration",
           filters: {},
           jwt: "any-connected-user-jwt",
         }),
@@ -483,7 +483,7 @@ describe("Establishment", () => {
 
       store.dispatch(
         establishmentSlice.actions.fetchEstablishmentPublicOptionsRequested({
-          feedbackTopic: "my-profile-establishment-registration",
+          feedbackTopic: "establishment-dashboard-registration",
           filters: {},
           jwt: "any-connected-user-jwt",
         }),
@@ -500,7 +500,7 @@ describe("Establishment", () => {
       expect(establishmentSelectors.isLoading(store.getState())).toBe(false);
 
       expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
-        "my-profile-establishment-registration": {
+        "establishment-dashboard-registration": {
           on: "fetch",
           level: "error",
           message: expectedError.message,
@@ -525,7 +525,7 @@ describe("Establishment", () => {
             isMainContactByPhone: false,
           },
           jwt: "any-connected-user-jwt",
-          feedbackTopic: "my-profile-establishment-registration",
+          feedbackTopic: "establishment-dashboard-registration",
         }),
       );
       expectToEqual(establishmentSelectors.isLoading(store.getState()), true);
@@ -534,7 +534,7 @@ describe("Establishment", () => {
       );
       expectToEqual(establishmentSelectors.isLoading(store.getState()), false);
       expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
-        "my-profile-establishment-registration": {
+        "establishment-dashboard-registration": {
           on: "create",
           level: "success",
           message:
@@ -558,7 +558,7 @@ describe("Establishment", () => {
             isMainContactByPhone: false,
           },
           jwt: "any-connected-user-jwt",
-          feedbackTopic: "my-profile-establishment-registration",
+          feedbackTopic: "establishment-dashboard-registration",
         }),
       );
       expectToEqual(establishmentSelectors.isLoading(store.getState()), true);
@@ -567,7 +567,7 @@ describe("Establishment", () => {
       );
       expectToEqual(establishmentSelectors.isLoading(store.getState()), false);
       expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
-        "my-profile-establishment-registration": {
+        "establishment-dashboard-registration": {
           on: "create",
           level: "error",
           message: "Failed to register user on establishment",

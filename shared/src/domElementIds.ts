@@ -943,7 +943,7 @@ export const domElementIds = {
     establishmentDashboardLink: "im-profile__establishment-dashboard-link",
     agencyDashboardLink: "im-profile__agency-dashboard-link",
   },
-  myAccountEstablishmentRegistration: {
+  establishmentDashboardRegistration: {
     registerEstablishmentButton: "im-profile__register-establishment-button",
     registerEstablishmentSearch: "im-register-establishment__search",
   },

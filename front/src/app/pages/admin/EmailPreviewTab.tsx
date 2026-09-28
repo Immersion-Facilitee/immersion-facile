@@ -493,7 +493,7 @@ export const defaultEmailValueByEmailKind: {
     reason: "user_unknown_or_missing_rights_on_establishment",
     sender: "establishment",
     requestEstablishmentRegistrationUrl:
-      "https://www.fake-immersion-facile-base-url.com/rattachement-entreprise?siret=12345678901234",
+      "https://www.fake-immersion-facile-base-url.com/mon-compte/tableau-de-bord-etablissement/rattachement-entreprise?siret=12345678901234",
     establishmentName: "ESTABLISHMENT_NAME",
   },
   WARN_DISCUSSION_DELIVERY_FAILED: {
