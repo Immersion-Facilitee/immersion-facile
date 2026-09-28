@@ -31,6 +31,7 @@ const createAssessmentQueryBuilder = (transaction: KyselyDb) =>
       beneficiaryFeedback: eb.ref("beneficiary_feedback"),
       signedAt: sql<DateString>`date_to_iso(signed_at)`,
       createdAt: sql<DateTimeIsoString>`date_to_iso(created_at)`,
+      createdBy: eb.ref("created_by"),
     }).as("assessment"),
   ]);
 
@@ -59,6 +60,7 @@ const parseAssessmentEntitySchema = (assessment: any) =>
     ...(assessment.numberOfMissedHours !== null
       ? { numberOfMissedHours: assessment.numberOfMissedHours }
       : {}),
+    ...(assessment.createdBy ? { createdBy: assessment.createdBy } : {}),
   });
 
 export class PgAssessmentRepository implements AssessmentRepository {
@@ -116,6 +118,9 @@ export class PgAssessmentRepository implements AssessmentRepository {
         convention_id: assessmentEntity.conventionId,
         ...assessmentEntityToDbRow(assessmentEntity),
         created_at: new Date(assessmentEntity.createdAt),
+        created_by: assessmentEntity.createdBy
+          ? JSON.stringify(assessmentEntity.createdBy)
+          : null,
       })
       .execute()
       .catch((error) => {

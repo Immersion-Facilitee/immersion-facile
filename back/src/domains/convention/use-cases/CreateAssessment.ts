@@ -1,19 +1,31 @@
+import { keys } from "ramda";
 import {
+  type AgencyModifierRole,
+  type AgencyWithUsersRights,
   type AssessmentDto,
+  allowedRolesToCreateAssessment,
   assessmentDtoSchema,
   type ConventionDto,
   type ConventionRelatedJwtPayload,
   calculateTotalImmersionHoursBetweenDateComplex,
+  type EmailHash,
   errors,
   ForbiddenError,
+  getConventionManageAllowedRoles,
+  type Role,
+  type User,
 } from "shared";
 import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import { throwForbiddenIfNotAllowedForAssessments } from "../../../utils/assessment";
+import { makeEmailHash } from "../../../utils/jwt";
+import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
+  type AssessmentCreator,
+  type AssessmentCreatorRole,
   type AssessmentEntity,
   createAssessmentEntity,
 } from "../entities/AssessmentEntity";
@@ -83,11 +95,19 @@ export const makeCreateAssessment = useCaseBuilder("CreateAssessment")
       )
         throw errors.assessment.numberOfMissedHoursExceedsScheduled();
 
-      const assessmentEntity = await createAssessmentEntityIfNotExist(
-        uow,
-        convention,
-        assessment,
-      );
+      const assessmentEntity: AssessmentEntity = {
+        ...(await createAssessmentEntityIfNotExist(
+          uow,
+          convention,
+          assessment,
+        )),
+        createdBy: await getAssessmentCreator({
+          uow,
+          convention,
+          agency,
+          conventionJwtPayload,
+        }),
+      };
 
       const triggeredBy: TriggeredBy =
         "role" in conventionJwtPayload
@@ -125,4 +145,93 @@ const createAssessmentEntityIfNotExist = async (
     throw errors.assessment.alreadyExist(convention.id);
 
   return createAssessmentEntity(assessment, convention);
+};
+
+const getAssessmentCreator = async ({
+  uow,
+  convention,
+  agency,
+  conventionJwtPayload,
+}: {
+  uow: UnitOfWork;
+  convention: ConventionDto;
+  agency: AgencyWithUsersRights;
+  conventionJwtPayload: ConventionRelatedJwtPayload;
+}): Promise<AssessmentCreator> => {
+  if (!("role" in conventionJwtPayload)) {
+    const user = await getUserWithRights(uow, conventionJwtPayload.userId);
+    return {
+      role: toAssessmentCreatorRole(
+        getConventionManageAllowedRoles(convention, user),
+      ),
+      ...toAssessmentCreatorIdentity(user),
+    };
+  }
+
+  const role = toAssessmentCreatorRole([conventionJwtPayload.role]);
+
+  if (role === "establishment-tutor") {
+    const { email, firstName, lastName } = convention.establishmentTutor;
+    return { role, email, firstName, lastName };
+  }
+
+  return {
+    role,
+    ...toAssessmentCreatorIdentity(
+      await getAgencyUserMatchingEmailHash({
+        uow,
+        agency,
+        role,
+        emailHash: conventionJwtPayload.emailHash,
+      }),
+    ),
+  };
+};
+
+const toAssessmentCreatorIdentity = ({
+  id,
+  email,
+  firstName,
+  lastName,
+}: User): Omit<AssessmentCreator, "role"> => ({
+  userId: id,
+  email,
+  firstName,
+  lastName,
+});
+
+const getAgencyUserMatchingEmailHash = async ({
+  uow,
+  agency,
+  role,
+  emailHash,
+}: {
+  uow: UnitOfWork;
+  agency: AgencyWithUsersRights;
+  role: AgencyModifierRole;
+  emailHash: EmailHash;
+}): Promise<User> => {
+  const agencyUserIdsWithRole = keys(agency.usersRights).filter((userId) =>
+    agency.usersRights[userId]?.roles.includes(role),
+  );
+  const agencyUsersWithRole = await uow.userRepository.getByIds(
+    agencyUserIdsWithRole,
+  );
+  const agencyUser = agencyUsersWithRole.find(
+    (user) => makeEmailHash(user.email) === emailHash,
+  );
+  if (!agencyUser) throw errors.assessment.forbidden("CreateAssessment");
+  return agencyUser;
+};
+
+const toAssessmentCreatorRole = (
+  rolesOnConvention: Role[],
+): AssessmentCreatorRole => {
+  const creatorRole = allowedRolesToCreateAssessment.find((role) =>
+    rolesOnConvention.includes(role),
+  );
+  if (creatorRole) return creatorRole;
+  if (rolesOnConvention.includes("establishment-representative"))
+    return "establishment-tutor";
+  throw errors.assessment.forbidden("CreateAssessment");
 };

@@ -843,6 +843,7 @@ interface ImmersionAssessments {
   signed_at: Timestamp | null;
   created_at: Timestamp;
   updated_at: Generated<Timestamp | null>;
+  created_by: Json | null;
 }
 
 interface ShortLinks {
