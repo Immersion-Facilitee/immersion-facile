@@ -36,9 +36,9 @@ const establishmentRegisterEstablishmentModal = createFormModal({
   doSubmitClosesModal: false,
 });
 
-const useMyProfileEstablishmentRegistrationRoute =
+const useEstablishmentDashboardRegistrationRoute =
   makeUseTypedRoute<
-    (typeof frontRoutes.myAccountEstablishmentRegistration)["name"]
+    (typeof frontRoutes.establishmentDashboardRegistration)["name"]
   >();
 
 export const RequestRegisterEstablishmentsForUserForm = ({
@@ -47,8 +47,8 @@ export const RequestRegisterEstablishmentsForUserForm = ({
   currentUser: ConnectedUser;
 }) => {
   const dispatch = useDispatch();
-  const route = useMyProfileEstablishmentRegistrationRoute([
-    "myAccountEstablishmentRegistration",
+  const route = useEstablishmentDashboardRegistrationRoute([
+    "establishmentDashboardRegistration",
   ]);
   const [inputValue, setInputValue] = useState<string | undefined>(undefined);
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
@@ -101,7 +101,7 @@ export const RequestRegisterEstablishmentsForUserForm = ({
             debouncedInputValue,
         },
         jwt: connectedUserJwt,
-        feedbackTopic: "my-profile-establishment-registration",
+        feedbackTopic: "establishment-dashboard-registration",
       }),
     );
   }, [debouncedInputValue, connectedUserJwt, dispatch]);
@@ -114,7 +114,7 @@ export const RequestRegisterEstablishmentsForUserForm = ({
           label="Se rattacher à une entreprise"
           hintText="Rechercher par n° SIRET ou nom sous lequel il est enregistré sur Immersion Facilitée"
           nativeInputProps={{
-            id: domElementIds.myAccountEstablishmentRegistration
+            id: domElementIds.establishmentDashboardRegistration
               .registerEstablishmentSearch,
             type: "search",
             placeholder: "",
@@ -200,7 +200,7 @@ export const RequestRegisterEstablishmentsForUserForm = ({
                         establishmentRegisterEstablishmentModal.open();
                       }}
                       size="small"
-                      id={`${domElementIds.myAccountEstablishmentRegistration.registerEstablishmentButton}-${establishmentPublicOption.siret}`}
+                      id={`${domElementIds.establishmentDashboardRegistration.registerEstablishmentButton}-${establishmentPublicOption.siret}`}
                       disabled={
                         establishmentPublicOption.isEstablishmentBanned ||
                         getStatusOnEstablishment(

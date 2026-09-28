@@ -904,7 +904,7 @@ describe("AddExchangeToDiscussion", () => {
   });
 
   describe("wrong paths", () => {
-    const requestEstablishmentRegistrationUrl: AbsoluteUrl = `https://www.fake-immersion-facile-base-url.com/mon-compte/rattachement-entreprise?siret=${pendingDiscussion1.siret}`;
+    const requestEstablishmentRegistrationUrl: AbsoluteUrl = `https://www.fake-immersion-facile-base-url.com/mon-compte/tableau-de-bord-etablissement/rattachement-entreprise?siret=${pendingDiscussion1.siret}`;
     it("throws an error if the discussion does not exist", async () => {
       const notFoundDiscussionId = "99999999-e89b-12d3-a456-426614174000";
 
@@ -1664,7 +1664,7 @@ describe("AddExchangeToDiscussion", () => {
         {
           reason: "user_unknown_or_missing_rights_on_establishment",
           sender: "establishment",
-          requestEstablishmentRegistrationUrl: `https://www.fake-immersion-facile-base-url.com/mon-compte/rattachement-entreprise?siret=${pendingDiscussion1.siret}`,
+          requestEstablishmentRegistrationUrl: `https://www.fake-immersion-facile-base-url.com/mon-compte/tableau-de-bord-etablissement/rattachement-entreprise?siret=${pendingDiscussion1.siret}`,
         },
       );
 
@@ -1686,7 +1686,7 @@ describe("AddExchangeToDiscussion", () => {
             params: {
               reason: "user_unknown_or_missing_rights_on_establishment",
               sender: "establishment",
-              requestEstablishmentRegistrationUrl: `https://www.fake-immersion-facile-base-url.com/mon-compte/rattachement-entreprise?siret=${pendingDiscussion1.siret}`,
+              requestEstablishmentRegistrationUrl: `https://www.fake-immersion-facile-base-url.com/mon-compte/tableau-de-bord-etablissement/rattachement-entreprise?siret=${pendingDiscussion1.siret}`,
             },
             recipients: [userWithPendingRight.email],
           },

@@ -38,11 +38,11 @@ import { InitiateConventionPage } from "src/app/pages/convention/InitiateConvent
 import { frontErrors } from "src/app/pages/error/front-errors";
 import { EstablishmentLeadRegistrationRejectedPage } from "src/app/pages/establishment/EstablishmentLeadRegistrationRejectedPage";
 import { EstablishmentDashboardMainTab } from "src/app/pages/establishment-dashboard/EstablishmentDashboardMainTab";
+import { EstablishmentRegistrationPage } from "src/app/pages/establishment-dashboard/EstablishmentRegistrationPage";
 import { StatsPage } from "src/app/pages/StatsPage";
 import { SearchPage } from "src/app/pages/search/SearchPage";
 import { MyAccountPage } from "src/app/pages/user/MyAccountPage";
 import { RequestAgencyRegistrationTab } from "src/app/pages/user/tabs/RequestAgencyRegistrationTab";
-import { RequestEstablishmentRegistrationTab } from "src/app/pages/user/tabs/RequestEstablishmentRegistrationTab";
 import { store } from "src/config/dependencies";
 import { connectedUserSlice } from "src/core-logic/domain/connected-user/connectedUser.slice";
 import type { Route } from "type-route";
@@ -320,24 +320,24 @@ const getPageByRouteName: {
     <ConnectedPrivateRoutePage
       route={route}
       oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
+        <PageHeader title="Vous devez vous connecter pour accéder à votre compte" />
       }
     >
       <RequestAgencyRegistrationTab route={route} />
     </ConnectedPrivateRoutePage>
   ),
 
-  myAccountEstablishmentRegistration: (route) => (
+  establishmentDashboardRegistration: (route) => (
     <ConnectedPrivateRoutePage
       route={route}
       oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
+        <PageHeader title="Vous devez vous connecter pour accéder à votre compte" />
       }
       mainWrapperProps={{
         vSpacing: 0,
       }}
     >
-      <RequestEstablishmentRegistrationTab />
+      <EstablishmentRegistrationPage />
     </ConnectedPrivateRoutePage>
   ),
   openApiDoc: (route: Route<typeof frontRoutes.openApiDoc>) => {

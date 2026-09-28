@@ -74,7 +74,7 @@ export const ManageEstablishmentsTab = ({
 
                 priority: "primary",
                 onClick: () => {
-                  frontRoutes.myAccountEstablishmentRegistration().push();
+                  frontRoutes.establishmentDashboardRegistration().push();
                 },
                 iconId: "fr-icon-add-line",
                 children: "Se rattacher à une entreprise",

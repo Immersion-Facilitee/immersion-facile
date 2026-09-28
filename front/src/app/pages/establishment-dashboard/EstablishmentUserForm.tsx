@@ -46,7 +46,7 @@ const useEstablishmentUserFormRoute =
     (
       | typeof frontRoutes.establishmentDashboardFormEstablishment
       | typeof frontRoutes.adminEstablishments
-      | typeof frontRoutes.myAccountEstablishmentRegistration
+      | typeof frontRoutes.establishmentDashboardRegistration
     )["name"]
   >();
 
@@ -62,12 +62,12 @@ export const EstablishmentUserForm = ({
   const route = useEstablishmentUserFormRoute([
     "establishmentDashboardFormEstablishment",
     "adminEstablishments",
-    "myAccountEstablishmentRegistration",
+    "establishmentDashboardRegistration",
   ]);
   const isEstablishmentDashboardFormEstablishment =
     route.name === "establishmentDashboardFormEstablishment";
-  const isMyProfileEstablishmentRegistration =
-    route.name === "myAccountEstablishmentRegistration";
+  const isEstablishmentDashboardRegistration =
+    route.name === "establishmentDashboardRegistration";
   const isManageEstablishmentAdmin = route.name === "adminEstablishments";
   const dispatch = useDispatch();
   const emptyValues = {
@@ -122,7 +122,7 @@ export const EstablishmentUserForm = ({
       );
     }
     if (
-      isMyProfileEstablishmentRegistration &&
+      isEstablishmentDashboardRegistration &&
       connectedUserJwt &&
       selectedEstablishmentSiret
     ) {
@@ -130,7 +130,7 @@ export const EstablishmentUserForm = ({
         establishmentSlice.actions.userRegistrationOnEstablishmentRequested({
           siret: selectedEstablishmentSiret,
           userRight: data,
-          feedbackTopic: "my-profile-establishment-registration",
+          feedbackTopic: "establishment-dashboard-registration",
           jwt: connectedUserJwt,
         }),
       );
@@ -225,7 +225,7 @@ export const EstablishmentUserForm = ({
       </form>
     </>
   );
-  if (isMyProfileEstablishmentRegistration) {
+  if (isEstablishmentDashboardRegistration) {
     return <FormProvider {...methods}>{formJsx}</FormProvider>;
   }
   return formJsx;

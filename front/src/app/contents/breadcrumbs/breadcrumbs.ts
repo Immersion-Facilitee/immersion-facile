@@ -105,14 +105,14 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
         label: "Demander l'accès à des organismes",
         route: frontRoutes.agencyRegistration({ fromRoute: "myAccount" }),
       },
-      myAccountEstablishmentRegistration: {
-        label: "Se rattacher à une entreprise",
-        route: frontRoutes.myAccountEstablishmentRegistration(),
-      },
       establishmentDashboard: {
         label: "Tableau de bord entreprise",
         route: frontRoutes.establishmentDashboard(),
         children: {
+          establishmentDashboardRegistration: {
+            label: "Se rattacher à une entreprise",
+            route: frontRoutes.establishmentDashboardRegistration(),
+          },
           establishmentDashboardConventions: {
             label: "Conventions",
             route: frontRoutes.establishmentDashboardConventions(),
