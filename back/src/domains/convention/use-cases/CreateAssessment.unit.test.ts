@@ -360,6 +360,7 @@ describe("CreateAssessment", () => {
             ...assessment,
             _entityName: "Assessment",
             numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+            createdBy: { role, userId: null },
           },
         ]);
       },
@@ -377,6 +378,7 @@ describe("CreateAssessment", () => {
           ...assessment,
           _entityName: "Assessment",
           numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          createdBy: { role: "validator", userId: validator.id },
         },
       ]);
     });
@@ -393,6 +395,50 @@ describe("CreateAssessment", () => {
           ...assessment,
           _entityName: "Assessment",
           numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          createdBy: { role: "counsellor", userId: counsellor.id },
+        },
+      ]);
+    });
+
+    it("should save the Assessment when user is both establishment tutor and representative on convention", async () => {
+      const { firstName, lastName, email, phone } =
+        validatedConvention.establishmentTutor;
+      const conventionWithTutorAsRepresentative = new ConventionDtoBuilder(
+        validatedConvention,
+      )
+        .withEstablishmentRepresentative({
+          ...validatedConvention.signatories.establishmentRepresentative,
+          firstName,
+          lastName,
+          email,
+          phone,
+        })
+        .build();
+      const tutorAndRepresentative = new ConnectedUserBuilder()
+        .withId("tutorAndRepresentative")
+        .withEmail(email)
+        .buildUser();
+      uow.conventionRepository.setConventions([
+        conventionWithTutorAsRepresentative,
+      ]);
+      uow.userRepository.users = [
+        ...uow.userRepository.users,
+        tutorAndRepresentative,
+      ];
+
+      await createAssessment.execute(assessment, {
+        userId: tutorAndRepresentative.id,
+      });
+
+      expectArraysToEqual(uow.assessmentRepository.assessments, [
+        {
+          ...assessment,
+          _entityName: "Assessment",
+          numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          createdBy: {
+            role: "establishment-tutor",
+            userId: tutorAndRepresentative.id,
+          },
         },
       ]);
     });
@@ -423,6 +469,7 @@ describe("CreateAssessment", () => {
           _entityName: "Assessment",
           numberOfHoursActuallyMade:
             validatedConvention.schedule.totalHours - 2,
+          createdBy: { role: "establishment-tutor", userId: null },
         },
       ]);
     });
@@ -465,6 +512,7 @@ describe("CreateAssessment", () => {
           ...partiallyCompletedAssessment,
           _entityName: "Assessment",
           numberOfHoursActuallyMade: 28,
+          createdBy: { role: "establishment-tutor", userId: null },
         },
       ]);
     });
@@ -506,6 +554,7 @@ describe("CreateAssessment", () => {
           ...partiallyCompletedAssessment,
           _entityName: "Assessment",
           numberOfHoursActuallyMade: 25.5, // 4 days * 7 hours - 2.5 missed hours
+          createdBy: { role: "establishment-tutor", userId: null },
         },
       ]);
     });
