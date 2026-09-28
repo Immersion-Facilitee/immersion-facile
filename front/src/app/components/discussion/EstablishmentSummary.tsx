@@ -1,5 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import { BorderedSection } from "react-design-system";
+import { BorderedSection, useLayout } from "react-design-system";
 import { type DiscussionReadDto, frontRoutes } from "shared";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { searchSelectors } from "src/core-logic/domain/search/search.selectors";
@@ -10,9 +10,10 @@ export const EstablishmentSummary = ({
   discussion: DiscussionReadDto;
 }) => {
   const relatedOffer = useAppSelector(searchSelectors.currentSearchResult);
+  const { isLayoutDesktop } = useLayout();
 
   return (
-    <BorderedSection>
+    <BorderedSection className={fr.cx(isLayoutDesktop && "fr-mb-2w")}>
       <h3 className={fr.cx("fr-h6")}>Entreprise</h3>
 
       <ul className={fr.cx("fr-raw-list")}>

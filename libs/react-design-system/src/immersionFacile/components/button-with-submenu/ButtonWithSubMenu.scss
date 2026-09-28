@@ -24,6 +24,8 @@
   }
 
   &--is-opened {
+    z-index: 99;
+
     #{$component}__menu {
       display: block;
     }

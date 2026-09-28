@@ -368,8 +368,8 @@ export const DiscussionDetails = (
     discussion,
     viewer,
   });
-  const isViewerBeneficiaryOrDiscussionRejected =
-    viewer === "potentialBeneficiary" || discussion.status === "REJECTED";
+  const isViewerBeneficiaryAndDiscussionRejected =
+    viewer === "potentialBeneficiary" && discussion.status === "REJECTED";
 
   return (
     <>
@@ -561,7 +561,7 @@ export const DiscussionDetails = (
                   )
                 }
                 exchangeFormComponent={
-                  !isViewerBeneficiaryOrDiscussionRejected && (
+                  !isViewerBeneficiaryAndDiscussionRejected && (
                     <DiscussionExchangeMessageForm
                       discussionId={discussion.id}
                       viewer={viewer}
