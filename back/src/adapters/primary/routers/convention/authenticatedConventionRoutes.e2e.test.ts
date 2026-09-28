@@ -588,6 +588,81 @@ describe("authenticatedConventionRoutes", () => {
     });
   });
 
+  describe("GetConventionsForEstablishmentUser", () => {
+    const establishmentUser = new ConnectedUserBuilder()
+      .withId("establishment-user")
+      .withEmail("establishment-user@mail.com")
+      .buildUser();
+
+    const convention = new ConventionDtoBuilder()
+      .withId("cccccc99-9c0b-1bbb-bb6d-6bb9bd38cccc")
+      .withEstablishmentRepresentativeEmail(establishmentUser.email)
+      .withStatus("ACCEPTED_BY_VALIDATOR")
+      .build();
+
+    beforeEach(() => {
+      inMemoryUow.userRepository.users = [establishmentUser];
+      inMemoryUow.conventionRepository.setConventions([convention]);
+    });
+
+    it("401 - Unauthorized when not correctly authenticated", async () => {
+      const response = await httpClient.getConventionsForEstablishmentUser({
+        headers: { authorization: "invalid-token" },
+        queryParams: {},
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: "Provided token is invalid",
+        },
+      });
+    });
+
+    it("200 - Successfully gets paginated conventions for the establishment user", async () => {
+      const jwt = generateConnectedUserJwt({
+        userId: establishmentUser.id,
+        version: currentJwtVersions.connectedUser,
+      });
+
+      const response = await httpClient.getConventionsForEstablishmentUser({
+        headers: { authorization: jwt },
+        queryParams: {
+          page: 1,
+          perPage: 10,
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          data: [
+            {
+              id: convention.id,
+              status: convention.status,
+              dateStart: convention.dateStart,
+              dateEnd: convention.dateEnd,
+              businessName: convention.businessName,
+              immersionAppellation: convention.immersionAppellation,
+              assessment: null,
+              beneficiary: {
+                firstName: convention.signatories.beneficiary.firstName,
+                lastName: convention.signatories.beneficiary.lastName,
+              },
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 1,
+          },
+        },
+      });
+    });
+  });
+
   describe(`${displayRouteName(
     authenticatedConventionRoutes.getConventionsWithUnfinalizedAssessment,
   )}`, () => {
