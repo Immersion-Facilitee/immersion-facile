@@ -70,6 +70,11 @@ test.describe("Convention manage actions from prescriber dashboard", () => {
       ),
     ).toHaveValue("Immersion");
     await manageConventionPage
+      .locator(
+        `[for="${domElementIds.manageConvention.validatorModalIsAlsoAgencyReferent}-0"]`,
+      )
+      .click();
+    await manageConventionPage
       .locator(`#${domElementIds.manageConvention.counsellorModalSubmitButton}`)
       .click();
     await expect(
