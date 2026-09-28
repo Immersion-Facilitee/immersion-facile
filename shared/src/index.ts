@@ -52,6 +52,8 @@ export * from "./convention/conventionWithBroadcastFeedback.schema";
 export * from "./convention/conventionWithUnfinalizedAssessment.dto";
 export * from "./convention/conventionWithUnfinalizedAssessment.dto";
 export * from "./convention/conventionWithUnfinalizedAssessment.schema";
+export * from "./convention/establishmentUserConventionList.dto";
+export * from "./convention/establishmentUserConventionList.schema";
 export * from "./convention/saveConventionDraft.dto";
 export * from "./convention/saveConventionDraft.schema";
 export * from "./dashboard/beneficiaryDashboardTabs";
