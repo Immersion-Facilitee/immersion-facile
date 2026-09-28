@@ -273,6 +273,10 @@ models:
         description: Actual hours completed during immersion
       - name: assessment_signed_at
         description: Timestamp when beneficiary signed the assessment
+      - name: assessment_created_by_role
+        description: Role of the person who created the assessment (establishment-tutor, establishment-representative, validator, counsellor), null when unknown
+      - name: assessment_created_by_user_id
+        description: ID of the connected user who created the assessment, null when created through a convention magic link or unknown
 
   - name: conventions_for_counting
     description: |
@@ -343,6 +347,8 @@ models:
         description: Boolean - true if job was found after immersion
       - name: assessment_type_of_contract
         description: Type of contract (CDI, CDD...)
+      - name: assessment_created_by_role
+        description: Role of the person who created the assessment (establishment-tutor, establishment-representative, validator, counsellor), null when unknown
       - name: beneficiary_email
         description: Beneficiary's email
       - name: schedule_total_hours

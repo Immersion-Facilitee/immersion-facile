@@ -439,6 +439,10 @@ sources:
             description: "Timestamp when updated"
           - name: signed_at
             description: "Timestamp when benficiary signed the assessment"
+          - name: created_by_role
+            description: "Role of the person who created the assessment"
+          - name: created_by_user_id
+            description: "Foreign key to users table - connected user who created the assessment"
 
       - name: establishments
         description: "Establishments offering immersion opportunities"

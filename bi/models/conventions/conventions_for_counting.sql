@@ -58,6 +58,7 @@ select
     ass.status as assessment_status,
     ass.ended_with_a_job as assessment_ended_with_a_job,
     ass.type_of_contract as assessment_type_of_contract,
+    ass.created_by_role as assessment_created_by_role,
     case
         when estab.siret is not null then true
         else false
