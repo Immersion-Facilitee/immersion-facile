@@ -25,6 +25,19 @@ jobs:
     env:
       AGENT_CONFIGURED: ${{ secrets.AGENT_EXPLO_APP_PRIVATE_KEY != '' && secrets.OPENCODE_API_KEY != '' }}
     steps:
+      - uses: actions/create-github-app-token@v3
+        if: env.AGENT_CONFIGURED == 'true'
+        id: writer
+        with:
+          client-id: ${{ vars.AGENT_EXPLO_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_EXPLO_APP_PRIVATE_KEY }}
+          permission-issues: write
+      - name: Acknowledge question
+        if: env.AGENT_CONFIGURED == 'true'
+        run: gh api --method POST --silent "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID/reactions" -f content=eyes
+        env:
+          GH_TOKEN: ${{ steps.writer.outputs.token }}
+          COMMENT_ID: ${{ github.event.comment.id }}
       - uses: actions/checkout@v7
         if: env.AGENT_CONFIGURED == 'true'
         with:
@@ -50,13 +63,8 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.membership.outputs.token }}
           AGENT_ALLOWED_TEAM: ${{ vars.AGENT_EXPLO_ALLOWED_TEAM }}
-      - uses: actions/create-github-app-token@v3
-        if: steps.authorize.outputs.authorized == 'true'
-        id: writer
-        with:
-          client-id: ${{ vars.AGENT_EXPLO_APP_CLIENT_ID }}
-          private-key: ${{ secrets.AGENT_EXPLO_APP_PRIVATE_KEY }}
-          permission-issues: write
+          AGENT_WRITE_TOKEN: ${{ steps.writer.outputs.token }}
+          AGENT_BOT_LOGIN: ${{ steps.writer.outputs.app-slug }}[bot]
       - name: Collect context, ask OpenCode and publish the answer
         if: steps.authorize.outputs.authorized == 'true'
         run: node .github/scripts/agent-explo.ts answer
