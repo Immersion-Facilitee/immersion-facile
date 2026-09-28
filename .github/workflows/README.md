@@ -10,7 +10,8 @@ Le [prompt](../scripts/agent-explo.prompt.md) définit ses consignes.
 L’événement GitHub `issue_comment` couvre les issues et l’onglet **Conversation**
 des PR. Les commentaires de review sur les lignes du diff ne déclenchent pas l’agent.
 
-Les réactions indiquent l’état : 👀 en cours, 👍 réponse publiée, 😕 échec.
+Les réactions indiquent l’état : 👀 prise en compte dès le démarrage du job,
+👎 auteur non autorisé ou question vide, 👍 réponse publiée, 😕 échec.
 Une relance du workflow met à jour la même réponse.
 
 ### Installation

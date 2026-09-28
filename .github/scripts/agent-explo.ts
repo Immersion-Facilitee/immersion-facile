@@ -42,14 +42,16 @@ async function runWorkflowStep(step: string) {
   switch (step) {
     case "authorize": {
       const question = extractQuestion(event, process.env.GITHUB_EVENT_NAME!);
-      if (!question) return;
-      const authorized = await isActiveTeamMember(
-        event.sender.login,
-        event.repository.owner.login,
-        process.env.AGENT_ALLOWED_TEAM!,
-      );
+      const authorized =
+        !!question &&
+        (await isActiveTeamMember(
+          event.sender.login,
+          event.repository.owner.login,
+          process.env.AGENT_ALLOWED_TEAM!,
+        ));
       if (authorized)
         await appendFile(process.env.GITHUB_OUTPUT!, "authorized=true\n");
+      else await setReaction(event, "-1");
       return;
     }
     case "answer":
@@ -316,7 +318,7 @@ async function install() {
 }
 export async function setReaction(
   event: IssueCommentEvent,
-  content: "eyes" | "+1" | "confused",
+  content: "eyes" | "+1" | "-1" | "confused",
 ) {
   const token = process.env.AGENT_WRITE_TOKEN;
   const path = `${root()}/issues/comments/${event.comment.id}/reactions`;
@@ -327,7 +329,7 @@ export async function setReaction(
   }>(path, token)) {
     if (
       reaction.user.login === process.env.AGENT_BOT_LOGIN &&
-      ["eyes", "+1", "confused"].includes(reaction.content)
+      ["eyes", "+1", "-1", "confused"].includes(reaction.content)
     )
       await github(`${path}/${reaction.id}`, "DELETE", undefined, token);
   }
