@@ -30,7 +30,7 @@ export const AgencyLineRightsCTAs = ({
   isBackofficeAdmin?: boolean;
   user: User;
 }): ReactNode => {
-  const removeUserModalId = `${domElementIds.myAccount.removeAgencyRightModal}-${agencyRight.agency.id}-${user.id}`;
+  const removeUserModalId = `${domElementIds.agencyDashboard.agencyTab.removeAgencyRightModal}-${agencyRight.agency.id}-${user.id}`;
   const userRightToRemove = {
     agencyRight,
     userEmail: user.email,
@@ -53,7 +53,7 @@ export const AgencyLineRightsCTAs = ({
         <Button
           size="small"
           priority="secondary"
-          id={`${domElementIds.myAccount.editRoleButton}-${agencyRight.agency.id}`}
+          id={`${domElementIds.agencyDashboard.agencyTab.editRoleButton}-${agencyRight.agency.id}`}
           onClick={() => {
             onUpdateClicked(agencyRight);
           }}
@@ -68,7 +68,7 @@ export const AgencyLineRightsCTAs = ({
               dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
               removeUserModal.open();
             },
-            removeUserButtonId: `${domElementIds.myAccount.removeAgencyRightButton}-${agencyRight.agency.id}-${user.id}`,
+            removeUserButtonId: `${domElementIds.agencyDashboard.agencyTab.removeAgencyRightButton}-${agencyRight.agency.id}-${user.id}`,
             userRightToRemove,
             size: "small",
           })}
@@ -79,7 +79,7 @@ export const AgencyLineRightsCTAs = ({
       {isBackofficeAdmin && (
         <Button
           priority="tertiary no outline"
-          id={`${domElementIds.myAccount.adminAgencyLink}-${agencyRight.agency.id}`}
+          id={`${domElementIds.agencyDashboard.agencyTab.adminAgencyLink}-${agencyRight.agency.id}`}
           size="small"
           linkProps={
             frontRoutes.adminAgencyDetail({
@@ -93,7 +93,7 @@ export const AgencyLineRightsCTAs = ({
       {onRegistrationCancelledClicked && (
         <Button
           priority="secondary"
-          id={`${domElementIds.myAccount.cancelRegistrationButton}-${agencyRight.agency.id}`}
+          id={`${domElementIds.agencyDashboard.agencyTab.cancelRegistrationButton}-${agencyRight.agency.id}`}
           size="small"
           onClick={() => {
             onRegistrationCancelledClicked(agencyRight);

@@ -938,23 +938,7 @@ export const domElementIds = {
     },
   },
   myAccount: {
-    firstName: "im-profile__first-name",
-    lastName: "im-profile__last-name",
-    email: "im-profile__email",
-    editRoleButton: "im-profile__edit-role-button",
-    adminAgencyLink: "im-profile__admin-agency-link",
-    adminEstablishmentLink: "im-profile__admin-establishment-link",
-    cancelRegistrationButton: "im-profile__cancel-registration-button",
-    removeAgencyRightButton: "im-profile__remove-agency-right-button",
-    removeAgencyRightModal: "im-profile__remove-agency-right-modal",
     updateOwnInfosLink: "im-profile__update-own-infos-link",
-    editAgencyUserEmail: "im-profile-edit-agency-user__email",
-    editAgencyManageUserCheckbox:
-      "im-profile-form-edit-agency__manage-user-checkbox",
-    editAgencyUserIsNotifiedByEmail:
-      "im-profile-edit-agency-user__is-notified-by-email-toggle",
-    editAgencyUserRoleSubmitButton:
-      "im-profile-form-edit-agency__users-submit-button",
     beneficiaryDashboardLink: "im-profile__beneficiary-dashboard-link",
     establishmentDashboardLink: "im-profile__establishment-dashboard-link",
     agencyDashboardLink: "im-profile__agency-dashboard-link",
@@ -1014,6 +998,21 @@ export const domElementIds = {
     agencyTab: {
       adminRightsModal: "im-agency-dashboard__agency-tab-admin-rights-modal",
       userRightsModal: "im-agency-dashboard__agency-tab-user-rights-modal",
+      editRoleButton: "im-agency-dashboard__agency-tab-edit-role-button",
+      adminAgencyLink: "im-agency-dashboard__agency-tab-admin-agency-link",
+      cancelRegistrationButton:
+        "im-agency-dashboard__agency-tab-cancel-registration-button",
+      removeAgencyRightButton:
+        "im-agency-dashboard__agency-tab-remove-agency-right-button",
+      removeAgencyRightModal:
+        "im-agency-dashboard__agency-tab-remove-agency-right-modal",
+      editAgencyUserEmail: "im-agency-dashboard__agency-tab-edit-user-email",
+      editAgencyManageUserCheckbox:
+        "im-agency-dashboard__agency-tab-edit-user-roles-checkbox",
+      editAgencyUserIsNotifiedByEmail:
+        "im-agency-dashboard__agency-tab-edit-user-is-notified-by-email-toggle",
+      editAgencyUserRoleSubmitButton:
+        "im-agency-dashboard__agency-tab-edit-user-submit-button",
     },
     agencyDetails: {
       editAgencyForm: "im-agency-dashboard-form-edit-agency",
@@ -1132,6 +1131,8 @@ export const domElementIds = {
         "im-manage-establishment__reject-user-right-button",
       registerEstablishmentButton:
         "im-manage-establishment__register-establishment-button",
+      adminEstablishmentLink:
+        "im-manage-establishment__admin-establishment-link",
     },
   },
   initiateConvention: {
