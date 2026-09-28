@@ -21,13 +21,19 @@ export const DiscussionExchangesContainer = ({
       element.scrollTop = element.scrollHeight;
     }
   }, []);
+  if (!exchangesComponent && !exchangeFormComponent) return null;
   return (
     <BorderedSection className={cx(Styles.root)}>
       {exchangesComponent && (
         <div
           ref={containerRef}
           className={cx(
-            fr.cx("fr-mt-2w", "fr-mr-2w", "fr-ml-2w"),
+            fr.cx(
+              "fr-mt-2w",
+              "fr-pr-2w",
+              "fr-pl-2w",
+              !exchangeFormComponent && "fr-mb-2w",
+            ),
             Styles.exchangesList,
           )}
         >
