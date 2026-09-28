@@ -234,7 +234,8 @@ ass.status as assessment_status,
     ass.type_of_contract as assessment_type_of_contract,
     ass.establishment_feedback as assessment_establishment_feedback,
     ass.number_of_hours_actually_made as assessment_hours_actually_made,
-    ass.signed_at as assessment_signed_at
+    ass.signed_at as assessment_signed_at,
+    ass.created_by ->> 'role' as assessment_created_by_role
 
 from {{ source('immersion', 'conventions') }} as c
 
