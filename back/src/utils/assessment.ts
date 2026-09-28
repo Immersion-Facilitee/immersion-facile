@@ -2,20 +2,28 @@ import {
   type AgencyDto,
   type AssessmentDto,
   type AssessmentMode,
+  allowedRolesToCreateAssessment,
   assessmentDtoSchema,
   type ConventionDto,
   type ConventionRelatedJwtPayload,
+  emailSchema,
   errors,
+  firstnameSchema,
   getConventionManageAllowedRoles,
   hasAllowedRoleOnAssessment,
   isEstablishmentTutorIsEstablishmentRepresentative,
+  lastnameSchema,
   legacyAssessmentDtoSchema,
   type Role,
+  userIdSchema,
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import { z } from "zod";
 import { getUserWithRights } from "../domains/connected-users/helpers/userRights.helper";
-import type { AssessmentEntity } from "../domains/convention/entities/AssessmentEntity";
+import type {
+  AssessmentCreator,
+  AssessmentEntity,
+} from "../domains/convention/entities/AssessmentEntity";
 import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
 import { isSomeEmailMatchingEmailHash } from "./jwt";
 
@@ -58,6 +66,15 @@ export const throwForbiddenIfNotAllowedForAssessments = async ({
   }
 };
 
+const assessmentCreatorSchema: ZodSchemaWithInputMatchingOutput<AssessmentCreator> =
+  z.object({
+    role: z.enum(allowedRolesToCreateAssessment),
+    email: emailSchema,
+    firstName: firstnameSchema,
+    lastName: lastnameSchema,
+    userId: userIdSchema.optional(),
+  });
+
 export const assessmentEntitySchema: ZodSchemaWithInputMatchingOutput<AssessmentEntity> =
   (assessmentDtoSchema as ZodSchemaWithInputMatchingOutput<AssessmentDto>)
     .or(legacyAssessmentDtoSchema)
@@ -65,6 +82,7 @@ export const assessmentEntitySchema: ZodSchemaWithInputMatchingOutput<Assessment
       z.object({
         _entityName: z.literal("Assessment"),
         numberOfHoursActuallyMade: z.number().or(z.null()),
+        createdBy: assessmentCreatorSchema.optional(),
       }),
     );
 

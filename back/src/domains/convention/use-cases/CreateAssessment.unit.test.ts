@@ -16,6 +16,7 @@ import {
   type Role,
   reasonableSchedule,
   splitCasesBetweenPassingAndFailing,
+  type User,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { makeHashByRolesForTest } from "../../../utils/emailHash";
@@ -28,7 +29,11 @@ import {
 } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { TestUuidGenerator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
-import { acceptedConventionStatusesForAssessment } from "../entities/AssessmentEntity";
+import {
+  type AssessmentCreator,
+  type AssessmentCreatorRole,
+  acceptedConventionStatusesForAssessment,
+} from "../entities/AssessmentEntity";
 import {
   type CreateAssessment,
   makeCreateAssessment,
@@ -74,6 +79,27 @@ describe("CreateAssessment", () => {
     applicationId: validatedConvention.id,
     role: "establishment-tutor",
     emailHash: makeEmailHash(validatedConvention.establishmentTutor.email),
+  };
+
+  const makeUserAssessmentCreator = (
+    role: AssessmentCreatorRole,
+    { id, email, firstName, lastName }: User,
+  ): AssessmentCreator => ({ role, userId: id, email, firstName, lastName });
+
+  const tutorAssessmentCreator: AssessmentCreator = {
+    role: "establishment-tutor",
+    email: validatedConvention.establishmentTutor.email,
+    firstName: validatedConvention.establishmentTutor.firstName,
+    lastName: validatedConvention.establishmentTutor.lastName,
+  };
+
+  const assessmentCreatorThroughMagicLinkByRole: Record<
+    AssessmentCreatorRole,
+    AssessmentCreator
+  > = {
+    "establishment-tutor": tutorAssessmentCreator,
+    validator: makeUserAssessmentCreator("validator", validator),
+    counsellor: makeUserAssessmentCreator("counsellor", counsellor),
   };
 
   const [passingStatuses, failingStatuses] = splitCasesBetweenPassingAndFailing(
@@ -360,6 +386,7 @@ describe("CreateAssessment", () => {
             ...assessment,
             _entityName: "Assessment",
             numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+            createdBy: assessmentCreatorThroughMagicLinkByRole[role],
           },
         ]);
       },
@@ -377,6 +404,7 @@ describe("CreateAssessment", () => {
           ...assessment,
           _entityName: "Assessment",
           numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          createdBy: makeUserAssessmentCreator("validator", validator),
         },
       ]);
     });
@@ -393,6 +421,84 @@ describe("CreateAssessment", () => {
           ...assessment,
           _entityName: "Assessment",
           numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          createdBy: makeUserAssessmentCreator("counsellor", counsellor),
+        },
+      ]);
+    });
+
+    it("should save the Assessment when user is both establishment tutor and representative on convention", async () => {
+      const { firstName, lastName, email, phone } =
+        validatedConvention.establishmentTutor;
+      const conventionWithTutorAsRepresentative = new ConventionDtoBuilder(
+        validatedConvention,
+      )
+        .withEstablishmentRepresentative({
+          ...validatedConvention.signatories.establishmentRepresentative,
+          firstName,
+          lastName,
+          email,
+          phone,
+        })
+        .build();
+      const tutorAndRepresentative = new ConnectedUserBuilder()
+        .withId("tutorAndRepresentative")
+        .withEmail(email)
+        .buildUser();
+      uow.conventionRepository.setConventions([
+        conventionWithTutorAsRepresentative,
+      ]);
+      uow.userRepository.users = [
+        ...uow.userRepository.users,
+        tutorAndRepresentative,
+      ];
+
+      await createAssessment.execute(assessment, {
+        userId: tutorAndRepresentative.id,
+      });
+
+      expectArraysToEqual(uow.assessmentRepository.assessments, [
+        {
+          ...assessment,
+          _entityName: "Assessment",
+          numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          createdBy: makeUserAssessmentCreator(
+            "establishment-tutor",
+            tutorAndRepresentative,
+          ),
+        },
+      ]);
+    });
+
+    it("should save the Assessment as created by establishment tutor when magic link role is establishment representative who is also tutor", async () => {
+      const { firstName, lastName, email, phone } =
+        validatedConvention.establishmentTutor;
+      const conventionWithTutorAsRepresentative = new ConventionDtoBuilder(
+        validatedConvention,
+      )
+        .withEstablishmentRepresentative({
+          ...validatedConvention.signatories.establishmentRepresentative,
+          firstName,
+          lastName,
+          email,
+          phone,
+        })
+        .build();
+      uow.conventionRepository.setConventions([
+        conventionWithTutorAsRepresentative,
+      ]);
+
+      await createAssessment.execute(assessment, {
+        applicationId: conventionWithTutorAsRepresentative.id,
+        role: "establishment-representative",
+        emailHash: makeEmailHash(email),
+      });
+
+      expectArraysToEqual(uow.assessmentRepository.assessments, [
+        {
+          ...assessment,
+          _entityName: "Assessment",
+          numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          createdBy: tutorAssessmentCreator,
         },
       ]);
     });
@@ -423,6 +529,7 @@ describe("CreateAssessment", () => {
           _entityName: "Assessment",
           numberOfHoursActuallyMade:
             validatedConvention.schedule.totalHours - 2,
+          createdBy: tutorAssessmentCreator,
         },
       ]);
     });
@@ -465,6 +572,7 @@ describe("CreateAssessment", () => {
           ...partiallyCompletedAssessment,
           _entityName: "Assessment",
           numberOfHoursActuallyMade: 28,
+          createdBy: tutorAssessmentCreator,
         },
       ]);
     });
@@ -506,6 +614,7 @@ describe("CreateAssessment", () => {
           ...partiallyCompletedAssessment,
           _entityName: "Assessment",
           numberOfHoursActuallyMade: 25.5, // 4 days * 7 hours - 2.5 missed hours
+          createdBy: tutorAssessmentCreator,
         },
       ]);
     });

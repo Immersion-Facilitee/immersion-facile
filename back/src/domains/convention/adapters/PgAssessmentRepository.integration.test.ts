@@ -130,6 +130,49 @@ describe("PgAssessmentRepository", () => {
       );
       expectToEqual(savedAssessment, fullAssessment);
     });
+
+    it("saves an assessment created by a connected user", async () => {
+      const assessmentCreatedByValidator: AssessmentEntity = {
+        ...fullAssessment,
+        createdBy: {
+          role: "validator",
+          userId: uuid(),
+          email: "validator@mail.com",
+          firstName: "Jean",
+          lastName: "Dupont",
+        },
+      };
+
+      await assessmentRepository.save(assessmentCreatedByValidator);
+
+      expectToEqual(
+        await assessmentRepository.getByConventionId(
+          assessmentCreatedByValidator.conventionId,
+        ),
+        assessmentCreatedByValidator,
+      );
+    });
+
+    it("saves an assessment created through a convention magic link", async () => {
+      const assessmentCreatedByTutor: AssessmentEntity = {
+        ...fullAssessment,
+        createdBy: {
+          role: "establishment-tutor",
+          email: convention.establishmentTutor.email,
+          firstName: convention.establishmentTutor.firstName,
+          lastName: convention.establishmentTutor.lastName,
+        },
+      };
+
+      await assessmentRepository.save(assessmentCreatedByTutor);
+
+      expectToEqual(
+        await assessmentRepository.getByConventionId(
+          assessmentCreatedByTutor.conventionId,
+        ),
+        assessmentCreatedByTutor,
+      );
+    });
   });
 
   describe("getByConventionId", () => {
@@ -229,6 +272,34 @@ describe("PgAssessmentRepository", () => {
           minimalAssessment.conventionId,
         );
       expectToEqual(updatedAssessmentStored, updatedAssessment);
+    });
+
+    it("keeps the assessment creator on update", async () => {
+      const assessmentCreatedByTutor: AssessmentEntity = {
+        ...minimalAssessment,
+        createdBy: {
+          role: "establishment-tutor",
+          email: convention.establishmentTutor.email,
+          firstName: convention.establishmentTutor.firstName,
+          lastName: convention.establishmentTutor.lastName,
+        },
+      };
+      await assessmentRepository.save(assessmentCreatedByTutor);
+
+      const signedAssessment: AssessmentEntity = {
+        ...assessmentCreatedByTutor,
+        beneficiaryAgreement: true,
+        beneficiaryFeedback: "Mon commentaire",
+        signedAt: new Date("2024-06-15").toISOString(),
+      };
+      await assessmentRepository.update(signedAssessment);
+
+      expectToEqual(
+        await assessmentRepository.getByConventionId(
+          minimalAssessment.conventionId,
+        ),
+        signedAssessment,
+      );
     });
 
     it("throws when assessment does not exist", async () => {
