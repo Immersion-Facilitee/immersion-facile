@@ -1267,7 +1267,7 @@ export const domElementIds = {
   statsEstablishmentDetails: {},
   agencyManagement: {},
   establishmentManagement: {},
-  agencyRegistration: {
+  agencyDashboardRegistration: {
     backButton: "im-agency-registration__back-button",
   },
   agencyDashboardAgencies: {

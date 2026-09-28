@@ -227,7 +227,9 @@ test.describe("Agency dashboard workflow", () => {
         )
         .click();
 
-      await page.waitForURL(`**${frontRoutes.agencyRegistration().href}**`);
+      await page.waitForURL(
+        `**${frontRoutes.agencyDashboardRegistration().href}**`,
+      );
       await expect(
         page.locator(
           `#${domElementIds.agencyDashboard.registerAgencies.search}`,
