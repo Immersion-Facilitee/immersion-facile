@@ -363,6 +363,15 @@ export const ConventionManageActions = ({
 
       <Feedback
         topics={[
+          "convention-action-edit-counsellor-name",
+          "partner-conventions",
+        ]}
+        className={fr.cx("fr-mb-2w")}
+        closable
+      />
+
+      <Feedback
+        topics={[
           "transfer-convention-to-agency",
           "convention-action-accept-by-counsellor",
           "convention-action-accept-by-validator",
@@ -370,13 +379,33 @@ export const ConventionManageActions = ({
           "convention-action-deprecate",
           "convention-action-cancel",
           "convention-action-renew",
-          "convention-action-edit-counsellor-name",
           "delete-assessment",
-          "partner-conventions",
           "edit-convention-with-final-status",
         ]}
         className={fr.cx("fr-mb-2w")}
         closable
+        render={({ title, level, message }) => (
+          <Alert
+            small
+            severity={level}
+            title={title}
+            description={
+              level === "error" ? (
+                message
+              ) : (
+                <>
+                  <p>{message}</p>
+                  {consumerNames.length > 0 && (
+                    <p>
+                      Ces changements ont été diffusés dans vos applicatifs.
+                    </p>
+                  )}
+                </>
+              )
+            }
+            className={fr.cx("fr-mb-5v")}
+          />
+        )}
       />
 
       <div
