@@ -1951,6 +1951,40 @@ Tél : ${beneficiaryPhone}`,
         subContent: defaultSignature("immersion"),
       }),
     },
+    ESTABLISHMENT_DELETED_NOTIFICATION_TO_BENEFICIARY: {
+      niceName: "Établissement - MER - Candidat - Entreprise désinscrite",
+      tags: [
+        "template:MER_candidat_entrepriseDesinscrite",
+        "theme:MER",
+        "acteur:candidat",
+        "role:beneficiaire",
+      ],
+      createEmailVariables: ({
+        discussionCreatedAt,
+        searchPageUrl,
+        beneficiaryFirstName,
+        beneficiaryLastName,
+        businessName,
+      }) => ({
+        subject: `Votre demande d’immersion chez ${businessName} a été clôturée`,
+        content: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},
+
+        La candidature pour une immersion au sein de l'entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, a été clôturée car l'entreprise s'est désinscrite d'Immersion Facilitée.
+
+        <strong>Si vous êtes toujours intéressé(e) par une immersion, nous vous invitons à rechercher d'autres opportunités :</strong>`,
+        buttons: [
+          {
+            label: "Rechercher des offres d'immersion",
+            url: searchPageUrl,
+          },
+        ],
+        subContent: `
+        N'hésitez pas à nous contacter si vous avez des questions.
+
+        ${defaultSignature("immersion")}
+        `,
+      }),
+    },
     ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY: {
       niceName: "Établissement - MER - Candidat - Entreprise bannie",
       tags: [

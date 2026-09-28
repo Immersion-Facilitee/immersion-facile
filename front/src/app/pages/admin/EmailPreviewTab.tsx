@@ -513,6 +513,13 @@ export const defaultEmailValueByEmailKind: {
     beneficiaryLastName: "Kornac'h",
     immersionBaseUrl: "https://immersion-facile.beta.gouv.fr",
   },
+  ESTABLISHMENT_DELETED_NOTIFICATION_TO_BENEFICIARY: {
+    beneficiaryFirstName: "Gwenola",
+    beneficiaryLastName: "Kornac'h",
+    businessName: "Machin CORP",
+    discussionCreatedAt: "2023-06-23T10:00:00.000Z",
+    searchPageUrl: "https://immersion-facile.beta.gouv.fr/recherche",
+  },
   ESTABLISHMENT_BANNED_NOTIFICATION_TO_VALIDATOR_AND_PREVALIDATOR: {
     conventionId: "CONVENTION_ID",
     businessName: "Ker Anna",

@@ -59,6 +59,18 @@ const getUseCasesByTopics = (
     },
   ],
   DiscussionMarkedAsDeprecated: [useCases.markDiscussionDeprecatedAndNotify],
+  DiscussionRejectedOnEstablishmentDeleted: [
+    {
+      useCaseName:
+        useCases
+          .notifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted
+          .useCaseName,
+      execute: async ({ discussion }) =>
+        useCases.notifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted.execute(
+          { discussionId: discussion.id },
+        ),
+    },
+  ],
   DiscussionBeneficiaryFollowUpRequested: [
     useCases.notifyBeneficiaryToFollowUpContactRequest,
   ],
@@ -218,7 +230,10 @@ const getUseCasesByTopics = (
     useCases.notifyThatEstablishmentFromConventionIsBanned,
     useCases.deleteEstablishmentMarketingContact,
   ],
-  EstablishmentDeleted: [useCases.deleteEstablishmentMarketingContact],
+  EstablishmentDeleted: [
+    useCases.deleteEstablishmentMarketingContact,
+    useCases.rejectDiscussionsForDeletedEstablishment,
+  ],
   MarketingEstablishmentContactDeletionRequested: [
     useCases.deleteEstablishmentMarketingContact,
   ],
