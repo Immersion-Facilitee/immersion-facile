@@ -123,7 +123,7 @@ test.describe("Agency dashboard workflow", () => {
 
       await expect(
         page.locator(
-          `[id^=${domElementIds.myAccount.cancelRegistrationButton}]`,
+          `[id^=${domElementIds.agencyDashboard.agencyTab.cancelRegistrationButton}]`,
         ),
       ).toHaveCount(registeredAgencyCount);
     });
@@ -137,13 +137,15 @@ test.describe("Agency dashboard workflow", () => {
       expect(
         await page
           .locator(
-            `[id^="${domElementIds.myAccount.cancelRegistrationButton}"]`,
+            `[id^="${domElementIds.agencyDashboard.agencyTab.cancelRegistrationButton}"]`,
           )
           .count(),
       ).toBe(registeredAgencyCount);
 
       await page
-        .locator(`[id^="${domElementIds.myAccount.cancelRegistrationButton}"]`)
+        .locator(
+          `[id^="${domElementIds.agencyDashboard.agencyTab.cancelRegistrationButton}"]`,
+        )
         .first()
         .click();
 
@@ -152,7 +154,7 @@ test.describe("Agency dashboard workflow", () => {
       expect(
         await page
           .locator(
-            `[id^="${domElementIds.myAccount.cancelRegistrationButton}"]`,
+            `[id^="${domElementIds.agencyDashboard.agencyTab.cancelRegistrationButton}"]`,
           )
           .count(),
       ).toBe(registeredAgencyCount - 1);

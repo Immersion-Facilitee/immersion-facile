@@ -89,20 +89,26 @@ test.describe("User workflow", () => {
       await goToMyAgenciesFromHome(page);
 
       await page
-        .locator(`[id^=${domElementIds.myAccount.editRoleButton}]`)
+        .locator(
+          `[id^=${domElementIds.agencyDashboard.agencyTab.editRoleButton}]`,
+        )
         .first()
         .click();
       await expect(agencyRightsModal(page)).toBeVisible();
       await expect(
-        page.locator(`#${domElementIds.myAccount.editAgencyUserEmail}`),
+        page.locator(
+          `#${domElementIds.agencyDashboard.agencyTab.editAgencyUserEmail}`,
+        ),
       ).toBeDisabled();
       await page
         .locator(
-          `[for="${domElementIds.myAccount.editAgencyManageUserCheckbox}-3"]`,
+          `[for="${domElementIds.agencyDashboard.agencyTab.editAgencyManageUserCheckbox}-3"]`,
         )
         .click();
       await page
-        .locator(`#${domElementIds.myAccount.editAgencyUserRoleSubmitButton}`)
+        .locator(
+          `#${domElementIds.agencyDashboard.agencyTab.editAgencyUserRoleSubmitButton}`,
+        )
         .click();
       await expect(page.locator(".fr-alert--success").first()).toBeVisible();
     });
@@ -155,10 +161,16 @@ test.describe("User workflow", () => {
       await goToMyAgenciesFromHome(page);
 
       await expect(
-        page.locator(`[id^=${domElementIds.myAccount.adminAgencyLink}]`),
+        page.locator(
+          `[id^=${domElementIds.agencyDashboard.agencyTab.adminAgencyLink}]`,
+        ),
       ).toHaveCount(0);
       await expect(
-        page.locator(`[id^=${domElementIds.myAccount.editRoleButton}]`).first(),
+        page
+          .locator(
+            `[id^=${domElementIds.agencyDashboard.agencyTab.editRoleButton}]`,
+          )
+          .first(),
       ).toBeVisible();
     });
 
@@ -166,7 +178,7 @@ test.describe("User workflow", () => {
       await goToMyAgenciesFromHome(page);
 
       const ftAgencyEditRoleButton = page.locator(
-        `#${domElementIds.myAccount.editRoleButton}-${SEED_FT_AGENCY_ID}`,
+        `#${domElementIds.agencyDashboard.agencyTab.editRoleButton}-${SEED_FT_AGENCY_ID}`,
       );
       const isAlreadyBasicAgencyUser = await ftAgencyEditRoleButton
         .waitFor({ state: "visible", timeout: 5_000 })
@@ -176,15 +188,19 @@ test.describe("User workflow", () => {
       await ftAgencyEditRoleButton.click();
       await expect(agencyRightsModal(page)).toBeVisible();
       await expect(
-        page.locator(`#${domElementIds.myAccount.editAgencyUserEmail}`),
+        page.locator(
+          `#${domElementIds.agencyDashboard.agencyTab.editAgencyUserEmail}`,
+        ),
       ).toBeDisabled();
       await page
         .locator(
-          `[for="${domElementIds.myAccount.editAgencyManageUserCheckbox}-0"]`,
+          `[for="${domElementIds.agencyDashboard.agencyTab.editAgencyManageUserCheckbox}-0"]`,
         )
         .click();
       await page
-        .locator(`#${domElementIds.myAccount.editAgencyUserRoleSubmitButton}`)
+        .locator(
+          `#${domElementIds.agencyDashboard.agencyTab.editAgencyUserRoleSubmitButton}`,
+        )
         .click();
       await expect(page.locator(".fr-alert--success").first()).toBeVisible();
     });
@@ -244,30 +260,34 @@ test.describe("User workflow", () => {
       await goToMyAgenciesFromHome(page);
 
       await page
-        .locator(`[id^=${domElementIds.myAccount.editRoleButton}]`)
+        .locator(
+          `[id^=${domElementIds.agencyDashboard.agencyTab.editRoleButton}]`,
+        )
         .first()
         .click();
       await expect(agencyRightsModal(page)).toBeVisible();
       await expect(
-        page.locator(`#${domElementIds.myAccount.editAgencyUserEmail}`),
+        page.locator(
+          `#${domElementIds.agencyDashboard.agencyTab.editAgencyUserEmail}`,
+        ),
       ).toBeDisabled();
       const roleOptionsCount = await page
         .locator(
-          `input[id^=${domElementIds.myAccount.editAgencyManageUserCheckbox}]`,
+          `input[id^=${domElementIds.agencyDashboard.agencyTab.editAgencyManageUserCheckbox}]`,
         )
         .count();
 
       for (let i = 0; i < roleOptionsCount; i++) {
         await expect(
           page.locator(
-            `[for="${domElementIds.myAccount.editAgencyManageUserCheckbox}-${i}"]`,
+            `[for="${domElementIds.agencyDashboard.agencyTab.editAgencyManageUserCheckbox}-${i}"]`,
           ),
         ).toBeDisabled();
       }
 
       await expect(
         page.locator(
-          `#${domElementIds.myAccount.editAgencyUserIsNotifiedByEmail}`,
+          `#${domElementIds.agencyDashboard.agencyTab.editAgencyUserIsNotifiedByEmail}`,
         ),
       ).toBeEnabled();
     });
