@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect } from "@playwright/test";
-import { type AgencyId, domElementIds } from "shared";
+import { type AgencyId, domElementIds, frontRoutes } from "shared";
 import { testConfig } from "../../custom.config";
 import { goToAdminTab } from "../../utils/admin";
 import { fillAndSubmitBasicAgencyForm } from "../../utils/agency";
@@ -212,6 +212,25 @@ test.describe("Agency dashboard workflow", () => {
       await expect(
         page.locator(
           `#${domElementIds.agencyDashboard.dashboard.tabContainer}`,
+        ),
+      ).toBeVisible();
+    });
+
+    test("IC user can open the agency registration page from its agencies", async ({
+      page,
+    }) => {
+      await page.goto(frontRoutes.agencyDashboardAgencies().href);
+
+      await page
+        .locator(
+          `#${domElementIds.agencyDashboard.registerAgencies.newAgencyButton}`,
+        )
+        .click();
+
+      await page.waitForURL(`**${frontRoutes.agencyRegistration().href}**`);
+      await expect(
+        page.locator(
+          `#${domElementIds.agencyDashboard.registerAgencies.search}`,
         ),
       ).toBeVisible();
     });
