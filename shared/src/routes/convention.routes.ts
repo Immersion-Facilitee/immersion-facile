@@ -44,6 +44,10 @@ import {
   paginatedConventionWithUnfinalizedAssessmentSchema,
 } from "../convention/conventionWithUnfinalizedAssessment.schema";
 import {
+  getConventionsForEstablishmentUserParamsSchema,
+  paginatedEstablishmentUserConventionListSchema,
+} from "../convention/establishmentUserConventionList.schema";
+import {
   conventionDraftSchema,
   saveConventionDraftSchema,
 } from "../convention/saveConventionDraft.schema";
@@ -394,6 +398,18 @@ export const authenticatedConventionRoutes = defineRoutes({
     queryParamsSchema: flatGetConventionsForAgencyUserParamsSchema,
     responses: {
       200: paginatedAgencyUserConventionListSchema,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+    },
+  }),
+
+  getConventionsForEstablishmentUser: defineRoute({
+    method: "get",
+    url: "/conventions-for-establishment-user",
+    ...withAuthorizationHeaders,
+    queryParamsSchema: getConventionsForEstablishmentUserParamsSchema,
+    responses: {
+      200: paginatedEstablishmentUserConventionListSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
     },
