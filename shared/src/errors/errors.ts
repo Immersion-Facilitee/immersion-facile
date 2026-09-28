@@ -846,6 +846,10 @@ export const errors = {
       new BadRequestError(
         `L'entreprise avec le siret '${siret}' n'est pas bannie`,
       ),
+    establishmentNotDeleted: ({ siret }: { siret: SiretDto }) =>
+      new BadRequestError(
+        `L'entreprise avec le siret '${siret}' n'est pas supprimée`,
+      ),
   },
   establishmentLead: {
     notFound: ({ siret }: { siret: SiretDto }) =>

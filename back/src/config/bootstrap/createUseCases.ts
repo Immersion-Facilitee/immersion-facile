@@ -152,7 +152,9 @@ import { makeGetDiscussionsForUser } from "../../domains/establishment/use-cases
 import { makeGetDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents } from "../../domains/establishment/use-cases/discussions/GetDiscussionsNeedingBeneficiaryFollowUpAndEmitEvents";
 import { makeMarkDiscussionDeprecatedAndNotify } from "../../domains/establishment/use-cases/discussions/MarkDiscussionDeprecatedAndNotify";
 import { makeMarkDiscussionLinkedToConvention } from "../../domains/establishment/use-cases/discussions/MarkDiscussionLinkedToConvention";
+import { makeNotifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted } from "../../domains/establishment/use-cases/discussions/NotifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted";
 import { makeNotifyBeneficiaryToFollowUpContactRequest } from "../../domains/establishment/use-cases/discussions/NotifyBeneficiaryToFollowUpContactRequest";
+import { makeRejectDiscussionsForDeletedEstablishment } from "../../domains/establishment/use-cases/discussions/RejectDiscussionsForDeletedEstablishment";
 import { makeSendExchangeToRecipient } from "../../domains/establishment/use-cases/discussions/SendExchangeToRecipient";
 import { makeUpdateDiscussionStatus } from "../../domains/establishment/use-cases/discussions/UpdateDiscussionStatus";
 import { makeWarnSenderThatMessageCouldNotBeDelivered } from "../../domains/establishment/use-cases/discussions/WarnSenderThatMessageCouldNotBeDelivered";
@@ -1164,6 +1166,22 @@ export const createUseCases = ({
         timeGateway,
       },
     }),
+    rejectDiscussionsForDeletedEstablishment:
+      makeRejectDiscussionsForDeletedEstablishment({
+        uowPerformer,
+        deps: {
+          timeGateway,
+          createNewEvent,
+        },
+      }),
+    notifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted:
+      makeNotifyBeneficiaryThatDiscussionWasRejectedOnEstablishmentDeleted({
+        uowPerformer,
+        deps: {
+          saveNotificationAndRelatedEvent,
+          config,
+        },
+      }),
     notifyBeneficiaryToFollowUpContactRequest:
       makeNotifyBeneficiaryToFollowUpContactRequest({
         uowPerformer,

@@ -380,6 +380,13 @@ export type EmailParamsByEmailType = {
     businessName: string;
     immersionBaseUrl: AbsoluteUrl;
   };
+  ESTABLISHMENT_DELETED_NOTIFICATION_TO_BENEFICIARY: {
+    beneficiaryFirstName: string;
+    beneficiaryLastName: string;
+    businessName: string;
+    discussionCreatedAt: string;
+    searchPageUrl: string;
+  };
   ESTABLISHMENT_BANNED_NOTIFICATION_TO_VALIDATOR_AND_PREVALIDATOR: {
     conventionId: ConventionId;
     beneficiaryFirstName: string;
