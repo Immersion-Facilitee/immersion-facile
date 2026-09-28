@@ -51,6 +51,7 @@ import { makeGetConvention } from "../../domains/convention/use-cases/GetConvent
 import { makeGetConventionDraftById } from "../../domains/convention/use-cases/GetConventionDraftById";
 import { makeGetConventionsForAgencyUser } from "../../domains/convention/use-cases/GetConventionsForAgencyUser";
 import { makeGetConventionsForApiConsumer } from "../../domains/convention/use-cases/GetConventionsForApiConsumer";
+import { makeGetConventionsForEstablishmentUser } from "../../domains/convention/use-cases/GetConventionsForEstablishmentUser";
 import { makeGetConventionsWithUnfinalizedAssessment } from "../../domains/convention/use-cases/GetConventionsWithUnfinalizedAssessment";
 import { makeGetConventionTemplatesForCurrentUser } from "../../domains/convention/use-cases/GetConventionTemplatesForCurrentUser";
 import { makeGetLastBroadcastFeedback } from "../../domains/convention/use-cases/GetLastBroadcastFeedback";
@@ -1107,6 +1108,10 @@ export const createUseCases = ({
       },
     }),
     getConventionsForAgencyUser: makeGetConventionsForAgencyUser({
+      uowPerformer,
+      deps: { timeGateway },
+    }),
+    getConventionsForEstablishmentUser: makeGetConventionsForEstablishmentUser({
       uowPerformer,
       deps: { timeGateway },
     }),
