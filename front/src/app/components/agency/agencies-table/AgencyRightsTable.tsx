@@ -151,7 +151,7 @@ export const AgencyRightsTable = ({
                   !selectedAgencyRight.roles.includes("agency-admin")
                 }
                 onSubmit={onUserUpdateRequested}
-                routeName="myAccount"
+                routeName="agencyDashboardAgencies"
                 hasCounsellorRoles={selectedAgencyHasCounsellorRoles}
                 isFTAgency={
                   selectedAgencyRight.agency.kind === "france-travail"
