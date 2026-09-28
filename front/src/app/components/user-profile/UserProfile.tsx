@@ -21,7 +21,6 @@ import { match } from "ts-pattern";
 import type { Route } from "type-route";
 import { AgenciesTablesSection } from "../agency/agencies-table/AgenciesTablesSection";
 import { EstablishmentsTablesSection } from "../establishment/establishments-table/EstablishmentsTablesSection";
-import { PersonnalInformationsSection } from "./PersonnalInformationsSection";
 
 type UserProfileAllowedRouteNames = Route<
   | typeof frontRoutes.adminUserDetailAgencies
@@ -177,7 +176,14 @@ export const UserProfile = ({
           />
         </div>
       )}
-      <PersonnalInformationsSection user={userWithRights} />
+      <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>Informations personnelles</h2>
+      <p>
+        Email de l'utilisateur :{" "}
+        <a href={`mailto:${userWithRights.email}`}>{userWithRights.email}</a>
+        <br />
+        {userWithRights.proConnect &&
+          `Connecté avec ProConnect (SIRET : ${userWithRights.proConnect.siret})`}
+      </p>
       <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>Mes rattachements</h2>
       <Tabs
         onTabChange={(tabId) => onTabChange(tabId as UserProfileTabId)}
