@@ -26,7 +26,10 @@ import {
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { getButtonConfigBySubStatus } from "src/app/components/forms/convention/manage-actions/getButtonConfigBySubStatus";
 import type { VerificationAction } from "src/app/components/forms/convention/manage-actions/getVerificationActionButtonProps";
-import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
+import {
+  useFeedbackTopic,
+  useFeedbackTopics,
+} from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { isAssessmentToBeSignedByBeneficiary } from "src/app/utils/assessment.utils";
 import { shouldShowPartnersBroadcastError } from "src/app/utils/broadcast.utils";
@@ -37,11 +40,27 @@ import { connectedUserSelectors } from "src/core-logic/domain/connected-user/con
 import { conventionActionSelectors } from "src/core-logic/domain/convention/convention-action/conventionAction.selectors";
 import { conventionActionSlice } from "src/core-logic/domain/convention/convention-action/conventionAction.slice";
 import { editConventionWithFinalStatusSlice } from "src/core-logic/domain/convention/edit-convention-with-final-status/editConventionWithFinalStatus.slice";
+import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
 import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
-import type { Feedback as FeedbackType } from "src/core-logic/domain/feedback/feedback.slice";
+import {
+  type Feedback as FeedbackType,
+  feedbackSlice,
+} from "src/core-logic/domain/feedback/feedback.slice";
 import { partnersErroredConventionSelectors } from "src/core-logic/domain/partnersErroredConvention/partnersErroredConvention.selectors";
 import { partnersErroredConventionSlice } from "src/core-logic/domain/partnersErroredConvention/partnersErroredConvention.slice";
 import { renderButtonsBySubStatus } from "./renderButtonsBySubStatus";
+
+const feedbackTopicsWithBroadcastMessage: FeedbackTopic[] = [
+  "transfer-convention-to-agency",
+  "convention-action-accept-by-counsellor",
+  "convention-action-accept-by-validator",
+  "convention-action-reject",
+  "convention-action-deprecate",
+  "convention-action-cancel",
+  "convention-action-renew",
+  "delete-assessment",
+  "edit-convention-with-final-status",
+];
 
 export type JwtKindProps =
   | {
@@ -152,6 +171,8 @@ export const ConventionManageActions = ({
       | MarkPartnersErroredConventionAsHandledRequest,
   ) => {
     if (isConventionActionLoading) return;
+
+    dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
 
     if (verificationAction === "EDIT_CONVENTION_WITH_FINAL_STATUS") {
       if ("beneficiary" in params && jwtParams.kind === "convention") return;
@@ -337,6 +358,8 @@ export const ConventionManageActions = ({
   });
 
   const { isLayoutDesktop } = useLayout();
+  const canBeBroadcasted =
+    useFeedbackTopics(feedbackTopicsWithBroadcastMessage).length > 0;
 
   return (
     <div
@@ -361,52 +384,43 @@ export const ConventionManageActions = ({
         />
       )}
 
-      <Feedback
-        topics={[
-          "convention-action-edit-counsellor-name",
-          "partner-conventions",
-        ]}
-        className={fr.cx("fr-mb-2w")}
-        closable
-      />
-
-      <Feedback
-        topics={[
-          "transfer-convention-to-agency",
-          "convention-action-accept-by-counsellor",
-          "convention-action-accept-by-validator",
-          "convention-action-reject",
-          "convention-action-deprecate",
-          "convention-action-cancel",
-          "convention-action-renew",
-          "delete-assessment",
-          "edit-convention-with-final-status",
-        ]}
-        className={fr.cx("fr-mb-2w")}
-        closable
-        render={({ title, level, message }) => (
-          <Alert
-            small
-            severity={level}
-            title={title}
-            description={
-              level === "error" ? (
-                message
-              ) : (
-                <>
-                  <p>{message}</p>
-                  {consumerNames.length > 0 && (
-                    <p>
-                      Ces changements ont été diffusés dans vos applicatifs.
-                    </p>
-                  )}
-                </>
-              )
-            }
-            className={fr.cx("fr-mb-5v")}
-          />
-        )}
-      />
+      {canBeBroadcasted ? (
+        <Feedback
+          topics={feedbackTopicsWithBroadcastMessage}
+          render={({ title, level, message }) => (
+            <Alert
+              small
+              closable
+              severity={level}
+              title={title}
+              description={
+                level === "error" ? (
+                  message
+                ) : (
+                  <>
+                    <p>{message}</p>
+                    {consumerNames.length > 0 && (
+                      <p>
+                        Ces changements ont été diffusés dans vos applicatifs.
+                      </p>
+                    )}
+                  </>
+                )
+              }
+              className={fr.cx("fr-mb-2w")}
+            />
+          )}
+        />
+      ) : (
+        <Feedback
+          topics={[
+            "convention-action-edit-counsellor-name",
+            "partner-conventions",
+          ]}
+          className={fr.cx("fr-mb-2w")}
+          closable
+        />
+      )}
 
       <div
         className={fr.cx("fr-container", "fr-py-1w")}
