@@ -19,12 +19,11 @@ import { testConfig } from "../custom.config";
 import { acceptCookiesIfBannerVisible } from "./utils";
 
 export const goToAdminTab = async (page: Page, tabName: AdminTabRouteName) => {
-  const adminButton = await page.locator("#fr-header-main-navigation-button-4");
-  await expect(adminButton).toBeVisible();
-  await adminButton.click();
-  await page
-    .locator(`#${domElementIds.header.navLinks.admin.backOffice}`)
-    .click();
+  const adminLink = page.locator(
+    `#${domElementIds.header.navLinks.admin.backOffice}`,
+  );
+  await expect(adminLink).toBeVisible();
+  await adminLink.click();
   await page.locator(".fr-tabs__tab").first().waitFor();
   const tabLocator = await page
     .locator(".fr-tabs__list li")

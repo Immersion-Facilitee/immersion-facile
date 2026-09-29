@@ -14,9 +14,11 @@ setup("authenticate as admin", async ({ page }) => {
   console.time("auth-admin");
   await page.goto("/");
   await acceptCookiesIfBannerVisible(page);
-  const adminButton = await page.locator("#fr-header-main-navigation-button-4");
+  const adminLink = page.locator(
+    `#${domElementIds.header.navLinks.admin.backOffice}`,
+  );
   await loginWithIdentityProvider(page, "admin", "ProConnect");
-  await expect(adminButton).toBeVisible();
+  await expect(adminLink).toBeVisible();
   await page.context().storageState({ path: adminAuthFile });
   console.timeEnd("auth-admin");
   // Capture the seeded link before concurrent workflows fill the 30-email inbox.
