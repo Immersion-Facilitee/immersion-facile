@@ -66,7 +66,7 @@ export const EstablishmentConventionList = ({
   return (
     <div className={fr.cx("fr-mt-4w")}>
       {conventionsDashboardUrl && (
-        <div className={fr.cx("fr-grid-row")}>
+        <div className={fr.cx("fr-grid-row", "fr-grid-row--right")}>
           <MetabaseFullScreenButton
             url={conventionsDashboardUrl}
             label="Télécharger les données (Excel/CSV)"
