@@ -37,7 +37,7 @@ export const BeneficiaryDashboardPage = ({
   return (
     <>
       {(isLoadingUser || isLoadingDiscussionList) && <Loader />}
-      <h1>Mon espace bénéficiaire</h1>
+      <h1>Mon espace candidat</h1>
       <SectionHighlight>
         <h2 className={fr.cx("fr-h6", "fr-mb-1w")}>
           Bienvenue dans votre nouvel espace candidat !
