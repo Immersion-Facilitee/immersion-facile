@@ -2,7 +2,6 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { Loader, PageHeader } from "react-design-system";
 import { domElementIds, frontRoutes } from "shared";
-import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { RegisterAgenciesForm } from "src/app/components/forms/register-agencies/RegisterAgenciesForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -21,7 +20,6 @@ export const AgencyRegistrationPage = (): JSX.Element => {
     <>
       <PageHeader
         title={"Demander l'accès à des organismes"}
-        breadcrumbs={<Breadcrumbs />}
         badge={
           <Button
             id={domElementIds.agencyDashboardRegistration.backButton}

@@ -2,7 +2,6 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { Loader, PageHeader } from "react-design-system";
 import { domElementIds, frontRoutes } from "shared";
-import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { RequestRegisterEstablishmentsForUserForm } from "src/app/components/forms/register-establishments/RequestRegisterEstablishmentsForUserForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -20,7 +19,6 @@ export const EstablishmentRegistrationPage = () => {
     <>
       <PageHeader
         title={"Se rattacher à une entreprise"}
-        breadcrumbs={<Breadcrumbs />}
         badge={
           <Button
             id={domElementIds.establishmentDashboardRegistration.backButton}
