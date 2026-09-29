@@ -250,7 +250,7 @@ export type EmailParamsByEmailType = {
     businessName: string;
     beneficiaryDashboardUrl: AbsoluteUrl;
   };
-  CONTACT_BY_EMAIL_MINISTAGE: {
+  CONTACT_BY_EMAIL_REQUEST_MINISTAGE: {
     appellationLabel: AppellationLabel;
     businessAddress: BusinessAddress;
     businessName: BusinessName;

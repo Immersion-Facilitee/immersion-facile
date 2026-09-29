@@ -385,7 +385,7 @@ export const defaultEmailValueByEmailKind: {
     dateEnd: "DATE_END",
     justification: "JUSTIFICATION",
   },
-  CONTACT_BY_EMAIL_MINISTAGE: {
+  CONTACT_BY_EMAIL_REQUEST_MINISTAGE: {
     appellationLabel: "APPELLATION_LABEL",
     businessAddress: "BUSINESS_ADDRESS",
     businessName: "BUSINESS_NAME",

@@ -343,7 +343,7 @@ describe("NotifyContactRequest", () => {
         });
       });
 
-      it("Sends one CONTACT_BY_EMAIL_MINISTAGE email per establishment user that is notified and has ACCEPTED rights", async () => {
+      it("Sends one CONTACT_BY_EMAIL_REQUEST_MINISTAGE email per establishment user that is notified and has ACCEPTED rights", async () => {
         const discussion = new DiscussionBuilder()
           .withSiret(establishmentAggregate.establishment.siret)
           .withContactMode("EMAIL")
@@ -364,7 +364,7 @@ describe("NotifyContactRequest", () => {
         expectSavedNotificationsAndEvents({
           emails: [
             {
-              kind: "CONTACT_BY_EMAIL_MINISTAGE",
+              kind: "CONTACT_BY_EMAIL_REQUEST_MINISTAGE",
               recipients: [establishmentAdmin.email],
               sender: discussionEmailSender,
               replyTo: {
@@ -399,7 +399,7 @@ describe("NotifyContactRequest", () => {
               },
             },
             {
-              kind: "CONTACT_BY_EMAIL_MINISTAGE",
+              kind: "CONTACT_BY_EMAIL_REQUEST_MINISTAGE",
               recipients: [establishmentContact.email],
               sender: discussionEmailSender,
               replyTo: {

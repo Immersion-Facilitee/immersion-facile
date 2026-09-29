@@ -16,8 +16,8 @@ type ContactByEmailRequest =
       params: EmailParamsByEmailType["CONTACT_BY_EMAIL_REQUEST_IMMERSION"];
     }
   | {
-      kind: "CONTACT_BY_EMAIL_MINISTAGE";
-      params: EmailParamsByEmailType["CONTACT_BY_EMAIL_MINISTAGE"];
+      kind: "CONTACT_BY_EMAIL_REQUEST_MINISTAGE";
+      params: EmailParamsByEmailType["CONTACT_BY_EMAIL_REQUEST_MINISTAGE"];
     };
 
 export const makeContactByEmailRequestParams = ({
@@ -74,7 +74,7 @@ export const makeContactByEmailRequestParams = ({
         },
       }
     : {
-        kind: "CONTACT_BY_EMAIL_MINISTAGE",
+        kind: "CONTACT_BY_EMAIL_REQUEST_MINISTAGE",
         params: {
           ...commonParams,
           levelOfEducation: discussion.potentialBeneficiary.levelOfEducation,
