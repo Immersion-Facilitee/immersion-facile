@@ -302,7 +302,7 @@ const OnboardingTabContent = () => (
             children: "Créer une nouvelle entreprise",
           },
           {
-            id: domElementIds.establishmentDashboardRegistration
+            id: domElementIds.establishmentDashboard.manageEstablishments
               .registerEstablishmentButton,
 
             priority: "primary",
