@@ -1324,7 +1324,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           ${defaultSignature("immersion")}`,
       }),
     },
-    CONTACT_BY_EMAIL_MINISTAGE: {
+    CONTACT_BY_EMAIL_REQUEST_MINISTAGE: {
       niceName: "MER - Entreprises - Demande de mini-stage",
       tags: [
         "template:demandeStage",
