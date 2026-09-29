@@ -3,6 +3,7 @@ import {
   type BeneficiaryConventionListDto,
   type DataWithPagination,
   defaultPerPageInWebPagination,
+  type EstablishmentUserConventionListDto,
   expectToEqual,
   type FlatGetBeneficiaryConventionListParams,
   type FlatGetConventionsForAgencyUserParams,
@@ -13,6 +14,7 @@ import {
   conventionListSlice,
   initialBeneficiaryConventionList,
   initialConventionWithPagination,
+  initialEstablishmentConventionList,
 } from "src/core-logic/domain/connected-user/conventionList/connectedUserConventionList.slice";
 import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
 import {
@@ -33,6 +35,7 @@ describe("ConnectedUserConventionList", () => {
     isLoading: false,
     conventionsWithPagination: initialConventionWithPagination,
     beneficiaryConventionList: initialBeneficiaryConventionList,
+    establishmentConventionList: initialEstablishmentConventionList,
   };
   const jwt = "my-jwt";
 
@@ -460,10 +463,196 @@ describe("ConnectedUserConventionList", () => {
           );
   });
 
+  describe("establishmentConventionList", () => {
+    const establishmentConvention1: EstablishmentUserConventionListDto = {
+      id: "establishment-convention-1",
+      status: "READY_TO_SIGN",
+      dateStart: "2024-01-15",
+      dateEnd: "2024-01-20",
+      businessName: "Business Name",
+      immersionAppellation: {
+        romeCode: "A1401",
+        romeLabel: "Aide agricole",
+        appellationCode: "12345",
+        appellationLabel: "Aide agricole de production fruitière",
+      },
+      assessment: null,
+      beneficiary: {
+        firstName: "John",
+        lastName: "Doe",
+      },
+    };
+
+    const establishmentConvention2: EstablishmentUserConventionListDto = {
+      id: "establishment-convention-2",
+      status: "READY_TO_SIGN",
+      dateStart: "2024-02-20",
+      dateEnd: "2024-01-20",
+      businessName: "Business Name",
+      immersionAppellation: {
+        romeCode: "A1401",
+        romeLabel: "Aide agricole",
+        appellationCode: "12345",
+        appellationLabel: "Aide agricole de production fruitière",
+      },
+      assessment: null,
+      beneficiary: {
+        firstName: "John",
+        lastName: "Doe",
+      },
+    };
+
+    it("on establishment convention list fetched successfully", () => {
+      expectConventionListSelectors(defaultConventionListState);
+
+      store.dispatch(
+        conventionListSlice.actions.fetchEstablishmentConventionListRequested({
+          jwt,
+          filters: {
+            page: 1,
+            perPage: 10,
+          },
+          feedbackTopic: "connected-user-establishment-convention-list",
+        }),
+      );
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        isLoading: true,
+      });
+
+      feedGatewayWithEstablishmentConventionListOrError({
+        data: [establishmentConvention1, establishmentConvention2],
+        pagination: {
+          totalRecords: 12,
+          currentPage: 1,
+          totalPages: 2,
+          numberPerPage: 10,
+        },
+      });
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        establishmentConventionList: {
+          data: [establishmentConvention1, establishmentConvention2],
+          pagination: {
+            totalRecords: 12,
+            currentPage: 1,
+            totalPages: 2,
+            numberPerPage: 10,
+          },
+          filters: {
+            page: 1,
+            perPage: 10,
+          },
+        },
+      });
+    });
+
+    it("on establishment convention list fetched failed", () => {
+      expectConventionListSelectors(defaultConventionListState);
+
+      store.dispatch(
+        conventionListSlice.actions.fetchEstablishmentConventionListRequested({
+          jwt,
+          filters: {
+            page: 1,
+            perPage: 10,
+          },
+          feedbackTopic: "connected-user-establishment-convention-list",
+        }),
+      );
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        isLoading: true,
+      });
+
+      feedGatewayWithEstablishmentConventionListOrError(
+        conventionListFetchError,
+      );
+
+      expectConventionListSelectors(defaultConventionListState);
+      expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
+        "connected-user-establishment-convention-list": {
+          on: "fetch",
+          level: "error",
+          title: "Problème lors de la récupération des conventions",
+          message: conventionListFetchErrorMessage,
+        },
+      });
+    });
+
+    it("clears establishment convention list", () => {
+      expectConventionListSelectors(defaultConventionListState);
+
+      store.dispatch(
+        conventionListSlice.actions.fetchEstablishmentConventionListRequested({
+          jwt,
+          filters: {
+            page: 1,
+            perPage: 10,
+          },
+          feedbackTopic: "connected-user-establishment-convention-list",
+        }),
+      );
+
+      feedGatewayWithEstablishmentConventionListOrError({
+        data: [establishmentConvention1, establishmentConvention2],
+        pagination: {
+          totalRecords: 12,
+          currentPage: 1,
+          totalPages: 2,
+          numberPerPage: 10,
+        },
+      });
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        establishmentConventionList: {
+          data: [establishmentConvention1, establishmentConvention2],
+          pagination: {
+            totalRecords: 12,
+            currentPage: 1,
+            totalPages: 2,
+            numberPerPage: 10,
+          },
+          filters: {
+            page: 1,
+            perPage: 10,
+          },
+        },
+      });
+
+      store.dispatch(
+        conventionListSlice.actions.clearEstablishmentConventionListRequested(),
+      );
+
+      expectConventionListSelectors(defaultConventionListState);
+    });
+
+    const feedGatewayWithEstablishmentConventionListOrError = (
+      establishmentConventionListOrError?:
+        | DataWithPagination<EstablishmentUserConventionListDto>
+        | Error,
+    ) => {
+      if (establishmentConventionListOrError instanceof Error) {
+        dependencies.conventionGateway.getConventionsForEstablishmentUserResult$.error(
+          establishmentConventionListOrError,
+        );
+      } else if (establishmentConventionListOrError) {
+        dependencies.conventionGateway.getConventionsForEstablishmentUserResult$.next(
+          establishmentConventionListOrError,
+        );
+      }
+    };
+  });
+
   const expectConventionListSelectors = ({
     isLoading,
     conventionsWithPagination,
     beneficiaryConventionList,
+    establishmentConventionList,
   }: ConventionListState) => {
     expectToEqual(
       conventionListSelectors.isLoading(store.getState()),
@@ -476,6 +665,10 @@ describe("ConnectedUserConventionList", () => {
     expectToEqual(
       conventionListSelectors.beneficiaryConventionList(store.getState()),
       beneficiaryConventionList,
+    );
+    expectToEqual(
+      conventionListSelectors.establishmentConventionList(store.getState()),
+      establishmentConventionList,
     );
   };
 });

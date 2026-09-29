@@ -62,6 +62,7 @@ const topics = [
   "connected-user-conventions",
   "connected-user-convention-list",
   "connected-user-beneficiary-convention-list",
+  "connected-user-establishment-convention-list",
   "convention-action-accept-by-counsellor",
   "convention-action-accept-by-validator",
   "convention-action-cancel",
@@ -1103,6 +1104,15 @@ export const feedbacks: Record<
   "connected-user-convention-list": {
     "fetch.error": {
       action: conventionListSlice.actions.fetchConventionListFailed,
+      title: "Problème lors de la récupération des conventions",
+      message:
+        "Une erreur est survenue lors de la récupération des conventions",
+    },
+  },
+  "connected-user-establishment-convention-list": {
+    "fetch.error": {
+      action:
+        conventionListSlice.actions.fetchEstablishmentConventionListFailed,
       title: "Problème lors de la récupération des conventions",
       message:
         "Une erreur est survenue lors de la récupération des conventions",
