@@ -24,10 +24,12 @@ import {
   type DataWithPagination,
   type EditConventionCounsellorNameRequestDto,
   type EditConventionWithFinalStatusRequestDto,
+  type EstablishmentUserConventionListDto,
   type FindSimilarConventionsParams,
   type FlatGetBeneficiaryConventionListParams,
   type FlatGetConventionsForAgencyUserParams,
   type FlatGetConventionsWithUnfinalizedAssessmentParams,
+  type GetConventionsForEstablishmentUserParams,
   type HandleArchivedConventionRequestDto,
   type MarkPartnersErroredConventionAsHandledRequest,
   makeEmptyLastReminders,
@@ -100,6 +102,9 @@ export class InMemoryConventionGateway implements ConventionGateway {
 
   public getConventionsForUserResult$ = new Subject<
     DataWithPagination<AgencyUserConventionListDto>
+  >();
+  public getConventionsForEstablishmentUserResult$ = new Subject<
+    DataWithPagination<EstablishmentUserConventionListDto>
   >();
   public getBeneficiaryConventionListResult$ =
     new Subject<BeneficiaryConventionListDto>();
@@ -322,6 +327,13 @@ export class InMemoryConventionGateway implements ConventionGateway {
     _jwt: string,
   ): Observable<DataWithPagination<AgencyUserConventionListDto>> {
     return this.getConventionsForUserResult$;
+  }
+
+  public getConventionsForEstablishmentUser$(
+    _params: GetConventionsForEstablishmentUserParams,
+    _jwt: string,
+  ): Observable<DataWithPagination<EstablishmentUserConventionListDto>> {
+    return this.getConventionsForEstablishmentUserResult$;
   }
   public getConventionLastBroadcastFeedback$(
     _conventionId: ConventionId,
