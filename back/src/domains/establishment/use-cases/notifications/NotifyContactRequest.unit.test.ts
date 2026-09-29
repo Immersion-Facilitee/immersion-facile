@@ -18,7 +18,10 @@ import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
 } from "../../../../utils/makeExpectSavedNotificationAndEvent.helpers";
-import { makeSaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
+import {
+  makeSaveNotificationAndRelatedEvent,
+  makeSaveNotificationsBatchAndRelatedEvent,
+} from "../../../core/notifications/helpers/Notification";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
@@ -198,6 +201,11 @@ describe("NotifyContactRequest", () => {
           new UuidV4Generator(),
           new CustomTimeGateway(),
         ),
+        saveNotificationsBatchAndRelatedEvent:
+          makeSaveNotificationsBatchAndRelatedEvent(
+            new UuidV4Generator(),
+            new CustomTimeGateway(),
+          ),
       },
       uowPerformer: new InMemoryUowPerformer(uow),
     });
