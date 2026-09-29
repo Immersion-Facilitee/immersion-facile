@@ -3,12 +3,16 @@ import type { ConventionStatus } from "shared";
 
 export const labelAndSeverityByStatus: Record<
   ConventionStatus,
-  { label: { agency: string; beneficiary: string }; color: FrCxArg }
+  {
+    label: { agency: string; beneficiary: string; establishment: string };
+    color: FrCxArg;
+  }
 > = {
   ACCEPTED_BY_COUNSELLOR: {
     label: {
       beneficiary: "📄 En cours d'examen",
       agency: "📄 Demande éligible",
+      establishment: "📄 En cours d'examen",
     },
     color: "fr-badge--purple-glycine",
   },
@@ -16,6 +20,7 @@ export const labelAndSeverityByStatus: Record<
     label: {
       beneficiary: "✅ Demande validée",
       agency: "✅ Demande validée",
+      establishment: "✅ Demande validée",
     },
     color: "fr-badge--green-emeraude",
   },
@@ -23,6 +28,7 @@ export const labelAndSeverityByStatus: Record<
     label: {
       beneficiary: "❌ Convention annulée",
       agency: "❌ Convention annulée",
+      establishment: "❌ Convention annulée",
     },
     color: "fr-badge--error",
   },
@@ -30,6 +36,7 @@ export const labelAndSeverityByStatus: Record<
     label: {
       beneficiary: "📄 En cours d'examen",
       agency: "📄 Demande à étudier",
+      establishment: "📄 En cours d'examen",
     },
     color: "fr-badge--purple-glycine",
   },
@@ -37,6 +44,7 @@ export const labelAndSeverityByStatus: Record<
     label: {
       beneficiary: "✍ Partiellement signée",
       agency: "✍ Partiellement signée",
+      establishment: "✍ En cours de signature",
     },
     color: "fr-badge--purple-glycine",
   },
@@ -44,6 +52,7 @@ export const labelAndSeverityByStatus: Record<
     label: {
       beneficiary: "✍ En cours de signature",
       agency: "✍ En cours de signature",
+      establishment: "✍ En cours de signature",
     },
     color: "fr-badge--purple-glycine",
   },
@@ -51,6 +60,7 @@ export const labelAndSeverityByStatus: Record<
     label: {
       beneficiary: "❌ Demande rejetée",
       agency: "❌ Demande rejetée",
+      establishment: "❌ Demande rejetée",
     },
     color: "fr-badge--error",
   },
@@ -58,6 +68,7 @@ export const labelAndSeverityByStatus: Record<
     label: {
       beneficiary: "❌ Demande obsolète",
       agency: "❌ Demande obsolète",
+      establishment: "❌ Demande obsolète",
     },
     color: "fr-badge--error",
   },
