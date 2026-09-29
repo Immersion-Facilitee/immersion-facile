@@ -1,5 +1,8 @@
 import { expect, type Page } from "@playwright/test";
-import { domElementIds } from "shared";
+import {
+  domElementIds,
+  SEED_ACCEPTED_BY_VALIDATOR_CONVENTION_1_ID,
+} from "shared";
 import { testConfig } from "../../custom.config";
 import {
   createConventionTemplate,
@@ -8,12 +11,54 @@ import {
   goToEstablishmentDashboardTab,
   initiateConvention,
 } from "../../utils/dashboard";
-import { expectLocatorToBeVisibleAndEnabled, test } from "../../utils/utils";
+import {
+  acceptCookiesIfBannerVisible,
+  expectLocatorToBeVisibleAndEnabled,
+  test,
+} from "../../utils/utils";
 
 test.describe.configure({ mode: "serial" });
 
 test.describe("Establishment dashboard workflow", () => {
   test.use({ storageState: testConfig.establishmentAuthFile });
+  test.describe("Establishment Convention List", () => {
+    test("should be able to navigate to establishment convention list and have conventions in list", async ({
+      page,
+    }) => {
+      await page.goto("/");
+      await goToEstablishmentConventionList(page);
+      await expect(
+        page.locator(
+          `[id^="${domElementIds.establishmentDashboardConventions.goToConventionButton}"]`,
+        ),
+      ).not.toHaveCount(0);
+    });
+
+    test("should open convention manage page from the list", async ({
+      page,
+    }) => {
+      await page.goto("/");
+      await goToEstablishmentConventionList(page);
+
+      const goToConventionButton = page.locator(
+        `#${domElementIds.establishmentDashboardConventions.goToConventionButton}--${SEED_ACCEPTED_BY_VALIDATOR_CONVENTION_1_ID}`,
+      );
+      await expect(goToConventionButton).toBeVisible();
+      const [manageConventionPage] = await Promise.all([
+        page.context().waitForEvent("page"),
+        goToConventionButton.click(),
+      ]);
+      await acceptCookiesIfBannerVisible(manageConventionPage);
+
+      await expect(
+        manageConventionPage.locator(
+          `#${domElementIds.manageConvention.openDocumentButton}`,
+        ),
+      ).toBeVisible();
+      await manageConventionPage.close();
+    });
+  });
+
   test.describe("Discussions", () => {
     test("should be able to reject candidate on a discussion", async ({
       page,
@@ -86,6 +131,11 @@ test.describe("Establishment dashboard workflow", () => {
     });
   });
 });
+
+const goToEstablishmentConventionList = async (page: Page) => {
+  await goToDashboard(page, "establishment");
+  await expectLocatorToBeVisibleAndEnabled(page.locator(".fr-tabs__list"));
+};
 
 const goToDiscussion = async (page: Page, discussionId: string) => {
   await goToDashboard(page, "establishment");
