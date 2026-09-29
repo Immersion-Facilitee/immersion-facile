@@ -1,5 +1,6 @@
 import {
   type AppellationAndRomeDto,
+  addressDtoToString,
   type DiscussionDto,
   type EmailParamsByEmailType,
   type Firstname,
@@ -36,7 +37,7 @@ export const makeContactByEmailRequestParams = ({
   const commonParams = {
     appellationLabel: appellation.appellationLabel,
     businessName: discussion.businessName,
-    businessAddress: `${discussion.address.streetNumberAndAddress} ${discussion.address.postcode} ${discussion.address.city}`,
+    businessAddress: addressDtoToString(discussion.address),
     contactFirstName,
     contactLastName,
     discussionUrl: makeRouteAbsoluteUrl({
