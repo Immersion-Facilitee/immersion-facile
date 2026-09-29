@@ -27,7 +27,9 @@ export const AgencyRegistrationPage = (): JSX.Element => {
             id={domElementIds.agencyDashboardRegistration.backButton}
             linkProps={frontRoutes.agencyDashboardAgencies().link}
             priority={"secondary"}
+            size="small"
             className={fr.cx("fr-mb-6w")}
+            iconId="fr-icon-arrow-go-back-line"
           >
             Retour au tableau de bord
           </Button>
