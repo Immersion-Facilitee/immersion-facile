@@ -70,7 +70,6 @@ export const domElementIds = {
       },
       admin: {
         backOffice: buildHeaderNavLinkId("admin-home"),
-        emails: buildHeaderNavLinkId("admin-emails"),
       },
       quickAccess: {
         beneficiary: buildHeaderNavLinkId("quick-access-beneficiary"),
