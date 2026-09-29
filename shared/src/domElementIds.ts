@@ -1278,7 +1278,10 @@ export const domElementIds = {
   agencyDashboardAgencyDetails: {},
   conventionConfirmation: {},
   conventionImmersionForExternals: {},
-  establishmentDashboardConventions: {},
+  establishmentDashboardConventions: {
+    goToConventionButton:
+      "im-establishment-dashboard-conventions__see-convention-button",
+  },
   establishmentDashboardFormEstablishment: {},
   openApiDoc: {},
   stats: {},
