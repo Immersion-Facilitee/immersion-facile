@@ -251,6 +251,7 @@ export const {
   ),
 
   myAccount,
+  legacyMyAccountAgencies: myAccount.extend("/mes-agences"),
   agencyDashboardAgencies: agencyDashboardAgencies,
   agencyDashboardAgencyDetails: agencyDashboardAgencies.extend(
     { agencyId: param.path.optional.string },
