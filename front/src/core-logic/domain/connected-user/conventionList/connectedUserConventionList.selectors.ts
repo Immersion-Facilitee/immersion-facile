@@ -13,4 +13,8 @@ export const conventionListSelectors = {
     conventionListState,
     ({ conventionsWithPagination }) => conventionsWithPagination,
   ),
+  establishmentConventionList: createSelector(
+    conventionListState,
+    ({ establishmentConventionList }) => establishmentConventionList,
+  ),
 };
