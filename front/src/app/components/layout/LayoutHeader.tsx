@@ -114,6 +114,9 @@ export const LayoutHeader = () => {
     agencyDashboardRoutes.includes(
       currentRoute.name as AgencyDashboardRouteName,
     );
+  const isAdminRoute =
+    typeof currentRoute.name === "string" &&
+    currentRoute.name.startsWith("admin");
   const links: MainNavigationProps.Item[] = [
     {
       text: "Accueil",
@@ -257,7 +260,7 @@ export const LayoutHeader = () => {
   if (isAdminConnected) {
     links.push({
       text: "Admin",
-      isActive: currentRoute.name === frontRoutes.adminConventions().name,
+      isActive: isAdminRoute,
       linkProps: {
         ...frontRoutes.adminConventions().link,
         id: adminIds.backOffice,
