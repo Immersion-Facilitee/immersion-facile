@@ -169,6 +169,9 @@ const getPageByRouteName: {
   agencyDashboard: (route) => (
     <RedirectTo route={frontRoutes.agencyDashboardMain(route.params)} />
   ),
+  legacyMyAccountAgencies: () => (
+    <RedirectTo route={frontRoutes.agencyDashboardAgencies()} />
+  ),
   agencyDashboardMain: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <AgencyDashboardMainTab route={route} />
