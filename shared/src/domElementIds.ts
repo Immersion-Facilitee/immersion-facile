@@ -1280,7 +1280,10 @@ export const domElementIds = {
   legacyMyAccountAgencies: {},
   conventionConfirmation: {},
   conventionImmersionForExternals: {},
-  establishmentDashboardConventions: {},
+  establishmentDashboardConventions: {
+    goToConventionButton:
+      "im-establishment-dashboard-conventions__see-convention-button",
+  },
   establishmentDashboardFormEstablishment: {},
   openApiDoc: {},
   stats: {},

@@ -7,7 +7,11 @@ import {
 } from "shared";
 
 export type AssessmentLabelsAndSeverity = {
-  shortLabel: { agencyLabel: string; beneficiaryLabel: string };
+  shortLabel: {
+    agencyLabel: string;
+    beneficiaryLabel: string;
+    establishmentLabel: string;
+  };
   longLabel: string;
   description: string;
   severity: BadgeProps["severity"];
@@ -22,6 +26,7 @@ export const getAssessmentLabelsAndSeverityByStatus = ({
     shortLabel: {
       agencyLabel: isPlural ? "Bilans complétés" : "Bilan complété",
       beneficiaryLabel: isPlural ? "Bilans complétés" : "Bilan complété",
+      establishmentLabel: isPlural ? "Bilans complétés" : "Bilan complété",
     },
     longLabel: isPlural
       ? "Bilans complétés et signés"
@@ -34,6 +39,9 @@ export const getAssessmentLabelsAndSeverityByStatus = ({
     shortLabel: {
       agencyLabel: isPlural ? "Bilans à signer" : "Bilan à signer",
       beneficiaryLabel: isPlural ? "Bilans à signer" : "Bilan à signer",
+      establishmentLabel: isPlural
+        ? "Attente signature bilans"
+        : "Attente signature bilan",
     },
     longLabel: isPlural
       ? "Bilans à signer par la personne en immersion"
@@ -46,6 +54,7 @@ export const getAssessmentLabelsAndSeverityByStatus = ({
     shortLabel: {
       agencyLabel: isPlural ? "Bilans à compléter" : "Bilan à compléter",
       beneficiaryLabel: isPlural ? "Attente bilans" : "Attente bilan",
+      establishmentLabel: isPlural ? "Bilans à compléter" : "Bilan à compléter",
     },
     longLabel: isPlural
       ? "Bilans à compléter par le tuteur"

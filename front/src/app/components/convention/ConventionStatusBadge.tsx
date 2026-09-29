@@ -8,7 +8,7 @@ export const ConventionStatusBadge = ({
   userKind,
 }: {
   conventionStatus: ConventionStatus;
-  userKind: "agency" | "beneficiary";
+  userKind: "agency" | "beneficiary" | "establishment";
 }): React.ReactNode => {
   const { color, label } = labelAndSeverityByStatus[conventionStatus];
 
