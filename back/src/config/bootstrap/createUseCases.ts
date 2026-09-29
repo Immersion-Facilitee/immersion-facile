@@ -584,6 +584,7 @@ export const createUseCases = ({
         domain: config.immersionFacileDomain,
         immersionFacileBaseUrl: config.immersionFacileBaseUrl,
         saveNotificationAndRelatedEvent,
+        saveNotificationsBatchAndRelatedEvent,
       },
       uowPerformer,
     }),

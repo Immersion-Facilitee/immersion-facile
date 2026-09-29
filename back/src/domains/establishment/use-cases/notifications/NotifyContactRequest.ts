@@ -7,14 +7,15 @@ import {
   discussionEmailSender,
   type Email,
   errors,
-  executeInSequence,
   getFormattedFirstnameAndLastname,
   immersionFacileNoReplyEmailSender,
-  type TemplatedEmail,
   type UserWithAdminRights,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
-import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
+import type {
+  SaveNotificationAndRelatedEvent,
+  SaveNotificationsBatchAndRelatedEvent,
+} from "../../../core/notifications/helpers/Notification";
 import type { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 import type {
@@ -28,6 +29,7 @@ export type NotifyContactRequest = ReturnType<typeof makeNotifyContactRequest>;
 
 type Deps = {
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
+  saveNotificationsBatchAndRelatedEvent: SaveNotificationsBatchAndRelatedEvent;
   domain: string;
   immersionFacileBaseUrl: AppConfig["immersionFacileBaseUrl"];
 };
@@ -145,29 +147,28 @@ const notifyOnEmailContactMode = async ({
     establishment.userRights,
   );
 
-  await executeInSequence(notifiedUsers, async (notifiedUser) => {
-    const templatedContent: TemplatedEmail = {
-      sender: discussionEmailSender,
-      recipients: [notifiedUser.email],
-      replyTo: {
-        email: opaqueEmail,
-        name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
-      },
-      ...makeContactByEmailRequestParams({
-        appellation,
-        contactFirstName: notifiedUser.firstName,
-        contactLastName: notifiedUser.lastName,
-        discussion,
-        immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
-      }),
-    };
-
-    await deps.saveNotificationAndRelatedEvent(uow, {
+  await deps.saveNotificationsBatchAndRelatedEvent(
+    uow,
+    notifiedUsers.map((notifiedUser) => ({
       kind: "email",
-      templatedContent,
+      templatedContent: {
+        sender: discussionEmailSender,
+        recipients: [notifiedUser.email],
+        replyTo: {
+          email: opaqueEmail,
+          name: `${getFormattedFirstnameAndLastname({ firstname: discussion.potentialBeneficiary.firstName, lastname: discussion.potentialBeneficiary.lastName })} - via Immersion Facilitée`,
+        },
+        ...makeContactByEmailRequestParams({
+          appellation,
+          contactFirstName: notifiedUser.firstName,
+          contactLastName: notifiedUser.lastName,
+          discussion,
+          immersionFacileBaseUrl: deps.immersionFacileBaseUrl,
+        }),
+      },
       followedIds: { establishmentSiret: discussion.siret },
-    });
-  });
+    })),
+  );
 };
 
 const getOtherContactModeParams = ({
