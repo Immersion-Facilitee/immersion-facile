@@ -24,11 +24,13 @@ import type {
   DataWithPagination,
   EditConventionCounsellorNameRequestDto,
   EditConventionWithFinalStatusRequestDto,
+  EstablishmentUserConventionListDto,
   FindSimilarConventionsParams,
   FlatGetBeneficiaryConventionListParams,
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   FlatGetConventionsWithUnfinalizedAssessmentParams,
+  GetConventionsForEstablishmentUserParams,
   HandleArchivedConventionRequestDto,
   MarkPartnersErroredConventionAsHandledRequest,
   RenewConventionParams,
@@ -548,6 +550,26 @@ export class HttpConventionGateway implements ConventionGateway {
     return from(
       this.authenticatedHttpClient
         .getConventionsForAgencyUser({
+          queryParams: params,
+          headers: { authorization: jwt },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: 401 }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public getConventionsForEstablishmentUser$(
+    params: GetConventionsForEstablishmentUserParams,
+    jwt: string,
+  ): Observable<DataWithPagination<EstablishmentUserConventionListDto>> {
+    return from(
+      this.authenticatedHttpClient
+        .getConventionsForEstablishmentUser({
           queryParams: params,
           headers: { authorization: jwt },
         })

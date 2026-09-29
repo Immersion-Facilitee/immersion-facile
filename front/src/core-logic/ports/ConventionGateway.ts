@@ -22,11 +22,13 @@ import type {
   DiscussionId,
   EditConventionCounsellorNameRequestDto,
   EditConventionWithFinalStatusRequestDto,
+  EstablishmentUserConventionListDto,
   FindSimilarConventionsParams,
   FlatGetBeneficiaryConventionListParams,
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   FlatGetConventionsWithUnfinalizedAssessmentParams,
+  GetConventionsForEstablishmentUserParams,
   HandleArchivedConventionRequestDto,
   MarkPartnersErroredConventionAsHandledRequest,
   RenewConventionParams,
@@ -109,6 +111,10 @@ export interface ConventionGateway {
     params: FlatGetConventionsForAgencyUserParams,
     jwt: string,
   ): Observable<DataWithPagination<AgencyUserConventionListDto>>;
+  getConventionsForEstablishmentUser$(
+    params: GetConventionsForEstablishmentUserParams,
+    jwt: string,
+  ): Observable<DataWithPagination<EstablishmentUserConventionListDto>>;
   getBeneficiaryConventionList$(
     params: FlatGetBeneficiaryConventionListParams,
     jwt: string,
