@@ -7,7 +7,6 @@ import {
   frontRoutes,
   makeUrlWithQueryParams,
 } from "shared";
-import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
 import { makeUseTypedRoute } from "src/app/routes/routes.hooks";
 
@@ -31,7 +30,6 @@ export const InitiateConventionPage = () => {
                 ? "Qui vous accompagne dans votre projet d'immersion ?"
                 : "Remplir la demande de convention"
             }
-            breadcrumbs={<Breadcrumbs />}
           />
         }
       >

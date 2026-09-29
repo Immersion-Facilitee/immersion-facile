@@ -4,7 +4,7 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons";
 import Select from "@codegouvfr/react-dsfr/SelectNext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader, PageHeader, useScrollTo } from "react-design-system";
+import { Loader, useScrollTo } from "react-design-system";
 import { type DefaultValues, FormProvider, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
@@ -91,12 +91,7 @@ export const ArchivedConventionRequestPage = ({
   };
 
   return (
-    <ConnectedPrivateRoutePage
-      route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à une convention archivée" />
-      }
-    >
+    <ConnectedPrivateRoutePage route={route}>
       <WithFeedbackReplacer
         topic="archived-convention-request"
         renderFeedback={({ level }) =>

@@ -9,7 +9,6 @@ import {
   frontRoutes,
   makeUrlWithQueryParams,
 } from "shared";
-import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import {
   type ConventionFormMode,
   ConventionFormWrapper,
@@ -98,10 +97,7 @@ export const ConventionImmersionPage = ({
         vSpacing={3}
         pageHeader={
           !displaySharedConventionMessage && (
-            <PageHeader
-              title={getPageHeaderTitle(jwt, showSummary)}
-              breadcrumbs={<Breadcrumbs />}
-            />
+            <PageHeader title={getPageHeaderTitle(jwt, showSummary)} />
           )
         }
       >

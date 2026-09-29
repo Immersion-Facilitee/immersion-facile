@@ -6,7 +6,6 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { PageHeader } from "react-design-system";
 import {
   type AdminTabRouteName,
   adminTabRouteNames,
@@ -213,12 +212,7 @@ const getPageByRouteName: {
     route.params.jwt ? (
       <AssessmentDocumentPage route={route} />
     ) : (
-      <ConnectedPrivateRoutePage
-        route={route}
-        oAuthConnectionPageHeader={
-          <PageHeader title="Vous devez vous connecter pour accéder au bilan" />
-        }
-      >
+      <ConnectedPrivateRoutePage route={route}>
         <AssessmentDocumentPage route={route} />
       </ConnectedPrivateRoutePage>
     ),
@@ -231,22 +225,12 @@ const getPageByRouteName: {
     />
   ),
   beneficiaryDashboardDiscussions: (route) => (
-    <ConnectedPrivateRoutePage
-      route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre espace candidat" />
-      }
-    >
+    <ConnectedPrivateRoutePage route={route}>
       <BeneficiaryDashboardPage route={route} />
     </ConnectedPrivateRoutePage>
   ),
   beneficiaryDashboardConventions: (route) => (
-    <ConnectedPrivateRoutePage
-      route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre espace candidat" />
-      }
-    >
+    <ConnectedPrivateRoutePage route={route}>
       <BeneficiaryDashboardPage route={route} />
     </ConnectedPrivateRoutePage>
   ),
@@ -297,12 +281,7 @@ const getPageByRouteName: {
   searchResultExternal: () => <SearchResultPage isExternal={true} />,
   manageConvention: (route) => <ConventionManagePage route={route} />,
   manageConventionConnectedUser: (route) => (
-    <ConnectedPrivateRoutePage
-      route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à cette convention" />
-      }
-    >
+    <ConnectedPrivateRoutePage route={route}>
       <ConventionManageConnectedUser route={route} />
     </ConnectedPrivateRoutePage>
   ),
@@ -310,33 +289,18 @@ const getPageByRouteName: {
     <RedirectTo route={frontRoutes.myAccountAgencies(route.params)} />
   ),
   myAccountAgencies: (route) => (
-    <ConnectedPrivateRoutePage
-      route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
-      }
-    >
+    <ConnectedPrivateRoutePage route={route}>
       <MyProfileMainTab route={route} />
     </ConnectedPrivateRoutePage>
   ),
 
   myAccountEstablishments: (route) => (
-    <ConnectedPrivateRoutePage
-      route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
-      }
-    >
+    <ConnectedPrivateRoutePage route={route}>
       <MyProfileMainTab route={route} />
     </ConnectedPrivateRoutePage>
   ),
   agencyRegistration: (route) => (
-    <ConnectedPrivateRoutePage
-      route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
-      }
-    >
+    <ConnectedPrivateRoutePage route={route}>
       <RequestAgencyRegistrationTab route={route} />
     </ConnectedPrivateRoutePage>
   ),
@@ -344,9 +308,6 @@ const getPageByRouteName: {
   myAccountEstablishmentRegistration: (route) => (
     <ConnectedPrivateRoutePage
       route={route}
-      oAuthConnectionPageHeader={
-        <PageHeader title="Vous devez vous connecter pour accéder à votre profil" />
-      }
       mainWrapperProps={{
         vSpacing: 0,
       }}

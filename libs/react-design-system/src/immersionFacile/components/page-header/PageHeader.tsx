@@ -10,7 +10,6 @@ export type PageHeaderProps = {
   className?: string;
   children?: ReactNode;
   classes?: Partial<Record<"root" | "description" | "inner" | "title", string>>;
-  breadcrumbs?: ReactNode;
   badge?: ReactNode;
   titleAs?: TitleLevel;
   titleClassName?: string;
@@ -24,7 +23,6 @@ export const PageHeader = ({
   children,
   illustration,
   classes = {},
-  breadcrumbs,
   badge,
 }: PageHeaderProps) => {
   const { cx } = useStyles();
@@ -54,9 +52,6 @@ export const PageHeader = ({
       )}
       aria-label="En-tête de page"
     >
-      {breadcrumbs && (
-        <div className={cx(Styles.breadcrumbsWrapper)}>{breadcrumbs}</div>
-      )}
       <div className={cx(fr.cx("fr-container", "fr-mt-8w"), classes.inner)}>
         {illustration && (
           <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>

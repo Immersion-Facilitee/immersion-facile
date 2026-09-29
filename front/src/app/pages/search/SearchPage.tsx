@@ -22,7 +22,6 @@ import {
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { domElementIds, type ValueOf } from "shared";
-import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { AppellationAutocomplete } from "src/app/components/forms/autocomplete/AppellationAutocomplete";
 import { PlaceAutocomplete } from "src/app/components/forms/autocomplete/PlaceAutocomplete";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
@@ -304,7 +303,6 @@ export const SearchPage = ({
                   ? "Trouver une immersion"
                   : "Trouver un stage"
               }
-              breadcrumbs={<Breadcrumbs />}
             >
               <p>Dans une entreprise ou une administration publique</p>
               <form
@@ -448,7 +446,6 @@ export const SearchPage = ({
         ) : (
           <>
             {isLoading && <Loader />}
-            <Breadcrumbs />
             {isExternal && (
               <div className={fr.cx("fr-container", "fr-mb-4w")}>
                 <SectionHighlight

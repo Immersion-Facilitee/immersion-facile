@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { PageHeader } from "react-design-system";
 import {
   ConnectedPrivateRoutePage,
   type FrontAdminRoute,
@@ -14,13 +13,7 @@ export const AdminPrivateRoutePage = ({
   route,
   children,
 }: AdminPrivateRoutePageProps) => (
-  <ConnectedPrivateRoutePage
-    allowAdminOnly={true}
-    route={route}
-    oAuthConnectionPageHeader={
-      <PageHeader title="Bienvenue cher administrateur de la super team Immersion Facilitée ! 🚀" />
-    }
-  >
+  <ConnectedPrivateRoutePage allowAdminOnly={true} route={route}>
     {children}
   </ConnectedPrivateRoutePage>
 );

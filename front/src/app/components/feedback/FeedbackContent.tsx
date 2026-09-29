@@ -4,7 +4,6 @@ import { fr } from "@codegouvfr/react-dsfr/fr";
 import type { FrCoreClassName } from "@codegouvfr/react-dsfr/fr/generatedFromCss/classNames";
 import { PageHeader, type TitleLevel } from "react-design-system";
 import type { ExtractFromExisting } from "shared";
-import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { match, P } from "ts-pattern";
 
 export type FeedbackContentProps = {
@@ -27,7 +26,6 @@ export const FeedbackContent = ({
   <PageHeader
     title={title}
     illustration={illustration}
-    breadcrumbs={<Breadcrumbs />}
     titleAs={titleAs}
     titleClassName={titleClassName ?? ""}
   >

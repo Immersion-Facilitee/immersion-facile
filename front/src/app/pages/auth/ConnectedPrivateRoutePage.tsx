@@ -5,7 +5,7 @@ import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import Tile from "@codegouvfr/react-dsfr/Tile";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactElement, type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import {
   Loader,
   MainWrapper,
@@ -139,7 +139,6 @@ type ConnectPrivateRoute =
 type ConnectedPrivateRoutePageProps = {
   route: ConnectPrivateRoute;
   children: ReactNode;
-  oAuthConnectionPageHeader: ReactElement;
   allowAdminOnly?: boolean;
   mainWrapperProps?: Omit<
     MainWrapperProps,

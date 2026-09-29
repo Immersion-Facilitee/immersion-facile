@@ -14,7 +14,6 @@ import {
   hasAllowedRoleOnAssessment,
   type Role,
 } from "shared";
-import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { FullPageFeedback } from "src/app/components/feedback/FullpageFeedback";
 import { AssessmentForm } from "src/app/components/forms/assessment/AssessmentForm";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
@@ -208,7 +207,6 @@ export const AssessmentPage = ({ route }: AssessmentPageProps) => {
             layout="default"
             pageHeader={
               <PageHeader
-                breadcrumbs={<Breadcrumbs />}
                 className={fr.cx("fr-mb-0")}
                 title={`Bilan ${convention.internshipKind === "immersion" ? "de l'immersion" : "du mini-stage"} de ${getFormattedFirstnameAndLastname(
                   {
