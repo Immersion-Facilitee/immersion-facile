@@ -95,17 +95,54 @@ const SearchResultComponent = ({
       : domElementIds.search.lbbMapSearchResultButton,
   }[mode];
 
-  const offerLinkId = `${offerLinkIdPrefix}-${locationId}`;
+  const offerLinkProps = {
+    ...linkPropsHandlingNotAvailable,
+    id: `${offerLinkIdPrefix}-${locationId}`,
+  };
+
+  const isMapPreview = mode === "map-preview";
+
+  const remoteWorkModeLabel = isInternalOfferDto(searchResult)
+    ? remoteWorkModeLabels[searchResult.remoteWorkMode].label
+    : null;
+
+  const locationAndWorkModeBadges = isMapPreview ? (
+    <div className={fr.cx("fr-badge-group", "fr-my-1v")}>
+      <Badge
+        small
+        className={cx(
+          fr.cx("fr-my-0"),
+          `${componentRootClassName}__location-badge`,
+        )}
+      >
+        {displayedLocation}
+      </Badge>
+      {remoteWorkModeLabel && (
+        <Badge small className={fr.cx("fr-my-0")}>
+          {remoteWorkModeLabel}
+        </Badge>
+      )}
+    </div>
+  ) : (
+    <>
+      <Badge className={fr.cx("fr-mb-2v", "fr-mr-2v")}>
+        {displayedLocation}
+      </Badge>
+      {remoteWorkModeLabel && (
+        <Badge className={fr.cx("fr-mb-2v")}>{remoteWorkModeLabel}</Badge>
+      )}
+    </>
+  );
 
   return (
     <Card
-      size={mode === "map-preview" ? "small" : "medium"}
+      size={isMapPreview ? "small" : "medium"}
       nativeDivProps={{
         "aria-disabled": isNotAvailableOffer,
       }}
       className={cx(
         componentRootClassName,
-        mode === "map-preview" && fr.cx("fr-card--no-icon"),
+        isMapPreview && fr.cx("fr-card--no-icon"),
         isNotAvailableOffer && `${componentRootClassName}--unavailable`,
       )}
       enlargeLink
@@ -114,52 +151,29 @@ const SearchResultComponent = ({
           ? `${domElementIds.search.searchResultButton}-${siret}`
           : `${domElementIds.search.lbbSearchResultButton}-${siret}`
       }
-      linkProps={{
-        ...linkPropsHandlingNotAvailable,
-        id: offerLinkId,
-      }}
+      linkProps={offerLinkProps}
       imageComponent={illustration}
-      start={
-        mode === "list" && (
-          <>
-            <Badge className={fr.cx("fr-mb-2v", "fr-mr-2v")}>
-              {displayedLocation}
-            </Badge>
-            {isInternalOfferDto(searchResult) && (
-              <Badge className={fr.cx("fr-mb-2v")}>
-                {remoteWorkModeLabels[searchResult.remoteWorkMode].label}
-              </Badge>
-            )}
-          </>
-        )
-      }
+      start={!isMapPreview && locationAndWorkModeBadges}
       detail={
-        <div className={fr.cx(mode === "list" && "fr-mt-1w")}>
-          {isNotAvailableOffer ? (
-            <span
-              className={cx(
-                fr.cx("fr-icon-stop-circle-fill", "fr-icon--sm"),
-                `${componentRootClassName}__availability-indicator`,
-              )}
-            >
-              {" "}
-              Temporairement indisponible
-            </span>
-          ) : (
-            <span
-              className={cx(
-                fr.cx("fr-icon-success-fill", "fr-icon--sm"),
-                `${componentRootClassName}__availability-indicator`,
-              )}
-            >
-              {" "}
-              Disponible
-            </span>
-          )}
+        <div className={fr.cx(!isMapPreview && "fr-mt-1w")}>
+          <span
+            className={cx(
+              fr.cx(
+                isNotAvailableOffer
+                  ? "fr-icon-stop-circle-fill"
+                  : "fr-icon-success-fill",
+                "fr-icon--sm",
+              ),
+              `${componentRootClassName}__availability-indicator`,
+            )}
+          >
+            {" "}
+            {isNotAvailableOffer ? "Temporairement indisponible" : "Disponible"}
+          </span>
         </div>
       }
       title={
-        mode === "map-preview" ? (
+        isMapPreview ? (
           <div className={fr.cx("fr-text--md", "fr-m-0")}>{jobTitle}</div>
         ) : (
           jobTitle
@@ -169,38 +183,15 @@ const SearchResultComponent = ({
       desc={
         <div className={fr.cx("fr-my-0")}>
           {establishmentName}
-          {mode === "map-preview" && (
-            <div className={fr.cx("fr-badge-group", "fr-my-1v")}>
-              <Badge
-                small
-                className={cx(
-                  fr.cx("fr-my-0"),
-                  `${componentRootClassName}__location-badge`,
-                )}
-              >
-                {displayedLocation}
-              </Badge>
-              {isInternalOfferDto(searchResult) && (
-                <Badge small className="fr-my-0">
-                  {remoteWorkModeLabels[searchResult.remoteWorkMode].label}
-                </Badge>
-              )}
-            </div>
-          )}
+          {isMapPreview && locationAndWorkModeBadges}
         </div>
       }
       end={
-        mode === "map-preview" ? (
-          <Button
-            size="small"
-            linkProps={{
-              ...linkPropsHandlingNotAvailable,
-              id: offerLinkId,
-            }}
-          >
+        isMapPreview && (
+          <Button size="small" linkProps={offerLinkProps}>
             Voir l'offre
           </Button>
-        ) : null
+        )
       }
     />
   );
