@@ -52,6 +52,11 @@ export type OmitStatusesForAgenciesFilter = {
   statuses: ConventionStatus[];
 };
 
+export type EstablishmentUserAccessFilter = {
+  sirets: SiretDto[];
+  email: Email;
+};
+
 export type GetPaginatedConventionsFilters = {
   search?: string;
   statuses?: ConventionStatus[];
@@ -62,6 +67,7 @@ export type GetPaginatedConventionsFilters = {
   dateSubmission?: DateFilter;
   assessmentCompletionStatus?: AssessmentCompletionStatusFilter[];
   beneficiaryEmail?: Email;
+  establishmentUserAccess?: EstablishmentUserAccessFilter;
 };
 
 export type GetPaginatedConventionsParams = {
