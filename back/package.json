@@ -35,6 +35,7 @@
     "test": "jest --testRegex='^((?!(integration|manual)).)*.test.ts$'",
     "trigger-evening-jobs": "tsx src/scripts/triggerEveningJobs.ts",
     "trigger-early-morning-jobs": "tsx src/scripts/triggerEarlyMorningJobs.ts",
+    "trigger-monthly-jobs": "tsx src/scripts/triggerMonthlyJobs.ts",
     "trigger-morning-jobs": "tsx src/scripts/triggerMorningJobs.ts",
     "trigger-add-agencies-and-users": "tsx src/scripts/triggerAddAgenciesAndUsers.ts",
     "trigger-archive-discussions": "tsx src/scripts/triggerArchiveDiscussions.ts",

@@ -1,15 +1,11 @@
 import "./instrumentSentryCron";
 import { createLogger } from "../utils/logger";
 import { triggerUpdateEstablishmentsFromSireneApiScript } from "./scheduledScripts/updateEstablishmentsFromSireneApiScript";
-import { triggerWarnInactiveAgenciesWithoutRecentConventions } from "./scheduledScripts/warnInactiveAgenciesWithoutRecentConventions";
 
 const logger = createLogger(__filename);
 
 const main = async () => {
   await triggerUpdateEstablishmentsFromSireneApiScript({ exitOnFinish: false });
-  await triggerWarnInactiveAgenciesWithoutRecentConventions({
-    exitOnFinish: false,
-  });
 };
 
 main()
