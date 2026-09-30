@@ -37,6 +37,7 @@ import {
   initialDiscussionsWithPagination,
 } from "src/core-logic/domain/discussion/discussion.slice";
 import { match, P } from "ts-pattern";
+import { DiscussionCardContent } from "./DiscussionCardContent";
 
 export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
   const dispatch = useDispatch();
@@ -263,7 +264,36 @@ const EstablishmentDiscussionTable = ({
       headers={getTableHeaders()}
       className={fr.cx("fr-mt-4w")}
       isLoading={isLoading}
-      data={discussions.map((discussion) => [
+      label={"Listing des candidatures"}
+      hasViewSwitch={true}
+      gridData={discussions.map((discussion) => ({
+        id: discussion.id,
+        title: discussion.appellation.appellationLabel,
+        cta: {
+          linkProps: frontRoutes.establishmentDashboardDiscussions({
+            discussionId: discussion.id,
+          }),
+          children: "Voir la candidature",
+        },
+        footerLeftNode: toDisplayedDate({
+          date: new Date(discussion.createdAt),
+        }),
+        subTitle: discussion.businessName,
+        badge: (
+          <DiscussionListBadges
+            key={discussion.id}
+            discussion={discussion}
+            viewer="establishment"
+          />
+        ),
+        content: (
+          <DiscussionCardContent
+            discussion={discussion}
+            viewer={"establishment"}
+          />
+        ),
+      }))}
+      tableData={discussions.map((discussion) => [
         <Fragment key={discussion.id}>
           <strong>{discussion.appellation.appellationLabel}</strong>
           <br />
@@ -436,7 +466,35 @@ const BeneficiaryDiscussionTable = ({
     <RichTable
       headers={getTableHeaders()}
       isLoading={isLoading}
-      data={discussions.map((discussion) => [
+      hasViewSwitch={true}
+      gridData={discussions.map((discussion) => ({
+        id: discussion.id,
+        title: discussion.businessName,
+        cta: {
+          linkProps: frontRoutes.establishmentDashboardDiscussions({
+            discussionId: discussion.id,
+          }),
+          children: "Voir la candidature",
+        },
+        footerLeftNode: toDisplayedDate({
+          date: new Date(discussion.createdAt),
+        }),
+        badge: (
+          <DiscussionListBadges
+            key={discussion.id}
+            discussion={discussion}
+            viewer="establishment"
+          />
+        ),
+        content: (
+          <DiscussionCardContent
+            discussion={discussion}
+            viewer={"potentialBeneficiary"}
+          />
+        ),
+      }))}
+      label={"Listing des candidatures"}
+      tableData={discussions.map((discussion) => [
         <strong key={discussion.id}>
           {discussion.appellation.appellationLabel}
         </strong>,

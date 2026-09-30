@@ -75,10 +75,12 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
         <RichTable
           headers={getTableHeaders(hasConventions)}
           isLoading={isLoading}
-          data={conventionListToTableData(
+          tableData={conventionListToTableData(
             conventions,
             enableBeneficiaryManageConvention.isActive,
           )}
+          label={"Listing des conventions"}
+          hasViewSwitch={false}
           searchBar={{
             label: "Rechercher",
             placeholder:
