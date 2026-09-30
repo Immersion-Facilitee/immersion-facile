@@ -224,16 +224,16 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
       expectSavedNotificationsAndEvents({ emails: [] });
     });
 
-    it("should not warn an agency updated since its last warning", async () => {
-      const agencyUpdatedAfterWarning = new AgencyDtoBuilder()
+    it("should not warn an agency updated less than numberOfMonthsWithoutConvention months ago even with an old warning", async () => {
+      const agencyUpdatedRecently = new AgencyDtoBuilder()
         .withId("agency1-id")
         .withName("Agency 1")
         .withStatus("active")
-        .withUpdatedAt(subMonths(now, 4))
+        .withUpdatedAt(subMonths(now, 1))
         .build();
 
       uow.agencyRepository.agencies = [
-        toAgencyWithRights(agencyUpdatedAfterWarning, {
+        toAgencyWithRights(agencyUpdatedRecently, {
           [agencyAdmin1.id]: {
             isNotifiedByEmail: true,
             roles: ["agency-admin"],
@@ -246,12 +246,12 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           id: "old-warning-id",
           createdAt: subMonths(now, 5).toISOString(),
           kind: "email",
-          followedIds: { agencyId: agencyUpdatedAfterWarning.id },
+          followedIds: { agencyId: agencyUpdatedRecently.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
             bcc: [agencyAdmin1.email],
             params: {
-              agencyName: agencyUpdatedAfterWarning.name,
+              agencyName: agencyUpdatedRecently.name,
             },
           },
         },
@@ -267,7 +267,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
       expectToEqual(uow.notificationRepository.notifications.length, 1);
     });
 
-    it("should not warn an agency with conventions submitted since its last warning", async () => {
+    it("should not warn an agency with conventions submitted less than numberOfMonthsWithoutConvention months ago even with an old warning", async () => {
       const veryOldAgency = new AgencyDtoBuilder()
         .withId("agency1-id")
         .withName("Agency 1")
@@ -275,11 +275,11 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
         .withUpdatedAt(subMonths(now, 12))
         .build();
 
-      const conventionAfterWarning = new ConventionDtoBuilder()
+      const recentConvention = new ConventionDtoBuilder()
         .withId("convention-after-warning-id")
         .withAgencyId(veryOldAgency.id)
         .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateSubmission(subMonths(now, 4).toISOString())
+        .withDateSubmission(subMonths(now, 1).toISOString())
         .build();
 
       uow.agencyRepository.agencies = [
@@ -291,7 +291,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
         }),
       ];
       uow.userRepository.users = [agencyAdmin1];
-      uow.conventionRepository.setConventions([conventionAfterWarning]);
+      uow.conventionRepository.setConventions([recentConvention]);
       uow.notificationRepository.notifications = [
         {
           id: "old-warning-id",
@@ -318,7 +318,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
       expectToEqual(uow.notificationRepository.notifications.length, 1);
     });
 
-    it("should not warn an agency when a referring agency has conventions submitted since its last warning", async () => {
+    it("should not warn an agency when a referring agency has conventions submitted less than numberOfMonthsWithoutConvention months ago even with an old warning", async () => {
       const veryOldAgency = new AgencyDtoBuilder()
         .withId("agency1-id")
         .withName("Agency 1")
@@ -338,11 +338,11 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
         .withUpdatedAt(subMonths(now, 12))
         .build();
 
-      const conventionOnReferringAgencyAfterWarning = new ConventionDtoBuilder()
+      const recentConventionOnReferringAgency = new ConventionDtoBuilder()
         .withId("convention-referring-after-warning-id")
         .withAgencyId(referringAgency.id)
         .withStatus("ACCEPTED_BY_VALIDATOR")
-        .withDateSubmission(subMonths(now, 4).toISOString())
+        .withDateSubmission(subMonths(now, 1).toISOString())
         .build();
 
       uow.agencyRepository.agencies = [
@@ -356,7 +356,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
       ];
       uow.userRepository.users = [agencyAdmin1];
       uow.conventionRepository.setConventions([
-        conventionOnReferringAgencyAfterWarning,
+        recentConventionOnReferringAgency,
       ]);
       uow.notificationRepository.notifications = [
         {
@@ -546,6 +546,236 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
       ]);
       expectObjectInArrayToMatch(uow.outboxRepository.events, [
         { topic: "NotificationAdded" },
+      ]);
+    });
+
+    it(`should send a new warning if the previous one is older than ${numberOfMonthsWithoutConvention} months even when the agency was updated after that warning but before ${numberOfMonthsWithoutConvention} months ago`, async () => {
+      const agencyUpdatedAfterOldWarning = new AgencyDtoBuilder()
+        .withId("agency1-id")
+        .withName("Agency 1")
+        .withStatus("active")
+        .withUpdatedAt(subMonths(now, 4))
+        .build();
+
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agencyUpdatedAfterOldWarning, {
+          [agencyAdmin1.id]: {
+            isNotifiedByEmail: true,
+            roles: ["agency-admin"],
+          },
+        }),
+      ];
+      uow.userRepository.users = [agencyAdmin1];
+      uow.notificationRepository.notifications = [
+        {
+          id: "old-warning-id",
+          createdAt: subMonths(now, 5).toISOString(),
+          kind: "email",
+          followedIds: { agencyId: agencyUpdatedAfterOldWarning.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: agencyUpdatedAfterOldWarning.name,
+            },
+          },
+        },
+      ];
+
+      const result = await warnInactiveAgenciesWithoutRecentConventions.execute(
+        {
+          numberOfMonthsWithoutConvention,
+        },
+      );
+
+      expectToEqual(result, { numberOfAgenciesWarned: 1 });
+      expectToEqual(uow.notificationRepository.notifications.length, 2);
+      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+        {
+          id: "old-warning-id",
+          followedIds: { agencyId: agencyUpdatedAfterOldWarning.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: agencyUpdatedAfterOldWarning.name,
+            },
+          },
+        },
+        {
+          followedIds: { agencyId: agencyUpdatedAfterOldWarning.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: agencyUpdatedAfterOldWarning.name,
+            },
+          },
+        },
+      ]);
+    });
+
+    it(`should send a new warning if the previous one is older than ${numberOfMonthsWithoutConvention} months even when a convention was submitted after that warning but before ${numberOfMonthsWithoutConvention} months ago`, async () => {
+      const veryOldAgency = new AgencyDtoBuilder()
+        .withId("agency1-id")
+        .withName("Agency 1")
+        .withStatus("active")
+        .withUpdatedAt(subMonths(now, 12))
+        .build();
+
+      const conventionAfterOldWarning = new ConventionDtoBuilder()
+        .withId("convention-after-warning-id")
+        .withAgencyId(veryOldAgency.id)
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .withDateSubmission(subMonths(now, 4).toISOString())
+        .build();
+
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(veryOldAgency, {
+          [agencyAdmin1.id]: {
+            isNotifiedByEmail: true,
+            roles: ["agency-admin"],
+          },
+        }),
+      ];
+      uow.userRepository.users = [agencyAdmin1];
+      uow.conventionRepository.setConventions([conventionAfterOldWarning]);
+      uow.notificationRepository.notifications = [
+        {
+          id: "old-warning-id",
+          createdAt: subMonths(now, 5).toISOString(),
+          kind: "email",
+          followedIds: { agencyId: veryOldAgency.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: veryOldAgency.name,
+            },
+          },
+        },
+      ];
+
+      const result = await warnInactiveAgenciesWithoutRecentConventions.execute(
+        {
+          numberOfMonthsWithoutConvention,
+        },
+      );
+
+      expectToEqual(result, { numberOfAgenciesWarned: 1 });
+      expectToEqual(uow.notificationRepository.notifications.length, 2);
+      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+        {
+          id: "old-warning-id",
+          followedIds: { agencyId: veryOldAgency.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: veryOldAgency.name,
+            },
+          },
+        },
+        {
+          followedIds: { agencyId: veryOldAgency.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: veryOldAgency.name,
+            },
+          },
+        },
+      ]);
+    });
+
+    it(`should send a new warning if the previous one is older than ${numberOfMonthsWithoutConvention} months even when a referring agency had a convention after that warning but before ${numberOfMonthsWithoutConvention} months ago`, async () => {
+      const veryOldAgency = new AgencyDtoBuilder()
+        .withId("agency1-id")
+        .withName("Agency 1")
+        .withStatus("active")
+        .withUpdatedAt(subMonths(now, 12))
+        .build();
+
+      const referringAgency = new AgencyDtoBuilder()
+        .withId("referring-agency-id")
+        .withName("Referring Agency")
+        .withStatus("active")
+        .withRefersToAgencyInfo({
+          refersToAgencyId: veryOldAgency.id,
+          refersToAgencyName: veryOldAgency.name,
+          refersToAgencyContactEmail: veryOldAgency.contactEmail,
+        })
+        .withUpdatedAt(subMonths(now, 12))
+        .build();
+
+      const conventionOnReferringAgencyAfterOldWarning =
+        new ConventionDtoBuilder()
+          .withId("convention-referring-after-warning-id")
+          .withAgencyId(referringAgency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateSubmission(subMonths(now, 4).toISOString())
+          .build();
+
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(veryOldAgency, {
+          [agencyAdmin1.id]: {
+            isNotifiedByEmail: true,
+            roles: ["agency-admin"],
+          },
+        }),
+        toAgencyWithRights(referringAgency, {}),
+      ];
+      uow.userRepository.users = [agencyAdmin1];
+      uow.conventionRepository.setConventions([
+        conventionOnReferringAgencyAfterOldWarning,
+      ]);
+      uow.notificationRepository.notifications = [
+        {
+          id: "old-warning-id",
+          createdAt: subMonths(now, 5).toISOString(),
+          kind: "email",
+          followedIds: { agencyId: veryOldAgency.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: veryOldAgency.name,
+            },
+          },
+        },
+      ];
+
+      const result = await warnInactiveAgenciesWithoutRecentConventions.execute(
+        {
+          numberOfMonthsWithoutConvention,
+        },
+      );
+
+      expectToEqual(result, { numberOfAgenciesWarned: 1 });
+      expectToEqual(uow.notificationRepository.notifications.length, 2);
+      expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
+        {
+          id: "old-warning-id",
+          followedIds: { agencyId: veryOldAgency.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: veryOldAgency.name,
+            },
+          },
+        },
+        {
+          followedIds: { agencyId: veryOldAgency.id },
+          templatedContent: {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            bcc: [agencyAdmin1.email],
+            params: {
+              agencyName: veryOldAgency.name,
+            },
+          },
+        },
       ]);
     });
 
