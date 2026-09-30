@@ -353,6 +353,7 @@ export const SearchListResults = ({
                     key={`${searchResult.siret}-${searchResult.rome}-${searchResult.locationId}`}
                   >
                     <SearchResult
+                      mode="list"
                       searchResult={searchResult}
                       illustration={
                         <SearchResultIllustration

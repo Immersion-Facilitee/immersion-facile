@@ -212,9 +212,10 @@ export const SearchMiniMap = ({
                 },
               }}
             >
-              <Popup>
+              <Popup closeButton={false}>
                 <SearchResult
                   key={`${searchResult.siret}-${searchResult.rome}`} // Should be unique !
+                  mode="map-preview"
                   searchResult={searchResult}
                   linkProps={
                     searchResult.voluntaryToImmersion

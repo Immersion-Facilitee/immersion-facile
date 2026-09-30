@@ -14,8 +14,10 @@ import {
 import { useStyles } from "tss-react/dsfr";
 import type { Link } from "type-route";
 import "./SearchResult.scss";
+import { Button } from "@codegouvfr/react-dsfr/Button";
 
 export type EnterpriseSearchResultProps = {
+  mode: "list" | "map-preview";
   searchResult: OfferDto;
   linkProps: Link;
   illustration?: ReactNode;
@@ -27,6 +29,7 @@ export type EnterpriseSearchResultProps = {
 const componentRootClassName = "im-search-result";
 
 const SearchResultComponent = ({
+  mode,
   linkProps,
   searchResult,
   illustration,
@@ -83,17 +86,29 @@ const SearchResultComponent = ({
       }
     : linkProps;
 
+  const offerLinkIdPrefix = {
+    list: voluntaryToImmersion
+      ? domElementIds.search.searchResultButton
+      : domElementIds.search.lbbSearchResultButton,
+    "map-preview": voluntaryToImmersion
+      ? domElementIds.search.mapSearchResultButton
+      : domElementIds.search.lbbMapSearchResultButton,
+  }[mode];
+
+  const offerLinkId = `${offerLinkIdPrefix}-${locationId}`;
+
   return (
     <Card
+      size={mode === "map-preview" ? "small" : "medium"}
       nativeDivProps={{
         "aria-disabled": isNotAvailableOffer,
       }}
       className={cx(
         componentRootClassName,
+        mode === "map-preview" && fr.cx("fr-card--no-icon"),
         isNotAvailableOffer && `${componentRootClassName}--unavailable`,
       )}
-      title={jobTitle}
-      desc={establishmentName}
+      enlargeLink
       id={
         voluntaryToImmersion
           ? `${domElementIds.search.searchResultButton}-${siret}`
@@ -101,47 +116,91 @@ const SearchResultComponent = ({
       }
       linkProps={{
         ...linkPropsHandlingNotAvailable,
-        id: voluntaryToImmersion
-          ? `${domElementIds.search.searchResultButton}-${locationId}`
-          : `${domElementIds.search.lbbSearchResultButton}-${locationId}`,
+        id: offerLinkId,
       }}
-      enlargeLink
-      titleAs="h2"
       imageComponent={illustration}
-      detail={
-        isNotAvailableOffer ? (
-          <span
-            className={cx(
-              fr.cx("fr-icon-stop-circle-fill", "fr-icon--sm", "fr-mt-1w"),
-              `${componentRootClassName}__availability-indicator`,
+      start={
+        mode === "list" && (
+          <>
+            <Badge className={fr.cx("fr-mb-2v", "fr-mr-2v")}>
+              {displayedLocation}
+            </Badge>
+            {isInternalOfferDto(searchResult) && (
+              <Badge className={fr.cx("fr-mb-2v")}>
+                {remoteWorkModeLabels[searchResult.remoteWorkMode].label}
+              </Badge>
             )}
-          >
-            {" "}
-            Mise en relation temporairement indisponible
-          </span>
-        ) : (
-          <span
-            className={cx(
-              fr.cx("fr-icon-success-fill", "fr-icon--sm", "fr-mt-1w"),
-              `${componentRootClassName}__availability-indicator`,
-            )}
-          >
-            {" "}
-            Mise en relation disponible
-          </span>
+          </>
         )
       }
-      start={
-        <>
-          <Badge className={fr.cx("fr-mb-2v", "fr-mr-2v")}>
-            {displayedLocation}
-          </Badge>
-          {isInternalOfferDto(searchResult) && (
-            <Badge className={fr.cx("fr-mb-2v")}>
-              {remoteWorkModeLabels[searchResult.remoteWorkMode].label}
-            </Badge>
+      detail={
+        <div className={fr.cx(mode === "list" && "fr-mt-1w")}>
+          {isNotAvailableOffer ? (
+            <span
+              className={cx(
+                fr.cx("fr-icon-stop-circle-fill", "fr-icon--sm"),
+                `${componentRootClassName}__availability-indicator`,
+              )}
+            >
+              {" "}
+              Temporairement indisponible
+            </span>
+          ) : (
+            <span
+              className={cx(
+                fr.cx("fr-icon-success-fill", "fr-icon--sm"),
+                `${componentRootClassName}__availability-indicator`,
+              )}
+            >
+              {" "}
+              Disponible
+            </span>
           )}
-        </>
+        </div>
+      }
+      title={
+        mode === "map-preview" ? (
+          <div className={fr.cx("fr-text--md", "fr-m-0")}>{jobTitle}</div>
+        ) : (
+          jobTitle
+        )
+      }
+      titleAs="h2"
+      desc={
+        <div className={fr.cx("fr-my-0")}>
+          {establishmentName}
+          {mode === "map-preview" && (
+            <div className={fr.cx("fr-badge-group", "fr-my-1v")}>
+              <Badge
+                small
+                className={cx(
+                  fr.cx("fr-my-0"),
+                  `${componentRootClassName}__location-badge`,
+                )}
+              >
+                {displayedLocation}
+              </Badge>
+              {isInternalOfferDto(searchResult) && (
+                <Badge small className="fr-my-0">
+                  {remoteWorkModeLabels[searchResult.remoteWorkMode].label}
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+      }
+      end={
+        mode === "map-preview" ? (
+          <Button
+            size="small"
+            linkProps={{
+              ...linkPropsHandlingNotAvailable,
+              id: offerLinkId,
+            }}
+          >
+            Voir l'offre
+          </Button>
+        ) : null
       }
     />
   );
