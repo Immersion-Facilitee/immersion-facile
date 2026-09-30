@@ -10,7 +10,7 @@ import { handleCRONScript } from "../handleCRONScript";
 
 const logger = createLogger(__filename);
 const config = AppConfig.createFromEnv();
-export const numberOfMonthsWithoutConvention = 3;
+export const numberOfMonthsWithoutConventionBeforeWarning = 3;
 
 const warnInactiveAgenciesWithoutRecentConventionsScript = async () => {
   const { uowPerformer } = createDbRelatedSystems(
@@ -34,7 +34,8 @@ const warnInactiveAgenciesWithoutRecentConventionsScript = async () => {
     });
 
   const result = await warnInactiveAgenciesWithoutRecentConventions.execute({
-    numberOfMonthsWithoutConvention,
+    numberOfMonthsWithoutConvention:
+      numberOfMonthsWithoutConventionBeforeWarning,
   });
   return result;
 };
@@ -49,7 +50,7 @@ export const triggerWarnInactiveAgenciesWithoutRecentConventions = ({
     config,
     script: warnInactiveAgenciesWithoutRecentConventionsScript,
     handleResults: ({ numberOfAgenciesWarned }) =>
-      `${numberOfAgenciesWarned} agencies were warned, because they had no conventions validated or to be validated for the last ${numberOfMonthsWithoutConvention} months`,
+      `${numberOfAgenciesWarned} agencies were warned, because they had no conventions validated or to be validated for the last ${numberOfMonthsWithoutConventionBeforeWarning} months`,
     logger,
     exitOnFinish,
   });

@@ -8,6 +8,7 @@ import {
   type UserWithAdminRights,
 } from "shared";
 import { z } from "zod";
+import { numberOfMonthsWithoutConventionBeforeWarning } from "../../../scripts/scheduledScripts/warnInactiveAgenciesWithoutRecentConventions";
 import type {
   NotificationContentAndFollowedIds,
   SaveNotificationsBatchAndRelatedEvent,
@@ -35,7 +36,7 @@ export type CloseInactiveAgenciesWithoutRecentConventions = ReturnType<
 >;
 
 const closeInactiveAgenciesWithoutRecentConventionsInputSchema = z.object({
-  numberOfMonthsWithoutConvention: z.number(),
+  numberOfMonthsWithoutConventionAfterWarning: z.number(),
 });
 
 export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
@@ -52,11 +53,11 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
   .notTransactional()
   .build(async ({ deps, inputParams }) => {
     const { uowPerformer } = deps;
-    const { numberOfMonthsWithoutConvention } = inputParams;
+    const { numberOfMonthsWithoutConventionAfterWarning } = inputParams;
     const now = deps.timeGateway.now();
     const agencyNotUpdatedOrNoConventionSince = subMonths(
       now,
-      numberOfMonthsWithoutConvention,
+      numberOfMonthsWithoutConventionAfterWarning,
     );
 
     const filters = makeInactiveAgenciesFilters({
@@ -106,10 +107,11 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
     let numberOfAgenciesClosed = 0;
     if (agenciesToClose.length > 0) {
       await uowPerformer.perform(async (uow) => {
-        const notifications = await getNotificationsForClosedAgencies(
+        const notifications = await makeNotificationsForClosedAgencies(
           agenciesToClose,
           uow,
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning +
+            numberOfMonthsWithoutConventionBeforeWarning,
         );
 
         await executeInSequence(agenciesToClose, (agency) =>
@@ -164,7 +166,7 @@ const hasValidWarningOldEnoughToClose = async (params: {
   }));
 };
 
-const getNotificationsForClosedAgencies = async (
+const makeNotificationsForClosedAgencies = async (
   agencies: AgencyWithUsersRights[],
   uow: UnitOfWork,
   numberOfMonthsWithoutConvention: number,
@@ -217,8 +219,7 @@ const getNotificationsForClosedAgencies = async (
                 recipients: adminEmails,
                 params: {
                   agencyName: agency.name,
-                  numberOfMonthsWithoutConvention:
-                    numberOfMonthsWithoutConvention,
+                  numberOfMonthsWithoutConvention,
                 },
               },
               followedIds: {
