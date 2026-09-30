@@ -1,7 +1,9 @@
 import MockAdapter from "axios-mock-adapter";
 import type { RedisClientType } from "redis";
 import {
+  AgencyDtoBuilder,
   ConventionDtoBuilder,
+  type ConventionReadDto,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
@@ -18,10 +20,9 @@ import { makeAxiosInstances } from "../../../../utils/axiosUtils";
 import { makeRedisWithCache } from "../../../core/caching-gateway/adapters/makeRedisWithCache";
 import type { WithCache } from "../../../core/caching-gateway/port/WithCache";
 import { noRetries } from "../../../core/retry-strategy/ports/RetryStrategy";
-import {
-  isBroadcastSuccessResponse,
-  type NotifyFranceTravailOnConventionUpdatedParams,
-} from "../../ports/FranceTravailGateway";
+import { isBroadcastSuccessResponse } from "../../ports/FranceTravailGateway";
+import type { BroadcastPayload } from "../../use-cases/broadcast/broadcastConvention.dto";
+import { toBroadcastConvention } from "../../use-cases/broadcast/toBroadcastConvention";
 import { createFranceTravailRoutes } from "./FranceTravailRoutes";
 import { HttpFranceTravailGateway } from "./HttpFranceTravailGateway";
 
@@ -34,27 +35,34 @@ const ftRoutesWithFakeUrls = createFranceTravailRoutes({
   ftEnterpriseUrl: fakeFtEnterpriseUrl,
 });
 
-const broadcastParams = (): NotifyFranceTravailOnConventionUpdatedParams => {
+const broadcastParams = (): BroadcastPayload => {
+  const agency = new AgencyDtoBuilder()
+    .withKind("france-travail")
+    .withCodeSafir("12345")
+    .build();
   const convention = new ConventionDtoBuilder()
     .withBeneficiaryEmail("test@PE-TEST.FR")
     .withBeneficiaryBirthdate("1994-10-22")
+    .withAgencyId(agency.id)
     .build();
+  const conventionRead: ConventionReadDto = {
+    ...convention,
+    agencyName: agency.name,
+    agencyDepartment: agency.address.departmentCode,
+    agencyContactEmail: agency.contactEmail,
+    agencyKind: agency.kind,
+    agencySiret: agency.agencySiret,
+    agencyValidationSteps: "validator-only",
+    assessment: null,
+    lastReminders: makeEmptyLastReminders(),
+    isEstablishmentBanned: false,
+  };
   return {
-    eventType: "CONVENTION_UPDATED",
-    convention: {
-      ...convention,
-      agencyName: "Agence de test",
-      agencyDepartment: "75",
-      agencyContactEmail: "contact@mail.com",
-      agencyKind: "pole-emploi",
-      agencySiret: "00000000000000",
-      agencyValidationSteps: "validator-only",
-      agencyRefersTo: undefined,
-      assessment: null,
-      lastReminders: makeEmptyLastReminders(),
-      isEstablishmentBanned: false,
-      agencyValidatorEmails: ["email@email.com"],
-    },
+    convention: toBroadcastConvention(
+      conventionRead,
+      { ...agency, validatorEmails: ["email@email.com"] },
+      null,
+    ),
   };
 };
 

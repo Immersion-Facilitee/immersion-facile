@@ -46,10 +46,7 @@ import type {
 } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
-import {
-  toAgencyWithRights,
-  toPartnerAgencyKind,
-} from "../../../../utils/agency";
+import { toAgencyWithRights } from "../../../../utils/agency";
 import {
   buildTestApp,
   type InMemoryGateways,
@@ -920,21 +917,48 @@ describe("convention e2e", () => {
 
         expectToEqual(gateways.franceTravailGateway.broadcastParamsCalls, [
           {
-            eventType: "CONVENTION_UPDATED",
             convention: {
-              ...convention,
+              id: convention.id,
               status: "REJECTED",
               statusJustification,
+              agencyId: convention.agencyId,
+              dateSubmission: convention.dateSubmission,
+              dateStart: convention.dateStart,
+              dateEnd: convention.dateEnd,
+              dateValidation: convention.dateValidation,
+              dateApproval: convention.dateApproval,
+              siret: convention.siret,
+              businessName: convention.businessName,
+              schedule: convention.schedule,
+              workConditions: convention.workConditions,
+              businessAdvantages: convention.businessAdvantages,
+              individualProtection: convention.individualProtection,
+              individualProtectionDescription:
+                convention.individualProtectionDescription,
+              sanitaryPrevention: convention.sanitaryPrevention,
+              sanitaryPreventionDescription:
+                convention.sanitaryPreventionDescription,
+              immersionAddress: convention.immersionAddress,
+              immersionObjective: convention.immersionObjective,
+              immersionAppellation: convention.immersionAppellation,
+              immersionActivities: convention.immersionActivities,
+              immersionSkills: convention.immersionSkills,
+              establishmentNumberEmployeesRange:
+                convention.establishmentNumberEmployeesRange,
+              establishmentTutor: convention.establishmentTutor,
+              validators: convention.validators,
+              agencyReferent: convention.agencyReferent,
+              renewed: convention.renewed,
+              acquisitionCampaign: convention.acquisitionCampaign,
+              acquisitionKeyword: convention.acquisitionKeyword,
+              internshipKind: convention.internshipKind,
+              signatories: convention.signatories,
               agencyName: ftAgency.name,
               agencyDepartment: ftAgency.address.departmentCode,
-              agencyContactEmail: ftAgency.contactEmail,
-              agencyKind: toPartnerAgencyKind(ftAgency.kind),
+              agencyKind: "pole-emploi",
               agencySiret: ftAgency.agencySiret,
-              agencyValidatorEmails: ftAgency.validatorEmails,
-              agencyValidationSteps: "validator-only",
-              agencyRefersTo: undefined,
-              assessment: null,
-              lastReminders: makeEmptyLastReminders(),
+              agencyCodeSafir: ftAgency.codeSafir,
+              agencyValidatorEmails: [],
               isEstablishmentBanned: false,
             },
           },
