@@ -10,6 +10,12 @@ import {
   getAssessmentLabelsAndSeverityByStatus,
 } from "src/app/utils/assessment.utils";
 
+const assessmentShortLabelKeyByUserKind = {
+  agency: "agencyLabel",
+  beneficiary: "beneficiaryLabel",
+  establishment: "establishmentLabel",
+} as const;
+
 export const ConventionAssessmentStatusBadge = ({
   conventionParams: { status, dateEnd, assessment },
   userKind,
@@ -17,27 +23,23 @@ export const ConventionAssessmentStatusBadge = ({
   conventionParams: Pick<ConventionDto, "status" | "dateEnd"> & {
     assessment: ConventionAssessmentFields["assessment"];
   };
-  userKind: "agency" | "beneficiary";
+  userKind: "agency" | "beneficiary" | "establishment";
 }): React.ReactNode => {
   const shouldShowBadge =
     isConventionValidated(status) && !isConventionEndingInOneDayOrMore(dateEnd);
-  if (!shouldShowBadge && userKind === "beneficiary")
+  if (!shouldShowBadge && userKind !== "agency")
     return <Badge small>Non Concernée</Badge>;
+
+  const assessmentLabel = getAssessmentLabelsAndSeverityByStatus({
+    isPlural: false,
+  })[getAssessmentCompletionStatus(assessment)];
+
   return (
     shouldShowBadge && (
-      <Badge
-        small
-        severity={
-          getAssessmentLabelsAndSeverityByStatus({
-            isPlural: false,
-          })[getAssessmentCompletionStatus(assessment)].severity
-        }
-      >
+      <Badge small severity={assessmentLabel.severity}>
         {
-          getAssessmentLabelsAndSeverityByStatus({
-            isPlural: false,
-          })[getAssessmentCompletionStatus(assessment)].shortLabel[
-            userKind === "agency" ? "agencyLabel" : "beneficiaryLabel"
+          assessmentLabel.shortLabel[
+            assessmentShortLabelKeyByUserKind[userKind]
           ]
         }
       </Badge>

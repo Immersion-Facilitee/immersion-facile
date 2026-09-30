@@ -5,8 +5,10 @@ import {
   type ConnectedUserJwt,
   type DataWithPagination,
   defaultPerPageInWebPagination,
+  type EstablishmentUserConventionListDto,
   type FlatGetBeneficiaryConventionListParams,
   type FlatGetConventionsForAgencyUserParams,
+  type GetConventionsForEstablishmentUserParams,
 } from "shared";
 
 import type {
@@ -24,6 +26,11 @@ export type FetchBeneficiaryConventionListRequestedPayload = {
   filters: FlatGetBeneficiaryConventionListParams;
 };
 
+export type FetchEstablishmentConventionListRequestedPayload = {
+  jwt: ConnectedUserJwt;
+  filters: GetConventionsForEstablishmentUserParams;
+};
+
 export type BeneficiaryConventionListState = BeneficiaryConventionListDto & {
   filters: FlatGetBeneficiaryConventionListParams;
 };
@@ -34,6 +41,9 @@ export type ConventionListState = {
     filters: FlatGetConventionsForAgencyUserParams;
   };
   beneficiaryConventionList: BeneficiaryConventionListState;
+  establishmentConventionList: DataWithPagination<EstablishmentUserConventionListDto> & {
+    filters: GetConventionsForEstablishmentUserParams;
+  };
 };
 
 export const initialConventionWithPagination: DataWithPagination<AgencyUserConventionListDto> & {
@@ -69,10 +79,27 @@ export const initialBeneficiaryConventionList: BeneficiaryConventionListState =
     },
   };
 
+export const initialEstablishmentConventionList: DataWithPagination<EstablishmentUserConventionListDto> & {
+  filters: GetConventionsForEstablishmentUserParams;
+} = {
+  data: [],
+  pagination: {
+    totalRecords: 0,
+    currentPage: 1,
+    totalPages: 1,
+    numberPerPage: 10,
+  },
+  filters: {
+    page: 1,
+    perPage: 10,
+  },
+};
+
 const initialConventionListState: ConventionListState = {
   isLoading: false,
   conventionsWithPagination: initialConventionWithPagination,
   beneficiaryConventionList: initialBeneficiaryConventionList,
+  establishmentConventionList: initialEstablishmentConventionList,
 };
 
 export const conventionListSlice = createSlice({
@@ -143,6 +170,39 @@ export const conventionListSlice = createSlice({
 
     clearBeneficiaryConventionListRequested: (state) => {
       state.beneficiaryConventionList = initialBeneficiaryConventionList;
+    },
+
+    fetchEstablishmentConventionListRequested: (
+      state,
+      action: PayloadActionWithFeedbackTopic<FetchEstablishmentConventionListRequestedPayload>,
+    ) => {
+      state.isLoading = true;
+      state.establishmentConventionList = {
+        ...state.establishmentConventionList,
+        filters: action.payload.filters,
+      };
+    },
+    fetchEstablishmentConventionListSucceeded: (
+      state,
+      action: PayloadActionWithFeedbackTopic<{
+        establishmentConventionList: DataWithPagination<EstablishmentUserConventionListDto>;
+      }>,
+    ) => {
+      state.establishmentConventionList = {
+        ...state.establishmentConventionList,
+        ...action.payload.establishmentConventionList,
+      };
+      state.isLoading = false;
+    },
+    fetchEstablishmentConventionListFailed: (
+      state,
+      _action: PayloadActionWithFeedbackTopicError,
+    ) => {
+      state.isLoading = false;
+    },
+
+    clearEstablishmentConventionListRequested: (state) => {
+      state.establishmentConventionList = initialEstablishmentConventionList;
     },
   },
 });

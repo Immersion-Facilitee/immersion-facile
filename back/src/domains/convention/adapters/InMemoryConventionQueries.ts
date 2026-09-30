@@ -753,6 +753,7 @@ const makeApplyPaginatedFiltersToConventions =
     dateEnd,
     dateSubmission,
     beneficiaryEmail,
+    establishmentUserAccess,
   }: GetPaginatedConventionsFilters) =>
   (convention: ConventionDto) => {
     const trimmedSearch = search?.trim();
@@ -787,6 +788,18 @@ const makeApplyPaginatedFiltersToConventions =
                 omitStatusesForAgencies.agencyIds.includes(agencyId) &&
                 omitStatusesForAgencies.statuses.includes(status)
               )
+            : true,
+        ({
+          siret,
+          signatories: { establishmentRepresentative },
+          establishmentTutor,
+        }) =>
+          establishmentUserAccess
+            ? (establishmentUserAccess.sirets.length > 0 &&
+                establishmentUserAccess.sirets.includes(siret)) ||
+              establishmentRepresentative.email ===
+                establishmentUserAccess.email ||
+              establishmentTutor.email === establishmentUserAccess.email
             : true,
       ] satisfies Array<(convention: ConventionDto) => boolean>
     ).every((filter) => filter(convention));

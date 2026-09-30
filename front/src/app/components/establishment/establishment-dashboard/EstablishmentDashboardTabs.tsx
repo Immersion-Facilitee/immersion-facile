@@ -31,8 +31,8 @@ import { commonIllustrations } from "src/assets/img/illustrations";
 import { discussionSelectors } from "src/core-logic/domain/discussion/discussion.selectors";
 import { initialDiscussionsWithPagination } from "src/core-logic/domain/discussion/discussion.slice";
 import { DiscussionTabContent } from "../../discussion/DiscussionTabContent";
-import { MetabaseView } from "../../MetabaseView";
 import { SelectConventionFromIdForm } from "../../SelectConventionFromIdForm";
+import { EstablishmentConventionList } from "./EstablishmentConventionList";
 
 type EstablishmentDashboardTabsProps = {
   currentUser: ConnectedUser;
@@ -160,15 +160,7 @@ const makeEstablishmentDashboardTabs = (
           >
             <SelectConventionFromIdForm routeNameToRedirectTo="manageConventionConnectedUser" />
           </HeadingSection>
-          {conventions ? (
-            <MetabaseView
-              title={"Tableau des conventions en cours"}
-              subtitle="Cliquer sur l'identifiant de la convention pour y accéder."
-              url={conventions}
-            />
-          ) : (
-            <p> Aucune convention trouvée pour votre compte</p>
-          )}
+          <EstablishmentConventionList conventionsDashboardUrl={conventions} />
           <ConventionTemplatesList
             fromRoute={frontRoutes.establishmentDashboard()}
           />

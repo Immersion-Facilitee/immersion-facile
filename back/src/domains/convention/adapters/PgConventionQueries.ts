@@ -46,6 +46,7 @@ import {
 } from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type {
   ConventionQueries,
+  EstablishmentUserAccessFilter,
   GetConventionIdsParams,
   GetConventionsFilters,
   GetConventionsParams,
@@ -275,6 +276,7 @@ export class PgConventionQueries implements ConventionQueries {
       dateSubmission,
       assessmentCompletionStatus,
       beneficiaryEmail,
+      establishmentUserAccess,
       ...rest
     } = filters;
 
@@ -297,6 +299,7 @@ export class PgConventionQueries implements ConventionQueries {
       }),
       filterByAgencyIds(agencyIds),
       filterByBeneficiaryEmail(beneficiaryEmail),
+      filterByEstablishmentUserAccess(establishmentUserAccess),
       filterOmitStatusesForAgencies(omitStatusesForAgencies),
       filterSearch(trimmedSearch),
       filterDate("date_start", dateStart),
@@ -647,6 +650,26 @@ const filterByBeneficiaryEmail =
   (email: Email | undefined) =>
   (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
     email ? builder.where("b.email", "=", email) : builder;
+const filterByEstablishmentUserAccess =
+  (establishmentUserAccess: EstablishmentUserAccessFilter | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder => {
+    if (!establishmentUserAccess) return builder;
+
+    const { sirets, email } = establishmentUserAccess;
+
+    if (sirets.length === 0)
+      return builder.where((eb) =>
+        eb.or([eb("er.email", "=", email), eb("et.email", "=", email)]),
+      );
+
+    return builder.where((eb) =>
+      eb.or([
+        isInArray(eb, "conventions.siret", sirets),
+        eb("er.email", "=", email),
+        eb("et.email", "=", email),
+      ]),
+    );
+  };
 
 const filterOmitStatusesForAgencies =
   (omitStatusesForAgencies: OmitStatusesForAgenciesFilter | undefined) =>
