@@ -2300,6 +2300,154 @@ describe("Pg implementation of ConventionQueries", () => {
           });
         });
       });
+
+      describe("establishmentUserAccess filter", () => {
+        const adminEmail = "admin-siret@example.com";
+        const representativeEmail = "representative-only@example.com";
+        const tutorEmail = "tutor-only@example.com";
+        const otherRepresentativeEmail = "other-representative@example.com";
+        const otherTutorEmail = "other-tutor@example.com";
+        const siret1 = "11111111111111";
+        const siret2 = "22222222222222";
+        const siret3 = "33333333333333";
+        const siret4 = "99999999999999";
+
+        const convention1 = new ConventionDtoBuilder()
+          .withId("f1111111-1111-4111-8111-111111111111")
+          .withAgencyId(agencyId)
+          .withSiret(siret1)
+          .withEstablishmentRepresentativeEmail(otherRepresentativeEmail)
+          .withEstablishmentTutorEmail(otherTutorEmail)
+          .withDateStart(new Date("2023-05-15").toISOString())
+          .withDateEnd(new Date("2023-05-20").toISOString())
+          .withUpdatedAt(anyConventionUpdatedAt)
+          .build();
+
+        const convention2 = new ConventionDtoBuilder()
+          .withId("f2222222-2222-4222-8222-222222222222")
+          .withAgencyId(agencyId)
+          .withSiret(siret2)
+          .withEstablishmentRepresentativeEmail(representativeEmail)
+          .withEstablishmentTutorEmail(otherTutorEmail)
+          .withDateStart(new Date("2023-06-15").toISOString())
+          .withDateEnd(new Date("2023-06-20").toISOString())
+          .withUpdatedAt(anyConventionUpdatedAt)
+          .build();
+
+        const convention3 = new ConventionDtoBuilder()
+          .withId("f3333333-3333-4333-8333-333333333333")
+          .withAgencyId(agencyId)
+          .withSiret(siret3)
+          .withEstablishmentRepresentativeEmail(otherRepresentativeEmail)
+          .withEstablishmentTutorEmail(tutorEmail)
+          .withDateStart(new Date("2023-07-15").toISOString())
+          .withDateEnd(new Date("2023-07-20").toISOString())
+          .withUpdatedAt(anyConventionUpdatedAt)
+          .build();
+
+        it("returns a convention by siret when email matches neither representative nor tutor", async () => {
+          await conventionRepository.save(convention1, anyConventionUpdatedAt);
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              establishmentUserAccess: {
+                sirets: [siret1],
+                email: adminEmail,
+              },
+            },
+            sort: {
+              by: "dateStart",
+              direction: "desc",
+            },
+          });
+
+          expectToEqual(result.data, [convention1]);
+        });
+
+        it("returns a convention by representative email when sirets is empty", async () => {
+          await conventionRepository.save(convention2, anyConventionUpdatedAt);
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              establishmentUserAccess: {
+                sirets: [],
+                email: representativeEmail,
+              },
+            },
+            sort: {
+              by: "dateStart",
+              direction: "desc",
+            },
+          });
+
+          expectToEqual(result.data, [convention2]);
+        });
+
+        it("returns a convention by tutor email when sirets is empty", async () => {
+          await conventionRepository.save(convention3, anyConventionUpdatedAt);
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              establishmentUserAccess: {
+                sirets: [],
+                email: tutorEmail,
+              },
+            },
+            sort: {
+              by: "dateStart",
+              direction: "desc",
+            },
+          });
+
+          expectToEqual(result.data, [convention3]);
+        });
+
+        it("returns the union of siret and representative email matches", async () => {
+          await Promise.all([
+            conventionRepository.save(convention1, anyConventionUpdatedAt),
+            conventionRepository.save(convention2, anyConventionUpdatedAt),
+            conventionRepository.save(convention3, anyConventionUpdatedAt),
+          ]);
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              establishmentUserAccess: {
+                sirets: [siret1],
+                email: representativeEmail,
+              },
+            },
+            sort: {
+              by: "dateStart",
+              direction: "desc",
+            },
+          });
+
+          expectToEqual(result.data, [convention2, convention1]);
+        });
+
+        it("excludes conventions outside siret and email", async () => {
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              establishmentUserAccess: {
+                sirets: [siret4],
+                email: adminEmail,
+              },
+            },
+            sort: {
+              by: "dateStart",
+              direction: "desc",
+            },
+          });
+
+          expectToEqual(result.data, []);
+          expectToEqual(result.pagination.totalRecords, 0);
+        });
+      });
     },
   );
 
