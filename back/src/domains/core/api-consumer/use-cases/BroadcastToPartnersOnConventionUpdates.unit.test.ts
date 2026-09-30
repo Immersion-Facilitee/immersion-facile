@@ -1,20 +1,23 @@
 import {
+  type AgencyDto,
   AgencyDtoBuilder,
   type AgencyKind,
+  type AppellationAndRomeDto,
   AssessmentDtoBuilder,
   type BroadcastFeedback,
   ConnectedUserBuilder,
+  type ConventionDto,
   ConventionDtoBuilder,
   cartographeAppellationAndRome,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
-  makeEmptyLastReminders,
   type SubscriptionParams,
 } from "shared";
 import { v4 as uuid } from "uuid";
 import { toAgencyWithRights } from "../../../../utils/agency";
 import { createAssessmentEntity } from "../../../convention/entities/AssessmentEntity";
+import type { BroadcastConventionDto } from "../../../convention/use-cases/broadcast/broadcastConvention.dto";
 import { CustomTimeGateway } from "../../time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
@@ -54,31 +57,42 @@ describe("Broadcast to partners on updated convention", () => {
     .withEmail("validator2@email.com")
     .buildUser();
 
+  const agency1Dto = new AgencyDtoBuilder()
+    .withId("agency-1")
+    .withValidatorEmails([validator1.email])
+    .build();
   const agency1 = toAgencyWithRights(
-    new AgencyDtoBuilder().withId("agency-1").build(),
+    { ...agency1Dto, validatorEmails: [], counsellorEmails: [] },
     {
       [counsellor1.id]: { roles: ["counsellor"], isNotifiedByEmail: true },
       [validator1.id]: { roles: ["validator"], isNotifiedByEmail: true },
     },
   );
+
+  const agency2Dto = new AgencyDtoBuilder()
+    .withId("agency-2")
+    .withValidatorEmails([validator2.email])
+    .build();
   const agency2 = toAgencyWithRights(
-    new AgencyDtoBuilder().withId("agency-2").build(),
+    { ...agency2Dto, validatorEmails: [], counsellorEmails: [] },
     {
       [counsellor2.id]: { roles: ["counsellor"], isNotifiedByEmail: true },
       [validator2.id]: { roles: ["validator"], isNotifiedByEmail: true },
     },
   );
 
+  const agencyWithRefersToDto = new AgencyDtoBuilder()
+    .withId("agency-with-refers-to")
+    .withKind("autre")
+    .withValidatorEmails([validator1.email])
+    .withRefersToAgencyInfo({
+      refersToAgencyId: agency1Dto.id,
+      refersToAgencyName: agency1Dto.name,
+      refersToAgencyContactEmail: agency1Dto.contactEmail,
+    })
+    .build();
   const agencyWithRefersTo = toAgencyWithRights(
-    new AgencyDtoBuilder()
-      .withId("agency-with-refers-to")
-      .withKind("autre")
-      .withRefersToAgencyInfo({
-        refersToAgencyId: agency1.id,
-        refersToAgencyName: agency1.name,
-        refersToAgencyContactEmail: agency1.contactEmail,
-      })
-      .build(),
+    { ...agencyWithRefersToDto, validatorEmails: [], counsellorEmails: [] },
     {
       [counsellor3.id]: { roles: ["counsellor"], isNotifiedByEmail: true },
       [validator1.id]: { roles: ["validator"], isNotifiedByEmail: true },
@@ -217,18 +231,7 @@ describe("Broadcast to partners on updated convention", () => {
         body: {
           subscribedEvent: "convention.updated",
           payload: {
-            convention: {
-              ...convention1,
-              agencyName: agency1.name,
-              agencyDepartment: agency1.address.departmentCode,
-              agencyContactEmail: agency1.contactEmail,
-              agencyKind: "autre",
-              agencySiret: agency1.agencySiret,
-              agencyValidationSteps: "counsellor-and-validator",
-              assessment: null,
-              lastReminders: makeEmptyLastReminders(),
-              isEstablishmentBanned: false,
-            },
+            convention: toExpectedBroadcastConvention(convention1, agency1Dto),
           },
         },
         subscriptionParams,
@@ -245,18 +248,7 @@ describe("Broadcast to partners on updated convention", () => {
         body: {
           subscribedEvent: "convention.updated",
           payload: {
-            convention: {
-              ...convention2,
-              agencyName: agency2.name,
-              agencyDepartment: agency2.address.departmentCode,
-              agencyContactEmail: agency2.contactEmail,
-              agencyKind: "autre",
-              agencySiret: agency2.agencySiret,
-              agencyValidationSteps: "counsellor-and-validator",
-              assessment: null,
-              lastReminders: makeEmptyLastReminders(),
-              isEstablishmentBanned: false,
-            },
+            convention: toExpectedBroadcastConvention(convention2, agency2Dto),
           },
         },
         subscriptionParams: {
@@ -294,27 +286,22 @@ describe("Broadcast to partners on updated convention", () => {
         body: {
           subscribedEvent: "convention.updated",
           payload: {
-            convention: {
-              ...convention,
-              agencyName: agency2.name,
-              agencyDepartment: agency2.address.departmentCode,
-              agencyContactEmail: agency2.contactEmail,
-              agencyKind: "autre",
-              agencySiret: agency2.agencySiret,
-              agencyValidationSteps: "counsellor-and-validator",
-              immersionAppellation: {
+            convention: toExpectedBroadcastConvention(
+              convention,
+              agency2Dto,
+              null,
+              {
                 ...cartographeAppellationAndRome,
                 romeCode: "V3008",
                 romeLabel: "Label V3 - Cartographe",
               },
-              assessment: {
-                status: assessment.status,
-                endedWithAJob: assessment.endedWithAJob,
-                signedAt: assessment.signedAt,
-                createdAt: assessment.createdAt,
-              },
-              lastReminders: makeEmptyLastReminders(),
-              isEstablishmentBanned: false,
+            ),
+            assessment: {
+              conventionId: convention.id,
+              status: "COMPLETED",
+              endedWithAJob: false,
+              establishmentFeedback: "Ca s'est bien passé",
+              establishmentAdvices: "mon conseil",
             },
           },
         },
@@ -322,7 +309,6 @@ describe("Broadcast to partners on updated convention", () => {
       },
     ]);
   });
-
   it("save webhook error", async () => {
     uow.conventionRepository.setConventions([convention1]);
     uow.apiConsumerRepository.consumers = [apiConsumer1];
@@ -418,16 +404,6 @@ describe("Broadcast to partners on updated convention", () => {
   });
 
   it("broadcast updated convention to agency and agency refered to ", async () => {
-    const agencyWithRefersTo = new AgencyDtoBuilder()
-      .withId("agency-with-refers-to")
-      .withKind("autre")
-      .withRefersToAgencyInfo({
-        refersToAgencyId: agency1.id,
-        refersToAgencyName: agency1.name,
-        refersToAgencyContactEmail: agency1.contactEmail,
-      })
-      .build();
-
     const conventionFromAgencyWithRefersTo = new ConventionDtoBuilder()
       .withId("11111111-ee70-4c90-b3f4-668d492f7397")
       .withAgencyId(agencyWithRefersTo.id)
@@ -475,29 +451,17 @@ describe("Broadcast to partners on updated convention", () => {
         body: {
           subscribedEvent: "convention.updated",
           payload: {
-            convention: {
-              ...conventionFromAgencyWithRefersTo,
-              agencyName: agencyWithRefersTo.name,
-              agencyDepartment: agencyWithRefersTo.address.departmentCode,
-              agencyContactEmail: agencyWithRefersTo.contactEmail,
-              agencyKind: "autre",
-              agencySiret: agencyWithRefersTo.agencySiret,
-              agencyValidationSteps: "counsellor-and-validator",
-              agencyRefersTo: {
-                id: agency1.id,
-                kind: "autre",
-                name: agency1.name,
-                contactEmail: agency1.contactEmail,
-                siret: agency1.agencySiret,
-              },
-              assessment: {
-                status: assessment.status,
-                endedWithAJob: assessment.endedWithAJob,
-                signedAt: assessment.signedAt,
-                createdAt: assessment.createdAt,
-              },
-              lastReminders: makeEmptyLastReminders(),
-              isEstablishmentBanned: false,
+            convention: toExpectedBroadcastConvention(
+              conventionFromAgencyWithRefersTo,
+              agencyWithRefersToDto,
+              agency1Dto,
+            ),
+            assessment: {
+              conventionId: conventionFromAgencyWithRefersTo.id,
+              status: "COMPLETED",
+              endedWithAJob: false,
+              establishmentFeedback: "Ca s'est bien passé",
+              establishmentAdvices: "mon conseil",
             },
           },
         },
@@ -507,29 +471,17 @@ describe("Broadcast to partners on updated convention", () => {
         body: {
           subscribedEvent: "convention.updated",
           payload: {
-            convention: {
-              ...conventionFromAgencyWithRefersTo,
-              agencyName: agencyWithRefersTo.name,
-              agencyDepartment: agencyWithRefersTo.address.departmentCode,
-              agencyContactEmail: agencyWithRefersTo.contactEmail,
-              agencyKind: "autre",
-              agencySiret: agencyWithRefersTo.agencySiret,
-              agencyValidationSteps: "counsellor-and-validator",
-              agencyRefersTo: {
-                id: agency1.id,
-                kind: "autre",
-                name: agency1.name,
-                contactEmail: agency1.contactEmail,
-                siret: agency1.agencySiret,
-              },
-              assessment: {
-                status: assessment.status,
-                endedWithAJob: assessment.endedWithAJob,
-                signedAt: assessment.signedAt,
-                createdAt: assessment.createdAt,
-              },
-              lastReminders: makeEmptyLastReminders(),
-              isEstablishmentBanned: false,
+            convention: toExpectedBroadcastConvention(
+              conventionFromAgencyWithRefersTo,
+              agencyWithRefersToDto,
+              agency1Dto,
+            ),
+            assessment: {
+              conventionId: conventionFromAgencyWithRefersTo.id,
+              status: "COMPLETED",
+              endedWithAJob: false,
+              establishmentFeedback: "Ca s'est bien passé",
+              establishmentAdvices: "mon conseil",
             },
           },
         },
@@ -541,25 +493,33 @@ describe("Broadcast to partners on updated convention", () => {
   });
 
   describe("when broadcasting france travail kinds", () => {
+    const franceTravailAgencyDto = new AgencyDtoBuilder()
+      .withId("france-travail-agency")
+      .withKind("france-travail")
+      .withValidatorEmails([validator1.email])
+      .build();
     const franceTravailAgency = toAgencyWithRights(
-      new AgencyDtoBuilder()
-        .withId("france-travail-agency")
-        .withKind("france-travail")
-        .build(),
+      { ...franceTravailAgencyDto, validatorEmails: [], counsellorEmails: [] },
       {
         [validator1.id]: { roles: ["validator"], isNotifiedByEmail: true },
       },
     );
+    const agencyReferringToFranceTravailDto = new AgencyDtoBuilder()
+      .withId("agency-referring-to-france-travail")
+      .withKind("autre")
+      .withValidatorEmails([validator1.email])
+      .withRefersToAgencyInfo({
+        refersToAgencyId: franceTravailAgencyDto.id,
+        refersToAgencyName: franceTravailAgencyDto.name,
+        refersToAgencyContactEmail: franceTravailAgencyDto.contactEmail,
+      })
+      .build();
     const agencyReferringToFranceTravail = toAgencyWithRights(
-      new AgencyDtoBuilder()
-        .withId("agency-referring-to-france-travail")
-        .withKind("autre")
-        .withRefersToAgencyInfo({
-          refersToAgencyId: franceTravailAgency.id,
-          refersToAgencyName: franceTravailAgency.name,
-          refersToAgencyContactEmail: franceTravailAgency.contactEmail,
-        })
-        .build(),
+      {
+        ...agencyReferringToFranceTravailDto,
+        validatorEmails: [],
+        counsellorEmails: [],
+      },
       {
         [validator1.id]: { roles: ["validator"], isNotifiedByEmail: true },
       },
@@ -607,18 +567,10 @@ describe("Broadcast to partners on updated convention", () => {
           body: {
             subscribedEvent: "convention.updated",
             payload: {
-              convention: {
-                ...convention,
-                agencyName: franceTravailAgency.name,
-                agencyDepartment: franceTravailAgency.address.departmentCode,
-                agencyContactEmail: franceTravailAgency.contactEmail,
-                agencyKind: "pole-emploi",
-                agencySiret: franceTravailAgency.agencySiret,
-                agencyValidationSteps: "validator-only",
-                assessment: null,
-                lastReminders: makeEmptyLastReminders(),
-                isEstablishmentBanned: false,
-              },
+              convention: toExpectedBroadcastConvention(
+                convention,
+                franceTravailAgencyDto,
+              ),
             },
           },
           subscriptionParams,
@@ -640,26 +592,11 @@ describe("Broadcast to partners on updated convention", () => {
           body: {
             subscribedEvent: "convention.updated",
             payload: {
-              convention: {
-                ...convention,
-                agencyName: agencyReferringToFranceTravail.name,
-                agencyDepartment:
-                  agencyReferringToFranceTravail.address.departmentCode,
-                agencyContactEmail: agencyReferringToFranceTravail.contactEmail,
-                agencyKind: "autre",
-                agencySiret: agencyReferringToFranceTravail.agencySiret,
-                agencyValidationSteps: "validator-only",
-                agencyRefersTo: {
-                  id: franceTravailAgency.id,
-                  kind: "pole-emploi",
-                  name: franceTravailAgency.name,
-                  contactEmail: franceTravailAgency.contactEmail,
-                  siret: franceTravailAgency.agencySiret,
-                },
-                assessment: null,
-                lastReminders: makeEmptyLastReminders(),
-                isEstablishmentBanned: false,
-              },
+              convention: toExpectedBroadcastConvention(
+                convention,
+                agencyReferringToFranceTravailDto,
+                franceTravailAgencyDto,
+              ),
             },
           },
           subscriptionParams,
@@ -720,6 +657,12 @@ describe("Broadcast to partners on updated convention", () => {
       });
 
       expectToEqual(subscribersGateway.calls.length, 2);
+      expectToEqual(
+        subscribersGateway.calls.map(
+          ({ body }) => body.payload.previousAgencyId,
+        ),
+        [previousAgency.id, previousAgency.id],
+      );
     });
 
     it("does not double-broadcast when previous agency consumer already matches new agency", async () => {
@@ -764,4 +707,66 @@ describe("Broadcast to partners on updated convention", () => {
       expectToEqual(subscribersGateway.calls.length, 1);
     });
   });
+});
+
+const toExpectedBroadcastConvention = (
+  convention: ConventionDto,
+  agency: AgencyDto,
+  refersToAgency: AgencyDto | null = null,
+  immersionAppellation?: AppellationAndRomeDto,
+): BroadcastConventionDto => ({
+  id: convention.id,
+  status: convention.status,
+  statusJustification: convention.statusJustification,
+  agencyId: convention.agencyId,
+  dateSubmission: convention.dateSubmission,
+  dateStart: convention.dateStart,
+  dateEnd: convention.dateEnd,
+  dateValidation: convention.dateValidation,
+  dateApproval: convention.dateApproval,
+  siret: convention.siret,
+  businessName: convention.businessName,
+  schedule: convention.schedule,
+  workConditions: convention.workConditions,
+  businessAdvantages: convention.businessAdvantages,
+  individualProtection: convention.individualProtection,
+  individualProtectionDescription: convention.individualProtectionDescription,
+  sanitaryPrevention: convention.sanitaryPrevention,
+  sanitaryPreventionDescription: convention.sanitaryPreventionDescription,
+  immersionAddress: convention.immersionAddress,
+  immersionObjective: convention.immersionObjective,
+  immersionAppellation: immersionAppellation ?? convention.immersionAppellation,
+  immersionActivities: convention.immersionActivities,
+  immersionSkills: convention.immersionSkills,
+  establishmentNumberEmployeesRange:
+    convention.establishmentNumberEmployeesRange,
+  establishmentTutor: convention.establishmentTutor,
+  validators: convention.validators,
+  agencyReferent: convention.agencyReferent,
+  renewed: convention.renewed,
+  acquisitionCampaign: convention.acquisitionCampaign,
+  acquisitionKeyword: convention.acquisitionKeyword,
+  internshipKind: convention.internshipKind,
+  signatories: convention.signatories,
+  agencyName: agency.name,
+  agencyDepartment: agency.address.departmentCode,
+  agencyKind: agency.kind === "france-travail" ? "pole-emploi" : agency.kind,
+  agencySiret: agency.agencySiret,
+  agencyCodeSafir: agency.codeSafir,
+  agencyValidatorEmails: agency.validatorEmails,
+  ...(refersToAgency
+    ? {
+        agencyRefersTo: {
+          id: refersToAgency.id,
+          name: refersToAgency.name,
+          kind:
+            refersToAgency.kind === "france-travail"
+              ? "pole-emploi"
+              : refersToAgency.kind,
+          siret: refersToAgency.agencySiret,
+          codeSafir: refersToAgency.codeSafir,
+        },
+      }
+    : {}),
+  isEstablishmentBanned: false,
 });
