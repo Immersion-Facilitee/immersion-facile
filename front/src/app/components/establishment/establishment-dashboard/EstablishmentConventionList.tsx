@@ -78,7 +78,9 @@ export const EstablishmentConventionList = ({
         <RichTable
           headers={getEstablishmentConventionTableHeaders(hasConventions)}
           isLoading={isLoading}
-          data={toEstablishmentConventionTableData(conventions)}
+          label={"Listing des conventions"}
+          hasViewSwitch={false}
+          tableData={toEstablishmentConventionTableData(conventions)}
           pagination={{
             count: pagination.totalPages,
             defaultPage: pagination.currentPage,

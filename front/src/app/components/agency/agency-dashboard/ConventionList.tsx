@@ -382,7 +382,9 @@ export const ConventionList = () => {
             <RichTable
               headers={getTableHeaders()}
               isLoading={isLoading}
-              data={conventions.map((convention) => [
+              label={"Listing des conventions"}
+              hasViewSwitch={false}
+              tableData={conventions.map((convention) => [
                 <Fragment key={`${convention.id}-counsellor`}>
                   <strong>
                     {getFormattedFirstnameAndLastname({
