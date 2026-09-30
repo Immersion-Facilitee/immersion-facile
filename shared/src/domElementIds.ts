@@ -943,7 +943,7 @@ export const domElementIds = {
     establishmentDashboardLink: "im-profile__establishment-dashboard-link",
     agencyDashboardLink: "im-profile__agency-dashboard-link",
   },
-  establishmentDashboardRegistration: {
+  establishmentUserRegistration: {
     registerEstablishmentButton: "im-register-establishment__register-button",
     registerEstablishmentSearch: "im-register-establishment__search",
     backButton: "im-register-establishment__back-button",

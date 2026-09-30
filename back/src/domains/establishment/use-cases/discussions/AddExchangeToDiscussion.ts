@@ -372,7 +372,7 @@ const notifyForbidden = async ({
               : "establishment",
           reason,
           requestEstablishmentRegistrationUrl: makeRouteAbsoluteUrl({
-            route: frontRoutes.establishmentDashboardRegistration({
+            route: frontRoutes.establishmentUserRegistration({
               siret: discussion.siret,
             }),
             baseUrl: deps.immersionFacileBaseUrl,

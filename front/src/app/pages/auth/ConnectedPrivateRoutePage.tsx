@@ -127,7 +127,7 @@ type ConnectPrivateRoute =
   | Route<typeof frontRoutes.formEstablishment>
   | Route<typeof frontRoutes.myAccount>
   | Route<typeof frontRoutes.agencyDashboardRegistration>
-  | Route<typeof frontRoutes.establishmentDashboardRegistration>
+  | Route<typeof frontRoutes.establishmentUserRegistration>
   | Route<typeof frontRoutes.addAgency>
   | Route<typeof frontRoutes.archivedConventionRequest>
   | Route<typeof frontRoutes.manageConventionConnectedUser>
@@ -390,7 +390,7 @@ const getAllowedStartAuthPage = (
   routeParams: ConnectPrivateRoute["params"],
 ): AllowedLoginSource => {
   if (routeName === "myAccount") return "myAccount";
-  if (routeName === "establishmentDashboardRegistration")
+  if (routeName === "establishmentUserRegistration")
     return "establishmentDashboard";
   if (routeName === "agencyDashboardRegistration") return "agencyDashboard";
   if (routeName === "beneficiaryDashboardDiscussions")
