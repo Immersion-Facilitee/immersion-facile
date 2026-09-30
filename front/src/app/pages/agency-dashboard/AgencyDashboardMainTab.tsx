@@ -31,7 +31,7 @@ export const AgencyDashboardMainTab = ({
     [currentUser?.agencyRights],
   );
 
-  const feedbackTopic: FeedbackTopic = "dashboard-agency-register-user";
+  const feedbackTopic: FeedbackTopic = "agency-user-registration";
 
   useEffect(() => {
     if (currentUser?.proConnect)

@@ -19,8 +19,8 @@ import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { AdminTabs } from "src/app/pages/admin/AdminTabs";
 import { AdminUserDetail } from "src/app/pages/admin/AdminUserDetail";
 import { AddAgencyPage } from "src/app/pages/agency/AddAgencyPage";
+import { AgencyUserRegistrationPage } from "src/app/pages/agency/AgencyUserRegistrationPage";
 import { AgencyDashboardMainTab } from "src/app/pages/agency-dashboard/AgencyDashboardMainTab";
-import { AgencyRegistrationPage } from "src/app/pages/agency-dashboard/AgencyRegistrationPage";
 import { AdminPrivateRoutePage } from "src/app/pages/auth/AdminPrivateRoutePage";
 import { ConnectedPrivateRoutePage } from "src/app/pages/auth/ConnectedPrivateRoutePage";
 import { DashboardPrivateRoutePage } from "src/app/pages/auth/DashboardPrivateRoutePage";
@@ -319,14 +319,14 @@ const getPageByRouteName: {
       <MyAccountPage />
     </ConnectedPrivateRoutePage>
   ),
-  agencyDashboardRegistration: (route) => (
+  agencyUserRegistration: (route) => (
     <ConnectedPrivateRoutePage
       route={route}
       oAuthConnectionPageHeader={
         <PageHeader title="Vous devez vous connecter pour accéder à votre compte" />
       }
     >
-      <AgencyRegistrationPage />
+      <AgencyUserRegistrationPage />
     </ConnectedPrivateRoutePage>
   ),
 

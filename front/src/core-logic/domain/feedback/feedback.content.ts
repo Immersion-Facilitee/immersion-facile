@@ -78,7 +78,7 @@ const topics = [
   "convention-status-dashboard",
   "conventions-with-unfinalized-assessment",
   "conventions-with-broadcast-feedback",
-  "dashboard-agency-register-user",
+  "agency-user-registration",
   "dashboard-discussion-status-updated",
   "dashboard-discussion",
   "dashboard-discussion-contact-info",
@@ -371,7 +371,7 @@ export const feedbacks: Record<
         "Une erreur est survenue lors de la suppression du rattachement de l'utilisateur.",
     },
   },
-  "dashboard-agency-register-user": {
+  "agency-user-registration": {
     "fetch.error": {
       action: connectedUserSlice.actions.currentUserFetchFailed,
       title: "Erreur",

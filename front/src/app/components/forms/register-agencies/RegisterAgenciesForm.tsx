@@ -109,7 +109,7 @@ export const RegisterAgenciesForm = ({
                     dispatch(
                       connectedUserSlice.actions.registerAgenciesRequested({
                         agencies: selectedAgencyIds,
-                        feedbackTopic: "dashboard-agency-register-user",
+                        feedbackTopic: "agency-user-registration",
                       }),
                     );
                   }}

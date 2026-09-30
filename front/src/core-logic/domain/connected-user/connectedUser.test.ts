@@ -133,7 +133,7 @@ describe("InclusionConnected", () => {
 
       store.dispatch(
         connectedUserSlice.actions.currentUserFetchRequested({
-          feedbackTopic: "dashboard-agency-register-user",
+          feedbackTopic: "agency-user-registration",
         }),
       );
 
@@ -179,7 +179,7 @@ describe("InclusionConnected", () => {
       expectCurrentUserToBe(null);
       store.dispatch(
         connectedUserSlice.actions.currentUserFetchRequested({
-          feedbackTopic: "dashboard-agency-register-user",
+          feedbackTopic: "agency-user-registration",
         }),
       );
       expectConnectedUserSelectorIsLoadingToBe(true);
@@ -191,7 +191,7 @@ describe("InclusionConnected", () => {
       expectConnectedUserSelectorIsLoadingToBe(false);
       expectCurrentUserToBe(null);
       expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
-        "dashboard-agency-register-user": {
+        "agency-user-registration": {
           on: "fetch",
           level: "error",
           title: "Erreur",
@@ -211,7 +211,7 @@ describe("InclusionConnected", () => {
       store.dispatch(
         connectedUserSlice.actions.registerAgenciesRequested({
           ...payload,
-          feedbackTopic: "dashboard-agency-register-user",
+          feedbackTopic: "agency-user-registration",
         }),
       );
       expectConnectedUserSelectorIsLoadingToBe(true);
@@ -220,7 +220,7 @@ describe("InclusionConnected", () => {
       );
       expectConnectedUserSelectorIsLoadingToBe(false);
       expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
-        "dashboard-agency-register-user": {
+        "agency-user-registration": {
           on: "create",
           level: "success",
           title: "Votre demande de rattachement a bien été prise en compte",
@@ -237,7 +237,7 @@ describe("InclusionConnected", () => {
       store.dispatch(
         connectedUserSlice.actions.registerAgenciesSucceeded({
           agencies: [agency1.id],
-          feedbackTopic: "dashboard-agency-register-user",
+          feedbackTopic: "agency-user-registration",
         }),
       );
 
@@ -255,7 +255,7 @@ describe("InclusionConnected", () => {
       store.dispatch(
         connectedUserSlice.actions.registerAgenciesRequested({
           ...payload,
-          feedbackTopic: "dashboard-agency-register-user",
+          feedbackTopic: "agency-user-registration",
         }),
       );
       expectConnectedUserSelectorIsLoadingToBe(true);
@@ -263,7 +263,7 @@ describe("InclusionConnected", () => {
         new Error(errorMessage),
       );
       expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
-        "dashboard-agency-register-user": {
+        "agency-user-registration": {
           on: "create",
           level: "error",
           title: "Erreur lors de la demande de rattachement à une agence",

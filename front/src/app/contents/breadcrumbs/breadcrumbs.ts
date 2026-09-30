@@ -137,9 +137,9 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
         label: "Tableau de bord",
         route: frontRoutes.agencyDashboardMain(),
         children: {
-          agencyDashboardRegistration: {
+          agencyUserRegistration: {
             label: "Demander l'accès à des organismes",
-            route: frontRoutes.agencyDashboardRegistration(),
+            route: frontRoutes.agencyUserRegistration(),
           },
         },
       },

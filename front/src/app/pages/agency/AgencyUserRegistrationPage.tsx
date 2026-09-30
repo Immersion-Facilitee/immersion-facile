@@ -7,7 +7,7 @@ import { RegisterAgenciesForm } from "src/app/components/forms/register-agencies
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 
-export const AgencyRegistrationPage = (): JSX.Element => {
+export const AgencyUserRegistrationPage = (): JSX.Element => {
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isLoading = useAppSelector(connectedUserSelectors.isLoading);
 
@@ -22,7 +22,7 @@ export const AgencyRegistrationPage = (): JSX.Element => {
         title={"Demander l'accès à des organismes"}
         badge={
           <Button
-            id={domElementIds.agencyDashboardRegistration.backButton}
+            id={domElementIds.agencyUserRegistration.backButton}
             linkProps={frontRoutes.agencyDashboardAgencies().link}
             priority={"secondary"}
             size="small"
@@ -38,7 +38,7 @@ export const AgencyRegistrationPage = (): JSX.Element => {
         Un administrateur vérifiera et validera votre demande.
       </PageHeader>
       <div className={fr.cx("fr-container", "fr-mt-2w", "fr-mb-8w")}>
-        <Feedback topics={["dashboard-agency-register-user"]} closable />
+        <Feedback topics={["agency-user-registration"]} closable />
         <RegisterAgenciesForm currentUser={currentUser} />
       </div>
     </>
