@@ -26,10 +26,7 @@ import {
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { getButtonConfigBySubStatus } from "src/app/components/forms/convention/manage-actions/getButtonConfigBySubStatus";
 import type { VerificationAction } from "src/app/components/forms/convention/manage-actions/getVerificationActionButtonProps";
-import {
-  useFeedbackTopic,
-  useFeedbackTopics,
-} from "src/app/hooks/feedback.hooks";
+import { useFeedbackTopics } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { isAssessmentToBeSignedByBeneficiary } from "src/app/utils/assessment.utils";
 import { shouldShowPartnersBroadcastError } from "src/app/utils/broadcast.utils";
@@ -41,7 +38,6 @@ import { conventionActionSelectors } from "src/core-logic/domain/convention/conv
 import { conventionActionSlice } from "src/core-logic/domain/convention/convention-action/conventionAction.slice";
 import { editConventionWithFinalStatusSlice } from "src/core-logic/domain/convention/edit-convention-with-final-status/editConventionWithFinalStatus.slice";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
-import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
 import {
   type Feedback as FeedbackType,
   feedbackSlice,
@@ -119,39 +115,54 @@ export const ConventionManageActions = ({
     ? lastBroadcastFeedback.broadcastFeedback?.subscriberErrorFeedback
     : undefined;
 
-  const feedbacks = useAppSelector(feedbacksSelectors.feedbacks);
   const consumerNames = useAppSelector(apiConsumerSelectors.apiConsumerNames);
   const isLoadingApiConsumer = useAppSelector(apiConsumerSelectors.isLoading);
   const isBroadcasting = useAppSelector(
     conventionActionSelectors.isBroadcasting,
   );
-  const hasBroadcastErrorFeedback =
-    feedbacks["broadcast-convention-again"]?.level === "error";
+
+  const [
+    conventionActionAcceptByValidatorFeedback,
+    conventionActionAcceptByCounsellorFeedback,
+    conventionActionRejectFeedback,
+    conventionActionDeprecateFeedback,
+    conventionActionCancelFeedback,
+    conventionActionRenewFeedback,
+    conventionActionEditCounsellorNameFeedback,
+    conventionActionTransferToAgencyFeedback,
+    conventionActionBroadcastAgainFeedback,
+    conventionActionSignFeedback,
+  ] = useFeedbackTopics([
+    "convention-action-accept-by-validator",
+    "convention-action-accept-by-counsellor",
+    "convention-action-reject",
+    "convention-action-deprecate",
+    "convention-action-cancel",
+    "convention-action-renew",
+    "convention-action-edit-counsellor-name",
+    "transfer-convention-to-agency",
+    "broadcast-convention-again",
+    "convention-action-sign",
+  ]);
 
   const isBroadcastAgainDisabled =
     isBroadcasting ||
-    hasBroadcastErrorFeedback ||
+    conventionActionBroadcastAgainFeedback?.level === "error" ||
     isLoadingApiConsumer ||
     consumerNames.length === 0;
 
   const disabledButtons: Partial<Record<VerificationAction, boolean>> =
     getDisabledButtons({
-      ACCEPT_VALIDATOR: useFeedbackTopic(
-        "convention-action-accept-by-validator",
-      ),
-      ACCEPT_COUNSELLOR: useFeedbackTopic(
-        "convention-action-accept-by-counsellor",
-      ),
-      REJECT: useFeedbackTopic("convention-action-reject"),
-      DEPRECATE: useFeedbackTopic("convention-action-deprecate"),
-      CANCEL: useFeedbackTopic("convention-action-cancel"),
-      RENEW: useFeedbackTopic("convention-action-renew"),
-      EDIT_COUNSELLOR_NAME: useFeedbackTopic(
-        "convention-action-edit-counsellor-name",
-      ),
-      TRANSFER: useFeedbackTopic("transfer-convention-to-agency"),
+      ACCEPT_VALIDATOR: conventionActionAcceptByValidatorFeedback,
+      ACCEPT_COUNSELLOR: conventionActionAcceptByCounsellorFeedback,
+      REJECT: conventionActionRejectFeedback,
+      DEPRECATE: conventionActionDeprecateFeedback,
+      CANCEL: conventionActionCancelFeedback,
+      RENEW: conventionActionRenewFeedback,
+      EDIT_COUNSELLOR_NAME: conventionActionEditCounsellorNameFeedback,
+      TRANSFER: conventionActionTransferToAgencyFeedback,
       BROADCAST_AGAIN: isBroadcastAgainDisabled,
-      SIGN: useFeedbackTopic("convention-action-sign"),
+      SIGN: conventionActionSignFeedback,
     });
 
   const [validatorWarningMessage, setValidatorWarningMessage] = useState<
