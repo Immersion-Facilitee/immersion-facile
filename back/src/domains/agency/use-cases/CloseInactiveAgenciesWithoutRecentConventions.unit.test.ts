@@ -449,99 +449,118 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
   });
 
   describe("When there are agencies to close", () => {
-    it("should close active agencies without recent conventions and send notifications to admins", async () => {
-      const agency1WithRights = toAgencyWithRights(agency1, {
-        [admin1.id]: {
-          isNotifiedByEmail: true,
-          roles: ["agency-admin"],
-        },
-        [validator1.id]: {
-          isNotifiedByEmail: true,
-          roles: ["validator"],
-        },
-      });
-      const agency2WithRights = toAgencyWithRights(agency2, {
-        [admin2.id]: {
-          isNotifiedByEmail: true,
-          roles: ["agency-admin"],
-        },
-      });
-      uow.agencyRepository.agencies = [agency1WithRights, agency2WithRights];
-      uow.userRepository.users = [admin1, admin2, validator1];
-      uow.conventionRepository.setConventions([]);
-      uow.notificationRepository.notifications = [
-        makeInactivityWarningNotification({
-          id: "warning-agency1",
-          agencyId: agency1.id,
-          agencyName: agency1.name,
-          createdAt: subMonths(
-            defaultDate,
-            numberOfMonthsWithoutConventionAfterWarning,
-          ),
-          recipientEmail: admin1.email,
-        }),
-        makeInactivityWarningNotification({
-          id: "warning-agency2",
-          agencyId: agency2.id,
-          agencyName: agency2.name,
-          createdAt: subMonths(
-            defaultDate,
-            numberOfMonthsWithoutConventionAfterWarning,
-          ),
-          recipientEmail: admin2.email,
-        }),
-      ];
+    it.each([
+      {
+        caseName: `warning was received exactly ${numberOfMonthsWithoutConventionAfterWarning} months ago`,
+        monthsSinceWarning: numberOfMonthsWithoutConventionAfterWarning,
+      },
+      {
+        caseName: `warning was received more than ${numberOfMonthsWithoutConventionAfterWarning} months ago`,
+        monthsSinceWarning: numberOfMonthsWithoutConventionAfterWarning + 2,
+      },
+    ])(
+      "should close agencies without recent conventions / update when $caseName and send notifications to admins",
+      async ({ monthsSinceWarning }) => {
+        const agencyUpdatedAt = subMonths(defaultDate, monthsSinceWarning + 1);
+        const inactiveAgency1 = AgencyDtoBuilder.create(agency1.id)
+          .withName(agency1.name)
+          .withStatus("active")
+          .withUpdatedAt(agencyUpdatedAt)
+          .build();
+        const inactiveAgency2 = AgencyDtoBuilder.create(agency2.id)
+          .withName(agency2.name)
+          .withStatus("active")
+          .withUpdatedAt(agencyUpdatedAt)
+          .build();
+        const agency1WithRights = toAgencyWithRights(inactiveAgency1, {
+          [admin1.id]: {
+            isNotifiedByEmail: true,
+            roles: ["agency-admin"],
+          },
+          [validator1.id]: {
+            isNotifiedByEmail: true,
+            roles: ["validator"],
+          },
+        });
+        const agency2WithRights = toAgencyWithRights(inactiveAgency2, {
+          [admin2.id]: {
+            isNotifiedByEmail: true,
+            roles: ["agency-admin"],
+          },
+        });
+        uow.agencyRepository.agencies = [agency1WithRights, agency2WithRights];
+        uow.userRepository.users = [admin1, admin2, validator1];
+        uow.conventionRepository.setConventions([]);
+        uow.notificationRepository.notifications = [
+          makeInactivityWarningNotification({
+            id: "warning-agency1",
+            agencyId: inactiveAgency1.id,
+            agencyName: inactiveAgency1.name,
+            createdAt: subMonths(defaultDate, monthsSinceWarning),
+            recipientEmail: admin1.email,
+          }),
+          makeInactivityWarningNotification({
+            id: "warning-agency2",
+            agencyId: inactiveAgency2.id,
+            agencyName: inactiveAgency2.name,
+            createdAt: subMonths(defaultDate, monthsSinceWarning),
+            recipientEmail: admin2.email,
+          }),
+        ];
 
-      const result =
-        await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConventionAfterWarning,
+        const result =
+          await closeInactiveAgenciesWithoutRecentConventions.execute({
+            numberOfMonthsWithoutConventionAfterWarning,
+          });
+
+        expectToEqual(result, {
+          numberOfAgenciesClosed: 2,
         });
 
-      expectToEqual(result, {
-        numberOfAgenciesClosed: 2,
-      });
-
-      expectToEqual(uow.agencyRepository.agencies, [
-        {
-          ...agency1WithRights,
-          status: "closed",
-          statusJustification: "Agence fermée automatiquement pour inactivité",
-          updatedAt: timeGateway.now().toISOString(),
-        },
-        {
-          ...agency2WithRights,
-          status: "closed",
-          statusJustification: "Agence fermée automatiquement pour inactivité",
-          updatedAt: timeGateway.now().toISOString(),
-        },
-      ]);
-
-      expectSavedNotificationsAndEvents({
-        emails: [
+        expectToEqual(uow.agencyRepository.agencies, [
           {
-            kind: "AGENCY_CLOSED_FOR_INACTIVITY",
-            recipients: [admin1.email],
-            params: {
-              agencyName: agency1.name,
-              numberOfMonthsWithoutConvention:
-                numberOfMonthsWithoutConventionAfterWarning +
-                numberOfMonthsWithoutConventionBeforeWarning,
-            },
+            ...agency1WithRights,
+            status: "closed",
+            statusJustification:
+              "Agence fermée automatiquement pour inactivité",
+            updatedAt: timeGateway.now().toISOString(),
           },
           {
-            kind: "AGENCY_CLOSED_FOR_INACTIVITY",
-            recipients: [admin2.email],
-            params: {
-              agencyName: agency2.name,
-              numberOfMonthsWithoutConvention:
-                numberOfMonthsWithoutConventionAfterWarning +
-                numberOfMonthsWithoutConventionBeforeWarning,
-            },
+            ...agency2WithRights,
+            status: "closed",
+            statusJustification:
+              "Agence fermée automatiquement pour inactivité",
+            updatedAt: timeGateway.now().toISOString(),
           },
-        ],
-        priority: 7,
-      });
-    });
+        ]);
+
+        expectSavedNotificationsAndEvents({
+          emails: [
+            {
+              kind: "AGENCY_CLOSED_FOR_INACTIVITY",
+              recipients: [admin1.email],
+              params: {
+                agencyName: inactiveAgency1.name,
+                numberOfMonthsWithoutConvention:
+                  numberOfMonthsWithoutConventionAfterWarning +
+                  numberOfMonthsWithoutConventionBeforeWarning,
+              },
+            },
+            {
+              kind: "AGENCY_CLOSED_FOR_INACTIVITY",
+              recipients: [admin2.email],
+              params: {
+                agencyName: inactiveAgency2.name,
+                numberOfMonthsWithoutConvention:
+                  numberOfMonthsWithoutConventionAfterWarning +
+                  numberOfMonthsWithoutConventionBeforeWarning,
+              },
+            },
+          ],
+          priority: 7,
+        });
+      },
+    );
 
     it("should not close agencies with recent conventions", async () => {
       const agency1WithRights = toAgencyWithRights(agency1, {
