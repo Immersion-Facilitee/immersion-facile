@@ -9,6 +9,7 @@ import {
   expectToEqual,
   type Notification,
 } from "shared";
+import { numberOfMonthsWithoutConventionBeforeWarning } from "../../../scripts/scheduledScripts/warnInactiveAgenciesWithoutRecentConventions";
 import { toAgencyWithRights } from "../../../utils/agency";
 import {
   type ExpectSavedNotificationsAndEvents,
@@ -28,7 +29,7 @@ import {
 } from "./CloseInactiveAgenciesWithoutRecentConventions";
 
 describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
-  const numberOfMonthsWithoutConvention = 3;
+  const numberOfMonthsWithoutConventionAfterWarning = 3;
   const defaultDate = new Date("2021-09-01T10:10:00.000Z");
 
   const admin1 = new ConnectedUserBuilder()
@@ -164,7 +165,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -198,14 +199,17 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           id: "warning-agency1",
           agencyId: agency1.id,
           agencyName: agency1.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin1.email,
         }),
       ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -231,7 +235,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -266,7 +270,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -308,7 +312,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -357,7 +361,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -428,7 +432,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -470,21 +474,27 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           id: "warning-agency1",
           agencyId: agency1.id,
           agencyName: agency1.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin1.email,
         }),
         makeInactivityWarningNotification({
           id: "warning-agency2",
           agencyId: agency2.id,
           agencyName: agency2.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin2.email,
         }),
       ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -513,7 +523,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             recipients: [admin1.email],
             params: {
               agencyName: agency1.name,
-              numberOfMonthsWithoutConvention,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
             },
           },
           {
@@ -521,7 +533,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             recipients: [admin2.email],
             params: {
               agencyName: agency2.name,
-              numberOfMonthsWithoutConvention,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
             },
           },
         ],
@@ -558,21 +572,27 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           id: "warning-agency1",
           agencyId: agency1.id,
           agencyName: agency1.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin1.email,
         }),
         makeInactivityWarningNotification({
           id: "warning-agency2",
           agencyId: agency2.id,
           agencyName: agency2.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin2.email,
         }),
       ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -596,7 +616,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             recipients: [admin2.email],
             params: {
               agencyName: agency2.name,
-              numberOfMonthsWithoutConvention,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
             },
           },
         ],
@@ -659,21 +681,27 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           id: "warning-agency1",
           agencyId: agency1.id,
           agencyName: agency1.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin1.email,
         }),
         makeInactivityWarningNotification({
           id: "warning-agency3",
           agencyId: agency3.id,
           agencyName: agency3.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin1.email,
         }),
       ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -714,21 +742,27 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           id: "warning-agency1",
           agencyId: agency1.id,
           agencyName: agency1.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin1.email,
         }),
         makeInactivityWarningNotification({
           id: "warning-agency2",
           agencyId: agency2.id,
           agencyName: agency2.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin1.email,
         }),
       ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -742,7 +776,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             recipients: [admin1.email],
             params: {
               agencyName: agency1.name,
-              numberOfMonthsWithoutConvention,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
             },
           },
           {
@@ -750,7 +786,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             recipients: [admin1.email],
             params: {
               agencyName: agency2.name,
-              numberOfMonthsWithoutConvention,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
             },
           },
         ],
@@ -797,14 +835,17 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           id: "warning-old-agency",
           agencyId: oldAgency.id,
           agencyName: oldAgency.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin2.email,
         }),
       ];
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, {
@@ -828,7 +869,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             recipients: [admin2.email],
             params: {
               agencyName: oldAgency.name,
-              numberOfMonthsWithoutConvention,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
             },
           },
         ],
@@ -877,14 +920,20 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
           id: "warning-agency3",
           agencyId: agency3.id,
           agencyName: agency3.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin2.email,
         }),
         makeInactivityWarningNotification({
           id: "warning-agency4",
           agencyId: agency4.id,
           agencyName: agency4.name,
-          createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
           recipientEmail: admin2.email,
         }),
       ];
@@ -905,7 +954,7 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
 
       const result =
         await closeInactiveAgenciesWithoutRecentConventions.execute({
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning,
         });
 
       expectToEqual(result, { numberOfAgenciesClosed: 2 });
@@ -931,7 +980,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             recipients: [admin2.email],
             params: {
               agencyName: agencyToClose1.name,
-              numberOfMonthsWithoutConvention,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
             },
           },
           {
@@ -939,7 +990,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             recipients: [admin2.email],
             params: {
               agencyName: agencyToClose2.name,
-              numberOfMonthsWithoutConvention,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
             },
           },
         ],
@@ -980,14 +1033,17 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
             id: "warning-agency1",
             agencyId: agency1.id,
             agencyName: agency1.name,
-            createdAt: subMonths(defaultDate, numberOfMonthsWithoutConvention),
+            createdAt: subMonths(
+              defaultDate,
+              numberOfMonthsWithoutConventionAfterWarning,
+            ),
             recipientEmail: admin2.email,
           }),
         ];
 
         const result =
           await closeInactiveAgenciesWithoutRecentConventions.execute({
-            numberOfMonthsWithoutConvention,
+            numberOfMonthsWithoutConventionAfterWarning,
           });
 
         expectToEqual(result, {
@@ -1012,7 +1068,9 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
               recipients: [admin2.email],
               params: {
                 agencyName: agency1.name,
-                numberOfMonthsWithoutConvention,
+                numberOfMonthsWithoutConvention:
+                  numberOfMonthsWithoutConventionAfterWarning +
+                  numberOfMonthsWithoutConventionBeforeWarning,
               },
             },
           ],

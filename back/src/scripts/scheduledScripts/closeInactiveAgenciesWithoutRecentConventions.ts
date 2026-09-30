@@ -10,7 +10,7 @@ import { handleCRONScript } from "../handleCRONScript";
 
 const logger = createLogger(__filename);
 const config = AppConfig.createFromEnv();
-export const numberOfMonthsWithoutConvention = 3;
+export const numberOfMonthsWithoutConventionAfterWarning = 3;
 
 const closeInactiveAgenciesWithoutRecentConventionsScript = async () => {
   const { uowPerformer } = createDbRelatedSystems(
@@ -34,7 +34,7 @@ const closeInactiveAgenciesWithoutRecentConventionsScript = async () => {
     });
 
   const result = await closeInactiveAgenciesWithoutRecentConventions.execute({
-    numberOfMonthsWithoutConvention,
+    numberOfMonthsWithoutConventionAfterWarning,
   });
   return result;
 };
