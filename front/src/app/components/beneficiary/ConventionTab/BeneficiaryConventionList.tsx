@@ -3,7 +3,7 @@ import { Fragment, useEffect } from "react";
 import { RichTable, SectionHighlight } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
-  type BeneficiaryConvention,
+  type BeneficiaryConventionInList,
   defaultPerPageInWebPagination,
   domElementIds,
   immersionFacileHelpdeskRootUrl,
@@ -165,7 +165,7 @@ const getTableHeaders = (hasConventions: boolean): React.ReactNode[] =>
       ];
 
 const conventionListToTableData = (
-  conventionList: BeneficiaryConvention[],
+  conventionList: BeneficiaryConventionInList[],
   isBeneficiaryManageConventionEnabled: boolean,
 ): React.ReactNode[][] =>
   conventionList.map<React.ReactNode[]>((convention) => [

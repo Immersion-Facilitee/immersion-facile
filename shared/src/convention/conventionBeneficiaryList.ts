@@ -27,7 +27,7 @@ import {
   conventionStatusSchema,
 } from "./convention.schema";
 
-export type BeneficiaryConvention = {
+export type BeneficiaryConventionInList = {
   conventionId: ConventionId;
   businessName: BusinessName | BusinessNameCustomized;
   status: ConventionStatus;
@@ -36,7 +36,7 @@ export type BeneficiaryConvention = {
   dateEnd: DateString;
 };
 
-const beneficiaryConventionSchema: ZodSchemaWithInputMatchingOutput<BeneficiaryConvention> =
+const beneficiaryConventionInListSchema: ZodSchemaWithInputMatchingOutput<BeneficiaryConventionInList> =
   z.object({
     conventionId: conventionIdSchema,
     businessName: businessNameSchema,
@@ -58,7 +58,7 @@ export type GetBeneficiaryConventionListParams = {
 };
 
 export type BeneficiaryConventionListDto =
-  DataWithPagination<BeneficiaryConvention>;
+  DataWithPagination<BeneficiaryConventionInList>;
 
 export const flatGetBeneficiaryConventionListParamsSchema: ZodSchemaWithInputMatchingOutput<FlatGetBeneficiaryConventionListParams> =
   paginationQueryParamsSchema.and(
@@ -78,7 +78,7 @@ export const getBeneficiaryConventionListParamsSchema: ZodSchemaWithInputMatchin
   });
 
 export const beneficiaryConventionListDtoSchema: ZodSchemaWithInputMatchingOutput<BeneficiaryConventionListDto> =
-  createPaginatedSchema(beneficiaryConventionSchema);
+  createPaginatedSchema(beneficiaryConventionInListSchema);
 
 export const flatParamsToGetBeneficiaryConventionListParams = (
   flatParams: FlatGetBeneficiaryConventionListParams,
