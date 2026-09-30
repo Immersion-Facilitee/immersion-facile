@@ -19,7 +19,6 @@ import type { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWo
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   getInactiveAgenciesAmong,
-  isAgencyActiveAfterWarning,
   makeInactiveAgenciesFilters,
 } from "../helpers/inactiveAgencies.helpers";
 import type { GetAgenciesFilters } from "../ports/AgencyRepository";
@@ -217,13 +216,7 @@ const isWarningNeeded = async (params: {
     startOfDay(lastWarningDate) >=
     startOfDay(subMonths(now, numberOfMonthsWithoutConvention));
 
-  if (isWarnedRecently) return false;
-
-  return !(await isAgencyActiveAfterWarning({
-    agency,
-    warningCreatedAt: lastWarningDate,
-    uow,
-  }));
+  return !isWarnedRecently;
 };
 
 const getAgenciesNeedingWarning = async ({
