@@ -246,7 +246,7 @@ export const {
   ),
   agencyManagement: agencyDashboard.extend("/pilotage-structure"),
   establishmentManagement: agencyDashboard.extend("/pilotage-entreprises"),
-  agencyDashboardRegistration: myAccount.extend(
+  agencyUserRegistration: myAccount.extend(
     "/tableau-de-bord-agence/rattachement-organisme",
   ),
 
