@@ -7,7 +7,7 @@ import { RequestRegisterEstablishmentsForUserForm } from "src/app/components/for
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 
-export const EstablishmentRegistrationPage = () => {
+export const EstablishmentUserRegistrationPage = () => {
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isLoading = useAppSelector(connectedUserSelectors.isLoading);
   if (isLoading) {
@@ -21,7 +21,7 @@ export const EstablishmentRegistrationPage = () => {
         title={"Se rattacher à une entreprise"}
         badge={
           <Button
-            id={domElementIds.establishmentDashboardRegistration.backButton}
+            id={domElementIds.establishmentUserRegistration.backButton}
             linkProps={
               frontRoutes.establishmentDashboardFormEstablishment().link
             }
@@ -40,7 +40,7 @@ export const EstablishmentRegistrationPage = () => {
       </PageHeader>
       <div className={fr.cx("fr-container", "fr-mt-2w", "fr-mb-8w")}>
         <Feedback
-          topics={["establishment-dashboard-registration"]}
+          topics={["establishment-user-registration"]}
           closable
           className={fr.cx("fr-mb-2w")}
         />

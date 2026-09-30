@@ -307,7 +307,7 @@ const OnboardingTabContent = () => (
 
             priority: "primary",
             onClick: () => {
-              frontRoutes.establishmentDashboardRegistration().push();
+              frontRoutes.establishmentUserRegistration().push();
             },
             iconId: "fr-icon-add-line",
             children: "Se rattacher à une entreprise",

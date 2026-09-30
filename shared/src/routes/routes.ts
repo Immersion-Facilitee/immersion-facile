@@ -367,7 +367,7 @@ export const {
     },
     ({ discussionId }) => `/discussions/${discussionId}`,
   ),
-  establishmentDashboardRegistration: myAccount.extend(
+  establishmentUserRegistration: myAccount.extend(
     { siret: param.query.optional.string },
     () => [
       "/tableau-de-bord-etablissement/rattachement-entreprise",

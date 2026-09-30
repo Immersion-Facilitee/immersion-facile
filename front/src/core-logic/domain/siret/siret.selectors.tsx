@@ -46,7 +46,7 @@ const errorTranslations: Partial<Record<SiretSliceError, ReactNode>> = {
     <span>
       Cet établissement est déjà référencé. Veuillez faire une{" "}
       <a
-        href={frontRoutes.establishmentDashboardRegistration().href}
+        href={frontRoutes.establishmentUserRegistration().href}
         rel="noreferrer"
       >
         demande de rattachement

@@ -38,8 +38,8 @@ import { ConventionTemplateForm } from "src/app/pages/convention/ConventionTempl
 import { InitiateConventionPage } from "src/app/pages/convention/InitiateConventionPage";
 import { frontErrors } from "src/app/pages/error/front-errors";
 import { EstablishmentLeadRegistrationRejectedPage } from "src/app/pages/establishment/EstablishmentLeadRegistrationRejectedPage";
+import { EstablishmentUserRegistrationPage } from "src/app/pages/establishment/EstablishmentUserRegistrationPage";
 import { EstablishmentDashboardMainTab } from "src/app/pages/establishment-dashboard/EstablishmentDashboardMainTab";
-import { EstablishmentRegistrationPage } from "src/app/pages/establishment-dashboard/EstablishmentRegistrationPage";
 import { StatsPage } from "src/app/pages/StatsPage";
 import { SearchPage } from "src/app/pages/search/SearchPage";
 import { MyAccountPage } from "src/app/pages/user/MyAccountPage";
@@ -330,7 +330,7 @@ const getPageByRouteName: {
     </ConnectedPrivateRoutePage>
   ),
 
-  establishmentDashboardRegistration: (route) => (
+  establishmentUserRegistration: (route) => (
     <ConnectedPrivateRoutePage
       route={route}
       oAuthConnectionPageHeader={
@@ -340,7 +340,7 @@ const getPageByRouteName: {
         vSpacing: 0,
       }}
     >
-      <EstablishmentRegistrationPage />
+      <EstablishmentUserRegistrationPage />
     </ConnectedPrivateRoutePage>
   ),
   openApiDoc: (route: Route<typeof frontRoutes.openApiDoc>) => {

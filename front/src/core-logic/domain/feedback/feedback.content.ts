@@ -90,7 +90,7 @@ const topics = [
   "form-establishment",
   "form-establishment-offer-modal",
   "ban-establishment",
-  "establishment-dashboard-registration",
+  "establishment-user-registration",
   "login-by-email",
   "magic-link-interstitial",
   "renew-expired-jwt",
@@ -401,7 +401,7 @@ export const feedbacks: Record<
         "Une erreur est survenue lors de l'annulation de la demande d'accès de l'utilisateur.",
     },
   },
-  "establishment-dashboard-registration": {
+  "establishment-user-registration": {
     "fetch.error": {
       action: establishmentSlice.actions.fetchEstablishmentPublicOptionsFailed,
       title: "Problème lors de la récupération des entreprises",

@@ -105,9 +105,9 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
         label: "Tableau de bord entreprise",
         route: frontRoutes.establishmentDashboard(),
         children: {
-          establishmentDashboardRegistration: {
+          establishmentUserRegistration: {
             label: "Se rattacher à une entreprise",
-            route: frontRoutes.establishmentDashboardRegistration(),
+            route: frontRoutes.establishmentUserRegistration(),
           },
           establishmentDashboardConventions: {
             label: "Conventions",
