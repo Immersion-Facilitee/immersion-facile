@@ -6,10 +6,10 @@ import { triggerWarnInactiveAgenciesWithoutRecentConventions } from "./scheduled
 const logger = createLogger(__filename);
 
 const main = async () => {
-  await triggerWarnInactiveAgenciesWithoutRecentConventions({
+  await triggerCloseInactiveAgenciesWithoutRecentConventions({
     exitOnFinish: false,
   });
-  await triggerCloseInactiveAgenciesWithoutRecentConventions({
+  await triggerWarnInactiveAgenciesWithoutRecentConventions({
     exitOnFinish: false,
   });
 };
