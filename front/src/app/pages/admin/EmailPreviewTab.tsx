@@ -301,6 +301,9 @@ export const defaultEmailValueByEmailKind: {
     agencyName: "AGENCY_NAME",
     numberOfMonthsWithoutConvention: 6,
   },
+  AGENCY_INACTIVITY_WARNING: {
+    agencyName: "AGENCY_NAME",
+  },
   AGENCY_DELEGATION_CONTACT_INFORMATION: {
     delegationProviderMail: "DELEGATION_PROVIDER_EMAIL",
   },

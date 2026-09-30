@@ -1,6 +1,6 @@
 import { AppConfig } from "../../config/bootstrap/appConfig";
 import { createMakeProductionPgPool } from "../../config/pg/pgPool";
-import { makeCloseInactiveAgenciesWithoutRecentConventions } from "../../domains/agency/use-cases/CloseInactiveAgenciesWithoutRecentConventions";
+import { makeWarnInactiveAgenciesWithoutRecentConventions } from "../../domains/agency/use-cases/WarnInactiveAgenciesWithoutRecentConventions";
 import { makeSaveNotificationsBatchAndRelatedEvent } from "../../domains/core/notifications/helpers/Notification";
 import { RealTimeGateway } from "../../domains/core/time-gateway/adapters/RealTimeGateway";
 import { createDbRelatedSystems } from "../../domains/core/unit-of-work/adapters/createDbRelatedSystems";
@@ -10,17 +10,17 @@ import { handleCRONScript } from "../handleCRONScript";
 
 const logger = createLogger(__filename);
 const config = AppConfig.createFromEnv();
-export const numberOfMonthsWithoutConventionAfterWarning = 3;
+export const numberOfMonthsWithoutConventionBeforeWarning = 3;
 
-const closeInactiveAgenciesWithoutRecentConventionsScript = async () => {
+const warnInactiveAgenciesWithoutRecentConventionsScript = async () => {
   const { uowPerformer } = createDbRelatedSystems(
     config,
     createMakeProductionPgPool(config),
   );
 
   const timeGateway = new RealTimeGateway();
-  const closeInactiveAgenciesWithoutRecentConventions =
-    makeCloseInactiveAgenciesWithoutRecentConventions({
+  const warnInactiveAgenciesWithoutRecentConventions =
+    makeWarnInactiveAgenciesWithoutRecentConventions({
       deps: {
         uowPerformer,
         timeGateway,
@@ -33,23 +33,24 @@ const closeInactiveAgenciesWithoutRecentConventionsScript = async () => {
       },
     });
 
-  const result = await closeInactiveAgenciesWithoutRecentConventions.execute({
-    numberOfMonthsWithoutConventionAfterWarning,
+  const result = await warnInactiveAgenciesWithoutRecentConventions.execute({
+    numberOfMonthsWithoutConvention:
+      numberOfMonthsWithoutConventionBeforeWarning,
   });
   return result;
 };
 
-export const triggerCloseInactiveAgenciesWithoutRecentConventions = ({
+export const triggerWarnInactiveAgenciesWithoutRecentConventions = ({
   exitOnFinish,
 }: {
   exitOnFinish: boolean;
 }) =>
   handleCRONScript({
-    name: "triggerCloseInactiveAgenciesWithoutRecentConventions",
+    name: "triggerWarnInactiveAgenciesWithoutRecentConventions",
     config,
-    script: closeInactiveAgenciesWithoutRecentConventionsScript,
-    handleResults: ({ numberOfAgenciesClosed }) =>
-      `${numberOfAgenciesClosed} agencies were closed, because they had no conventions validated or to be validated since the last inactivity warning 3 months ago`,
+    script: warnInactiveAgenciesWithoutRecentConventionsScript,
+    handleResults: ({ numberOfAgenciesWarned }) =>
+      `${numberOfAgenciesWarned} agencies were warned, because they had no conventions validated or to be validated for the last ${numberOfMonthsWithoutConventionBeforeWarning} months`,
     logger,
     exitOnFinish,
   });

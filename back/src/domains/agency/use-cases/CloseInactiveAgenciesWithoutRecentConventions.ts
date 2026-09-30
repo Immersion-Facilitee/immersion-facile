@@ -1,16 +1,14 @@
-import { subMonths } from "date-fns";
+import { startOfDay, subMonths } from "date-fns";
 import { toPairs, uniq } from "ramda";
 import {
-  type AgencyKind,
-  type AgencyStatus,
   type AgencyWithUsersRights,
-  type ConventionStatus,
   executeInSequence,
   isTruthy,
   type UserId,
   type UserWithAdminRights,
 } from "shared";
 import { z } from "zod";
+import { numberOfMonthsWithoutConventionBeforeWarning } from "../../../scripts/scheduledScripts/warnInactiveAgenciesWithoutRecentConventions";
 import type {
   NotificationContentAndFollowedIds,
   SaveNotificationsBatchAndRelatedEvent,
@@ -19,7 +17,11 @@ import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import type { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
-import type { GetAgenciesFilters } from "../ports/AgencyRepository";
+import {
+  getInactiveAgenciesAmong,
+  isAgencyActiveAfterWarning,
+  makeInactiveAgenciesFilters,
+} from "../helpers/inactiveAgencies.helpers";
 
 export type CloseInactiveAgenciesWithoutRecentConventionsInput = {
   numberOfMonthsWithoutConvention: number;
@@ -34,7 +36,7 @@ export type CloseInactiveAgenciesWithoutRecentConventions = ReturnType<
 >;
 
 const closeInactiveAgenciesWithoutRecentConventionsInputSchema = z.object({
-  numberOfMonthsWithoutConvention: z.number(),
+  numberOfMonthsWithoutConventionAfterWarning: z.number(),
 });
 
 export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
@@ -51,28 +53,16 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
   .notTransactional()
   .build(async ({ deps, inputParams }) => {
     const { uowPerformer } = deps;
-    const { numberOfMonthsWithoutConvention } = inputParams;
+    const { numberOfMonthsWithoutConventionAfterWarning } = inputParams;
     const now = deps.timeGateway.now();
     const agencyNotUpdatedOrNoConventionSince = subMonths(
       now,
-      numberOfMonthsWithoutConvention,
+      numberOfMonthsWithoutConventionAfterWarning,
     );
 
-    const filters: GetAgenciesFilters = {
-      status: ["active", "from-api-PE"] satisfies AgencyStatus[],
-      kinds: [
-        "mission-locale",
-        "cap-emploi",
-        "conseil-departemental",
-        "structure-IAE",
-        "fonction-publique",
-        "cci",
-        "cma",
-        "chambre-agriculture",
-        "autre",
-      ] satisfies AgencyKind[],
+    const filters = makeInactiveAgenciesFilters({
       updatedAtBefore: agencyNotUpdatedOrNoConventionSince,
-    };
+    });
 
     const perPage = deps.batchSize;
     let page = 1;
@@ -87,13 +77,29 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
             pagination: { page, perPage },
           });
         totalPages = pagination.totalPages;
-        agenciesToClose.push(
-          ...(await getAgenciesToClose(
-            activeAgencies,
-            uow,
-            agencyNotUpdatedOrNoConventionSince,
-          )),
-        );
+
+        const inactiveAgencies = await getInactiveAgenciesAmong({
+          agencies: activeAgencies,
+          uow,
+          noConventionSince: agencyNotUpdatedOrNoConventionSince,
+        });
+
+        const agenciesWithValidWarning = (
+          await executeInSequence(
+            inactiveAgencies,
+            async (agency): Promise<AgencyWithUsersRights | null> =>
+              (await hasValidWarningOldEnoughToClose({
+                agency,
+                uow,
+                warningMustHaveBeenSentBefore:
+                  agencyNotUpdatedOrNoConventionSince,
+              }))
+                ? agency
+                : null,
+          )
+        ).filter(isTruthy);
+
+        agenciesToClose.push(...agenciesWithValidWarning);
       });
       page += 1;
     }
@@ -101,10 +107,11 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
     let numberOfAgenciesClosed = 0;
     if (agenciesToClose.length > 0) {
       await uowPerformer.perform(async (uow) => {
-        const notifications = await getNotificationsForClosedAgencies(
+        const notifications = await makeNotificationsForClosedAgencies(
           agenciesToClose,
           uow,
-          numberOfMonthsWithoutConvention,
+          numberOfMonthsWithoutConventionAfterWarning +
+            numberOfMonthsWithoutConventionBeforeWarning,
         );
 
         await executeInSequence(agenciesToClose, (agency) =>
@@ -127,7 +134,39 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
     return { numberOfAgenciesClosed };
   });
 
-const getNotificationsForClosedAgencies = async (
+const hasValidWarningOldEnoughToClose = async (params: {
+  agency: AgencyWithUsersRights;
+  uow: UnitOfWork;
+  warningMustHaveBeenSentBefore: Date;
+}): Promise<boolean> => {
+  const { agency, uow, warningMustHaveBeenSentBefore } = params;
+
+  const [lastWarning] = await uow.notificationRepository.getEmailsByFilters({
+    agencyId: agency.id,
+    emailType: "AGENCY_INACTIVITY_WARNING",
+    limit: 1,
+  });
+
+  if (!lastWarning) {
+    return false;
+  }
+
+  const lastWarningDate = new Date(lastWarning.createdAt);
+  const isWarningOldEnough =
+    startOfDay(lastWarningDate) <= startOfDay(warningMustHaveBeenSentBefore);
+
+  if (!isWarningOldEnough) {
+    return false;
+  }
+
+  return !(await isAgencyActiveAfterWarning({
+    agency,
+    warningCreatedAt: lastWarningDate,
+    uow,
+  }));
+};
+
+const makeNotificationsForClosedAgencies = async (
   agencies: AgencyWithUsersRights[],
   uow: UnitOfWork,
   numberOfMonthsWithoutConvention: number,
@@ -180,8 +219,7 @@ const getNotificationsForClosedAgencies = async (
                 recipients: adminEmails,
                 params: {
                   agencyName: agency.name,
-                  numberOfMonthsWithoutConvention:
-                    numberOfMonthsWithoutConvention,
+                  numberOfMonthsWithoutConvention,
                 },
               },
               followedIds: {
@@ -192,58 +230,4 @@ const getNotificationsForClosedAgencies = async (
       },
     )
     .filter(isTruthy);
-};
-
-const validConventionStatuses: ConventionStatus[] = [
-  "ACCEPTED_BY_VALIDATOR",
-  "IN_REVIEW",
-  "PARTIALLY_SIGNED",
-  "ACCEPTED_BY_COUNSELLOR",
-  "READY_TO_SIGN",
-];
-
-const getAgenciesToClose = async (
-  agencies: AgencyWithUsersRights[],
-  uow: UnitOfWork,
-  noConventionSince: Date,
-): Promise<AgencyWithUsersRights[]> => {
-  const agenciesToCloseResults = await executeInSequence(
-    agencies,
-    async (agency): Promise<AgencyWithUsersRights | null> => {
-      const agencyConventionIds =
-        await uow.conventionQueries.getConventionIdsByFilters({
-          filters: {
-            withAgencyIds: [agency.id],
-            withStatuses: [...validConventionStatuses],
-            withDateSubmission: { from: noConventionSince },
-          },
-          limit: 1,
-        });
-
-      if (agencyConventionIds.length === 0) {
-        const referringAgencies =
-          await uow.agencyRepository.getAgenciesRelatedToAgency(agency.id);
-
-        if (referringAgencies.length === 0) return agency;
-
-        const referringAgenciesConventionIds =
-          await uow.conventionQueries.getConventionIdsByFilters({
-            filters: {
-              withAgencyIds: referringAgencies.map(
-                (referringAgency) => referringAgency.id,
-              ),
-              withStatuses: [...validConventionStatuses],
-              withDateSubmission: { from: noConventionSince },
-            },
-            limit: 1,
-          });
-
-        if (referringAgenciesConventionIds.length === 0) return agency;
-      }
-
-      return null;
-    },
-  );
-
-  return agenciesToCloseResults.filter(isTruthy);
 };
