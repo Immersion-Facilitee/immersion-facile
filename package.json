@@ -33,7 +33,7 @@
     "lint-staged": "lint-staged --config=./.tooling/.lintstaged/.lintstagedrc",
     "includecheck": "turbo run includecheck",
     "check": "turbo run check",
-    "fullcheck": "turbo run verify-migrations-order includecheck check typecheck test --concurrency=50%",
+    "fullcheck": "turbo run verify-migrations-order includecheck check typecheck test --concurrency=2",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "dev": "turbo run dev",
