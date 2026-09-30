@@ -6,7 +6,13 @@ import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import { useIsDark } from "@codegouvfr/react-dsfr/useIsDark";
 import { MaintenanceCallout, useLayout } from "react-design-system";
 import { useDispatch } from "react-redux";
-import { domElementIds, frontRoutes, useRoute } from "shared";
+import {
+  type AdminTabRouteName,
+  adminTabRouteNames,
+  domElementIds,
+  frontRoutes,
+  useRoute,
+} from "shared";
 import { ressourcesAndWebinarsUrl } from "src/app/contents/home/content";
 import { useFeedbackEventCallback } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -114,9 +120,9 @@ export const LayoutHeader = () => {
     agencyDashboardRoutes.includes(
       currentRoute.name as AgencyDashboardRouteName,
     );
-  const isAdminRoute =
-    typeof currentRoute.name === "string" &&
-    currentRoute.name.startsWith("admin");
+  const isAdminRoute = adminTabRouteNames.includes(
+    currentRoute.name as AdminTabRouteName,
+  );
   const links: MainNavigationProps.Item[] = [
     {
       text: "Accueil",
