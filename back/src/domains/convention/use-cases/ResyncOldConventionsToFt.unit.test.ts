@@ -2,10 +2,10 @@ import subDays from "date-fns/subDays";
 import {
   AgencyDtoBuilder,
   type AssessmentDto,
+  type ConventionDto,
   ConventionDtoBuilder,
   errors,
   expectToEqual,
-  makeEmptyLastReminders,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
@@ -16,6 +16,7 @@ import {
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { InMemoryFranceTravailGateway } from "../adapters/france-travail-gateway/InMemoryFranceTravailGateway";
 import { makeBroadcastToFranceTravailOnConventionUpdates } from "./broadcast/BroadcastToFranceTravailOnConventionUpdates";
+import type { BroadcastPayload } from "./broadcast/broadcastConvention.dto";
 import {
   makeResyncOldConventionsToFt,
   type ResyncOldConventionsToFt,
@@ -23,6 +24,54 @@ import {
 
 describe("ResyncOldConventionsToFt use case", () => {
   const agencyFT = new AgencyDtoBuilder().withKind("france-travail").build();
+
+  const expectedBroadcastPayload = (
+    convention: ConventionDto,
+  ): BroadcastPayload => ({
+    convention: {
+      id: convention.id,
+      status: convention.status,
+      statusJustification: convention.statusJustification,
+      agencyId: convention.agencyId,
+      dateSubmission: convention.dateSubmission,
+      dateStart: convention.dateStart,
+      dateEnd: convention.dateEnd,
+      dateValidation: convention.dateValidation,
+      dateApproval: convention.dateApproval,
+      siret: convention.siret,
+      businessName: convention.businessName,
+      schedule: convention.schedule,
+      workConditions: convention.workConditions,
+      businessAdvantages: convention.businessAdvantages,
+      individualProtection: convention.individualProtection,
+      individualProtectionDescription:
+        convention.individualProtectionDescription,
+      sanitaryPrevention: convention.sanitaryPrevention,
+      sanitaryPreventionDescription: convention.sanitaryPreventionDescription,
+      immersionAddress: convention.immersionAddress,
+      immersionObjective: convention.immersionObjective,
+      immersionAppellation: convention.immersionAppellation,
+      immersionActivities: convention.immersionActivities,
+      immersionSkills: convention.immersionSkills,
+      establishmentNumberEmployeesRange:
+        convention.establishmentNumberEmployeesRange,
+      establishmentTutor: convention.establishmentTutor,
+      validators: convention.validators,
+      agencyReferent: convention.agencyReferent,
+      renewed: convention.renewed,
+      acquisitionCampaign: convention.acquisitionCampaign,
+      acquisitionKeyword: convention.acquisitionKeyword,
+      internshipKind: convention.internshipKind,
+      signatories: convention.signatories,
+      agencyName: agencyFT.name,
+      agencyDepartment: agencyFT.address.departmentCode,
+      agencyKind: "pole-emploi",
+      agencySiret: agencyFT.agencySiret,
+      agencyCodeSafir: agencyFT.codeSafir,
+      agencyValidatorEmails: [],
+      isEstablishmentBanned: false,
+    },
+  });
   const conventionToSync1 = new ConventionDtoBuilder()
     .withId("6f59c7b7-c2c9-4a31-a3eb-377ea83ae08b")
     .withAgencyId(agencyFT.id)
@@ -139,38 +188,8 @@ describe("ResyncOldConventionsToFt use case", () => {
         },
       ]);
       expectToEqual(ftGateway.broadcastParamsCalls, [
-        {
-          eventType: "CONVENTION_UPDATED",
-          convention: {
-            ...conventionToSync1,
-            agencyName: agencyFT.name,
-            agencyDepartment: agencyFT.address.departmentCode,
-            agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: "pole-emploi",
-            agencySiret: agencyFT.agencySiret,
-            agencyValidatorEmails: agencyFT.validatorEmails,
-            agencyValidationSteps: "validator-only",
-            assessment: null,
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        },
-        {
-          eventType: "CONVENTION_UPDATED",
-          convention: {
-            ...conventionToSync2,
-            agencyName: agencyFT.name,
-            agencyDepartment: agencyFT.address.departmentCode,
-            agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: "pole-emploi",
-            agencySiret: agencyFT.agencySiret,
-            agencyValidatorEmails: agencyFT.validatorEmails,
-            agencyValidationSteps: "validator-only",
-            assessment: null,
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        },
+        expectedBroadcastPayload(conventionToSync1),
+        expectedBroadcastPayload(conventionToSync2),
       ]);
       expectToEqual(report, {
         success: 2,
@@ -292,38 +311,8 @@ describe("ResyncOldConventionsToFt use case", () => {
         },
       ]);
       expectToEqual(ftGateway.broadcastParamsCalls, [
-        {
-          eventType: "CONVENTION_UPDATED",
-          convention: {
-            ...conventionToSync1,
-            agencyName: agencyFT.name,
-            agencyDepartment: agencyFT.address.departmentCode,
-            agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: "pole-emploi",
-            agencySiret: agencyFT.agencySiret,
-            agencyValidatorEmails: agencyFT.validatorEmails,
-            agencyValidationSteps: "validator-only",
-            assessment: null,
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        },
-        {
-          eventType: "CONVENTION_UPDATED",
-          convention: {
-            ...conventionToSync2,
-            agencyName: agencyFT.name,
-            agencyDepartment: agencyFT.address.departmentCode,
-            agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: "pole-emploi",
-            agencySiret: agencyFT.agencySiret,
-            agencyValidatorEmails: agencyFT.validatorEmails,
-            agencyValidationSteps: "validator-only",
-            assessment: null,
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        },
+        expectedBroadcastPayload(conventionToSync1),
+        expectedBroadcastPayload(conventionToSync2),
       ]);
       expectToEqual(report, {
         success: 2,
@@ -420,22 +409,7 @@ describe("ResyncOldConventionsToFt use case", () => {
         },
       ]);
       expectToEqual(ftGateway.broadcastParamsCalls, [
-        {
-          eventType: "CONVENTION_UPDATED",
-          convention: {
-            ...conventionToSync1,
-            agencyName: agencyFT.name,
-            agencyDepartment: agencyFT.address.departmentCode,
-            agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: "pole-emploi",
-            agencySiret: agencyFT.agencySiret,
-            agencyValidatorEmails: agencyFT.validatorEmails,
-            agencyValidationSteps: "validator-only",
-            assessment: null,
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        },
+        expectedBroadcastPayload(conventionToSync1),
       ]);
       expectToEqual(report, {
         success: 1,
@@ -483,25 +457,13 @@ describe("ResyncOldConventionsToFt use case", () => {
       ]);
       expectToEqual(ftGateway.broadcastParamsCalls, [
         {
-          eventType: "ASSESSMENT_CREATED",
-          assessment,
-          convention: {
-            ...conventionToSync1,
-            agencyName: agencyFT.name,
-            agencyDepartment: agencyFT.address.departmentCode,
-            agencyKind: "pole-emploi",
-            agencyContactEmail: agencyFT.contactEmail,
-            agencySiret: agencyFT.agencySiret,
-            agencyValidatorEmails: agencyFT.validatorEmails,
-            agencyValidationSteps: "validator-only",
-            assessment: {
-              status: assessment.status,
-              endedWithAJob: assessment.endedWithAJob,
-              signedAt: assessment.signedAt,
-              createdAt: assessment.createdAt,
-            },
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
+          ...expectedBroadcastPayload(conventionToSync1),
+          assessment: {
+            conventionId: conventionToSync1.id,
+            status: "COMPLETED",
+            endedWithAJob: false,
+            establishmentFeedback: "commentaire",
+            establishmentAdvices: "commentaire",
           },
         },
       ]);
@@ -542,25 +504,7 @@ describe("ResyncOldConventionsToFt use case", () => {
         },
       ]);
       expectToEqual(ftGateway.broadcastParamsCalls, [
-        {
-          eventType: "CONVENTION_UPDATED",
-          convention: {
-            ...conventionToSync1,
-            agencyName: agencyFT.name,
-            agencyDepartment: agencyFT.address.departmentCode,
-            agencyContactEmail: agencyFT.contactEmail,
-            agencyKind: "pole-emploi",
-            agencySiret: agencyFT.agencySiret,
-            agencyValidatorEmails: agencyFT.validatorEmails,
-            agencyValidationSteps: "validator-only",
-            assessment: {
-              status: "FINISHED",
-              createdAt: new Date("2023-03-11").toISOString(),
-            },
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        },
+        expectedBroadcastPayload(conventionToSync1),
       ]);
       expectToEqual(report, {
         success: 1,
