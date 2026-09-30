@@ -27,22 +27,15 @@ export const ConventionAssessmentStatusBadge = ({
 }): React.ReactNode => {
   const shouldShowBadge =
     isConventionValidated(status) && !isConventionEndingInOneDayOrMore(dateEnd);
-  if (!shouldShowBadge && userKind !== "agency")
-    return <Badge small>Non Concernée</Badge>;
+  if (!shouldShowBadge) return <Badge small>Non Concernée</Badge>;
 
   const assessmentLabel = getAssessmentLabelsAndSeverityByStatus({
     isPlural: false,
   })[getAssessmentCompletionStatus(assessment)];
 
   return (
-    shouldShowBadge && (
-      <Badge small severity={assessmentLabel.severity}>
-        {
-          assessmentLabel.shortLabel[
-            assessmentShortLabelKeyByUserKind[userKind]
-          ]
-        }
-      </Badge>
-    )
+    <Badge small severity={assessmentLabel.severity}>
+      {assessmentLabel.shortLabel[assessmentShortLabelKeyByUserKind[userKind]]}
+    </Badge>
   );
 };
