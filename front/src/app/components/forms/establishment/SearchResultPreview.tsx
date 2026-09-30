@@ -83,7 +83,6 @@ export const SearchResultPreview = ({
               onClick: () => {},
             }}
             searchResult={establishmentToSearchResultPreview(establishment)}
-            preview
           />
         </div>
       </div>

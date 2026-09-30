@@ -21,9 +21,6 @@ export type EnterpriseSearchResultProps = {
   searchResult: OfferDto;
   linkProps: Link;
   illustration?: ReactNode;
-  disableButton?: boolean;
-  preview?: boolean;
-  showDistance?: boolean;
 };
 
 const componentRootClassName = "im-search-result";
