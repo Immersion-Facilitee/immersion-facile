@@ -101,8 +101,14 @@
       width: 100%;
       height: auto;
 
+      &__desc {
+        margin: .5rem 0 0;
+      }
+
       &__end {
+        margin-top: 1rem;
         margin-bottom: auto !important;
+        padding-top: 0;
       }
 
       &__content {
@@ -119,6 +125,27 @@
           bottom: 1rem !important;
         }
       }
+    }
+
+    .fr-badge-group {
+      flex-wrap: nowrap;
+
+      .fr-badge {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+
+      .im-search-result__location-badge {
+        display: block;
+        flex-shrink: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .fr-btn {
+      color: var(--text-inverted-blue-france);
     }
 
   }
