@@ -57,7 +57,6 @@ import { ConventionManagePage } from "../pages/convention/ConventionManagePage";
 import { ConventionPageForExternals } from "../pages/convention/ConventionPageForExternals";
 import { ErrorPage } from "../pages/error/ErrorPage";
 import { EstablishmentCreationFormPage } from "../pages/establishment/EstablishmentCreationFormPage";
-import { GroupPage } from "../pages/group/GroupPage";
 import { HomePage } from "../pages/home/HomePage";
 import { AssessmentPage } from "../pages/immersion-assessment/AssessmentPage";
 import { SearchResultPage } from "../pages/search/SearchResultPage";
@@ -289,7 +288,7 @@ const getPageByRouteName: {
     </DashboardPrivateRoutePage>
   ),
   formEstablishment: (route) => <EstablishmentCreationFormPage route={route} />,
-  group: (route) => <GroupPage route={route} />,
+  group: (route) => <SearchPage route={route} isExternal={false} />,
   home: () => <HomePage type="default" />,
   homeAgencies: () => <HomePage type="agency" />,
   homeCandidates: () => <HomePage type="candidate" />,

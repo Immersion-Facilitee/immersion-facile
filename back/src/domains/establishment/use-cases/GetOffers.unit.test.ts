@@ -210,6 +210,46 @@ describe("GetOffers", () => {
     expectToEqual(result.pagination.totalRecords, 0);
   });
 
+  it("should filter offers on group", async () => {
+    const groupSlug = "carrefour";
+    uow.establishmentAggregateRepository.siretsByGroupSlug = {
+      [groupSlug]: [establishment2.establishment.siret],
+    };
+
+    const result: DataWithPagination<InternalOfferDto> =
+      await getOffers.execute(
+        {
+          sortBy: "score",
+          sortOrder: "desc",
+          group: groupSlug,
+        },
+        undefined,
+      );
+
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].siret).toBe(establishment2.establishment.siret);
+    expectToEqual(uow.searchMadeRepository.searchesMade[0].group, groupSlug);
+  });
+
+  it("should return no offer when group has no matching establishment", async () => {
+    uow.establishmentAggregateRepository.siretsByGroupSlug = {
+      carrefour: [establishment2.establishment.siret],
+    };
+
+    const result: DataWithPagination<InternalOfferDto> =
+      await getOffers.execute(
+        {
+          sortBy: "score",
+          sortOrder: "desc",
+          group: "unknown-group",
+        },
+        undefined,
+      );
+
+    expectToEqual(result.data, []);
+    expectToEqual(result.pagination.totalRecords, 0);
+  });
+
   describe("showOnlyAvailableOffers", () => {
     it("should return offers from establishment that have reached max contact for period and showOnlyAvailableOffers is default (true)", async () => {
       uow.establishmentAggregateRepository.establishmentAggregates = [

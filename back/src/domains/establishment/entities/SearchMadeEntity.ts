@@ -5,6 +5,7 @@ import type {
   ExpectTrue,
   FitForDisableWorkerOption,
   Flavor,
+  GroupSlug,
   LocationId,
   NafCode,
   RemoteWorkMode,
@@ -29,6 +30,7 @@ type SearchMadeFilters = {
   showOnlyAvailableOffers?: boolean;
   sirets?: SiretDto[];
   departmentCodes?: DepartmentCode[];
+  group?: GroupSlug;
 };
 
 type _CheckExaustiveSearchFilters = ExpectTrue<

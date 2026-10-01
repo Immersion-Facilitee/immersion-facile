@@ -21,7 +21,12 @@ import {
 } from "react-design-system";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import { domElementIds, type ValueOf } from "shared";
+import {
+  domElementIds,
+  type Group,
+  type GroupSlug,
+  type ValueOf,
+} from "shared";
 import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { AppellationAutocomplete } from "src/app/components/forms/autocomplete/AppellationAutocomplete";
 import { PlaceAutocomplete } from "src/app/components/forms/autocomplete/PlaceAutocomplete";
@@ -56,6 +61,7 @@ import {
 import { useStyles } from "tss-react/dsfr";
 import "./SearchPage.scss";
 import { commonIllustrations } from "src/assets/img/illustrations";
+import { outOfReduxDependencies } from "src/config/dependencies";
 import Styles from "./SearchPage.styles";
 
 export const radiusOptions = ["1", "2", "5", "10", "20", "50", "100"].map(
@@ -142,12 +148,15 @@ export const SearchPage = ({
 }) => {
   const { cx } = useStyles();
   const dispatch = useDispatch();
+  const routeParams = route.params as Partial<SearchPageParams>;
+  const groupSlug = route.name === "group" ? route.params.groupSlug : undefined;
   const { pagination } = useAppSelector(
     searchSelectors.searchResultsWithPagination,
   );
   const isLoading = useAppSelector(searchSelectors.isLoading);
   const { navigateToSearch } = useSearch(route);
   const [searchMade, setSearchMade] = useState<SearchPageParams | null>(null);
+  const [groupData, setGroupData] = useState<Group | null>(null);
   const searchResultsWrapper = useRef<ElementRef<"div">>(null);
   const innerSearchResultWrapper = useRef<ElementRef<"div">>(null);
   const acquisitionParams = useGetAcquisitionParams();
@@ -183,9 +192,10 @@ export const SearchPage = ({
         : undefined,
       remoteWorkModes: undefined,
       showOnlyAvailableOffers: true,
+      group: groupSlug,
       ...acquisitionParams,
     }),
-    [enableSearchByScore, isExternal, acquisitionParams],
+    [enableSearchByScore, isExternal, acquisitionParams, groupSlug],
   );
 
   const [tempValue, setTempValue] = useState<SearchPageParams>(initialValues);
@@ -203,7 +213,6 @@ export const SearchPage = ({
       }, {} as SearchPageParams),
     [],
   );
-  const routeParams = route.params as Partial<SearchPageParams>;
   const buildValuesFromRouteParams = useCallback(
     (paramsFromRoute: Partial<SearchPageParams>): SearchPageParams =>
       keys(initialValues).reduce(
@@ -238,6 +247,17 @@ export const SearchPage = ({
     },
     [navigateToSearch, filterFormValues],
   );
+
+  const getInitialGroupData = useCallback(async (groupSlug: GroupSlug) => {
+    const response =
+      await outOfReduxDependencies.searchGateway.getGroupBySlug(groupSlug);
+    const { group } = response;
+    setGroupData(group);
+  }, []);
+
+  if (groupSlug && groupData === null) {
+    getInitialGroupData(groupSlug);
+  }
 
   useScrollTo(pagination?.currentPage ?? 1);
 
@@ -285,13 +305,10 @@ export const SearchPage = ({
           locator: "search-form-place",
         }),
       );
+      dispatch(nafSlice.actions.getAllSectionsRequested());
     },
     [dispatch],
   );
-
-  useEffect(() => {
-    dispatch(nafSlice.actions.getAllSectionsRequested());
-  }, [dispatch]);
 
   return (
     <HeaderFooterLayout>
@@ -448,7 +465,8 @@ export const SearchPage = ({
         ) : (
           <>
             {isLoading && <Loader />}
-            <Breadcrumbs />
+            {!groupSlug && <Breadcrumbs />}
+            {groupSlug && <div>{groupSlug}</div>}
             {isExternal && (
               <div className={fr.cx("fr-container", "fr-mb-4w")}>
                 <SectionHighlight

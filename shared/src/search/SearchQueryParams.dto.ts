@@ -4,6 +4,7 @@ import type {
   EstablishmentSearchableByValue,
   FitForDisableWorkerOption,
 } from "../formEstablishment/FormEstablishment.dto";
+import type { GroupSlug } from "../group/group.dto";
 import type { NafCode, WithNafCodes } from "../naf/naf.dto";
 import type {
   PaginationQueryParams,
@@ -85,6 +86,7 @@ type GetOffersFlatParamsCommon = WithAcquisition & {
   sirets?: SiretDto[];
   departmentCodes?: DepartmentCode[];
   showOnlyAvailableOffers?: boolean;
+  group?: GroupSlug;
 } & Partial<WithAppellationCodes> &
   WithOptionalRemoteWorkModes;
 
