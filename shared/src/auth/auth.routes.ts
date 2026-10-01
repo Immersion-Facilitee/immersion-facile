@@ -71,6 +71,7 @@ export const authRoutes = defineRoutes({
     responses: {
       200: z.array(connectedUserSchema),
       401: httpErrorSchema,
+      403: httpErrorSchema,
     },
   }),
   getOAuthLogoutUrl: defineRoute({
