@@ -1,5 +1,6 @@
 import {
   type ConnectedUser,
+  errors,
   type WithUserFilters,
   withUserFiltersSchema,
 } from "shared";
@@ -17,6 +18,7 @@ export const makeGetConnectedUsers = useCaseBuilder("GetConnectedUsers")
   .withOutput<ConnectedUser[]>()
   .build(async ({ uow, currentUser, inputParams: filters }) => {
     throwIfNotAuthorized(filters, currentUser);
+    throwIfRequestingToReviewUsersOnNeedsReviewAgency(filters, currentUser);
 
     const userIds =
       await uow.agencyRepository.getUserIdWithAgencyRightsByFilters(filters);
@@ -56,4 +58,21 @@ const throwIfNotAuthorized = (
     return;
   }
   throwIfNotAdmin(currentUser);
+};
+
+const throwIfRequestingToReviewUsersOnNeedsReviewAgency = (
+  filters: WithUserFilters,
+  currentUser: ConnectedUser,
+): void => {
+  if (filters.agencyRole !== "to-review" || !filters.agencyIds?.length) return;
+
+  const hasNoNeedsReviewAgency = filters.agencyIds.every((agencyId) => {
+    const agencyRight = currentUser.agencyRights.find(
+      (right) => right.agency.id === agencyId,
+    );
+    return agencyRight?.agency.status !== "needsReview";
+  });
+
+  if (!hasNoNeedsReviewAgency)
+    throw errors.agency.cannotGetToReviewUsersWhenNeedsReview();
 };

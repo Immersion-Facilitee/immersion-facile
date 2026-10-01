@@ -975,6 +975,10 @@ export const errors = {
       new BadRequestError(
         `L'agence '${id}' n'a pas le bon status. Le status actuel est '${actual}' alors que le status attendu est '${expected}'.`,
       ),
+    cannotGetToReviewUsersWhenNeedsReview: () =>
+      new BadRequestError(
+        "Il n'est pas possible de récupérer les utilisateurs en attente de validation pour une agence en attente d'activation.",
+      ),
     invalidValidatorEditionWhenAgencyWithRefersTo: (agencyId: AgencyId) =>
       new BadRequestError(
         `L'ajout, la suppression ou l'édition d'un valideur n'est pas autorisée pour l'agence "${agencyId}" car il s'agit d'une structure d'accompagnement. Cette action est autorisée seulement par l'agence prescriptrice à laquelle elle est rattachée.`,
