@@ -99,6 +99,10 @@ export const RichTable = ({
     searchBarRefOnSubmitRef?.(debouncedSearchValue);
   }, [debouncedSearchValue, searchBarRefOnSubmitRef]);
 
+  useEffect(() => {
+    setSelectedViewMode(isLayoutDesktop ? "table" : "grid");
+  }, [isLayoutDesktop]);
+
   return (
     <section
       role="tabpanel"
