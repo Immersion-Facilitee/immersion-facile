@@ -198,6 +198,43 @@ describe("GetConnectedUsers", () => {
       );
     });
 
+    it("throws BadRequest if agencyRole is to-review and an agency has status needsReview", async () => {
+      const agencyNeedsReview = new AgencyDtoBuilder(agencyWithRefersTo)
+        .withStatus("needsReview")
+        .build();
+
+      const agencyAdminOnNeedsReview = new ConnectedUserBuilder(agencyAdmin)
+        .withAgencyRights([
+          {
+            agency: toAgencyDtoForAgencyUsersAndAdmins(agencyNeedsReview, []),
+            roles: ["agency-admin"],
+            isNotifiedByEmail: true,
+          },
+        ])
+        .build();
+
+      uow.userRepository.users = [agencyAdminOnNeedsReview];
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agencyNeedsReview, {
+          [agencyAdminOnNeedsReview.id]: {
+            roles: ["agency-admin"],
+            isNotifiedByEmail: true,
+          },
+        }),
+      ];
+
+      await expectPromiseToFailWithError(
+        getConnectedUsers.execute(
+          {
+            agencyRole: "to-review",
+            agencyIds: [agencyNeedsReview.id],
+          },
+          agencyAdminOnNeedsReview,
+        ),
+        errors.agency.cannotGetToReviewUsersWhenNeedsReview(),
+      );
+    });
+
     it.each(closedOrRejectedAgencyStatuses)(
       "throws Forbidden if current user is not backoffice admin and agency to get by id is %s",
       async (status) => {

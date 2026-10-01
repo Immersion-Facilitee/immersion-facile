@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { UserParamsForAgency } from "shared";
 import {
   type AgencyRight,
+  activeAgencyStatuses,
   type ConnectedUser,
   domElementIds,
   frontRoutes,
@@ -47,10 +48,14 @@ export const AgencyAdminTabContent = ({
   const isLoadingUsersToReview = useSelector(usersToReviewSelectors.isLoading);
   const [hasRequestedUsersToReview, setHasRequestedUsersToReview] =
     useState(false);
-  const agencyIdsUserIsAdminOn = useMemo(
+  const activeAgencyIdsUserIsAdminOn = useMemo(
     () =>
       activeAgencyRights
-        .filter((agencyRight) => agencyRight.roles.includes("agency-admin"))
+        .filter(
+          (agencyRight) =>
+            agencyRight.roles.includes("agency-admin") &&
+            activeAgencyStatuses.includes(agencyRight.agency.status),
+        )
         .map((agencyRight) => agencyRight.agency.id),
     [activeAgencyRights],
   );
@@ -83,16 +88,16 @@ export const AgencyAdminTabContent = ({
     };
 
   useEffect(() => {
-    if (agencyIdsUserIsAdminOn.length === 0) return;
+    if (activeAgencyIdsUserIsAdminOn.length === 0) return;
 
     dispatch(
       usersToReviewSlice.actions.fetchUsersToReviewRequested({
         agencyRole: "to-review",
-        agencyIds: agencyIdsUserIsAdminOn,
+        agencyIds: activeAgencyIdsUserIsAdminOn,
         feedbackTopic: "agency-users-to-review",
       }),
     );
-  }, [dispatch, agencyIdsUserIsAdminOn]);
+  }, [dispatch, activeAgencyIdsUserIsAdminOn]);
 
   if (hasRequestedUsersToReview) {
     return (
