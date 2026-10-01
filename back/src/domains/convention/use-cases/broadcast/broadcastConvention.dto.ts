@@ -51,8 +51,6 @@ export type BroadcastConventionField =
   | "validators"
   | "agencyReferent"
   | "renewed"
-  | "acquisitionCampaign"
-  | "acquisitionKeyword"
   | "internshipKind"
   | "signatories";
 
@@ -90,5 +88,4 @@ export type BroadcastAssessmentDto =
 export type BroadcastPayload = {
   convention: BroadcastConventionDto;
   assessment?: BroadcastAssessmentDto;
-  previousAgencyId?: AgencyId;
 };

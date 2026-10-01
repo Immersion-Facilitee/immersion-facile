@@ -793,7 +793,6 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
         expectedFtBroadcast({
           conventionRead,
           agency: siaeAgencyWithEmptyEmails,
-          previousAgencyId: peAgency.id,
         }),
       ]);
     });
@@ -833,7 +832,6 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
             validatorEmails: [],
             counsellorEmails: [],
           },
-          previousAgencyId: anotherPeAgency.id,
         }),
       ]);
     });
@@ -969,12 +967,10 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
     conventionRead,
     agency,
     refersToAgency = null,
-    previousAgencyId,
   }: {
     conventionRead: ConventionReadDto;
     agency: AgencyDto;
     refersToAgency?: AgencyDto | null;
-    previousAgencyId?: string;
   }): BroadcastPayload => ({
     convention: {
       id: conventionRead.id,
@@ -1008,8 +1004,6 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
       validators: conventionRead.validators,
       agencyReferent: conventionRead.agencyReferent,
       renewed: conventionRead.renewed,
-      acquisitionCampaign: conventionRead.acquisitionCampaign,
-      acquisitionKeyword: conventionRead.acquisitionKeyword,
       internshipKind: conventionRead.internshipKind,
       signatories: conventionRead.signatories,
       agencyName: agency.name,
@@ -1035,6 +1029,5 @@ describe("BroadcastToFranceTravailOnConventionUpdates", () => {
         : {}),
       isEstablishmentBanned: false,
     },
-    ...(previousAgencyId ? { previousAgencyId } : {}),
   });
 });

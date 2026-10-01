@@ -949,8 +949,6 @@ describe("convention e2e", () => {
               validators: convention.validators,
               agencyReferent: convention.agencyReferent,
               renewed: convention.renewed,
-              acquisitionCampaign: convention.acquisitionCampaign,
-              acquisitionKeyword: convention.acquisitionKeyword,
               internshipKind: convention.internshipKind,
               signatories: convention.signatories,
               agencyName: ftAgency.name,

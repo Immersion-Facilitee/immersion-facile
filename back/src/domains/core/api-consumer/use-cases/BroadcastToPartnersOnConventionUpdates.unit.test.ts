@@ -659,9 +659,9 @@ describe("Broadcast to partners on updated convention", () => {
       expectToEqual(subscribersGateway.calls.length, 2);
       expectToEqual(
         subscribersGateway.calls.map(
-          ({ body }) => body.payload.previousAgencyId,
+          ({ subscriptionParams }) => subscriptionParams,
         ),
-        [previousAgency.id, previousAgency.id],
+        [subscriptionParams, previousAgencySubscriptionParams],
       );
     });
 
@@ -744,8 +744,6 @@ const toExpectedBroadcastConvention = (
   validators: convention.validators,
   agencyReferent: convention.agencyReferent,
   renewed: convention.renewed,
-  acquisitionCampaign: convention.acquisitionCampaign,
-  acquisitionKeyword: convention.acquisitionKeyword,
   internshipKind: convention.internshipKind,
   signatories: convention.signatories,
   agencyName: agency.name,

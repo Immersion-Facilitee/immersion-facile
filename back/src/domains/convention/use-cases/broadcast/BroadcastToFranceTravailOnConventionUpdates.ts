@@ -114,9 +114,6 @@ export const makeBroadcastToFranceTravailOnConventionUpdates = useCaseBuilder(
           toBroadcastConvention(inputParams.convention, agency, refersToAgency),
         ),
         ...(assessment ? { assessment } : {}),
-        ...(inputParams.previousAgencyId
-          ? { previousAgencyId: inputParams.previousAgencyId }
-          : {}),
       }),
     );
 

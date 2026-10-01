@@ -59,8 +59,6 @@ describe("ResyncOldConventionsToFt use case", () => {
       validators: convention.validators,
       agencyReferent: convention.agencyReferent,
       renewed: convention.renewed,
-      acquisitionCampaign: convention.acquisitionCampaign,
-      acquisitionKeyword: convention.acquisitionKeyword,
       internshipKind: convention.internshipKind,
       signatories: convention.signatories,
       agencyName: agencyFT.name,

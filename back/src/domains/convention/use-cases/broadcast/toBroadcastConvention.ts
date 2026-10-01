@@ -73,8 +73,6 @@ const toBroadcastConventionFields = (
     validators: conventionRead.validators,
     agencyReferent: conventionRead.agencyReferent,
     renewed: conventionRead.renewed,
-    acquisitionCampaign: conventionRead.acquisitionCampaign,
-    acquisitionKeyword: conventionRead.acquisitionKeyword,
   };
 
   if (conventionRead.internshipKind === "immersion")

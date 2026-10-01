@@ -1,7 +1,6 @@
 import { filter } from "ramda";
 import {
   type AgencyDto,
-  type AgencyId,
   type ApiConsumer,
   type ApiConsumerName,
   type AppellationAndRomeDto,
@@ -50,14 +49,8 @@ export const makeBroadcastToPartnersOnConventionUpdates = useCaseBuilder(
     const convention = await uow.conventionRepository.getById(conventionId);
     if (!convention) throw errors.convention.notFound({ conventionId });
 
-    const {
-      acquisitionCampaign: _,
-      acquisitionKeyword: __,
-      ...conventionWithoutAcquisitionParams
-    } = convention;
-
     const [conventionRead] = await conventionDtosToConventionReadDtos(
-      [conventionWithoutAcquisitionParams],
+      [convention],
       uow,
     );
 
@@ -124,7 +117,6 @@ export const makeBroadcastToPartnersOnConventionUpdates = useCaseBuilder(
         agency,
         refersToAgency,
         assessment,
-        previousAgencyId: inputParams.previousAgencyId,
         deps,
       })(apiConsumer),
     );
@@ -171,7 +163,6 @@ const notifySubscriber =
     agency,
     refersToAgency,
     assessment,
-    previousAgencyId,
     deps,
   }: {
     uow: UnitOfWork;
@@ -179,7 +170,6 @@ const notifySubscriber =
     agency: AgencyDto;
     refersToAgency: AgencyDto | null;
     assessment: AssessmentDto | LegacyAssessmentDto | undefined;
-    previousAgencyId: AgencyId | undefined;
     deps: {
       subscribersGateway: SubscribersGateway;
       timeGateway: TimeGateway;
@@ -223,7 +213,6 @@ const notifySubscriber =
         payload: {
           convention,
           assessment: toBroadcastAssessment(assessment),
-          ...(previousAgencyId ? { previousAgencyId } : {}),
         },
         subscribedEvent: "convention.updated",
       },

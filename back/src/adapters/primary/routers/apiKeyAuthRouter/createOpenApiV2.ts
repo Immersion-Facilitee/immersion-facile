@@ -141,8 +141,6 @@ const callbackPayloadExample: BroadcastPayload = {
     validators: callbackConventionBase.validators,
     agencyReferent: callbackConventionBase.agencyReferent,
     renewed: callbackConventionBase.renewed,
-    acquisitionCampaign: callbackConventionBase.acquisitionCampaign,
-    acquisitionKeyword: callbackConventionBase.acquisitionKeyword,
     internshipKind: callbackConventionBase.internshipKind,
     signatories: callbackConventionBase.signatories,
     agencyName: "Agence de test",
@@ -160,7 +158,6 @@ const callbackPayloadExample: BroadcastPayload = {
     establishmentFeedback: "Ca s'est bien passé",
     establishmentAdvices: "mon conseil",
   },
-  previousAgencyId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
 };
 
 const callbackBodySchema: ZodSchemaWithInputMatchingOutput<ConventionUpdatedSubscriptionCallbackBody> =

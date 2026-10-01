@@ -54,8 +54,6 @@ const broadcastConventionFields: Record<BroadcastConventionField, true> = {
   validators: true,
   agencyReferent: true,
   renewed: true,
-  acquisitionCampaign: true,
-  acquisitionKeyword: true,
   internshipKind: true,
   signatories: true,
 } as const;
@@ -102,5 +100,4 @@ export const broadcastPayloadSchema: ZodSchemaWithInputMatchingOutput<BroadcastP
   z.object({
     convention: broadcastConventionDtoSchema,
     assessment: broadcastAssessmentDtoSchema.optional(),
-    previousAgencyId: agencyIdSchema.optional(),
   });
