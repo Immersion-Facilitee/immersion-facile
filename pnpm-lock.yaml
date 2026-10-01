@@ -471,6 +471,10 @@ importers:
         version: 4.0.17
 
   libs/html-templates:
+    dependencies:
+      ts-pattern:
+        specifier: ^5.7.0
+        version: 5.7.0
     devDependencies:
       '@types/jest':
         specifier: ^30.0.0
