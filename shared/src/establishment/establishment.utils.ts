@@ -25,3 +25,11 @@ export const partitionUserEstablishmentRightsByStatus = (
       establishment.status === "PENDING",
   ),
 });
+
+export const getDisplayedBusinessName = ({
+  businessName,
+  businessNameCustomized,
+}: {
+  businessName: string;
+  businessNameCustomized?: string | null;
+}): string => businessNameCustomized?.trim() || businessName;
