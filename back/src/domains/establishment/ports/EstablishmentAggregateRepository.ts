@@ -95,10 +95,9 @@ export interface EstablishmentAggregateRepository {
   ): Promise<DataWithPagination<InternalOfferDto>>;
 
   getSiretsOfEstablishmentsWithRomeCode(rome: string): Promise<SiretDto[]>;
-  getSiretsOfEstablishmentsNotUpdatedSince(params: {
-    updatedBefore: Date;
+  getSiretsOfEstablishmentsToSuggestReengagement(params: {
+    notUpdatedNorSuggestedSince: Date;
     limit: number;
-    offset?: number;
   }): Promise<SiretDto[]>;
   getSiretsOfEstablishmentsNotCheckedAtInseeSince(
     checkDate: Date,

@@ -188,23 +188,56 @@ export class PgEstablishmentAggregateRepository
     );
   }
 
-  public async getSiretsOfEstablishmentsNotUpdatedSince({
-    updatedBefore,
+  public async getSiretsOfEstablishmentsToSuggestReengagement({
+    notUpdatedNorSuggestedSince,
     limit,
-    offset = 0,
   }: {
-    updatedBefore: Date;
+    notUpdatedNorSuggestedSince: Date;
     limit: number;
-    offset?: number;
   }): Promise<SiretDto[]> {
     const result = await this.transaction
       .selectFrom("establishments")
       .select("establishments.siret")
-      .where("establishments.update_date", "<", updatedBefore)
+      .where("establishments.update_date", "<", notUpdatedNorSuggestedSince)
+      .where(({ exists, selectFrom }) =>
+        exists(
+          selectFrom("establishments__users")
+            .select("establishments__users.siret")
+            .whereRef(
+              "establishments__users.siret",
+              "=",
+              "establishments.siret",
+            )
+            .where("establishments__users.role", "=", "establishment-admin")
+            .where("establishments__users.status", "=", "ACCEPTED"),
+        ),
+      )
+      .where(({ exists, not, selectFrom }) =>
+        not(
+          exists(
+            selectFrom("notifications_email")
+              .select("notifications_email.establishment_siret")
+              .whereRef(
+                "notifications_email.establishment_siret",
+                "=",
+                "establishments.siret",
+              )
+              .where(
+                "notifications_email.email_kind",
+                "=",
+                "ESTABLISHMENT_REENGAGEMENT_SUGGESTION",
+              )
+              .where(
+                "notifications_email.created_at",
+                ">",
+                notUpdatedNorSuggestedSince,
+              ),
+          ),
+        ),
+      )
       .orderBy("establishments.update_date", "asc")
       .orderBy("establishments.siret", "asc")
       .limit(limit)
-      .offset(offset)
       .execute();
 
     return result.map(({ siret }) => siret);

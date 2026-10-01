@@ -5,6 +5,7 @@ import {
   type InternalOfferDto,
   type Location,
 } from "shared";
+import { InMemoryNotificationRepository } from "../../core/notifications/adapters/InMemoryNotificationRepository";
 import { InMemoryEstablishmentAggregateQueries } from "../adapters/InMemoryEstablishmentAggregateQueries";
 import {
   InMemoryEstablishmentAggregateRepository,
@@ -53,7 +54,9 @@ describe("GetSearchResultBySearchQuery", () => {
 
   beforeEach(() => {
     establishmentAggregateRepository =
-      new InMemoryEstablishmentAggregateRepository();
+      new InMemoryEstablishmentAggregateRepository(
+        new InMemoryNotificationRepository(),
+      );
     getSearchResultBySearchQuery = makeGetSearchResultBySearchQuery({
       deps: {
         establishmentAggregateQueries:

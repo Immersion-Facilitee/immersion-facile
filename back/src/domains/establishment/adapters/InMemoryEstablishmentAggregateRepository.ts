@@ -8,6 +8,7 @@ import {
   type GeoPositionDto,
   type InternalOfferDto,
   type LocationId,
+  onlyAdminUserRightsWithStatusAccepted,
   path,
   pathEq,
   type RemoteWorkMode,
@@ -16,6 +17,7 @@ import {
   type SiretDto,
 } from "shared";
 import { distanceBetweenCoordinatesInMeters } from "../../../utils/distanceBetweenCoordinatesInMeters";
+import type { InMemoryNotificationRepository } from "../../core/notifications/adapters/InMemoryNotificationRepository";
 import type { EstablishmentAggregate } from "../entities/EstablishmentAggregate";
 import type {
   EstablishmentAggregateFilters,
@@ -31,6 +33,10 @@ export class InMemoryEstablishmentAggregateRepository
   implements EstablishmentAggregateRepository
 {
   #establishmentAggregates: EstablishmentAggregate[] = [];
+
+  constructor(
+    private readonly notificationRepository: InMemoryNotificationRepository,
+  ) {}
 
   public async delete(siret: SiretDto): Promise<void> {
     const formEstablishmentIndex = this.#establishmentAggregates.findIndex(
@@ -98,24 +104,40 @@ export class InMemoryEstablishmentAggregateRepository
     );
   }
 
-  public async getSiretsOfEstablishmentsNotUpdatedSince({
-    updatedBefore,
+  public async getSiretsOfEstablishmentsToSuggestReengagement({
+    notUpdatedNorSuggestedSince,
     limit,
-    offset = 0,
   }: {
-    updatedBefore: Date;
+    notUpdatedNorSuggestedSince: Date;
     limit: number;
-    offset?: number;
   }): Promise<SiretDto[]> {
+    const siretsSuggestedSince = new Set(
+      this.notificationRepository.notifications.flatMap((notification) =>
+        notification.kind === "email" &&
+        notification.templatedContent.kind ===
+          "ESTABLISHMENT_REENGAGEMENT_SUGGESTION" &&
+        notification.followedIds.establishmentSiret &&
+        new Date(notification.createdAt) > notUpdatedNorSuggestedSince
+          ? [notification.followedIds.establishmentSiret]
+          : [],
+      ),
+    );
+
     return this.#establishmentAggregates
-      .filter(({ establishment }) => establishment.updatedAt < updatedBefore)
+      .filter(
+        ({ establishment, userRights }) =>
+          establishment.updatedAt < notUpdatedNorSuggestedSince &&
+          userRights.some(onlyAdminUserRightsWithStatusAccepted) &&
+          !siretsSuggestedSince.has(establishment.siret),
+      )
       .sort(
         (a, b) =>
           a.establishment.updatedAt.getTime() -
-          b.establishment.updatedAt.getTime(),
+            b.establishment.updatedAt.getTime() ||
+          a.establishment.siret.localeCompare(b.establishment.siret),
       )
       .map(({ establishment }) => establishment.siret)
-      .slice(offset, offset + limit);
+      .slice(0, limit);
   }
 
   public async getSiretsOfEstablishmentsNotCheckedAtInseeSince(
