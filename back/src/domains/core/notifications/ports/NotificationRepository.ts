@@ -10,7 +10,6 @@ import type {
   NotificationKind,
   NotificationState,
   PhoneNumber,
-  SiretDto,
   SmsNotification,
   TemplatedSms,
   UserId,
@@ -84,8 +83,4 @@ export interface NotificationRepository {
   filterUserDeletionWarningNotifications(
     params: FilterUserDeletionWarningNotificationsParams,
   ): Promise<UserId[]>;
-  filterEstablishmentSiretsAlreadySuggestedReengagement(params: {
-    sirets: SiretDto[];
-    suggestedSince: Date;
-  }): Promise<SiretDto[]>;
 }

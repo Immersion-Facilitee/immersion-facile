@@ -77,7 +77,7 @@ export const createInMemoryUow = () => {
     delegationContactRepository: new InMemoryDelegationContactRepository(),
     discussionRepository: new InMemoryDiscussionRepository(userRepository),
     establishmentAggregateRepository:
-      new InMemoryEstablishmentAggregateRepository(),
+      new InMemoryEstablishmentAggregateRepository(notificationRepository),
     groupRepository: new InMemoryGroupRepository(),
     featureFlagRepository: featureFlagRepository,
     featureFlagQueries: new InMemoryFeatureFlagQueries(featureFlagRepository),
