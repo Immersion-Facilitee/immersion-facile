@@ -1,4 +1,4 @@
-import { errors, withConventionSchema } from "shared";
+import { errors, getDisplayedBusinessName, withConventionSchema } from "shared";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
@@ -39,7 +39,7 @@ export const makeNotifyAllActorsThatConventionIsDeprecated = useCaseBuilder(
           internshipKind: convention.internshipKind,
           beneficiaryFirstName: beneficiary.firstName,
           beneficiaryLastName: beneficiary.lastName,
-          businessName: convention.businessName,
+          businessName: getDisplayedBusinessName(convention),
           deprecationReason: convention.statusJustification || "",
           dateStart: convention.dateStart,
           dateEnd: convention.dateEnd,

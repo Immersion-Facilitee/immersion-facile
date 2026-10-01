@@ -1,6 +1,7 @@
 import {
   type ConventionEstablishmentRole,
   errors,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   type WithAssessmentDto,
   withAssessmentSchema,
@@ -67,7 +68,7 @@ export const makeNotifyEstablishmentThatAssessmentWasCreated = useCaseBuilder(
                       lastname: convention.establishmentTutor.lastName,
                     })}`,
               internshipKind: convention.internshipKind,
-              businessName: convention.businessName,
+              businessName: getDisplayedBusinessName(convention),
               linkToAssessment: generateLink({
                 id: convention.id,
                 email:

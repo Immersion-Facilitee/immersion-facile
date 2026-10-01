@@ -5,6 +5,7 @@ import {
   executeInSequence,
   filterNotFalsy,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
@@ -76,7 +77,7 @@ const makeEmail = (
     beneficiaryLastName: getFormattedFirstnameAndLastname({
       lastname: convention.signatories.beneficiary.lastName,
     }),
-    businessName: convention.businessName,
+    businessName: getDisplayedBusinessName(convention),
     conventionId: convention.id,
     conventionSignatureLink: makeRouteAbsoluteUrl({
       route: frontRoutes.manageConventionConnectedUser({

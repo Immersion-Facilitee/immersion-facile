@@ -1,5 +1,6 @@
 import {
   errors,
+  getDisplayedBusinessName,
   onlyContactUserRightsWithStatusAccepted,
   type UserWithAdminRights,
   type WithSiretDto,
@@ -44,7 +45,10 @@ export const makeNotifyConfirmationEstablishmentCreated = useCaseBuilder(
         recipients: [firstAdminUser.email],
         cc: establishmentContactUsers.map((user) => user.email),
         params: {
-          businessName: establishment.establishment.name,
+          businessName: getDisplayedBusinessName({
+            businessName: establishment.establishment.name,
+            businessNameCustomized: establishment.establishment.customizedName,
+          }),
           businessAddresses: establishment.establishment.locations.map(
             ({ address, id }) => locationToRawAddress(id, address).rawAddress,
           ),

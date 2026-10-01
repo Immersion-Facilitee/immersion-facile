@@ -1,5 +1,6 @@
 import {
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   makeRouteAbsoluteUrl,
   withConventionSchema,
@@ -54,7 +55,7 @@ export const makeNotifyFranceTravailUserAdvisorOnConventionFullySigned =
                 lastname: convention.signatories.beneficiary.lastName,
               }),
               beneficiaryEmail: convention.signatories.beneficiary.email,
-              businessName: convention.businessName,
+              businessName: getDisplayedBusinessName(convention),
               conventionId: convention.id,
               dateEnd: convention.dateEnd,
               dateStart: convention.dateStart,

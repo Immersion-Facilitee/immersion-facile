@@ -5,6 +5,7 @@ import {
   type EstablishmentRole,
   errors,
   executeInSequence,
+  getDisplayedBusinessName,
   type WithSiretDto,
   withSiretSchema,
 } from "shared";
@@ -110,7 +111,11 @@ const onEstablishment = (
                 (addressAndPosition) =>
                   addressDtoToString(addressAndPosition.address),
               ),
-              businessName: establishment.establishment.name,
+              businessName: getDisplayedBusinessName({
+                businessName: establishment.establishment.name,
+                businessNameCustomized:
+                  establishment.establishment.customizedName,
+              }),
               siret: establishment.establishment.siret,
             },
           },

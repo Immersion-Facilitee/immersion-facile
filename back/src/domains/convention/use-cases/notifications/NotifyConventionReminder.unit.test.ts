@@ -14,6 +14,7 @@ import {
   expectToEqual,
   frontRoutes,
   type GenericActor,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
@@ -767,7 +768,7 @@ const makeAgencyFirstReminderEmail = ({
     beneficiaryLastName: getFormattedFirstnameAndLastname({
       lastname: convention.signatories.beneficiary.lastName,
     }),
-    businessName: convention.businessName,
+    businessName: getDisplayedBusinessName(convention),
     dateStart: convention.dateStart,
     dateEnd: convention.dateEnd,
     manageConventionLink,
@@ -796,7 +797,7 @@ const makeAgencyLastReminderEmail = ({
     beneficiaryLastName: getFormattedFirstnameAndLastname({
       lastname: convention.signatories.beneficiary.lastName,
     }),
-    businessName: convention.businessName,
+    businessName: getDisplayedBusinessName(convention),
     manageConventionLink,
   },
 });
@@ -843,7 +844,7 @@ const makeSignatoriesLastReminderEmail = ({
     beneficiaryLastName: getFormattedFirstnameAndLastname({
       lastname: convention.signatories.beneficiary.lastName,
     }),
-    businessName: convention.businessName,
+    businessName: getDisplayedBusinessName(convention),
     signatoriesSummary: toSignatoriesSummary(convention).join("\n"),
     magicLinkUrl,
   },
