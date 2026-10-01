@@ -47,6 +47,7 @@ describe("PgAssessmentRepository", () => {
   let pool: Pool;
   let db: KyselyDb;
   let assessmentRepository: PgAssessmentRepository;
+  const validator = makeUniqueUserForTest(uuid());
 
   beforeAll(async () => {
     pool = makeTestPgPool();
@@ -58,8 +59,6 @@ describe("PgAssessmentRepository", () => {
     await db.deleteFrom("agency_groups__agencies").execute();
     await db.deleteFrom("agency_groups").execute();
     await db.deleteFrom("agencies").execute();
-
-    const validator = makeUniqueUserForTest(uuid());
 
     await new PgUserRepository(db).save(validator);
     await new PgAgencyRepository(db).insert(
@@ -129,6 +128,38 @@ describe("PgAssessmentRepository", () => {
         fullAssessment.conventionId,
       );
       expectToEqual(savedAssessment, fullAssessment);
+    });
+
+    it("saves an assessment created by a connected user", async () => {
+      const assessmentCreatedByValidator: AssessmentEntity = {
+        ...fullAssessment,
+        createdBy: { role: "validator", userId: validator.id },
+      };
+
+      await assessmentRepository.save(assessmentCreatedByValidator);
+
+      expectToEqual(
+        await assessmentRepository.getByConventionId(
+          assessmentCreatedByValidator.conventionId,
+        ),
+        assessmentCreatedByValidator,
+      );
+    });
+
+    it("saves an assessment created through a convention magic link", async () => {
+      const assessmentCreatedByTutor: AssessmentEntity = {
+        ...fullAssessment,
+        createdBy: { role: "establishment-tutor", userId: null },
+      };
+
+      await assessmentRepository.save(assessmentCreatedByTutor);
+
+      expectToEqual(
+        await assessmentRepository.getByConventionId(
+          assessmentCreatedByTutor.conventionId,
+        ),
+        assessmentCreatedByTutor,
+      );
     });
   });
 
@@ -229,6 +260,29 @@ describe("PgAssessmentRepository", () => {
           minimalAssessment.conventionId,
         );
       expectToEqual(updatedAssessmentStored, updatedAssessment);
+    });
+
+    it("keeps the assessment creator on update", async () => {
+      const assessmentCreatedByTutor: AssessmentEntity = {
+        ...minimalAssessment,
+        createdBy: { role: "establishment-tutor", userId: null },
+      };
+      await assessmentRepository.save(assessmentCreatedByTutor);
+
+      const signedAssessment: AssessmentEntity = {
+        ...assessmentCreatedByTutor,
+        beneficiaryAgreement: true,
+        beneficiaryFeedback: "Mon commentaire",
+        signedAt: new Date("2024-06-15").toISOString(),
+      };
+      await assessmentRepository.update(signedAssessment);
+
+      expectToEqual(
+        await assessmentRepository.getByConventionId(
+          minimalAssessment.conventionId,
+        ),
+        signedAssessment,
+      );
     });
 
     it("throws when assessment does not exist", async () => {

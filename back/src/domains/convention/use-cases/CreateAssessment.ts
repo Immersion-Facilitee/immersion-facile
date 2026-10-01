@@ -1,19 +1,23 @@
 import {
   type AssessmentDto,
+  allowedRolesToCreateAssessment,
   assessmentDtoSchema,
   type ConventionDto,
   type ConventionRelatedJwtPayload,
   calculateTotalImmersionHoursBetweenDateComplex,
   errors,
   ForbiddenError,
+  getConventionManageAllowedRoles,
 } from "shared";
 import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import { throwForbiddenIfNotAllowedForAssessments } from "../../../utils/assessment";
+import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
+  type AssessmentCreator,
   type AssessmentEntity,
   createAssessmentEntity,
 } from "../entities/AssessmentEntity";
@@ -83,11 +87,18 @@ export const makeCreateAssessment = useCaseBuilder("CreateAssessment")
       )
         throw errors.assessment.numberOfMissedHoursExceedsScheduled();
 
-      const assessmentEntity = await createAssessmentEntityIfNotExist(
-        uow,
-        convention,
-        assessment,
-      );
+      const assessmentEntity: AssessmentEntity = {
+        ...(await createAssessmentEntityIfNotExist(
+          uow,
+          convention,
+          assessment,
+        )),
+        createdBy: await getAssessmentCreator(
+          uow,
+          convention,
+          conventionJwtPayload,
+        ),
+      };
 
       const triggeredBy: TriggeredBy =
         "role" in conventionJwtPayload
@@ -125,4 +136,26 @@ const createAssessmentEntityIfNotExist = async (
     throw errors.assessment.alreadyExist(convention.id);
 
   return createAssessmentEntity(assessment, convention);
+};
+
+const getAssessmentCreator = async (
+  uow: UnitOfWork,
+  convention: ConventionDto,
+  conventionJwtPayload: ConventionRelatedJwtPayload,
+): Promise<AssessmentCreator> => {
+  if ("role" in conventionJwtPayload)
+    return { role: conventionJwtPayload.role, userId: null };
+
+  const user = await getUserWithRights(uow, conventionJwtPayload.userId);
+  const userRolesOnConvention = getConventionManageAllowedRoles(
+    convention,
+    user,
+  );
+  const creatorRole = allowedRolesToCreateAssessment.find((role) =>
+    userRolesOnConvention.includes(role),
+  );
+
+  if (!creatorRole) throw errors.assessment.forbidden("CreateAssessment");
+
+  return { role: creatorRole, userId: user.id };
 };

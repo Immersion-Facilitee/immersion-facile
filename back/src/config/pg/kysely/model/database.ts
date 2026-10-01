@@ -16,8 +16,10 @@ import type {
   EstablishmentUserRightStatus,
   ImmersionDuration,
   PhoneStatus,
+  Role,
   SiretDto,
   SubscriberErrorFeedback,
+  UserId,
 } from "shared";
 
 export interface Database {
@@ -843,6 +845,8 @@ interface ImmersionAssessments {
   signed_at: Timestamp | null;
   created_at: Timestamp;
   updated_at: Generated<Timestamp | null>;
+  created_by_role: Role | null;
+  created_by_user_id: UserId | null;
 }
 
 interface ShortLinks {

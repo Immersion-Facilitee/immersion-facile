@@ -11,6 +11,8 @@ import {
   isEstablishmentTutorIsEstablishmentRepresentative,
   legacyAssessmentDtoSchema,
   type Role,
+  roleSchema,
+  userIdSchema,
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import { z } from "zod";
@@ -65,6 +67,12 @@ export const assessmentEntitySchema: ZodSchemaWithInputMatchingOutput<Assessment
       z.object({
         _entityName: z.literal("Assessment"),
         numberOfHoursActuallyMade: z.number().or(z.null()),
+        createdBy: z
+          .object({
+            role: roleSchema,
+            userId: userIdSchema.or(z.null()),
+          })
+          .optional(),
       }),
     );
 

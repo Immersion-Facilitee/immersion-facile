@@ -6,14 +6,22 @@ import {
   errors,
   isAssessmentDto,
   type LegacyAssessmentDto,
+  type Role,
+  type UserId,
 } from "shared";
 import type { EntityFromDto } from "../../../utils/EntityFromDto";
+
+export type AssessmentCreator = {
+  role: Role;
+  userId: UserId | null;
+};
 
 export type AssessmentEntity = EntityFromDto<
   AssessmentDto | LegacyAssessmentDto,
   "Assessment"
 > & {
   numberOfHoursActuallyMade: number | null;
+  createdBy?: AssessmentCreator;
 };
 
 export const acceptedConventionStatusesForAssessment: ConventionStatus[] = [
@@ -55,7 +63,8 @@ export const createAssessmentEntity = (
 
 export const toAssessmentDto = ({
   _entityName,
-  numberOfHoursActuallyMade: _,
+  numberOfHoursActuallyMade: _numberOfHoursActuallyMade,
+  createdBy: _createdBy,
   ...assessmentEntity
 }: AssessmentEntity): AssessmentDto | LegacyAssessmentDto => assessmentEntity;
 
