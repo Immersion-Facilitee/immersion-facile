@@ -1,6 +1,7 @@
 import {
   errors,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   makeRouteAbsoluteUrl,
   type WithAssessmentDto,
@@ -64,7 +65,7 @@ export const makeNotifyBeneficiaryThatAssessmentNeedsSignature = useCaseBuilder(
           beneficiaryLastName: getFormattedFirstnameAndLastname({
             lastname: beneficiary.lastName,
           }),
-          businessName: convention.businessName,
+          businessName: getDisplayedBusinessName(convention),
           internshipKind: convention.internshipKind,
           assessmentSignatureLink: makeRouteAbsoluteUrl({
             route: frontRoutes.assessmentDocument({

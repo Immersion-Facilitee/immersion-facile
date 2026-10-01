@@ -17,6 +17,7 @@ import type {
 } from "../discussion/discussion.dto";
 import { labelsForContactLevelOfEducation } from "../discussion/discussion.dto";
 import { isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl } from "../discussion/discussion.schema";
+import { getDisplayedBusinessName } from "../establishment/establishment.utils";
 import type { AgencyRole } from "../role/role.dto";
 import { titleByRole } from "../role/role.utils";
 import { frontRoutes, makeRouteAbsoluteUrl } from "../routes/routes";
@@ -3038,11 +3039,13 @@ L'équipe d'Immersion Facilitée`,
             lastname: convention.signatories.beneficiary.lastName,
           });
 
+        const displayedBusinessName = getDisplayedBusinessName(convention);
+
         return {
           subject:
             convention.internshipKind === "immersion"
-              ? `Validation et convention de l'immersion pour observer l'activité de ${convention.immersionAppellation.appellationLabel} au sein de ${convention.businessName}`
-              : `Mini Stage - Validation et convention du mini stage pour observer l'activité de ${convention.immersionAppellation.appellationLabel} au sein de ${convention.businessName}`,
+              ? `Validation et convention de l'immersion pour observer l'activité de ${convention.immersionAppellation.appellationLabel} au sein de ${displayedBusinessName}`
+              : `Mini Stage - Validation et convention du mini stage pour observer l'activité de ${convention.immersionAppellation.appellationLabel} au sein de ${displayedBusinessName}`,
           greetings: greetingsWithConventionId(convention.id),
           content: `
       Bonne nouvelle ! 
@@ -3062,7 +3065,7 @@ L'équipe d'Immersion Facilitée`,
       } :</strong>
       <ul>
         <li><strong>Dates :</strong> du ${parseISO(convention.dateStart).toLocaleDateString("fr")} au ${parseISO(convention.dateEnd).toLocaleDateString("fr")}</li>
-        <li><strong>Entreprise :</strong> ${convention.businessName}</li>
+        <li><strong>Entreprise :</strong> ${displayedBusinessName}</li>
         <li><strong>Tuteur :</strong> ${getFormattedFirstnameAndLastname({
           firstname: convention.establishmentTutor.firstName,
           lastname: convention.establishmentTutor.lastName,

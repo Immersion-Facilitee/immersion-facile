@@ -1,6 +1,7 @@
 import { uniq } from "ramda";
 import {
   type Email,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   withAssessmentSchema,
 } from "shared";
@@ -54,7 +55,7 @@ export const makeNotifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow =
             beneficiaryLastName: getFormattedFirstnameAndLastname({
               lastname: convention.signatories.beneficiary.lastName,
             }),
-            businessName: convention.businessName,
+            businessName: getDisplayedBusinessName(convention),
             conventionId: convention.id,
             immersionObjective: convention.immersionObjective,
             internshipKind: convention.internshipKind,

@@ -15,6 +15,7 @@ import {
   filterNotFalsy,
   frontRoutes,
   type GenericActor,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   isEstablishmentTutorIsEstablishmentRepresentative,
   isSignatoryRole,
@@ -226,7 +227,7 @@ const makeSignatoryReminderEmail = ({
     beneficiaryLastName: getFormattedFirstnameAndLastname({
       lastname: convention.signatories.beneficiary.lastName,
     }),
-    businessName: convention.businessName,
+    businessName: getDisplayedBusinessName(convention),
     conventionId: convention.id,
     signatoriesSummary: toSignatoriesSummary(convention).join("\n"),
     magicLinkUrl: isSignatoryRole(role)
@@ -309,7 +310,7 @@ const createAgencyReminderEmail = async ({
             beneficiaryLastName: getFormattedFirstnameAndLastname({
               lastname: convention.signatories.beneficiary.lastName,
             }),
-            businessName: convention.businessName,
+            businessName: getDisplayedBusinessName(convention),
             dateStart: convention.dateStart,
             dateEnd: convention.dateEnd,
             manageConventionLink: makeRouteAbsoluteUrl({
@@ -334,7 +335,7 @@ const createAgencyReminderEmail = async ({
             beneficiaryLastName: getFormattedFirstnameAndLastname({
               lastname: convention.signatories.beneficiary.lastName,
             }),
-            businessName: convention.businessName,
+            businessName: getDisplayedBusinessName(convention),
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({
                 conventionId: convention.id,

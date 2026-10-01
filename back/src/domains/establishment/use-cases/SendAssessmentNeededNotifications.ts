@@ -10,6 +10,7 @@ import {
   type DateRange,
   errors,
   executeInSequence,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   immersionFacileNoReplyEmailSender,
   validatedConventionStatuses,
@@ -269,7 +270,7 @@ const makeBeneficiaryNotification = (
       beneficiaryLastName: getFormattedFirstnameAndLastname({
         lastname: convention.signatories.beneficiary.lastName,
       }),
-      businessName: convention.businessName,
+      businessName: getDisplayedBusinessName(convention),
       conventionId: convention.id,
       internshipKind: convention.internshipKind,
       establishmentTutorEmail: convention.establishmentTutor.email,

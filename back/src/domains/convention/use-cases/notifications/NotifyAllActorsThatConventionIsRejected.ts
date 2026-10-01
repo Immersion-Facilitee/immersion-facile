@@ -1,5 +1,6 @@
 import {
   errors,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   withConventionSchema,
 } from "shared";
@@ -48,7 +49,7 @@ export const makeNotifyAllActorsThatConventionIsRejected = useCaseBuilder(
           beneficiaryLastName: getFormattedFirstnameAndLastname({
             lastname: beneficiary.lastName,
           }),
-          businessName: convention.businessName,
+          businessName: getDisplayedBusinessName(convention),
           rejectionReason: convention.statusJustification || "",
           signature: agency.signature,
           immersionProfession: convention.immersionAppellation.appellationLabel,

@@ -7,6 +7,7 @@ import {
   errors,
   expectToEqual,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
@@ -304,7 +305,6 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
     recipient: string;
     agency: AgencyDto;
   }) => {
-    const { businessName } = convention;
     const {
       beneficiary,
       establishmentRepresentative,
@@ -354,7 +354,7 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
           }),
           baseUrl: config.immersionFacileBaseUrl,
         }),
-        businessName,
+        businessName: getDisplayedBusinessName(convention),
         agencyLogoUrl: agency.logoUrl ?? undefined,
       },
     });
@@ -379,7 +379,7 @@ export const expectNotifyConventionRejected = (
       beneficiaryLastName: getFormattedFirstnameAndLastname({
         lastname: convention.signatories.beneficiary.lastName,
       }),
-      businessName: convention.businessName,
+      businessName: getDisplayedBusinessName(convention),
       rejectionReason: convention.statusJustification || "",
       signature: agency.signature,
       immersionProfession: convention.immersionAppellation.appellationLabel,
@@ -407,7 +407,7 @@ export const expectNotifyConventionCancelled = (
       beneficiaryLastName: getFormattedFirstnameAndLastname({
         lastname: convention.signatories.beneficiary.lastName,
       }),
-      businessName: convention.businessName,
+      businessName: getDisplayedBusinessName(convention),
       signature: agency.signature,
       immersionProfession: convention.immersionAppellation.appellationLabel,
       agencyLogoUrl: agency.logoUrl ?? undefined,
@@ -431,7 +431,7 @@ export const expectNotifyConventionIsDeprecated = (
       internshipKind: convention.internshipKind,
       beneficiaryFirstName: convention.signatories.beneficiary.firstName,
       beneficiaryLastName: convention.signatories.beneficiary.lastName,
-      businessName: convention.businessName,
+      businessName: getDisplayedBusinessName(convention),
       deprecationReason: convention.statusJustification || "",
       immersionProfession: convention.immersionAppellation.appellationLabel,
       dateEnd: convention.dateEnd,
