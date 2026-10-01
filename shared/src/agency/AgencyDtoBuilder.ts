@@ -218,6 +218,13 @@ export class AgencyDtoBuilder implements Builder<AgencyDto> {
     });
   }
 
+  public withCounsellorEmails(counsellorEmails: string[]) {
+    return new AgencyDtoBuilder({
+      ...this.#agency,
+      counsellorEmails,
+    });
+  }
+
   public withValidatorEmails(validatorEmails: string[]) {
     return new AgencyDtoBuilder({
       ...this.#agency,

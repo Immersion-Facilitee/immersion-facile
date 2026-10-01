@@ -32,7 +32,7 @@ import {
   hasPartialCompletionDetails,
 } from "./assessment.helpers";
 
-const withAssessmentStatusSchema = z.discriminatedUnion(
+export const withAssessmentStatusSchema = z.discriminatedUnion(
   "status",
   [
     z.object({
@@ -58,13 +58,13 @@ const withAssessmentStatusSchema = z.discriminatedUnion(
   },
 );
 
-const withEstablishmentCommentsSchema: ZodSchemaWithInputMatchingOutput<WithEstablishmentComments> =
+export const withEstablishmentCommentsSchema: ZodSchemaWithInputMatchingOutput<WithEstablishmentComments> =
   z.object({
     establishmentFeedback: zStringMinLength1Max9200,
     establishmentAdvices: zStringMinLength1Max6000,
   });
 
-const withEndedWithAJobSchema: ZodSchemaWithInputMatchingOutput<WithEndedWithAJob> =
+export const withEndedWithAJobSchema: ZodSchemaWithInputMatchingOutput<WithEndedWithAJob> =
   z.discriminatedUnion(
     "endedWithAJob",
     [
