@@ -7,6 +7,7 @@ import {
   errors,
   formatHoursCooldownTimeRemaining,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   isBeforeAssessmentSignatureReleaseDate,
   isWithinHoursCooldown,
@@ -189,7 +190,7 @@ const sendAssessmentSignatureReminderEmail = async ({
         beneficiaryLastName: getFormattedFirstnameAndLastname({
           lastname: beneficiary.lastName,
         }),
-        businessName: convention.businessName,
+        businessName: getDisplayedBusinessName(convention),
         internshipKind: convention.internshipKind,
         assessmentSignatureLink: makeRouteAbsoluteUrl({
           route: frontRoutes.assessmentDocument({

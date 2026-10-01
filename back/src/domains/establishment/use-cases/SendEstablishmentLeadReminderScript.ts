@@ -6,6 +6,7 @@ import {
   castError,
   executeInSequence,
   frontRoutes,
+  getDisplayedBusinessName,
   immersionFacileNoReplyEmailSender,
   localization,
   makeRouteAbsoluteUrl,
@@ -153,7 +154,7 @@ const sendOneEmailWithEstablishmentLeadReminder = async ({
       recipients: [convention.signatories.establishmentRepresentative.email],
       sender: immersionFacileNoReplyEmailSender,
       params: {
-        businessName: convention.businessName,
+        businessName: getDisplayedBusinessName(convention),
         registerEstablishmentShortLink,
         unsubscribeToEmailShortLink,
       },

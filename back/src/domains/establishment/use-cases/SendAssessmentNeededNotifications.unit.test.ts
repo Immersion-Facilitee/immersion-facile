@@ -10,6 +10,7 @@ import {
   expectArraysToMatch,
   expectObjectInArrayToMatch,
   expectToEqual,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   immersionFacileNoReplyEmailSender,
   type Notification,
@@ -759,7 +760,7 @@ describe("SendAssessmentNeededNotifications", () => {
       beneficiaryFirstName: getFormattedFirstnameAndLastname({
         firstname: convention.signatories.beneficiary.firstName,
       }),
-      businessName: convention.businessName,
+      businessName: getDisplayedBusinessName(convention),
       internshipKind: convention.internshipKind,
       establishmentTutorEmail: convention.establishmentTutor.email,
     },

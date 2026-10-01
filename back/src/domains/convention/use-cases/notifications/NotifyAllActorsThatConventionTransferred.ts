@@ -6,6 +6,7 @@ import {
   type Email,
   errors,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
@@ -192,7 +193,7 @@ const sendSignatoriesEmail = async (
           immersionProfession: convention.immersionAppellation.appellationLabel,
           newAgencyName: agency.name,
           agencyAddress: `${agency.address.streetNumberAndAddress} ${agency.address.postcode} ${agency.address.city}`,
-          businessName: convention.businessName,
+          businessName: getDisplayedBusinessName(convention),
           justification,
           manageConventionLink: makeRouteAbsoluteUrl({
             route: frontRoutes.manageConventionConnectedUser({

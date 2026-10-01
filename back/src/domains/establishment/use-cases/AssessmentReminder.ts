@@ -8,6 +8,7 @@ import {
   errors,
   executeInSequence,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   immersionFacileNoReplyEmailSender,
   localization,
@@ -324,7 +325,7 @@ const sendAgencyAssessmentReminder = async ({
             }),
             conventionId: convention.id,
             internshipKind: convention.internshipKind,
-            businessName: convention.businessName,
+            businessName: getDisplayedBusinessName(convention),
             agencyLogoUrl: agency.logoUrl ?? undefined,
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({

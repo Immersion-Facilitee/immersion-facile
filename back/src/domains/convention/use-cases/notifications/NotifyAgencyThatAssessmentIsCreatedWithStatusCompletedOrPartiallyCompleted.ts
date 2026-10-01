@@ -4,6 +4,7 @@ import {
   type Email,
   executeInSequence,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   makeRouteAbsoluteUrl,
   withAssessmentSchema,
@@ -84,7 +85,7 @@ export const makeNotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartial
               beneficiaryLastName: getFormattedFirstnameAndLastname({
                 lastname: convention.signatories.beneficiary.lastName,
               }),
-              businessName: convention.businessName,
+              businessName: getDisplayedBusinessName(convention),
               conventionId: convention.id,
               immersionObjective: convention.immersionObjective,
               internshipKind: convention.internshipKind,

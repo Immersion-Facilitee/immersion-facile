@@ -5,6 +5,7 @@ import {
   errors,
   filterNotFalsy,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
@@ -75,7 +76,6 @@ const makeEmail = (
   config: AppConfig,
 ): TemplatedEmail => {
   const {
-    businessName,
     signatories: {
       beneficiary,
       beneficiaryRepresentative,
@@ -126,7 +126,7 @@ const makeEmail = (
         }),
         baseUrl: config.immersionFacileBaseUrl,
       }),
-      businessName,
+      businessName: getDisplayedBusinessName(convention),
       agencyLogoUrl: agency.logoUrl ?? undefined,
     },
   };
