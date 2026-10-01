@@ -4,6 +4,7 @@ import {
   type ConventionStatus,
   errors,
   executeInSequence,
+  getDisplayedBusinessName,
   type WithSiretDto,
   withSiretSchema,
 } from "shared";
@@ -86,7 +87,7 @@ export const makeNotifyThatEstablishmentFromConventionIsBanned = useCaseBuilder(
         deps.saveNotificationAndRelatedEvent,
         deps.immersionBaseUrl,
         convention,
-        convention.businessName,
+        getDisplayedBusinessName(convention),
       );
     });
   });
@@ -101,13 +102,14 @@ const notifyBeneficiaryAndEstablishmentRepresentative = async (
     await uow.establishmentAggregateRepository.getEstablishmentAggregateBySiret(
       convention.siret,
     );
+  const businessName = getDisplayedBusinessName(convention);
   await saveNotificationAndRelatedEvent(uow, {
     kind: "email",
     templatedContent: {
       kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
       recipients: [convention.signatories.beneficiary.email],
       params: {
-        businessName: convention.businessName,
+        businessName,
         beneficiaryFirstName: convention.signatories.beneficiary.firstName,
         beneficiaryLastName: convention.signatories.beneficiary.lastName,
         immersionBaseUrl,
@@ -126,7 +128,7 @@ const notifyBeneficiaryAndEstablishmentRepresentative = async (
         kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
         recipients: [convention.signatories.establishmentRepresentative.email],
         params: {
-          businessName: convention.businessName,
+          businessName,
           siret: convention.siret,
         },
       },
