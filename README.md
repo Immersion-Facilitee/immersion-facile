@@ -4,12 +4,12 @@ Le but du projet immersion facile est de faciliter les immersions professionnell
 Il y a pour cela plusieurs axes de travail :
 
 - Dématérialiser entièrement les demandes d'immersion et les interactions des conseillers France travail, Missions locales, etc.
-- Constituer un annuaire des entreprises qui sont susceptible d'accueillir en immersion
+- Constituer un annuaire des entreprises qui sont susceptibles d'accueillir en immersion
 - Rendre les immersions recherchables par les bénéficiaires
 
 ### Prérequis
 
-Pour démarrer le projet il vous faut `git`, `docker` et `node` (version 24.14.0 > voir package.json "engines" ) installée sur la machine.
+Pour démarrer le projet il vous faut `git`, `docker` et `node` (version 24.14.0 > voir package.json "engines" ) installés sur la machine.
 Nous utilisons `pnpm` comme gestionnaire de paquets (pour l'installer : `npm install -g pnpm`).
 
 ### Démarrer le projet
@@ -63,10 +63,10 @@ Le `.env` permet de configurer le mode de fonctionnement de l'application.
 
 On peut lancer avec une base de données postgres simplement en mettant `REPOSITORIES="PG"`.
 
-On peut démarrer facilement une DB local avec docker-compose :
+On peut démarrer facilement une DB local avec docker compose :
 
 ```sh
-docker-compose -f docker-compose.resources.yml up --build
+docker compose -f docker-compose.resources.yml up --build
 ```
 
 Il y aura alors une DB postgres accessible sur le port 5432, et un adminer sur le port 8080.
@@ -132,4 +132,4 @@ Le projet a deux grandes parties :
 
 Le flux des statuts de convention est le suivant :
 
-![img.png](doc/flux de statuts de convention.png)
+![flux de statuts de convention](doc/flux%20de%20statuts%20de%20convention.png)
