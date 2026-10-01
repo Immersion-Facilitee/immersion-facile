@@ -8,6 +8,9 @@
     "typecheck": "tsc --noEmit",
     "fullcheck": "pnpm -w fullcheck --filter=html-templates"
   },
+  "dependencies": {
+    "ts-pattern": "^5.7.0"
+  },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^24.12.0",

@@ -1,0 +1,10 @@
+export { type EmailButtonProps, renderButton } from "./blocks/button";
+export { renderContent } from "./blocks/content";
+export { type HighlightKind, renderHighlight } from "./blocks/highlight";
+export { renderHighlightContentWithCTA } from "./blocks/highlightContentWithCTA";
+export { renderFooter } from "./layout/footer";
+export { renderGreetings } from "./layout/greetings";
+export { renderHead } from "./layout/head";
+export { renderHeader } from "./layout/header";
+export { renderLegals } from "./layout/legals";
+export { renderSignature } from "./layout/signature";

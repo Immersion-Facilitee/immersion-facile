@@ -10,6 +10,8 @@ import {
 } from "./components/email";
 import { renderHighlightContentWithCTA } from "./components/email/highlightContentWithCTA";
 import type { HtmlTemplateEmailData } from "./createTemplatesByName";
+import { isEmailVariables } from "./email/createEmailTemplate";
+import { renderEmail } from "./email/renderEmail";
 import { ignoreTabs } from "./helpers/formatters";
 
 type Attachement = { url: string } | { name: string; content: string };
@@ -62,6 +64,9 @@ export const configureGenerateHtmlFromTemplate =
     attachment?: Attachement[];
   } => {
     const { createEmailVariables, tags } = templateByName[templateName];
+    const emailVariables = createEmailVariables(params as any);
+    if (isEmailVariables(emailVariables))
+      return renderEmail({ emailVariables, tags, customParts, options });
     const {
       subject,
       agencyLogoUrl,
