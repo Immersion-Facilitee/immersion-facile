@@ -790,7 +790,7 @@ describe("RenewExpiredJwt use case", () => {
             state: emailUnusedOnGoingOAuth.state,
             targetRoute: "magicLinkInterstitial",
             now: timeGateway.now(),
-          }),
+          }).url,
           lastUsedAt: null,
         },
       ]);

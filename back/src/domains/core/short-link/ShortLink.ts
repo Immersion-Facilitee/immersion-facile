@@ -103,7 +103,7 @@ export const prepareEmailAuthCodeShortLinkMaker =
       uow,
       config,
       shortLinkIdGeneratorGateway,
-      longLink: generateEmailAuthCodeLoginUrl(params),
+      longLink: generateEmailAuthCodeLoginUrl(params).url,
     });
 
 export const makeShortLink = async ({
