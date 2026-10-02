@@ -4,13 +4,10 @@ import {
   expectArraysToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
-  frontRoutes,
   getFormattedFirstnameAndLastname,
   immersionFacileNoReplyEmailSender,
-  makeRouteAbsoluteUrl,
   type UserWithAdminRights,
 } from "shared";
-import { AppConfigBuilder } from "../../../../../utils/AppConfigBuilder";
 import { fakeGenerateEmailAuthCodeUrlFn } from "../../../../../utils/jwtTestHelper";
 import {
   type ExpectSavedNotificationsAndEvents,
@@ -31,8 +28,6 @@ import {
 } from "./InitiateLoginByEmail";
 
 describe("InitiateLoginByEmail usecase", () => {
-  const config = new AppConfigBuilder().withTestPresetPreviousKeys().build();
-
   let initiateLoginByEmail: InitiateLoginByEmail;
   let uow: InMemoryUnitOfWork;
   let timeGateway: TimeGateway;
@@ -65,7 +60,6 @@ describe("InitiateLoginByEmail usecase", () => {
     initiateLoginByEmail = makeInitiateLoginByEmail({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
-        config,
         saveNotificationAndRelatedEvent: makeSaveNotificationAndRelatedEvent(
           uuidGenerator,
           timeGateway,
@@ -107,6 +101,13 @@ describe("InitiateLoginByEmail usecase", () => {
     uuidGenerator.setNextUuids(["nonce1", state]);
     uow.userRepository.users = [user];
 
+    const { url: loginLink, expiresAt } = fakeGenerateEmailAuthCodeUrlFn({
+      email: user.email,
+      state,
+      targetRoute: "magicLinkInterstitial",
+      now: timeGateway.now(),
+    });
+
     await initiateLoginByEmail.execute({
       email: user.email,
       redirectUri,
@@ -129,15 +130,8 @@ describe("InitiateLoginByEmail usecase", () => {
         {
           kind: "LOGIN_BY_EMAIL_REQUESTED",
           params: {
-            validMinutes: config.emailAuthCodeJwtDurationInMinutes,
-            loginLink: makeRouteAbsoluteUrl({
-              route: frontRoutes.magicLinkInterstitial({
-                code: "EmailAuthCodeJwt",
-                state,
-                email: user.email,
-              }),
-              baseUrl: "http://fake-connected-user",
-            }),
+            expiresAt,
+            loginLink,
             fullname: getFormattedFirstnameAndLastname({
               firstname: user.firstName,
               lastname: user.lastName,
@@ -160,6 +154,13 @@ describe("InitiateLoginByEmail usecase", () => {
     uuidGenerator.setNextUuids(["nonce1", state]);
     uow.userRepository.users = [];
 
+    const { url: loginLink, expiresAt } = fakeGenerateEmailAuthCodeUrlFn({
+      email: user.email,
+      state,
+      targetRoute: "magicLinkInterstitial",
+      now: timeGateway.now(),
+    });
+
     await initiateLoginByEmail.execute({
       email: user.email,
       redirectUri,
@@ -181,15 +182,8 @@ describe("InitiateLoginByEmail usecase", () => {
         {
           kind: "LOGIN_BY_EMAIL_REQUESTED",
           params: {
-            validMinutes: config.emailAuthCodeJwtDurationInMinutes,
-            loginLink: makeRouteAbsoluteUrl({
-              route: frontRoutes.magicLinkInterstitial({
-                code: "EmailAuthCodeJwt",
-                state,
-                email: user.email,
-              }),
-              baseUrl: "http://fake-connected-user",
-            }),
+            expiresAt,
+            loginLink,
             fullname: "",
           },
           recipients: [user.email],
@@ -203,6 +197,13 @@ describe("InitiateLoginByEmail usecase", () => {
     uuidGenerator.setNextUuids(["nonce1", state]);
     uow.userRepository.users = [user];
 
+    const { url: loginLink, expiresAt } = fakeGenerateEmailAuthCodeUrlFn({
+      email: user.email,
+      state,
+      targetRoute: "magicLinkInterstitial",
+      now: timeGateway.now(),
+    });
+
     await initiateLoginByEmail.execute({
       email: user.email,
       redirectUri:
@@ -214,15 +215,8 @@ describe("InitiateLoginByEmail usecase", () => {
         {
           kind: "LOGIN_BY_EMAIL_REQUESTED",
           params: {
-            validMinutes: config.emailAuthCodeJwtDurationInMinutes,
-            loginLink: makeRouteAbsoluteUrl({
-              route: frontRoutes.magicLinkInterstitial({
-                code: "EmailAuthCodeJwt",
-                state,
-                email: user.email,
-              }),
-              baseUrl: "http://fake-connected-user",
-            }),
+            expiresAt,
+            loginLink,
             fullname: getFormattedFirstnameAndLastname({
               firstname: user.firstName,
               lastname: user.lastName,
