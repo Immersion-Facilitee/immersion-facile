@@ -16,6 +16,7 @@ import {
   makeDateStringSchema,
   toDateUTCString,
   toDisplayedDate,
+  toDisplayedParisTime,
 } from "./date";
 
 describe("Date utils tests - toDateUTCString", () => {
@@ -46,6 +47,51 @@ describe("Date utils tests - toDisplayedDate", () => {
   it("can't format an empty string", () => {
     const date = new Date("");
     expect(() => toDisplayedDate({ date })).toThrow("Invalid time value");
+  });
+
+  it.each([
+    {
+      title: "wraps past midnight in winter and advances the day",
+      date: parseISO("2024-01-15T23:15:00.000Z"),
+      expectedWithHours: "16/01/2024 à 00h15 (heure de Paris)",
+      expectedDateOnly: "15/01/2024",
+    },
+    {
+      title: "wraps past midnight in summer and advances the day",
+      date: parseISO("2024-07-15T23:15:00.000Z"),
+      expectedWithHours: "16/07/2024 à 01h15 (heure de Paris)",
+      expectedDateOnly: "15/07/2024",
+    },
+  ])("$title", ({ date, expectedWithHours, expectedDateOnly }) => {
+    expect(toDisplayedDate({ date, withHours: true })).toBe(expectedWithHours);
+    expect(toDisplayedDate({ date })).toBe(expectedDateOnly);
+  });
+});
+
+describe("Date utils tests - toDisplayedParisTime", () => {
+  it.each([
+    {
+      title: "winter time (UTC+1)",
+      date: parseISO("2024-01-29T11:36:50.274Z"),
+      expected: "12h36 (heure de Paris)",
+    },
+    {
+      title: "summer time (UTC+2)",
+      date: parseISO("2024-07-15T11:36:50.274Z"),
+      expected: "13h36 (heure de Paris)",
+    },
+    {
+      title: "just after midnight Paris in winter",
+      date: parseISO("2024-01-15T23:15:00.000Z"),
+      expected: "00h15 (heure de Paris)",
+    },
+    {
+      title: "just after midnight Paris in summer",
+      date: parseISO("2024-07-15T22:15:00.000Z"),
+      expected: "00h15 (heure de Paris)",
+    },
+  ])("$title", ({ date, expected }) => {
+    expect(toDisplayedParisTime({ date })).toBe(expected);
   });
 });
 
