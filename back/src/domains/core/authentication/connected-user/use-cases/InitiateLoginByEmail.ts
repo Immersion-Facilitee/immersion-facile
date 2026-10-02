@@ -25,6 +25,12 @@ export const makeInitiateLoginByEmail = useCaseBuilder("InitiateLoginByEmail")
   .build(async ({ inputParams: { email, redirectUri }, uow, deps }) => {
     const nonce = deps.uuidGenerator.new();
     const state = deps.uuidGenerator.new();
+    const { url: loginLink } = deps.generateEmailAuthCodeUrl({
+      state,
+      now: deps.timeGateway.now(),
+      targetRoute: "magicLinkInterstitial",
+      email,
+    });
 
     const user = await uow.userRepository.findByEmail(email);
 
@@ -48,12 +54,7 @@ export const makeInitiateLoginByEmail = useCaseBuilder("InitiateLoginByEmail")
           sender: immersionFacileNoReplyEmailSender,
           params: {
             validMinutes: deps.config.emailAuthCodeJwtDurationInMinutes,
-            loginLink: deps.generateEmailAuthCodeUrl({
-              state,
-              now: deps.timeGateway.now(),
-              targetRoute: "magicLinkInterstitial",
-              email,
-            }),
+            loginLink,
             fullname: getFormattedFirstnameAndLastname({
               firstname: user?.firstName,
               lastname: user?.lastName,

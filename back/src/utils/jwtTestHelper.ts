@@ -4,7 +4,10 @@ import {
   decodeURIWithParams,
   filterNotFalsy,
   frontRoutes,
+  loginByEmailLinkDurationInMinutes,
   makeRouteAbsoluteUrl,
+  ONE_SECOND_MS,
+  oneMinuteInSeconds,
   queryParamsAsString,
   type WithAcquisitionQueryParams,
 } from "shared";
@@ -71,12 +74,18 @@ export const fakeGenerateEmailAuthCodeUrlFn: GenerateEmailAuthCodeUrl = ({
   email,
   state,
   targetRoute,
-}) =>
-  makeRouteAbsoluteUrl({
+  now,
+}) => ({
+  url: makeRouteAbsoluteUrl({
     route: frontRoutes[targetRoute]({
       code: "EmailAuthCodeJwt",
       email,
       state,
     }),
     baseUrl: "http://fake-connected-user",
-  });
+  }),
+  expiresAt: new Date(
+    now.getTime() +
+      loginByEmailLinkDurationInMinutes * oneMinuteInSeconds * ONE_SECOND_MS,
+  ).toISOString(),
+});
