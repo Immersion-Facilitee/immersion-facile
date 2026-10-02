@@ -15,7 +15,6 @@ import {
   type EmailTemplatesByName,
   emailTemplatesByName,
   internshipKinds,
-  loginByEmailLinkDurationInMinutes,
 } from "shared";
 import { BackofficeDashboardTabContent } from "src/app/components/layout/BackofficeDashboardTabContent";
 import { useStyles } from "tss-react/dsfr";
@@ -204,7 +203,7 @@ export const defaultEmailValueByEmailKind: {
   >[0];
 } = {
   LOGIN_BY_EMAIL_REQUESTED: {
-    validMinutes: loginByEmailLinkDurationInMinutes,
+    expiresAt: new Date("2025-01-01T13:32:00.000Z").toISOString(),
     loginLink: "https://google.com",
     fullname: "BOB",
   },

@@ -34,7 +34,7 @@ import type { AgencyRole, EstablishmentRole } from "../role/role.dto";
 import type { AppellationLabel } from "../romeAndAppellationDtos/romeAndAppellation.dto";
 import type { SiretDto } from "../siret/siret";
 import type { Firstname, Lastname } from "../user/user.dto";
-import type { DateString } from "../utils/date";
+import type { DateString, DateTimeIsoString } from "../utils/date";
 import type { Email } from "./email.dto";
 
 export type UserParamsForMail = {
@@ -452,7 +452,7 @@ export type EmailParamsByEmailType = {
   };
   IC_USER_RIGHTS_HAS_CHANGED: UserParamsForMail;
   LOGIN_BY_EMAIL_REQUESTED: {
-    validMinutes: number;
+    expiresAt: DateTimeIsoString;
     fullname?: string;
     loginLink: AbsoluteUrl;
   };
