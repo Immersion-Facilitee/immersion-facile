@@ -19,6 +19,7 @@ import {
   SectionTextEmbed,
   useScrollTo,
 } from "react-design-system";
+import { Helmet } from "react-helmet-async";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
@@ -48,7 +49,9 @@ import {
   isKeyInObjectAndValueNotUndefinedNorEmpty,
   isValueUndefinedOrEmpty,
 } from "src/app/utils/url.utils";
+import { commonIllustrations } from "src/assets/img/illustrations";
 import labonneboiteLogoUrl from "src/assets/img/logo-lbb-centered.png";
+import { outOfReduxDependencies } from "src/config/dependencies";
 import { appellationSlice } from "src/core-logic/domain/appellation/appellation.slice";
 import { featureFlagSelectors } from "src/core-logic/domain/featureFlags/featureFlags.selector";
 import { geosearchSlice } from "src/core-logic/domain/geosearch/geosearch.slice";
@@ -60,8 +63,7 @@ import {
 } from "src/core-logic/domain/search/search.slice";
 import { useStyles } from "tss-react/dsfr";
 import "./SearchPage.scss";
-import { commonIllustrations } from "src/assets/img/illustrations";
-import { outOfReduxDependencies } from "src/config/dependencies";
+import { GroupHeroHeader } from "./GroupHeroHeader";
 import Styles from "./SearchPage.styles";
 
 export const radiusOptions = ["1", "2", "5", "10", "20", "50", "100"].map(
@@ -146,7 +148,6 @@ export const SearchPage = ({
   useNaturalLanguageForAppellations?: boolean;
   isExternal: boolean;
 }) => {
-  const { cx } = useStyles();
   const dispatch = useDispatch();
   const routeParams = route.params as Partial<SearchPageParams>;
   const groupSlug = route.name === "group" ? route.params.groupSlug : undefined;
@@ -154,6 +155,10 @@ export const SearchPage = ({
     searchSelectors.searchResultsWithPagination,
   );
   const isLoading = useAppSelector(searchSelectors.isLoading);
+  const [isLoadingGroupData, setIsLoadingGroupData] = useState<boolean>(
+    !!groupSlug,
+  );
+  const { cx } = useStyles();
   const { navigateToSearch } = useSearch(route);
   const [searchMade, setSearchMade] = useState<SearchPageParams | null>(null);
   const [groupData, setGroupData] = useState<Group | null>(null);
@@ -253,6 +258,7 @@ export const SearchPage = ({
       await outOfReduxDependencies.searchGateway.getGroupBySlug(groupSlug);
     const { group } = response;
     setGroupData(group);
+    setIsLoadingGroupData(false);
   }, []);
 
   if (groupSlug && groupData === null) {
@@ -464,9 +470,17 @@ export const SearchPage = ({
           </>
         ) : (
           <>
-            {isLoading && <Loader />}
+            {(isLoading || isLoadingGroupData) && <Loader />}
             {!groupSlug && <Breadcrumbs />}
-            {groupSlug && <div>{groupSlug}</div>}
+            {groupData && (
+              <>
+                <Helmet>
+                  <title>{"TODO"}</title>
+                  <meta name="description" content={"TODO"} />
+                </Helmet>
+                <GroupHeroHeader groupData={groupData} />
+              </>
+            )}
             {isExternal && (
               <div className={fr.cx("fr-container", "fr-mb-4w")}>
                 <SectionHighlight
