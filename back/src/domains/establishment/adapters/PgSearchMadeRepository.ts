@@ -38,6 +38,7 @@ export class PgSearchMadeRepository implements SearchMadeRepository {
         "distance",
         "fit_for_disabled_workers",
         "gps",
+        "group_slug",
         "id",
         "lat",
         "location_ids",
@@ -70,6 +71,7 @@ export class PgSearchMadeRepository implements SearchMadeRepository {
                   fit_for_disabled_workers: optionalJsonb(
                     searchMade.fitForDisabledWorkers,
                   ),
+                  group_slug: searchMade.group ?? null,
                   location_ids: optionalJsonb(searchMade.locationIds),
                   remote_work_modes: optionalJsonb(searchMade.remoteWorkModes),
                   show_only_available_offers:
@@ -126,6 +128,7 @@ export class PgSearchMadeRepository implements SearchMadeRepository {
             eb.fn
               .coalesce(sql`${eb.ref("values.gps")}::geography`, sql`NULL`)
               .as("gps"),
+            "values.group_slug",
             sql`${eb.ref("values.id")}::uuid`.as("id"),
             eb.fn
               .coalesce(

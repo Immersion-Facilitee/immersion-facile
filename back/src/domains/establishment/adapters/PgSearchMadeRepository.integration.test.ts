@@ -4,6 +4,7 @@ import {
   type EstablishmentSearchableByValue,
   expectToEqual,
   type FitForDisableWorkerOption,
+  type GroupSlug,
   type LocationId,
   type NafCode,
   optional,
@@ -245,6 +246,18 @@ describe("PgSearchesMadeRepository", () => {
     expectToEqual(await getSearchMadeById(db, searchMade.id), searchMade);
   });
 
+  it("with group", async () => {
+    const group: GroupSlug = "carrefour";
+    const searchMade: SearchMadeEntity = {
+      ...searchMadeWithoutLocation,
+      group,
+    };
+
+    await pgSearchesMadeRepository.insertSearchMade(searchMade);
+
+    expectToEqual(await getSearchMadeById(db, searchMade.id), searchMade);
+  });
+
   it("with all SearchMadeFilters", async () => {
     const { romeCodes: _, ...searchMade }: SearchMadeEntity = {
       ...searchMadeWithoutLocation,
@@ -257,6 +270,7 @@ describe("PgSearchesMadeRepository", () => {
       remoteWorkModes: ["FULL_REMOTE", "ON_SITE"],
       showOnlyAvailableOffers: true,
       sirets: ["12345678901234"],
+      group: "carrefour",
     };
 
     await pgSearchesMadeRepository.insertSearchMade(searchMade);
@@ -329,6 +343,7 @@ const getSearchMadeById = async (
         searchMadeResult.show_only_available_offers,
       ),
       sirets: optional(searchMadeResult.sirets) as SiretDto[] | undefined,
+      group: optional(searchMadeResult.group_slug) as GroupSlug | undefined,
       nafCodes,
     }
   );

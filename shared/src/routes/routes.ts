@@ -388,7 +388,10 @@ export const {
     () => "/desinscription-prospect",
   ),
   group: defineRoute(
-    { groupSlug: param.path.string },
+    {
+      groupSlug: param.path.string,
+      ...searchParams,
+    },
     (params) => `/groupe/${params.groupSlug}`,
   ),
   home: defineRoute("/"),

@@ -6,6 +6,7 @@ import {
   type DataWithPagination,
   errors,
   type GeoPositionDto,
+  type GroupSlug,
   type InternalOfferDto,
   type LocationId,
   path,
@@ -31,6 +32,7 @@ export class InMemoryEstablishmentAggregateRepository
   implements EstablishmentAggregateRepository
 {
   #establishmentAggregates: EstablishmentAggregate[] = [];
+  #siretsByGroupSlug: Partial<Record<GroupSlug, SiretDto[]>> = {};
 
   public async delete(siret: SiretDto): Promise<void> {
     const formEstablishmentIndex = this.#establishmentAggregates.findIndex(
@@ -48,6 +50,16 @@ export class InMemoryEstablishmentAggregateRepository
 
   public set establishmentAggregates(establishmentAggregates: EstablishmentAggregate[]) {
     this.#establishmentAggregates = establishmentAggregates;
+  }
+
+  public get siretsByGroupSlug(): Partial<Record<GroupSlug, SiretDto[]>> {
+    return this.#siretsByGroupSlug;
+  }
+
+  public set siretsByGroupSlug(siretsByGroupSlug: Partial<
+    Record<GroupSlug, SiretDto[]>
+  >,) {
+    this.#siretsByGroupSlug = siretsByGroupSlug;
   }
 
   public async getEstablishmentAggregateBySiret(
@@ -218,6 +230,14 @@ export class InMemoryEstablishmentAggregateRepository
             )
           : true,
       )
+      .filter((aggregate) => {
+        if (!filters.group) return true;
+        return (
+          this.#siretsByGroupSlug[filters.group]?.includes(
+            aggregate.establishment.siret,
+          ) ?? false
+        );
+      })
       .flatMap((aggregate) =>
         aggregate.offers
           .filter((offer) =>
