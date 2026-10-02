@@ -22,8 +22,11 @@ import { titleByRole } from "../role/role.utils";
 import { frontRoutes, makeRouteAbsoluteUrl } from "../routes/routes";
 import type { Firstname, Lastname } from "../user/user.dto";
 import { displayEmergencyContactInfos } from "../utils/beneficiary";
-import { isStringDate, toDisplayedDate } from "../utils/date";
-import { displayDuration, oneMinuteInSeconds } from "../utils/durations";
+import {
+  isStringDate,
+  toDisplayedDate,
+  toDisplayedParisTime,
+} from "../utils/date";
 import {
   getFormattedFirstnameAndLastname,
   joinWithCommasAnd,
@@ -2383,26 +2386,32 @@ Tél : ${beneficiaryPhone}`,
         "theme:authentification",
         "role:utilisateurInitiateur",
       ],
-      createEmailVariables: ({ loginLink, fullname, validMinutes }) => ({
-        subject: "Votre lien de connexion à Immersion Facilitée",
-        greetings: `Bonjour ${fullname ?? ""},`,
-        content: `Voici votre lien de connexion à Immersion Facilitée.
+      createEmailVariables: ({ loginLink, fullname, expiresAt }) => {
+        const displayedExpiresAt = toDisplayedParisTime({
+          date: new Date(expiresAt),
+        });
+
+        return {
+          subject: `Votre lien de connexion à Immersion Facilitée, valable jusqu’à ${displayedExpiresAt}`,
+          greetings: `Bonjour ${fullname ?? ""},`,
+          content: `Voici votre lien de connexion à Immersion Facilitée.
           Cliquez sur le bouton ci-dessous pour accéder à votre espace :`,
-        buttons: [
-          {
-            label: "Se connecter",
-            url: loginLink,
-          },
-        ],
-        subContent: `
-          Ce lien est valable pendant ${displayDuration({ durationInSeconds: validMinutes * oneMinuteInSeconds, format: "minutes" })} et ne peut être utilisé qu’une seule fois.
+          buttons: [
+            {
+              label: "Se connecter",
+              url: loginLink,
+            },
+          ],
+          subContent: `
+          Ce lien est valable jusqu’à ${displayedExpiresAt} et ne peut être utilisé qu’une seule fois.
           
           Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.
           
           À bientôt,
           L’équipe Immersion Facilitée
         `,
-      }),
+        };
+      },
     },
     MAGIC_LINK_RENEWAL: {
       niceName: "Renouvellement de lien",

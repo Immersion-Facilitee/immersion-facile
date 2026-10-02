@@ -1,5 +1,6 @@
 // Matches valid dates of the format 'yyyy-mm-dd'.
 import {
+  addDays,
   addHours,
   addYears,
   differenceInCalendarDays,
@@ -114,22 +115,33 @@ const isWinterClockHours = (date: Date): boolean => {
   return date < lastSundayMarch || date >= lastSundayOctober;
 };
 
+const getParisTotalHours = (date: Date): number => {
+  const parisOffset = isWinterClockHours(date) ? 1 : 2;
+  return date.getUTCHours() + parisOffset;
+};
+
+export const toDisplayedParisTime = ({ date }: { date: Date }): string => {
+  const hours = String(getParisTotalHours(date) % 24).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+
+  return `${hours}${hourDisplayedSeparator}${minutes} (heure de Paris)`;
+};
+
 export const toDisplayedDate = ({
   date,
   withHours = false,
 }:
   | { date: Date; withHours?: false }
   | { date: Date; withHours?: true }): string => {
-  const [year, month, day] = toDateUTCString(date).split("-");
-
   if (withHours) {
-    const parisOffset = isWinterClockHours(date) ? 1 : 2;
-    const hours = String(date.getUTCHours() + parisOffset).padStart(2, "0");
-    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const dateForDisplay =
+      getParisTotalHours(date) >= 24 ? addDays(date, 1) : date;
+    const [year, month, day] = toDateUTCString(dateForDisplay).split("-");
 
-    return `${day}/${month}/${year} à ${hours}h${minutes} (heure de Paris)`;
+    return `${day}/${month}/${year} à ${toDisplayedParisTime({ date })}`;
   }
 
+  const [year, month, day] = toDateUTCString(date).split("-");
   return `${day}/${month}/${year}`;
 };
 

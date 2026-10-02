@@ -1,6 +1,7 @@
 import {
   type AbsoluteUrl,
   type ConnectedUserQueryParams,
+  type DateTimeIsoString,
   decodeURIWithParams,
   type Email,
   type FrontRouteKeys,
@@ -139,21 +140,27 @@ export const makeGenerateEmailAuthCodeUrl =
     state,
     targetRoute,
     now,
-  }: GenerateEmailAuthCodeUrlParams): AbsoluteUrl => {
-    const jwt = generateEmailAuthCodeJwt(
-      createEmailAuthCodeJwtPayload({
-        now,
-        durationMinutes: config.emailAuthCodeJwtDurationInMinutes,
-        emailAuthCode: true,
-      }),
-    );
-
-    return makeRouteAbsoluteUrl({
-      route: frontRoutes[targetRoute]({
-        code: jwt,
-        email,
-        state,
-      }),
-      baseUrl: config.immersionFacileBaseUrl,
+  }: GenerateEmailAuthCodeUrlParams): {
+    url: AbsoluteUrl;
+    expiresAt: DateTimeIsoString;
+  } => {
+    const payload = createEmailAuthCodeJwtPayload({
+      now,
+      durationMinutes: config.emailAuthCodeJwtDurationInMinutes,
+      emailAuthCode: true,
     });
+    const jwt = generateEmailAuthCodeJwt(payload);
+    const expiresInMs = payload.exp * 1000;
+
+    return {
+      url: makeRouteAbsoluteUrl({
+        route: frontRoutes[targetRoute]({
+          code: jwt,
+          email,
+          state,
+        }),
+        baseUrl: config.immersionFacileBaseUrl,
+      }),
+      expiresAt: new Date(expiresInMs).toISOString(),
+    };
   };

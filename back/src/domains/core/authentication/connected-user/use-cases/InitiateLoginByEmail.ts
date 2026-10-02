@@ -4,7 +4,6 @@ import {
   immersionFacileNoReplyEmailSender,
   initiateLoginByEmailParamsSchema,
 } from "shared";
-import type { AppConfig } from "../../../../../config/bootstrap/appConfig";
 import type { GenerateEmailAuthCodeUrl } from "../../../../../config/bootstrap/magicLinkUrl";
 import type { SaveNotificationAndRelatedEvent } from "../../../notifications/helpers/Notification";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
@@ -16,7 +15,6 @@ export const makeInitiateLoginByEmail = useCaseBuilder("InitiateLoginByEmail")
   .withInput<InitiateLoginByEmailParams>(initiateLoginByEmailParamsSchema)
   .withOutput<void>()
   .withDeps<{
-    config: AppConfig;
     saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
     uuidGenerator: UuidGenerator;
     generateEmailAuthCodeUrl: GenerateEmailAuthCodeUrl;
@@ -25,6 +23,12 @@ export const makeInitiateLoginByEmail = useCaseBuilder("InitiateLoginByEmail")
   .build(async ({ inputParams: { email, redirectUri }, uow, deps }) => {
     const nonce = deps.uuidGenerator.new();
     const state = deps.uuidGenerator.new();
+    const { url: loginLink, expiresAt } = deps.generateEmailAuthCodeUrl({
+      state,
+      now: deps.timeGateway.now(),
+      targetRoute: "magicLinkInterstitial",
+      email,
+    });
 
     const user = await uow.userRepository.findByEmail(email);
 
@@ -47,13 +51,8 @@ export const makeInitiateLoginByEmail = useCaseBuilder("InitiateLoginByEmail")
           recipients: [email],
           sender: immersionFacileNoReplyEmailSender,
           params: {
-            validMinutes: deps.config.emailAuthCodeJwtDurationInMinutes,
-            loginLink: deps.generateEmailAuthCodeUrl({
-              state,
-              now: deps.timeGateway.now(),
-              targetRoute: "magicLinkInterstitial",
-              email,
-            }),
+            expiresAt,
+            loginLink,
             fullname: getFormattedFirstnameAndLastname({
               firstname: user?.firstName,
               lastname: user?.lastName,

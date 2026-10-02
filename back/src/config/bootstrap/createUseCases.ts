@@ -1149,7 +1149,6 @@ export const createUseCases = ({
     initiateLoginByEmail: makeInitiateLoginByEmail({
       uowPerformer,
       deps: {
-        config,
         timeGateway,
         uuidGenerator,
         saveNotificationAndRelatedEvent,

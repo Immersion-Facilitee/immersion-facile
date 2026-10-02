@@ -130,7 +130,10 @@ export const createEmailAuthCodeJwtPayload = ({
   durationMinutes,
   expOverride,
   emailAuthCode,
-}: EmailAuthCodeJwtPayloadProperties): EmailAuthCodeJwtPayload => {
+}: EmailAuthCodeJwtPayloadProperties): EmailAuthCodeJwtPayload & {
+  iat: number;
+  exp: number;
+} => {
   const iat = Math.round(now.getTime() / 1000);
   const exp = expOverride ?? iat + durationMinutes * oneMinuteInSeconds;
 
