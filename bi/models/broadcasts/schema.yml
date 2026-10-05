@@ -16,22 +16,6 @@ models:
           - not_null
       - name: convention_id
         description: UUID of the broadcasted convention
-      - name: occurred_at
-        description: Timestamp of the broadcast
-      - name: consumer_name
-        description: Name of the broadcast recipient (France Travail or API consumer)
-      - name: error_message
-        description: Error message of the failed broadcast, null when it succeeded
-      - name: http_status
-        description: HTTP status returned by the recipient, null on network errors
-      - name: error_kind
-        description: |
-          functional when error_message is one of the business errors known by the application
-          (shared functionalBroadcastFeedbackErrorMessage), technical otherwise, null when the broadcast succeeded
-      - name: technical_error_response_body
-        description: Body returned by the recipient, only for technical errors
-      - name: handled_by_agency
-        description: Whether the agency marked the error as handled
       - name: convention_status
         description: Status of the convention when it was broadcasted
       - name: agency_id
@@ -40,3 +24,21 @@ models:
         description: Kind of the convention agency (e.g. mission-locale, france-travail)
       - name: agency_department_code
         description: Department code of the convention agency
+      - name: occurred_at
+        description: Timestamp of the broadcast
+      - name: consumer_name
+        description: Name of the broadcast recipient (France Travail or API consumer)
+      - name: http_status
+        description: HTTP status returned by the recipient, null on network errors
+      - name: error_message
+        description: Error message of the failed broadcast, null when it succeeded
+      - name: error_code
+        description: Error code returned by the recipient in the response body (codeErreur, e.g. EX_EX158_EDI_004)
+      - name: error_kind
+        description: |
+          functional when error_message is one of the business errors known by the application
+          (shared functionalBroadcastFeedbackErrorMessage), technical otherwise, null when the broadcast succeeded
+      - name: technical_error_response_body
+        description: Body returned by the recipient, only for technical errors
+      - name: handled_by_agency
+        description: Whether the agency marked the error as handled
