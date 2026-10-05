@@ -175,11 +175,13 @@ export const isBeneficiaryMinor = ({
       beneficiaryBirthdate,
     ));
 
-export const clearSignaturesAndValidationDate = <C extends ConventionDto>(
+export const clearSignaturesAndValidation = <C extends ConventionDto>(
   convention: C,
 ): C => ({
   ...convention,
   dateValidation: undefined,
+  dateApproval: undefined,
+  validators: undefined,
   signatories: mapObjIndexed(
     (value) => ({
       ...value,
