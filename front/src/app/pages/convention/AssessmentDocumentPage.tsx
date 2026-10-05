@@ -12,6 +12,7 @@ import {
   domElementIds,
   escapeHtml,
   frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   immersionFacileHelpdeskRootUrl,
   isAssessmentDto,
@@ -278,9 +279,7 @@ export const AssessmentDocumentPage = ({
           firstname: convention.signatories.beneficiary.firstName,
           lastname: convention.signatories.beneficiary.lastName,
         })}
-        businessName={
-          convention.businessNameCustomized?.trim() || convention.businessName
-        }
+        businessName={getDisplayedBusinessName(convention)}
         internshipKind={convention.internshipKind}
         showPrintButton={!isSignatureRequired}
         customActions={
@@ -326,9 +325,10 @@ export const AssessmentDocumentPage = ({
           })}{" "}
           au sein de{" "}
           <strong>
+            {getDisplayedBusinessName(convention)}
             {convention.businessNameCustomized?.trim()
-              ? `${convention.businessNameCustomized.trim()}, dont la raison sociale est ${convention.businessName}`
-              : convention.businessName}
+              ? `, dont la raison sociale est ${convention.businessName}`
+              : ""}
           </strong>{" "}
           (Siret n°
           <a

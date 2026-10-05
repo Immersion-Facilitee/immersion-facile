@@ -18,6 +18,7 @@ import {
   domElementIds,
   errors,
   type frontRoutes,
+  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   isConventionRenewed,
   isStringDate,
@@ -195,9 +196,7 @@ export const ConventionDocumentPage = ({
           firstname: beneficiary.firstName,
           lastname: beneficiary.lastName,
         })}
-        businessName={
-          convention.businessNameCustomized?.trim() || convention.businessName
-        }
+        businessName={getDisplayedBusinessName(convention)}
         internshipKind={internshipKind}
         customActions={[
           <Button
@@ -303,10 +302,7 @@ export const ConventionDocumentPage = ({
               </strong>{" "}
               en qualité de{" "}
               <strong>
-                représentant de{" "}
-                {convention.businessNameCustomized?.trim()
-                  ? convention.businessNameCustomized.trim()
-                  : convention.businessName}
+                représentant de {getDisplayedBusinessName(convention)}
               </strong>
               {convention.businessNameCustomized?.trim() && (
                 <span>
@@ -447,11 +443,7 @@ export const ConventionDocumentPage = ({
         <p>
           {internshipKind === "immersion" ? "Cette immersion" : "Ce mini-stage"}{" "}
           se déroulera au sein de{" "}
-          <strong>
-            {convention.businessNameCustomized?.trim()
-              ? convention.businessNameCustomized.trim()
-              : convention.businessName}
-          </strong>{" "}
+          <strong>{getDisplayedBusinessName(convention)}</strong>{" "}
           {convention.businessNameCustomized?.trim() && (
             <span>, dont la raison sociale est {convention.businessName}</span>
           )}
