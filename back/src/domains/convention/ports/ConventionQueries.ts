@@ -101,6 +101,7 @@ export type GetConventionIdsParams = {
     };
   };
   limit?: number;
+  sortBy?: GetConventionsSortBy;
 };
 
 export interface ConventionQueries {

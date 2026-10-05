@@ -1069,6 +1069,88 @@ describe("Pg implementation of ConventionQueries", () => {
         );
       });
     });
+
+    describe.each(["Pg", "InMemory"] as const)("%s sortBy", (adapter) => {
+      const conventionValidatedEarlierWithLaterStart =
+        new ConventionDtoBuilder()
+          .withId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateStart("2026-02-01")
+          .withDateEnd("2026-02-10")
+          .withDateValidation("2026-01-01")
+          .build();
+
+      const conventionValidatedLaterWithEarlierStart =
+        new ConventionDtoBuilder()
+          .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
+          .withAgencyId(agency.id)
+          .withStatus("ACCEPTED_BY_VALIDATOR")
+          .withDateStart("2026-01-01")
+          .withDateEnd("2026-01-10")
+          .withDateValidation("2026-02-01")
+          .build();
+
+      let queries: ConventionQueries;
+      let conventions: ConventionRepository;
+
+      beforeEach(async () => {
+        if (adapter === "Pg") {
+          queries = conventionQueries;
+          conventions = conventionRepository;
+        } else {
+          const uow = createInMemoryUow();
+          queries = uow.conventionQueries;
+          conventions = uow.conventionRepository;
+          await uow.agencyRepository.insert(
+            toAgencyWithRights(agency, {
+              [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+            }),
+          );
+        }
+
+        await conventions.save(conventionValidatedLaterWithEarlierStart);
+        await conventions.save(conventionValidatedEarlierWithLaterStart);
+      });
+
+      if (adapter === "Pg") {
+        it("sorts by dateStart desc by default", async () => {
+          expectToEqual(
+            await queries.getConventionIdsByFilters({ filters: {} }),
+            [
+              conventionValidatedEarlierWithLaterStart.id,
+              conventionValidatedLaterWithEarlierStart.id,
+            ],
+          );
+        });
+      }
+
+      it("sorts by dateStart desc when sortBy is dateStart", async () => {
+        expectToEqual(
+          await queries.getConventionIdsByFilters({
+            filters: {},
+            sortBy: "dateStart",
+          }),
+          [
+            conventionValidatedEarlierWithLaterStart.id,
+            conventionValidatedLaterWithEarlierStart.id,
+          ],
+        );
+      });
+
+      it("sorts by dateValidation desc when sortBy is dateValidation", async () => {
+        expectToEqual(
+          await queries.getConventionIdsByFilters({
+            filters: {},
+            sortBy: "dateValidation",
+          }),
+          [
+            conventionValidatedLaterWithEarlierStart.id,
+            conventionValidatedEarlierWithLaterStart.id,
+          ],
+        );
+      });
+    });
   });
 
   describe.each(["Pg", "InMemory"] as const)(

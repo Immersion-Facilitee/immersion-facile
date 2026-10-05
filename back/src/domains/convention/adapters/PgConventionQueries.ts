@@ -90,12 +90,18 @@ export class PgConventionQueries implements ConventionQueries {
       withValidationDate,
     },
     limit,
+    sortBy = "dateStart",
   }: GetConventionIdsParams): Promise<ConventionId[]> {
+    const sortByKey: Record<
+      GetConventionsSortBy,
+      keyof Pick<Database["conventions"], "date_start" | "date_validation">
+    > = {
+      dateStart: "date_start",
+      dateValidation: "date_validation",
+    };
+
     const pgResults = await pipeWithValue(
-      this.transaction
-        .selectFrom("conventions")
-        .select("conventions.id")
-        .orderBy("conventions.date_start", "desc"),
+      this.transaction.selectFrom("conventions").select("conventions.id"),
       (qb) =>
         withAgencyIds && withAgencyIds.length > 0
           ? qb.where("conventions.agency_id", "in", withAgencyIds)
@@ -219,7 +225,10 @@ export class PgConventionQueries implements ConventionQueries {
                   : qb,
             )
           : qb,
-      (qb) => qb.orderBy("conventions.date_start", "desc").orderBy("id", "asc"),
+      (qb) =>
+        qb
+          .orderBy(`conventions.${sortByKey[sortBy]}`, "desc")
+          .orderBy("id", "asc"),
       (qb) => (limit ? qb.limit(limit) : qb),
     ).execute();
 
@@ -237,7 +246,7 @@ export class PgConventionQueries implements ConventionQueries {
     sortBy,
     limit,
   }: GetConventionsParams): Promise<ConventionDto[]> {
-    const conventionsSortByDateToDatabaseConventionsOrderBy: Record<
+    const sortByKey: Record<
       GetConventionsSortBy,
       keyof Pick<Database["conventions"], "date_start" | "date_validation">
     > = {
@@ -249,10 +258,7 @@ export class PgConventionQueries implements ConventionQueries {
       createConventionQueryBuilder(this.transaction, false),
       addFiltersToBuilder(filters),
       (builder) =>
-        builder.orderBy(
-          `conventions.${conventionsSortByDateToDatabaseConventionsOrderBy[sortBy]}`,
-          "desc",
-        ),
+        builder.orderBy(`conventions.${sortByKey[sortBy]}`, "desc"),
       (builder) => (limit ? builder.limit(limit) : builder),
       (builder) => builder.execute(),
       andThen(validateConventionResults),
