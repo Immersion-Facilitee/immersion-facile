@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { businessNameSchema } from "../establishment/businessComponents.schema";
 import type { DataWithPagination } from "../pagination/pagination.dto";
-import {
-  createPaginatedSchema,
-  paginationQueryParamsSchema,
-} from "../pagination/pagination.schema";
+import { createPaginatedSchema } from "../pagination/pagination.schema";
 import { appellationAndRomeDtoSchema } from "../romeAndAppellationDtos/romeAndAppellation.schema";
 import {
   firstnameMandatorySchema,
@@ -18,10 +15,7 @@ import {
   conventionIdSchema,
   conventionStatusSchema,
 } from "./convention.schema";
-import type {
-  EstablishmentUserConventionListDto,
-  GetConventionsForEstablishmentUserParams,
-} from "./establishmentUserConventionList.dto";
+import type { EstablishmentUserConventionListDto } from "./establishmentUserConventionList.dto";
 
 export const establishmentUserConventionListDtoSchema: ZodSchemaWithInputMatchingOutput<EstablishmentUserConventionListDto> =
   z.object({
@@ -41,6 +35,3 @@ export const establishmentUserConventionListDtoSchema: ZodSchemaWithInputMatchin
 export const paginatedEstablishmentUserConventionListSchema: ZodSchemaWithInputMatchingOutput<
   DataWithPagination<EstablishmentUserConventionListDto>
 > = createPaginatedSchema(establishmentUserConventionListDtoSchema);
-
-export const getConventionsForEstablishmentUserParamsSchema: ZodSchemaWithInputMatchingOutput<GetConventionsForEstablishmentUserParams> =
-  paginationQueryParamsSchema;

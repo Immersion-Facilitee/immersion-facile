@@ -76,9 +76,7 @@ export const EstablishmentConventionList = ({
       )}
       <WithFeedbackReplacer topic={establishmentConventionListFeedbackTopic}>
         <RichTable
-          headers={getEstablishmentConventionTableHeaders(
-            hasConventions || isLoading,
-          )}
+          headers={getEstablishmentConventionTableHeaders(hasConventions)}
           isLoading={isLoading}
           data={toEstablishmentConventionTableData(conventions)}
           pagination={{
@@ -121,14 +119,17 @@ const toEstablishmentConventionTableData = (
 ): ReactNode[][] =>
   conventions.map((convention) => [
     <Fragment key={`${convention.id}-beneficiary`}>
-      <strong>
-        {getFormattedFirstnameAndLastname({
-          firstname: convention.beneficiary.firstName,
-          lastname: convention.beneficiary.lastName,
-        })}
-      </strong>
-      <br />
-      {`${convention.immersionAppellation.appellationLabel} (${convention.businessName})`}
+      <p>
+        <strong>
+          {getFormattedFirstnameAndLastname({
+            firstname: convention.beneficiary.firstName,
+            lastname: convention.beneficiary.lastName,
+          })}
+        </strong>
+      </p>
+      <p>
+        {`${convention.immersionAppellation.appellationLabel} (${convention.businessName})`}
+      </p>
     </Fragment>,
     <Fragment key={`${convention.id}-status`}>
       <ConventionStatusBadge
