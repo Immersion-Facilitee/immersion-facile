@@ -178,7 +178,7 @@ describe("RenewConvention", () => {
       },
     );
 
-    it("clears validators and dateApproval when renewing a pre-validated convention", async () => {
+    it("clears signatures validators and dateApproval when renewing a pre-validated convention", async () => {
       const preValidatedConvention = new ConventionDtoBuilder(
         existingValidatedConvention,
       )

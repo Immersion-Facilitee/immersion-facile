@@ -1057,6 +1057,50 @@ describe("PgConventionRepository", () => {
         conventionBackToReadyToSign,
       );
     });
+
+    it("Update convention with validators and drops them when undefined", async () => {
+      const conventionId: ConventionId = "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa";
+      const convention = conventionStylisteBuilder
+        .withId(conventionId)
+        .withStatus("IN_REVIEW")
+        .build();
+      await conventionRepository.save(convention, anyConventionUpdatedAt);
+
+      const updatedConvention = conventionStylisteBuilder
+        .withId(conventionId)
+        .withStatus("ACCEPTED_BY_COUNSELLOR")
+        .withCounsellor({ firstname: "Billy", lastname: "Idol" })
+        .withValidator({ firstname: "John", lastname: "Doe" })
+        .withDateStart(new Date("2024-10-20").toISOString())
+        .withDateEnd(new Date("2024-10-24").toISOString())
+        .build();
+
+      await conventionRepository.update(
+        updatedConvention,
+        anyConventionUpdatedAt,
+      );
+
+      expectToEqual(
+        await conventionRepository.getById(conventionId),
+        updatedConvention,
+      );
+
+      const conventionWithoutValidators: ConventionDto = {
+        ...updatedConvention,
+        status: "READY_TO_SIGN",
+        validators: undefined,
+      };
+
+      await conventionRepository.update(
+        conventionWithoutValidators,
+        anyConventionUpdatedAt,
+      );
+
+      expectToEqual(
+        await conventionRepository.getById(conventionId),
+        conventionWithoutValidators,
+      );
+    });
   });
 
   describe("deprecateConventionsWithoutDefinitiveStatusEndedSince", () => {
