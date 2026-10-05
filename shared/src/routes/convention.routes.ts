@@ -43,10 +43,7 @@ import {
   flatGetConventionsWithUnfinalizedAssessmentParamsSchema,
   paginatedConventionWithUnfinalizedAssessmentSchema,
 } from "../convention/conventionWithUnfinalizedAssessment.schema";
-import {
-  getConventionsForEstablishmentUserParamsSchema,
-  paginatedEstablishmentUserConventionListSchema,
-} from "../convention/establishmentUserConventionList.schema";
+import { paginatedEstablishmentUserConventionListSchema } from "../convention/establishmentUserConventionList.schema";
 import {
   conventionDraftSchema,
   saveConventionDraftSchema,
@@ -58,6 +55,7 @@ import {
   sendAssessmentLinkRequestSchema,
   sendSignatureLinkRequestSchema,
 } from "../notifications/notifications.schema";
+import { paginationQueryParamsSchema } from "../pagination/pagination.schema";
 import { renewExpiredJwtResponseSchema } from "../tokens/jwt.schema";
 import {
   expressEmptyResponseBody,
@@ -407,7 +405,7 @@ export const authenticatedConventionRoutes = defineRoutes({
     method: "get",
     url: "/conventions-for-establishment-user",
     ...withAuthorizationHeaders,
-    queryParamsSchema: getConventionsForEstablishmentUserParamsSchema,
+    queryParamsSchema: paginationQueryParamsSchema,
     responses: {
       200: paginatedEstablishmentUserConventionListSchema,
       400: httpErrorSchema,

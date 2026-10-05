@@ -6,9 +6,10 @@ import {
   type DataWithPagination,
   defaultMonthsThresholdForConventionsListing,
   type EstablishmentUserConventionListDto,
-  type GetConventionsForEstablishmentUserParams,
-  getConventionsForEstablishmentUserParamsSchema,
+  getDisplayedBusinessName,
   getPaginationParamsForWeb,
+  type PaginationQueryParams,
+  paginationQueryParamsSchema,
   partitionUserEstablishmentRightsByStatus,
 } from "shared";
 import { assesmentEntityToConventionAssessmentFields } from "../../../utils/convention";
@@ -19,9 +20,7 @@ import type { AssessmentEntity } from "../entities/AssessmentEntity";
 export const makeGetConventionsForEstablishmentUser = useCaseBuilder(
   "GetConventionsForEstablishmentUser",
 )
-  .withInput<GetConventionsForEstablishmentUserParams>(
-    getConventionsForEstablishmentUserParamsSchema,
-  )
+  .withInput<PaginationQueryParams>(paginationQueryParamsSchema)
   .withOutput<DataWithPagination<EstablishmentUserConventionListDto>>()
   .withCurrentUser<ConnectedUser>()
   .withDeps<{ timeGateway: TimeGateway }>()
@@ -80,14 +79,13 @@ const toEstablishmentUserConventionListDto = (
   assessment: AssessmentEntity | undefined,
 ): EstablishmentUserConventionListDto => {
   const { beneficiary } = convention.signatories;
-  const customizedName = convention.businessNameCustomized?.trim();
 
   return {
     id: convention.id,
     status: convention.status,
     dateStart: convention.dateStart,
     dateEnd: convention.dateEnd,
-    businessName: customizedName ?? convention.businessName,
+    businessName: getDisplayedBusinessName(convention),
     immersionAppellation: convention.immersionAppellation,
     assessment:
       assesmentEntityToConventionAssessmentFields(assessment).assessment,

@@ -30,9 +30,9 @@ import type {
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   FlatGetConventionsWithUnfinalizedAssessmentParams,
-  GetConventionsForEstablishmentUserParams,
   HandleArchivedConventionRequestDto,
   MarkPartnersErroredConventionAsHandledRequest,
+  PaginationQueryParams,
   RenewConventionParams,
   SaveConventionDraftDto,
   SendSignatureLinkRequestDto,
@@ -564,7 +564,7 @@ export class HttpConventionGateway implements ConventionGateway {
   }
 
   public getConventionsForEstablishmentUser$(
-    params: GetConventionsForEstablishmentUserParams,
+    params: PaginationQueryParams,
     jwt: string,
   ): Observable<DataWithPagination<EstablishmentUserConventionListDto>> {
     return from(

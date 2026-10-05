@@ -8,7 +8,7 @@ import {
   type EstablishmentUserConventionListDto,
   type FlatGetBeneficiaryConventionListParams,
   type FlatGetConventionsForAgencyUserParams,
-  type GetConventionsForEstablishmentUserParams,
+  type PaginationQueryParams,
 } from "shared";
 
 import type {
@@ -28,7 +28,7 @@ export type FetchBeneficiaryConventionListRequestedPayload = {
 
 export type FetchEstablishmentConventionListRequestedPayload = {
   jwt: ConnectedUserJwt;
-  filters: GetConventionsForEstablishmentUserParams;
+  filters: PaginationQueryParams;
 };
 
 export type BeneficiaryConventionListState = BeneficiaryConventionListDto & {
@@ -42,7 +42,7 @@ export type ConventionListState = {
   };
   beneficiaryConventionList: BeneficiaryConventionListState;
   establishmentConventionList: DataWithPagination<EstablishmentUserConventionListDto> & {
-    filters: GetConventionsForEstablishmentUserParams;
+    filters: PaginationQueryParams;
   };
 };
 
@@ -80,7 +80,7 @@ export const initialBeneficiaryConventionList: BeneficiaryConventionListState =
   };
 
 export const initialEstablishmentConventionList: DataWithPagination<EstablishmentUserConventionListDto> & {
-  filters: GetConventionsForEstablishmentUserParams;
+  filters: PaginationQueryParams;
 } = {
   data: [],
   pagination: {
