@@ -1,5 +1,5 @@
 import { parseISO } from "date-fns";
-import { createTemplatesByName } from "html-templates";
+import { createEmailTemplate, createTemplatesByName } from "html-templates";
 import {
   type AbsoluteUrl,
   immersionFacileHelpdeskRootUrl,
@@ -1705,6 +1705,105 @@ Tél : ${beneficiaryPhone}`,
       `,
       }),
     },
+    DEMO_EMAIL_COMPONENTS: createEmailTemplate({
+      niceName: "[DEMO] Composants email",
+      tags: ["template:demo_email_components"],
+      createEmailVariables: ({ agencyLogoUrl, demoUrl, internshipKind }) => ({
+        subject: `[DEMO] Composants email (${internshipKind})`,
+        agencyLogoUrl,
+        greetings: `<strong>[FIGE] greetings</strong>
+          Toujours juste sous le header, jamais déplaçable.`,
+        blocks: [
+          {
+            kind: "paragraph",
+            content: `paragraph — avec du HTML en ligne : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>.`,
+          },
+          {
+            kind: "list",
+            items: [
+              "list — état 1 : à puces",
+              "deuxième élément, avec du <strong>gras</strong>",
+              `troisième élément, avec un <a href="${demoUrl}">lien</a>`,
+            ],
+          },
+          {
+            kind: "list",
+            numbered: true,
+            items: [
+              "list — état 2 : numérotée",
+              "deuxième élément",
+              "troisième élément",
+            ],
+          },
+          {
+            kind: "buttons",
+            buttons: [
+              {
+                label: "buttons — état 1 : seul",
+                url: demoUrl,
+                target: "_blank",
+              },
+            ],
+          },
+          {
+            kind: "buttons",
+            buttons: [
+              {
+                label: "buttons — état 2 : premier",
+                url: demoUrl,
+                target: "_blank",
+              },
+              { label: "deuxième", url: demoUrl, target: "_blank" },
+              { label: "troisième", url: demoUrl, target: "_blank" },
+            ],
+          },
+          {
+            kind: "highlight",
+            variant: "info",
+            content: "highlight — variante info (bleu)",
+          },
+          {
+            kind: "highlight",
+            variant: "success",
+            content: "highlight — variante success (vert)",
+          },
+          {
+            kind: "highlight",
+            variant: "warning",
+            content: "highlight — variante warning (orange)",
+          },
+          {
+            kind: "highlight",
+            variant: "error",
+            content: "highlight — variante error (rouge)",
+          },
+          {
+            kind: "paragraph",
+            content: "marginBottom — sm (8px)",
+            marginBottom: "sm",
+          },
+          {
+            kind: "paragraph",
+            content: "marginBottom — md (16px), valeur par défaut",
+          },
+          {
+            kind: "paragraph",
+            content: "marginBottom — lg (32px)",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "bloc suivant",
+          },
+        ],
+        signature: `<strong>[FIGE] signature</strong>
+          Toujours après le corps, avant les mentions légales.
+          ${defaultSignature(internshipKind)}`,
+        legals: `[FIGE] legals
+          Toujours en dernier, précédé d'un filet bleu clair. Le footer vient juste après, automatiquement.`,
+        attachmentUrls: [emailAttachements.memoBeneficiary],
+      }),
+    }),
     DEPRECATED_CONVENTION_NOTIFICATION: {
       niceName: "Convention - Obsolète",
       tags: [
