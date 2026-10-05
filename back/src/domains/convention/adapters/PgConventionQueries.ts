@@ -257,8 +257,7 @@ export class PgConventionQueries implements ConventionQueries {
     return pipeWithValue(
       createConventionQueryBuilder(this.transaction, false),
       addFiltersToBuilder(filters),
-      (builder) =>
-        builder.orderBy(`conventions.${sortByKey[sortBy]}`, "desc"),
+      (builder) => builder.orderBy(`conventions.${sortByKey[sortBy]}`, "desc"),
       (builder) => (limit ? builder.limit(limit) : builder),
       (builder) => builder.execute(),
       andThen(validateConventionResults),
