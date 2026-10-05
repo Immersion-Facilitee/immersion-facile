@@ -864,6 +864,39 @@ describe("Update Convention", () => {
       ]);
     });
 
+    it("clears validators when updating convention", async () => {
+      const storedConvention = new ConventionDtoBuilder(
+        acceptedByCounsellorConvention,
+      )
+        .withCounsellor({ firstname: "Billy", lastname: "Idol" })
+        .withValidator({ firstname: "John", lastname: "Doe" })
+        .build();
+
+      uow.conventionRepository.setConventions([storedConvention]);
+
+      const updatedConvention = new ConventionDtoBuilder(storedConvention)
+        .withStatus("READY_TO_SIGN")
+        .withBeneficiaryEmail("new@email.fr")
+        .withStatusJustification("justif")
+        .notSigned()
+        .build();
+
+      await updateConvention.execute(
+        {
+          convention: updatedConvention,
+        },
+        { userId: backofficeAdminUser.id },
+      );
+
+      expectToEqual(uow.conventionRepository.conventions, [
+        {
+          ...updatedConvention,
+          dateApproval: undefined,
+          validators: undefined,
+        },
+      ]);
+    });
+
     it.each(statusTransitionConfigs.READY_TO_SIGN.validInitialStatuses)(
       "allows when convention initial status is %s",
       async (initialStatus: ConventionStatus) => {

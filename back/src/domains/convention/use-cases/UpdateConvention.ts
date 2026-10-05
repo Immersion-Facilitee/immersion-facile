@@ -92,6 +92,7 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
           ? {
               ...convention,
               dateApproval: undefined,
+              validators: undefined,
               signatories: clearSignedAtForAllSignatories(
                 convention.signatories,
               ),
@@ -99,6 +100,7 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
           : {
               ...convention,
               dateApproval: undefined,
+              validators: undefined,
               signatories: clearSignedAtForAllSignatories(
                 convention.signatories,
               ),
