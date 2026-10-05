@@ -306,15 +306,16 @@ const getAgencyStatusWhenNoRemainingAdminOrValidator = async ({
     return "closed";
   }
 
-  const acceptedConventions = await uow.conventionQueries.getConventions({
-    filters: {
-      agencyIds: [agencyId],
-      withStatuses: ["ACCEPTED_BY_VALIDATOR"],
-    },
-    sortBy: "dateStart",
-  });
+  const acceptedConventionIds =
+    await uow.conventionQueries.getConventionIdsByFilters({
+      filters: {
+        withAgencyIds: [agencyId],
+        withStatuses: ["ACCEPTED_BY_VALIDATOR"],
+      },
+      limit: 1,
+    });
 
-  return acceptedConventions.length ? "closed" : "rejected";
+  return acceptedConventionIds.length ? "closed" : "rejected";
 };
 
 const getMostActiveUserId = (
