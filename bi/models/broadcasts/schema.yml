@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: broadcast_feedbacks
+    description: |
+      Convention broadcast feedbacks (France Travail and API subscribers), successes and errors,
+      with the main JSON fields of the request, the response and the error flattened into columns.
+      Replaces the Metabase V1 question on broadcast_feedbacks.
+      Grain: 1 row per broadcast feedback.
+    columns:
+      - name: id
+        description: Primary key - ID of the broadcast feedback
+        tests:
+          - unique
+          - not_null
+      - name: request_params_callback_url
+        description: Callback URL of the API subscriber
+      - name: request_params_convention_id
+        description: UUID of the broadcasted convention, from the request parameters
+      - name: request_params_convention_status
+        description: Status of the convention when broadcasted
+      - name: response_body
+        description: Body returned by the recipient
+      - name: response_body_code_erreur
+        description: Error code returned by France Travail
+      - name: response_body_code_http
+        description: HTTP code reported in the response body by France Travail
+      - name: response_body_message
+        description: Message returned in the response body
+      - name: response_http_status
+        description: HTTP status returned by the recipient
+      - name: subscriber_error_feedback_message
+        description: Error message of the failed broadcast
+      - name: service_name
+        description: Name of the service that performed the broadcast
+      - name: request_params
+        description: Raw request parameters (JSON)
+      - name: occurred_at
+        description: Timestamp of the broadcast
+      - name: handled_by_agency
+        description: Whether the agency marked the error as handled
+      - name: consumer_id
+        description: ID of the API consumer, null for France Travail broadcasts
+      - name: consumer_name
+        description: Name of the broadcast recipient
+      - name: subscriber_error_feedback
+        description: Raw error feedback (JSON)
+      - name: response
+        description: Raw response (JSON)
+      - name: convention_id
+        description: UUID of the broadcasted convention
+      - name: agency_id
+        description: UUID of the convention agency
