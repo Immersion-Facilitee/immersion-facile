@@ -349,7 +349,7 @@ export const createUseCases = ({
 
     renewConvention: makeRenewConvention({
       uowPerformer,
-      deps: { addConvention },
+      deps: { addConvention, timeGateway },
     }),
     updateConvention: makeUpdateConvention({
       uowPerformer,
