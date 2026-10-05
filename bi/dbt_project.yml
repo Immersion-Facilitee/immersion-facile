@@ -40,6 +40,7 @@ on-run-end:
   - "ANALYZE public_analytics.discussion_with_number_of_exchanges"
   - "ANALYZE public_analytics.groups"
   - "ANALYZE public_analytics.groups_sirets"
+  - "ANALYZE public_analytics.broadcast_feedbacks"
 
 models:
   immersion_bi:
