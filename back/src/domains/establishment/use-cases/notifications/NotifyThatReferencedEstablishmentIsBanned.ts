@@ -40,10 +40,16 @@ export const makeNotifyThatReferencedEstablishmentIsBanned = useCaseBuilder(
     if (!establishment.establishment.isEstablishmentBanned)
       throw errors.establishment.establishmentNotBanned({ siret });
 
+    const displayedBusinessName = getDisplayedBusinessName({
+      businessName: establishment.establishment.name,
+      businessNameCustomized: establishment.establishment.customizedName,
+    });
+
     await notifyEstablishmentUsers(
       uow,
       deps.saveNotificationAndRelatedEvent,
       establishment,
+      displayedBusinessName,
     );
 
     await notifyBeneficiaries(
@@ -51,6 +57,7 @@ export const makeNotifyThatReferencedEstablishmentIsBanned = useCaseBuilder(
       deps.saveNotificationAndRelatedEvent,
       deps.immersionBaseUrl,
       establishment,
+      displayedBusinessName,
     );
 
     await notifyValidatorsAndCounsellors(
@@ -59,6 +66,7 @@ export const makeNotifyThatReferencedEstablishmentIsBanned = useCaseBuilder(
       deps.saveNotificationAndRelatedEvent,
       deps.immersionBaseUrl,
       establishment,
+      displayedBusinessName,
     );
   });
 
@@ -66,6 +74,7 @@ const notifyEstablishmentUsers = async (
   uow: UnitOfWork,
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent,
   bannedEstablishment: EstablishmentAggregate,
+  displayedBusinessName: string,
 ) => {
   const userRightIds = bannedEstablishment.userRights
     .filter(
@@ -77,11 +86,6 @@ const notifyEstablishmentUsers = async (
 
   const users = await uow.userRepository.getByIds(userRightIds);
 
-  const businessName = getDisplayedBusinessName({
-    businessName: bannedEstablishment.establishment.name,
-    businessNameCustomized: bannedEstablishment.establishment.customizedName,
-  });
-
   await executeInSequence(users, (user) =>
     saveNotificationAndRelatedEvent(uow, {
       kind: "email",
@@ -89,7 +93,7 @@ const notifyEstablishmentUsers = async (
         kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS",
         recipients: [user.email],
         params: {
-          businessName,
+          businessName: displayedBusinessName,
           siret: bannedEstablishment.establishment.siret,
         },
       },
@@ -105,6 +109,7 @@ const notifyBeneficiaries = async (
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent,
   immersionBaseUrl: AbsoluteUrl,
   bannedEstablishment: EstablishmentAggregate,
+  displayedBusinessName: string,
 ) => {
   const discussions = await uow.discussionRepository.getDiscussions({
     filters: { sirets: [bannedEstablishment.establishment.siret] },
@@ -113,11 +118,6 @@ const notifyBeneficiaries = async (
 
   const pendingDiscussions = discussions.filter((d) => d.status === "PENDING");
 
-  const businessName = getDisplayedBusinessName({
-    businessName: bannedEstablishment.establishment.name,
-    businessNameCustomized: bannedEstablishment.establishment.customizedName,
-  });
-
   await executeInSequence(pendingDiscussions, (discussion) =>
     saveNotificationAndRelatedEvent(uow, {
       kind: "email",
@@ -125,7 +125,7 @@ const notifyBeneficiaries = async (
         kind: "ESTABLISHMENT_BANNED_NOTIFICATION_TO_BENEFICIARY",
         recipients: [discussion.potentialBeneficiary.email],
         params: {
-          businessName,
+          businessName: displayedBusinessName,
           beneficiaryFirstName: discussion.potentialBeneficiary.firstName,
           beneficiaryLastName: discussion.potentialBeneficiary.lastName,
           immersionBaseUrl: immersionBaseUrl,
@@ -144,6 +144,7 @@ const notifyValidatorsAndCounsellors = async (
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent,
   immersionBaseUrl: AbsoluteUrl,
   bannedEstablishment: EstablishmentAggregate,
+  displayedBusinessName: string,
 ) => {
   const validatedConventions = await uow.conventionQueries.getConventions({
     filters: {
@@ -154,18 +155,13 @@ const notifyValidatorsAndCounsellors = async (
     sortBy: "dateStart",
   });
 
-  const businessName = getDisplayedBusinessName({
-    businessName: bannedEstablishment.establishment.name,
-    businessNameCustomized: bannedEstablishment.establishment.customizedName,
-  });
-
   await executeInSequence(validatedConventions, (convention) =>
     notifyValidatorAndCounsellor(
       uow,
       saveNotificationAndRelatedEvent,
       immersionBaseUrl,
       convention,
-      businessName,
+      displayedBusinessName,
     ),
   );
 };
