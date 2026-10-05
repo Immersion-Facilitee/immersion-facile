@@ -32,6 +32,9 @@ describe("RenewConvention", () => {
   let renewConvention: RenewConvention;
   let uow: InMemoryUnitOfWork;
   let uuidGenerator: TestUuidGenerator;
+  let timeGateway: CustomTimeGateway;
+
+  const now = new Date("2026-10-05T09:00:00.000Z");
 
   const validator = new ConnectedUserBuilder()
     .withId("validator")
@@ -79,14 +82,16 @@ describe("RenewConvention", () => {
     uow = createInMemoryUow();
     const uowPerformer = new InMemoryUowPerformer(uow);
     uuidGenerator = new TestUuidGenerator();
+    timeGateway = new CustomTimeGateway(now);
     renewConvention = makeRenewConvention({
       uowPerformer,
       deps: {
+        timeGateway,
         addConvention: makeAddConvention({
           uowPerformer,
           deps: {
             createNewEvent: makeCreateNewEvent({
-              timeGateway: new CustomTimeGateway(),
+              timeGateway,
               uuidGenerator,
             }),
             siretGateway: new InMemorySiretGateway(),
@@ -153,6 +158,7 @@ describe("RenewConvention", () => {
           {
             ...existingValidatedConvention,
             ...renewConventionParams,
+            dateSubmission: now.toISOString(),
             signatories: {
               beneficiary: {
                 ...existingValidatedConvention.signatories.beneficiary,

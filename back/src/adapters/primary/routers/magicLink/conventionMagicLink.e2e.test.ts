@@ -315,6 +315,7 @@ describe("Magic link router", () => {
         {
           ...existingConvention,
           ...renewedConventionParams,
+          dateSubmission: gateways.timeGateway.now().toISOString(),
           signatories: {
             beneficiary: {
               ...existingConvention.signatories.beneficiary,
@@ -369,6 +370,7 @@ describe("Magic link router", () => {
         {
           ...existingConvention,
           ...renewedConventionParams,
+          dateSubmission: gateways.timeGateway.now().toISOString(),
           signatories: {
             beneficiary: {
               ...existingConvention.signatories.beneficiary,
@@ -448,6 +450,7 @@ describe("Magic link router", () => {
         {
           ...existingConvention,
           ...renewedConventionParams,
+          dateSubmission: gateways.timeGateway.now().toISOString(),
           signatories: {
             beneficiary: {
               ...existingConvention.signatories.beneficiary,

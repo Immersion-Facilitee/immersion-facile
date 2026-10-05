@@ -10,6 +10,7 @@ import {
   type Role,
   renewConventionParamsSchema,
 } from "shared";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { AddConvention } from "./AddConvention";
@@ -22,6 +23,7 @@ export const makeRenewConvention = useCaseBuilder("RenewConvention")
   .withDeps<{
     //TODO : must use event instead of sub usecase execution
     addConvention: AddConvention;
+    timeGateway: TimeGateway;
   }>()
   .build(
     async ({
@@ -64,6 +66,7 @@ export const makeRenewConvention = useCaseBuilder("RenewConvention")
           id,
           dateStart,
           dateEnd,
+          dateSubmission: deps.timeGateway.now().toISOString(),
           schedule,
           renewed,
           status: "READY_TO_SIGN",
