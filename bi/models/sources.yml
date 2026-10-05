@@ -171,10 +171,6 @@ sources:
             description: "Whether handled by agency"
           - name: response
             description: "Response data"
-          - name: convention_id
-            description: "Foreign key to conventions table"
-          - name: agency_id
-            description: "Foreign key to agencies table"
 
       - name: conventions
         description: "Immersion applications/conventions data"
