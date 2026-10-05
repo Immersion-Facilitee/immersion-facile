@@ -171,10 +171,55 @@ describe("RenewConvention", () => {
               },
             },
             status: "READY_TO_SIGN",
+            dateApproval: undefined,
+            validators: undefined,
           },
         ]);
       },
     );
+
+    it("clears validators and dateApproval when renewing a pre-validated convention", async () => {
+      const preValidatedConvention = new ConventionDtoBuilder(
+        existingValidatedConvention,
+      )
+        .withDateApproval("2024-01-15T10:00:00.000Z")
+        .withDateValidation("2024-01-20T10:00:00.000Z")
+        .withCounsellor({ firstname: "Billy", lastname: "Idol" })
+        .withValidator({ firstname: "John", lastname: "Doe" })
+        .build();
+
+      uow.conventionRepository.setConventions([preValidatedConvention]);
+
+      await renewConvention.execute(
+        renewConventionParams,
+        createJwtPayload({
+          role: "validator",
+          conventionId: preValidatedConvention.id,
+        }),
+      );
+
+      expectToEqual(uow.conventionRepository.conventions, [
+        preValidatedConvention,
+        {
+          ...preValidatedConvention,
+          ...renewConventionParams,
+          signatories: {
+            beneficiary: {
+              ...preValidatedConvention.signatories.beneficiary,
+              signedAt: undefined,
+            },
+            establishmentRepresentative: {
+              ...preValidatedConvention.signatories.establishmentRepresentative,
+              signedAt: undefined,
+            },
+          },
+          status: "READY_TO_SIGN",
+          dateValidation: undefined,
+          dateApproval: undefined,
+          validators: undefined,
+        },
+      ]);
+    });
   });
 
   describe("Wrong paths", () => {

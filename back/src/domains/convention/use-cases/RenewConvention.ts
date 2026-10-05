@@ -4,7 +4,7 @@ import {
   type ConventionDto,
   type ConventionId,
   type ConventionRelatedJwtPayload,
-  clearSignaturesAndValidationDate,
+  clearSignaturesAndValidation,
   errors,
   ForbiddenError,
   type Role,
@@ -62,7 +62,7 @@ export const makeRenewConvention = useCaseBuilder("RenewConvention")
 
       await deps.addConvention.execute({
         convention: {
-          ...clearSignaturesAndValidationDate(conventionInRepo),
+          ...clearSignaturesAndValidation(conventionInRepo),
           id,
           dateStart,
           dateEnd,
