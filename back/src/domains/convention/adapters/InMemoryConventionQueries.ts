@@ -45,6 +45,7 @@ import type {
   GetConventionIdsParams,
   GetConventionsFilters,
   GetConventionsParams,
+  GetConventionsSortBy,
   GetPaginatedConventionsFilters,
   GetPaginatedConventionsParams,
 } from "../ports/ConventionQueries";
@@ -66,9 +67,17 @@ export class InMemoryConventionQueries implements ConventionQueries {
   public async getConventionIdsByFilters(
     params: GetConventionIdsParams,
   ): Promise<ConventionId[]> {
-    const results = this.conventionRepository.conventions
-      .filter(makeApplyFiltersToGetConventionIds(params.filters))
-      .map((convention) => convention.id);
+    const filteredConventions = this.conventionRepository.conventions.filter(
+      makeApplyFiltersToGetConventionIds(params.filters),
+    );
+
+    const sortedConventions = params.sortBy
+      ? [...filteredConventions].sort(
+          makeSortConventionsByDateDesc(params.sortBy),
+        )
+      : filteredConventions;
+
+    const results = sortedConventions.map((convention) => convention.id);
 
     return params.limit ? results.slice(0, params.limit) : results;
   }
@@ -539,6 +548,24 @@ export class InMemoryConventionQueries implements ConventionQueries {
     };
   }
 }
+
+const makeSortConventionsByDateDesc =
+  (sortBy: GetConventionsSortBy) =>
+  (previous: ConventionDto, current: ConventionDto): number => {
+    const previousDate = previous[sortBy];
+    const currentDate = current[sortBy];
+
+    if (!previousDate) return 1;
+    if (!currentDate) return -1;
+
+    const dateDiff =
+      new Date(currentDate).getTime() - new Date(previousDate).getTime();
+    if (dateDiff !== 0) return dateDiff;
+
+    if (previous.id < current.id) return -1;
+    if (previous.id > current.id) return 1;
+    return 0;
+  };
 
 const makeApplyFiltersToGetConventionIds =
   ({
