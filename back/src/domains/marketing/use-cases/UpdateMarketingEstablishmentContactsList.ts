@@ -52,19 +52,10 @@ export const makeUpdateMarketingEstablishmentContactList = useCaseBuilder(
           siret,
         );
 
-      const validatedConventions = await uow.conventionQueries.getConventions({
-        filters: {
-          withSirets: [siret],
-          withStatuses: ["ACCEPTED_BY_VALIDATOR"],
-        },
-        sortBy: "dateValidation",
-      });
-
-      const marketingConventionsData = {
-        firstConvention: validatedConventions.at(-1),
-        lastConvention: validatedConventions.at(0),
-        totalNumberOfConvention: validatedConventions.length,
-      };
+      const marketingConventionsData = await getMarketingConventionsData(
+        uow,
+        siret,
+      );
 
       return establishment
         ? onEstablishment({
@@ -87,6 +78,44 @@ export const makeUpdateMarketingEstablishmentContactList = useCaseBuilder(
     },
   );
 
+type MarketingConventionsData = {
+  firstConvention: ConventionDto | undefined;
+  lastConvention: ConventionDto | undefined;
+  totalNumberOfConvention: number;
+};
+
+const getMarketingConventionsData = async (
+  uow: UnitOfWork,
+  siret: SiretDto,
+): Promise<MarketingConventionsData> => {
+  const validatedConventionIds =
+    await uow.conventionQueries.getConventionIdsByFilters({
+      filters: {
+        withSirets: [siret],
+        withStatuses: ["ACCEPTED_BY_VALIDATOR"],
+      },
+      sortBy: "dateValidation",
+    });
+
+  const lastConventionId = validatedConventionIds.at(0);
+  const firstConventionId = validatedConventionIds.at(-1);
+
+  const lastConvention = lastConventionId
+    ? await uow.conventionQueries.getConventionById(lastConventionId)
+    : undefined;
+
+  const firstConvention =
+    firstConventionId && firstConventionId !== lastConventionId
+      ? await uow.conventionQueries.getConventionById(firstConventionId)
+      : lastConvention;
+
+  return {
+    firstConvention,
+    lastConvention,
+    totalNumberOfConvention: validatedConventionIds.length,
+  };
+};
+
 const onMissingEstablishment = async ({
   uow,
   timeGateway,
@@ -101,11 +130,7 @@ const onMissingEstablishment = async ({
   siretGateway: SiretGateway;
   establishmentMarketingGateway: EstablishmentMarketingGateway;
   createNewEvent: CreateNewEvent;
-  marketingConventionsData: {
-    firstConvention: ConventionDto | undefined;
-    lastConvention: ConventionDto | undefined;
-    totalNumberOfConvention: number;
-  };
+  marketingConventionsData: MarketingConventionsData;
   siret: SiretDto;
 }): Promise<void> => {
   const { lastConvention } = marketingConventionsData;
@@ -159,11 +184,7 @@ const onEstablishment = async ({
   marketingGateway: EstablishmentMarketingGateway;
   timeGateway: TimeGateway;
   establishmentAggregate: EstablishmentAggregate;
-  marketingConventionsData: {
-    firstConvention: ConventionDto | undefined;
-    lastConvention: ConventionDto | undefined;
-    totalNumberOfConvention: number;
-  };
+  marketingConventionsData: MarketingConventionsData;
   siretGateway: SiretGateway;
 }): Promise<void> => {
   const firstLocation = establishmentAggregate.establishment.locations.at(0);
@@ -243,11 +264,9 @@ const onEstablishment = async ({
   });
 };
 
-const makeConventionInfos = (marketingConventionsData: {
-  firstConvention: ConventionDto | undefined;
-  lastConvention: ConventionDto | undefined;
-  totalNumberOfConvention: number;
-}): ConventionInfos => {
+const makeConventionInfos = (
+  marketingConventionsData: MarketingConventionsData,
+): ConventionInfos => {
   const { firstConvention, lastConvention, totalNumberOfConvention } =
     marketingConventionsData;
 
