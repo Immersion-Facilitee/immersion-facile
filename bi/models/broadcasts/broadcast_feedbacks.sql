@@ -52,19 +52,20 @@ with classified_broadcast_feedbacks as (
 select
     bf.id,
     (bf.request_params ->> 'conventionId')::uuid as convention_id,
+    bf.request_params ->> 'conventionStatus' as convention_status,
+    a.id as agency_id,
+    a.kind as agency_kind,
+    a.department_code as agency_department_code,
     bf.occurred_at,
     bf.consumer_name,
-    bf.subscriber_error_feedback ->> 'message' as error_message,
     (bf.response ->> 'httpStatus')::integer as http_status,
+    bf.subscriber_error_feedback ->> 'message' as error_message,
+    bf.response -> 'body' ->> 'codeErreur' as error_code,
     bf.error_kind,
     case
         when bf.error_kind = 'technical' then bf.response ->> 'body'
     end as technical_error_response_body,
-    bf.handled_by_agency,
-    bf.request_params ->> 'conventionStatus' as convention_status,
-    a.id as agency_id,
-    a.kind as agency_kind,
-    a.department_code as agency_department_code
+    bf.handled_by_agency
 from classified_broadcast_feedbacks as bf
 left join {{ source('immersion', 'conventions') }} as c
     on c.id = (bf.request_params ->> 'conventionId')::uuid
