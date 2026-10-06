@@ -62,7 +62,7 @@ avec les règles par défaut et celles de [gitleaks-actions-logs.toml](../gitlea
 En cas de détection :
 
 - les logs du run analysé sont supprimés ;
-- `@if-devs` est alerté sur `#if-prod-déploiement` ;
+- `@if-devs` est alerté sur `#if-dev` ;
 - un extrait des logs autour de chaque détection (30 lignes avant, 10 après) est posté dans le fil
   de l’alerte, chaque valeur détectée y étant remplacée par `REDACTED` ;
 - le job de scan échoue et liste la règle, l’étape, la ligne et le nom de la variable, sans la valeur.
