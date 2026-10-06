@@ -29,7 +29,7 @@ export const AgencyUserRegistrationPage = (): JSX.Element => {
             className={fr.cx("fr-mb-6w")}
             iconId="fr-icon-arrow-go-back-line"
           >
-            Retour au tableau de bord
+            Retour à mes organismes
           </Button>
         }
       >
