@@ -30,7 +30,7 @@ export const EstablishmentUserRegistrationPage = () => {
             className={fr.cx("fr-mb-6w")}
             iconId="fr-icon-arrow-go-back-line"
           >
-            Retour au tableau de bord
+            Retour à mes entreprises
           </Button>
         }
       >
