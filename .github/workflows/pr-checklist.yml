@@ -3,13 +3,19 @@ name: PR Checklist
 on:
   pull_request:
     types: [opened, edited, ready_for_review, synchronize]
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   check-checklist:
-    if: github.event.pull_request.draft == false
+    if: github.event_name == 'merge_group' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
+      - name: Checklist déjà vérifiée sur la PR
+        if: github.event_name == 'merge_group'
+        run: echo "✅ Checklist vérifiée avant l'entrée dans la merge queue."
       - name: Vérifier la checklist
+        if: github.event_name == 'pull_request'
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |

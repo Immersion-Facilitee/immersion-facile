@@ -1,5 +1,31 @@
 # Workflows GitHub Actions
 
+## Merge queue
+
+Les PR sont mergées sur `main` via la merge queue GitHub : l’auteur clique sur
+**Merge when ready**, et la PR entre dans la file dès qu’elle est approuvée et
+que sa CI est verte. GitHub la rebase sur `main` dans une branche temporaire
+`gh-readonly-queue/main/...`, relance la CI dessus, puis merge si elle passe.
+En cas de conflit ou d’échec, la PR sort de la file et l’auteur est notifié.
+
+Les workflows [validation-pr.yml](validation-pr.yml) et
+[pr-checklist.yml](pr-checklist.yml) écoutent l’événement `merge_group` pour
+rapporter les checks requis sur ces branches temporaires. La checklist étant
+déjà vérifiée sur la PR, elle passe directement dans la file.
+
+### Configuration
+
+Dans la règle de protection de `main`, **Require merge queue** est activé avec :
+
+| Réglage | Valeur |
+| --- | --- |
+| Merge method | Rebase |
+| Build concurrency | 4 |
+| Min / max group size | 1 / 1 |
+| Only merge non-failing pull requests | Oui |
+
+Quand la recette est bloquée, ne pas ajouter de PR à la file.
+
 ## Agent explo
 
 Le workflow [agent-explo.yml](agent-explo.yml) répond aux commentaires d’issue ou de PR

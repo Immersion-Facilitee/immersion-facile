@@ -6,10 +6,13 @@ on:
       - opened
       - synchronize
       - ready_for_review
+  merge_group:
+    types:
+      - checks_requested
 
 jobs:
   fullcheck:
-    if: ${{ github.event.pull_request.draft == false }}
+    if: ${{ github.event_name == 'merge_group' || github.event.pull_request.draft == false }}
     uses: ./.github/workflows/fullcheck.yml
     secrets:
       API_KEY_OPEN_CAGE_DATA_GEOCODING: ${{ secrets.API_KEY_OPEN_CAGE_DATA_GEOCODING }}
@@ -20,7 +23,7 @@ jobs:
       PRO_CONNECT_CLIENT_SECRET: ${{ secrets.PRO_CONNECT_CLIENT_SECRET}}
   verify-migration-order:
     name: "Verify migration order"
-    if: ${{ github.event.pull_request.draft == false }}
+    if: ${{ github.event_name == 'merge_group' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
