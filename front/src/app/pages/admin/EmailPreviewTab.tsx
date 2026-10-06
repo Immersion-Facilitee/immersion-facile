@@ -630,16 +630,12 @@ export const defaultEmailValueByEmailKind: {
   NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE: {
     agencyLogoUrl: defaultEmailPreviewUrl,
     beneficiaryName: "BENEFICIARY_NAME",
-    beneficiaryRepresentativeName: undefined,
-    businessName: "BUSINESS_NAME",
     conventionId: "CONVENTION_ID",
-    establishmentRepresentativeName: "ESTABLISHMENT_REPRESENTATIVE_NAME",
-    establishmentTutorName: "ESTABLISHMENT_TUTOR_NAME",
     internshipKind: "immersion",
     conventionSignatureLink:
       "http://MANAGE_CONVENTION_CONNECTED_USER?loginPersona=beneficiary",
+    signatoryEmail: "SIGNATORY_EMAIL",
     signatoryName: "SIGNATORY_NAME",
-    beneficiaryCurrentEmployerName: "CURRENT_EMPLOYER_NAME",
     renewed: {
       from: "11111111-1111-4111-1111-111111111111",
       justification: "EXCELLENTE_RAISON_DE_RENOUVELLEMENT",
