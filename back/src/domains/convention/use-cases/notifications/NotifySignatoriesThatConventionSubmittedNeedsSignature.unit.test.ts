@@ -115,4 +115,51 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
       config,
     });
   });
+
+  it("sends confirmation email with renewed and signatoryEmail when the convention is a renewal", async () => {
+    const originalConventionId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const renewedConvention = new ConventionDtoBuilder(validConvention)
+      .withRenewed({
+        from: originalConventionId,
+        justification: "Le bénéficiaire souhaite prolonger l'immersion",
+      })
+      .build();
+
+    await useCase.execute({ convention: renewedConvention });
+
+    const emailNotifications = uow.notificationRepository.notifications.filter(
+      (notification): notification is EmailNotification =>
+        notification.kind === "email",
+    );
+
+    expect(emailNotifications).toHaveLength(3);
+
+    expectEmailSignatoryConfirmationSignatureRequestMatchingConvention({
+      templatedEmail: emailNotifications[0].templatedContent,
+      convention: renewedConvention,
+      signatory: renewedConvention.signatories.beneficiary,
+      recipient: renewedConvention.signatories.beneficiary.email,
+      agency,
+      config,
+    });
+    expectEmailSignatoryConfirmationSignatureRequestMatchingConvention({
+      templatedEmail: emailNotifications[1].templatedContent,
+      convention: renewedConvention,
+      signatory: renewedConvention.signatories.establishmentRepresentative,
+      recipient:
+        renewedConvention.signatories.establishmentRepresentative.email,
+      agency,
+      config,
+    });
+    expectEmailSignatoryConfirmationSignatureRequestMatchingConvention({
+      templatedEmail: emailNotifications[2].templatedContent,
+      convention: renewedConvention,
+      // biome-ignore lint/style/noNonNullAssertion: <explanation>
+      signatory: renewedConvention.signatories.beneficiaryRepresentative!,
+      // biome-ignore lint/style/noNonNullAssertion: <explanation>
+      recipient: renewedConvention.signatories.beneficiaryRepresentative!.email,
+      agency,
+      config,
+    });
+  });
 });

@@ -305,12 +305,7 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
     recipient: string;
     agency: AgencyDto;
   }) => {
-    const {
-      beneficiary,
-      establishmentRepresentative,
-      beneficiaryRepresentative,
-      beneficiaryCurrentEmployer,
-    } = convention.signatories;
+    const { beneficiary } = convention.signatories;
 
     expectToEqual(templatedEmail, {
       kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
@@ -322,30 +317,11 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
           firstname: signatory.firstName,
           lastname: signatory.lastName,
         }),
+        signatoryEmail: signatory.email,
         beneficiaryName: getFormattedFirstnameAndLastname({
           firstname: beneficiary.firstName,
           lastname: beneficiary.lastName,
         }),
-        establishmentTutorName: getFormattedFirstnameAndLastname({
-          firstname: convention.establishmentTutor.firstName,
-          lastname: convention.establishmentTutor.lastName,
-        }),
-        establishmentRepresentativeName: getFormattedFirstnameAndLastname({
-          firstname: establishmentRepresentative.firstName,
-          lastname: establishmentRepresentative.lastName,
-        }),
-        beneficiaryRepresentativeName:
-          beneficiaryRepresentative &&
-          getFormattedFirstnameAndLastname({
-            firstname: beneficiaryRepresentative.firstName,
-            lastname: beneficiaryRepresentative.lastName,
-          }),
-        beneficiaryCurrentEmployerName:
-          beneficiaryCurrentEmployer &&
-          getFormattedFirstnameAndLastname({
-            firstname: beneficiaryCurrentEmployer.firstName,
-            lastname: beneficiaryCurrentEmployer.lastName,
-          }),
         conventionSignatureLink: makeRouteAbsoluteUrl({
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
@@ -354,8 +330,8 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
           }),
           baseUrl: config.immersionFacileBaseUrl,
         }),
-        businessName: getDisplayedBusinessName(convention),
         agencyLogoUrl: agency.logoUrl ?? undefined,
+        renewed: convention.renewed,
       },
     });
   };
