@@ -5,10 +5,9 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
-import { Table } from "@codegouvfr/react-dsfr/Table";
 import { addYears } from "date-fns";
 import { Fragment, useEffect, useState } from "react";
-import { useCopyButton } from "react-design-system";
+import { ResponsiveTable, useCopyButton } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -249,8 +248,7 @@ export const ApiConsumersSection = () => {
       }
       className={fr.cx("fr-mt-4w")}
     >
-      <Table
-        fixed
+      <ResponsiveTable
         data={tableDataFromApiConsumers}
         headers={[
           "Id (Nom)",

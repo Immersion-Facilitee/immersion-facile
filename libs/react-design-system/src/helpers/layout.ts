@@ -10,13 +10,9 @@ export const useLayout = () => {
     const mediaQuery = window.matchMedia(
       fr.breakpoints.up("lg").replace("@media ", ""),
     );
-    mediaQuery.addEventListener("change", () =>
-      setIsLayoutDesktop(mediaQuery.matches),
-    );
-    return () =>
-      mediaQuery.removeEventListener("change", () =>
-        setIsLayoutDesktop(mediaQuery.matches),
-      );
+    const onLayoutChange = () => setIsLayoutDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener("change", onLayoutChange);
+    return () => mediaQuery.removeEventListener("change", onLayoutChange);
   }, []);
   return { isLayoutDesktop };
 };

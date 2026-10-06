@@ -1,9 +1,8 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
-import Table from "@codegouvfr/react-dsfr/Table";
 import { useEffect, useState } from "react";
-import { HeadingSection, Loader } from "react-design-system";
+import { HeadingSection, Loader, ResponsiveTable } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -93,7 +92,7 @@ export const ArchivedConventionListSection = () => {
       <WithFeedbackReplacer topic={feedbackTopic} level="error" />
       {archivedConventionListToReview !== null &&
         (archivedConventionListToReview.length > 0 ? (
-          <Table
+          <ResponsiveTable
             data={archivedConventionListToReview.map((request) =>
               makeArchivedConventionListLine(request, () => {
                 setSelectedRequest(request);

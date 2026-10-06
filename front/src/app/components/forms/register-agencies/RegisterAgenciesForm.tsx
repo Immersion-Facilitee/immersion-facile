@@ -2,7 +2,6 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
 import Input from "@codegouvfr/react-dsfr/Input";
-import Table from "@codegouvfr/react-dsfr/Table";
 import {
   type ChangeEvent,
   type ElementRef,
@@ -10,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Tag } from "react-design-system";
+import { ResponsiveTable, Tag } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AgencyId,
@@ -166,8 +165,7 @@ const AgencyTable = ({
   if (agencies.length === 0)
     return <p>Aucun organisme correspondant à votre recherche</p>;
   return (
-    <Table
-      fixed
+    <ResponsiveTable
       id={domElementIds.agencyDashboard.registerAgencies.table}
       headers={["", "Organismes"]}
       data={agencies.map((agency) => [

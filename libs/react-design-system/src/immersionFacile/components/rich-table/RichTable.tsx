@@ -5,12 +5,12 @@ import {
   Pagination,
   type PaginationProps,
 } from "@codegouvfr/react-dsfr/Pagination";
-import { Table, type TableProps } from "@codegouvfr/react-dsfr/Table";
+import type { TableProps } from "@codegouvfr/react-dsfr/Table";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStyles } from "tss-react/dsfr";
-import { useLayout } from "../../../helpers/layout";
 import { useDebounce, useScrollTo } from "../../hooks";
 import { Loader } from "../loader";
+import { ResponsiveTable } from "../responsive-table";
 import { RichDropdown, type RichDropdownProps } from "../rich-dropdown";
 import Styles from "./RichTable.styles";
 
@@ -42,11 +42,10 @@ export const RichTable = ({
   className,
 }: RichTableProps) => {
   const { cx } = useStyles();
-  const { isLayoutDesktop } = useLayout();
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearchValue = useDebounce(searchValue, 500);
   const searchBarRefOnSubmitRef = useRef(searchBar?.onSubmit).current;
-  const tableRef = useRef<HTMLTableElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
 
   useScrollTo(pagination.defaultPage ?? 1);
 
@@ -123,12 +122,11 @@ export const RichTable = ({
         )}
       </header>
 
-      <Table
+      <ResponsiveTable
         ref={tableRef}
         headers={headers}
         data={data}
         bordered={false}
-        fixed={isLayoutDesktop}
       />
       <Pagination {...pagination} />
     </section>
