@@ -90,14 +90,16 @@ export const DiscussionSummary = ({
               </div>
             </>
           )}
-          <a
-            href={discussion.potentialBeneficiary.resumeLink}
-            target="_blank"
-            rel="noreferrer"
-            className={fr.cx("fr-link")}
-          >
-            CV ou profil en ligne
-          </a>
+          {discussion.potentialBeneficiary.resumeLink && (
+            <a
+              href={discussion.potentialBeneficiary.resumeLink}
+              target="_blank"
+              rel="noreferrer"
+              className={fr.cx("fr-link")}
+            >
+              CV ou profil en ligne
+            </a>
+          )}
           {displayMode === "preview" && (
             <div
               className={fr.cx(
