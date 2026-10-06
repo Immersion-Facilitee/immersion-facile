@@ -421,21 +421,22 @@ export const SearchPage = ({
             </PageHeader>
 
             <div className={fr.cx("fr-pt-6w", "fr-mt-6w", "fr-hr")}>
-              <Tile
-                imageUrl={commonIllustrations.job}
-                imageAlt=""
-                title="Vous cherchez une entreprise ?"
-                titleAs="h2"
-                desc="Découvrez les grands groupes inscrits sur Immersion Facilitée qui proposent des immersions partout en France."
-                detail="Aldi, Boulanger, Decatlon, EDF, Enedis ou encore le Club Med."
-                orientation="horizontal"
-                className={fr.cx("fr-container", "fr-mb-10w")}
-                linkProps={{
-                  href: "https://pages.immersion-facile.beta.gouv.fr/ressources-entreprises/groupes/",
-                  rel: "noreferrer",
-                  id: domElementIds.search.groupPush,
-                }}
-              />
+              <div className={fr.cx("fr-container", "fr-mb-10w")}>
+                <Tile
+                  imageUrl={commonIllustrations.job}
+                  imageAlt=""
+                  title="Vous cherchez une entreprise ?"
+                  titleAs="h2"
+                  desc="Découvrez les grands groupes inscrits sur Immersion Facilitée qui proposent des immersions partout en France."
+                  detail="Aldi, Boulanger, Decatlon, EDF, Enedis ou encore le Club Med."
+                  orientation="horizontal"
+                  linkProps={{
+                    href: "https://pages.immersion-facile.beta.gouv.fr/ressources-entreprises/groupes/",
+                    rel: "noreferrer",
+                    id: domElementIds.search.groupPush,
+                  }}
+                />
+              </div>
               <SearchInfoSection />
               <SectionTextEmbed
                 videoUrl="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise.mp4"
