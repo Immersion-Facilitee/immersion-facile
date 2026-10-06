@@ -2429,6 +2429,41 @@ describe("Pg implementation of ConventionQueries", () => {
           expectToEqual(result.data, [convention2, convention1]);
         });
 
+        it("returns a convention only once when it matches both siret and email", async () => {
+          const overlappingConvention = new ConventionDtoBuilder()
+            .withId("f4444444-4444-4444-8444-444444444444")
+            .withAgencyId(agencyId)
+            .withSiret(siret1)
+            .withEstablishmentRepresentativeEmail(adminEmail)
+            .withEstablishmentTutorEmail(otherTutorEmail)
+            .withDateStart(new Date("2023-08-15").toISOString())
+            .withDateEnd(new Date("2023-08-20").toISOString())
+            .withUpdatedAt(anyConventionUpdatedAt)
+            .build();
+
+          await conventionRepository.save(
+            overlappingConvention,
+            anyConventionUpdatedAt,
+          );
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              establishmentUserAccess: {
+                sirets: [siret1],
+                email: adminEmail,
+              },
+            },
+            sort: {
+              by: "dateStart",
+              direction: "desc",
+            },
+          });
+
+          expectToEqual(result.data, [overlappingConvention]);
+          expectToEqual(result.pagination.totalRecords, 1);
+        });
+
         it("excludes conventions outside siret and email", async () => {
           const result = await conventionQueries.getPaginatedConventions({
             pagination: { page: 1, perPage: 10 },

@@ -650,6 +650,7 @@ const filterByBeneficiaryEmail =
   (email: Email | undefined) =>
   (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
     email ? builder.where("b.email", "=", email) : builder;
+
 const filterByEstablishmentUserAccess =
   (establishmentUserAccess: EstablishmentUserAccessFilter | undefined) =>
   (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder => {
@@ -657,18 +658,45 @@ const filterByEstablishmentUserAccess =
 
     const { sirets, email } = establishmentUserAccess;
 
-    if (sirets.length === 0)
-      return builder.where((eb) =>
-        eb.or([eb("er.email", "=", email), eb("et.email", "=", email)]),
+    return builder.where((eb) => {
+      const idsMatchingRepresentativeEmail = eb
+        .selectFrom("conventions")
+        .innerJoin(
+          "actors as establishment_representative_access",
+          "establishment_representative_access.id",
+          "conventions.establishment_representative_id",
+        )
+        .select("conventions.id")
+        .where("establishment_representative_access.email", "=", email);
+
+      const idsMatchingTutorEmail = eb
+        .selectFrom("conventions")
+        .innerJoin(
+          "actors as establishment_tutor_access",
+          "establishment_tutor_access.id",
+          "conventions.establishment_tutor_id",
+        )
+        .select("conventions.id")
+        .where("establishment_tutor_access.email", "=", email);
+
+      const idsMatchingEmail = idsMatchingRepresentativeEmail.union(
+        idsMatchingTutorEmail,
       );
 
-    return builder.where((eb) =>
-      eb.or([
-        isInArray(eb, "conventions.siret", sirets),
-        eb("er.email", "=", email),
-        eb("et.email", "=", email),
-      ]),
-    );
+      if (sirets.length === 0)
+        return eb("conventions.id", "in", idsMatchingEmail);
+
+      const idsMatchingSiret = eb
+        .selectFrom("conventions")
+        .select("conventions.id")
+        .where(sql<boolean>`conventions.siret = ANY(${sirets}::bpchar[])`);
+
+      return eb(
+        "conventions.id",
+        "in",
+        idsMatchingSiret.union(idsMatchingEmail),
+      );
+    });
   };
 
 const filterOmitStatusesForAgencies =
