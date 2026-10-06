@@ -1,7 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
-import Table from "@codegouvfr/react-dsfr/Table";
 import type { ReactNode } from "react";
+import { ResponsiveTable } from "react-design-system";
 import type {
   EstablishmentUserRightStatus,
   UserEstablishmentRightDetails,
@@ -22,8 +22,7 @@ export const EstablishmentsRightsTable = ({
   isBackofficeAdmin?: boolean;
 }) => (
   <>
-    <Table
-      fixed={true}
+    <ResponsiveTable
       headers={getEstablishmentRightLineHeaders(
         withEstablishmentData[0].status,
       )}

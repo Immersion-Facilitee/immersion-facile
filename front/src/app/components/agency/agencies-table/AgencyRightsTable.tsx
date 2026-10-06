@@ -1,10 +1,13 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
-import Table from "@codegouvfr/react-dsfr/Table";
 import { values } from "ramda";
 import { Fragment, useMemo, useState } from "react";
-import { HeadingSection, NotificationIndicator } from "react-design-system";
+import {
+  HeadingSection,
+  NotificationIndicator,
+  ResponsiveTable,
+} from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -95,7 +98,7 @@ export const AgencyRightsTable = ({
 
   const jsxContent = (
     <>
-      <Table
+      <ResponsiveTable
         headers={[
           "Organisme",
           "Type",

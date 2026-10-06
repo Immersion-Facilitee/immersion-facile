@@ -1,6 +1,6 @@
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
-import { Table } from "@codegouvfr/react-dsfr/Table";
 import { type ElementRef, useRef } from "react";
+import { ResponsiveTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import { domElementIds, frontRoutes } from "shared";
 import { NameAndEmailInTable } from "src/app/components/admin/NameAndEmailInTable";
@@ -66,7 +66,7 @@ const UsersTable = () => {
     return <p>Aucun utilisateur correspondant à votre recherche</p>;
 
   return (
-    <Table
+    <ResponsiveTable
       id={domElementIds.admin.usersTab.usersTable}
       headers={[
         "Utilisateur",

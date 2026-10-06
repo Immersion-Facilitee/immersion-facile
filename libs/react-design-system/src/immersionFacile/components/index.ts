@@ -34,6 +34,7 @@ export * from "./notification-indicator";
 export * from "./nps-form";
 export * from "./over-footer";
 export * from "./page-header";
+export * from "./responsive-table";
 export * from "./rich-dropdown";
 export * from "./rich-table";
 export * from "./rs-autocomplete";

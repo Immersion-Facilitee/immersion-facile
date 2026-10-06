@@ -2,10 +2,9 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
-import Table from "@codegouvfr/react-dsfr/Table";
 import { values } from "ramda";
 import { useEffect, useState } from "react";
-import { HeadingSection, Loader } from "react-design-system";
+import { HeadingSection, Loader, ResponsiveTable } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -150,7 +149,7 @@ export const AgencyAdminUsersToReview = ({
           />
         )}
         {usersToReview.length > 0 ? (
-          <Table
+          <ResponsiveTable
             headers={["Utilisateur", "Organisme demandé", "Actions"]}
             data={usersToReview.map((userToReview) =>
               TableLine({

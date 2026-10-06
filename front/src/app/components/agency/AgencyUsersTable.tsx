@@ -2,9 +2,8 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
-import { Table } from "@codegouvfr/react-dsfr/Table";
 import { useMemo, useState } from "react";
-import { NotificationIndicator } from "react-design-system";
+import { NotificationIndicator, ResponsiveTable } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import { type AgencyDto, type ConnectedUser, domElementIds } from "shared";
@@ -63,7 +62,7 @@ export const AgencyUsersTable = ({
   return (
     <>
       {agencyUsers.length > 0 ? (
-        <Table
+        <ResponsiveTable
           id={tableId}
           headers={[
             "Utilisateurs",

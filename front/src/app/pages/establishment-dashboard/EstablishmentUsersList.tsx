@@ -2,10 +2,9 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import { Table } from "@codegouvfr/react-dsfr/Table";
 import { uniqBy } from "ramda";
 import { Fragment, useState } from "react";
-import { NotificationIndicator } from "react-design-system";
+import { NotificationIndicator, ResponsiveTable } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -133,7 +132,11 @@ export const EstablishmentUsersList = () => {
 
       <Feedback topics={["establishment-dashboard-users-rights"]} />
 
-      <Table id="establishment-users-table" headers={headers} data={data} />
+      <ResponsiveTable
+        id="establishment-users-table"
+        headers={headers}
+        data={data}
+      />
       {createPortal(
         <establishmentUsersEditModal.Component
           title={
