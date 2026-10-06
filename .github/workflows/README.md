@@ -73,8 +73,9 @@ jamais dans un artefact ou un log GitHub, publics sur ce dépôt.
 
 Les secrets concernés doivent ensuite être changés.
 
-`workflow_run` exige le nom de chaque workflow surveillé : tout nouveau workflow doit être
-ajouté à la liste `workflows`. Les logs restent publics pendant l’exécution du run
+`workflow_run` exige le nom de chaque workflow surveillé : tout nouveau workflow ayant son propre
+déclencheur doit être ajouté à la liste `workflows`. Les workflows réutilisables (`workflow_call`)
+n’y figurent pas : leurs logs font partie du run du workflow appelant. Les logs restent publics pendant l’exécution du run
 analysé ; le scan réduit la durée d’exposition sans la supprimer.
 
 Une fausse alerte se corrige par une entrée `[[allowlists]]` dans la configuration.
