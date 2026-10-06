@@ -51,3 +51,26 @@ images dépend de l’accès à leur URL et du modèle.
 Aucun token GitHub n’est transmis à OpenCode. L’exploration a un délai de
 10 minutes ; une annulation forcée ou une panne GitHub peut empêcher la
 publication et la réaction finale.
+
+## Scan des logs Actions
+
+Le dépôt est public : les logs de tous les runs sont lisibles par tous. Le workflow
+[scan-actions-logs-for-secrets.yml](scan-actions-logs-for-secrets.yml) analyse les
+logs de chaque run terminé avec [gitleaks](https://github.com/gitleaks/gitleaks),
+avec les règles par défaut et celles de [gitleaks-actions-logs.toml](../gitleaks-actions-logs.toml).
+
+En cas de détection :
+
+- les logs du run analysé sont supprimés ;
+- `@if-devs` est alerté sur `#if-prod-déploiement` ;
+- le job de scan échoue et liste la règle, l’étape, la ligne et le nom de la variable, sans la valeur.
+
+Les secrets concernés doivent ensuite être changés.
+
+`workflow_run` exige le nom de chaque workflow surveillé : tout nouveau workflow doit être
+ajouté à la liste `workflows`. Les logs restent publics pendant l’exécution du run
+analysé ; le scan réduit la durée d’exposition sans la supprimer.
+
+Une fausse alerte se corrige par une entrée `[[allowlists]]` dans la configuration.
+Toute nouvelle règle doit définir `secretGroup` et être vérifiée avec de fausses valeurs :
+sans cela, `--redact` peut masquer la mauvaise partie et afficher le secret.
