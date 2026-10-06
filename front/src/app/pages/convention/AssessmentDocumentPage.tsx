@@ -458,31 +458,39 @@ export const AssessmentDocumentPage = ({
           )}
         </ul>
         <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>Appréciation générale</h2>
-        <p
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(
-              escapeHtml(assessment.establishmentFeedback).replace(
-                /\n/g,
-                "<br />",
+        <p>
+          «&nbsp;
+          <span
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(
+                escapeHtml(assessment.establishmentFeedback).replace(
+                  /\n/g,
+                  "<br />",
+                ),
               ),
-            ),
-          }}
-        />
+            }}
+          />
+          &nbsp;»
+        </p>
         {!isAssessmentLegacy && (
           <>
             <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>
               Conseils pour la suite
             </h2>
-            <p
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(
-                  escapeHtml(assessment.establishmentAdvices).replace(
-                    /\n/g,
-                    "<br />",
+            <p>
+              «&nbsp;
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(
+                    escapeHtml(assessment.establishmentAdvices).replace(
+                      /\n/g,
+                      "<br />",
+                    ),
                   ),
-                ),
-              }}
-            />
+                }}
+              />
+              &nbsp;»
+            </p>
             {!isAssessmentLegacy &&
               !isBeforeSignatureReleaseDate &&
               assessment.status !== "DID_NOT_SHOW" && (
