@@ -2,6 +2,10 @@ name: "Fullcheck of the project + integration tests"
 
 on:
   workflow_call:
+    inputs:
+      code_already_tested:
+        type: boolean
+        default: false
     secrets:
       API_KEY_OPEN_CAGE_DATA_GEOCODING:
         required: true
@@ -26,16 +30,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        if: ${{ !inputs.code_already_tested }}
       - uses: pnpm/action-setup@v3
+        if: ${{ !inputs.code_already_tested }}
         with:
           version: 10.32.1
       - name: Use Node.js
+        if: ${{ !inputs.code_already_tested }}
         uses: actions/setup-node@v4
         with:
           node-version: "24.14.0"
           cache: "pnpm"
 
       - name: Cache node_modules
+        if: ${{ !inputs.code_already_tested }}
         uses: actions/cache@v4
         id: node_modules_cache_id
         with:
@@ -44,13 +52,16 @@ jobs:
           restore-keys: ${{ runner.os }}-pnpm-node-modules-
 
       - name: Install dependencies
+        if: ${{ !inputs.code_already_tested }}
         run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: ${{matrix.command}}
+        if: ${{ !inputs.code_already_tested }}
         run: ${{matrix.command}}
 
   back-integration-tests:
     name: "Back integration tests"
+    if: ${{ !inputs.code_already_tested }}
     runs-on: ubuntu-latest
     env:
       TEST_DATABASE_URL: postgresql://immersion:password@localhost:5432/immersion-db
@@ -119,7 +130,7 @@ jobs:
 
   playwright-tests:
     name: "Playwright tests"
-    if: github.ref != 'refs/heads/main' # Skip this job on main branch
+    if: github.ref != 'refs/heads/main' && !inputs.code_already_tested # Skip this job on main branch
     runs-on: ubuntu-latest
     env:
       # Secrets passed to Playwright config via process.env

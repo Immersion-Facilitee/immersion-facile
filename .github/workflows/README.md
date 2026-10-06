@@ -13,16 +13,26 @@ Les workflows [validation-pr.yml](validation-pr.yml) et
 rapporter les checks requis sur ces branches temporaires. La checklist étant
 déjà vérifiée sur la PR, elle passe directement dans la file.
 
+Quand le code de la branche temporaire est identique à celui déjà testé sur la
+PR (PR à jour avec `main` et première dans la file), les tests ne sont pas
+rejoués : les checks requis sont rapportés sans exécuter les tests et la PR est
+mergée en environ une minute.
+
 ### Configuration
 
-Dans la règle de protection de `main`, **Require merge queue** est activé avec :
+Dans le ruleset `linear-history-and-status-check` de `main`,
+**Require merge queue** est activé avec :
 
 | Réglage | Valeur |
 | --- | --- |
 | Merge method | Rebase |
 | Build concurrency | 4 |
 | Min / max group size | 1 / 1 |
-| Only merge non-failing pull requests | Oui |
+| Require all queue entries to pass required checks | Oui |
+| Status check timeout | 60 minutes |
+
+Les branches n’ont pas besoin d’être à jour avec `main` pour entrer dans la
+file, et aucun rôle ne peut contourner le ruleset.
 
 Quand la recette est bloquée, ne pas ajouter de PR à la file.
 
