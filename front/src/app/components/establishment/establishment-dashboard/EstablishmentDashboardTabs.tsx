@@ -167,47 +167,33 @@ const makeEstablishmentDashboardTabs = (
         </>
       ),
     },
-    ...(userHasDiscussions
+    ...(userHasDiscussions || userIsOnboarding
       ? [
           {
             label: "Candidatures",
             tabId: "discussions",
-            content: <DiscussionTabContent viewer="establishment" />,
-          },
-        ]
-      : []),
-    ...(userCanManageEstablishments
-      ? [
-          {
-            label:
-              establishmentsArray.length > 1
-                ? "Mes entreprises"
-                : "Mon entreprise",
-            tabId: "fiche-entreprise",
-            content: (
-              <ManageEstablishmentsTab
-                establishments={acceptedUserEstablishmentsRights}
-                pendingEstablishmentRights={pendingUserEstablishmentsRights}
-                isBackofficeAdmin={isBackofficeAdmin}
-              />
+            content: userHasDiscussions ? (
+              <DiscussionTabContent viewer="establishment" />
+            ) : (
+              <OnboardingTabContent />
             ),
           },
         ]
       : []),
-    ...(userIsOnboarding
-      ? [
-          {
-            label: "Candidatures",
-            tabId: "discussions",
-            content: <OnboardingTabContent />,
-          },
-          {
-            label: "Mon entreprise",
-            tabId: "fiche-entreprise",
-            content: <OnboardingTabContent />,
-          },
-        ]
-      : []),
+    {
+      label:
+        establishmentsArray.length > 1 ? "Mes entreprises" : "Mon entreprise",
+      tabId: "fiche-entreprise",
+      content: userCanManageEstablishments ? (
+        <ManageEstablishmentsTab
+          establishments={acceptedUserEstablishmentsRights}
+          pendingEstablishmentRights={pendingUserEstablishmentsRights}
+          isBackofficeAdmin={isBackofficeAdmin}
+        />
+      ) : (
+        <OnboardingTabContent />
+      ),
+    },
   ];
 };
 
