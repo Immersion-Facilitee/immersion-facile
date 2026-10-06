@@ -63,21 +63,21 @@ En cas de détection :
 
 - les logs du run analysé sont supprimés ;
 - `@if-devs` est alerté sur `#if-dev` par un message d’une ligne ;
-- le fil de ce message détaille les détections (règle, job, ligne, variable) et contient un extrait
-  des logs autour de chacune (30 lignes avant, 10 après), chaque valeur détectée y étant remplacée
+- le fil de ce message liste les détections (règle, job, ligne, variable) et contient un extrait
+  des logs autour de chacune (30 lignes avant, 10 après), chaque valeur détectée étant remplacée
   par `REDACTED` ;
-- le job de scan échoue et liste la règle, l’étape, la ligne et le nom de la variable, sans la valeur.
-
-L’extrait peut contenir des secrets que gitleaks n’a pas reconnus : il n’est envoyé que sur Slack,
-jamais dans un artefact ou un log GitHub, publics sur ce dépôt.
+- le job de scan échoue.
 
 Les secrets concernés doivent ensuite être changés.
 
+L’extrait peut contenir des secrets que gitleaks n’a pas reconnus : il n’est envoyé que sur Slack,
+jamais dans un artefact ou un log GitHub. Les logs restent publics pendant l’exécution du run
+analysé : le scan réduit la durée d’exposition sans la supprimer.
+
 `workflow_run` exige le nom de chaque workflow surveillé : tout nouveau workflow ayant son propre
 déclencheur doit être ajouté à la liste `workflows`. Les workflows réutilisables (`workflow_call`)
-n’y figurent pas : leurs logs font partie du run du workflow appelant. Les logs restent publics pendant l’exécution du run
-analysé ; le scan réduit la durée d’exposition sans la supprimer.
+n’y figurent pas : leurs logs font partie du run du workflow appelant.
 
-Une fausse alerte se corrige par une entrée `[[allowlists]]` dans la configuration.
-Toute nouvelle règle doit définir `secretGroup` et être vérifiée avec de fausses valeurs :
-sans cela, `--redact` peut masquer la mauvaise partie et afficher le secret.
+Une fausse alerte se corrige par une entrée `[[allowlists]]` dans la configuration. Toute nouvelle
+règle doit définir `secretGroup` pour que seule la valeur soit masquée, et être vérifiée avec de
+fausses valeurs.
