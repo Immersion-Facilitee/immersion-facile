@@ -1069,8 +1069,12 @@ describe("Pg implementation of ConventionQueries", () => {
         );
       });
     });
+  });
 
-    describe.each(["Pg", "InMemory"] as const)("%s sortBy", (adapter) => {
+  describe.each(["Pg", "InMemory"] as const)(
+    "%s getConventionIdsByFilters sortBy",
+    (adapter) => {
+      const agency = AgencyDtoBuilder.create().build();
       const conventionValidatedEarlierWithLaterStart =
         new ConventionDtoBuilder()
           .withId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
@@ -1091,43 +1095,49 @@ describe("Pg implementation of ConventionQueries", () => {
           .withDateValidation("2026-02-01")
           .build();
 
-      let queries: ConventionQueries;
-      let conventions: ConventionRepository;
+      let conventionQueries: ConventionQueries;
+      let agencyRepo: AgencyRepository;
+      let conventionRepository: ConventionRepository;
 
       beforeEach(async () => {
         if (adapter === "Pg") {
-          queries = conventionQueries;
-          conventions = conventionRepository;
+          conventionQueries = new PgConventionQueries(db);
+          agencyRepo = new PgAgencyRepository(db);
+          conventionRepository = new PgConventionRepository(db);
         } else {
           const uow = createInMemoryUow();
-          queries = uow.conventionQueries;
-          conventions = uow.conventionRepository;
-          await uow.agencyRepository.insert(
-            toAgencyWithRights(agency, {
-              [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-            }),
-          );
+          conventionQueries = uow.conventionQueries;
+          agencyRepo = uow.agencyRepository;
+          conventionRepository = uow.conventionRepository;
         }
 
-        await conventions.save(conventionValidatedLaterWithEarlierStart);
-        await conventions.save(conventionValidatedEarlierWithLaterStart);
+        await agencyRepo.insert(
+          toAgencyWithRights(agency, {
+            [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+          }),
+        );
+
+        await conventionRepository.save(
+          conventionValidatedLaterWithEarlierStart,
+        );
+        await conventionRepository.save(
+          conventionValidatedEarlierWithLaterStart,
+        );
       });
 
-      if (adapter === "Pg") {
-        it("sorts by dateStart desc by default", async () => {
-          expectToEqual(
-            await queries.getConventionIdsByFilters({ filters: {} }),
-            [
-              conventionValidatedEarlierWithLaterStart.id,
-              conventionValidatedLaterWithEarlierStart.id,
-            ],
-          );
-        });
-      }
+      it("sorts by dateStart desc by default", async () => {
+        expectToEqual(
+          await conventionQueries.getConventionIdsByFilters({ filters: {} }),
+          [
+            conventionValidatedEarlierWithLaterStart.id,
+            conventionValidatedLaterWithEarlierStart.id,
+          ],
+        );
+      });
 
       it("sorts by dateStart desc when sortBy is dateStart", async () => {
         expectToEqual(
-          await queries.getConventionIdsByFilters({
+          await conventionQueries.getConventionIdsByFilters({
             filters: {},
             sortBy: "dateStart",
           }),
@@ -1140,7 +1150,7 @@ describe("Pg implementation of ConventionQueries", () => {
 
       it("sorts by dateValidation desc when sortBy is dateValidation", async () => {
         expectToEqual(
-          await queries.getConventionIdsByFilters({
+          await conventionQueries.getConventionIdsByFilters({
             filters: {},
             sortBy: "dateValidation",
           }),
@@ -1150,8 +1160,8 @@ describe("Pg implementation of ConventionQueries", () => {
           ],
         );
       });
-    });
-  });
+    },
+  );
 
   describe.each(["Pg", "InMemory"] as const)(
     "%s getPaginatedConventions",

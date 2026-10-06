@@ -64,22 +64,20 @@ export class InMemoryConventionQueries implements ConventionQueries {
     private readonly bannedEstablishmentRepository: InMemoryBannedEstablishmentRepository,
   ) {}
 
-  public async getConventionIdsByFilters(
-    params: GetConventionIdsParams,
-  ): Promise<ConventionId[]> {
+  public async getConventionIdsByFilters({
+    filters,
+    limit,
+    sortBy = "dateStart",
+  }: GetConventionIdsParams): Promise<ConventionId[]> {
     const filteredConventions = this.conventionRepository.conventions.filter(
-      makeApplyFiltersToGetConventionIds(params.filters),
+      makeApplyFiltersToGetConventionIds(filters),
     );
 
-    const sortedConventions = params.sortBy
-      ? [...filteredConventions].sort(
-          makeSortConventionsByDateDesc(params.sortBy),
-        )
-      : filteredConventions;
+    const results = [...filteredConventions]
+      .sort(makeSortConventionsByDateDesc(sortBy))
+      .map((convention) => convention.id);
 
-    const results = sortedConventions.map((convention) => convention.id);
-
-    return params.limit ? results.slice(0, params.limit) : results;
+    return limit ? results.slice(0, limit) : results;
   }
 
   public async getConventionById(
