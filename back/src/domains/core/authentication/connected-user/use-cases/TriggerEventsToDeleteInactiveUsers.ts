@@ -1,6 +1,12 @@
 import { subDays, subYears } from "date-fns";
-import type { DateRange } from "shared";
+import {
+  type DateRange,
+  executeInSequence,
+  isTruthy,
+  type UserId,
+} from "shared";
 import { z } from "zod";
+import { isLastAcceptedAdminWithPendingRightsOnly } from "../../../../establishment/helpers/establishment.utils";
 import type { CreateNewEvent } from "../../../events/ports/EventBus";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../../unit-of-work/ports/UnitOfWorkPerformer";
@@ -86,11 +92,29 @@ export const makeTriggerEventsToDeleteInactiveUsers = useCaseBuilder(
             since: twoYearsAgo,
           });
 
-        const userIdsToDelete =
+        const userIdsWithoutRecentExchange =
           await uow.discussionRepository.getUserIdsWithNoRecentExchange({
             userIds: candidateUserIdsWithoutActiveConvention,
             since: twoYearsAgo,
           });
+
+        const userIdsToDelete = (
+          await executeInSequence(
+            userIdsWithoutRecentExchange,
+            async (userId): Promise<UserId | null> => {
+              const establishments =
+                await uow.establishmentAggregateRepository.getEstablishmentAggregatesByFilters(
+                  { userId },
+                );
+
+              return establishments.some((establishment) =>
+                isLastAcceptedAdminWithPendingRightsOnly(establishment, userId),
+              )
+                ? null
+                : userId;
+            },
+          )
+        ).filter(isTruthy);
 
         const events = userIdsToDelete.map((userId) =>
           deps.createNewEvent({

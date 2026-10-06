@@ -10,6 +10,8 @@ import {
   errors,
   executeInSequence,
   isNotEmptyArray,
+  onlyAdminUserRightsWithStatusAccepted,
+  onlyUserRightWithStatusAccepted,
   type UserId,
   type UserWithAdminRights,
   type WithUserId,
@@ -31,6 +33,7 @@ import type {
   EstablishmentAggregate,
   EstablishmentUserRight,
 } from "../../establishment/entities/EstablishmentAggregate";
+import { isLastAcceptedAdminWithPendingRightsOnly } from "../../establishment/helpers/establishment.utils";
 
 export const partialDeleteOptions = [
   "establishement-only",
@@ -74,6 +77,22 @@ export const makeDeleteUser = useCaseBuilder("DeleteUser")
         await uow.establishmentAggregateRepository.getEstablishmentAggregatesByFilters(
           { userId: userToDelete.id },
         );
+
+      const siretsWithLastAcceptedAdminAndPendingRightsOnly =
+        establishmentsWithUserRight
+          .filter((establishment) =>
+            isLastAcceptedAdminWithPendingRightsOnly(
+              establishment,
+              userToDelete.id,
+            ),
+          )
+          .map((establishment) => establishment.establishment.siret);
+
+      if (isNotEmptyArray(siretsWithLastAcceptedAdminAndPendingRightsOnly))
+        throw errors.user.deleteForbiddenLastAcceptedEstablishmentAdmin({
+          userId: userToDelete.id,
+          sirets: siretsWithLastAcceptedAdminAndPendingRightsOnly,
+        });
 
       if (inputParams.partialDelete)
         throw new Error("HYBRID BEHAVIOR NOT IMPLEMENTED");
@@ -126,23 +145,28 @@ const updateEstablishment =
     const remainingRights = establishment.userRights.filter(
       (right) => userId !== right.userId,
     );
+    const remainingAcceptedRights = remainingRights.filter(
+      onlyUserRightWithStatusAccepted,
+    );
 
-    const shouldSetLatestActiveUserAsAdmin = !remainingRights.some(
-      ({ role }) => role === "establishment-admin",
+    const shouldSetLatestActiveUserAsAdmin = !remainingAcceptedRights.some(
+      onlyAdminUserRightsWithStatusAccepted,
     );
     const shouldSetLatestActiveUserAsMainContactByPhone =
       !!userRightToDelete?.isMainContactByPhone &&
-      !remainingRights.some(({ isMainContactByPhone }) => isMainContactByPhone);
+      !remainingAcceptedRights.some(
+        ({ isMainContactByPhone }) => isMainContactByPhone,
+      );
     const shouldSetLatestActiveUserAsMainContactInPerson =
       !!userRightToDelete?.isMainContactInPerson &&
-      !remainingRights.some(
+      !remainingAcceptedRights.some(
         ({ isMainContactInPerson }) => isMainContactInPerson,
       );
 
-    const latestActiveUserId = isNotEmptyArray(remainingRights)
+    const latestActiveUserId = isNotEmptyArray(remainingAcceptedRights)
       ? await getMostActiveUserId(
           uow,
-          remainingRights.map(({ userId }) => userId),
+          remainingAcceptedRights.map(({ userId }) => userId),
         )
       : null;
 
@@ -160,7 +184,6 @@ const updateEstablishment =
 
             const withTransferredContactFlags: EstablishmentUserRight = {
               ...right,
-              status: "ACCEPTED",
               ...(shouldSetLatestActiveUserAsMainContactInPerson
                 ? { isMainContactInPerson: true }
                 : {}),
