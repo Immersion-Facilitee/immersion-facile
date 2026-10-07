@@ -6,6 +6,7 @@ import {
   type AgencyId,
   type AgencyOption,
   type AgencyPublicDisplayDto,
+  type AgencyUserForListing,
   type ConnectedUser,
   type ConnectedUserJwt,
   type CreateAgencyDto,
@@ -150,6 +151,10 @@ export class SimulatedAgencyGateway implements AgencyGateway {
     throw errors.agency.notFound({ agencyId });
   }
 
+  public getAgencyUsers$(): Observable<AgencyUserForListing[]> {
+    return of(simulatedAgencyUsers);
+  }
+
   public getImmersionFacileAgencyId$(): Observable<AgencyId> {
     return of("agency-id-with-immersion-facile-kind");
   }
@@ -198,3 +203,31 @@ export class SimulatedAgencyGateway implements AgencyGateway {
     return of(undefined);
   }
 }
+
+const simulatedAgencyUsers: AgencyUserForListing[] = [
+  {
+    id: "fake-user-id-1",
+    email: "jbon8745@wanadoo.fr",
+    firstName: "Jean",
+    lastName: "Bon",
+    agencyRights: [
+      {
+        agencyId: MISSION_LOCAL_AGENCY_ACTIVE.id,
+        roles: ["to-review"],
+        isNotifiedByEmail: true,
+      },
+      {
+        agencyId: PE_AGENCY_ACTIVE.id,
+        roles: ["validator"],
+        isNotifiedByEmail: true,
+      },
+      {
+        agencyId: CCI_ACTIVE.id,
+        roles: ["to-review"],
+        isNotifiedByEmail: true,
+      },
+    ],
+    createdAt: new Date().toISOString(),
+    preventToDelete: false,
+  },
+];

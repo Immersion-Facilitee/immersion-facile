@@ -5,10 +5,12 @@ import type {
   AgencyOption,
   AgencyPublicDisplayDto,
   AgencyRoutes,
+  AgencyUserForListing,
   CloseAgencyAndTransferConventionsRequestDto,
   ConnectedUser,
   ConnectedUserJwt,
   CreateAgencyDto,
+  GetAgencyUsersFilters,
   ListAgencyOptionsRequestDto,
   UserParamsForAgency,
   WithAgencyId,
@@ -85,6 +87,26 @@ export class HttpAgencyGateway implements AgencyGateway {
         .then((response) =>
           match(response)
             .with({ status: 200 }, ({ body }) => body)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public getAgencyUsers$(
+    token: ConnectedUserJwt,
+    filters: GetAgencyUsersFilters,
+  ): Observable<AgencyUserForListing[]> {
+    return from(
+      this.httpClient
+        .getAgencyUsers({
+          queryParams: filters,
+          headers: { authorization: token },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

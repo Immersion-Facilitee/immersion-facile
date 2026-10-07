@@ -1,5 +1,7 @@
 import { type Observable, of, throwError } from "rxjs";
 import {
+  AgencyDtoBuilder,
+  type AgencyRight,
   type ApiConsumer,
   type ApiConsumerId,
   type ApiConsumerJwt,
@@ -15,6 +17,7 @@ import {
   noAgencyDashboards,
   noEstablishmentDashboard,
   type RejectConnectedUserRoleForAgencyParams,
+  toAgencyDtoForAgencyUsersAndAdmins,
   type UserParamsForAgency,
   type UserWithNumberOfAgenciesAndEstablishments,
   type WithPreventToDelete,
@@ -72,6 +75,28 @@ export class SimulatedAdminGateway implements AdminGateway {
           createdAt: new Date().toISOString(),
           preventToDelete: false,
         });
+  }
+
+  public getConnectedUsers$(): Observable<ConnectedUser[]> {
+    return of([
+      {
+        id: "fake-user-id-1",
+        email: "jbon8745@wanadoo.fr",
+        firstName: "Jean",
+        lastName: "Bon",
+        agencyRights: simulatedAgencyRights,
+        dashboards: {
+          agencies: noAgencyDashboards,
+          establishments: noEstablishmentDashboard,
+        },
+        proConnect: {
+          externalId: "fake-user-external-id-1",
+          siret: "00000000002222",
+        },
+        createdAt: new Date().toISOString(),
+        preventToDelete: false,
+      },
+    ]);
   }
 
   public getAllApiConsumers$(
@@ -162,6 +187,31 @@ export class SimulatedAdminGateway implements AdminGateway {
     return of(undefined);
   }
 }
+
+const simulatedAgencyRights: AgencyRight[] = [
+  {
+    roles: ["to-review"],
+    agency: toAgencyDtoForAgencyUsersAndAdmins(
+      new AgencyDtoBuilder()
+        .withName("Agence de Bourg en Bresse")
+        .withId("fake-agency-id-1")
+        .build(),
+      [],
+    ),
+    isNotifiedByEmail: true,
+  },
+  {
+    roles: ["validator"],
+    agency: toAgencyDtoForAgencyUsersAndAdmins(
+      new AgencyDtoBuilder()
+        .withName("Mission locale qu'on ne devrait pas voir")
+        .withId("fake-agency-id-not-shown")
+        .build(),
+      [],
+    ),
+    isNotifiedByEmail: true,
+  },
+];
 
 const simulatedUsers: UserWithNumberOfAgenciesAndEstablishments[] = [
   {
