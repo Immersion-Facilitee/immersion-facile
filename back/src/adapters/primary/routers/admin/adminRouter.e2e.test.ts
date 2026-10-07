@@ -977,6 +977,91 @@ describe("Admin router", () => {
       });
     });
   });
+
+  describe(`${displayRouteName(
+    adminRoutes.getConnectedUsers,
+  )} List connected users`, () => {
+    const agency = new AgencyDtoBuilder().withKind("france-travail").build();
+    const agencyUser: User = {
+      id: "agency-user-id",
+      email: "joe@mail.com",
+      firstName: "Joe",
+      lastName: "Doe",
+      proConnect: defaultProConnectInfos,
+      createdAt: new Date().toISOString(),
+      preventToDelete: false,
+    };
+
+    it("200 - Gets the list of connected users for an agency", async () => {
+      inMemoryUow.userRepository.users = [agencyUser, backOfficeAdminUser];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [agencyUser.id]: {
+            roles: ["agency-admin"],
+            isNotifiedByEmail: true,
+          },
+        }),
+      ];
+
+      const response = await sharedRequest.getConnectedUsers({
+        queryParams: { agencyIds: [agency.id] },
+        headers: { authorization: backOfficeAdminToken },
+      });
+
+      const { validatorEmails: _, counsellorEmails: __, ...rest } = agency;
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: [
+          {
+            ...agencyUser,
+            agencyRights: [
+              {
+                agency: {
+                  ...rest,
+                  admins: [agencyUser.email],
+                },
+                roles: ["agency-admin"],
+                isNotifiedByEmail: true,
+              },
+            ],
+            dashboards: {
+              agencies: noAgencyDashboards,
+              establishments: noEstablishmentDashboard,
+            },
+          },
+        ],
+      });
+    });
+
+    it("401 - missing token", async () => {
+      const response = await sharedRequest.getConnectedUsers({
+        queryParams: { agencyRole: "to-review" },
+        headers: { authorization: "" },
+      });
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: "Veuillez vous authentifier" },
+      });
+    });
+
+    it("403 - non admin user", async () => {
+      inMemoryUow.userRepository.users = [nonAdminUser];
+
+      const response = await sharedRequest.getConnectedUsers({
+        queryParams: { agencyIds: [agency.id] },
+        headers: { authorization: nonAdminToken },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.user.forbidden({ userId: nonAdminUser.id }).message,
+        },
+      });
+    });
+  });
 });
 
 const expectResponseAndReturnJwt = <

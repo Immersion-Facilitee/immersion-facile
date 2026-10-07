@@ -21,6 +21,7 @@ import { makeUpdateAgencyReferringToUpdatedAgency } from "../../domains/agency/u
 import { throwIfNotAdmin } from "../../domains/connected-users/helpers/authorization.helper";
 import { makeCreateUserForAgency } from "../../domains/connected-users/use-cases/CreateUserForAgency";
 import { makeDeleteUser } from "../../domains/connected-users/use-cases/DeleteUser";
+import { makeGetAgencyUsers } from "../../domains/connected-users/use-cases/GetAgencyUsers";
 import { makeGetConnectedUser } from "../../domains/connected-users/use-cases/GetConnectedUser";
 import { makeGetConnectedUsers } from "../../domains/connected-users/use-cases/GetConnectedUsers";
 import { makeGetUsers } from "../../domains/connected-users/use-cases/GetUsers";
@@ -754,6 +755,10 @@ export const createUseCases = ({
     }),
 
     getConnectedUsers: makeGetConnectedUsers({
+      uowPerformer,
+    }),
+
+    getAgencyUsers: makeGetAgencyUsers({
       uowPerformer,
     }),
 
