@@ -336,9 +336,6 @@ const getPageByRouteName: {
       oAuthConnectionPageHeader={
         <PageHeader title="Vous devez vous connecter pour accéder à votre compte" />
       }
-      mainWrapperProps={{
-        vSpacing: 0,
-      }}
     >
       <EstablishmentUserRegistrationPage />
     </ConnectedPrivateRoutePage>

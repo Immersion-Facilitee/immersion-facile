@@ -52,7 +52,7 @@ export const PageHeader = ({
       )}
       aria-label="En-tête de page"
     >
-      <div className={cx(fr.cx("fr-container", "fr-mt-8w"), classes.inner)}>
+      <div className={cx(fr.cx("fr-container", "fr-mt-4w"), classes.inner)}>
         {illustration && (
           <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
             <div className={fr.cx("fr-col-12", "fr-col-lg-7")}>
