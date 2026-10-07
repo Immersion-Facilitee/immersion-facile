@@ -32,6 +32,7 @@ import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   retrieveConventionWithAgency,
   throwErrorIfPhoneNumberNotValid,
+  throwIfConventionArchivedForNonAdmin,
 } from "../entities/Convention";
 
 export type SendAssessmentLink = ReturnType<typeof makeSendAssessmentLink>;
@@ -69,6 +70,13 @@ export const makeSendAssessmentLink = useCaseBuilder("SendAssessmentLink")
       jwtPayload,
       isPeAdvisorAllowed: true,
       isValidatorOfAgencyRefersToAllowed: true,
+    });
+
+    await throwIfConventionArchivedForNonAdmin({
+      convention,
+      now: deps.timeGateway.now(),
+      jwtPayload,
+      uow,
     });
 
     throwErrorIfConventionStatusNotAllowed(
