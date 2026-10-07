@@ -6,7 +6,6 @@ import {
   type ConventionDto,
   type ConventionId,
   type ConventionReadDto,
-  type ConventionsWithErroredBroadcastFeedbackFilters,
   type ConventionsWithUnfinalizedAssessmentFilters,
   type ConventionWithBroadcastFeedback,
   type ConventionWithUnfinalizedAssessment,
@@ -33,18 +32,19 @@ import { assesmentEntityToConventionAssessmentFields } from "../../../utils/conv
 import { createLogger } from "../../../utils/logger";
 import type { InMemoryAgencyRepository } from "../../agency/adapters/InMemoryAgencyRepository";
 import type { InMemoryBroadcastFeedbacksRepository } from "../../core/saved-errors/adapters/InMemoryBroadcastFeedbacksRepository";
-import {
-  broadcastToFtConsumerName,
-  broadcastToPartnersServiceName,
-} from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type { InMemoryBannedEstablishmentRepository } from "../../establishment/adapters/InMemoryBannedEstablishmentRepository";
 import type { BannedEstablishment } from "../../establishment/ports/BannedEstablishmentRepository";
 import type { AssessmentEntity } from "../entities/AssessmentEntity";
+import {
+  hasPriorSuccessfulBroadcast,
+  isBroadcastFeedbackRelevant,
+} from "../entities/Broadcast";
 import type {
   ConventionQueries,
   GetConventionIdsParams,
   GetConventionsFilters,
   GetConventionsParams,
+  GetConventionsWithErroredBroadcastFeedbackForAgencyUserParams,
   GetPaginatedConventionsFilters,
   GetPaginatedConventionsParams,
 } from "../ports/ConventionQueries";
@@ -423,12 +423,15 @@ export class InMemoryConventionQueries implements ConventionQueries {
     userAgencyIds,
     pagination,
     filters = {},
-  }: {
-    userAgencyIds: AgencyId[];
-    pagination: Required<PaginationQueryParams>;
-    filters?: ConventionsWithErroredBroadcastFeedbackFilters;
-  }): Promise<DataWithPagination<ConventionWithBroadcastFeedback>> {
-    if (userAgencyIds.length === 0)
+    relevantConsumerNamesByAgencyId,
+  }: GetConventionsWithErroredBroadcastFeedbackForAgencyUserParams): Promise<
+    DataWithPagination<ConventionWithBroadcastFeedback>
+  > {
+    const hasRelevantBroadcastDestinations = Object.values(
+      relevantConsumerNamesByAgencyId,
+    ).some((consumerNames) => consumerNames.length > 0);
+
+    if (userAgencyIds.length === 0 || !hasRelevantBroadcastDestinations)
       return {
         data: [],
         pagination: {
@@ -445,10 +448,18 @@ export class InMemoryConventionQueries implements ConventionQueries {
 
     const results: ConventionWithBroadcastFeedback[] = await Promise.all(
       userConventions.map(async (convention) => {
+        const relevantConsumerNames =
+          relevantConsumerNamesByAgencyId[convention.agencyId] ?? [];
         const lastBroadcastFeedback =
-          await this.broadcastFeedbacksRepository.getLastBroadcastFeedback(
-            convention.id,
-          );
+          (
+            await this.broadcastFeedbacksRepository.getBroadcastFeedbacksByConventionId(
+              convention.id,
+            )
+          )
+            .filter((feedback) =>
+              isBroadcastFeedbackRelevant(feedback, relevantConsumerNames),
+            )
+            .at(-1) ?? null;
         return {
           id: convention.id,
           status: convention.status,
@@ -486,18 +497,17 @@ export class InMemoryConventionQueries implements ConventionQueries {
             return false;
         }
 
-        const hasPriorSuccessfulBroadcast =
-          this.broadcastFeedbacksRepository.broadcastFeedbacks.some(
-            (bf) =>
-              bf.requestParams.conventionId === result.id &&
-              ((bf.consumerName === broadcastToFtConsumerName &&
-                bf.response?.httpStatus === 201) ||
-                (bf.serviceName === broadcastToPartnersServiceName &&
-                  !bf.subscriberErrorFeedback)),
-          );
+        const relevantConsumerNames =
+          relevantConsumerNamesByAgencyId[result.agencyId] ?? [];
         if (
           isUnvalidatedConventionStatus(result.status) &&
-          !hasPriorSuccessfulBroadcast
+          !hasPriorSuccessfulBroadcast(
+            this.broadcastFeedbacksRepository.broadcastFeedbacks.filter(
+              (bf) =>
+                bf.requestParams.conventionId === result.id &&
+                isBroadcastFeedbackRelevant(bf, relevantConsumerNames),
+            ),
+          )
         )
           return false;
 

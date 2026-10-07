@@ -4,6 +4,7 @@ import { sql } from "kysely";
 import { andThen } from "ramda";
 import {
   type AgencyId,
+  type ApiConsumerName,
   ASSESSEMENT_SIGNATURE_RELEASE_DATE,
   type AssessmentCompletionStatusFilter,
   type AssessmentStatus,
@@ -12,7 +13,6 @@ import {
   type ConventionDto,
   type ConventionId,
   type ConventionStatus,
-  type ConventionsWithErroredBroadcastFeedbackFilters,
   type ConventionsWithUnfinalizedAssessmentFilters,
   type ConventionWithBroadcastFeedback,
   type ConventionWithUnfinalizedAssessment,
@@ -51,6 +51,7 @@ import type {
   GetConventionsFilters,
   GetConventionsParams,
   GetConventionsSortBy,
+  GetConventionsWithErroredBroadcastFeedbackForAgencyUserParams,
   GetPaginatedConventionsParams,
   OmitStatusesForAgenciesFilter,
 } from "../ports/ConventionQueries";
@@ -507,12 +508,19 @@ export class PgConventionQueries implements ConventionQueries {
     userAgencyIds,
     pagination,
     filters = {},
-  }: {
-    userAgencyIds: AgencyId[];
-    pagination: Required<PaginationQueryParams>;
-    filters?: ConventionsWithErroredBroadcastFeedbackFilters;
-  }): Promise<DataWithPagination<ConventionWithBroadcastFeedback>> {
-    if (userAgencyIds.length === 0)
+    relevantConsumerNamesByAgencyId,
+  }: GetConventionsWithErroredBroadcastFeedbackForAgencyUserParams): Promise<
+    DataWithPagination<ConventionWithBroadcastFeedback>
+  > {
+    const relevantConsumerAgencyIds = Object.entries(
+      relevantConsumerNamesByAgencyId,
+    ).flatMap(([agencyId, consumerNames]) => consumerNames.map(() => agencyId));
+
+    const relevantConsumerNames = Object.values(
+      relevantConsumerNamesByAgencyId,
+    ).flat();
+
+    if (userAgencyIds.length === 0 || relevantConsumerAgencyIds.length === 0)
       return {
         data: [],
         pagination: {
@@ -530,6 +538,8 @@ export class PgConventionQueries implements ConventionQueries {
       transaction: this.transaction,
       userAgencyIds,
       conventionSubmittedAfter: new Date("2025-01-01"),
+      relevantConsumerAgencyIds,
+      relevantConsumerNames,
     };
 
     const applyBroadcastFilters = (qb: BroadcastFeedbackBaseQueryBuilder) =>
@@ -537,7 +547,10 @@ export class PgConventionQueries implements ConventionQueries {
         qb,
         filterHasErroredFeedback(),
         filterBroadcastErrorKind(broadcastErrorKind),
-        filterExcludeUnvalidatedConventionsWithoutPriorSuccessfulBroadcast(),
+        filterExcludeUnvalidatedConventionsWithoutPriorSuccessfulBroadcast({
+          relevantConsumerAgencyIds,
+          relevantConsumerNames,
+        }),
         filterConventionStatus(conventionStatus),
         filterSearchForBroadcastFeedback(search),
       );
@@ -861,7 +874,13 @@ const filterBroadcastErrorKind =
   };
 
 const filterExcludeUnvalidatedConventionsWithoutPriorSuccessfulBroadcast =
-  () =>
+  ({
+    relevantConsumerAgencyIds,
+    relevantConsumerNames,
+  }: {
+    relevantConsumerAgencyIds: AgencyId[];
+    relevantConsumerNames: ApiConsumerName[];
+  }) =>
   (
     builder: BroadcastFeedbackBaseQueryBuilder,
   ): BroadcastFeedbackBaseQueryBuilder =>
@@ -873,6 +892,9 @@ const filterExcludeUnvalidatedConventionsWithoutPriorSuccessfulBroadcast =
             .selectFrom("broadcast_feedbacks as bf_ok")
             .select(sql`1`.as("__"))
             .where("bf_ok.convention_id", "=", eb.ref("cf.conventionId"))
+            .where(
+              sql<boolean>`("cf"."agencyId", bf_ok.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
+            )
             .where(
               sql<boolean>`(
                 (bf_ok.consumer_name = ${broadcastToFtConsumerName} AND bf_ok.response @> '{"httpStatus": 201}'::jsonb)

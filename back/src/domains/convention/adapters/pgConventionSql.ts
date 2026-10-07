@@ -2,6 +2,7 @@ import type { Expression, SelectQueryBuilder } from "kysely";
 import { sql } from "kysely";
 import {
   type AgencyId,
+  type ApiConsumerName,
   type AppellationCode,
   type AppellationLabel,
   type Beneficiary,
@@ -387,10 +388,14 @@ const createBroadcastFeedbackBaseBuilder = ({
   transaction,
   userAgencyIds,
   conventionSubmittedAfter,
+  relevantConsumerAgencyIds,
+  relevantConsumerNames,
 }: {
   transaction: KyselyDb;
   userAgencyIds: AgencyId[];
   conventionSubmittedAfter?: Date;
+  relevantConsumerAgencyIds: AgencyId[];
+  relevantConsumerNames: ApiConsumerName[];
 }) => {
   const cteBuilder = transaction.with(
     "conventions_with_latest_feedback",
@@ -438,6 +443,9 @@ const createBroadcastFeedbackBaseBuilder = ({
           eb.ref("c.date_submission").as("dateSubmission"),
         ])
         .where("c.agency_id", "in", userAgencyIds)
+        .where(
+          sql<boolean>`(c.agency_id, bf.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
+        )
         .distinctOn("c.id")
         .orderBy("c.id")
         .orderBy("bf.occurred_at", "desc");
@@ -460,30 +468,42 @@ export const createConventionsWithErroredBroadcastFeedbackBuilder = ({
   transaction,
   userAgencyIds,
   conventionSubmittedAfter,
+  relevantConsumerAgencyIds,
+  relevantConsumerNames,
 }: {
   transaction: KyselyDb;
   userAgencyIds: AgencyId[];
   conventionSubmittedAfter?: Date;
+  relevantConsumerAgencyIds: AgencyId[];
+  relevantConsumerNames: ApiConsumerName[];
 }) =>
   createBroadcastFeedbackBaseBuilder({
     transaction,
     userAgencyIds,
     conventionSubmittedAfter,
+    relevantConsumerAgencyIds,
+    relevantConsumerNames,
   }).selectAll();
 
 export const createBroadcastFeedbackCountBuilder = ({
   transaction,
   userAgencyIds,
   conventionSubmittedAfter,
+  relevantConsumerAgencyIds,
+  relevantConsumerNames,
 }: {
   transaction: KyselyDb;
   userAgencyIds: AgencyId[];
   conventionSubmittedAfter?: Date;
+  relevantConsumerAgencyIds: AgencyId[];
+  relevantConsumerNames: ApiConsumerName[];
 }) =>
   createBroadcastFeedbackBaseBuilder({
     transaction,
     userAgencyIds,
     conventionSubmittedAfter,
+    relevantConsumerAgencyIds,
+    relevantConsumerNames,
   }).select((eb) => sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"));
 
 export const getConventionDtoById = async (

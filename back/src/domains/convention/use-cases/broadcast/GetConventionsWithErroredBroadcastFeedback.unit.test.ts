@@ -9,6 +9,7 @@ import {
   toAgencyDtoForAgencyUsersAndAdmins,
 } from "shared";
 import { toAgencyWithRights } from "../../../../utils/agency";
+import { ApiConsumerBuilder } from "../../../core/api-consumer/adapters/InMemoryApiConsumerRepository";
 import {
   broadcastToFtConsumerName,
   broadcastToFtServiceName,
@@ -23,6 +24,8 @@ import {
   type GetConventionsWithErroredBroadcastFeedback,
   makeGetConventionsWithErroredBroadcastFeedback,
 } from "./GetConventionsWithErroredBroadcastFeedback";
+
+const siMiloProductionConsumerName = "si-milo-production";
 
 describe("GetConventionsWithErroredBroadcastFeedback", () => {
   const agencyId1 = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
@@ -94,7 +97,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
   const managedErrorFeedback: BroadcastFeedback = {
     serviceName: "test-service",
     consumerId: "consumer-id-1",
-    consumerName: "Test Consumer",
+    consumerName: broadcastToFtConsumerName,
     conventionId: convention1.id,
     agencyId: agencyId1,
     subscriberErrorFeedback: {
@@ -110,7 +113,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
   const unmanagedErrorFeedback: BroadcastFeedback = {
     serviceName: "test-service",
     consumerId: "consumer-id-2",
-    consumerName: "Test Consumer",
+    consumerName: broadcastToFtConsumerName,
     conventionId: convention2.id,
     agencyId: agencyId1,
     subscriberErrorFeedback: {
@@ -132,6 +135,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
     });
 
+    uow.userRepository.users = [user1];
     uow.agencyRepository.agencies = [agency1];
     uow.conventionRepository.setConventions([convention1, convention2]);
     uow.broadcastFeedbacksRepository.broadcastFeedbacks = [
@@ -301,7 +305,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
     const errorFeedbackForAgency2: BroadcastFeedback = {
       serviceName: "test-service",
       consumerId: "consumer-id-3",
-      consumerName: "Test Consumer",
+      consumerName: broadcastToFtConsumerName,
       conventionId: convention3.id,
       agencyId: agencyId2,
       subscriberErrorFeedback: {
@@ -544,7 +548,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
 
     const errorBroadcast: BroadcastFeedback = {
       consumerId: null,
-      consumerName: "any-consumer-name",
+      consumerName: broadcastToFtConsumerName,
       conventionId: cancelledConventionId,
       agencyId: agencyId1,
       serviceName: broadcastToFtServiceName,
@@ -583,7 +587,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
 
     const priorBroadcastWithHttp200: BroadcastFeedback = {
       consumerId: null,
-      consumerName: "any-consumer-name",
+      consumerName: broadcastToFtConsumerName,
       conventionId: cancelledConventionId,
       agencyId: agencyId1,
       serviceName: broadcastToFtServiceName,
@@ -726,6 +730,24 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
     });
 
     it("includes convention in unvalidated status when a prior partner broadcast has no subscriber error", async () => {
+      uow.apiConsumerRepository.consumers = [
+        new ApiConsumerBuilder()
+          .withName("partner-consumer")
+          .withConventionRight({
+            kinds: ["SUBSCRIPTION"],
+            scope: { agencyIds: [agencyId1] },
+            subscriptions: [
+              {
+                id: "11111111-1111-4111-8111-111111111111",
+                createdAt: "2024-07-22T00:00:00.000Z",
+                callbackHeaders: { authorization: "token" },
+                callbackUrl: "https://partner.example.com",
+                subscribedEvent: "convention.updated",
+              },
+            ],
+          })
+          .build(),
+      ];
       uow.broadcastFeedbacksRepository.broadcastFeedbacks = [
         priorPartnerBroadcastWithoutError,
         partnerErrorBroadcast,
@@ -752,6 +774,204 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
             agencyReferent: null,
             agencyId: agencyId1,
             agencyName: agency1.name,
+          },
+        ],
+        pagination: {
+          totalRecords: 1,
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+        },
+      });
+    });
+  });
+
+  describe("filters last feedback by relevant consumer names", () => {
+    const missionLocaleAgencyId = "11111111-1111-4111-8111-111111111111";
+
+    const missionLocaleAgency = toAgencyWithRights(
+      new AgencyDtoBuilder()
+        .withId(missionLocaleAgencyId)
+        .withKind("mission-locale")
+        .withName("Mission Locale")
+        .build(),
+      {
+        [userId1]: { isNotifiedByEmail: true, roles: ["validator"] },
+      },
+    );
+
+    const missionLocaleUser = new ConnectedUserBuilder()
+      .withId(userId1)
+      .withAgencyRights([
+        {
+          agency: toAgencyDtoForAgencyUsersAndAdmins(missionLocaleAgency, []),
+          roles: ["validator"],
+          isNotifiedByEmail: true,
+        },
+      ])
+      .build();
+
+    const cancelledMissionLocaleConvention = new ConventionDtoBuilder()
+      .withId("convention-id-ml")
+      .withAgencyId(missionLocaleAgencyId)
+      .withStatus("CANCELLED")
+      .withDateSubmission("2025-01-02T00:00:00.000Z")
+      .build();
+
+    const imiloErrorFeedback: BroadcastFeedback = {
+      consumerId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      consumerName: siMiloProductionConsumerName,
+      conventionId: cancelledMissionLocaleConvention.id,
+      agencyId: missionLocaleAgencyId,
+      serviceName: broadcastToPartnersServiceName,
+      occurredAt: "2025-01-16T14:00:00.000Z",
+      handledByAgency: false,
+      requestParams: {
+        conventionId: cancelledMissionLocaleConvention.id,
+        conventionStatus: "CANCELLED",
+      },
+      subscriberErrorFeedback: {
+        message: "i-milo error",
+        error: { code: "IMILO_ERROR" },
+      },
+      response: { httpStatus: 500 },
+    };
+
+    const ftSuccessFeedback: BroadcastFeedback = {
+      consumerId: null,
+      consumerName: broadcastToFtConsumerName,
+      conventionId: cancelledMissionLocaleConvention.id,
+      agencyId: missionLocaleAgencyId,
+      serviceName: broadcastToFtServiceName,
+      occurredAt: "2025-01-16T08:00:00.000Z",
+      handledByAgency: false,
+      requestParams: {
+        conventionId: cancelledMissionLocaleConvention.id,
+        conventionStatus: "ACCEPTED_BY_VALIDATOR",
+      },
+      response: { httpStatus: 201 },
+    };
+
+    it("excludes convention in unvalidated status when prior success is not relevant", async () => {
+      uow.agencyRepository.agencies = [missionLocaleAgency];
+      uow.apiConsumerRepository.consumers = [
+        new ApiConsumerBuilder()
+          .withName(siMiloProductionConsumerName)
+          .withConventionRight({
+            kinds: ["SUBSCRIPTION"],
+            scope: { agencyIds: [missionLocaleAgencyId] },
+            subscriptions: [
+              {
+                id: "11111111-1111-4111-8111-111111111111",
+                createdAt: "2024-07-22T00:00:00.000Z",
+                callbackHeaders: { authorization: "token" },
+                callbackUrl: "https://partner.example.com",
+                subscribedEvent: "convention.updated",
+              },
+            ],
+          })
+          .build(),
+      ];
+      uow.conventionRepository.setConventions([
+        cancelledMissionLocaleConvention,
+      ]);
+      uow.broadcastFeedbacksRepository.broadcastFeedbacks = [
+        ftSuccessFeedback,
+        imiloErrorFeedback,
+      ];
+
+      const result = await useCase.execute(
+        { pagination: { page: 1, perPage: 10 } },
+        missionLocaleUser,
+      );
+
+      expectToEqual(result, {
+        data: [],
+        pagination: {
+          totalRecords: 0,
+          currentPage: 1,
+          totalPages: 0,
+          numberPerPage: 10,
+        },
+      });
+    });
+
+    it("keeps the last feedback when the consumer name stays relevant after a transfer", async () => {
+      const otherFranceTravailAgencyId = "22222222-2222-4222-8222-222222222222";
+      const otherFranceTravailAgency = toAgencyWithRights(
+        new AgencyDtoBuilder()
+          .withId(otherFranceTravailAgencyId)
+          .withKind("france-travail")
+          .withName("France Travail 2")
+          .build(),
+        {
+          [userId1]: { isNotifiedByEmail: true, roles: ["validator"] },
+        },
+      );
+      const otherFranceTravailUser = new ConnectedUserBuilder()
+        .withId(userId1)
+        .withAgencyRights([
+          {
+            agency: toAgencyDtoForAgencyUsersAndAdmins(
+              otherFranceTravailAgency,
+              [],
+            ),
+            roles: ["validator"],
+            isNotifiedByEmail: true,
+          },
+        ])
+        .build();
+      const otherFranceTravailConvention = new ConventionDtoBuilder()
+        .withId("convention-id-ft-2")
+        .withAgencyId(otherFranceTravailAgencyId)
+        .withStatus("READY_TO_SIGN")
+        .withDateSubmission("2025-01-02T00:00:00.000Z")
+        .build();
+      const otherFranceTravailErrorFeedback: BroadcastFeedback = {
+        consumerId: null,
+        consumerName: broadcastToFtConsumerName,
+        conventionId: otherFranceTravailConvention.id,
+        agencyId: otherFranceTravailAgencyId,
+        serviceName: broadcastToFtServiceName,
+        occurredAt: "2025-01-16T16:00:00.000Z",
+        handledByAgency: false,
+        requestParams: {
+          conventionId: otherFranceTravailConvention.id,
+          conventionStatus: "READY_TO_SIGN",
+        },
+        subscriberErrorFeedback: {
+          message: "FT error",
+          error: { code: "FT_ERROR" },
+        },
+        response: { httpStatus: 500 },
+      };
+
+      uow.agencyRepository.agencies = [otherFranceTravailAgency];
+      uow.conventionRepository.setConventions([otherFranceTravailConvention]);
+      uow.broadcastFeedbacksRepository.broadcastFeedbacks = [
+        otherFranceTravailErrorFeedback,
+      ];
+
+      const result = await useCase.execute(
+        { pagination: { page: 1, perPage: 10 } },
+        otherFranceTravailUser,
+      );
+
+      expectToEqual(result, {
+        data: [
+          {
+            id: otherFranceTravailConvention.id,
+            status: otherFranceTravailConvention.status,
+            beneficiary: {
+              firstname:
+                otherFranceTravailConvention.signatories.beneficiary.firstName,
+              lastname:
+                otherFranceTravailConvention.signatories.beneficiary.lastName,
+            },
+            lastBroadcastFeedback: otherFranceTravailErrorFeedback,
+            agencyReferent: null,
+            agencyId: otherFranceTravailAgencyId,
+            agencyName: otherFranceTravailAgency.name,
           },
         ],
         pagination: {
