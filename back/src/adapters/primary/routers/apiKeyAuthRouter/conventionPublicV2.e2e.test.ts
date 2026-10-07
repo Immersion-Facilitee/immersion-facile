@@ -1,13 +1,17 @@
+import { subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AssessmentDto,
   ConventionDtoBuilder,
+  defaultMonthsThresholdForConventionsListing,
   displayRouteName,
   errors,
   expectHttpResponseToEqual,
   expectToEqual,
+  makeBooleanFeatureFlag,
   makeEmptyLastReminders,
   type Notification,
+  reasonableSchedule,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -218,6 +222,73 @@ describe("Convention routes", () => {
           isEstablishmentBanned: false,
         },
         status: 200,
+      });
+    });
+
+    describe("when convention is archived", () => {
+      const now = new Date("2021-09-01T10:10:00.000Z");
+      const dateEnd = subMonths(
+        now,
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(convention)
+        .withDateSubmission(subDays(dateEnd, 10).toISOString())
+        .withDateStart(subDays(dateEnd, 4).toISOString())
+        .withDateEnd(dateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+
+      beforeEach(() => {
+        inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+        inMemoryUow.conventionRepository.setConventions([archivedConvention]);
+      });
+
+      it("returns 200 when enableRequestArchivedConvention is inactive", async () => {
+        const response = await sharedRequest.getConventionById({
+          headers: {
+            authorization: conventionReadConsumerWithAgencyIdsScopeToken,
+          },
+          urlParams: { conventionId: archivedConvention.id },
+        });
+
+        expectHttpResponseToEqual(response, {
+          body: {
+            ...archivedConvention,
+            agencyName: agency.name,
+            agencyDepartment: agency.address.departmentCode,
+            agencyContactEmail: agency.contactEmail,
+            agencyKind: "pole-emploi",
+            agencySiret: agency.agencySiret,
+            agencyValidationSteps: "validator-only",
+            assessment: null,
+            lastReminders: makeEmptyLastReminders(),
+            isEstablishmentBanned: false,
+          },
+          status: 200,
+        });
+      });
+
+      it("403 when enableRequestArchivedConvention is active", async () => {
+        inMemoryUow.featureFlagRepository.featureFlags = {
+          enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+        };
+
+        const response = await sharedRequest.getConventionById({
+          headers: {
+            authorization: conventionReadConsumerWithAgencyIdsScopeToken,
+          },
+          urlParams: { conventionId: archivedConvention.id },
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 403,
+          body: {
+            status: 403,
+            message: errors.convention.archived({
+              conventionId: archivedConvention.id,
+            }).message,
+          },
+        });
       });
     });
   });

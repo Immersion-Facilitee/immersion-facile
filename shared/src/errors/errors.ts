@@ -72,7 +72,6 @@ import {
 } from "./httpErrors";
 
 export const badSchemaErrorMessagePrefix = "Schema validation failed";
-
 export const errors = {
   fetch: {
     errorResponse: async (errorResponse: Response) => {
@@ -485,6 +484,10 @@ export const errors = {
     ) =>
       new ForbiddenError(
         `Le consomateur API '${apiConsumerId}' n'a pas de droits sur la convention '${conventionId}'.`,
+      ),
+    archived: ({ conventionId }: { conventionId: ConventionId }) =>
+      new ForbiddenError(
+        `Cette convention est archivée et n'est plus accessible (identifiant '${conventionId}').`,
       ),
     forbiddenConventionIdMismatch: ({
       jwtConventionId,

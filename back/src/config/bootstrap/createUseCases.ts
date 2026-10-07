@@ -305,7 +305,10 @@ export const createUseCases = ({
 
     //Convention
     addConvention,
-    getConvention: makeGetConvention({ uowPerformer }),
+    getConvention: makeGetConvention({
+      uowPerformer,
+      deps: { timeGateway },
+    }),
     getBeneficiaryConventionList: makeGetBeneficiaryConventionList({
       uowPerformer,
       deps: { timeGateway },

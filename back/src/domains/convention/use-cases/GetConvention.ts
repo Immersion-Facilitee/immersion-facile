@@ -18,11 +18,13 @@ import {
   isHashMatchPeAdvisorEmail,
 } from "../../../utils/emailHash";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   isConventionInScope,
   throwErrorOnConventionIdMismatch,
+  throwIfConventionArchivedForNonAdmin,
 } from "../entities/Convention";
 
 export type GetConvention = ReturnType<typeof makeGetConvention>;
@@ -31,8 +33,14 @@ export const makeGetConvention = useCaseBuilder("GetConvention")
   .withInput(withConventionIdSchema)
   .withOutput<ConventionReadDto>()
   .withCurrentUser<ConventionRelatedJwtPayload | ApiConsumer>()
+  .withDeps<{ timeGateway: TimeGateway }>()
   .build(
-    async ({ inputParams: { conventionId }, uow, currentUser: jwtPayload }) => {
+    async ({
+      inputParams: { conventionId },
+      uow,
+      currentUser: jwtPayload,
+      deps,
+    }) => {
       const conventionDto =
         await uow.conventionRepository.getById(conventionId);
       if (!conventionDto) throw errors.convention.notFound({ conventionId });
@@ -42,18 +50,35 @@ export const makeGetConvention = useCaseBuilder("GetConvention")
         uow,
       );
 
-      if ("id" in jwtPayload) return onApiConsumer(jwtPayload, convention);
-      return "emailHash" in jwtPayload
-        ? isConventionDomainPayloadHasRight({
-            jwtPayload,
-            uow,
-            convention,
-          })
-        : onConnectedUserPayload({
-            userId: jwtPayload.userId,
-            uow,
-            convention,
-          });
+      const { authorizedConvention, isBackofficeAdmin } =
+        "id" in jwtPayload
+          ? {
+              authorizedConvention: await onApiConsumer(jwtPayload, convention),
+              isBackofficeAdmin: false,
+            }
+          : "emailHash" in jwtPayload
+            ? {
+                authorizedConvention: await isConventionDomainPayloadHasRight({
+                  jwtPayload,
+                  uow,
+                  convention,
+                }),
+                isBackofficeAdmin: false,
+              }
+            : await onConnectedUserPayload({
+                userId: jwtPayload.userId,
+                uow,
+                convention,
+              });
+
+      throwIfConventionArchivedForNonAdmin({
+        convention: authorizedConvention,
+        now: deps.timeGateway.now(),
+        isBackofficeAdmin,
+        featureFlags: await uow.featureFlagQueries.getAll(),
+      });
+
+      return authorizedConvention;
     },
   );
 
@@ -76,11 +101,16 @@ const onConnectedUserPayload = async ({
   userId: UserId;
   convention: ConventionReadDto;
   uow: UnitOfWork;
-}): Promise<ConventionReadDto> => {
+}): Promise<{
+  authorizedConvention: ConventionReadDto;
+  isBackofficeAdmin: boolean;
+}> => {
   const user = await getUserWithRights(uow, userId);
+  const isBackofficeAdmin = !!user.isBackofficeAdmin;
 
   const roles = getConventionManageAllowedRoles(convention, user);
-  if (roles.length) return convention;
+  if (roles.length)
+    return { authorizedConvention: convention, isBackofficeAdmin };
 
   const establishment =
     await uow.establishmentAggregateRepository.getEstablishmentAggregateBySiret(
@@ -92,7 +122,8 @@ const onConnectedUserPayload = async ({
       userRight.userId === user.id && userRight.status === "ACCEPTED",
   );
 
-  if (hasSomeEstablishmentRights) return convention;
+  if (hasSomeEstablishmentRights)
+    return { authorizedConvention: convention, isBackofficeAdmin };
 
   throw errors.convention.forbiddenMissingRightsUserId({
     conventionId: convention.id,
