@@ -1,3 +1,4 @@
+import { subDays, subMonths } from "date-fns";
 import type {
   AgencyDto,
   AgencyRole,
@@ -14,11 +15,14 @@ import {
   ConnectedUserBuilder,
   ConventionDtoBuilder,
   conventionStatusesWithoutJustificationNorValidator,
+  defaultMonthsThresholdForConventionsListing,
   errors,
   expectArraysToMatch,
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  makeBooleanFeatureFlag,
+  reasonableSchedule,
   UserBuilder,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
@@ -124,6 +128,7 @@ describe("TransferConventionToAgency", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         createNewEvent,
+        timeGateway,
       },
     });
   });
@@ -1072,6 +1077,48 @@ describe("TransferConventionToAgency", () => {
           ]);
         });
       });
+    });
+  });
+
+  describe("archived convention", () => {
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(convention)
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+
+      uow.userRepository.users = [notConnectedUser];
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [notConnectedUser.id]: {
+            roles: ["validator"],
+            isNotifiedByEmail: true,
+          },
+        }),
+        toAgencyWithRights(otherAgency, {}),
+      ];
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        usecase.execute(
+          {
+            conventionId,
+            agencyId: otherAgency.id,
+            justification: "change of agency",
+          },
+          validatorJwtPayload,
+        ),
+        errors.convention.archived({ conventionId: archivedConvention.id }),
+      );
     });
   });
 });
