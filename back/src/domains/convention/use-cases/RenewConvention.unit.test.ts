@@ -203,6 +203,8 @@ describe("RenewConvention", () => {
         {
           ...preValidatedConvention,
           ...renewConventionParams,
+          dateSubmission: now.toISOString(),
+          sourceConventionDraftId: undefined,
           signatories: {
             beneficiary: {
               ...preValidatedConvention.signatories.beneficiary,
