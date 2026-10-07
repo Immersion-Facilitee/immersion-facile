@@ -47,6 +47,8 @@ export class TestAdminGateway implements AdminGateway {
 
   public createUserForAgencyResponse$ = new Subject<ConnectedUser>();
 
+  public getConnectedUsersResponse$ = new Subject<ConnectedUser[]>();
+
   public banEstablishmentResponse$ = new Subject<void>();
 
   public listUsersResponse$ = new Subject<
@@ -75,6 +77,10 @@ export class TestAdminGateway implements AdminGateway {
     _token: string,
   ): Observable<ConnectedUser> {
     return this.createUserForAgencyResponse$;
+  }
+
+  public getConnectedUsers$(): Observable<ConnectedUser[]> {
+    return this.getConnectedUsersResponse$;
   }
 
   public getDashboardUrl$(): Observable<DashboardUrlAndName> {

@@ -17,6 +17,7 @@ import type {
   UserParamsForAgency,
   UserWithNumberOfAgenciesAndEstablishments,
   WithPreventToDelete,
+  WithUserFilters,
   WithUserId,
 } from "shared";
 
@@ -30,6 +31,11 @@ export interface AdminGateway {
     params: UserParamsForAgency,
     token: ConnectedUserJwt,
   ): Observable<ConnectedUser>;
+
+  getConnectedUsers$: (
+    token: ConnectedUserJwt,
+    filters: WithUserFilters,
+  ) => Observable<ConnectedUser[]>;
 
   getDashboardUrl$: (
     params: GetDashboardParams,
