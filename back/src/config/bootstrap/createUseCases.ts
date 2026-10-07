@@ -924,6 +924,7 @@ export const createUseCases = ({
     }),
     getAssessmentByConventionId: makeGetAssessmentByConventionId({
       uowPerformer,
+      deps: { timeGateway },
     }),
     notifyBeneficiaryThatAssessmentIsCreated:
       makeNotifyBeneficiaryThatAssessmentIsCreated({
