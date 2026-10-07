@@ -1,11 +1,20 @@
 import type { BreadcrumbProps } from "@codegouvfr/react-dsfr/Breadcrumb";
-import { flatten, keys } from "ramda";
-import { isFunction } from "shared";
-import type {
-  Breadcrumbs,
-  BreadcrumbsItem,
-} from "src/app/contents/breadcrumbs/breadcrumbs";
+import { flatten, keys, values } from "ramda";
+import { type FrontRouteKeys, type FrontRouteUnion, isFunction } from "shared";
 import type { Route } from "type-route";
+
+export type BreadcrumbsItem = {
+  label: string;
+  route: Route<FrontRouteUnion> | (() => Route<FrontRouteUnion>);
+  isDisplayedOnOwnPage?: boolean;
+  children?: {
+    [K in FrontRouteKeys]?: BreadcrumbsItem;
+  };
+};
+
+export type Breadcrumbs<T extends string> = {
+  [K in T]?: BreadcrumbsItem;
+};
 
 type RoutesKeysFromBreadcrumbs<T extends Record<keyof T, BreadcrumbsItem>> = {
   [K in keyof T]:
@@ -25,6 +34,11 @@ export const makeBreadcrumbsSegments =
   }: {
     currentRouteKey: RoutesKeysFromBreadcrumbs<T>;
   }): BreadcrumbProps["segments"] => {
+    if (
+      findBreadcrumbsItem(currentRouteKey, breadcrumbsSet)
+        ?.isDisplayedOnOwnPage === false
+    )
+      return [];
     const currentRouteAncestor = keys(breadcrumbsSet).find((key) => {
       const currentRouteInBreadcrumbs = breadcrumbsSet[key];
       if (!currentRouteInBreadcrumbs) return false;
@@ -43,6 +57,22 @@ export const makeBreadcrumbsSegments =
         : []),
     ];
   };
+
+const findBreadcrumbsItem = <T>(
+  currentRouteKey: T,
+  breadcrumbsItems: Partial<Record<string, BreadcrumbsItem>>,
+): BreadcrumbsItem | undefined =>
+  values(breadcrumbsItems).reduce<BreadcrumbsItem | undefined>(
+    (foundBreadcrumbsItem, breadcrumbsItem) => {
+      if (foundBreadcrumbsItem || !breadcrumbsItem) return foundBreadcrumbsItem;
+      if (getRoute(breadcrumbsItem.route).name === currentRouteKey)
+        return breadcrumbsItem;
+      return breadcrumbsItem.children
+        ? findBreadcrumbsItem(currentRouteKey, breadcrumbsItem.children)
+        : undefined;
+    },
+    undefined,
+  );
 
 const isRouteInChildren = <T>(
   currentRouteKey: T,

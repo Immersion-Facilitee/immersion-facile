@@ -1,24 +1,9 @@
 import type { BreadcrumbProps } from "@codegouvfr/react-dsfr/Breadcrumb";
+import { type FrontRouteKeys, frontRoutes, useRoute } from "shared";
 import {
-  type FrontRouteKeys,
-  type FrontRouteUnion,
-  frontRoutes,
-  useRoute,
-} from "shared";
-import { makeBreadcrumbsSegments } from "src/app/utils/breadcrumbs";
-import type { Route } from "type-route";
-
-export type BreadcrumbsItem = {
-  label: string;
-  route: Route<FrontRouteUnion> | (() => Route<FrontRouteUnion>);
-  children?: {
-    [K in FrontRouteKeys]?: BreadcrumbsItem;
-  };
-};
-
-export type Breadcrumbs<T extends string> = {
-  [K in T]?: BreadcrumbsItem;
-};
+  type Breadcrumbs,
+  makeBreadcrumbsSegments,
+} from "src/app/utils/breadcrumbs";
 
 export const defaultAncestor: BreadcrumbProps["segments"][0] = {
   label: "Accueil",
@@ -29,6 +14,7 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
   homeAgencies: {
     label: "Organismes prescripteurs",
     route: frontRoutes.homeAgencies(),
+    isDisplayedOnOwnPage: false,
     children: {
       addAgency: {
         label: "Inscrire mon organisme",
@@ -39,6 +25,7 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
   homeCandidates: {
     label: "Candidats",
     route: frontRoutes.homeCandidates(),
+    isDisplayedOnOwnPage: false,
     children: {
       search: {
         label: "Recherche",
@@ -68,6 +55,8 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
   homeEstablishments: {
     label: "Entreprises",
     route: frontRoutes.homeEstablishments(),
+    isDisplayedOnOwnPage: false,
+
     children: {
       formEstablishment: {
         label: "Inscrire une entreprise",
