@@ -2,7 +2,6 @@ import { uniq } from "ramda";
 import {
   type AgencyDto,
   type AgencyId,
-  type AgencyKind,
   type AgencyValidationStep,
   type AgencyWithUsersRights,
   type ApiConsumer,
@@ -16,7 +15,6 @@ import {
   conventionSchema,
   type DateTimeIsoString,
   errors,
-  type FeatureFlags,
   ForbiddenError,
   getConventionManageAllowedRoles,
   isSignatoryRole,
@@ -271,44 +269,6 @@ export const getLinkedAgenciesFromAgencyId = async (
     agency,
     refersToAgency: await agencyWithRightToAgencyDto(uow, refersToAgency),
   };
-};
-
-export const shouldBroadcastToFranceTravail = ({
-  agency,
-  featureFlags,
-  refersToAgency,
-}: {
-  agency: AgencyDto;
-  refersToAgency: AgencyDto | null;
-  featureFlags: FeatureFlags;
-}): boolean => {
-  const isBroadcastToFranceTravailAllowedForKind = (agencyKind: AgencyKind) => {
-    if (agency.kind === agencyKind) return true;
-    if (refersToAgency && refersToAgency.kind === "france-travail") return true;
-    return false;
-  };
-
-  if (isBroadcastToFranceTravailAllowedForKind("france-travail")) return true;
-
-  if (
-    featureFlags.enableBroadcastOfMissionLocaleToFT.isActive &&
-    isBroadcastToFranceTravailAllowedForKind("mission-locale")
-  )
-    return true;
-
-  if (
-    featureFlags.enableBroadcastOfConseilDepartementalToFT.isActive &&
-    isBroadcastToFranceTravailAllowedForKind("conseil-departemental")
-  )
-    return true;
-
-  if (
-    featureFlags.enableBroadcastOfCapEmploiToFT.isActive &&
-    isBroadcastToFranceTravailAllowedForKind("cap-emploi")
-  )
-    return true;
-
-  return false;
 };
 
 export const getSignatoryRoleAndUserFromJwtPayload = async (

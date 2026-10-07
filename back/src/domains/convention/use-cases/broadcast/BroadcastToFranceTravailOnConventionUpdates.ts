@@ -18,10 +18,8 @@ import {
 } from "../../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
-import {
-  getLinkedAgenciesFromAgencyId,
-  shouldBroadcastToFranceTravail,
-} from "../../entities/Convention";
+import { shouldBroadcastToFranceTravail } from "../../entities/Broadcast";
+import { getLinkedAgenciesFromAgencyId } from "../../entities/Convention";
 import {
   type FranceTravailBroadcastResponse,
   type FranceTravailConventionReadDto,
