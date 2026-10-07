@@ -5,7 +5,7 @@ import {
   makeBreadcrumbsSegments,
 } from "src/app/utils/breadcrumbs";
 
-export const defaultAncestor: BreadcrumbProps["segments"][0] = {
+const defaultAncestor: BreadcrumbProps["segments"][0] = {
   label: "Accueil",
   linkProps: frontRoutes.home().link,
 };
@@ -46,26 +46,6 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
         label: "Recherche scolaire",
         route: frontRoutes.searchForStudent(),
       },
-      beneficiaryDashboard: {
-        label: "Tableau de bord",
-        route: frontRoutes.beneficiaryDashboard(),
-      },
-    },
-  },
-  homeEstablishments: {
-    label: "Entreprises",
-    route: frontRoutes.homeEstablishments(),
-    isDisplayedOnOwnPage: false,
-
-    children: {
-      formEstablishment: {
-        label: "Inscrire une entreprise",
-        route: frontRoutes.formEstablishment(),
-      },
-      establishmentDashboard: {
-        label: "Tableau de bord",
-        route: frontRoutes.establishmentDashboard(),
-      },
     },
   },
   initiateConvention: {
@@ -81,10 +61,6 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
   assessment: {
     label: "Bilan d'immersion",
     route: frontRoutes.assessment({ jwt: "", conventionId: "" }),
-  },
-  assessmentDocument: {
-    label: "Bilan d'immersion",
-    route: frontRoutes.assessmentDocument({ jwt: "", conventionId: "" }),
   },
   myAccount: {
     label: "Mon compte",
@@ -103,52 +79,68 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
             route: frontRoutes.establishmentDashboardConventions(),
           },
           establishmentDashboardDiscussions: {
-            label: "Discussions",
+            label: "Candidatures",
             route: frontRoutes.establishmentDashboardDiscussions(),
           },
           establishmentDashboardFormEstablishment: {
-            label: "Fiche entreprise",
-            route: frontRoutes.formEstablishment(),
+            label: "Mon entreprise",
+            route: frontRoutes.establishmentDashboardFormEstablishment(),
           },
         },
       },
       beneficiaryDashboard: {
-        label: "Tableau de bord bénéficiaire",
+        label: "Tableau de bord candidat",
         route: frontRoutes.beneficiaryDashboard(),
         children: {
           beneficiaryDashboardDiscussions: {
-            label: "Candidatures",
+            label: "Mes candidatures",
             route: frontRoutes.beneficiaryDashboardDiscussions(),
+          },
+          beneficiaryDashboardConventions: {
+            label: "Mes conventions",
+            route: frontRoutes.beneficiaryDashboardConventions(),
           },
         },
       },
-      agencyDashboardMain: {
-        label: "Tableau de bord",
-        route: frontRoutes.agencyDashboardMain(),
+      agencyDashboard: {
+        label: "Tableau de bord prescripteur",
+        route: frontRoutes.agencyDashboard(),
         children: {
           agencyUserRegistration: {
             label: "Demander l'accès à des organismes",
             route: frontRoutes.agencyUserRegistration(),
           },
+          agencyDashboardMain: {
+            label: "Tableau de bord",
+            route: frontRoutes.agencyDashboardMain(),
+          },
+          agencyDashboardAgencies: {
+            label: "Mes Organismes",
+            route: frontRoutes.agencyDashboardAgencies(),
+            children: {
+              agencyDashboardAgencyDetails: {
+                label: "Détail de l'organisme",
+                route: frontRoutes.agencyDashboardAgencyDetails({
+                  agencyId: "",
+                }),
+              },
+            },
+          },
+          agencyManagement: {
+            label: "Pilotage de ma structure",
+            route: frontRoutes.agencyManagement(),
+          },
+          statsEstablishmentDetails: {
+            label: "Activités par entreprise",
+            route: frontRoutes.statsEstablishmentDetails(),
+          },
+          establishmentManagement: {
+            label: "Pilotage des entreprises",
+            route: frontRoutes.establishmentManagement(),
+          },
         },
       },
-      agencyDashboardAgencyDetails: {
-        label: "Détail de l'organisme",
-        route: frontRoutes.agencyDashboardAgencyDetails({ agencyId: "" }),
-      },
     },
-  },
-  admin: {
-    label: "Administration",
-    route: frontRoutes.admin(),
-  },
-  magicLinkInterstitial: {
-    label: "Connexion à Immersion Facilitée",
-    route: frontRoutes.magicLinkInterstitial({
-      email: "",
-      code: "",
-      state: "",
-    }),
   },
 };
 
