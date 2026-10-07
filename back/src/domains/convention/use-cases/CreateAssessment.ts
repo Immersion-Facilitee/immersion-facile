@@ -21,6 +21,7 @@ import { makeEmailHash } from "../../../utils/jwt";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
@@ -29,16 +30,22 @@ import {
   type AssessmentEntity,
   createAssessmentEntity,
 } from "../entities/AssessmentEntity";
-import { retrieveConventionWithAgency } from "../entities/Convention";
+import {
+  retrieveConventionWithAgency,
+  throwIfConventionArchivedForNonAdmin,
+} from "../entities/Convention";
 
-type WithCreateNewEvent = { createNewEvent: CreateNewEvent };
+type CreateAssessmentDeps = {
+  createNewEvent: CreateNewEvent;
+  timeGateway: TimeGateway;
+};
 
 export type CreateAssessment = ReturnType<typeof makeCreateAssessment>;
 export const makeCreateAssessment = useCaseBuilder("CreateAssessment")
   .withInput<AssessmentDto>(assessmentDtoSchema)
   .withOutput<void>()
   .withCurrentUser<ConventionRelatedJwtPayload | undefined>()
-  .withDeps<WithCreateNewEvent>()
+  .withDeps<CreateAssessmentDeps>()
   .build(
     async ({
       inputParams: assessment,
@@ -58,6 +65,13 @@ export const makeCreateAssessment = useCaseBuilder("CreateAssessment")
         mode: "CreateAssessment",
         convention,
         agency: await agencyWithRightToAgencyDto(uow, agency),
+        jwtPayload: conventionJwtPayload,
+        uow,
+      });
+
+      await throwIfConventionArchivedForNonAdmin({
+        convention,
+        now: deps.timeGateway.now(),
         jwtPayload: conventionJwtPayload,
         uow,
       });
