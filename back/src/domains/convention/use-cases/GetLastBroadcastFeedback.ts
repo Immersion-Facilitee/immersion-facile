@@ -11,11 +11,12 @@ import {
   userHasEnoughRightsOnConvention,
 } from "shared";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
-import {
-  broadcastToFtConsumerName,
-  broadcastToPartnersServiceName,
-} from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
+import {
+  getRelevantBroadcastConsumerNames,
+  hasPriorSuccessfulBroadcast,
+  isBroadcastFeedbackRelevant,
+} from "../entities/Broadcast";
 
 export type GetLastBroadcastFeedback = ReturnType<
   typeof makeGetLastBroadcastFeedback
@@ -40,11 +41,18 @@ export const makeGetLastBroadcastFeedback = useCaseBuilder(
         ...allAgencyRoles,
       ])
     ) {
-      const broadcastFeedbacks =
+      const relevantConsumerNames = await getRelevantBroadcastConsumerNames(
+        uow,
+        convention.agencyId,
+      );
+      const relevantBroadcastFeedbacks = (
         await uow.broadcastFeedbacksRepository.getBroadcastFeedbacksByConventionId(
           inputParams,
-        );
-      const broadcastFeedback = broadcastFeedbacks.at(-1);
+        )
+      ).filter((feedback) =>
+        isBroadcastFeedbackRelevant(feedback, relevantConsumerNames),
+      );
+      const broadcastFeedback = relevantBroadcastFeedbacks.at(-1);
 
       if (!broadcastFeedback) return { broadcastFeedback: null };
 
@@ -53,7 +61,7 @@ export const makeGetLastBroadcastFeedback = useCaseBuilder(
         shouldBeHandled: shouldBroadcastFeedbackBeHandled(
           convention,
           broadcastFeedback,
-          broadcastFeedbacks,
+          relevantBroadcastFeedbacks,
         ),
       };
     }
@@ -81,14 +89,3 @@ const shouldBroadcastFeedbackBeHandled = (
 
   return true;
 };
-
-const hasPriorSuccessfulBroadcast = (
-  broadcastFeedbacks: BroadcastFeedback[],
-): boolean =>
-  broadcastFeedbacks.some(
-    (broadcastFeedback) =>
-      (broadcastFeedback.consumerName === broadcastToFtConsumerName &&
-        broadcastFeedback.response?.httpStatus === 201) ||
-      (broadcastFeedback.serviceName === broadcastToPartnersServiceName &&
-        !broadcastFeedback.subscriberErrorFeedback),
-  );
