@@ -7,7 +7,6 @@ import {
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
-  makeBooleanFeatureFlag,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { ApiConsumerBuilder } from "../../core/api-consumer/adapters/InMemoryApiConsumerRepository";
@@ -453,7 +452,7 @@ describe("GetLastBroadcastFeedback", () => {
     });
   });
 
-  describe("filters feedbacks to current relevant destinations", () => {
+  describe("filters last feedback by relevant consumer names", () => {
     const missionLocaleAgency = new AgencyDtoBuilder()
       .withId("11111111-1111-4111-8111-111111111111")
       .withKind("mission-locale")
@@ -469,7 +468,9 @@ describe("GetLastBroadcastFeedback", () => {
       })
       .build();
 
-    const conventionWithAgencyWithRefersTo = new ConventionDtoBuilder(convention)
+    const conventionWithAgencyWithRefersTo = new ConventionDtoBuilder(
+      convention,
+    )
       .withAgencyId(agencyWithRefersTo.id)
       .build();
 
@@ -517,7 +518,9 @@ describe("GetLastBroadcastFeedback", () => {
         toAgencyWithRights(currentAgency, {
           [connectedUser.id]: { isNotifiedByEmail: true, roles: ["validator"] },
         }),
-        ...(currentAgency.refersToAgencyId ? [toAgencyWithRights(ftAgency)] : []),
+        ...(currentAgency.refersToAgencyId
+          ? [toAgencyWithRights(ftAgency)]
+          : []),
       ];
       uow.apiConsumerRepository.consumers = [
         new ApiConsumerBuilder()
@@ -539,7 +542,7 @@ describe("GetLastBroadcastFeedback", () => {
       ];
     };
 
-    it("ignores a more recent feedback that is no longer a relevant destination", async () => {
+    it("ignores a more recent feedback whose consumer name is no longer relevant", async () => {
       setupAgencyUser(missionLocaleAgency);
       uow.conventionRepository.setConventions([
         new ConventionDtoBuilder(convention)
@@ -604,15 +607,16 @@ describe("GetLastBroadcastFeedback", () => {
       });
     });
 
-    it("keeps the last feedback when the destination stays relevant after a transfer", async () => {
+    it("keeps the last feedback when the consumer name stays relevant after a transfer", async () => {
       const otherFranceTravailAgency = new AgencyDtoBuilder()
         .withId("22222222-2222-4222-8222-222222222222")
         .withKind("france-travail")
         .build();
-      const conventionWithOtherFranceTravailAgency =
-        new ConventionDtoBuilder(convention)
-          .withAgencyId(otherFranceTravailAgency.id)
-          .build();
+      const conventionWithOtherFranceTravailAgency = new ConventionDtoBuilder(
+        convention,
+      )
+        .withAgencyId(otherFranceTravailAgency.id)
+        .build();
       setupAgencyUser(otherFranceTravailAgency);
       uow.conventionRepository.setConventions([
         conventionWithOtherFranceTravailAgency,
@@ -641,9 +645,11 @@ describe("GetLastBroadcastFeedback", () => {
       });
     });
 
-    it("keeps the last feedback when the destination belongs to the referred agency", async () => {
+    it("keeps the last feedback when the consumer name is relevant for the referred agency", async () => {
       setupAgencyUser(agencyWithRefersTo);
-      uow.conventionRepository.setConventions([conventionWithAgencyWithRefersTo]);
+      uow.conventionRepository.setConventions([
+        conventionWithAgencyWithRefersTo,
+      ]);
       uow.broadcastFeedbacksRepository.broadcastFeedbacks = [
         sampleBroadcastFeedback,
       ];
@@ -680,7 +686,9 @@ describe("GetLastBroadcastFeedback", () => {
           })
           .build(),
       ];
-      uow.conventionRepository.setConventions([conventionWithAgencyWithRefersTo]);
+      uow.conventionRepository.setConventions([
+        conventionWithAgencyWithRefersTo,
+      ]);
       const referredAgencyPartnerFeedback: BroadcastFeedback = {
         consumerId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         consumerName: referredAgencyPartnerName,

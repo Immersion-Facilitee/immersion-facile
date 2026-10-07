@@ -1,4 +1,6 @@
 import {
+  type AgencyId,
+  type ApiConsumerName,
   type ConnectedUser,
   type ConventionWithBroadcastFeedbackReadDto,
   type DataWithPagination,
@@ -8,6 +10,7 @@ import {
   getPaginationParamsForWeb,
 } from "shared";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
+import { getRelevantBroadcastConsumerNames } from "../../entities/Broadcast";
 
 export type GetConventionsWithErroredBroadcastFeedback = ReturnType<
   typeof makeGetConventionsWithErroredBroadcastFeedback
@@ -26,14 +29,29 @@ export const makeGetConventionsWithErroredBroadcastFeedback = useCaseBuilder(
 
     const pagination = getPaginationParamsForWeb(inputParams.pagination);
 
+    const userAgencyIds = currentUser.agencyRights
+      .filter((agencyRight) => agencyRight.roles.length > 0)
+      .map((agencyRight) => agencyRight.agency.id);
+
+    const relevantConsumerNamesByAgencyId: Record<AgencyId, ApiConsumerName[]> =
+      Object.fromEntries(
+        await Promise.all(
+          userAgencyIds.map(
+            async (agencyId): Promise<[AgencyId, ApiConsumerName[]]> => [
+              agencyId,
+              await getRelevantBroadcastConsumerNames(uow, agencyId),
+            ],
+          ),
+        ),
+      );
+
     const result =
       await uow.conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
         {
-          userAgencyIds: currentUser.agencyRights
-            .filter((agencyRight) => agencyRight.roles.length > 0)
-            .map((agencyRight) => agencyRight.agency.id),
+          userAgencyIds,
           pagination,
           filters,
+          relevantConsumerNamesByAgencyId,
         },
       );
 
