@@ -15,6 +15,7 @@ export const Breadcrumbs = () => {
   return (
     <div className={fr.cx("fr-container", "fr-mt-4w")}>
       <Breadcrumb
+        className={fr.cx("fr-mb-0")}
         segments={ancestors}
         currentPageLabel={segments[segments.length - 1].label}
       />

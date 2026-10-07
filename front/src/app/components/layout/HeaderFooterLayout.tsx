@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { type SkipLink, SkipLinks } from "react-design-system";
+import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { LayoutFooter } from "./LayoutFooter";
 import { LayoutHeader } from "./LayoutHeader";
 
@@ -25,6 +26,7 @@ export const HeaderFooterLayout = ({ children }: HeaderFooterLayoutProps) => (
   <>
     <SkipLinks links={skipLinks} />
     <LayoutHeader />
+    <Breadcrumbs />
     {children}
     <LayoutFooter />
   </>
