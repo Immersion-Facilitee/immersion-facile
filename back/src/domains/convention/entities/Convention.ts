@@ -175,20 +175,24 @@ export const isConventionInScope = (
   isAgencyIdInConsumerScope(conventionRead, apiConsumer) ||
   isAgencyKindInConsumerScope(conventionRead, apiConsumer);
 
-export const throwIfConventionArchivedForNonAdmin = ({
+export const throwIfConventionArchivedForNonAdmin = async ({
   convention,
   now,
-  isBackofficeAdmin,
-  featureFlags,
+  jwtPayload,
+  uow,
 }: {
   convention: Pick<ConventionDto, "id" | "dateEnd">;
   now: Date;
-  isBackofficeAdmin: boolean;
-  featureFlags: FeatureFlags;
-}): void => {
+  jwtPayload: ConventionRelatedJwtPayload | ApiConsumer;
+  uow: UnitOfWork;
+}): Promise<void> => {
+  if ("userId" in jwtPayload) {
+    const user = await getUserWithRights(uow, jwtPayload.userId);
+    if (user.isBackofficeAdmin) return;
+  }
+  const featureFlags = await uow.featureFlagQueries.getAll();
   if (!featureFlags.enableRequestArchivedConvention.isActive) return;
   if (!isConventionArchived({ dateEnd: convention.dateEnd, now })) return;
-  if (isBackofficeAdmin) return;
   throw errors.convention.archived({ conventionId: convention.id });
 };
 

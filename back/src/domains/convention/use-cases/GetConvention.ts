@@ -50,32 +50,26 @@ export const makeGetConvention = useCaseBuilder("GetConvention")
         uow,
       );
 
-      const { authorizedConvention, isBackofficeAdmin } =
+      const authorizedConvention =
         "id" in jwtPayload
-          ? {
-              authorizedConvention: await onApiConsumer(jwtPayload, convention),
-              isBackofficeAdmin: false,
-            }
+          ? await onApiConsumer(jwtPayload, convention)
           : "emailHash" in jwtPayload
-            ? {
-                authorizedConvention: await isConventionDomainPayloadHasRight({
-                  jwtPayload,
-                  uow,
-                  convention,
-                }),
-                isBackofficeAdmin: false,
-              }
+            ? await isConventionDomainPayloadHasRight({
+                jwtPayload,
+                uow,
+                convention,
+              })
             : await onConnectedUserPayload({
                 userId: jwtPayload.userId,
                 uow,
                 convention,
               });
 
-      throwIfConventionArchivedForNonAdmin({
+      await throwIfConventionArchivedForNonAdmin({
         convention: authorizedConvention,
         now: deps.timeGateway.now(),
-        isBackofficeAdmin,
-        featureFlags: await uow.featureFlagQueries.getAll(),
+        jwtPayload,
+        uow,
       });
 
       return authorizedConvention;
@@ -101,16 +95,11 @@ const onConnectedUserPayload = async ({
   userId: UserId;
   convention: ConventionReadDto;
   uow: UnitOfWork;
-}): Promise<{
-  authorizedConvention: ConventionReadDto;
-  isBackofficeAdmin: boolean;
-}> => {
+}): Promise<ConventionReadDto> => {
   const user = await getUserWithRights(uow, userId);
-  const isBackofficeAdmin = !!user.isBackofficeAdmin;
 
   const roles = getConventionManageAllowedRoles(convention, user);
-  if (roles.length)
-    return { authorizedConvention: convention, isBackofficeAdmin };
+  if (roles.length) return convention;
 
   const establishment =
     await uow.establishmentAggregateRepository.getEstablishmentAggregateBySiret(
@@ -122,8 +111,7 @@ const onConnectedUserPayload = async ({
       userRight.userId === user.id && userRight.status === "ACCEPTED",
   );
 
-  if (hasSomeEstablishmentRights)
-    return { authorizedConvention: convention, isBackofficeAdmin };
+  if (hasSomeEstablishmentRights) return convention;
 
   throw errors.convention.forbiddenMissingRightsUserId({
     conventionId: convention.id,

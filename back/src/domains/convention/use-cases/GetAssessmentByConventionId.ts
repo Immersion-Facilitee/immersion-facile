@@ -8,7 +8,6 @@ import {
 } from "shared";
 import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import { throwForbiddenIfNotAllowedForAssessments } from "../../../utils/assessment";
-import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import { toAssessmentDto } from "../entities/AssessmentEntity";
@@ -41,16 +40,11 @@ export const makeGetAssessmentByConventionId = useCaseBuilder(
       uow,
     });
 
-    const isBackofficeAdmin =
-      "userId" in currentUser
-        ? !!(await getUserWithRights(uow, currentUser.userId)).isBackofficeAdmin
-        : false;
-
-    throwIfConventionArchivedForNonAdmin({
+    await throwIfConventionArchivedForNonAdmin({
       convention,
       now: deps.timeGateway.now(),
-      isBackofficeAdmin,
-      featureFlags: await uow.featureFlagQueries.getAll(),
+      jwtPayload: currentUser,
+      uow,
     });
 
     const assessment = await uow.assessmentRepository.getByConventionId(
