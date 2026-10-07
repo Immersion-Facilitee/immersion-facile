@@ -1,9 +1,11 @@
+import { subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AgencyRole,
   ConnectedUserBuilder,
   ConventionDtoBuilder,
   conventionStatusesAllowedForModification,
+  defaultMonthsThresholdForConventionsListing,
   type EditConventionWithFinalStatusBeneficiaryUpdate,
   type EditConventionWithFinalStatusRequestDto,
   errors,
@@ -11,6 +13,8 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  makeBooleanFeatureFlag,
+  reasonableSchedule,
   UserBuilder,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
@@ -85,16 +89,19 @@ describe("EditConventionWithFinalStatus", () => {
 
   let uow: InMemoryUnitOfWork;
   let usecase: EditConventionWithFinalStatus;
+  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
     uow = createInMemoryUow();
+    timeGateway = new CustomTimeGateway();
     usecase = makeEditConventionWithFinalStatus({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         createNewEvent: makeCreateNewEvent({
-          timeGateway: new CustomTimeGateway(),
+          timeGateway,
           uuidGenerator: new TestUuidGenerator(),
         }),
+        timeGateway,
       },
     });
 
@@ -681,6 +688,40 @@ describe("EditConventionWithFinalStatus", () => {
           },
         },
       ]);
+    });
+  });
+
+  describe("archived convention", () => {
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const dateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(convention)
+        .withDateSubmission(subDays(dateEnd, 10).toISOString())
+        .withDateStart(subDays(dateEnd, 4).toISOString())
+        .withDateEnd(dateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.userRepository.users = [counsellorUser];
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [counsellorUser.id]: {
+            roles: ["counsellor"],
+            isNotifiedByEmail: true,
+          },
+        }),
+      ];
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        usecase.execute(tutorOnlyRequest, counsellorJwtPayload),
+        errors.convention.archived({ conventionId: archivedConvention.id }),
+      );
     });
   });
 });
