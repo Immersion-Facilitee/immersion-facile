@@ -61,13 +61,17 @@ export const withPreventToDeleteSchema: ZodSchemaWithInputMatchingOutput<WithPre
     preventToDelete: z.boolean(),
   });
 
-const userSchema: ZodSchemaWithInputMatchingOutput<User> = z.object({
+const commonUserShape = {
   id: userIdSchema,
   email: emailSchema,
   createdAt: dateTimeIsoStringSchema,
   firstName: zStringCanBeEmpty,
   lastName: zStringCanBeEmpty,
   preventToDelete: z.boolean(),
+};
+
+const userSchema: ZodSchemaWithInputMatchingOutput<User> = z.object({
+  ...commonUserShape,
   proConnect: proConnectInfoSchema.or(z.null()),
 });
 
@@ -111,7 +115,7 @@ const agencyRightForListingSchema: ZodSchemaWithInputMatchingOutput<AgencyRightF
   });
 
 export const agencyUserForListingSchema: ZodSchemaWithInputMatchingOutput<AgencyUserForListing> =
-  userSchema.and(
+  z.object(commonUserShape).and(
     z.object({
       agencyRights: z.array(agencyRightForListingSchema),
     }),

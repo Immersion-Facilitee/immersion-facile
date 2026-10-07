@@ -68,7 +68,7 @@ export type AgencyRightForListing = Omit<AgencyRight, "agency"> & {
   agencyId: AgencyId;
 };
 
-export type AgencyUserForListing = User & {
+export type AgencyUserForListing = Omit<User, "proConnect"> & {
   agencyRights: AgencyRightForListing[];
 };
 
