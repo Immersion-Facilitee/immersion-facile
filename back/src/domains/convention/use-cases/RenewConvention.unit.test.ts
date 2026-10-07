@@ -1,4 +1,4 @@
-import { addDays } from "date-fns";
+import { addDays, subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   BadRequestError,
@@ -8,11 +8,14 @@ import {
   type ConventionId,
   type ConventionRelatedJwtPayload,
   type ConventionRole,
+  defaultMonthsThresholdForConventionsListing,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
   ForbiddenError,
+  makeBooleanFeatureFlag,
   type RenewConventionParams,
+  reasonableSchedule,
   ScheduleDtoBuilder,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
@@ -276,6 +279,36 @@ describe("RenewConvention", () => {
         new ForbiddenError(
           "The role 'agency-admin' is not allowed to renew convention",
         ),
+      );
+    });
+
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(
+        existingValidatedConvention,
+      )
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        renewConvention.execute(
+          renewConventionParams,
+          createJwtPayload({
+            role: "validator",
+            conventionId: archivedConvention.id,
+          }),
+        ),
+        errors.convention.archived({ conventionId: archivedConvention.id }),
       );
     });
   });
