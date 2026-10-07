@@ -72,6 +72,8 @@ import {
 } from "./httpErrors";
 
 export const badSchemaErrorMessagePrefix = "Schema validation failed";
+export const archivedConventionErrorMessage =
+  "Cette convention est archivée et n'est plus accessible";
 export const errors = {
   fetch: {
     errorResponse: async (errorResponse: Response) => {
@@ -487,7 +489,7 @@ export const errors = {
       ),
     archived: ({ conventionId }: { conventionId: ConventionId }) =>
       new ForbiddenError(
-        `Cette convention est archivée et n'est plus accessible (identifiant '${conventionId}').`,
+        `${archivedConventionErrorMessage} (identifiant '${conventionId}').`,
       ),
     forbiddenConventionIdMismatch: ({
       jwtConventionId,

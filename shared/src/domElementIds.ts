@@ -1207,6 +1207,11 @@ export const domElementIds = {
       newRequestButton:
         "im-archived-convention-request-success__new-request-button",
     },
+    error: {
+      goToRequestFormButton:
+        "im-archived-convention-error__go-to-request-form-button",
+      homeButton: "im-archived-convention-error__home-button",
+    },
   },
   conventionTemplate: {
     form: {

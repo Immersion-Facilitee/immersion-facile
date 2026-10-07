@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
   agencyModifierRoles,
+  archivedConventionErrorMessage,
   type ConventionDraftId,
   type ConventionId,
   type ConventionJwtPayload,
@@ -94,6 +95,13 @@ export const ConventionFormWrapper = ({
   const showSummary = useAppSelector(conventionSelectors.showSummary);
   const route = useConventionRoute();
   const routeJwt = "jwt" in route.params ? route.params.jwt : undefined;
+  const routeConventionId =
+    "conventionId" in route.params ? route.params.conventionId : undefined;
+  const conventionIdFromJwt = routeJwt
+    ? decodeMagicLinkJwtWithoutSignatureCheck<ConventionJwtPayload>(routeJwt)
+        .applicationId
+    : undefined;
+  const conventionId = conventionIdFromJwt ?? routeConventionId;
   const routeConventionDraftId =
     "conventionDraftId" in route.params
       ? route.params.conventionDraftId
@@ -158,25 +166,17 @@ export const ConventionFormWrapper = ({
           feedbackTopic: "convention-draft",
         }),
       );
-    } else if (mode === "edit-convention" && routeJwt) {
+    } else if (mode === "edit-convention" && routeJwt && conventionId) {
       dispatch(conventionSlice.actions.jwtProvided(routeJwt));
-      const { applicationId } =
-        decodeMagicLinkJwtWithoutSignatureCheck<ConventionJwtPayload>(routeJwt);
-
-      const conventionIdInRouteParams =
-        "conventionId" in route.params ? route.params.conventionId : undefined;
-
-      const conventionId = applicationId ?? conventionIdInRouteParams;
-
       dispatch(
         conventionSlice.actions.fetchConventionRequested({
           jwt: routeJwt,
           conventionId,
-          feedbackTopic: "unused",
+          feedbackTopic: "convention-form",
         }),
       );
     }
-  }, [dispatch, mode, routeJwt, route.params, conventionDraftId]);
+  }, [dispatch, mode, routeJwt, conventionId, conventionDraftId]);
 
   useEffect(() => {
     if (routeJwt) {
@@ -368,16 +368,22 @@ export const ConventionFormWrapper = ({
             if (routeToRedirectTo) routeToRedirectTo.push();
           },
         )
-        .with({ shouldRedirectToError: true }, () => (
-          <>
-            {routeJwt && fetchConventionError && (
-              <ShowConventionErrorOrRenewExpiredJwt
-                errorMessage={conventionFormFeedback?.message}
-                jwt={routeJwt}
-              />
-            )}
-          </>
-        ))
+        .with({ shouldRedirectToError: true }, () => {
+          const message = conventionFormFeedback?.message ?? "";
+          if (conventionId && message.includes(archivedConventionErrorMessage))
+            throw frontErrors.convention.archived({ conventionId });
+
+          return (
+            <>
+              {routeJwt && fetchConventionError && (
+                <ShowConventionErrorOrRenewExpiredJwt
+                  errorMessage={message}
+                  jwt={routeJwt}
+                />
+              )}
+            </>
+          );
+        })
         .exhaustive()}
     </div>
   );

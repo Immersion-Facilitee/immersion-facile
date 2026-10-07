@@ -8,6 +8,7 @@ import {
   ConnectedUserBuilder,
   type ConventionDomainJwtPayload,
   ConventionDtoBuilder,
+  type ConventionReadDto,
   type ConventionRole,
   defaultMonthsThresholdForConventionsListing,
   defaultProConnectInfos,
@@ -21,7 +22,6 @@ import {
   type Role,
   reasonableSchedule,
   type User,
-  ConventionReadDto,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { makeEmailHash } from "../../../utils/jwt";

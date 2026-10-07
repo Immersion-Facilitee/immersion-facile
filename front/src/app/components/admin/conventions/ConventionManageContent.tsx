@@ -3,6 +3,7 @@ import { Loader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   allAgencyRoles,
+  archivedConventionErrorMessage,
   badSchemaErrorMessagePrefix,
   type ConventionJwtPayload,
   decodeMagicLinkJwtWithoutSignatureCheck,
@@ -135,6 +136,9 @@ export const ConventionManageContent = ({
         conventionId,
         errorMessage: message,
       });
+
+    if (message.includes(archivedConventionErrorMessage))
+      throw frontErrors.convention.archived({ conventionId });
 
     throw frontErrors.convention.noRightsOnConvention({
       userEmail: currentUser?.email ?? "INCONNU",

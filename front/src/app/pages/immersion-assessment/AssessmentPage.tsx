@@ -6,6 +6,7 @@ import { Loader, MainWrapper, PageHeader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AssessmentStatus,
+  archivedConventionErrorMessage,
   type ConventionJwtPayload,
   decodeMagicLinkJwtWithoutSignatureCheck,
   domElementIds,
@@ -23,6 +24,7 @@ import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useSiretFetcher } from "src/app/hooks/siret.hooks";
 import { ShowConventionErrorOrRenewExpiredJwt } from "src/app/pages/convention/ShowConventionErrorOrRenewExpiredJwt";
+import { frontErrors } from "src/app/pages/error/front-errors";
 import { commonIllustrations } from "src/assets/img/illustrations";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
@@ -95,13 +97,18 @@ export const AssessmentPage = ({ route }: AssessmentPageProps) => {
     assessmentFormFeedback?.level === "success" &&
     assessmentFormFeedback?.on === "create";
 
-  if (fetchConventionError)
+  if (fetchConventionError) {
+    const message = conventionFormFeedback?.message ?? "";
+    if (conventionId && message.includes(archivedConventionErrorMessage))
+      throw frontErrors.convention.archived({ conventionId });
+
     return (
       <ShowConventionErrorOrRenewExpiredJwt
-        errorMessage={conventionFormFeedback?.message}
+        errorMessage={message}
         jwt={route.params.jwt}
       />
     );
+  }
 
   if (isAssessmentSuccessfullySubmitted && !isFetchingSiret)
     return (

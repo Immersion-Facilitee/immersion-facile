@@ -11,6 +11,7 @@ import {
   ConventionDtoBuilder,
   type ConventionId,
   type ConventionMagicLinkRoutes,
+  type ConventionReadDto,
   type ConventionRole,
   conventionMagicLinkRoutes,
   currentJwtVersions,
@@ -35,7 +36,6 @@ import {
   type User,
   unauthenticatedConventionRoutes,
   type WithAuthorizationHeader,
-  ConventionReadDto,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";

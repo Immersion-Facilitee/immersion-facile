@@ -253,6 +253,45 @@ export const frontErrors = {
         ),
         buttons: [HomeButton, ContactUsButton()],
       }),
+    archived: ({ conventionId }: { conventionId: ConventionId }) =>
+      new FrontSpecificError({
+        title: "Cette convention est archivée",
+        description: (
+          <>
+            <p>
+              Les conventions de plus de 2 ans sont automatiquement archivées.
+              Vous ne pouvez plus consulter cette convention ni son bilan.
+            </p>
+            <p>
+              Vous pouvez demander la récupération de cette convention et de son
+              bilan pour des raisons légales ou de suivi.
+            </p>
+          </>
+        ),
+        buttons: [
+          <Button
+            key="archived-convention-request-form-button"
+            priority="primary"
+            linkProps={{
+              ...frontRoutes.archivedConventionRequest({ conventionId }).link,
+              id: domElementIds.archivedConventionRequest.error
+                .goToRequestFormButton,
+            }}
+          >
+            Faire une demande d'accès
+          </Button>,
+          <Button
+            key="archived-convention-home-button"
+            priority="secondary"
+            linkProps={{
+              ...frontRoutes.home().link,
+              id: domElementIds.archivedConventionRequest.error.homeButton,
+            }}
+          >
+            Retourner à la page d'accueil
+          </Button>,
+        ],
+      }),
   },
   conventionDraft: {
     notFound: () =>
