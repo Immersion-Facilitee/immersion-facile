@@ -946,7 +946,6 @@ export const domElementIds = {
   establishmentUserRegistration: {
     registerEstablishmentButton: "im-register-establishment__register-button",
     registerEstablishmentSearch: "im-register-establishment__search",
-    backButton: "im-register-establishment__back-button",
   },
   conventionStatusDashboard: {},
   group: {},
@@ -1268,9 +1267,7 @@ export const domElementIds = {
   statsEstablishmentDetails: {},
   agencyManagement: {},
   establishmentManagement: {},
-  agencyUserRegistration: {
-    backButton: "im-agency-registration__back-button",
-  },
+  agencyUserRegistration: {},
   agencyDashboardAgencies: {
     userRegistrationToAgency: {
       modal: "im-agency-dashboard-agencies__user-registration-to-agency-modal",

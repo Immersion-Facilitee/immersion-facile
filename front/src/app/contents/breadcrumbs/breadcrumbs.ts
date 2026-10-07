@@ -67,7 +67,7 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
     route: frontRoutes.myAccount(),
     children: {
       establishmentDashboard: {
-        label: "Tableau de bord entreprise",
+        label: "Mon espace entreprise",
         route: frontRoutes.establishmentDashboard(),
         children: {
           establishmentUserRegistration: {
@@ -89,7 +89,7 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
         },
       },
       beneficiaryDashboard: {
-        label: "Tableau de bord candidat",
+        label: "Mon espace bénéficiaire",
         route: frontRoutes.beneficiaryDashboard(),
         children: {
           beneficiaryDashboardDiscussions: {
@@ -103,7 +103,7 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
         },
       },
       agencyDashboard: {
-        label: "Tableau de bord prescripteur",
+        label: "Mon espace prescripteur",
         route: frontRoutes.agencyDashboard(),
         children: {
           agencyUserRegistration: {

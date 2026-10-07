@@ -1,7 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
 import { Loader } from "react-design-system";
-import { domElementIds, frontRoutes } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { RequestRegisterEstablishmentsForUserForm } from "src/app/components/forms/register-establishments/RequestRegisterEstablishmentsForUserForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -17,16 +15,6 @@ export const EstablishmentUserRegistrationPage = () => {
     return <p>Merci de vous connecter pour accéder à cette page.</p>;
   return (
     <>
-      <Button
-        id={domElementIds.establishmentUserRegistration.backButton}
-        linkProps={frontRoutes.establishmentDashboardFormEstablishment().link}
-        priority={"secondary"}
-        size="small"
-        className={fr.cx("fr-mb-6w")}
-        iconId="fr-icon-arrow-go-back-line"
-      >
-        Retour à mes entreprises
-      </Button>
       <h1>Se rattacher à une entreprise</h1>
       <p>
         Bonjour {currentUser.firstName} {currentUser.lastName}, recherchez une
