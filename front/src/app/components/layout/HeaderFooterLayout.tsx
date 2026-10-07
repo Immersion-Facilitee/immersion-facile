@@ -20,13 +20,17 @@ const skipLinks: SkipLink[] = [
 ];
 type HeaderFooterLayoutProps = {
   children: ReactNode;
+  isBreadcrumbsDisplayed?: boolean;
 };
 
-export const HeaderFooterLayout = ({ children }: HeaderFooterLayoutProps) => (
+export const HeaderFooterLayout = ({
+  children,
+  isBreadcrumbsDisplayed = true,
+}: HeaderFooterLayoutProps) => (
   <>
     <SkipLinks links={skipLinks} />
     <LayoutHeader />
-    <Breadcrumbs />
+    {isBreadcrumbsDisplayed && <Breadcrumbs />}
     {children}
     <LayoutFooter />
   </>

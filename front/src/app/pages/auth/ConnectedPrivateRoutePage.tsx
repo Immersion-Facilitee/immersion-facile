@@ -221,7 +221,7 @@ export const ConnectedPrivateRoutePage = ({
           />
         )}
       >
-        <HeaderFooterLayout>
+        <HeaderFooterLayout isBreadcrumbsDisplayed={false}>
           <MainWrapper
             layout="default"
             pageHeader={
