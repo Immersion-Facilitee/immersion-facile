@@ -398,7 +398,6 @@ describe("GetAssessmentByConventionId", () => {
       );
     });
 
-
     it("can also get an assessment with legacy format", async () => {
       const legacyAssessment: LegacyAssessmentDto = {
         status: "FINISHED",
