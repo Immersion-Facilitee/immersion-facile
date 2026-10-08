@@ -39,6 +39,7 @@ export const EstablishmentConventionList = ({
   } = useAppSelector(conventionListSelectors.establishmentConventionList);
   const isLoading = useAppSelector(conventionListSelectors.isLoading);
   const hasConventions = conventions.length > 0;
+  const hasActiveSearch = !!filters.search;
 
   useEffect(() => {
     if (!connectedUserJwt) return;
@@ -76,9 +77,33 @@ export const EstablishmentConventionList = ({
       )}
       <WithFeedbackReplacer topic={establishmentConventionListFeedbackTopic}>
         <RichTable
-          headers={getEstablishmentConventionTableHeaders(hasConventions)}
+          headers={getEstablishmentConventionTableHeaders(
+            hasConventions,
+            hasActiveSearch,
+          )}
           isLoading={isLoading}
           data={toEstablishmentConventionTableData(conventions)}
+          searchBar={{
+            label: "Rechercher",
+            placeholder:
+              "Rechercher une convention (ID de convention, nom, prénom, email, SIRET, ... )",
+            onSubmit: (query: string) => {
+              dispatch(
+                conventionListSlice.actions.fetchEstablishmentConventionListRequested(
+                  {
+                    jwt: connectedUserJwt,
+                    filters: {
+                      ...filters,
+                      search: query || undefined,
+                      page: 1,
+                      perPage: 10,
+                    },
+                    feedbackTopic: establishmentConventionListFeedbackTopic,
+                  },
+                ),
+              );
+            },
+          }}
           pagination={{
             count: pagination.totalPages,
             defaultPage: pagination.currentPage,
@@ -109,10 +134,16 @@ export const EstablishmentConventionList = ({
 
 const getEstablishmentConventionTableHeaders = (
   hasConventions: boolean,
-): string[] =>
-  hasConventions
-    ? ["Personne en immersion", "Statut", "Bilan", "Dates", "Actions"]
-    : ["Nous n'avons pas trouvé de convention."];
+  hasActiveSearch: boolean,
+): string[] => {
+  if (hasConventions)
+    return ["Personne en immersion", "Statut", "Bilan", "Dates", "Actions"];
+  if (hasActiveSearch)
+    return [
+      "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+    ];
+  return ["Nous n'avons pas trouvé de convention."];
+};
 
 const toEstablishmentConventionTableData = (
   conventions: EstablishmentUserConventionListDto[],

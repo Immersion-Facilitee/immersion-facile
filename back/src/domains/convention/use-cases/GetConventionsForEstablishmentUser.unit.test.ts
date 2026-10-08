@@ -632,4 +632,166 @@ describe("GetConventionsForEstablishmentUser", () => {
       });
     });
   });
+
+  describe("search", () => {
+    const bakeryConvention = new ConventionDtoBuilder()
+      .withId("33333333-3333-4333-8333-333333333331")
+      .withSiret(acceptedAdminRight.siret)
+      .withEstablishmentRepresentativeEmail("other-representative@mail.com")
+      .withEstablishmentTutorEmail("other-tutor@mail.com")
+      .withBusinessName("Boulangerie Dupont")
+      .withDateStart("2026-01-10")
+      .withDateEnd("2026-01-15")
+      .withSchedule(reasonableSchedule)
+      .build();
+    const floristConvention = new ConventionDtoBuilder()
+      .withId("33333333-3333-4333-8333-333333333332")
+      .withSiret(acceptedAdminRight.siret)
+      .withEstablishmentRepresentativeEmail("other-representative@mail.com")
+      .withEstablishmentTutorEmail("other-tutor@mail.com")
+      .withBusinessName("Fleuriste Martin")
+      .withDateStart("2026-02-10")
+      .withDateEnd("2026-02-15")
+      .withSchedule(reasonableSchedule)
+      .build();
+    const otherEstablishmentConvention = new ConventionDtoBuilder()
+      .withId("44444444-4444-4444-8444-444444444441")
+      .withSiret("99998888777766")
+      .withEstablishmentRepresentativeEmail("someone-else@mail.com")
+      .withEstablishmentTutorEmail("someone-else-tutor@mail.com")
+      .withBusinessName("Boulangerie Dupont")
+      .withDateStart("2026-01-10")
+      .withDateEnd("2026-01-15")
+      .withSchedule(reasonableSchedule)
+      .build();
+    const archivedBakeryConvention = new ConventionDtoBuilder()
+      .withId("55555555-5555-4555-8555-555555555551")
+      .withSiret(acceptedAdminRight.siret)
+      .withEstablishmentRepresentativeEmail("other-representative@mail.com")
+      .withEstablishmentTutorEmail("other-tutor@mail.com")
+      .withBusinessName("Boulangerie Dupont")
+      .withDateStart(subDays(monthsAgo_25, 4).toISOString())
+      .withDateEnd(subDays(monthsAgo_25, 1).toISOString())
+      .withSchedule(reasonableSchedule)
+      .build();
+
+    beforeEach(() => {
+      uow.conventionRepository.setConventions([
+        bakeryConvention,
+        floristConvention,
+        otherEstablishmentConvention,
+        archivedBakeryConvention,
+      ]);
+    });
+
+    it("returns the matching convention when searching by businessName", async () => {
+      const result = await getConventionsForEstablishmentUser.execute(
+        { ...pagination, search: "Fleuriste" },
+        userWithAcceptedAdminRight,
+      );
+
+      expectToEqual(result, {
+        data: [
+          {
+            id: floristConvention.id,
+            status: floristConvention.status,
+            dateStart: floristConvention.dateStart,
+            dateEnd: floristConvention.dateEnd,
+            businessName: floristConvention.businessName,
+            immersionAppellation: floristConvention.immersionAppellation,
+            assessment: null,
+            beneficiary: {
+              firstName: floristConvention.signatories.beneficiary.firstName,
+              lastName: floristConvention.signatories.beneficiary.lastName,
+            },
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        },
+      });
+    });
+
+    it("excludes a matching convention not belonging to the user establishment", async () => {
+      const result = await getConventionsForEstablishmentUser.execute(
+        { ...pagination, search: "Boulangerie" },
+        userWithAcceptedAdminRight,
+      );
+
+      expectToEqual(result, {
+        data: [
+          {
+            id: bakeryConvention.id,
+            status: bakeryConvention.status,
+            dateStart: bakeryConvention.dateStart,
+            dateEnd: bakeryConvention.dateEnd,
+            businessName: bakeryConvention.businessName,
+            immersionAppellation: bakeryConvention.immersionAppellation,
+            assessment: null,
+            beneficiary: {
+              firstName: bakeryConvention.signatories.beneficiary.firstName,
+              lastName: bakeryConvention.signatories.beneficiary.lastName,
+            },
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        },
+      });
+    });
+
+    it("returns an empty page when search has no match", async () => {
+      const result = await getConventionsForEstablishmentUser.execute(
+        { ...pagination, search: "99999999-9999-4999-8999-999999999999" },
+        userWithAcceptedAdminRight,
+      );
+
+      expectToEqual(result, {
+        data: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 0,
+        },
+      });
+    });
+
+    it(`does not return archived conventions matching search when enableRequestArchivedConvention is inactive (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
+      const result = await getConventionsForEstablishmentUser.execute(
+        { ...pagination, search: "Boulangerie" },
+        userWithAcceptedAdminRight,
+      );
+
+      expectToEqual(result, {
+        data: [
+          {
+            id: bakeryConvention.id,
+            status: bakeryConvention.status,
+            dateStart: bakeryConvention.dateStart,
+            dateEnd: bakeryConvention.dateEnd,
+            businessName: bakeryConvention.businessName,
+            immersionAppellation: bakeryConvention.immersionAppellation,
+            assessment: null,
+            beneficiary: {
+              firstName: bakeryConvention.signatories.beneficiary.firstName,
+              lastName: bakeryConvention.signatories.beneficiary.lastName,
+            },
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        },
+      });
+    });
+  });
 });

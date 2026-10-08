@@ -661,6 +661,67 @@ describe("authenticatedConventionRoutes", () => {
         },
       });
     });
+
+    it("200 - filters conventions by search", async () => {
+      const matchingConvention = new ConventionDtoBuilder()
+        .withId("dddddd99-9d0b-1ddd-dd6d-6dd9bd38dddd")
+        .withEstablishmentRepresentativeEmail(establishmentUser.email)
+        .withBusinessName("Boulangerie Dupont")
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .build();
+      const otherConvention = new ConventionDtoBuilder()
+        .withId("eeeeee99-9e0b-1eee-ee6d-6ee9bd38eeee")
+        .withEstablishmentRepresentativeEmail(establishmentUser.email)
+        .withBusinessName("Fleuriste Martin")
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .build();
+
+      inMemoryUow.conventionRepository.setConventions([
+        matchingConvention,
+        otherConvention,
+      ]);
+
+      const jwt = generateConnectedUserJwt({
+        userId: establishmentUser.id,
+        version: currentJwtVersions.connectedUser,
+      });
+
+      const response = await httpClient.getConventionsForEstablishmentUser({
+        headers: { authorization: jwt },
+        queryParams: {
+          page: 1,
+          perPage: 10,
+          search: "Boulangerie",
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          data: [
+            {
+              id: matchingConvention.id,
+              status: matchingConvention.status,
+              dateStart: matchingConvention.dateStart,
+              dateEnd: matchingConvention.dateEnd,
+              businessName: matchingConvention.businessName,
+              immersionAppellation: matchingConvention.immersionAppellation,
+              assessment: null,
+              beneficiary: {
+                firstName: matchingConvention.signatories.beneficiary.firstName,
+                lastName: matchingConvention.signatories.beneficiary.lastName,
+              },
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 1,
+          },
+        },
+      });
+    });
   });
 
   describe(`${displayRouteName(

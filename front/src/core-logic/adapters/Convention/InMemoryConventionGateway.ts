@@ -28,6 +28,7 @@ import {
   type FindSimilarConventionsParams,
   type FlatGetBeneficiaryConventionListParams,
   type FlatGetConventionsForAgencyUserParams,
+  type FlatGetConventionsForEstablishmentUserParams,
   type FlatGetConventionsWithUnfinalizedAssessmentParams,
   type HandleArchivedConventionRequestDto,
   type MarkPartnersErroredConventionAsHandledRequest,
@@ -329,7 +330,7 @@ export class InMemoryConventionGateway implements ConventionGateway {
   }
 
   public getConventionsForEstablishmentUser$(
-    _params: PaginationQueryParams,
+    _params: FlatGetConventionsForEstablishmentUserParams,
     _jwt: string,
   ): Observable<DataWithPagination<EstablishmentUserConventionListDto>> {
     return this.getConventionsForEstablishmentUserResult$;

@@ -6,10 +6,10 @@ import {
   type DataWithPagination,
   defaultMonthsThresholdForConventionsListing,
   type EstablishmentUserConventionListDto,
+  type FlatGetConventionsForEstablishmentUserParams,
+  flatGetConventionsForEstablishmentUserParamsSchema,
   getDisplayedBusinessName,
   getPaginationParamsForWeb,
-  type PaginationQueryParams,
-  paginationQueryParamsSchema,
   partitionUserEstablishmentRightsByStatus,
 } from "shared";
 import { assesmentEntityToConventionAssessmentFields } from "../../../utils/convention";
@@ -20,7 +20,9 @@ import type { AssessmentEntity } from "../entities/AssessmentEntity";
 export const makeGetConventionsForEstablishmentUser = useCaseBuilder(
   "GetConventionsForEstablishmentUser",
 )
-  .withInput<PaginationQueryParams>(paginationQueryParamsSchema)
+  .withInput<FlatGetConventionsForEstablishmentUserParams>(
+    flatGetConventionsForEstablishmentUserParamsSchema,
+  )
   .withOutput<DataWithPagination<EstablishmentUserConventionListDto>>()
   .withCurrentUser<ConnectedUser>()
   .withDeps<{ timeGateway: TimeGateway }>()
@@ -33,6 +35,7 @@ export const makeGetConventionsForEstablishmentUser = useCaseBuilder(
       await uow.conventionQueries.getPaginatedConventions({
         sort: { by: "dateStart", direction: "desc" },
         filters: {
+          search: inputParams.search,
           establishmentUserAccess: {
             email: currentUser.email,
             sirets: acceptedUserEstablishmentsRights.map(({ siret }) => siret),

@@ -26,11 +26,11 @@ import type {
   FindSimilarConventionsParams,
   FlatGetBeneficiaryConventionListParams,
   FlatGetConventionsForAgencyUserParams,
+  FlatGetConventionsForEstablishmentUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
   FlatGetConventionsWithUnfinalizedAssessmentParams,
   HandleArchivedConventionRequestDto,
   MarkPartnersErroredConventionAsHandledRequest,
-  PaginationQueryParams,
   RenewConventionParams,
   SaveConventionDraftDto,
   SendSignatureLinkRequestDto,
@@ -112,7 +112,7 @@ export interface ConventionGateway {
     jwt: string,
   ): Observable<DataWithPagination<AgencyUserConventionListDto>>;
   getConventionsForEstablishmentUser$(
-    params: PaginationQueryParams,
+    params: FlatGetConventionsForEstablishmentUserParams,
     jwt: string,
   ): Observable<DataWithPagination<EstablishmentUserConventionListDto>>;
   getBeneficiaryConventionList$(

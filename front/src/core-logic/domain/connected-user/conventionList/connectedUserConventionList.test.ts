@@ -7,6 +7,7 @@ import {
   expectToEqual,
   type FlatGetBeneficiaryConventionListParams,
   type FlatGetConventionsForAgencyUserParams,
+  type FlatGetConventionsForEstablishmentUserParams,
 } from "shared";
 import { conventionListSelectors } from "src/core-logic/domain/connected-user/conventionList/connectedUserConventionList.selectors";
 import {
@@ -545,6 +546,52 @@ describe("ConnectedUserConventionList", () => {
             page: 1,
             perPage: 10,
           },
+        },
+      });
+    });
+
+    it("updates filters when fetching establishment convention list", () => {
+      const filters: FlatGetConventionsForEstablishmentUserParams = {
+        search: "acme",
+        page: 2,
+        perPage: 10,
+      };
+
+      store.dispatch(
+        conventionListSlice.actions.fetchEstablishmentConventionListRequested({
+          jwt,
+          filters,
+          feedbackTopic: "connected-user-establishment-convention-list",
+        }),
+      );
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        isLoading: true,
+        establishmentConventionList: {
+          ...initialEstablishmentConventionList,
+          filters,
+        },
+      });
+
+      const nextResult: DataWithPagination<EstablishmentUserConventionListDto> =
+        {
+          data: [],
+          pagination: {
+            totalRecords: 0,
+            currentPage: 2,
+            totalPages: 1,
+            numberPerPage: 10,
+          },
+        };
+
+      feedGatewayWithEstablishmentConventionListOrError(nextResult);
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        establishmentConventionList: {
+          ...nextResult,
+          filters,
         },
       });
     });
