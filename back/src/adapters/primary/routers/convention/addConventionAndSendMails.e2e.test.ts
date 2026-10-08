@@ -215,7 +215,6 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     expect(inMemoryUow.notificationRepository.notifications).toHaveLength(2);
     const ftNotification =
       gateways.franceTravailGateway.broadcastParamsCalls[0];
-    expectToEqual(ftNotification.eventType, "CONVENTION_UPDATED");
     expectToEqual(ftNotification.convention.id, convention.id);
     expectToEqual(ftNotification.convention.status, "READY_TO_SIGN");
     expectToEqual(
