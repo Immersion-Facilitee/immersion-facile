@@ -825,33 +825,46 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         internshipKind,
         assessmentSignatureLink,
         conventionId,
-      }) => ({
-        subject: `Votre bilan d'immersion est prêt à être signé`,
-        greetings: greetingsWithConventionId(
-          conventionId,
-          `${beneficiaryFirstName} ${beneficiaryLastName}`,
-        ),
+        createdBy,
+      }) => {
+        const internshipKindLabel =
+          internshipKind === "immersion"
+            ? "immersion professionnelle"
+            : "mini-stage";
+        const createdByFullName = createdBy
+          ? getFormattedFirstnameAndLastname({
+              firstname: createdBy.firstName,
+              lastname: createdBy.lastName,
+            })
+          : "";
 
-        content: `
-        <strong>Nous espérons que votre ${
-          internshipKind === "immersion"
-            ? "immersion professionnelle"
-            : "mini-stage"
-        } au sein de ${businessName} s’est bien déroulée et que cette expérience vous a été bénéfique.</strong>
+        return {
+          subject: `Votre bilan d'immersion est prêt à être signé`,
+          greetings: greetingsWithConventionId(
+            conventionId,
+            `${beneficiaryFirstName} ${beneficiaryLastName}`,
+          ),
+
+          content: `
+        <strong>Nous espérons que votre ${internshipKindLabel} au sein de ${businessName} s’est bien déroulée et que cette expérience vous a été bénéfique.</strong>
        
-        Votre tuteur a rempli le bilan de votre ${
-          internshipKind === "immersion"
-            ? "immersion professionnelle"
-            : "mini-stage"
-        }. Vous pouvez dès maintenant le consulter et le signer en ligne.
+        ${
+          createdBy
+            ? `Le bilan de votre ${internshipKindLabel} a été complété par ${
+                createdByFullName
+                  ? `${createdByFullName} (${createdBy.email})`
+                  : createdBy.email
+              }, de ${createdBy.organizationName}. Vous pouvez dès maintenant le consulter et le signer en ligne.`
+            : `Vous pouvez dès maintenant consulter et signer le bilan de votre ${internshipKindLabel} en ligne.`
+        }
         `,
-        buttons: [
-          {
-            label: "Consulter et signer le bilan",
-            url: assessmentSignatureLink,
-          },
-        ],
-        subContent: `<strong>Lors de la signature, vous aurez trois possibilités :</strong>
+          buttons: [
+            {
+              label: "Consulter et signer le bilan",
+              url: assessmentSignatureLink,
+            },
+          ],
+          subContent: `<strong>Lors de la signature, vous aurez trois possibilités :</strong>
           • J’ai bien lu, je suis d’accord, rien à ajouter
           • J’ai bien lu, je suis d’accord, je veux commenter
           • J’ai bien lu, je ne suis pas d’accord, je veux commenter
@@ -861,7 +874,8 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         Une fois signé, un lien vous permettant de télécharger le bilan vous sera automatiquement envoyé, ainsi qu'à l’entreprise et à votre accompagnateur au format PDF.
         ${defaultSignature(internshipKind)}
         `,
-      }),
+        };
+      },
     },
     ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION: {
       niceName: "Bilan - Bénéficiaire - Bilan complété",

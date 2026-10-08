@@ -626,6 +626,13 @@ export const defaultEmailValueByEmailKind: {
     businessName: "BUSINESS_NAME",
     internshipKind: "immersion",
     assessmentSignatureLink: "http://SIGNATURE_LINK",
+    createdBy: {
+      role: "counsellor",
+      firstName: "Marie",
+      lastName: "Dupont",
+      email: "marie@agence.fr",
+      organizationName: "Mission Locale",
+    },
   },
   NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE: {
     agencyLogoUrl: defaultEmailPreviewUrl,
