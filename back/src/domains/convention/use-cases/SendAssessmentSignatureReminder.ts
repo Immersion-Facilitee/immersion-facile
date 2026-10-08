@@ -1,4 +1,6 @@
 import {
+  type AgencyWithUsersRights,
+  type AssessmentDto,
   assessmentSignatureReminderAuthorizedRoles,
   CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS,
   type ConventionDto,
@@ -7,6 +9,7 @@ import {
   errors,
   formatHoursCooldownTimeRemaining,
   frontRoutes,
+  getAssessmentCreatorOrganizationName,
   getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   isBeforeAssessmentSignatureReleaseDate,
@@ -139,6 +142,8 @@ export const makeSendAssessmentSignatureReminder = useCaseBuilder(
     if (notificationKind === "email")
       await sendAssessmentSignatureReminderEmail({
         convention,
+        agency,
+        assessmentDto,
         uow,
         ...deps,
       });
@@ -166,11 +171,15 @@ export const makeSendAssessmentSignatureReminder = useCaseBuilder(
 
 const sendAssessmentSignatureReminderEmail = async ({
   convention,
+  agency,
+  assessmentDto,
   saveNotificationAndRelatedEvent,
   config,
   uow,
 }: {
   convention: ConventionDto;
+  agency: AgencyWithUsersRights;
+  assessmentDto: AssessmentDto;
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
   config: AppConfig;
   uow: UnitOfWork;
@@ -199,6 +208,19 @@ const sendAssessmentSignatureReminderEmail = async ({
           }),
           baseUrl: config.immersionFacileBaseUrl,
         }),
+        ...(assessmentDto.createdBy
+          ? {
+              createdBy: {
+                ...assessmentDto.createdBy,
+                organizationName: getAssessmentCreatorOrganizationName({
+                  role: assessmentDto.createdBy.role,
+                  convention: convention,
+                  agencyName: agency.name,
+                  agencyRefersToName: agency.refersToAgencyName,
+                }),
+              },
+            }
+          : {}),
       },
     },
     followedIds: {

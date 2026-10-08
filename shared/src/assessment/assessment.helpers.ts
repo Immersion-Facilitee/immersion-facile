@@ -4,6 +4,7 @@ import type {
   ConventionAssessmentFields,
   ConventionDto,
 } from "../convention/convention.dto";
+import { getDisplayedBusinessName } from "../establishment/establishment.utils";
 import { calculateTotalImmersionHoursBetweenDateComplex } from "../schedule/ScheduleUtils";
 import {
   type DateString,
@@ -11,6 +12,7 @@ import {
   hoursValueToHoursDisplayed,
 } from "../utils/date";
 import type {
+  AssessmentCreatorRole,
   AssessmentDto,
   AssessmentFormDto,
   AssessmentStatus,
@@ -145,6 +147,23 @@ export const computeTotalHours = ({
     )
     .with("DID_NOT_SHOW", () => hoursValueToHoursDisplayed({ hoursValue: 0 }))
     .with(null, () => hoursValueToHoursDisplayed({ hoursValue: 0 }))
+    .exhaustive();
+
+export const getAssessmentCreatorOrganizationName = ({
+  role,
+  convention,
+  agencyName,
+  agencyRefersToName,
+}: {
+  role: AssessmentCreatorRole;
+  convention: ConventionDto;
+  agencyName: string;
+  agencyRefersToName: string | null;
+}): string =>
+  match(role)
+    .with("establishment-tutor", () => getDisplayedBusinessName(convention))
+    .with("counsellor", () => agencyName)
+    .with("validator", () => agencyRefersToName ?? agencyName)
     .exhaustive();
 
 export const isAssessmentDto = (

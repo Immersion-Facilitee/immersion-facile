@@ -118,9 +118,10 @@ export class PgAssessmentRepository implements AssessmentRepository {
         convention_id: assessmentEntity.conventionId,
         ...assessmentEntityToDbRow(assessmentEntity),
         created_at: new Date(assessmentEntity.createdAt),
-        created_by: assessmentEntity.createdBy
-          ? JSON.stringify(assessmentEntity.createdBy)
-          : null,
+        created_by:
+          isAssessmentDto(assessmentEntity) && assessmentEntity.createdBy
+            ? JSON.stringify(assessmentEntity.createdBy)
+            : null,
       })
       .execute()
       .catch((error) => {

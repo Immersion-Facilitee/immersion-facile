@@ -1,8 +1,11 @@
 import { z } from "zod";
 import type { ConventionReadDto } from "../convention/convention.dto";
 import { conventionIdSchema } from "../convention/convention.schema";
+import { emailSchema } from "../email/email.schema";
 import { errors } from "../errors/errors";
+import { allowedRolesToCreateAssessment } from "../role/role.dto";
 import { calculateTotalImmersionHoursBetweenDateComplex } from "../schedule/ScheduleUtils";
+import { firstnameSchema, lastnameSchema } from "../user/user.schema";
 import { dateTimeIsoStringSchema, makeDateStringSchema } from "../utils/date";
 import {
   zStringMinLength1Max1024,
@@ -16,6 +19,7 @@ import {
   zEnumValidation,
 } from "../zodUtils";
 import {
+  type AssessmentCreator,
   type AssessmentDto,
   type AssessmentFormDto,
   type DeleteAssessmentRequestDto,
@@ -80,6 +84,14 @@ const withEndedWithAJobSchema: ZodSchemaWithInputMatchingOutput<WithEndedWithAJo
     { error: "Veuillez sélectionnez une option" },
   );
 
+const assessmentCreatorSchema: ZodSchemaWithInputMatchingOutput<AssessmentCreator> =
+  z.object({
+    role: z.enum(allowedRolesToCreateAssessment),
+    email: emailSchema,
+    firstName: firstnameSchema,
+    lastName: lastnameSchema,
+  });
+
 export const assessmentDtoSchema: ZodSchemaWithInputMatchingOutput<AssessmentDto> =
   z
     .object({
@@ -94,6 +106,7 @@ export const assessmentDtoSchema: ZodSchemaWithInputMatchingOutput<AssessmentDto
         beneficiaryFeedback: zStringMinLength1Max3000.nullable(),
         signedAt: makeDateStringSchema().nullable(),
         createdAt: dateTimeIsoStringSchema,
+        createdBy: assessmentCreatorSchema.optional(),
       }),
     );
 

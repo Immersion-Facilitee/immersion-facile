@@ -251,7 +251,15 @@ describe("Assessment routes", () => {
 
       expectHttpResponseToEqual(response, {
         status: 200,
-        body: assessment,
+        body: {
+          ...assessment,
+          createdBy: {
+            role: "establishment-tutor",
+            email: convention.establishmentTutor.email,
+            firstName: convention.establishmentTutor.firstName,
+            lastName: convention.establishmentTutor.lastName,
+          },
+        },
       });
     });
 

@@ -1,5 +1,18 @@
 import type { ConventionId } from "../convention/convention.dto";
+import type { Email } from "../email/email.dto";
+import type { allowedRolesToCreateAssessment } from "../role/role.dto";
+import type { Firstname, Lastname } from "../user/user.dto";
 import type { DateString, DateTimeIsoString } from "../utils/date";
+
+export type AssessmentCreatorRole =
+  (typeof allowedRolesToCreateAssessment)[number];
+
+export type AssessmentCreator = {
+  role: AssessmentCreatorRole;
+  email: Email;
+  firstName: Firstname;
+  lastName: Lastname;
+};
 
 export type AssessmentStatus = AssessmentDto["status"];
 export const assessmentStatuses: AssessmentStatus[] = [
@@ -61,6 +74,7 @@ export type AssessmentDto = (
   | AssessmentDtoPartiallyCompleted
 ) & {
   createdAt: DateTimeIsoString;
+  createdBy?: AssessmentCreator;
 };
 
 export type WithAssessmentDto = {

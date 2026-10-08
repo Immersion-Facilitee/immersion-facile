@@ -58,6 +58,12 @@ export class SimulatedAssessmentGateway implements AssessmentGateway {
       beneficiaryFeedback: null,
       signedAt: null,
       createdAt: new Date().toISOString(),
+      createdBy: {
+        role: "counsellor",
+        email: "marie@agence.fr",
+        firstName: "Marie",
+        lastName: "Dupont",
+      },
     });
   }
 

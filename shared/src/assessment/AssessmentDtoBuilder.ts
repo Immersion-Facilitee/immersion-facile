@@ -1,6 +1,6 @@
 import type { Builder } from "../Builder";
 import type { ConventionId } from "../convention/convention.dto";
-import type { AssessmentDto } from "./assessment.dto";
+import type { AssessmentCreator, AssessmentDto } from "./assessment.dto";
 
 const minimalAssessment: AssessmentDto = {
   conventionId: "aaaaac99-9c0b-1bbb-bb6d-6bb9bd38aaaa",
@@ -50,6 +50,11 @@ export class AssessmentDtoBuilder implements Builder<AssessmentDto> {
 
   public withCreatedAt(createdAt: string) {
     this.dto.createdAt = createdAt;
+    return this;
+  }
+
+  public withCreatedBy(createdBy: AssessmentCreator) {
+    this.dto.createdBy = createdBy;
     return this;
   }
 
