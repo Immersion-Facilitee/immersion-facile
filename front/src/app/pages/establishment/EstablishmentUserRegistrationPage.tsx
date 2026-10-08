@@ -1,7 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
-import { Loader, PageHeader } from "react-design-system";
-import { domElementIds, frontRoutes } from "shared";
+import { Loader } from "react-design-system";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { RequestRegisterEstablishmentsForUserForm } from "src/app/components/forms/register-establishments/RequestRegisterEstablishmentsForUserForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -17,35 +15,18 @@ export const EstablishmentUserRegistrationPage = () => {
     return <p>Merci de vous connecter pour accéder à cette page.</p>;
   return (
     <>
-      <PageHeader
-        title={"Se rattacher à une entreprise"}
-        badge={
-          <Button
-            id={domElementIds.establishmentUserRegistration.backButton}
-            linkProps={
-              frontRoutes.establishmentDashboardFormEstablishment().link
-            }
-            priority={"secondary"}
-            size="small"
-            className={fr.cx("fr-mb-6w")}
-            iconId="fr-icon-arrow-go-back-line"
-          >
-            Retour à mes entreprises
-          </Button>
-        }
-      >
+      <h1>Se rattacher à une entreprise</h1>
+      <p>
         Bonjour {currentUser.firstName} {currentUser.lastName}, recherchez une
         entreprise afin d'accéder aux offres et mises en relation de cette
         dernière. Un administrateur vérifiera et validera votre demande.
-      </PageHeader>
-      <div className={fr.cx("fr-container", "fr-mt-2w", "fr-mb-8w")}>
-        <Feedback
-          topics={["establishment-user-registration"]}
-          closable
-          className={fr.cx("fr-mb-2w")}
-        />
-        <RequestRegisterEstablishmentsForUserForm currentUser={currentUser} />
-      </div>
+      </p>
+      <Feedback
+        topics={["establishment-user-registration"]}
+        closable
+        className={fr.cx("fr-mb-2w")}
+      />
+      <RequestRegisterEstablishmentsForUserForm currentUser={currentUser} />
     </>
   );
 };

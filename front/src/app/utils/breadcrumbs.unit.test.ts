@@ -81,6 +81,42 @@ describe("makeBreadcrumbsSegments", () => {
       },
     ]);
   });
+
+  it("should returns no segments for a route not displayed on its own page", () => {
+    const segments = getTestBreadcrumbs({
+      currentRouteKey: "homeEstablishments",
+    });
+    expect(segments).toEqual([]);
+  });
+
+  it("should returns all segments for a child of a route not displayed on its own page", () => {
+    const segments = getTestBreadcrumbs({
+      currentRouteKey: "formEstablishment",
+    });
+    expect(segments).toEqual([
+      {
+        label: "Accueil",
+        linkProps: {
+          href: "/",
+          onClick: expect.any(Function),
+        },
+      },
+      {
+        label: "Entreprises",
+        linkProps: {
+          href: "/homeEstablishments",
+          onClick: expect.any(Function),
+        },
+      },
+      {
+        label: "Inscrire une entreprise",
+        linkProps: {
+          href: "/formEstablishment",
+          onClick: expect.any(Function),
+        },
+      },
+    ]);
+  });
 });
 
 const makeFakeRoute = (name: string): Route<any> => ({
@@ -109,6 +145,17 @@ const testBreadcrumbsSet = {
       beneficiaryDashboard: {
         label: "Tableau de bord",
         route: makeFakeRoute("beneficiaryDashboard"),
+      },
+    },
+  },
+  homeEstablishments: {
+    label: "Entreprises",
+    route: makeFakeRoute("homeEstablishments"),
+    isDisplayedOnOwnPage: false,
+    children: {
+      formEstablishment: {
+        label: "Inscrire une entreprise",
+        route: makeFakeRoute("formEstablishment"),
       },
     },
   },

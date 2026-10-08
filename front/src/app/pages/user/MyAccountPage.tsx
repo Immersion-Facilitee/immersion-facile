@@ -1,12 +1,10 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Card from "@codegouvfr/react-dsfr/Card";
 import { useEffect } from "react";
 import { Loader, SectionHighlight } from "react-design-system";
 import { useDispatch } from "react-redux";
 import { type ConnectedUser, domElementIds, frontRoutes } from "shared";
-import { defaultAncestor } from "src/app/contents/breadcrumbs/breadcrumbs";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { commonIllustrations } from "src/assets/img/illustrations";
 import { ENV } from "src/config/environmentVariables";
@@ -70,11 +68,6 @@ export const MyAccountPage = () => {
 
   return (
     <>
-      <Breadcrumb
-        className={fr.cx("fr-mt-0")}
-        segments={[defaultAncestor]}
-        currentPageLabel="Mon compte"
-      />
       <h1>Mon compte</h1>
       <PersonalInformations
         user={currentUser}

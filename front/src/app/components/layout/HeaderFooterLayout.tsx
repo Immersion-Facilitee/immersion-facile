@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { type SkipLink, SkipLinks } from "react-design-system";
+import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import { LayoutFooter } from "./LayoutFooter";
 import { LayoutHeader } from "./LayoutHeader";
 
@@ -19,12 +20,17 @@ const skipLinks: SkipLink[] = [
 ];
 type HeaderFooterLayoutProps = {
   children: ReactNode;
+  isBreadcrumbsDisplayed?: boolean;
 };
 
-export const HeaderFooterLayout = ({ children }: HeaderFooterLayoutProps) => (
+export const HeaderFooterLayout = ({
+  children,
+  isBreadcrumbsDisplayed = true,
+}: HeaderFooterLayoutProps) => (
   <>
     <SkipLinks links={skipLinks} />
     <LayoutHeader />
+    {isBreadcrumbsDisplayed && <Breadcrumbs />}
     {children}
     <LayoutFooter />
   </>

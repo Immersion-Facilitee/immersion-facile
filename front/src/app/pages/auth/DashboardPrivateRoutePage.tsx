@@ -1,6 +1,5 @@
 import type { ReactElement } from "react";
 import { PageHeader } from "react-design-system";
-import { Breadcrumbs } from "src/app/components/Breadcrumbs";
 import {
   ConnectedPrivateRoutePage,
   type FrontDashboardRoute,
@@ -18,10 +17,7 @@ export const DashboardPrivateRoutePage = ({
   <ConnectedPrivateRoutePage
     route={route}
     oAuthConnectionPageHeader={
-      <PageHeader
-        title="Retrouvez vos conventions en tant que prescripteur"
-        breadcrumbs={<Breadcrumbs />}
-      />
+      <PageHeader title="Retrouvez vos conventions en tant que prescripteur" />
     }
   >
     {children}

@@ -10,11 +10,12 @@ export const Breadcrumbs = () => {
   const segments = getBreadcrumbs({
     currentRouteKey: currentRouteName,
   });
-  if (segments.length === 1) return null;
+  if (segments.length <= 1) return null;
   const ancestors = slice(0, -1, segments);
   return (
     <div className={fr.cx("fr-container", "fr-mt-4w")}>
       <Breadcrumb
+        className={fr.cx("fr-mb-0")}
         segments={ancestors}
         currentPageLabel={segments[segments.length - 1].label}
       />
