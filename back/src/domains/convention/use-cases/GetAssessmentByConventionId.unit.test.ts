@@ -1,3 +1,4 @@
+import { subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AssessmentDto,
@@ -7,17 +8,21 @@ import {
   ConventionDtoBuilder,
   type ConventionJwtPayload,
   type ConventionRole,
+  defaultMonthsThresholdForConventionsListing,
   errors,
   establishmentsRoles,
   expectPromiseToFailWithError,
   expectToEqual,
   type LegacyAssessmentDto,
+  makeBooleanFeatureFlag,
   type Role,
+  reasonableSchedule,
   splitCasesBetweenPassingAndFailing,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { makeHashByRolesForTest } from "../../../utils/emailHash";
 import { makeEmailHash } from "../../../utils/jwt";
+import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -57,6 +62,7 @@ describe("GetAssessmentByConventionId", () => {
     .withId("agencyViewer")
     .withEmail("agencyViewer@email.com")
     .buildUser();
+  const now = new Date("2026-09-01T10:10:00.000Z");
   const convention = new ConventionDtoBuilder()
     .withAgencyId(agency.id)
     .withBeneficiaryRepresentative({
@@ -77,6 +83,16 @@ describe("GetAssessmentByConventionId", () => {
       businessName: "business",
       businessAddress: "Rue des Bouchers 67065 Strasbourg",
     })
+    .build();
+  const dateEnd = subMonths(
+    now,
+    defaultMonthsThresholdForConventionsListing + 1,
+  );
+  const archivedConvention = new ConventionDtoBuilder(convention)
+    .withDateSubmission(subDays(dateEnd, 10).toISOString())
+    .withDateStart(subDays(dateEnd, 4).toISOString())
+    .withDateEnd(dateEnd.toISOString())
+    .withSchedule(reasonableSchedule)
     .build();
   const beneficiary = new ConnectedUserBuilder()
     .withId("beneficiary")
@@ -133,6 +149,7 @@ describe("GetAssessmentByConventionId", () => {
     uow = createInMemoryUow();
     getAssessment = makeGetAssessmentByConventionId({
       uowPerformer: new InMemoryUowPerformer(uow),
+      deps: { timeGateway: new CustomTimeGateway(now) },
     });
     uow.conventionRepository.setConventions([convention]);
     uow.agencyRepository.agencies = [
@@ -395,6 +412,90 @@ describe("GetAssessmentByConventionId", () => {
       );
 
       expectToEqual(assessment, legacyAssessment);
+    });
+  });
+
+  describe("archived convention access", () => {
+    describe("when enableRequestArchivedConvention is inactive", () => {
+      it("returns the assessment for a connected user with rights", async () => {
+        uow.conventionRepository.setConventions([archivedConvention]);
+
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: archivedConvention.id },
+            { userId: establishmentTutorUser.id },
+          ),
+          assessment,
+        );
+      });
+    });
+
+    describe("when enableRequestArchivedConvention is active", () => {
+      beforeEach(() => {
+        uow.featureFlagRepository.featureFlags = {
+          enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+        };
+      });
+
+      it("returns the assessment of a non archived convention for a connected user with rights", async () => {
+        expectToEqual(
+          await getAssessment.execute(
+            { conventionId: convention.id },
+            { userId: establishmentTutorUser.id },
+          ),
+          assessment,
+        );
+      });
+
+      describe("when convention is archived", () => {
+        beforeEach(() => {
+          uow.conventionRepository.setConventions([archivedConvention]);
+        });
+
+        it("throws if convention is archived for a connected user with rights", async () => {
+          await expectPromiseToFailWithError(
+            getAssessment.execute(
+              { conventionId: archivedConvention.id },
+              { userId: establishmentTutorUser.id },
+            ),
+            errors.convention.archived({
+              conventionId: archivedConvention.id,
+            }),
+          );
+        });
+
+        it("throws if convention is archived for a magic link with rights", async () => {
+          await expectPromiseToFailWithError(
+            getAssessment.execute(
+              { conventionId: archivedConvention.id },
+              establishmentTutorPayload,
+            ),
+            errors.convention.archived({
+              conventionId: archivedConvention.id,
+            }),
+          );
+        });
+
+        it("throws forbidden for a connected user without rights", async () => {
+          await expectPromiseToFailWithError(
+            getAssessment.execute(
+              { conventionId: archivedConvention.id },
+              { userId: userWithoutRoleOnConvention.id },
+            ),
+            errors.assessment.forbidden("GetAssessment"),
+          );
+        });
+
+        it("returns the assessment for a backoffice admin", async () => {
+          expectToEqual(
+            await getAssessment.execute(
+              { conventionId: archivedConvention.id },
+              { userId: backOfficeAdmin.id },
+            ),
+            assessment,
+          );
+        });
+      });
     });
   });
 });

@@ -19,6 +19,7 @@ import {
   type FeatureFlags,
   ForbiddenError,
   getConventionManageAllowedRoles,
+  isConventionArchived,
   isSignatoryRole,
   isValidMobilePhone,
   type Role,
@@ -173,6 +174,27 @@ export const isConventionInScope = (
 ): boolean =>
   isAgencyIdInConsumerScope(conventionRead, apiConsumer) ||
   isAgencyKindInConsumerScope(conventionRead, apiConsumer);
+
+export const throwIfConventionArchivedForNonAdmin = async ({
+  convention,
+  now,
+  jwtPayload,
+  uow,
+}: {
+  convention: Pick<ConventionDto, "id" | "dateEnd">;
+  now: Date;
+  jwtPayload: ConventionRelatedJwtPayload | ApiConsumer;
+  uow: UnitOfWork;
+}): Promise<void> => {
+  if ("userId" in jwtPayload) {
+    const user = await getUserWithRights(uow, jwtPayload.userId);
+    if (user.isBackofficeAdmin) return;
+  }
+  const featureFlags = await uow.featureFlagQueries.getAll();
+  if (!featureFlags.enableRequestArchivedConvention.isActive) return;
+  if (!isConventionArchived({ dateEnd: convention.dateEnd, now })) return;
+  throw errors.convention.archived({ conventionId: convention.id });
+};
 
 export const throwErrorOnConventionIdMismatch = ({
   requestedConventionId,

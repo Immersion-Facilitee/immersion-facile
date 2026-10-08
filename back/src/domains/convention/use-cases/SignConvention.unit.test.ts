@@ -1,3 +1,4 @@
+import { subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   allRoles,
@@ -12,10 +13,13 @@ import {
   type ConventionRole,
   type ConventionStatus,
   conventionStatuses,
+  defaultMonthsThresholdForConventionsListing,
   type EstablishmentRepresentative,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
+  makeBooleanFeatureFlag,
+  reasonableSchedule,
   type Signatories,
   type SignatoryRole,
   splitCasesBetweenPassingAndFailing,
@@ -517,6 +521,75 @@ describe("Sign convention", () => {
           },
         ]);
       });
+    });
+  });
+
+  describe("archived convention", () => {
+    const makeArchivedConvention = (convention: ConventionDto) => {
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      return new ConventionDtoBuilder(convention)
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+    };
+
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const { convention, agency } =
+        prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
+      const archivedConvention = makeArchivedConvention(convention);
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        signConvention.execute(
+          { conventionId: archivedConvention.id },
+          {
+            role: "beneficiary",
+            applicationId: archivedConvention.id,
+            emailHash: "toto",
+          },
+        ),
+        errors.convention.archived({
+          conventionId: archivedConvention.id,
+        }),
+      );
+    });
+
+    it("signs when enableRequestArchivedConvention is inactive", async () => {
+      const { convention, agency } =
+        prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
+      const archivedConvention = makeArchivedConvention(convention);
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      const signedAt = new Date("2022-01-01");
+      timeGateway.setNextDate(signedAt);
+
+      await signConvention.execute(
+        { conventionId: archivedConvention.id },
+        {
+          role: "beneficiary",
+          applicationId: archivedConvention.id,
+          emailHash: "toto",
+        },
+      );
+
+      expectToEqual(uow.conventionRepository.conventions, [
+        {
+          ...archivedConvention,
+          status: "PARTIALLY_SIGNED",
+          signatories: makeSignatories(archivedConvention, {
+            beneficiarySignedAt: signedAt.toISOString(),
+          }),
+        },
+      ]);
     });
   });
 

@@ -1,4 +1,4 @@
-import { subHours } from "date-fns";
+import { subDays, subHours, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AgencyRole,
@@ -10,13 +10,16 @@ import {
   ConventionDtoBuilder,
   type ConventionRelatedJwtPayload,
   type ConventionRole,
+  defaultMonthsThresholdForConventionsListing,
   errors,
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
   frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeBooleanFeatureFlag,
   makeRouteAbsoluteUrl,
+  reasonableSchedule,
 } from "shared";
 import type { AppConfig } from "../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../utils/AppConfigBuilder";
@@ -437,4 +440,31 @@ describe("SendAssessmentSignatureReminder", () => {
 
     return { userId: roleTestUser.id };
   };
+
+  describe("archived convention", () => {
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(convention)
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        usecase.execute(
+          { conventionId: archivedConvention.id, notificationKind: "email" },
+          { userId: connectedValidator.id },
+        ),
+        errors.convention.archived({ conventionId: archivedConvention.id }),
+      );
+    });
+  });
 });

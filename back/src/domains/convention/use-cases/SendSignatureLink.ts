@@ -38,6 +38,7 @@ import {
   throwErrorIfSignatoryAlreadySigned,
   throwErrorIfSignatoryPhoneNumberNotValid,
   throwErrorOnConventionIdMismatch,
+  throwIfConventionArchivedForNonAdmin,
 } from "../entities/Convention";
 
 export type SendSignatureLink = ReturnType<typeof makeSendSignatureLink>;
@@ -87,6 +88,13 @@ export const makeSendSignatureLink = useCaseBuilder("RemindSignatories")
       jwtPayload,
       isPeAdvisorAllowed: true,
       isValidatorOfAgencyRefersToAllowed: true,
+    });
+
+    await throwIfConventionArchivedForNonAdmin({
+      convention,
+      now: deps.timeGateway.now(),
+      jwtPayload,
+      uow,
     });
 
     const signatoryKey = conventionSignatoryRoleBySignatoryKey[signatoryRole];

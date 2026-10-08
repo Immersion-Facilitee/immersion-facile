@@ -18,11 +18,13 @@ import {
   isHashMatchPeAdvisorEmail,
 } from "../../../utils/emailHash";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   isConventionInScope,
   throwErrorOnConventionIdMismatch,
+  throwIfConventionArchivedForNonAdmin,
 } from "../entities/Convention";
 
 export type GetConvention = ReturnType<typeof makeGetConvention>;
@@ -31,8 +33,14 @@ export const makeGetConvention = useCaseBuilder("GetConvention")
   .withInput(withConventionIdSchema)
   .withOutput<ConventionReadDto>()
   .withCurrentUser<ConventionRelatedJwtPayload | ApiConsumer>()
+  .withDeps<{ timeGateway: TimeGateway }>()
   .build(
-    async ({ inputParams: { conventionId }, uow, currentUser: jwtPayload }) => {
+    async ({
+      inputParams: { conventionId },
+      uow,
+      currentUser: jwtPayload,
+      deps,
+    }) => {
       const conventionDto =
         await uow.conventionRepository.getById(conventionId);
       if (!conventionDto) throw errors.convention.notFound({ conventionId });
@@ -42,18 +50,29 @@ export const makeGetConvention = useCaseBuilder("GetConvention")
         uow,
       );
 
-      if ("id" in jwtPayload) return onApiConsumer(jwtPayload, convention);
-      return "emailHash" in jwtPayload
-        ? isConventionDomainPayloadHasRight({
-            jwtPayload,
-            uow,
-            convention,
-          })
-        : onConnectedUserPayload({
-            userId: jwtPayload.userId,
-            uow,
-            convention,
-          });
+      const authorizedConvention =
+        "id" in jwtPayload
+          ? await onApiConsumer(jwtPayload, convention)
+          : "emailHash" in jwtPayload
+            ? await isConventionDomainPayloadHasRight({
+                jwtPayload,
+                uow,
+                convention,
+              })
+            : await onConnectedUserPayload({
+                userId: jwtPayload.userId,
+                uow,
+                convention,
+              });
+
+      await throwIfConventionArchivedForNonAdmin({
+        convention: authorizedConvention,
+        now: deps.timeGateway.now(),
+        jwtPayload,
+        uow,
+      });
+
+      return authorizedConvention;
     },
   );
 

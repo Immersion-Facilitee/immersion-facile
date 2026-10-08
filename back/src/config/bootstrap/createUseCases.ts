@@ -305,7 +305,10 @@ export const createUseCases = ({
 
     //Convention
     addConvention,
-    getConvention: makeGetConvention({ uowPerformer }),
+    getConvention: makeGetConvention({
+      uowPerformer,
+      deps: { timeGateway },
+    }),
     getBeneficiaryConventionList: makeGetBeneficiaryConventionList({
       uowPerformer,
       deps: { timeGateway },
@@ -904,7 +907,7 @@ export const createUseCases = ({
     }),
     createAssessment: makeCreateAssessment({
       uowPerformer,
-      deps: { createNewEvent },
+      deps: { createNewEvent, timeGateway },
     }),
     deleteAssessment: makeDeleteAssessment({
       uowPerformer,
@@ -921,6 +924,7 @@ export const createUseCases = ({
     }),
     getAssessmentByConventionId: makeGetAssessmentByConventionId({
       uowPerformer,
+      deps: { timeGateway },
     }),
     notifyBeneficiaryThatAssessmentIsCreated:
       makeNotifyBeneficiaryThatAssessmentIsCreated({
@@ -1122,7 +1126,7 @@ export const createUseCases = ({
       }),
     transferConventionToAgency: makeTransferConventionToAgency({
       uowPerformer,
-      deps: { createNewEvent },
+      deps: { createNewEvent, timeGateway },
     }),
     removeConventionFTAdvisorIfAgencyIsNotFranceTravail:
       makeRemoveConventionFTAdvisorIfAgencyIsNotFranceTravail({
@@ -1130,11 +1134,11 @@ export const createUseCases = ({
       }),
     editConventionCounsellorName: makeEditConventionCounsellorName({
       uowPerformer,
-      deps: { createNewEvent },
+      deps: { createNewEvent, timeGateway },
     }),
     editConventionWithFinalStatus: makeEditConventionWithFinalStatus({
       uowPerformer,
-      deps: { createNewEvent },
+      deps: { createNewEvent, timeGateway },
     }),
     createOrUpdateConventionTemplate: makeCreateOrUpdateConventionTemplate({
       uowPerformer,

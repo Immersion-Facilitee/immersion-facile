@@ -26,6 +26,7 @@ import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   throwErrorOnConventionIdMismatch,
+  throwIfConventionArchivedForNonAdmin,
   throwIfTransitionNotAllowed,
 } from "../entities/Convention";
 
@@ -108,9 +109,17 @@ export const makeUpdateConventionStatus = useCaseBuilder(
       hasAssessment: !!assessment,
     });
 
+    const now = deps.timeGateway.now();
+    await throwIfConventionArchivedForNonAdmin({
+      convention,
+      now,
+      jwtPayload: payload,
+      uow,
+    });
+
     throwIfMissingIsAlsoAgencyReferent(convention, inputParams);
 
-    const conventionUpdatedAt = deps.timeGateway.now().toISOString();
+    const conventionUpdatedAt = now.toISOString();
 
     const statusJustification =
       inputParams.status === "CANCELLED" ||

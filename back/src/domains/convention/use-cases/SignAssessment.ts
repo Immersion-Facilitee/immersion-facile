@@ -8,7 +8,10 @@ import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import { getOnlyAssessmentDto } from "../entities/AssessmentEntity";
-import { retrieveConventionWithAgency } from "../entities/Convention";
+import {
+  retrieveConventionWithAgency,
+  throwIfConventionArchivedForNonAdmin,
+} from "../entities/Convention";
 
 export type SignAssessment = ReturnType<typeof makeSignAssessment>;
 
@@ -37,6 +40,14 @@ export const makeSignAssessment = useCaseBuilder("SignAssessment")
       isValidatorOfAgencyRefersToAllowed: false,
     });
 
+    const now = deps.timeGateway.now();
+    await throwIfConventionArchivedForNonAdmin({
+      convention,
+      now,
+      jwtPayload,
+      uow,
+    });
+
     const assessmentEntity = await uow.assessmentRepository.getByConventionId(
       inputParams.conventionId,
     );
@@ -54,7 +65,7 @@ export const makeSignAssessment = useCaseBuilder("SignAssessment")
       ...assessmentDto,
       beneficiaryAgreement: inputParams.beneficiaryAgreement,
       beneficiaryFeedback: inputParams.beneficiaryFeedback,
-      signedAt: deps.timeGateway.now().toISOString(),
+      signedAt: now.toISOString(),
     };
 
     await uow.assessmentRepository.update({

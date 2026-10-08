@@ -1,5 +1,5 @@
 import { afterEach } from "node:test";
-import { subDays, subHours } from "date-fns";
+import { subDays, subHours, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS,
@@ -9,6 +9,7 @@ import {
   ConventionDtoBuilder,
   type ConventionRole,
   conventionStatusesWithValidator,
+  defaultMonthsThresholdForConventionsListing,
   defaultPhoneNumber,
   errors,
   expectObjectInArrayToMatch,
@@ -16,8 +17,10 @@ import {
   expectToEqual,
   frontRoutes,
   getFormattedFirstnameAndLastname,
+  makeBooleanFeatureFlag,
   makeRouteAbsoluteUrl,
   type Notification,
+  reasonableSchedule,
   type SignatoryRole,
   UserBuilder,
   unvalidatedConventionStatuses,
@@ -1313,6 +1316,47 @@ describe("Send signature link", () => {
             },
           ]);
         },
+      );
+    });
+  });
+
+  describe("archived convention", () => {
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(convention)
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [notConnectedUser.id]: {
+            roles: ["validator"],
+            isNotifiedByEmail: true,
+          },
+        }),
+      ];
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.userRepository.users = [notConnectedUser];
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "beneficiary",
+            notificationKind: "email",
+          },
+          validatorJwtPayload,
+        ),
+        errors.convention.archived({ conventionId: archivedConvention.id }),
       );
     });
   });
