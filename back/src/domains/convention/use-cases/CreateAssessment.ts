@@ -2,6 +2,8 @@ import { keys } from "ramda";
 import {
   type AgencyModifierRole,
   type AgencyWithUsersRights,
+  type AssessmentCreator,
+  type AssessmentCreatorRole,
   type AssessmentDto,
   allowedRolesToCreateAssessment,
   assessmentDtoSchema,
@@ -24,8 +26,6 @@ import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
-  type AssessmentCreator,
-  type AssessmentCreatorRole,
   type AssessmentEntity,
   createAssessmentEntity,
 } from "../entities/AssessmentEntity";
@@ -95,19 +95,22 @@ export const makeCreateAssessment = useCaseBuilder("CreateAssessment")
       )
         throw errors.assessment.numberOfMissedHoursExceedsScheduled();
 
-      const assessmentEntity: AssessmentEntity = {
-        ...(await createAssessmentEntityIfNotExist(
-          uow,
-          convention,
-          assessment,
-        )),
-        createdBy: await getAssessmentCreator({
-          uow,
-          convention,
-          agency,
-          conventionJwtPayload,
-        }),
+      const createdBy = await getAssessmentCreator({
+        uow,
+        convention,
+        agency,
+        conventionJwtPayload,
+      });
+      const assessmentWithCreator: AssessmentDto = {
+        ...assessment,
+        createdBy,
       };
+      const assessmentEntity: AssessmentEntity =
+        await createAssessmentEntityIfNotExist(
+          uow,
+          convention,
+          assessmentWithCreator,
+        );
 
       const triggeredBy: TriggeredBy =
         "role" in conventionJwtPayload
@@ -125,7 +128,7 @@ export const makeCreateAssessment = useCaseBuilder("CreateAssessment")
           topic: "AssessmentCreated",
           payload: {
             convention,
-            assessment,
+            assessment: assessmentWithCreator,
             triggeredBy,
           },
         }),
@@ -189,12 +192,10 @@ const getAssessmentCreator = async ({
 };
 
 const toAssessmentCreatorIdentity = ({
-  id,
   email,
   firstName,
   lastName,
 }: User): Omit<AssessmentCreator, "role"> => ({
-  userId: id,
   email,
   firstName,
   lastName,

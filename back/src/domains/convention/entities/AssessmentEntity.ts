@@ -1,36 +1,19 @@
 import {
   type AssessmentDto,
-  type allowedRolesToCreateAssessment,
   type ConventionDto,
   type ConventionStatus,
   calculateTotalImmersionHoursBetweenDateComplex,
-  type Email,
   errors,
-  type Firstname,
   isAssessmentDto,
-  type Lastname,
   type LegacyAssessmentDto,
-  type UserId,
 } from "shared";
 import type { EntityFromDto } from "../../../utils/EntityFromDto";
-
-export type AssessmentCreatorRole =
-  (typeof allowedRolesToCreateAssessment)[number];
-
-export type AssessmentCreator = {
-  role: AssessmentCreatorRole;
-  email: Email;
-  firstName: Firstname;
-  lastName: Lastname;
-  userId?: UserId;
-};
 
 export type AssessmentEntity = EntityFromDto<
   AssessmentDto | LegacyAssessmentDto,
   "Assessment"
 > & {
   numberOfHoursActuallyMade: number | null;
-  createdBy?: AssessmentCreator;
 };
 
 export const acceptedConventionStatusesForAssessment: ConventionStatus[] = [
@@ -73,7 +56,6 @@ export const createAssessmentEntity = (
 export const toAssessmentDto = ({
   _entityName,
   numberOfHoursActuallyMade: _numberOfHoursActuallyMade,
-  createdBy: _createdBy,
   ...assessmentEntity
 }: AssessmentEntity): AssessmentDto | LegacyAssessmentDto => assessmentEntity;
 

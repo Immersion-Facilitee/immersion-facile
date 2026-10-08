@@ -136,7 +136,6 @@ describe("PgAssessmentRepository", () => {
         ...fullAssessment,
         createdBy: {
           role: "validator",
-          userId: uuid(),
           email: "validator@mail.com",
           firstName: "Jean",
           lastName: "Dupont",
