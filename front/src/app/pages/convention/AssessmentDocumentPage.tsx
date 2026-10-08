@@ -12,6 +12,7 @@ import {
   domElementIds,
   escapeHtml,
   frontRoutes,
+  getAssessmentCreatorOrganizationName,
   getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   immersionFacileHelpdeskRootUrl,
@@ -263,6 +264,13 @@ export const AssessmentDocumentPage = ({
     assessment.status === "DID_NOT_SHOW" ||
     isBeforeSignatureReleaseDate
   );
+  const createdBy = !isAssessmentLegacy ? assessment.createdBy : undefined;
+  const createdByFullName = createdBy
+    ? getFormattedFirstnameAndLastname({
+        firstname: createdBy.firstName,
+        lastname: createdBy.lastName,
+      })
+    : "";
 
   const documentContent = (
     <>
@@ -357,18 +365,37 @@ export const AssessmentDocumentPage = ({
           </li>
         </ul>
         <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>
-          Évaluation du tuteur{" "}
+          Évaluation{" "}
           {convention.internshipKind === "immersion"
             ? "de l'immersion"
             : "du mini-stage"}
         </h2>
         <p>
-          <strong>Tuteur :</strong>{" "}
+          <strong>
+            {convention.internshipKind === "immersion"
+              ? "Tuteur de l'immersion :"
+              : "Tuteur du mini-stage :"}
+          </strong>{" "}
           {getFormattedFirstnameAndLastname({
             firstname: convention.establishmentTutor.firstName,
             lastname: convention.establishmentTutor.lastName,
           })}
         </p>
+        {createdBy && (
+          <p>
+            <strong>Bilan complété par :</strong>{" "}
+            {createdByFullName
+              ? `${createdByFullName} (${createdBy.email})`
+              : createdBy.email}
+            {" - "}
+            {getAssessmentCreatorOrganizationName({
+              role: createdBy.role,
+              convention,
+              agencyName: convention.agencyName,
+              agencyRefersToName: convention.agencyRefersTo?.name ?? null,
+            })}
+          </p>
+        )}
         <ul>
           {!isAssessmentLegacy && (
             <li>
