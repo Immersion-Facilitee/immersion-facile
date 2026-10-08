@@ -97,8 +97,6 @@ export const makeSendExchangeToRecipient = useCaseBuilder(
         params: {
           subject: lastExchange.subject,
           htmlContent: `
-                  ⚠️ Important : Seule la personne destinataire de cet email est autorisée à répondre via Immersion Facilitée. 
-                  Merci de ne pas transférer ce message : toute réponse envoyée depuis un autre compte ne pourra pas être transmise.
                   <div style="color: #b5b5b5; font-size: 12px">Pour rappel, voici les informations liées à cette mise en relation :
                   <br /><ul>
                   <li>Candidat : ${discussion.potentialBeneficiary.firstName} ${
