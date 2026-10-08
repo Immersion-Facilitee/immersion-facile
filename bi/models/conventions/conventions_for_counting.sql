@@ -59,6 +59,15 @@ select
     ass.ended_with_a_job as assessment_ended_with_a_job,
     ass.type_of_contract as assessment_type_of_contract,
     ass.created_by ->> 'role' as assessment_created_by_role,
+    ass.created_by ->> 'email' as assessment_created_by_email,
+    ass.created_by ->> 'firstName' as assessment_created_by_first_name,
+    ass.created_by ->> 'lastName' as assessment_created_by_last_name,
+    case
+        when ass.created_by ->> 'role' = 'establishment-tutor' then c.business_name
+        when ass.created_by ->> 'role' = 'validator' and refer_a.name is not null then refer_a.name
+        when ass.created_by ->> 'role' in ('counsellor', 'validator') then a.name
+        else null
+    end as assessment_created_by_organization_name,
     case
         when estab.siret is not null then true
         else false
@@ -92,6 +101,8 @@ left join {{ source('immersion', 'public_department_region') }} as dept_immersio
     end
 inner join {{ source('immersion', 'agencies') }} as a
     on a.id = c.agency_id
+left join {{ source('immersion', 'agencies') }} as refer_a
+    on a.refers_to_agency_id = refer_a.id
 left join {{ source('immersion', 'public_department_region') }} as pdr
     on pdr.department_code = a.department_code
 inner join {{ source('immersion', 'public_appellations_data') }} as pad
