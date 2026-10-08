@@ -1,11 +1,15 @@
-import type {
-  AppellationCode,
-  AppellationDto,
-  CreateDiscussion1Eleve1StageDto,
-  CreateDiscussionIFDto,
-  DiscussionKind,
-  ExcludeFromExisting,
+import type { DefaultValues } from "react-hook-form";
+import {
+  type AppellationCode,
+  type AppellationDto,
+  type CreateDiscussion1Eleve1StageDto,
+  type CreateDiscussionDto,
+  type CreateDiscussionIFDto,
+  type DiscussionKind,
+  discoverObjective,
+  type ExcludeFromExisting,
 } from "shared";
+import type { ContactTranscientData } from "src/app/components/immersion-offer/useTranscientDataFromStorage";
 
 export const getDefaultAppellationCode = (
   appellations: AppellationDto[],
@@ -17,7 +21,7 @@ export const getDefaultAppellationCode = (
   return appellations.length > 1 ? "" : appellations[0].appellationCode;
 };
 
-type ContactInputKeys = ExcludeFromExisting<
+export type ContactInputKeys = ExcludeFromExisting<
   keyof CreateDiscussionIFDto | keyof CreateDiscussion1Eleve1StageDto,
   | "kind"
   | "siret"
@@ -49,3 +53,21 @@ export const makeContactInputsLabelsByKey = (
   experienceAdditionalInformation:
     "L'immersion ne nécessite pas d'expérience spécifique. Quelles connaissances, expériences ou qualités personnelles souhaitez-vous partager pour aider l'entreprise à préparer votre accueil ? *",
 });
+
+export const makeCreateDiscussionValuesForKind = (
+  kind: DiscussionKind,
+  transcientData: ContactTranscientData | null,
+): DefaultValues<CreateDiscussionDto> =>
+  kind === "IF"
+    ? {
+        motivation: "",
+        experienceAdditionalInformation: "",
+        ...transcientData,
+        kind: "IF",
+      }
+    : {
+        levelOfEducation: "3ème",
+        ...transcientData,
+        kind: "1_ELEVE_1_STAGE",
+        immersionObjective: discoverObjective,
+      };

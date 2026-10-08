@@ -12,12 +12,14 @@ import {
   type NotEmptyArray,
 } from "shared";
 import {
-  type ContactTranscientData,
   type TranscientData,
   useTranscientDataFromStorage,
 } from "src/app/components/immersion-offer/useTranscientDataFromStorage";
 import { useCreateDiscussionRoute } from "src/app/routes/routes.hooks";
-import { makeContactInputsLabelsByKey } from "./contactUtils";
+import {
+  type ContactInputKeys,
+  makeContactInputsLabelsByKey,
+} from "./contactUtils";
 
 const transcientPreferencesModal = createModal({
   id: "transcient-preferences-modal",
@@ -52,16 +54,12 @@ export const TranscientPreferencesDisplay = (
   const {
     getTranscientDataForScope,
     setPreferUseTranscientDataForScope,
-    setTranscientDataForScope,
     clearTranscientDataForScope,
   } = useTranscientDataFromStorage(scope);
   const transcientDataForScope = getTranscientDataForScope();
   const [displayIsVisible, setDisplayIsVisible] = useState(false);
   const savePreferences = (accept: boolean) => {
     setPreferUseTranscientDataForScope(accept);
-    setTranscientDataForScope({
-      ...transcientDataForScope?.value,
-    });
     onPreferencesChange(accept);
     if (mode === "modal") {
       transcientPreferencesModal.close();
@@ -148,7 +146,7 @@ export const TranscientPreferencesDisplay = (
 };
 
 const renderTranscientKeyValues = (
-  data: ContactTranscientData,
+  data: Partial<Record<ContactInputKeys, string>>,
   kind: DiscussionKind,
 ) =>
   keys(data).map((key) => {
@@ -162,7 +160,7 @@ const renderTranscientKeyValues = (
   });
 
 const renderValue = (
-  key: keyof ContactTranscientData,
+  key: ContactInputKeys,
   value: string | boolean | number | ImmersionObjective,
 ) => {
   if (typeof value === "boolean") {

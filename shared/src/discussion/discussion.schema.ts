@@ -51,6 +51,7 @@ import {
   type CreateDiscussionIFDto,
   candidateWarnedMethods,
   contactLevelsOfEducation,
+  type Discussion1Eleve1StageImmersionObjective,
   type DiscussionDto,
   type DiscussionDto1Eleve1Stage,
   type DiscussionDtoIF,
@@ -307,6 +308,9 @@ const immersionDurationSchema: ZodSchemaWithInputMatchingOutput<ImmersionDuratio
     error: localization.invalidEnum,
   });
 
+const discussion1Eleve1StageImmersionObjectiveSchema: ZodSchemaWithInputMatchingOutput<Discussion1Eleve1StageImmersionObjective> =
+  z.literal(discoverObjective);
+
 const potentialBeneficiaryIFSchema = potentialBeneficiaryCommonSchema.extend({
   immersionObjective: immersionObjectiveSchema.or(z.null()),
   resumeLink: resumeLinkSchema,
@@ -317,7 +321,7 @@ const potentialBeneficiaryIFSchema = potentialBeneficiaryCommonSchema.extend({
 
 const potentialBeneficiary1Eleve1StageSchema =
   potentialBeneficiaryCommonSchema.extend({
-    immersionObjective: z.literal(discoverObjective),
+    immersionObjective: discussion1Eleve1StageImmersionObjectiveSchema,
     levelOfEducation: discussionLevelOfEducationSchema,
   });
 
@@ -481,7 +485,7 @@ const contactLevelOfEducationSchema: ZodSchemaWithInputMatchingOutput<ContactLev
 
 const createDiscussion1Eleve1StageSchema = createDiscussionCommonSchema.extend({
   kind: z.literal("1_ELEVE_1_STAGE"),
-  immersionObjective: z.literal(discoverObjective),
+  immersionObjective: discussion1Eleve1StageImmersionObjectiveSchema,
   levelOfEducation: contactLevelOfEducationSchema,
 }) satisfies ZodSchemaWithInputMatchingOutput<CreateDiscussion1Eleve1StageDto>;
 
