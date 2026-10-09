@@ -35,10 +35,7 @@ import {
   type SearchRoute,
   useSearch,
 } from "src/app/hooks/search.hooks";
-import {
-  areValidGeoParams,
-  canSubmitSearch,
-} from "src/app/pages/search/SearchPage.utils";
+import { canSubmitSearch } from "src/app/pages/search/SearchPage.utils";
 import {
   isKeyInObjectAndValueNotUndefinedNorEmpty,
   isValueUndefinedOrEmpty,
@@ -508,7 +505,6 @@ export const SearchPage = ({
                     >
                       <SearchListResults
                         route={route}
-                        showDistance={areValidGeoParams(searchMade)}
                         isExternal={route.name === "externalSearch"}
                         onSearchFormSubmit={onSearchFormSubmit}
                         useNaturalLanguageForAppellations={

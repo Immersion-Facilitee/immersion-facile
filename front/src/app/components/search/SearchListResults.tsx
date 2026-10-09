@@ -54,7 +54,6 @@ type ResultsPerPageOption = (typeof resultsPerPageOptions)[number];
 const resultsPerPageOptions = ["1", "6", "12", "24", "48"] as const;
 
 export const SearchListResults = ({
-  showDistance,
   route,
   isExternal,
   onSearchFormSubmit,
@@ -63,7 +62,6 @@ export const SearchListResults = ({
   tempValue: SearchPageParams;
   setTempValue: (updatedValues: SearchPageParams) => void;
   route: SearchRoute;
-  showDistance: boolean;
   isExternal: boolean;
   onSearchFormSubmit: (
     searchParams: ReturnType<typeof searchSelectors.searchParams>,
@@ -353,6 +351,7 @@ export const SearchListResults = ({
                     key={`${searchResult.siret}-${searchResult.rome}-${searchResult.locationId}`}
                   >
                     <SearchResult
+                      mode="list"
                       searchResult={searchResult}
                       illustration={
                         <SearchResultIllustration
@@ -381,7 +380,6 @@ export const SearchListResults = ({
                           </div>
                         </SearchResultIllustration>
                       }
-                      showDistance={showDistance}
                       linkProps={makeOfferLink(
                         route,
                         searchResult,

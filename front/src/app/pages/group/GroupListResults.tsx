@@ -58,6 +58,7 @@ export const GroupListResults = ({
                 key={`${searchResult.siret}-${searchResult.rome}`}
               >
                 <SearchResult
+                  mode="list"
                   illustration={
                     <SearchResultIllustration
                       illustration={searchIllustrations[0]}

@@ -166,6 +166,7 @@ export const domElementIds = {
     distanceSelect: "im-search-page__distance-dropdown",
     fitForDisableWorkersFilterTag:
       "im-search-page__fit-for-disabled-workers-filter-tag",
+    lbbMapSearchResultButton: "im-search-result__lbb-map-contact-button",
     lbbSearchResultButton: "im-search-result__lbb-contact-button",
     locationFilterTag: "im-search-page__location-filter-tag",
     nafAutocomplete: "im-search-page__naf-autocomplete",
@@ -177,6 +178,7 @@ export const domElementIds = {
     resultPerPageDropdown: "im-search-page__results-per-page-dropdown",
     searchForm: "im-search-page__search-form",
     searchResultButton: "im-search-result__contact-button",
+    mapSearchResultButton: "im-search-result__map-contact-button",
     searchSortOptionBase: "im-search__search-sort-option-",
     searchSubmitButton: "im-search__submit-search",
     sortFilter: "im-search-page__sort-filter-select",
