@@ -13,7 +13,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { type DefaultValues, FormProvider, useForm } from "react-hook-form";
 import {
   type AppellationCode,
   type AppellationDto,
@@ -23,7 +23,7 @@ import {
   contactLevelsOfEducation,
   conventionObjectiveOptions,
   createDiscussionSchema,
-  discoverObjective,
+  type DiscussionKind,
   domElementIds,
   type ImmersionDuration,
   type ImmersionObjective,
@@ -37,6 +37,7 @@ import { PhoneInput } from "src/app/components/forms/commons/PhoneInput";
 import {
   getDefaultAppellationCode,
   makeContactInputsLabelsByKey,
+  makeCreateDiscussionValuesForKind,
 } from "src/app/components/immersion-offer/contactUtils";
 import { TranscientPreferencesDisplay } from "src/app/components/immersion-offer/TranscientPreferencesDisplay";
 import {
@@ -64,10 +65,10 @@ export const CreateDiscussionForm = ({
 }: CreateDiscussionFormProps) => {
   const { activeError, setActiveErrorKind } = useContactEstablishmentError();
   const route = useCreateDiscussionRoute();
+  const discussionKind: DiscussionKind =
+    route.name === "searchResult" ? "IF" : "1_ELEVE_1_STAGE";
 
-  const inputsLabelsByKey = makeContactInputsLabelsByKey(
-    route.name === "searchResult" ? "IF" : "1_ELEVE_1_STAGE",
-  );
+  const inputsLabelsByKey = makeContactInputsLabelsByKey(discussionKind);
 
   const [invalidEmailMessage, setInvalidEmailMessage] =
     useState<ReactNode | null>(null);
@@ -83,7 +84,7 @@ export const CreateDiscussionForm = ({
   const transcientDataForScope = getTranscientDataForScope();
   const preferUseTranscientData = getPreferUseTranscientDataForScope();
   const acquisitionParams = useGetAcquisitionParams();
-  const initialValues = useMemo<CreateDiscussionDto>(
+  const commonValues = useMemo(
     () => ({
       contactMode,
       siret: route.params.siret,
@@ -99,31 +100,24 @@ export const CreateDiscussionForm = ({
       potentialBeneficiaryPhone: route.params.contactPhone ?? "",
       locationId: route.params.location ?? "",
       ...acquisitionParams,
-      ...(preferUseTranscientData && transcientDataForScope?.value
-        ? { ...transcientDataForScope.value }
-        : {}),
-      ...(route.name === "searchResult"
-        ? {
-            kind: "IF",
-            immersionObjective: null as any as ImmersionObjective,
-            immersionDuration: null as any as ImmersionDuration,
-            motivation: "",
-            experienceAdditionalInformation: "",
-          }
-        : {
-            kind: "1_ELEVE_1_STAGE",
-            immersionObjective: discoverObjective,
-            levelOfEducation: "3ème",
-          }),
+    }),
+    [appellations, route.params, acquisitionParams, contactMode],
+  );
+  const initialValues = useMemo<DefaultValues<CreateDiscussionDto>>(
+    () => ({
+      ...commonValues,
+      ...makeCreateDiscussionValuesForKind(
+        discussionKind,
+        preferUseTranscientData
+          ? (transcientDataForScope?.value ?? null)
+          : null,
+      ),
     }),
     [
-      appellations,
-      route.params,
+      commonValues,
+      discussionKind,
       preferUseTranscientData,
       transcientDataForScope,
-      acquisitionParams,
-      route.name,
-      contactMode,
     ],
   );
 
@@ -177,13 +171,13 @@ export const CreateDiscussionForm = ({
         <TranscientPreferencesDisplay
           scope="contact-establishment"
           onPreferencesChange={(accept) => {
-            const newInitialValues = accept
-              ? {
-                  ...initialValues,
-                  ...transcientDataForScope?.value,
-                }
-              : initialValues;
-            reset(newInitialValues);
+            reset({
+              ...commonValues,
+              ...makeCreateDiscussionValuesForKind(
+                discussionKind,
+                accept ? (transcientDataForScope?.value ?? null) : null,
+              ),
+            });
           }}
           mode="form-overlay"
           parentRef={formRef}
