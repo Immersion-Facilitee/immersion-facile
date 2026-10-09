@@ -325,25 +325,6 @@ export const OffersSettingsSection = ({
         />
 
         <RadioButtons
-          {...formContents.isEngagedEnterprise}
-          legend={formContents.isEngagedEnterprise.label}
-          options={booleanSelectOptions.map((option) => ({
-            ...option,
-            nativeInputProps: {
-              ...option.nativeInputProps,
-              checked:
-                Boolean(option.nativeInputProps.value) ===
-                formValues.isEngagedEnterprise,
-              onChange: () => {
-                setValue(
-                  "isEngagedEnterprise",
-                  option.nativeInputProps.value === 1,
-                );
-              },
-            },
-          }))}
-        />
-        <RadioButtons
           {...formContents.fitForDisabledWorkers}
           legend={formContents.fitForDisabledWorkers.label}
           options={booleanSelectOptions.map((option) => ({
@@ -397,7 +378,6 @@ export const OffersSettingsSection = ({
                     "searchableBy",
                     "maxContactsPerMonth",
                     "nextAvailabilityDate",
-                    "isEngagedEnterprise",
                     "fitForDisabledWorkers",
                     "contactMode",
                     ...getConditionalFieldsToValidate(getValues("contactMode")),

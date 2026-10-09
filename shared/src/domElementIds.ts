@@ -616,8 +616,6 @@ export const domElementIds = {
       },
       contactMode:
         "im-form-create-establishment__businessContact-contact-method",
-      isEngagedEnterprise:
-        "im-form-create-establishment__is-engaged-enterprise",
       fitForDisabledWorkers:
         "im-form-create-establishment__fit-for-disabled-workers",
       appellations: "im-form-create-establishment__appellations",
@@ -679,7 +677,6 @@ export const domElementIds = {
           "im-form-edit-establishment__businessContact-is-main-contact-in-person",
       },
       contactMode: "im-form-edit-establishment__businessContact-contact-method",
-      isEngagedEnterprise: "im-form-edit-establishment__is-engaged-enterprise",
       fitForDisabledWorkers:
         "im-form-edit-establishment__fit-for-disabled-workers",
       appellations: "im-form-edit-establishment__appellations",
@@ -754,8 +751,6 @@ export const domElementIds = {
       },
       contactMode:
         "im-form-manage-establishment-admin__businessContact-contact-method",
-      isEngagedEnterprise:
-        "im-form-manage-establishment-admin__is-engaged-enterprise",
       fitForDisabledWorkers:
         "im-form-manage-establishment-admin__fit-for-disabled-workers",
       appellations: "im-form-manage-establishment-admin__appellations",

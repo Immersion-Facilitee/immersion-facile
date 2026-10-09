@@ -111,7 +111,6 @@ export const defaultValidFormEstablishment: FormEstablishmentDto = {
   naf: { code: "7201A", nomenclature: "nomenclature code 7201A" },
   businessName: "Ma super entreprise",
   businessNameCustomized: "Ma belle enseigne du quartier",
-  isEngagedEnterprise: false,
   fitForDisabledWorkers: "no",
   siret: "01234567890123",
   website: "https://www@super.com/jobs",
@@ -198,7 +197,6 @@ export const fullyUpdatedFormEstablishment: FormEstablishmentDto = {
   },
   businessNameCustomized: "Updated Business Name",
   fitForDisabledWorkers: "no",
-  isEngagedEnterprise: false,
   nextAvailabilityDate: new Date("2025-02-01").toISOString(),
   isEstablishmentBanned: false,
 };
@@ -335,13 +333,6 @@ export class FormEstablishmentDtoBuilder
     });
   }
 
-  public withIsEngagedEnterprise(isEngagedEnterprise?: boolean) {
-    return new FormEstablishmentDtoBuilder({
-      ...this.#dto,
-      isEngagedEnterprise,
-    });
-  }
-
   public withSiret(siret: SiretDto) {
     return new FormEstablishmentDtoBuilder({ ...this.#dto, siret });
   }
@@ -418,7 +409,6 @@ const formEstablishmentToEstablishmentCsvRow = (
     offers_appellation_code: establishment.offers
       .map((offer) => offer.appellationCode)
       .join(","),
-    isEngagedEnterprise: establishment.isEngagedEnterprise ? "1" : "0",
     maxContactPerMonth: String(establishment.maxContactsPerMonth),
     fitForDisabledWorkers: establishment.fitForDisabledWorkers ? "1" : "0",
     searchableByStudents: establishment.searchableBy.students ? "1" : "0",

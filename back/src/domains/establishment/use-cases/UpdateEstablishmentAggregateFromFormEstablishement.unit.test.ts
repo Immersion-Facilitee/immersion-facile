@@ -389,7 +389,6 @@ describe("Update Establishment aggregate from form data", () => {
                 .withFitForDisabledWorkers(
                   updatedFormEstablishment.fitForDisabledWorkers,
                 )
-                .withIsCommited(updatedFormEstablishment.isEngagedEnterprise)
                 .withIsOpen(true)
                 .withName(updatedFormEstablishment.businessName)
                 .withMaxContactsPerMonth(
@@ -494,7 +493,6 @@ describe("Update Establishment aggregate from form data", () => {
                 .withFitForDisabledWorkers(
                   updatedFormEstablishment.fitForDisabledWorkers,
                 )
-                .withIsCommited(updatedFormEstablishment.isEngagedEnterprise)
                 .withIsOpen(true)
                 .withName(updatedFormEstablishment.businessName)
                 .withMaxContactsPerMonth(
@@ -646,7 +644,6 @@ describe("Update Establishment aggregate from form data", () => {
           )
           .withCreatedAt(creationDate)
           .withUpdatedAt(creationDate)
-          .withIsCommited(existingFormEstablishment.isEngagedEnterprise)
           .withAdditionalInformation(
             existingFormEstablishment.additionalInformation,
           )
@@ -717,7 +714,6 @@ describe("Update Establishment aggregate from form data", () => {
           )
           .withCreatedAt(creationDate)
           .withUpdatedAt(now)
-          .withIsCommited(updatedFormEstablishment.isEngagedEnterprise)
           .withAdditionalInformation(
             updatedFormEstablishment.additionalInformation,
           )

@@ -123,7 +123,6 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
       departmentCode:
         establishment.establishment.locations[0].address.departmentCode,
       hasIcAccount: false,
-      isCommited: establishment.establishment.isCommited,
       isRegistered: true,
       maxContactsPerMonth: establishment.establishment.maxContactsPerMonth,
       nafCode: establishment.establishment.nafDto.code,
@@ -215,7 +214,6 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
           numberOfDiscussionsReceived: 121234256,
           searchableBy: "jobSeekers",
           siret: establishment.establishment.siret,
-          isCommited: false,
           nextAvailabilityDate: new Date(),
           numberEmployeesRange: "+10000",
           romes: establishment.offers.map(({ romeCode }) => romeCode),
@@ -698,7 +696,6 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
           numberOfDiscussionsReceived: 121234256,
           searchableBy: "jobSeekers",
           siret: convention.siret,
-          isCommited: false,
           nextAvailabilityDate: new Date(),
           numberEmployeesRange: "+10000",
           isSuperEstablishment: isSuperEstablishment(
@@ -831,7 +828,6 @@ describe("UpdateMarketingEstablishmentContactsList", () => {
           numberOfDiscussionsReceived: 121234256,
           searchableBy: "jobSeekers",
           siret: convention.siret,
-          isCommited: false,
           nextAvailabilityDate: new Date(),
           numberEmployeesRange: "+10000",
           isSuperEstablishment: isSuperEstablishment(

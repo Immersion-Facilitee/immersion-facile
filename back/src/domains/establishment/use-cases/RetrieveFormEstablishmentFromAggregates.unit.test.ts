@@ -545,7 +545,6 @@ const makeExpectedFormEstablishment = ({
       id: location.id,
     }),
   ),
-  isEngagedEnterprise: establishmentAggregate.establishment.isCommited,
   naf: establishmentAggregate.establishment.nafDto,
   offers: establishmentAggregate.offers.map((offer) => ({
     appellationCode: offer.appellationCode,

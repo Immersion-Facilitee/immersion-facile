@@ -251,7 +251,6 @@ const onEstablishment = async ({
       establishmentAggregate,
     ),
     siret: establishmentAggregate.establishment.siret,
-    isCommited: establishmentAggregate.establishment.isCommited,
     nextAvailabilityDate:
       establishmentAggregate.establishment.nextAvailabilityDate &&
       new Date(establishmentAggregate.establishment.nextAvailabilityDate),

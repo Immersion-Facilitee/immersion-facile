@@ -33,7 +33,6 @@ type LeadEstablishmentMarketingGatewayDto =
 
 type SpecificRegistered = {
   departmentCode: DepartmentCode; //ENT_CODE_DEPARTEMENT
-  isCommited?: boolean; //ENT_LES_ENTREPRISES_SENGAGENT
   isRegistered: true; //ENT_REFERENCE_SITE
   isSuperEstablishment: boolean; //ENT_SUPER_ENTREPRISE
   maxContactsPerMonth: number; //ENT_MAX_CONTACTS_PER_MONTH

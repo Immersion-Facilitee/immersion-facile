@@ -205,7 +205,6 @@ const formEstablishmentCommonShape = {
       }),
     )
     .min(1),
-  isEngagedEnterprise: zBoolean.optional(),
   fitForDisabledWorkers: fitForDisabledWorkersSchema,
   naf: nafSchema.optional(),
 
@@ -316,7 +315,6 @@ export const establishmentCSVRowSchema: ZodSchemaWithInputMatchingOutput<Establi
     businessAddress: addressWithPostalCodeSchema,
     naf_code: zStringMinLength1Max1024,
     offers_appellation_code: zStringMinLength1Max1024,
-    isEngagedEnterprise: csvBooleanSchema,
     contactMode: contactModeSchema,
     maxContactPerMonth: zStringMinLength1Max8.optional(),
     website: zStringCanBeEmpty,

@@ -111,9 +111,6 @@ export const candidateEstablishmentMapper = (
       ),
       userRights: makeUserRightsFromCSV(establishmentRow),
       fitForDisabledWorkers: getFitForDisabledWorkers(),
-      isEngagedEnterprise: csvBooleanToBoolean(
-        establishmentRow.isEngagedEnterprise,
-      ),
       maxContactsPerMonth: getMaxContactsPerMonth(
         establishmentRow.maxContactPerMonth,
       ),
