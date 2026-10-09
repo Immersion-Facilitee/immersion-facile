@@ -2,6 +2,7 @@ import { type ZodType, z } from "zod";
 import { withAcquisitionSchema } from "../acquisition.dto";
 import { addressDepartmentCodeSchema } from "../address/address.schema";
 import { fitForDisabledWorkersSchema } from "../formEstablishment/FormEstablishment.schema";
+import { groupSlugSchema } from "../group/group.schema";
 import { nafCodeSchema, withNafCodesSchema } from "../naf/naf.schema";
 import type { SortDirection } from "../pagination/pagination.dto";
 import {
@@ -132,6 +133,7 @@ export const getOffersFlatParamsSchema: z.ZodType<
       .optional(),
     place: placeSchema.optional(),
     showOnlyAvailableOffers: zToBoolean.optional(),
+    group: groupSlugSchema.optional(),
   })
   .and(paginationQueryParamsSchema)
   .and(geoParamsAndSortSchema)

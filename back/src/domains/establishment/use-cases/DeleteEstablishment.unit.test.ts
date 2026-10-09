@@ -41,7 +41,6 @@ describe("Delete Establishment", () => {
       logoUrl: "https://my-logo-url.com",
       backgroundColor: "blue",
     },
-    tintColor: "red",
   };
 
   const establishmentAdmin = new UserBuilder()

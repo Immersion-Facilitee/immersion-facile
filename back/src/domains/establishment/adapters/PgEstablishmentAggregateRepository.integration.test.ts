@@ -69,6 +69,7 @@ import {
   searchableByStudentsEstablishment,
   unavailableEstablishment,
 } from "./PgEstablishmentAggregateRepository.test.helpers";
+import { PgGroupRepository } from "./PgGroupRepository";
 
 describe("PgEstablishmentAggregateRepository", () => {
   let pool: Pool;
@@ -752,6 +753,117 @@ describe("PgEstablishmentAggregateRepository", () => {
             pagination: { page: 1, perPage: 10 },
             sort: defaultSort,
             filters: { ...defaultFilters, departmentCodes: ["99"] },
+          });
+          expectToEqual(result, {
+            pagination: {
+              currentPage: 1,
+              totalPages: 1,
+              numberPerPage: 10,
+              totalRecords: 0,
+            },
+            data: [],
+          });
+        });
+      });
+      describe("filters.group", () => {
+        const establishmentInGroup: EstablishmentAggregate = {
+          ...searchableByAllEstablishment,
+          establishment: {
+            ...searchableByAllEstablishment.establishment,
+            siret: "00000000000080",
+          },
+        };
+        const establishmentOutsideGroup: EstablishmentAggregate = {
+          ...searchableByStudentsEstablishment,
+          establishment: {
+            ...searchableByStudentsEstablishment.establishment,
+            siret: "00000000000081",
+          },
+        };
+        const groupSlug = "test-group";
+
+        beforeEach(async () => {
+          const pgGroupRepository = new PgGroupRepository(kyselyDb);
+          await kyselyDb.deleteFrom("groups__sirets").execute();
+          await kyselyDb.deleteFrom("groups").execute();
+          await Promise.all(
+            [establishmentInGroup, establishmentOutsideGroup].map(
+              (establishmentAggregate) =>
+                pgEstablishmentAggregateRepository.insertEstablishmentAggregate(
+                  establishmentAggregate,
+                ),
+            ),
+          );
+          await pgGroupRepository.save({
+            slug: groupSlug,
+            name: "Test Group",
+            sirets: [establishmentInGroup.establishment.siret],
+            options: {
+              heroHeader: {
+                title: "Title",
+                description: "Description",
+              },
+            },
+          });
+        });
+
+        it("doesn't filter by group when group is not provided", async () => {
+          const result = await pgEstablishmentAggregateRepository.getOffers({
+            pagination: { page: 1, perPage: 10 },
+            sort: defaultSort,
+            filters: defaultFilters,
+          });
+          expectToEqual(result.pagination, {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 2,
+          });
+          expectToEqual(
+            result.data,
+            [establishmentInGroup, establishmentOutsideGroup].map(
+              (establishmentAggregate) =>
+                makeExpectedSearchResult({
+                  establishment: establishmentAggregate,
+                  withOffers: establishmentAggregate.offers,
+                  withLocationAndDistance:
+                    establishmentAggregate.establishment.locations[0],
+                  nafLabel: "Activités des agences de travail temporaire",
+                }),
+            ),
+          );
+        });
+
+        it("filters by group", async () => {
+          const result = await pgEstablishmentAggregateRepository.getOffers({
+            pagination: { page: 1, perPage: 10 },
+            sort: defaultSort,
+            filters: { ...defaultFilters, group: groupSlug },
+          });
+          expectToEqual(result, {
+            pagination: {
+              currentPage: 1,
+              totalPages: 1,
+              numberPerPage: 10,
+              totalRecords: 1,
+            },
+            data: [
+              makeExpectedSearchResult({
+                establishment: establishmentInGroup,
+                withOffers: establishmentInGroup.offers,
+                withLocationAndDistance:
+                  establishmentInGroup.establishment.locations[0],
+                nafLabel: "Activités des agences de travail temporaire",
+              }),
+            ],
+          });
+        });
+
+        it("returns no result when group has no matching establishment", async () => {
+          const result = await pgEstablishmentAggregateRepository.getOffers({
+            pagination: { page: 1, perPage: 10 },
+            sort: defaultSort,
+            filters: { ...defaultFilters, group: "unknown-group" },
           });
           expectToEqual(result, {
             pagination: {

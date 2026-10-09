@@ -41,6 +41,7 @@ export const makeGetOffers = useCaseBuilder("GetOffers")
       searchableBy,
       sirets,
       place,
+      group,
       showOnlyAvailableOffers,
       ...sortAndPositionParams
     } = inputParams;
@@ -80,6 +81,7 @@ export const makeGetOffers = useCaseBuilder("GetOffers")
         showOnlyAvailableOffers: showOnlyAvailableOffers ?? true,
         geoParams,
         excludedSirets,
+        group,
       },
       sort: { by: inputParams.sortBy, direction: inputParams.sortOrder },
     });
@@ -96,6 +98,7 @@ export const makeGetOffers = useCaseBuilder("GetOffers")
       sirets: sirets ?? [],
       sortedBy: inputParams.sortBy,
       place,
+      group,
     };
 
     const searchMade: SearchMade = geoParams

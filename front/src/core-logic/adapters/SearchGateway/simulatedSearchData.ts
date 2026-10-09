@@ -352,7 +352,6 @@ export const groupWithResultsStub: GroupWithResults = {
           "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Decathlon_Logo.svg/800px-Decathlon_Logo.svg.png",
         backgroundColor: "#FF0000",
       },
-      tintColor: "#0082c3",
     },
   },
   results: groupSearchResultBySlugStub,

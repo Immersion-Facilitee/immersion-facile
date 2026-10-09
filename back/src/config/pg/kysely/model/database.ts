@@ -192,7 +192,6 @@ interface Groups {
   hero_header_description: string;
   hero_header_logo_url: AbsoluteUrl | null;
   hero_header_background_color: string | null;
-  tint_color: string | null;
 }
 
 interface GroupsSirets {
@@ -658,6 +657,7 @@ interface SearchesMade extends WithAcquisition {
   distance: number | null;
   fit_for_disabled_workers: JSONColumnType<string[]> | null;
   gps: string | null;
+  group_slug: string | null;
   id: string;
   lat: number | null;
   location_ids: JSONColumnType<string[]> | null;

@@ -39,7 +39,6 @@ export class PgGroupRepository implements GroupRepository {
           logoUrl: rawGroup.hero_header_logo_url ?? undefined,
           backgroundColor: rawGroup.hero_header_background_color ?? undefined,
         },
-        tintColor: rawGroup.tint_color ?? undefined,
       },
     };
 
@@ -149,7 +148,6 @@ export class PgGroupRepository implements GroupRepository {
               logoUrl: ref("hero_header_logo_url"),
               backgroundColor: ref("hero_header_background_color"),
             }),
-            tintColor: ref("tint_color"),
           }),
         ).as("options"),
       ])
@@ -176,7 +174,6 @@ export class PgGroupRepository implements GroupRepository {
       .values({
         name: group.name,
         slug: group.slug,
-        tint_color: group.options.tintColor,
         hero_header_title: group.options.heroHeader.title,
         hero_header_description: group.options.heroHeader.description,
         hero_header_background_color: group.options.heroHeader.backgroundColor,

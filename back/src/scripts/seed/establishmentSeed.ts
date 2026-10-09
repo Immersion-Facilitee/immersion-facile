@@ -139,7 +139,6 @@ export const establishmentSeed = async (uow: UnitOfWork) => {
         title: "Bienvenue chez Decathlon",
         description: "À fond la forme !",
       },
-      tintColor: "#007DBC",
     },
     name: "Decathlon",
   });

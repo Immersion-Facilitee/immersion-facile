@@ -330,6 +330,7 @@ const makeGetFilteredResultsSubQueryBuilder = ({
     excludedSirets,
     fitForDisabledWorkers,
     geoParams,
+    group,
     locationIds,
     nafCodes,
     remoteWorkModes,
@@ -389,6 +390,18 @@ const makeGetFilteredResultsSubQueryBuilder = ({
             (qb) =>
               sirets?.length
                 ? qb.where("establishments.siret", "in", sirets)
+                : qb,
+            (qb) =>
+              group
+                ? qb.where(({ eb, selectFrom }) =>
+                    eb(
+                      "establishments.siret",
+                      "in",
+                      selectFrom("groups__sirets")
+                        .select("siret")
+                        .where("group_slug", "=", group),
+                    ),
+                  )
                 : qb,
             (qb) => {
               if (searchableBy === "jobSeekers")
@@ -575,6 +588,7 @@ const checkHasNoJoinFilters = (filters: SearchImmersionFilters): boolean => {
     remoteWorkModes: !filters.remoteWorkModes?.length,
     locationIds: !filters.locationIds?.length,
     departmentCodes: !filters.departmentCodes?.length,
+    group: !filters.group,
     fitForDisabledWorkers: true,
     searchableBy: true,
     showOnlyAvailableOffers: true,

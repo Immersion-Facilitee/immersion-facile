@@ -17,7 +17,6 @@ type GroupHeroHeader = {
 
 export type GroupOptions = {
   heroHeader: GroupHeroHeader;
-  tintColor?: string;
 };
 
 export type Group = {

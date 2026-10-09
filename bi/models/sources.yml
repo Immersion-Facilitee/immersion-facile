@@ -399,8 +399,8 @@ sources:
             description: "URL of hero header logo"
           - name: hero_header_background_color
             description: "Background color of hero header"
-          - name: tint_color
-            description: "Tint color"
+          - name: __old_tint_color
+            description: "Deprecated tint color (renamed)"
 
       - name: groups__sirets
         description: "Relationship between groups and SIRETs"

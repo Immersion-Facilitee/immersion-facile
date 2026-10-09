@@ -985,7 +985,6 @@ describe("/offers route", () => {
             description: "À fond la forme",
             logoUrl: "https://logo-decathlon.com",
           },
-          tintColor: "red",
         },
       };
       const groupEntity: GroupEntity = {

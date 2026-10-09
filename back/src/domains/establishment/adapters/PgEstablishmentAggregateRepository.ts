@@ -14,6 +14,7 @@ import {
   type EstablishmentUserRightStatus,
   errors,
   type FitForDisableWorkerOption,
+  type GroupSlug,
   type LocationId,
   type NafCode,
   type RemoteWorkMode,
@@ -809,6 +810,7 @@ export type SearchImmersionFilters = {
   sirets?: SiretDto[];
   searchableBy?: EstablishmentSearchableByValue;
   showOnlyAvailableOffers: boolean;
+  group?: GroupSlug;
 };
 
 const establishmentByFiltersQueryBuilder = (db: KyselyDb) =>
