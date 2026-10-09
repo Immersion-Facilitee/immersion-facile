@@ -22,7 +22,6 @@ export const withGroupSlugSchema: ZodSchemaWithInputMatchingOutput<WithGroupSlug
     groupSlug: groupSlugSchema,
   });
 
-const colorSchema = zStringCanBeEmpty; // 1024 max - voir si on peut faire plus petit
 const backgroundColorSchema = zStringCanBeEmpty; // 1024 max - voir si on peut faire plus petit
 
 const groupOptionsSchema: ZodSchemaWithInputMatchingOutput<GroupOptions> =
@@ -33,7 +32,6 @@ const groupOptionsSchema: ZodSchemaWithInputMatchingOutput<GroupOptions> =
       logoUrl: absoluteUrlSchema.optional(),
       backgroundColor: backgroundColorSchema.optional(),
     }),
-    tintColor: colorSchema.optional(),
   });
 
 export const groupSchema: ZodSchemaWithInputMatchingOutput<Group> = z.object({

@@ -23,8 +23,6 @@ models:
         description: "URL of hero header logo"
       - name: hero_header_background_color
         description: "Background color of hero header"
-      - name: tint_color
-        description: "Tint color"
 
   - name: groups_sirets
     description: "Relationship between groups and SIRETs - one row per (group_slug, siret)"

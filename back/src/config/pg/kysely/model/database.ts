@@ -192,7 +192,6 @@ interface Groups {
   hero_header_description: string;
   hero_header_logo_url: AbsoluteUrl | null;
   hero_header_background_color: string | null;
-  tint_color: string | null;
 }
 
 interface GroupsSirets {

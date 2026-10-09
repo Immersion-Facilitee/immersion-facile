@@ -36,7 +36,6 @@ describe("PgEstablishmentGroupRepository", () => {
       description: "My hero header description",
       logoUrl: "https://my-logo-url.com",
     },
-    tintColor: "red",
   };
 
   const siret1 = "11112222111122";
