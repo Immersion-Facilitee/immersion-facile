@@ -1,5 +1,6 @@
 import { subDays, subMilliseconds, subYears } from "date-fns";
 import { expectToEqual, makeBooleanFeatureFlag } from "shared";
+import { EstablishmentAggregateBuilder } from "../../../../establishment/helpers/EstablishmentBuilders";
 import { makeCreateNewEvent } from "../../../events/ports/EventBus";
 import { CustomTimeGateway } from "../../../time-gateway/adapters/CustomTimeGateway";
 import {
@@ -398,6 +399,204 @@ describe("TriggerEventsToDeleteInactiveUsers", () => {
       3,
     );
     expectToEqual(countingUowPerformer.getCount(), 4);
+  });
+
+  it("does not trigger deletion for last ACCEPTED admin when remaining right is PENDING", async () => {
+    const inactiveAdmin = makeUser({
+      id: "inactive-admin-id",
+      email: "inactive-admin@test.fr",
+      lastLoginAt: inactiveLastLoginAt,
+    });
+    const pendingContact = makeUser({
+      id: "pending-contact-id",
+      email: "pending-contact@test.fr",
+    });
+    uow.userRepository.users = [inactiveAdmin, pendingContact];
+    saveDeletionWarningNotification({
+      uow,
+      userId: inactiveAdmin.id,
+      createdAt: subDays(now, 8),
+    });
+    uow.establishmentAggregateRepository.establishmentAggregates = [
+      new EstablishmentAggregateBuilder()
+        .withUserRights([
+          {
+            userId: inactiveAdmin.id,
+            role: "establishment-admin",
+            status: "ACCEPTED",
+            isMainContactByPhone: true,
+            job: "",
+            phone: "",
+            shouldReceiveDiscussionNotifications: true,
+          },
+          {
+            userId: pendingContact.id,
+            role: "establishment-contact",
+            status: "PENDING",
+            shouldReceiveDiscussionNotifications: true,
+          },
+        ])
+        .build(),
+    ];
+
+    const result = await triggerEventsToDeleteInactiveUsers.execute();
+
+    expectToEqual(result, { numberOfDeletionsTriggered: 0 });
+    expectToEqual(uow.outboxRepository.events.length, 0);
+  });
+
+  it("triggers deletion for last ACCEPTED admin when remaining contact is ACCEPTED", async () => {
+    const inactiveAdmin = makeUser({
+      id: "inactive-admin-id",
+      email: "inactive-admin@test.fr",
+      lastLoginAt: inactiveLastLoginAt,
+    });
+    const acceptedContact = makeUser({
+      id: "accepted-contact-id",
+      email: "accepted-contact@test.fr",
+    });
+    uow.userRepository.users = [inactiveAdmin, acceptedContact];
+    saveDeletionWarningNotification({
+      uow,
+      userId: inactiveAdmin.id,
+      createdAt: subDays(now, 8),
+    });
+    uow.establishmentAggregateRepository.establishmentAggregates = [
+      new EstablishmentAggregateBuilder()
+        .withUserRights([
+          {
+            userId: inactiveAdmin.id,
+            role: "establishment-admin",
+            status: "ACCEPTED",
+            isMainContactByPhone: true,
+            job: "",
+            phone: "",
+            shouldReceiveDiscussionNotifications: true,
+          },
+          {
+            userId: acceptedContact.id,
+            role: "establishment-contact",
+            status: "ACCEPTED",
+            shouldReceiveDiscussionNotifications: true,
+          },
+        ])
+        .build(),
+    ];
+
+    const result = await triggerEventsToDeleteInactiveUsers.execute();
+
+    expectToEqual(result, { numberOfDeletionsTriggered: 1 });
+    expectToEqual(uow.outboxRepository.events.length, 1);
+    expectToEqual(uow.outboxRepository.events[0].payload, {
+      userId: inactiveAdmin.id,
+      triggeredBy: { kind: "crawler" },
+    });
+  });
+
+  it("triggers deletion for last ACCEPTED admin when no other user has rights on establishment", async () => {
+    const inactiveAdmin = makeUser({
+      id: "inactive-admin-id",
+      email: "inactive-admin@test.fr",
+      lastLoginAt: inactiveLastLoginAt,
+    });
+    uow.userRepository.users = [inactiveAdmin];
+    saveDeletionWarningNotification({
+      uow,
+      userId: inactiveAdmin.id,
+      createdAt: subDays(now, 8),
+    });
+    uow.establishmentAggregateRepository.establishmentAggregates = [
+      new EstablishmentAggregateBuilder()
+        .withUserRights([
+          {
+            userId: inactiveAdmin.id,
+            role: "establishment-admin",
+            status: "ACCEPTED",
+            isMainContactByPhone: true,
+            job: "",
+            phone: "",
+            shouldReceiveDiscussionNotifications: true,
+          },
+        ])
+        .build(),
+    ];
+
+    const result = await triggerEventsToDeleteInactiveUsers.execute();
+
+    expectToEqual(result, { numberOfDeletionsTriggered: 1 });
+    expectToEqual(uow.outboxRepository.events.length, 1);
+    expectToEqual(uow.outboxRepository.events[0].payload, {
+      userId: inactiveAdmin.id,
+      triggeredBy: { kind: "crawler" },
+    });
+  });
+
+  it("does not trigger deletion when user is last ACCEPTED admin of one establishment even if they have an ACCEPTED contact right elsewhere", async () => {
+    const inactiveAdmin = makeUser({
+      id: "inactive-admin-id",
+      email: "inactive-admin@test.fr",
+      lastLoginAt: inactiveLastLoginAt,
+    });
+    const pendingContact = makeUser({
+      id: "pending-contact-id",
+      email: "pending-contact@test.fr",
+    });
+    const otherAdmin = makeUser({
+      id: "other-admin-id",
+      email: "other-admin@test.fr",
+    });
+    uow.userRepository.users = [inactiveAdmin, pendingContact, otherAdmin];
+    saveDeletionWarningNotification({
+      uow,
+      userId: inactiveAdmin.id,
+      createdAt: subDays(now, 8),
+    });
+    uow.establishmentAggregateRepository.establishmentAggregates = [
+      new EstablishmentAggregateBuilder()
+        .withUserRights([
+          {
+            userId: inactiveAdmin.id,
+            role: "establishment-admin",
+            status: "ACCEPTED",
+            isMainContactByPhone: true,
+            job: "",
+            phone: "",
+            shouldReceiveDiscussionNotifications: true,
+          },
+          {
+            userId: pendingContact.id,
+            role: "establishment-contact",
+            status: "PENDING",
+            shouldReceiveDiscussionNotifications: true,
+          },
+        ])
+        .build(),
+      new EstablishmentAggregateBuilder()
+        .withEstablishmentSiret("12345678901234")
+        .withUserRights([
+          {
+            userId: otherAdmin.id,
+            role: "establishment-admin",
+            status: "ACCEPTED",
+            isMainContactByPhone: true,
+            job: "",
+            phone: "",
+            shouldReceiveDiscussionNotifications: true,
+          },
+          {
+            userId: inactiveAdmin.id,
+            role: "establishment-contact",
+            status: "ACCEPTED",
+            shouldReceiveDiscussionNotifications: true,
+          },
+        ])
+        .build(),
+    ];
+
+    const result = await triggerEventsToDeleteInactiveUsers.execute();
+
+    expectToEqual(result, { numberOfDeletionsTriggered: 0 });
+    expectToEqual(uow.outboxRepository.events.length, 0);
   });
 
   const makeInactiveUsers = (count: number) =>

@@ -1088,6 +1088,16 @@ export const errors = {
       new ForbiddenError(
         `Il n'est pas possible de supprimer l'utilisateur '${userId}' car il est exclu de la suppression automatique.`,
       ),
+    deleteForbiddenLastAcceptedEstablishmentAdmin: ({
+      userId,
+      sirets,
+    }: {
+      userId: UserId;
+      sirets: SiretDto[];
+    }) =>
+      new ForbiddenError(
+        `Il n'est pas possible de supprimer l'utilisateur '${userId}' car il est le seul administrateur accepté d'un établissement qui a encore des rattachements en attente (${sirets.join(", ")}).`,
+      ),
     forbidden: ({ userId }: { userId: UserId }) =>
       new ForbiddenError(
         `L'utilisateur qui a l'identifiant "${userId}" n'a pas le droit d'accéder à cette ressource.`,
