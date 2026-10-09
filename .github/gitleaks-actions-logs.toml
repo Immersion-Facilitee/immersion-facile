@@ -1,0 +1,35 @@
+title = "Secrets dans les logs GitHub Actions"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "postgres-url-with-password"
+description = "URL PostgreSQL contenant un mot de passe"
+regex = '''postgres(?:ql)?://[^:/\s]+:([^@\s]+)@'''
+secretGroup = 1
+keywords = ["postgres"]
+
+[[rules]]
+id = "scalingo-env-set-output"
+description = "Valeur affichée par scalingo env-set"
+regex = '''[A-Za-z0-9_]+ has been set to '([^']+)''''
+secretGroup = 1
+keywords = ["has been set to"]
+
+[[rules]]
+id = "sensitive-env-assignment"
+description = "Variable d'environnement sensible affichée avec sa valeur"
+regex = '''\b[A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|PRIVATE_KEY|API_KEY)[A-Z0-9_]*=['"]?([^\s'"]+)'''
+secretGroup = 1
+keywords = ["password", "secret", "token", "private_key", "api_key"]
+
+[[allowlists]]
+description = "Valeurs déjà masquées par GitHub"
+regexTarget = "secret"
+regexes = ['''^\*+$''']
+
+[[allowlists]]
+description = "Mot de passe du conteneur Postgres de test (fullcheck.yml)"
+regexTarget = "secret"
+regexes = ['''^password$''']
