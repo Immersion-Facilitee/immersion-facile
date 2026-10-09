@@ -312,8 +312,8 @@ export const ConnectedPrivateRoutePage = ({
 
                   {selectedLoginPersona && (
                     <p className={fr.cx("fr-hint-text")}>
-                      Si votre messagerie est protégée une anti-spam, pensez à
-                      ajouter l’adresse{" "}
+                      Si votre messagerie dispose d’une protection anti-spam,
+                      pensez à ajouter l’adresse{" "}
                       <strong>{immersionFacileNoReplyEmail}</strong> à votre
                       liste de contacts autorisés.
                     </p>
