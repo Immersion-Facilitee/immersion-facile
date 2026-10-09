@@ -1988,7 +1988,6 @@ describe("PgEstablishmentAggregateRepository", () => {
                     fit_for_disabled_workers: "no",
                     score: 50,
                     customized_name: null,
-                    is_commited: null,
                     last_insee_check_date: null,
                     next_availability_date: null,
                     welcome_address_street_number_and_address: null,
@@ -2718,7 +2717,6 @@ describe("PgEstablishmentAggregateRepository", () => {
                 .withCustomizedName("my customize name")
                 .withContactMode("IN_PERSON")
                 .withFitForDisabledWorkers("yes-ft-certified")
-                .withIsCommited(true)
                 .withLastInseeCheck(new Date())
                 .withNextAvailabilityDate(new Date())
                 .withMaxContactsPerMonth(2)
@@ -2745,7 +2743,6 @@ describe("PgEstablishmentAggregateRepository", () => {
                   .withAdditionalInformation("my additionnal info")
                   .withCustomizedName("my customize name")
                   .withFitForDisabledWorkers("yes-ft-certified")
-                  .withIsCommited(true)
                   .withContactMode("EMAIL")
                   .withLastInseeCheck(new Date())
                   .withNextAvailabilityDate(new Date())
@@ -2757,7 +2754,6 @@ describe("PgEstablishmentAggregateRepository", () => {
               )
                 .withAdditionalInformation("")
                 .withCustomizedName(undefined)
-                .withIsCommited(undefined)
                 .withLastInseeCheck(undefined)
                 .withNextAvailabilityDate(undefined)
                 .withUpdatedAt(updatedAt)

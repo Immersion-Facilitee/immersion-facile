@@ -119,11 +119,6 @@ export const formEstablishmentFieldsLabels = (
     required: true,
     id: domElementIds.formEstablishment[mode].contactMode,
   },
-  isEngagedEnterprise: {
-    label:
-      "Mon entreprise est membre de la communauté « Les entreprises s'engagent »",
-    id: domElementIds.formEstablishment[mode].isEngagedEnterprise,
-  },
   fitForDisabledWorkers: {
     label:
       "Mon entreprise est prête à accueillir des personnes en situation de handicap",

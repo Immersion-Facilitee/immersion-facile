@@ -354,7 +354,6 @@ function expectEstablishmentInRepoUpdated(
     updatedAt: timeGateway.now(),
     website: formEstablishment.website,
     name: formEstablishment.businessName,
-    isCommited: formEstablishment.isEngagedEnterprise,
     customizedName: formEstablishment.businessNameCustomized,
     maxContactsPerMonth: formEstablishment.maxContactsPerMonth,
     searchableBy: formEstablishment.searchableBy,

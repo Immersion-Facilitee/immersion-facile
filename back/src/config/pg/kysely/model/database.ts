@@ -503,7 +503,6 @@ interface Establishments extends WithAcquisition {
   created_at: Timestamp;
   customized_name: string | null;
   fit_for_disabled_workers: FitForDisabledWorkers;
-  is_commited: boolean | null;
   is_open: Generated<boolean>;
   last_insee_check_date: Timestamp | null;
   legacy_address: string | null;

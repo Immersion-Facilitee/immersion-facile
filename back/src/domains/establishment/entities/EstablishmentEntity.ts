@@ -22,7 +22,6 @@ export type EstablishmentEntity = {
   createdAt: Date;
   customizedName?: string;
   fitForDisabledWorkers: FitForDisableWorkerOption;
-  isCommited?: boolean;
   isOpen: boolean;
   isMaxDiscussionsForPeriodReached: boolean;
   lastInseeCheckDate?: Date;

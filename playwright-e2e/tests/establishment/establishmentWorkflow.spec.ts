@@ -96,7 +96,6 @@ test.describe("Establishment creation and modification workflow", () => {
       ])
       .withWebsite("https://new.website.com")
       .withFitForDisabledWorkers("yes-ft-certified")
-      .withIsEngagedEnterprise(true)
       .build();
 
   test.describe("Cleanup stale establishments from previous runs", () => {

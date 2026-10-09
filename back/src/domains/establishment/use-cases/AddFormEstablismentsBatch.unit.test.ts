@@ -195,7 +195,6 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
                 )
                 .withCreatedAt(timeGateway.now())
                 .withUpdatedAt(timeGateway.now())
-                .withIsCommited(false)
                 .withName(form.businessName)
                 .withNumberOfEmployeeRange("3-5")
                 .withWebsite(form.website)
@@ -266,7 +265,6 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
             .withNafDto({ code: "", nomenclature: "" })
             .withCreatedAt(timeGateway.now())
             .withUpdatedAt(timeGateway.now())
-            .withIsCommited(false)
             .withName(existingFormEstablishment.businessName)
             .withNumberOfEmployeeRange("0")
             .withLocations([])
@@ -346,7 +344,6 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
                 .withNafDto({ code: "7112B", nomenclature: "Ref2" })
                 .withCreatedAt(timeGateway.now())
                 .withUpdatedAt(timeGateway.now())
-                .withIsCommited(false)
                 .withName(
                   formEstablishmentBatch.formEstablishments[0].businessName,
                 )
@@ -432,7 +429,6 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
                 .withNafDto({ code: "8559A", nomenclature: "Ref2" })
                 .withCreatedAt(timeGateway.now())
                 .withUpdatedAt(timeGateway.now())
-                .withIsCommited(false)
                 .withName(
                   formEstablishmentBatch.formEstablishments[1].businessName,
                 )
@@ -543,7 +539,6 @@ describe("AddFormEstablishmentsBatch Use Case", () => {
             .withNafDto({ code: "", nomenclature: "" })
             .withCreatedAt(timeGateway.now())
             .withUpdatedAt(timeGateway.now())
-            .withIsCommited(false)
             .withName(formEstablishmentBatch.formEstablishments[0].businessName)
             .withNumberOfEmployeeRange("0")
             .withLocations([])

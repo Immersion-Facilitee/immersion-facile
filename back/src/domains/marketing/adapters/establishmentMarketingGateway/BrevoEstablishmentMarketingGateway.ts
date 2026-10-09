@@ -77,10 +77,6 @@ export class BrevoEstablishmentMarketingGateway
           dto.isRegistered && dto.nextAvailabilityDate
             ? dto.nextAvailabilityDate.toISOString()
             : "",
-        ENT_LES_ENTREPRISES_SENGAGENT:
-          dto.isRegistered && dto.isCommited !== undefined
-            ? dto.isCommited
-            : "",
         ENT_MAX_CONTACTS_PER_MONTH: dto.isRegistered
           ? dto.maxContactsPerMonth
           : "",
@@ -241,7 +237,6 @@ export class BrevoEstablishmentMarketingGateway
           ? {
               isRegistered,
               departmentCode: attributes.ENT_CODE_DEPARTEMENT ?? "",
-              isCommited: attributes.ENT_LES_ENTREPRISES_SENGAGENT ?? false,
               maxContactsPerMonth: attributes.ENT_MAX_CONTACTS_PER_MONTH ?? -1,
               nafCode: attributes.ENT_CODE_NAF ?? "",
               ...(attributes.ENT_DATE_DISPO !== undefined

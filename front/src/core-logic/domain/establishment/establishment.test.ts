@@ -184,7 +184,6 @@ describe("Establishment", () => {
       });
       const editedEstablishment: FormEstablishmentDto = {
         ...formEstablishment,
-        isEngagedEnterprise: !formEstablishment.isEngagedEnterprise,
         businessAddresses: [
           {
             id: "11111111-2222-4444-1111-1111111111111111",
@@ -241,7 +240,6 @@ describe("Establishment", () => {
       });
       const editedEstablishment: FormEstablishmentDto = {
         ...formEstablishment,
-        isEngagedEnterprise: !formEstablishment.isEngagedEnterprise,
         businessAddresses: [
           {
             id: "11111111-2222-4444-1111-111111111111",

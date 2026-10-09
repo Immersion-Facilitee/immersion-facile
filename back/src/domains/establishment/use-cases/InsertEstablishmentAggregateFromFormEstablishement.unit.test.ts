@@ -211,7 +211,6 @@ describe("InsertEstablishmentAggregateFromForm", () => {
                 .withNafDto(expectedNafDto)
                 .withCreatedAt(timeGateway.now())
                 .withUpdatedAt(timeGateway.now())
-                .withIsCommited(false)
                 .withName(formEstablishment.businessName)
                 .withNumberOfEmployeeRange(numberEmployeesRanges)
                 .withLocations([
@@ -321,7 +320,6 @@ describe("InsertEstablishmentAggregateFromForm", () => {
                 .withNafDto(expectedNafDto)
                 .withCreatedAt(timeGateway.now())
                 .withUpdatedAt(timeGateway.now())
-                .withIsCommited(false)
                 .withName(formEstablishment.businessName)
                 .withNumberOfEmployeeRange(numberEmployeesRanges)
                 .withLocations([
@@ -418,7 +416,6 @@ describe("InsertEstablishmentAggregateFromForm", () => {
                 .withScore(0)
                 .withCreatedAt(timeGateway.now())
                 .withUpdatedAt(timeGateway.now())
-                .withIsCommited(false)
                 .withContactMode(formEstablishment.contactMode)
                 .withWelcomeAddress(defaultAddress.addressAndPosition)
                 .withNafDto(expectedNafDto)
@@ -710,7 +707,6 @@ describe("InsertEstablishmentAggregateFromForm", () => {
           )
           .withCreatedAt(timeGateway.now())
           .withUpdatedAt(timeGateway.now())
-          .withIsCommited(validFormEstablishmentWithSiret.isEngagedEnterprise)
           .withAdditionalInformation(
             validFormEstablishmentWithSiret.additionalInformation,
           )
@@ -819,7 +815,6 @@ describe("InsertEstablishmentAggregateFromForm", () => {
             )
             .withCreatedAt(timeGateway.now())
             .withUpdatedAt(timeGateway.now())
-            .withIsCommited(formEstablishment.isEngagedEnterprise)
             .withAdditionalInformation(formEstablishment.additionalInformation)
             .withScore(0)
             .build(),
@@ -952,7 +947,6 @@ describe("InsertEstablishmentAggregateFromForm", () => {
                 )
                 .withCreatedAt(timeGateway.now())
                 .withUpdatedAt(timeGateway.now())
-                .withIsCommited(form.isEngagedEnterprise)
                 .withAdditionalInformation(form.additionalInformation)
                 .withScore(0)
                 .build(),

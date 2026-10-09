@@ -202,12 +202,6 @@ const step3 = async (
     .click();
 
   await page.click(
-    `[for=${domElementIds.formEstablishment.edit.isEngagedEnterprise}-${
-      updatedEstablishment.isEngagedEnterprise ? "1" : "0"
-    }]`,
-  );
-
-  await page.click(
     `[for=${domElementIds.formEstablishment.edit.fitForDisabledWorkers}-${
       updatedEstablishment.fitForDisabledWorkers ? "1" : "0"
     }]`,

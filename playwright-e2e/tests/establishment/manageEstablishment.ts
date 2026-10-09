@@ -176,14 +176,6 @@ const checkEstablishment = async (
   ).toBeChecked();
 
   await expect(
-    await page.locator(
-      `#${domElementIds.formEstablishment.admin.isEngagedEnterprise}-${
-        updatedEstablishmentInfos.isEngagedEnterprise ? "1" : "0"
-      }`,
-    ),
-  ).toBeChecked();
-
-  await expect(
     page.locator(`#${domElementIds.formEstablishment.admin.website}`),
   ).toHaveValue(website);
 

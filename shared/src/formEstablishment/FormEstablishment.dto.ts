@@ -139,7 +139,6 @@ export type CommonFormEstablishmentDto = {
   businessName: BusinessName;
   businessNameCustomized?: BusinessNameCustomized;
   fitForDisabledWorkers: FitForDisableWorkerOption;
-  isEngagedEnterprise?: boolean;
   maxContactsPerMonth: number;
   naf?: NafDto;
   nextAvailabilityDate?: DateTimeIsoString;
@@ -180,7 +179,6 @@ export type EstablishmentCSVRow = {
   naf_code: string;
   offers_appellation_code: string;
   contactMode: ContactMode;
-  isEngagedEnterprise: CSVBoolean;
   maxContactPerMonth?: CSVOptionalString;
   website: CSVOptionalString;
   additionalInformation: CSVOptionalString;

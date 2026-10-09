@@ -68,7 +68,6 @@ const makeFormEstablishement = async (
           rawAddress: addressDtoToString(location.address),
         }),
       ),
-      isEngagedEnterprise: establishmentAggregate.establishment.isCommited,
       fitForDisabledWorkers:
         establishmentAggregate.establishment.fitForDisabledWorkers,
       naf: establishmentAggregate.establishment?.nafDto,

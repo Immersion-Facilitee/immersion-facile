@@ -49,7 +49,6 @@ const validEstablishmentEntityV2: EstablishmentEntity = {
   name: "Company inside repository",
   locations: [defaultLocation],
   customizedName: undefined,
-  isCommited: undefined,
   createdAt: defaultCreatedAt,
   sourceProvider: "immersion-facile",
   voluntaryToImmersion: true,
@@ -107,13 +106,6 @@ export class EstablishmentEntityBuilder
     return new EstablishmentEntityBuilder({
       ...this.entity,
       fitForDisabledWorkers,
-    });
-  }
-
-  public withIsCommited(isCommited?: boolean) {
-    return new EstablishmentEntityBuilder({
-      ...this.entity,
-      isCommited,
     });
   }
 

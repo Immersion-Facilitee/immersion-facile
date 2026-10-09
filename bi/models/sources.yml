@@ -467,8 +467,6 @@ sources:
             description: "Origin of the data"
           - name: number_employees
             description: "Number of employees"
-          - name: is_commited
-            description: "Whether committed to hiring"
           - name: fit_for_disabled_workers
             description: "Accessibility for disabled workers"
           - name: website

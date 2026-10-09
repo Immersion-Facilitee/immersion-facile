@@ -114,7 +114,6 @@ export const makeEstablishmentAggregate = async ({
       createdAt: existingEntity ? existingEntity.createdAt : timeGateway.now(),
       customizedName: formEstablishment.businessNameCustomized,
       fitForDisabledWorkers: formEstablishment.fitForDisabledWorkers,
-      isCommited: formEstablishment.isEngagedEnterprise,
       isOpen: true,
       isMaxDiscussionsForPeriodReached:
         formEstablishment.maxContactsPerMonth <= noContactPerMonth,

@@ -24,7 +24,6 @@ select
     is_open,
     source_provider,
     number_employees,
-    is_commited,
     fit_for_disabled_workers,
     website,
     additional_information,

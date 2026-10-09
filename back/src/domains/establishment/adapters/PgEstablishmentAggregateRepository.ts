@@ -441,7 +441,6 @@ export class PgEstablishmentAggregateRepository
         additional_information: establishment.additionalInformation ?? null,
         customized_name: establishment.customizedName ?? null,
         fit_for_disabled_workers: establishment.fitForDisabledWorkers ?? null,
-        is_commited: establishment.isCommited ?? null,
         is_open: establishment.isOpen,
         is_max_discussions_for_period_reached:
           establishment.isMaxDiscussionsForPeriodReached,
@@ -507,7 +506,6 @@ export class PgEstablishmentAggregateRepository
         is_open: aggregate.establishment.isOpen,
         is_max_discussions_for_period_reached:
           aggregate.establishment.isMaxDiscussionsForPeriodReached,
-        is_commited: aggregate.establishment.isCommited,
         fit_for_disabled_workers: aggregate.establishment.fitForDisabledWorkers,
         max_contacts_per_month: aggregate.establishment.maxContactsPerMonth,
         last_insee_check_date: aggregate.establishment.lastInseeCheckDate,
@@ -868,7 +866,6 @@ const establishmentByFiltersQueryBuilder = (db: KyselyDb) =>
             isMaxDiscussionsForPeriodReached: ref(
               "e.is_max_discussions_for_period_reached",
             ),
-            isCommited: ref("e.is_commited"),
             fitForDisabledWorkers: ref("e.fit_for_disabled_workers"),
             maxContactsPerMonth: ref("e.max_contacts_per_month"),
             nextAvailabilityDate: sql<string>`date_to_iso
