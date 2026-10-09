@@ -460,14 +460,10 @@ export type EmailParamsByEmailType = {
   NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE: {
     agencyLogoUrl: AbsoluteUrl | undefined;
     beneficiaryName: string;
-    beneficiaryRepresentativeName?: string;
-    beneficiaryCurrentEmployerName?: string;
-    businessName: string;
     conventionId: ConventionId;
-    establishmentRepresentativeName: string;
-    establishmentTutorName: string;
     internshipKind: InternshipKind;
     conventionSignatureLink: AbsoluteUrl;
+    signatoryEmail: string;
     signatoryName: string;
     renewed?: Renewed;
   };

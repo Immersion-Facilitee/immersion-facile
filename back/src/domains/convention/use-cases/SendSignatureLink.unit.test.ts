@@ -513,42 +513,15 @@ describe("Send signature link", () => {
                 lastname:
                   convention.signatories.establishmentRepresentative.lastName,
               }),
+              signatoryEmail:
+                convention.signatories.establishmentRepresentative.email,
               beneficiaryName: getFormattedFirstnameAndLastname({
                 firstname: convention.signatories.beneficiary.firstName,
                 lastname: convention.signatories.beneficiary.lastName,
               }),
-              establishmentTutorName: getFormattedFirstnameAndLastname({
-                firstname: convention.establishmentTutor.firstName,
-                lastname: convention.establishmentTutor.lastName,
-              }),
-              establishmentRepresentativeName: getFormattedFirstnameAndLastname(
-                {
-                  firstname:
-                    convention.signatories.establishmentRepresentative
-                      .firstName,
-                  lastname:
-                    convention.signatories.establishmentRepresentative.lastName,
-                },
-              ),
-              beneficiaryRepresentativeName:
-                convention.signatories.beneficiaryRepresentative &&
-                getFormattedFirstnameAndLastname({
-                  firstname:
-                    convention.signatories.beneficiaryRepresentative.firstName,
-                  lastname:
-                    convention.signatories.beneficiaryRepresentative.lastName,
-                }),
-              beneficiaryCurrentEmployerName:
-                convention.signatories.beneficiaryCurrentEmployer &&
-                getFormattedFirstnameAndLastname({
-                  firstname:
-                    convention.signatories.beneficiaryCurrentEmployer.firstName,
-                  lastname:
-                    convention.signatories.beneficiaryCurrentEmployer.lastName,
-                }),
               conventionSignatureLink: makeShortLinkUrl(config, "shortLink"),
-              businessName: convention.businessName,
               agencyLogoUrl: undefined,
+              renewed: convention.renewed,
             },
           },
         },
@@ -1261,43 +1234,11 @@ describe("Send signature link", () => {
                     firstname: recipient.firstName,
                     lastname: recipient.lastName,
                   }),
+                  signatoryEmail: recipient.email,
                   beneficiaryName: getFormattedFirstnameAndLastname({
                     firstname: convention.signatories.beneficiary.firstName,
                     lastname: convention.signatories.beneficiary.lastName,
                   }),
-                  establishmentTutorName: getFormattedFirstnameAndLastname({
-                    firstname: convention.establishmentTutor.firstName,
-                    lastname: convention.establishmentTutor.lastName,
-                  }),
-                  establishmentRepresentativeName:
-                    getFormattedFirstnameAndLastname({
-                      firstname:
-                        convention.signatories.establishmentRepresentative
-                          .firstName,
-                      lastname:
-                        convention.signatories.establishmentRepresentative
-                          .lastName,
-                    }),
-                  beneficiaryRepresentativeName:
-                    convention.signatories.beneficiaryRepresentative &&
-                    getFormattedFirstnameAndLastname({
-                      firstname:
-                        convention.signatories.beneficiaryRepresentative
-                          .firstName,
-                      lastname:
-                        convention.signatories.beneficiaryRepresentative
-                          .lastName,
-                    }),
-                  beneficiaryCurrentEmployerName:
-                    convention.signatories.beneficiaryCurrentEmployer &&
-                    getFormattedFirstnameAndLastname({
-                      firstname:
-                        convention.signatories.beneficiaryCurrentEmployer
-                          .firstName,
-                      lastname:
-                        convention.signatories.beneficiaryCurrentEmployer
-                          .lastName,
-                    }),
                   conventionSignatureLink: makeRouteAbsoluteUrl({
                     route: frontRoutes.manageConventionConnectedUser({
                       conventionId: convention.id,
@@ -1306,8 +1247,8 @@ describe("Send signature link", () => {
                     }),
                     baseUrl: config.immersionFacileBaseUrl,
                   }),
-                  businessName: convention.businessName,
                   agencyLogoUrl: undefined,
+                  renewed: convention.renewed,
                 },
               },
             },

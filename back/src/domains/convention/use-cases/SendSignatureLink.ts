@@ -9,7 +9,6 @@ import {
   errors,
   formatHoursCooldownTimeRemaining,
   frontRoutes,
-  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   isWithinHoursCooldown,
   loginPersonaByConventionRole,
@@ -250,34 +249,11 @@ const sendEmail = async ({
           firstname: signatory.firstName,
           lastname: signatory.lastName,
         }),
+        signatoryEmail: signatory.email,
         beneficiaryName: getFormattedFirstnameAndLastname({
           firstname: convention.signatories.beneficiary.firstName,
           lastname: convention.signatories.beneficiary.lastName,
         }),
-        establishmentTutorName: getFormattedFirstnameAndLastname({
-          firstname: convention.establishmentTutor.firstName,
-          lastname: convention.establishmentTutor.lastName,
-        }),
-        establishmentRepresentativeName: getFormattedFirstnameAndLastname({
-          firstname:
-            convention.signatories.establishmentRepresentative.firstName,
-          lastname: convention.signatories.establishmentRepresentative.lastName,
-        }),
-        beneficiaryRepresentativeName:
-          convention.signatories.beneficiaryRepresentative &&
-          getFormattedFirstnameAndLastname({
-            firstname:
-              convention.signatories.beneficiaryRepresentative.firstName,
-            lastname: convention.signatories.beneficiaryRepresentative.lastName,
-          }),
-        beneficiaryCurrentEmployerName:
-          convention.signatories.beneficiaryCurrentEmployer &&
-          getFormattedFirstnameAndLastname({
-            firstname:
-              convention.signatories.beneficiaryCurrentEmployer.firstName,
-            lastname:
-              convention.signatories.beneficiaryCurrentEmployer.lastName,
-          }),
         conventionSignatureLink: makeRouteAbsoluteUrl({
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
@@ -286,8 +262,8 @@ const sendEmail = async ({
           }),
           baseUrl: config.immersionFacileBaseUrl,
         }),
-        businessName: getDisplayedBusinessName(convention),
         agencyLogoUrl: undefined,
+        renewed: convention.renewed,
       },
     },
   });

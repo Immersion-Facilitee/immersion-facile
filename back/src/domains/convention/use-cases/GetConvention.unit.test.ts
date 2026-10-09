@@ -619,12 +619,10 @@ describe("Get Convention", () => {
             params: {
               agencyLogoUrl: undefined,
               beneficiaryName: "Beneficiary",
-              businessName: convention.businessName,
               conventionId: convention.id,
-              establishmentRepresentativeName: "Establishment Rep",
-              establishmentTutorName: "Tutor",
               internshipKind: convention.internshipKind,
               conventionSignatureLink: "https://short.link",
+              signatoryEmail: convention.signatories.beneficiary.email,
               signatoryName: "Signatory",
             },
           },

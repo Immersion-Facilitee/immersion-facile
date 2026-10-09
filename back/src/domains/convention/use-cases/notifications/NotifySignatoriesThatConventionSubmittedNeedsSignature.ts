@@ -5,7 +5,6 @@ import {
   errors,
   filterNotFalsy,
   frontRoutes,
-  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   loginPersonaByConventionRole,
   makeRouteAbsoluteUrl,
@@ -74,60 +73,30 @@ const makeEmail = (
   convention: ConventionDto,
   agency: AgencyDto,
   config: AppConfig,
-): TemplatedEmail => {
-  const {
-    signatories: {
-      beneficiary,
-      beneficiaryRepresentative,
-      establishmentRepresentative,
-      beneficiaryCurrentEmployer,
-    },
-  } = convention;
-
-  return {
-    kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
-    recipients: [signatory.email],
-    params: {
-      conventionId: convention.id,
-      internshipKind: convention.internshipKind,
-      signatoryName: getFormattedFirstnameAndLastname({
-        firstname: signatory.firstName,
-        lastname: signatory.lastName,
+): TemplatedEmail => ({
+  kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
+  recipients: [signatory.email],
+  params: {
+    conventionId: convention.id,
+    internshipKind: convention.internshipKind,
+    signatoryName: getFormattedFirstnameAndLastname({
+      firstname: signatory.firstName,
+      lastname: signatory.lastName,
+    }),
+    signatoryEmail: signatory.email,
+    beneficiaryName: getFormattedFirstnameAndLastname({
+      firstname: convention.signatories.beneficiary.firstName,
+      lastname: convention.signatories.beneficiary.lastName,
+    }),
+    conventionSignatureLink: makeRouteAbsoluteUrl({
+      route: frontRoutes.manageConventionConnectedUser({
+        conventionId: convention.id,
+        loginPersona: loginPersonaByConventionRole(signatory.role),
+        at_campaign: "email-signature-link",
       }),
-      beneficiaryName: getFormattedFirstnameAndLastname({
-        firstname: beneficiary.firstName,
-        lastname: beneficiary.lastName,
-      }),
-      establishmentTutorName: getFormattedFirstnameAndLastname({
-        firstname: convention.establishmentTutor.firstName,
-        lastname: convention.establishmentTutor.lastName,
-      }),
-      establishmentRepresentativeName: getFormattedFirstnameAndLastname({
-        firstname: establishmentRepresentative.firstName,
-        lastname: establishmentRepresentative.lastName,
-      }),
-      beneficiaryRepresentativeName:
-        beneficiaryRepresentative &&
-        getFormattedFirstnameAndLastname({
-          firstname: beneficiaryRepresentative.firstName,
-          lastname: beneficiaryRepresentative.lastName,
-        }),
-      beneficiaryCurrentEmployerName:
-        beneficiaryCurrentEmployer &&
-        getFormattedFirstnameAndLastname({
-          lastname: beneficiaryCurrentEmployer.lastName,
-          firstname: beneficiaryCurrentEmployer.firstName,
-        }),
-      conventionSignatureLink: makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: convention.id,
-          loginPersona: loginPersonaByConventionRole(signatory.role),
-          at_campaign: "email-signature-link",
-        }),
-        baseUrl: config.immersionFacileBaseUrl,
-      }),
-      businessName: getDisplayedBusinessName(convention),
-      agencyLogoUrl: agency.logoUrl ?? undefined,
-    },
-  };
-};
+      baseUrl: config.immersionFacileBaseUrl,
+    }),
+    agencyLogoUrl: agency.logoUrl ?? undefined,
+    renewed: convention.renewed,
+  },
+});

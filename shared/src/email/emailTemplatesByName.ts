@@ -2496,78 +2496,62 @@ Tél : ${beneficiaryPhone}`,
       ],
       createEmailVariables: ({
         agencyLogoUrl,
-        beneficiaryCurrentEmployerName,
         beneficiaryName,
-        beneficiaryRepresentativeName,
-        businessName,
         conventionId,
-        establishmentRepresentativeName,
-        establishmentTutorName,
         internshipKind,
         conventionSignatureLink,
+        signatoryEmail,
         signatoryName,
         renewed,
-      }) => ({
-        subject:
-          internshipKind === "immersion"
-            ? `Pour action : ${
-                renewed ? "Immersion en entreprise prolongée," : ""
-              } signez votre demande de convention`
-            : `Pour action : ${
-                renewed ? "Mini-stage en entreprise prolongé," : ""
-              } signez votre demande de mini stage`,
-        greetings: greetingsWithConventionId(conventionId, signatoryName),
-        content: `Une demande de convention ${
-          internshipKind === "immersion" ? "d'immersion" : "de mini stage"
-        } vient d'être enregistrée. Vous devez maintenant la confirmer.
-          ${
+      }) => {
+        const conventionKindLabel =
+          internshipKind === "immersion" ? "d'immersion" : "de mini stage";
+        return {
+          subject:
+            internshipKind === "immersion"
+              ? "Signez votre convention d'immersion sur Immersion Facilitée"
+              : "Signez votre convention de mini stage sur Immersion Facilitée",
+          greetings: greetingsWithConventionId(conventionId, signatoryName),
+          content: `${
             renewed
-              ? `\nCette convention a été renouvelée par le conseiller depuis la convention numéro : ${renewed.from}.
-          La raison est la suivante : ${renewed.justification}.\n`
-              : ""
+              ? `<strong>Un renouvellement de la convention ${conventionKindLabel} n°${renewed.from} pour ${beneficiaryName} est prêt à être signé.</strong>`
+              : `<strong>Une demande de convention ${conventionKindLabel} pour ${beneficiaryName} est prête à être signée.</strong>`
           }
-          Pour rappel, cette demande concerne : 
-             - Le bénéficiaire ${beneficiaryName}${
-               beneficiaryRepresentativeName
-                 ? `\n- Le représentant légal du bénéficiaire ${beneficiaryRepresentativeName}`
-                 : ""
-}${
-               beneficiaryCurrentEmployerName
-                 ? `\n- L'employeur actuel du bénéficiaire ${beneficiaryCurrentEmployerName}`
-                 : ""
-}
-             - L'entreprise ${businessName} représentée par ${establishmentRepresentativeName}
-             - Le tuteur dans l'entreprise ${establishmentTutorName}
-          
-            <strong>Votre signature est obligatoire</strong> pour permettre à votre ${
-              internshipKind === "immersion"
-                ? "conseiller"
-                : "conseiller de la Chambre consulaire ayant émis la convention"
-            } de valider la convention. Merci !
-          
-          <strong>Ouvrez la demande via le bouton ci-dessous puis vérifiez les informations :</strong>
-          - Si les informations sont correctes, cliquez sur “Signer la convention”.
-          - Si les informations ne sont pas correctes, cliquez sur le bouton "Modifier une autre information".`,
-        buttons: [{ url: conventionSignatureLink, label: "Ouvrir ma demande" }],
-        highlight: {
-          content: `Attention, ne démarrez pas votre ${
-            internshipKind === "immersion" ? "immersion" : "mini stage"
-          } tant que vous n'avez pas reçu cette validation ! Vous n'auriez pas de couverture en cas d'accident.`,
-        },
-        subContent: `La décision de votre ${
-          internshipKind === "immersion"
-            ? "conseiller"
-            : "conseiller de la Chambre consulaire ayant émis la convention"
-        } vous sera transmise par mail.
-  
+
+          🖊️ <strong>Comment signer la demande ${
+            renewed ? "de renouvellement" : "de convention"
+          } ?</strong>
+
+          1. Cliquez sur le bouton ci-dessous.
+          2. Connectez-vous à Immersion Facilitée avec l'adresse email <strong>${signatoryEmail}</strong>.
+          3. Une fois connecté, vérifiez les informations puis cliquez sur <strong>«Signer la convention»</strong>.
+          4. Si les informations ne sont pas correctes, cliquez sur le bouton <strong>«Modifier une autre information»</strong>.`,
+          buttons: [
+            {
+              url: conventionSignatureLink,
+              label: "Se connecter et signer la convention",
+            },
+          ],
+          highlight: {
+            content: `⚠️ Attention, ne démarrez pas ${
+              internshipKind === "immersion" ? "l'immersion" : "le mini-stage"
+            } avant d'avoir reçu la validation du conseiller. Sans cette validation, vous ne bénéficiez pas de couverture en cas d'accident.`,
+          },
+          subContent: `Vous recevrez un email lorsque la demande aura été traitée par ${
+            internshipKind === "immersion"
+              ? "le conseiller"
+              : "le conseiller de la Chambre consulaire ayant émis la convention"
+          }.
+
           ${defaultSignature(internshipKind)}
         `,
-        attachmentUrls:
-          internshipKind === "immersion"
-            ? [emailAttachements.memoBeneficiary]
-            : undefined,
-        agencyLogoUrl,
-      }),
+          attachmentUrls:
+            internshipKind === "immersion"
+              ? [emailAttachements.memoBeneficiary]
+              : undefined,
+          agencyLogoUrl,
+        };
+      },
     },
     NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE_AFTER_MODIFICATION: {
       niceName: "Convention - Demande de signature après modification",

@@ -99,12 +99,10 @@ describe("conventionDtosToConventionReadDtos", () => {
       params: {
         agencyLogoUrl: undefined,
         beneficiaryName: "Beneficiary",
-        businessName: convention.businessName,
         conventionId: convention.id,
-        establishmentRepresentativeName: "Establishment Rep",
-        establishmentTutorName: "Tutor",
         internshipKind: convention.internshipKind,
         conventionSignatureLink: "https://signature.link",
+        signatoryEmail: recipientEmail,
         signatoryName: "Signatory",
       },
     },
