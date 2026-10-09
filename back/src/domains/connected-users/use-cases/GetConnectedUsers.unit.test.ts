@@ -81,33 +81,18 @@ describe("GetConnectedUsers", () => {
 
   const agency1 = new AgencyDtoBuilder().withId("agency-1").build();
   const agency2 = new AgencyDtoBuilder().withId("agency-2").build();
-  const agencyWithRefersTo = new AgencyDtoBuilder()
-    .withId("agency-with-refers-to")
-    .withRefersToAgencyInfo({
-      refersToAgencyId: agency2.id,
-      refersToAgencyName: agency2.name,
-      refersToAgencyContactEmail: agency2.contactEmail,
-    })
-    .build();
+
   const agencyAdminUserBuilder = new ConnectedUserBuilder()
     .withId("agency-admin")
     .withFirstName("Jack")
     .withLastName("The agency Admin")
-    .withEmail("jack.admin@mail.com")
+    .withEmail("jack.agency.admin@mail.com")
     .withCreatedAt(new Date())
     .withProConnectInfos({
-      externalId: "jack-admin-external-id",
+      externalId: "jack-agency-admin-external-id",
       siret: fakeProConnectSiret,
-    })
-    .withAgencyRights([
-      {
-        agency: toAgencyDtoForAgencyUsersAndAdmins(agencyWithRefersTo, []),
-        roles: ["agency-admin"],
-        isNotifiedByEmail: true,
-      },
-    ]);
+    });
 
-  const agencyAdminUser = agencyAdminUserBuilder.buildUser();
   const agencyAdmin = agencyAdminUserBuilder.build();
 
   const agency1WithRights = toAgencyWithRights(agency1, {
@@ -129,13 +114,6 @@ describe("GetConnectedUsers", () => {
     },
   });
 
-  const agencyWithRefersToWithRights = toAgencyWithRights(agencyWithRefersTo, {
-    [agencyAdminUser.id]: {
-      roles: ["agency-admin"],
-      isNotifiedByEmail: true,
-    },
-  });
-
   let getConnectedUsers: GetConnectedUsers;
   let uow: InMemoryUnitOfWork;
 
@@ -152,118 +130,12 @@ describe("GetConnectedUsers", () => {
 
       await expectPromiseToFailWithError(
         getConnectedUsers.execute(
-          { agencyRole: "to-review" },
+          { agencyRole: "to-review", agencyIds: [agency2.id] },
           connectedNotBackOffice,
         ),
         errors.user.forbidden({ userId: notBackOfficeUser.id }),
       );
     });
-
-    it("throws Forbidden if filter has agency id and token payload is not backoffice token neither agency Admin ", async () => {
-      uow.userRepository.users = [connectedPaulUser];
-
-      await expectPromiseToFailWithError(
-        getConnectedUsers.execute(
-          { agencyIds: [agency2.id] },
-          connectedPaulUser,
-        ),
-        errors.user.forbidden({ userId: connectedPaulUser.id }),
-      );
-    });
-
-    it("throws Forbidden if filter has agencyRole and agencyIds and user is not backoffice nor agency admin", async () => {
-      uow.userRepository.users = [connectedPaulUser];
-
-      await expectPromiseToFailWithError(
-        getConnectedUsers.execute(
-          { agencyRole: "to-review", agencyIds: [agency1.id] },
-          connectedPaulUser,
-        ),
-        errors.user.forbidden({ userId: connectedPaulUser.id }),
-      );
-    });
-
-    it("throws Forbidden if agency admin requests an agency he is not admin on", async () => {
-      uow.userRepository.users = [agencyAdminUser];
-
-      await expectPromiseToFailWithError(
-        getConnectedUsers.execute(
-          {
-            agencyRole: "to-review",
-            agencyIds: [agency1.id, agencyWithRefersToWithRights.id],
-          },
-          agencyAdmin,
-        ),
-        errors.user.forbidden({ userId: agencyAdminUser.id }),
-      );
-    });
-
-    it("throws BadRequest if agencyRole is to-review and an agency has status needsReview", async () => {
-      const agencyNeedsReview = new AgencyDtoBuilder(agencyWithRefersTo)
-        .withStatus("needsReview")
-        .build();
-
-      const agencyAdminOnNeedsReview = new ConnectedUserBuilder(agencyAdmin)
-        .withAgencyRights([
-          {
-            agency: toAgencyDtoForAgencyUsersAndAdmins(agencyNeedsReview, []),
-            roles: ["agency-admin"],
-            isNotifiedByEmail: true,
-          },
-        ])
-        .build();
-
-      uow.userRepository.users = [agencyAdminOnNeedsReview];
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agencyNeedsReview, {
-          [agencyAdminOnNeedsReview.id]: {
-            roles: ["agency-admin"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
-
-      await expectPromiseToFailWithError(
-        getConnectedUsers.execute(
-          {
-            agencyRole: "to-review",
-            agencyIds: [agencyNeedsReview.id],
-          },
-          agencyAdminOnNeedsReview,
-        ),
-        errors.agency.cannotGetToReviewUsersWhenNeedsReview(),
-      );
-    });
-
-    it.each(closedOrRejectedAgencyStatuses)(
-      "throws Forbidden if current user is not backoffice admin and agency to get by id is %s",
-      async (status) => {
-        const agencyWithStatus = new AgencyDtoBuilder(agency1)
-          .withStatus(status)
-          .withStatusJustification("some reason")
-          .build();
-
-        uow.userRepository.users = [agencyAdmin];
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agencyWithStatus, {
-            [agencyAdmin.id]: {
-              isNotifiedByEmail: true,
-              roles: ["validator", "agency-admin"],
-            },
-          }),
-        ];
-
-        await expectPromiseToFailWithError(
-          getConnectedUsers.execute(
-            {
-              agencyIds: [agency1.id],
-            },
-            agencyAdmin,
-          ),
-          errors.user.forbidden({ userId: agencyAdminUser.id }),
-        );
-      },
-    );
   });
 
   describe("right paths", () => {
@@ -333,41 +205,6 @@ describe("GetConnectedUsers", () => {
           ]);
         });
 
-        it("gets the users by agencyId when agency admin request it", async () => {
-          uow.userRepository.users = [
-            johnUser,
-            paulUser,
-            backOfficeUser,
-            agencyAdminUser,
-          ];
-          uow.agencyRepository.agencies = [
-            agency1WithRights,
-            agency2WithRights,
-            agencyWithRefersToWithRights,
-          ];
-
-          const users = await getConnectedUsers.execute(
-            { agencyIds: [agencyWithRefersToWithRights.id] },
-            agencyAdmin,
-          );
-
-          expectToEqual(users, [
-            {
-              ...agencyAdmin,
-              agencyRights: [
-                {
-                  agency: toAgencyDtoForAgencyUsersAndAdmins(
-                    agencyWithRefersTo,
-                    [agencyAdminUser.email],
-                  ),
-                  isNotifiedByEmail: true,
-                  roles: ["agency-admin"],
-                },
-              ],
-            },
-          ]);
-        });
-
         it.each(closedOrRejectedAgencyStatuses)(
           "when current user is backoffice admin and agency is %s",
           async (status) => {
@@ -411,57 +248,33 @@ describe("GetConnectedUsers", () => {
       });
 
       describe("byAgencyRoleAndAgencyIds", () => {
-        it.each([
-          {
-            currentUserLabel: "backoffice admin",
-            currentUser: connectedBackOffice,
-          },
-          {
-            currentUserLabel: "agency admin",
-            currentUser: agencyAdmin,
-          },
-        ])(
-          "gets the users by agencyRole and agencyIds when $currentUserLabel requests it",
-          async ({ currentUser }) => {
-            uow.userRepository.users = [
-              johnUser,
-              paulUser,
-              backOfficeUser,
-              agencyAdminUser,
-            ];
-            uow.agencyRepository.agencies = [
-              toAgencyWithRights(agencyWithRefersTo, {
-                [johnUser.id]: toReviewAndNotifiedUserRight,
-                [agencyAdminUser.id]: {
-                  roles: ["agency-admin"],
+        it("gets the users by agencyRole and agencyIds when backoffice admin requests it", async () => {
+          uow.userRepository.users = [johnUser, paulUser, backOfficeUser];
+          uow.agencyRepository.agencies = [
+            toAgencyWithRights(agency1, {
+              [johnUser.id]: toReviewAndNotifiedUserRight,
+            }),
+            agency2WithRights,
+          ];
+
+          const users = await getConnectedUsers.execute(
+            { agencyRole: "to-review", agencyIds: [agency1.id] },
+            connectedBackOffice,
+          );
+
+          expectToEqual(users, [
+            {
+              ...connectedJohnUser,
+              agencyRights: [
+                {
+                  agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
                   isNotifiedByEmail: true,
+                  roles: ["to-review"],
                 },
-              }),
-              agency2WithRights,
-            ];
-
-            const users = await getConnectedUsers.execute(
-              { agencyRole: "to-review", agencyIds: [agencyWithRefersTo.id] },
-              currentUser,
-            );
-
-            expectToEqual(users, [
-              {
-                ...connectedJohnUser,
-                agencyRights: [
-                  {
-                    agency: toAgencyDtoForAgencyUsersAndAdmins(
-                      agencyWithRefersTo,
-                      [agencyAdminUser.email],
-                    ),
-                    isNotifiedByEmail: true,
-                    roles: ["to-review"],
-                  },
-                ],
-              },
-            ]);
-          },
-        );
+              ],
+            },
+          ]);
+        });
       });
     });
 

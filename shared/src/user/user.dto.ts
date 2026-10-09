@@ -1,4 +1,6 @@
 import type {
+  AgencyId,
+  AgencyRight,
   WithAgencyDashboards,
   WithAgencyRights,
 } from "../agency/agency.dto";
@@ -9,6 +11,7 @@ import type {
   WithEstablishmentDashboards,
   WithUserEstablishmentRightDetails,
 } from "../establishment/establishment.dto";
+import type { AgencyRole } from "../role/role.dto";
 import type { ConnectedUserJwt } from "../tokens/jwt.dto";
 import type { Flavor } from "../typeFlavors";
 import type { DateTimeIsoString } from "../utils/date";
@@ -60,6 +63,19 @@ export type UserWithRights = UserWithAgencyRights &
   WithIsBackOfficeAdmin;
 
 export type ConnectedUser = UserWithRights & WithDashboards;
+
+export type AgencyRightForListing = Omit<AgencyRight, "agency"> & {
+  agencyId: AgencyId;
+};
+
+export type AgencyUserForListing = Omit<User, "proConnect"> & {
+  agencyRights: AgencyRightForListing[];
+};
+
+export type GetAgencyUsersFilters = {
+  agencyIds: AgencyId[];
+  agencyRole?: AgencyRole;
+};
 
 export type ConnectedUserQueryParams = {
   token: ConnectedUserJwt;

@@ -28,6 +28,17 @@ export const createAgenciesRouter = (deps: AppDependencies) => {
       ),
   );
 
+  sharedAgencyRouter.getAgencyUsers(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.getAgencyUsers.execute(
+          req.query,
+          getGenericAuthOrThrow(req.payloads?.currentUser),
+        ),
+      ),
+  );
+
   sharedAgencyRouter.getAgencyById(
     deps.connectedUserAuthMiddleware,
     (req, res) =>

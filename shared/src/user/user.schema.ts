@@ -3,6 +3,8 @@ import { absoluteUrlSchema } from "../AbsoluteUrl";
 import type { AgencyRight, WithAgencyDashboards } from "../agency/agency.dto";
 import {
   agencyDtoForAgencyUsersAndAdminsSchema,
+  agencyIdSchema,
+  agencyIdsSchema,
   agencyRoleSchema,
 } from "../agency/agency.schema";
 import { proConnectInfoSchema } from "../auth/proConnect/proConnect.schema";
@@ -27,8 +29,11 @@ import {
   type ZodSchemaWithInputMatchingOutput,
 } from "../zodUtils";
 import type {
+  AgencyRightForListing,
+  AgencyUserForListing,
   ConnectedUser,
   Firstname,
+  GetAgencyUsersFilters,
   Lastname,
   User,
   UserId,
@@ -56,13 +61,17 @@ export const withPreventToDeleteSchema: ZodSchemaWithInputMatchingOutput<WithPre
     preventToDelete: z.boolean(),
   });
 
-const userSchema: ZodSchemaWithInputMatchingOutput<User> = z.object({
+const commonUserShape = {
   id: userIdSchema,
   email: emailSchema,
   createdAt: dateTimeIsoStringSchema,
   firstName: zStringCanBeEmpty,
   lastName: zStringCanBeEmpty,
   preventToDelete: z.boolean(),
+};
+
+const userSchema: ZodSchemaWithInputMatchingOutput<User> = z.object({
+  ...commonUserShape,
   proConnect: proConnectInfoSchema.or(z.null()),
 });
 
@@ -96,6 +105,26 @@ const agencyRightSchema: ZodSchemaWithInputMatchingOutput<AgencyRight> =
     agency: agencyDtoForAgencyUsersAndAdminsSchema,
     roles: z.array(agencyRoleSchema),
     isNotifiedByEmail: z.boolean(),
+  });
+
+const agencyRightForListingSchema: ZodSchemaWithInputMatchingOutput<AgencyRightForListing> =
+  z.object({
+    agencyId: agencyIdSchema,
+    roles: z.array(agencyRoleSchema),
+    isNotifiedByEmail: z.boolean(),
+  });
+
+export const agencyUserForListingSchema: ZodSchemaWithInputMatchingOutput<AgencyUserForListing> =
+  z.object(commonUserShape).and(
+    z.object({
+      agencyRights: z.array(agencyRightForListingSchema),
+    }),
+  );
+
+export const getAgencyUsersFiltersSchema: ZodSchemaWithInputMatchingOutput<GetAgencyUsersFilters> =
+  z.object({
+    agencyIds: agencyIdsSchema,
+    agencyRole: agencyRoleSchema.optional(),
   });
 
 const userEstablishmentRightDetailsCommonShape = {

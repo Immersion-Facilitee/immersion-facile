@@ -803,4 +803,101 @@ describe("Agency routes", () => {
       });
     });
   });
+
+  describe(`${displayRouteName(
+    agencyRoutes.getAgencyUsers,
+  )} List agency users`, () => {
+    const agency = new AgencyDtoBuilder().withKind("france-travail").build();
+    const agencyAdmin: User = {
+      id: "agency-admin-id",
+      email: "agency-admin@mail.com",
+      firstName: "Agency",
+      lastName: "Admin",
+      proConnect: defaultProConnectInfos,
+      createdAt: new Date().toISOString(),
+      preventToDelete: false,
+    };
+
+    it("200 - Gets the list of users for an agency when agency admin requests it", async () => {
+      inMemoryUow.userRepository.users = [
+        agencyAdmin,
+        backofficeAdminUser,
+        nonAdminUser,
+      ];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [agencyAdmin.id]: {
+            roles: ["agency-admin"],
+            isNotifiedByEmail: true,
+          },
+        }),
+      ];
+
+      const agencyAdminToken = generateConnectedUserJwt({
+        userId: agencyAdmin.id,
+        version: currentJwtVersions.connectedUser,
+        iat: Date.now(),
+        exp: addDays(new Date(), 5).getTime(),
+      });
+
+      const response = await httpClient.getAgencyUsers({
+        queryParams: { agencyIds: [agency.id] },
+        headers: { authorization: agencyAdminToken },
+      });
+
+      const { proConnect: _, ...agencyAdminWithoutProConnect } = agencyAdmin;
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: [
+          {
+            ...agencyAdminWithoutProConnect,
+            agencyRights: [
+              {
+                agencyId: agency.id,
+                roles: ["agency-admin"],
+                isNotifiedByEmail: true,
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it("401 - missing token", async () => {
+      const response = await httpClient.getAgencyUsers({
+        queryParams: { agencyIds: [agency.id] },
+        headers: { authorization: "" },
+      });
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: "Veuillez vous authentifier" },
+      });
+    });
+
+    it("403 - non agency admin user", async () => {
+      inMemoryUow.userRepository.users = [nonAdminUser];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [nonAdminUser.id]: {
+            roles: ["validator"],
+            isNotifiedByEmail: true,
+          },
+        }),
+      ];
+
+      const response = await httpClient.getAgencyUsers({
+        queryParams: { agencyIds: [agency.id] },
+        headers: { authorization: nonAdminToken },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.user.forbidden({ userId: nonAdminUser.id }).message,
+        },
+      });
+    });
+  });
 });

@@ -4,6 +4,7 @@ import {
   type AgencyDashboards,
   type AgencyId,
   type AgencyRight,
+  type AgencyUserForListing,
   type AgencyWithUsersRights,
   agencyRoleIsNotToReview,
   type ConnectedUser,
@@ -101,6 +102,55 @@ export const getConnectedUsersByUserIds = async (
     })),
   );
 };
+
+export const getAgencyUsersByUserIds = async (
+  uow: UnitOfWork,
+  userIds: UserId[],
+  agencyIds: AgencyId[],
+): Promise<AgencyUserForListing[]> => {
+  const users = await uow.userRepository.getByIds(userIds);
+
+  return Promise.all(
+    users.map(async (user) => {
+      const rights = await uow.agencyRepository.getAgenciesRightsByUserId(
+        user.id,
+      );
+      const {
+        isBackofficeAdmin: _,
+        proConnect: __,
+        ...userWithoutAdminAndProConnect
+      } = user;
+
+      return {
+        ...userWithoutAdminAndProConnect,
+        agencyRights: rights.filter((right) =>
+          agencyIds.includes(right.agencyId),
+        ),
+      };
+    }),
+  );
+};
+
+export const sortUsersByName = <
+  T extends { firstName: string; lastName: string; email: string },
+>(
+  users: T[],
+): T[] =>
+  [...users].sort((a, b) => {
+    const firstNameA = a.firstName.trim();
+    const firstNameB = b.firstName.trim();
+
+    const isAEmpty = firstNameA === "";
+    const isBEmpty = firstNameB === "";
+
+    if (isAEmpty !== isBEmpty) return isAEmpty ? -1 : 1;
+    if (isAEmpty && isBEmpty) return a.email.localeCompare(b.email);
+
+    const compareFirstName = firstNameA.localeCompare(firstNameB);
+    return compareFirstName !== 0
+      ? compareFirstName
+      : a.lastName.trim().localeCompare(b.lastName.trim());
+  });
 
 const makeAgencyRights = (
   userRights: AgencyRightOfUser[],

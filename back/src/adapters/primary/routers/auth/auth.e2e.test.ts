@@ -21,8 +21,6 @@ import {
   frontRoutes,
   ManagedFTConnectError,
   makeRouteAbsoluteUrl,
-  noAgencyDashboards,
-  noEstablishmentDashboard,
   queryParamsAsString,
   type Role,
   type TechnicalRoutes,
@@ -773,7 +771,6 @@ describe("auth router", () => {
       createdAt: new Date().toISOString(),
       preventToDelete: false,
     };
-    const agency = new AgencyDtoBuilder().withKind("france-travail").build();
 
     describe("/inclusion-connected/user", () => {
       const agency = new AgencyDtoBuilder().withKind("france-travail").build();
@@ -892,68 +889,6 @@ describe("auth router", () => {
         expectHttpResponseToEqual(response, {
           body: { message: authExpiredMessage(), status: 401 },
           status: 401,
-        });
-      });
-    });
-
-    describe(`${displayRouteName(
-      authRoutes.getConnectedUsers,
-    )} List connected users`, () => {
-      it("200 - Gets the list of connected users with role 'to-review'", async () => {
-        inMemoryUow.userRepository.users = [agencyUser];
-        inMemoryUow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [agencyUser.id]: {
-              roles: ["agency-admin"],
-              isNotifiedByEmail: true,
-            },
-          }),
-        ];
-
-        const response = await authRoutesClient.getConnectedUsers({
-          queryParams: { agencyIds: [agency.id] },
-          headers: {
-            authorization: generateConnectedUserJwt({
-              userId: agencyUser.id,
-              version: currentJwtVersions.connectedUser,
-            }),
-          },
-        });
-
-        const { validatorEmails: _, counsellorEmails: __, ...rest } = agency;
-
-        expectHttpResponseToEqual(response, {
-          status: 200,
-          body: [
-            {
-              ...agencyUser,
-              agencyRights: [
-                {
-                  agency: {
-                    ...rest,
-                    admins: [agencyUser.email],
-                  },
-                  roles: ["agency-admin"],
-                  isNotifiedByEmail: true,
-                },
-              ],
-              dashboards: {
-                agencies: noAgencyDashboards,
-                establishments: noEstablishmentDashboard,
-              },
-            },
-          ],
-        });
-      });
-
-      it("401 - missing token", async () => {
-        const response = await authRoutesClient.getConnectedUsers({
-          queryParams: { agencyRole: "to-review" },
-          headers: { authorization: "" },
-        });
-        expectHttpResponseToEqual(response, {
-          status: 401,
-          body: { status: 401, message: "Veuillez vous authentifier" },
         });
       });
     });

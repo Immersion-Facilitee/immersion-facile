@@ -1,4 +1,5 @@
 import { defineRoute, defineRoutes } from "shared-routes";
+import { z } from "zod";
 import { userParamsForAgencySchema } from "../admin/admin.schema";
 import {
   agencyIdResponseSchema,
@@ -13,7 +14,11 @@ import {
 import { agencyPublicDisplaySchema } from "../agency/publicAgency.schema";
 import { withAuthorizationHeaders } from "../headers";
 import { httpErrorSchema } from "../httpClient/httpErrors.schema";
-import { connectedUserSchema } from "../user/user.schema";
+import {
+  agencyUserForListingSchema,
+  connectedUserSchema,
+  getAgencyUsersFiltersSchema,
+} from "../user/user.schema";
 import { expressEmptyResponseBody } from "../zodUtils";
 
 export type AgencyRoutes = typeof agencyRoutes;
@@ -40,6 +45,19 @@ export const agencyRoutes = defineRoutes({
       400: httpErrorSchema,
       401: httpErrorSchema,
       404: httpErrorSchema,
+    },
+  }),
+
+  getAgencyUsers: defineRoute({
+    method: "get",
+    url: "/agencies/users",
+    queryParamsSchema: getAgencyUsersFiltersSchema,
+    ...withAuthorizationHeaders,
+    responses: {
+      200: z.array(agencyUserForListingSchema),
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
     },
   }),
 

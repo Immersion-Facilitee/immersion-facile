@@ -1,7 +1,5 @@
 import { defineRoute, defineRoutes } from "shared-routes";
-import z from "zod";
 import { absoluteUrlSchema } from "../AbsoluteUrl";
-import { withUserFiltersSchema } from "../admin/admin.schema";
 import { withAuthorizationHeaders } from "../headers";
 import { httpErrorSchema } from "../httpClient/httpErrors.schema";
 import { renewExpiredJwtRequestSchema } from "../tokens/jwt.schema";
@@ -61,18 +59,6 @@ export const authRoutes = defineRoutes({
       401: httpErrorSchema,
       403: httpErrorSchema,
       404: httpErrorSchema,
-    },
-  }),
-  getConnectedUsers: defineRoute({
-    method: "get",
-    url: "/inclusion-connected/users",
-    queryParamsSchema: withUserFiltersSchema,
-    ...withAuthorizationHeaders,
-    responses: {
-      200: z.array(connectedUserSchema),
-      400: httpErrorSchema,
-      401: httpErrorSchema,
-      403: httpErrorSchema,
     },
   }),
   getOAuthLogoutUrl: defineRoute({
