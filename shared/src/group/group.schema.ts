@@ -14,7 +14,7 @@ import type {
   WithGroupSlug,
 } from "./group.dto";
 
-const groupSlugSchema: ZodSchemaWithInputMatchingOutput<GroupSlug> =
+export const groupSlugSchema: ZodSchemaWithInputMatchingOutput<GroupSlug> =
   zStringMinLength1Max1024;
 
 export const withGroupSlugSchema: ZodSchemaWithInputMatchingOutput<WithGroupSlug> =

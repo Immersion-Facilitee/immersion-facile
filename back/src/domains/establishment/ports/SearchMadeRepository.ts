@@ -14,6 +14,7 @@ const searchFilters = [
   "locationIds",
   "showOnlyAvailableOffers",
   "departmentCodes",
+  "group",
 ] as const;
 
 type SearchFilterKey = (typeof searchFilters)[number];

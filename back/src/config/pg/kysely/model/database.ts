@@ -658,6 +658,7 @@ interface SearchesMade extends WithAcquisition {
   distance: number | null;
   fit_for_disabled_workers: JSONColumnType<string[]> | null;
   gps: string | null;
+  group_slug: string | null;
   id: string;
   lat: number | null;
   location_ids: JSONColumnType<string[]> | null;

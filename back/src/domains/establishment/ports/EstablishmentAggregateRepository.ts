@@ -6,6 +6,7 @@ import type {
   DepartmentCode,
   EstablishmentSearchableByValue,
   FitForDisableWorkerOption,
+  GroupSlug,
   InternalOfferDto,
   LocationId,
   NafCode,
@@ -49,6 +50,7 @@ type GetOffersFilters = {
   excludedSirets?: SiretDto[];
   showOnlyAvailableOffers: boolean;
   departmentCodes?: DepartmentCode[];
+  group?: GroupSlug;
 };
 
 export type GetOffersParams = WithRequiredPagination &
