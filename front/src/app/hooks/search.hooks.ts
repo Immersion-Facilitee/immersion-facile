@@ -4,10 +4,8 @@ import {
   frontRoutes,
   type GetOffersFlatQueryParams,
   keys,
-  searchParams,
 } from "shared";
 import {
-  filterParamsForRoute,
   getUrlParameters,
   isKeyInObjectAndValueNotUndefinedNorEmpty,
 } from "src/app/utils/url.utils";
@@ -22,7 +20,66 @@ export type SearchRoute = Route<
   | typeof frontRoutes.search
   | typeof frontRoutes.searchForStudent
   | typeof frontRoutes.externalSearch
+  | typeof frontRoutes.group
 >;
+
+type ClassicSearchRouteName = Exclude<SearchRoute["name"], "group">;
+
+type SearchQueryRouteParams = Parameters<typeof frontRoutes.search>[0];
+
+const buildSearchQueryRouteParams = ({
+  values,
+  urlParams,
+}: {
+  values: SearchPageParams;
+  urlParams: Record<string, string>;
+}): SearchQueryRouteParams => {
+  const acquisitionFromUrl = Object.fromEntries(
+    Object.entries(urlParams).filter(([key]) =>
+      keys(acquisitionParams).includes(key as keyof AcquisitionParams),
+    ),
+  );
+
+  return {
+    distanceKm: values.distanceKm,
+    latitude: values.latitude,
+    longitude: values.longitude,
+    appellations: values.appellations,
+    appellationCodes: values.appellationCodes,
+    sortBy: values.sortBy,
+    sortOrder: values.sortOrder,
+    place: isKeyInObjectAndValueNotUndefinedNorEmpty("place", values)
+      ? encodeURIComponent(values.place)
+      : values.place,
+    page: values.page,
+    perPage: values.perPage,
+    nafCodes: values.nafCodes,
+    nafLabel: values.nafLabel,
+    remoteWorkModes: values.remoteWorkModes,
+    showOnlyAvailableOffers: values.showOnlyAvailableOffers,
+    at_campaign: acquisitionFromUrl.at_campaign,
+    at_medium: acquisitionFromUrl.at_medium,
+    at_kwd: acquisitionFromUrl.at_kwd,
+  };
+};
+
+const pushClassicSearchRoute = ({
+  routeName,
+  params,
+}: {
+  routeName: ClassicSearchRouteName;
+  params: SearchQueryRouteParams;
+}): void => {
+  if (routeName === "search") {
+    frontRoutes.search(params).push();
+    return;
+  }
+  if (routeName === "searchForStudent") {
+    frontRoutes.searchForStudent(params).push();
+    return;
+  }
+  frontRoutes.externalSearch(params).push();
+};
 
 const filterUrlsParamsAndUpdateUrl = ({
   values,
@@ -32,29 +89,24 @@ const filterUrlsParamsAndUpdateUrl = ({
   values: SearchPageParams;
   urlParams: Record<string, string>;
   routeName: SearchRoute["name"];
-}) => {
-  const filteredUrlParams = filterParamsForRoute<Partial<SearchPageParams>>({
-    urlParams: {
-      ...Object.fromEntries(
-        Object.entries(urlParams).filter(([key]) =>
-          keys(acquisitionParams).includes(key as keyof AcquisitionParams),
-        ),
-      ),
-      ...values,
-    },
-    matchingParams: searchParams,
-  });
+}): void => {
+  const searchQueryParams = buildSearchQueryRouteParams({ values, urlParams });
 
-  const encodedUrlParams = {
-    ...filteredUrlParams,
-    ...encodedSearchUriParams.reduce((acc, currentKey) => {
-      if (isKeyInObjectAndValueNotUndefinedNorEmpty(currentKey, values)) {
-        acc[currentKey] = encodeURIComponent(values[currentKey]);
-      }
-      return acc;
-    }, filteredUrlParams),
-  };
-  frontRoutes[routeName](encodedUrlParams).push();
+  if (routeName === "group") {
+    if (!values.group) return;
+    frontRoutes
+      .group({
+        groupSlug: values.group,
+        ...searchQueryParams,
+      })
+      .push();
+    return;
+  }
+
+  pushClassicSearchRoute({
+    routeName,
+    params: searchQueryParams,
+  });
 };
 
 export const useSearch = ({ name }: SearchRoute) => ({
