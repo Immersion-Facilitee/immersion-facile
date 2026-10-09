@@ -142,7 +142,7 @@ export const SearchListResults = ({
           />
         </div>
 
-        <div className={fr.cx("fr-col-12", "fr-col-md-8")}>
+        <div className={fr.cx("fr-col-12", "fr-col-md-8", "fr-pt-md-3w")}>
           {!isExternal && isLayoutDesktop && (
             <div
               className={cx(fr.cx("fr-mb-2w"), "search-map-results__summary")}
