@@ -11,9 +11,41 @@ on:
       - checks_requested
 
 jobs:
+  detect-already-tested-code:
+    name: "Detect already tested code"
+    if: ${{ github.event_name == 'merge_group' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code_already_tested: ${{ steps.compare.outputs.code_already_tested }}
+    steps:
+      - id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_GROUP_HEAD_REF: ${{ github.event.merge_group.head_ref }}
+          MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+        run: |
+          PR_NUMBER=$(echo "$MERGE_GROUP_HEAD_REF" | sed -E 's|.*/pr-([0-9]+)-.*|\1|')
+          PR_HEAD_SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .head.sha)
+          PR_TREE=$(gh api "repos/$GITHUB_REPOSITORY/git/commits/$PR_HEAD_SHA" --jq .tree.sha)
+          MERGE_GROUP_TREE=$(gh api "repos/$GITHUB_REPOSITORY/git/commits/$MERGE_GROUP_HEAD_SHA" --jq .tree.sha)
+          PR_COMMITS_BEHIND_BASE=$(gh api "repos/$GITHUB_REPOSITORY/compare/$MERGE_GROUP_BASE_SHA...$PR_HEAD_SHA" --jq .behind_by)
+
+          CODE_ALREADY_TESTED=false
+          if [ "$PR_TREE" = "$MERGE_GROUP_TREE" ] && [ "$PR_COMMITS_BEHIND_BASE" = "0" ]; then
+            CODE_ALREADY_TESTED=true
+          fi
+          echo "PR #$PR_NUMBER, code déjà testé sur la PR : $CODE_ALREADY_TESTED"
+          echo "code_already_tested=$CODE_ALREADY_TESTED" >> "$GITHUB_OUTPUT"
   fullcheck:
-    if: ${{ github.event_name == 'merge_group' || github.event.pull_request.draft == false }}
+    needs: detect-already-tested-code
+    if: ${{ !cancelled() && (github.event_name == 'merge_group' || github.event.pull_request.draft == false) }}
     uses: ./.github/workflows/fullcheck.yml
+    with:
+      code_already_tested: ${{ needs.detect-already-tested-code.outputs.code_already_tested == 'true' }}
     secrets:
       API_KEY_OPEN_CAGE_DATA_GEOCODING: ${{ secrets.API_KEY_OPEN_CAGE_DATA_GEOCODING }}
       API_KEY_OPEN_CAGE_DATA_GEOSEARCH: ${{ secrets.API_KEY_OPEN_CAGE_DATA_GEOSEARCH }}
