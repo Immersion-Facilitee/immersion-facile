@@ -26,10 +26,14 @@ const toExpectedAgencyUser = (
 ): AgencyUserForListing => {
   const {
     isBackofficeAdmin: _,
-    proConnect: __,
+    proConnect,
     ...userWithoutAdminAndProConnect
   } = user;
-  return { ...userWithoutAdminAndProConnect, agencyRights };
+  return {
+    ...userWithoutAdminAndProConnect,
+    isProConnectUser: proConnect !== null,
+    agencyRights,
+  };
 };
 
 describe("GetAgencyUsers", () => {

@@ -2,8 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import type {
   AgencyDtoForAgencyUsersAndAdmins,
   AgencyId,
+  AgencyRole,
   UserId,
-  WithUserFilters,
 } from "shared";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import type { PayloadActionWithFeedbackTopic } from "src/core-logic/domain/feedback/feedback.slice";
@@ -14,6 +14,11 @@ export type UserToReview = {
   firstName: string;
   lastName: string;
   agency: AgencyDtoForAgencyUsersAndAdmins;
+};
+
+type FetchUsersToReviewPayload = {
+  agencies: AgencyDtoForAgencyUsersAndAdmins[];
+  agencyRole: AgencyRole;
 };
 
 type UsersToReviewState = {
@@ -32,7 +37,7 @@ export const usersToReviewSlice = createSlice({
   reducers: {
     fetchUsersToReviewRequested: (
       state,
-      _action: PayloadActionWithFeedbackTopic<WithUserFilters>,
+      _action: PayloadActionWithFeedbackTopic<FetchUsersToReviewPayload>,
     ) => {
       state.isLoading = true;
     },

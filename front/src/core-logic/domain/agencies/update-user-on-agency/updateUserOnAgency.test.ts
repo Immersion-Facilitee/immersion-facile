@@ -8,9 +8,8 @@ import {
   type UserParamsForAgency,
 } from "shared";
 import { adminPreloadedState } from "src/core-logic/domain/admin/adminPreloadedState";
-import type { ConnectedUserWithNormalizedAgencyRights } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
-
 import { agenciesPreloadedState } from "src/core-logic/domain/agencies/agenciesPreloadedState";
+import type { AgencyUserForManagement } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import { updateUserOnAgencySelectors } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.selectors";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
@@ -45,9 +44,22 @@ describe("UpdateUserOnAgency slice", () => {
     isNotifiedByEmail: true,
   };
 
-  const normalizedUser: ConnectedUserWithNormalizedAgencyRights = {
-    ...user,
-    agencyRights: { [agency.id]: agencyRight },
+  const agencyUser: AgencyUserForManagement = {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    createdAt: user.createdAt,
+    preventToDelete: user.preventToDelete,
+    lastLoginAt: user.lastLoginAt,
+    isProConnectUser: user.proConnect !== null,
+    agencyRights: {
+      [agency.id]: {
+        agencyId: agency.id,
+        roles: agencyRight.roles,
+        isNotifiedByEmail: agencyRight.isNotifiedByEmail,
+      },
+    },
   };
 
   beforeEach(() => {
@@ -62,7 +74,7 @@ describe("UpdateUserOnAgency slice", () => {
         ...agenciesPreloadedState({
           fetchAgency: {
             agency,
-            agencyUsers: { [user.id]: normalizedUser },
+            agencyUsers: { [user.id]: agencyUser },
             isLoading: false,
           },
           updateUserOnAgency: {

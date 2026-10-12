@@ -186,7 +186,7 @@ export const AgencyAdminUsersToReview = ({
                   email: reviewActionProps.userToReview.email,
                   roles: ["to-review"],
                   isNotifiedByEmail: false,
-                  isIcUser: true,
+                  isProConnectUser: true,
                 }}
                 closeModal={closeUserRegistrationToAgencyModal}
                 onSubmit={onUserRegistrationSubmitted}

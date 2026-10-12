@@ -142,7 +142,7 @@ export const AgencyRightsTable = ({
                   roles: selectedAgencyRight.roles,
                   email: user.email,
                   isNotifiedByEmail: selectedAgencyRight.isNotifiedByEmail,
-                  isIcUser: !!user.proConnect,
+                  isProConnectUser: !!user.proConnect,
                 }}
                 closeModal={() => userModal.close()}
                 agencyHasRefersTo={

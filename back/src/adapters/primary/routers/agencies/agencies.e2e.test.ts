@@ -852,6 +852,7 @@ describe("Agency routes", () => {
         body: [
           {
             ...agencyAdminWithoutProConnect,
+            isProConnectUser: true,
             agencyRights: [
               {
                 agencyId: agency.id,

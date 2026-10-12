@@ -16,10 +16,9 @@ import {
 import { AgencyUserModificationForm } from "src/app/components/agency/AgencyUserModificationForm";
 import { RejectIcUserRegistrationToAgencyForm } from "src/app/components/agency/RejectIcUserRegistrationToAgencyForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { connectedUsersAdminSelectors } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.selectors";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { hasCounsellorRoles } from "src/core-logic/domain/agencies/agencies.helpers";
-import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
-import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 
 type IcUserAgenciesToReviewProps = {
   agenciesNeedingReviewForUser: AgencyRight[];
@@ -110,7 +109,7 @@ export const IcUserAgenciesToReview = ({
   const [modalProps, setModalProps] =
     useState<IcUserAgenciesToReviewModalProps | null>(null);
   const selectedAgencyUsersById = useAppSelector(
-    fetchAgencySelectors.agencyUsers,
+    connectedUsersAdminSelectors.agencyUsers,
   );
   const selectedAgencyHasCounsellorRoles = selectedAgency?.id
     ? hasCounsellorRoles({
@@ -133,8 +132,8 @@ export const IcUserAgenciesToReview = ({
   const selectAgency = (agency: AgencyDtoForAgencyUsersAndAdmins) => {
     setSelectedAgency(agency);
     dispatch(
-      fetchAgencySlice.actions.fetchAgencyUsersRequested({
-        agencyId: agency.id,
+      connectedUsersAdminSlice.actions.fetchAgencyUsersRequested({
+        agencyIds: [agency.id],
       }),
     );
   };
@@ -168,7 +167,7 @@ export const IcUserAgenciesToReview = ({
                   userId: selectedUser.id,
                   email: selectedUser.email,
                   roles: ["to-review"],
-                  isIcUser: true,
+                  isProConnectUser: true,
                   isNotifiedByEmail: true,
                 }}
                 closeModal={closeIcUserRegistrationToAgencyModal}

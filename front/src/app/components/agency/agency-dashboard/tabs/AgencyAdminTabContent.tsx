@@ -48,7 +48,7 @@ export const AgencyAdminTabContent = ({
   const isLoadingUsersToReview = useSelector(usersToReviewSelectors.isLoading);
   const [hasRequestedUsersToReview, setHasRequestedUsersToReview] =
     useState(false);
-  const activeAgencyIdsUserIsAdminOn = useMemo(
+  const activeAgenciesUserIsAdminOn = useMemo(
     () =>
       activeAgencyRights
         .filter(
@@ -56,7 +56,7 @@ export const AgencyAdminTabContent = ({
             agencyRight.roles.includes("agency-admin") &&
             activeAgencyStatuses.includes(agencyRight.agency.status),
         )
-        .map((agencyRight) => agencyRight.agency.id),
+        .map((agencyRight) => agencyRight.agency),
     [activeAgencyRights],
   );
 
@@ -88,16 +88,16 @@ export const AgencyAdminTabContent = ({
     };
 
   useEffect(() => {
-    if (activeAgencyIdsUserIsAdminOn.length === 0) return;
+    if (activeAgenciesUserIsAdminOn.length === 0) return;
 
     dispatch(
       usersToReviewSlice.actions.fetchUsersToReviewRequested({
         agencyRole: "to-review",
-        agencyIds: activeAgencyIdsUserIsAdminOn,
+        agencies: activeAgenciesUserIsAdminOn,
         feedbackTopic: "agency-users-to-review",
       }),
     );
-  }, [dispatch, activeAgencyIdsUserIsAdminOn]);
+  }, [dispatch, activeAgenciesUserIsAdminOn]);
 
   if (hasRequestedUsersToReview) {
     return (

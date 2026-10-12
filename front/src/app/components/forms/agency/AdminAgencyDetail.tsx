@@ -9,7 +9,10 @@ import { AgencyDashboard } from "src/app/pages/admin/AgencyTab";
 import { connectedUsersAdminSelectors } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.selectors";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
-import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
+import {
+  fetchAgencySlice,
+  toAgencyUsersForManagementById,
+} from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import type { Route } from "type-route";
 
 type AdminAgencyDetailProps = {
@@ -50,7 +53,7 @@ export const AdminAgencyDetail = ({ route }: AdminAgencyDetailProps) => {
           <>
             <AgencyOverview
               agency={agency}
-              agencyUsers={agencyUsersById}
+              agencyUsers={toAgencyUsersForManagementById(agencyUsersById)}
               routeName={route.name}
             />
             <AgencyDashboard agency={agency} />

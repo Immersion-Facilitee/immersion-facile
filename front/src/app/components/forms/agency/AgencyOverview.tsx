@@ -1,6 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 
-import type { AgencyDto, frontRoutes } from "shared";
+import type { AgencyDto, frontRoutes, UserId } from "shared";
 import { AgencyStatusBadge } from "src/app/components/agency/AgencyStatusBadge";
 import { AgencyTag } from "src/app/components/agency/AgencyTag";
 import { AgencyUsers } from "src/app/components/agency/AgencyUsers";
@@ -9,7 +9,7 @@ import { CopyAgencyId } from "src/app/components/agency/CopyAgencyId";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { EditAgencyForm } from "src/app/components/forms/agency/EditAgencyForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import type { ConnectedUsersWithNormalizedAgencyRightsById } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import type { AgencyUserForManagement } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import type { Route } from "type-route";
 
@@ -22,7 +22,7 @@ export type AgencyOverviewRouteName = Route<
 
 type AgencyOverviewProps = {
   agency: AgencyDto;
-  agencyUsers: ConnectedUsersWithNormalizedAgencyRightsById;
+  agencyUsers: Record<UserId, AgencyUserForManagement>;
   routeName: AgencyOverviewRouteName;
 };
 

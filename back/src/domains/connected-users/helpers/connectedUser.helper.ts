@@ -117,12 +117,13 @@ export const getAgencyUsersByUserIdsAndAgencyIds = async (
       );
       const {
         isBackofficeAdmin: _,
-        proConnect: __,
+        proConnect,
         ...userWithoutAdminAndProConnect
       } = user;
 
       return {
         ...userWithoutAdminAndProConnect,
+        isProConnectUser: proConnect !== null,
         agencyRights: rights.filter((right) =>
           agencyIds.includes(right.agencyId),
         ),

@@ -70,6 +70,7 @@ export type AgencyRightForListing = Omit<AgencyRight, "agency"> & {
 
 export type AgencyUserForListing = Omit<User, "proConnect"> & {
   agencyRights: AgencyRightForListing[];
+  isProConnectUser: boolean;
 };
 
 export type GetAgencyUsersFilters = {

@@ -3,7 +3,8 @@ import type { ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import type { ModalProps } from "@codegouvfr/react-dsfr/Modal";
 import {
-  type AgencyRight,
+  type AgencyId,
+  type AgencyRole,
   domElementIds,
   type Email,
   type UserId,
@@ -36,7 +37,12 @@ export const SelfRemoveUserAgencyRightFeedback = () => (
 );
 
 export type UserRightToRemove = {
-  agencyRight: AgencyRight;
+  agency: {
+    id: AgencyId;
+    name: string;
+    refersToAgencyId: AgencyId | null;
+  };
+  roles: AgencyRole[];
   userEmail: Email;
   userId: UserId;
   isSelfRemoval: boolean;
@@ -56,8 +62,8 @@ export const makeRemoveUserAgencyRightsButtonProps = ({
   children: userRightToRemove.isSelfRemoval ? "Me détacher" : "Supprimer",
   priority: "secondary",
   disabled:
-    userRightToRemove.agencyRight.agency.refersToAgencyId !== null &&
-    userRightToRemove.agencyRight.roles.includes("validator"),
+    userRightToRemove.agency.refersToAgencyId !== null &&
+    userRightToRemove.roles.includes("validator"),
   id: removeUserButtonId,
   onClick: () => onDeleteClicked(userRightToRemove),
   size,
@@ -74,7 +80,7 @@ export const makeRemoveUserAgencyRightsModalProps = ({
 }): ModalProps => ({
   title:
     userRightToRemove.isSelfRemoval === true
-      ? `Se détacher de ${userRightToRemove.agencyRight.agency.name}`
+      ? `Se détacher de ${userRightToRemove.agency.name}`
       : "Confirmer la suppression",
   children: (
     <>
@@ -112,13 +118,13 @@ const makeDescriptionFromUserRightToRemove = (
         <p>
           Vous êtes sur le point de supprimer le rattachement de{" "}
           {userRightToRemove.userEmail} à l'agence "
-          {userRightToRemove.agencyRight.agency.name}".
+          {userRightToRemove.agency.name}".
         </p>
         <p>Souhaitez-vous continuer ?</p>
       </>
     );
 
-  return userRightToRemove.agencyRight.roles.includes("agency-admin") ? (
+  return userRightToRemove.roles.includes("agency-admin") ? (
     <>
       <p>
         Vous êtes sur le point de vous détacher de cet organisme. En tant

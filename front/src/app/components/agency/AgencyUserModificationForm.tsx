@@ -32,7 +32,7 @@ export const AgencyUserModificationForm = ({
   modalId,
   isFTAgency,
 }: {
-  agencyUser: UserParamsForAgency & { isIcUser: boolean };
+  agencyUser: UserParamsForAgency & { isProConnectUser: boolean };
   closeModal: () => void;
   agencyHasRefersTo: boolean;
   isEmailDisabled?: boolean;
@@ -140,7 +140,7 @@ export const AgencyUserModificationForm = ({
             },
           }}
           {...getFieldError("email")}
-          disabled={isEmailDisabled ?? agencyUser.isIcUser}
+          disabled={isEmailDisabled ?? agencyUser.isProConnectUser}
           onEmailValidationFeedback={({ state, stateRelatedMessage }) => {
             setInvalidEmailMessage(
               state === "error" ? stateRelatedMessage : null,

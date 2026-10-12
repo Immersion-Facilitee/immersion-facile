@@ -31,14 +31,14 @@ type RemoveUserFromAgencyAction = ActionOfSlice<
 type ConnectedUsersAdminActionEpic = AppEpic<ConnectedUsersAdminAction>;
 
 const fetchConnectedUsersWithAgencyNeedingReviewEpic: ConnectedUsersAdminActionEpic =
-  (action$, state$, { authGateway }) =>
+  (action$, state$, { adminGateway }) =>
     action$.pipe(
       filter(
         connectedUsersAdminSlice.actions.fetchConnectedUsersToReviewRequested
           .match,
       ),
       switchMap((action: PayloadAction<WithUserFilters>) =>
-        authGateway.getConnectedUsers$(
+        adminGateway.getConnectedUsers$(
           getConnectedUserJwt(state$.value),
           action.payload,
         ),
@@ -57,12 +57,12 @@ const fetchConnectedUsersWithAgencyNeedingReviewEpic: ConnectedUsersAdminActionE
 const fetchConnectedUsersWithAgencyIdEpic: ConnectedUsersAdminActionEpic = (
   action$,
   state$,
-  { authGateway },
+  { adminGateway },
 ) =>
   action$.pipe(
     filter(connectedUsersAdminSlice.actions.fetchAgencyUsersRequested.match),
     switchMap((action: PayloadAction<WithUserFilters>) =>
-      authGateway.getConnectedUsers$(
+      adminGateway.getConnectedUsers$(
         getConnectedUserJwt(state$.value),
         action.payload,
       ),
