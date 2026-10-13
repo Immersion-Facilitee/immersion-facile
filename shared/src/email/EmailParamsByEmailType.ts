@@ -5,6 +5,7 @@ import type {
 } from "../agency/agency.dto";
 import type { ArchivedConventionRequestId } from "../archivedConventionRequest/archivedConventionRequest.dto";
 import type {
+  AssessmentCreator,
   AssessmentDtoCompleted,
   AssessmentDtoPartiallyCompleted,
 } from "../assessment/assessment.dto";
@@ -163,6 +164,7 @@ export type EmailParamsByEmailType = {
     internshipKind: InternshipKind;
     assessmentSignatureLink: string;
     conventionId: ConventionId;
+    createdBy?: AssessmentCreator & { organizationName: string };
   };
   ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION: {
     internshipKind: InternshipKind;

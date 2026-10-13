@@ -370,6 +370,34 @@ describe("GetAssessmentByConventionId", () => {
       );
     });
 
+    it("returns createdBy when present", async () => {
+      const createdBy = {
+        role: "validator" as const,
+        email: validator.email,
+        firstName: validator.firstName,
+        lastName: validator.lastName,
+      };
+      const assessmentWithCreator: AssessmentDto = {
+        ...assessment,
+        createdBy,
+      };
+      uow.assessmentRepository.assessments = [
+        {
+          _entityName: "Assessment",
+          numberOfHoursActuallyMade: convention.schedule.totalHours,
+          ...assessmentWithCreator,
+        },
+      ];
+
+      expectToEqual(
+        await getAssessment.execute(
+          { conventionId: convention.id },
+          establishmentTutorPayload,
+        ),
+        assessmentWithCreator,
+      );
+    });
+
     it("can also get an assessment with legacy format", async () => {
       const legacyAssessment: LegacyAssessmentDto = {
         status: "FINISHED",

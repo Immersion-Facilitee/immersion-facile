@@ -1,6 +1,8 @@
 import { addDays, subDays } from "date-fns";
 import {
   AgencyDtoBuilder,
+  type AssessmentCreator,
+  type AssessmentCreatorRole,
   type AssessmentDto,
   allRoles,
   ConnectedUserBuilder,
@@ -29,11 +31,7 @@ import {
 } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { TestUuidGenerator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
-import {
-  type AssessmentCreator,
-  type AssessmentCreatorRole,
-  acceptedConventionStatusesForAssessment,
-} from "../entities/AssessmentEntity";
+import { acceptedConventionStatusesForAssessment } from "../entities/AssessmentEntity";
 import {
   type CreateAssessment,
   makeCreateAssessment,
@@ -83,8 +81,8 @@ describe("CreateAssessment", () => {
 
   const makeUserAssessmentCreator = (
     role: AssessmentCreatorRole,
-    { id, email, firstName, lastName }: User,
-  ): AssessmentCreator => ({ role, userId: id, email, firstName, lastName });
+    { email, firstName, lastName }: User,
+  ): AssessmentCreator => ({ role, email, firstName, lastName });
 
   const tutorAssessmentCreator: AssessmentCreator = {
     role: "establishment-tutor",
@@ -627,12 +625,39 @@ describe("CreateAssessment", () => {
           topic: "AssessmentCreated",
           payload: {
             convention: validatedConvention,
-            assessment,
+            assessment: {
+              ...assessment,
+              createdBy: tutorAssessmentCreator,
+            },
             triggeredBy: {
               kind: "convention-magic-link",
               role: tutorPayload.role,
             },
           },
+        },
+      ]);
+    });
+
+    it("overwrites createdBy sent by the client", async () => {
+      await createAssessment.execute(
+        {
+          ...assessment,
+          createdBy: {
+            role: "counsellor",
+            email: "spoofed@mail.com",
+            firstName: "Fake",
+            lastName: "User",
+          },
+        },
+        tutorPayload,
+      );
+
+      expectArraysToEqual(uow.assessmentRepository.assessments, [
+        {
+          ...assessment,
+          _entityName: "Assessment",
+          numberOfHoursActuallyMade: validatedConvention.schedule.totalHours,
+          createdBy: tutorAssessmentCreator,
         },
       ]);
     });

@@ -124,7 +124,7 @@ describe("SendAssessmentSignatureReminder", () => {
     ];
   });
 
-  it("sends email reminder to beneficiary", async () => {
+  it("sends email reminder to beneficiary without createdBy is missing", async () => {
     await usecase.execute(
       { conventionId: convention.id, notificationKind: "email" },
       { userId: connectedValidator.id },
@@ -174,6 +174,62 @@ describe("SendAssessmentSignatureReminder", () => {
           triggeredBy: {
             kind: "connected-user",
             userId: connectedValidator.id,
+          },
+        },
+      },
+    ]);
+  });
+
+  it("sends email reminder with createdBy when present", async () => {
+    const createdBy = {
+      role: "establishment-tutor" as const,
+      email: "paul@entreprise.fr",
+      firstName: "Paul",
+      lastName: "Martin",
+    };
+    uow.assessmentRepository.assessments = [
+      createAssessmentEntity({ ...assessmentDto, createdBy }, convention),
+    ];
+
+    await usecase.execute(
+      { conventionId: convention.id, notificationKind: "email" },
+      { userId: connectedValidator.id },
+    );
+
+    expectToEqual(uow.notificationRepository.notifications, [
+      {
+        id: notificationId,
+        createdAt: now.toISOString(),
+        kind: "email",
+        followedIds: {
+          conventionId: convention.id,
+          agencyId: convention.agencyId,
+          establishmentSiret: convention.siret,
+        },
+        templatedContent: {
+          kind: "ASSESSMENT_NEEDS_SIGNATURE_BENEFICIARY_NOTIFICATION",
+          recipients: [convention.signatories.beneficiary.email],
+          params: {
+            conventionId: convention.id,
+            beneficiaryFirstName: getFormattedFirstnameAndLastname({
+              firstname: convention.signatories.beneficiary.firstName,
+            }),
+            beneficiaryLastName: getFormattedFirstnameAndLastname({
+              lastname: convention.signatories.beneficiary.lastName,
+            }),
+            businessName: convention.businessName,
+            internshipKind: convention.internshipKind,
+            assessmentSignatureLink: makeRouteAbsoluteUrl({
+              route: frontRoutes.assessmentDocument({
+                conventionId: convention.id,
+                loginPersona: "beneficiary",
+              }),
+              baseUrl: config.immersionFacileBaseUrl,
+            }),
+            createdBy: {
+              ...createdBy,
+              organizationName: convention.businessName,
+            },
           },
         },
       },

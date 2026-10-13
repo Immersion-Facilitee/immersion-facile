@@ -1,4 +1,6 @@
 import {
+  AgencyDtoBuilder,
+  type AssessmentCreator,
   type AssessmentDto,
   ConventionDtoBuilder,
   errors,
@@ -9,6 +11,7 @@ import {
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
+import { toAgencyWithRights } from "../../../../utils/agency";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
@@ -27,6 +30,7 @@ import {
 } from "./NotifyBeneficiaryThatAssessmentNeedsSignature";
 
 const convention = new ConventionDtoBuilder().build();
+const agency = new AgencyDtoBuilder().withId(convention.agencyId).build();
 
 const assessment: AssessmentDto = {
   conventionId: convention.id,
@@ -75,7 +79,7 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
 
   it("throws when assessment not found", async () => {
     uow.conventionRepository.setConventions([convention]);
-    uow.assessmentRepository.assessments = [];
+    uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
 
     await expectPromiseToFailWithError(
       usecase.execute({ convention, assessment }),
@@ -90,6 +94,7 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
       status: "DID_NOT_SHOW",
     };
     uow.conventionRepository.setConventions([convention]);
+    uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
     uow.assessmentRepository.assessments = [
       {
         _entityName: "Assessment",
@@ -103,8 +108,9 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
     expectSavedNotificationsAndEvents({ emails: [] });
   });
 
-  it("notify beneficiary that assessment needs signature with connected assessment document URL", async () => {
+  it("notifies beneficiary without createdBy when missing", async () => {
     uow.conventionRepository.setConventions([convention]);
+    uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
     uow.assessmentRepository.assessments = [
       {
         _entityName: "Assessment",
@@ -114,14 +120,6 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
     ];
 
     await usecase.execute({ convention, assessment });
-
-    const assessmentSignatureLink = makeRouteAbsoluteUrl({
-      route: frontRoutes.assessmentDocument({
-        conventionId: convention.id,
-        loginPersona: "beneficiary",
-      }),
-      baseUrl: config.immersionFacileBaseUrl,
-    });
 
     expectSavedNotificationsAndEvents({
       emails: [
@@ -137,7 +135,72 @@ describe("NotifyBeneficiaryThatAssessmentNeedsSignature", () => {
             }),
             businessName: convention.businessName,
             internshipKind: convention.internshipKind,
-            assessmentSignatureLink,
+            assessmentSignatureLink: makeRouteAbsoluteUrl({
+              route: frontRoutes.assessmentDocument({
+                conventionId: convention.id,
+                loginPersona: "beneficiary",
+              }),
+              baseUrl: config.immersionFacileBaseUrl,
+            }),
+          },
+          recipients: [convention.signatories.beneficiary.email],
+        },
+      ],
+    });
+  });
+
+  it("notifies beneficiary with createdBy when present", async () => {
+    const counsellorAgency = new AgencyDtoBuilder()
+      .withId(convention.agencyId)
+      .withName("Mission Locale")
+      .build();
+    const createdBy: AssessmentCreator = {
+      role: "counsellor",
+      email: "marie@agence.fr",
+      firstName: "Marie",
+      lastName: "Dupont",
+    };
+    const assessmentWithCreator: AssessmentDto = {
+      ...assessment,
+      createdBy,
+    };
+    uow.conventionRepository.setConventions([convention]);
+    uow.agencyRepository.agencies = [toAgencyWithRights(counsellorAgency)];
+    uow.assessmentRepository.assessments = [
+      {
+        _entityName: "Assessment",
+        ...assessmentWithCreator,
+        numberOfHoursActuallyMade: null,
+      },
+    ];
+
+    await usecase.execute({ convention, assessment: assessmentWithCreator });
+
+    expectSavedNotificationsAndEvents({
+      emails: [
+        {
+          kind: "ASSESSMENT_NEEDS_SIGNATURE_BENEFICIARY_NOTIFICATION",
+          params: {
+            conventionId: convention.id,
+            beneficiaryFirstName: getFormattedFirstnameAndLastname({
+              firstname: convention.signatories.beneficiary.firstName,
+            }),
+            beneficiaryLastName: getFormattedFirstnameAndLastname({
+              lastname: convention.signatories.beneficiary.lastName,
+            }),
+            businessName: convention.businessName,
+            internshipKind: convention.internshipKind,
+            assessmentSignatureLink: makeRouteAbsoluteUrl({
+              route: frontRoutes.assessmentDocument({
+                conventionId: convention.id,
+                loginPersona: "beneficiary",
+              }),
+              baseUrl: config.immersionFacileBaseUrl,
+            }),
+            createdBy: {
+              ...createdBy,
+              organizationName: "Mission Locale",
+            },
           },
           recipients: [convention.signatories.beneficiary.email],
         },

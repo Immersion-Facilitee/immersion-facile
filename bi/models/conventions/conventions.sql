@@ -235,7 +235,16 @@ ass.status as assessment_status,
     ass.establishment_feedback as assessment_establishment_feedback,
     ass.number_of_hours_actually_made as assessment_hours_actually_made,
     ass.signed_at as assessment_signed_at,
-    ass.created_by ->> 'role' as assessment_created_by_role
+    ass.created_by ->> 'role' as assessment_created_by_role,
+    ass.created_by ->> 'email' as assessment_created_by_email,
+    ass.created_by ->> 'firstName' as assessment_created_by_first_name,
+    ass.created_by ->> 'lastName' as assessment_created_by_last_name,
+    case
+        when ass.created_by ->> 'role' = 'establishment-tutor' then c.business_name
+        when ass.created_by ->> 'role' = 'validator' and refer_a.name is not null then refer_a.name
+        when ass.created_by ->> 'role' in ('counsellor', 'validator') then a.name
+        else null
+    end as assessment_created_by_organization_name
 
 from {{ source('immersion', 'conventions') }} as c
 

@@ -103,6 +103,12 @@ describe("Immersion Assessment slice", () => {
       beneficiaryFeedback: null,
       signedAt: null,
       createdAt: new Date().toISOString(),
+      createdBy: {
+        role: "counsellor",
+        email: "marie@agence.fr",
+        firstName: "Marie",
+        lastName: "Dupont",
+      },
     };
     const feedGatewayWithGetError = (error: Error) => {
       dependencies.assessmentGateway.getResponse$.error(error);
@@ -126,6 +132,10 @@ describe("Immersion Assessment slice", () => {
       expect(assessmentSelectors.isLoading(store.getState())).toBe(true);
       feedGatewayWithGetSuccess();
       expect(assessmentSelectors.isLoading(store.getState())).toBe(false);
+      expectToEqual(
+        assessmentSelectors.currentAssessment(store.getState()),
+        assessment,
+      );
     });
 
     it("not found error", () => {
