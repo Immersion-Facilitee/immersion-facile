@@ -1,15 +1,22 @@
+export type EmailButtonPriority = "primary" | "secondary" | "tertiary";
+
 export type EmailButtonProps = {
   url: string;
   label: string;
-  target?: "_blank" | "_self";
+  priority?: EmailButtonPriority;
 };
 
-const getButtonStyle = (index: number) =>
-  `text-decoration: none; display: inline-block; padding: 10px 20px; text-align: center; ${
-    index === 0
-      ? "background-color: #000091; color: #fff;"
-      : "border: #000091 1px solid; color: #000091;"
-  }`;
+const buttonColorsByPriority: Record<EmailButtonPriority, string> = {
+  primary:
+    "background-color: #000091; color: #f5f5fe; border: 1px solid #000091;",
+  secondary:
+    "background-color: transparent; color: #000091; border: 1px solid #000091;",
+  tertiary:
+    "background-color: transparent; color: #000091; border: 1px solid #dddddd;",
+};
+
+const getButtonStyle = (priority: EmailButtonPriority) =>
+  `display: inline-block; padding: 7px 15px; font-size: 16px; line-height: 24px; font-weight: 500; text-align: center; text-decoration: none; background-image: none; ${buttonColorsByPriority[priority]}`;
 
 export const renderButton = (params?: EmailButtonProps[]): string | undefined =>
   params &&
@@ -17,7 +24,7 @@ export const renderButton = (params?: EmailButtonProps[]): string | undefined =>
   `<table>
     ${params
       .map(
-        ({ target, url, label }, index) =>
+        ({ url, label, priority = "primary" }, index) =>
           `<tr>
               <td 
                 align="center" 
@@ -27,9 +34,9 @@ export const renderButton = (params?: EmailButtonProps[]): string | undefined =>
                 }; padding-bottom: ${index === params.length - 1 ? "0" : "10px"};"
               >
                 <a
-                  style="${getButtonStyle(index)}"
+                  style="${getButtonStyle(priority)}"
                   href="${url}"
-                  ${target ? `target="${target}"` : ""}
+                  target="_blank"
                 >
                   ${label}
                 </a>
