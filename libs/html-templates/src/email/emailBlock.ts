@@ -5,6 +5,7 @@ import {
   type HighlightVariant,
   renderButton,
   renderButtonsGroup,
+  renderDivider,
   renderHighlight,
   renderList,
   renderParagraph,
@@ -28,6 +29,7 @@ export type EmailBlock = (
   | ({ kind: "button" } & EmailButtonProps)
   | ({ kind: "buttonsGroup" } & EmailButtonsGroupProps)
   | { kind: "highlight"; variant?: HighlightVariant; content: string }
+  | { kind: "divider" }
 ) &
   CommonEmailBlockProps;
 
@@ -46,4 +48,5 @@ export const renderEmailBlock = (block: EmailBlock): string | undefined =>
     .with({ kind: "highlight" }, ({ content, variant }) =>
       renderHighlight({ content, variant }),
     )
+    .with({ kind: "divider" }, () => renderDivider())
     .exhaustive();

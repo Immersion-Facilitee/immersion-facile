@@ -1794,6 +1794,9 @@ Tél : ${beneficiaryPhone}`,
             content: "highlight — variante error (rouge)",
           },
           {
+            kind: "divider",
+          },
+          {
             kind: "paragraph",
             content: "marginBottom — sm (8px)",
             marginBottom: "sm",
@@ -1816,7 +1819,7 @@ Tél : ${beneficiaryPhone}`,
           Toujours après le corps, avant les mentions légales.
           ${defaultSignature(internshipKind)}`,
         legals: `[FIGE] legals
-          Toujours en dernier, précédé d'un filet bleu clair. Le footer vient juste après, automatiquement.`,
+          Toujours en dernier, précédé d'un divider. Le footer vient juste après, automatiquement.`,
         attachmentUrls: [emailAttachements.memoBeneficiary],
       }),
     }),
