@@ -3,7 +3,7 @@ export {
   type EmailButtonsGroupProps,
   renderButtonsGroup,
 } from "./blocks/buttonsGroup";
-export { type HighlightKind, renderHighlight } from "./blocks/highlight";
+export { type HighlightVariant, renderHighlight } from "./blocks/highlight";
 export { renderList } from "./blocks/list";
 export { renderParagraph } from "./blocks/paragraph";
 export { renderFooter } from "./layout/footer";
