@@ -1739,22 +1739,20 @@ Tél : ${beneficiaryPhone}`,
             kind: "buttons",
             buttons: [
               {
-                label: "buttons — état 1 : seul",
+                label: "buttons — primary",
                 url: demoUrl,
-                target: "_blank",
+                priority: "primary",
               },
-            ],
-          },
-          {
-            kind: "buttons",
-            buttons: [
               {
-                label: "buttons — état 2 : premier",
+                label: "secondary",
                 url: demoUrl,
-                target: "_blank",
+                priority: "secondary",
               },
-              { label: "deuxième", url: demoUrl, target: "_blank" },
-              { label: "troisième", url: demoUrl, target: "_blank" },
+              {
+                label: "tertiary",
+                url: demoUrl,
+                priority: "tertiary",
+              },
             ],
           },
           {
