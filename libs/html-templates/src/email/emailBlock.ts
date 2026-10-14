@@ -2,7 +2,7 @@ import { match } from "ts-pattern";
 import {
   type EmailButtonProps,
   type EmailButtonsGroupProps,
-  type HighlightKind,
+  type HighlightVariant,
   renderButton,
   renderButtonsGroup,
   renderHighlight,
@@ -27,7 +27,7 @@ export type EmailBlock = (
   | { kind: "list"; numbered?: boolean; items: string[] }
   | ({ kind: "button" } & EmailButtonProps)
   | ({ kind: "buttonsGroup" } & EmailButtonsGroupProps)
-  | { kind: "highlight"; variant?: HighlightKind; content: string }
+  | { kind: "highlight"; variant?: HighlightVariant; content: string }
 ) &
   CommonEmailBlockProps;
 
@@ -43,7 +43,7 @@ export const renderEmailBlock = (block: EmailBlock): string | undefined =>
     .with({ kind: "buttonsGroup" }, ({ buttons, layout }) =>
       renderButtonsGroup({ buttons, layout }),
     )
-    .with({ kind: "highlight" }, ({ variant, content }) =>
-      renderHighlight({ kind: variant, content }),
+    .with({ kind: "highlight" }, ({ content, variant }) =>
+      renderHighlight({ content, variant }),
     )
     .exhaustive();

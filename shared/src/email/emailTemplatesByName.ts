@@ -1770,6 +1770,11 @@ Tél : ${beneficiaryPhone}`,
           },
           {
             kind: "highlight",
+            content: `highlight — variante default (bleu France)
+              sur plusieurs lignes`,
+          },
+          {
+            kind: "highlight",
             variant: "info",
             content: "highlight — variante info (bleu)",
           },
