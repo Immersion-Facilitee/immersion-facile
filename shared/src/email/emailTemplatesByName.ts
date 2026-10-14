@@ -1750,23 +1750,36 @@ Tél : ${beneficiaryPhone}`,
             ],
           },
           {
-            kind: "buttons",
+            kind: "button",
+            label: "button — primary (par défaut)",
+            url: demoUrl,
+          },
+          {
+            kind: "button",
+            label: "button — secondary",
+            url: demoUrl,
+            priority: "secondary",
+          },
+          {
+            kind: "button",
+            label: "button — tertiary",
+            url: demoUrl,
+            priority: "tertiary",
+          },
+          {
+            kind: "buttonsGroup",
             buttons: [
-              {
-                label: "buttons — primary",
-                url: demoUrl,
-                priority: "primary",
-              },
-              {
-                label: "secondary",
-                url: demoUrl,
-                priority: "secondary",
-              },
-              {
-                label: "tertiary",
-                url: demoUrl,
-                priority: "tertiary",
-              },
+              { label: "buttonsGroup — vertical (par défaut)", url: demoUrl },
+              { label: "secondary", url: demoUrl, priority: "secondary" },
+              { label: "tertiary", url: demoUrl, priority: "tertiary" },
+            ],
+          },
+          {
+            kind: "buttonsGroup",
+            layout: "horizontal",
+            buttons: [
+              { label: "buttonsGroup — horizontal", url: demoUrl },
+              { label: "secondary", url: demoUrl, priority: "secondary" },
             ],
           },
           {
