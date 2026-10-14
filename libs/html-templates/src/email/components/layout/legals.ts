@@ -1,4 +1,5 @@
 import { ignoreTabs } from "../../../helpers/formatters";
+import { renderDivider } from "../blocks/divider";
 
 export const renderLegals = (content: string | undefined): string | undefined =>
   content &&
@@ -8,7 +9,8 @@ export const renderLegals = (content: string | undefined): string | undefined =>
       </td>
     </tr>
     <tr>
-      <td align="center" height="8" style="background-color: #F5F5FE;">
+      <td>
+        ${renderDivider()}
       </td>
     </tr>
     <tr>
