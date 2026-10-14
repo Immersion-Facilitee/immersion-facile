@@ -1725,12 +1725,23 @@ Tél : ${beneficiaryPhone}`,
       createEmailVariables: ({ agencyLogoUrl, demoUrl, internshipKind }) => ({
         subject: `[DEMO] Composants email (${internshipKind})`,
         agencyLogoUrl,
-        greetings: `<strong>[FIGE] greetings</strong>
+        greetings: `<strong>[FIXE] greetings</strong>
           Toujours juste sous le header, jamais déplaçable.`,
         blocks: [
           {
             kind: "paragraph",
+            content: "<strong>paragraph</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "paragraph",
             content: `paragraph — avec du HTML en ligne : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>.`,
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>list</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "list",
@@ -1739,6 +1750,12 @@ Tél : ${beneficiaryPhone}`,
               "deuxième élément, avec du <strong>gras</strong>",
               `troisième élément, avec un <a href="${demoUrl}">lien</a>`,
             ],
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>list numbered</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "list",
@@ -1748,23 +1765,47 @@ Tél : ${beneficiaryPhone}`,
               "deuxième élément",
               "troisième élément",
             ],
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>button primary</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "button",
             label: "button — primary (par défaut)",
             url: demoUrl,
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>button secondary</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "button",
             label: "button — secondary",
             url: demoUrl,
             priority: "secondary",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>button tertiary</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "button",
             label: "button — tertiary",
             url: demoUrl,
             priority: "tertiary",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>buttonsGroup vertical</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "buttonsGroup",
@@ -1773,6 +1814,12 @@ Tél : ${beneficiaryPhone}`,
               { label: "secondary", url: demoUrl, priority: "secondary" },
               { label: "tertiary", url: demoUrl, priority: "tertiary" },
             ],
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>buttonsGroup horizontal</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "buttonsGroup",
@@ -1781,34 +1828,76 @@ Tél : ${beneficiaryPhone}`,
               { label: "buttonsGroup — horizontal", url: demoUrl },
               { label: "secondary", url: demoUrl, priority: "secondary" },
             ],
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>highlight default</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "highlight",
             content: `highlight — variante default (bleu France)
-              sur plusieurs lignes`,
+              avec du HTML en ligne : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>.`,
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>highlight info</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "highlight",
             variant: "info",
             content: "highlight — variante info (bleu)",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>highlight success</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "highlight",
             variant: "success",
             content: "highlight — variante success (vert)",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>highlight warning</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "highlight",
             variant: "warning",
             content: "highlight — variante warning (orange)",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>highlight error</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "highlight",
             variant: "error",
             content: "highlight — variante error (rouge)",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>divider</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "divider",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>marginBottom</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "paragraph",
@@ -1829,10 +1918,10 @@ Tél : ${beneficiaryPhone}`,
             content: "bloc suivant",
           },
         ],
-        signature: `<strong>[FIGE] signature</strong>
+        signature: `<strong>[FIXE] signature</strong>
           Toujours après le corps, avant les mentions légales.
           ${defaultSignature(internshipKind)}`,
-        legals: `[FIGE] legals
+        legals: `[FIXE] legals
           Toujours en dernier, précédé d'un divider. Le footer vient juste après, automatiquement.`,
         attachmentUrls: [emailAttachements.memoBeneficiary],
       }),
