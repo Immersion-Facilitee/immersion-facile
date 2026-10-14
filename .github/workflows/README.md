@@ -110,9 +110,11 @@ L’extrait peut contenir des secrets que gitleaks n’a pas reconnus : il n’e
 jamais dans un artefact ou un log GitHub. Les logs restent publics pendant l’exécution du run
 analysé : le scan réduit la durée d’exposition sans la supprimer.
 
-`workflow_run` exige le nom de chaque workflow surveillé : tout nouveau workflow ayant son propre
-déclencheur doit être ajouté à la liste `workflows`. Les workflows réutilisables (`workflow_call`)
-n’y figurent pas : leurs logs font partie du run du workflow appelant.
+Le scan surveille tous les workflows du dépôt, y compris ceux ajoutés plus tard, sauf lui-même
+(`workflows: ["**", "!Scan Actions logs for secrets"]`). Les motifs dans `workflow_run.workflows`
+ne sont pas documentés par GitHub mais fonctionnent, exclusion `!` comprise. Les workflows réutilisables
+(`workflow_call`) ne déclenchent pas `workflow_run` : leurs logs sont analysés avec le run du
+workflow appelant. Renommer le workflow de scan impose de mettre à jour son exclusion.
 
 Une fausse alerte se corrige par une entrée `[[allowlists]]` dans la configuration. Toute nouvelle
 règle doit définir `secretGroup` pour que seule la valeur soit masquée, et être vérifiée avec de
