@@ -1,4 +1,8 @@
 export { type EmailButtonProps, renderButton } from "./blocks/button";
+export {
+  type EmailButtonsGroupProps,
+  renderButtonsGroup,
+} from "./blocks/buttonsGroup";
 export { type HighlightKind, renderHighlight } from "./blocks/highlight";
 export { renderList } from "./blocks/list";
 export { renderParagraph } from "./blocks/paragraph";
