@@ -94,6 +94,7 @@ export class PgAgencyRepository implements AgencyRepository {
         acquisition_keyword: agency.acquisitionKeyword,
         phone_id: phoneId,
         status_justification: agency.statusJustification,
+        group_name: agency.groupName,
         delegation_info: agency.delegationAgencyInfo
           ? JSON.stringify(agency.delegationAgencyInfo)
           : null,
@@ -173,6 +174,7 @@ export class PgAgencyRepository implements AgencyRepository {
         updated_at: agency.updatedAt,
         status_justification: agency.statusJustification,
         phone_id: phoneId,
+        group_name: agency.groupName,
         delegation_info:
           agency.delegationAgencyInfo &&
           JSON.stringify(agency.delegationAgencyInfo),
@@ -560,6 +562,7 @@ export class PgAgencyRepository implements AgencyRepository {
           acquisitionCampaign: ref("agencies.acquisition_campaign"),
           acquisitionKeyword: ref("agencies.acquisition_keyword"),
           phoneNumber: ref("phone_numbers.phone_number"),
+          groupName: ref("agencies.group_name"),
           delegationAgencyInfo: cast<DelegationAgencyInfo | null>(
             ref("agencies.delegation_info"),
           ),
