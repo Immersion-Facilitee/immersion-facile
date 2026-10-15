@@ -30,6 +30,8 @@ import {
 } from "src/app/hooks/formContents.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useSiretFetcher } from "src/app/hooks/siret.hooks";
+import { setValueAsNull } from "src/app/utils/form.utils";
+import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { makeGeocodingLocatorSelector } from "src/core-logic/domain/geocoding/geocoding.selectors";
 import { geocodingSlice } from "src/core-logic/domain/geocoding/geocoding.slice";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
@@ -48,8 +50,12 @@ export const AgencyFormCommonFields = ({
   mode,
   disableAgencyKeyFields,
 }: AgencyFormCommonFieldsProps) => {
-  const { getValues, setValue, register, formState, watch } =
-    useFormContext<CreateAgencyDto>();
+  const { getValues, setValue, register, formState, watch } = useFormContext<
+    CreateAgencyDto & {
+      groupName?: string | null;
+    }
+  >();
+  const isAdminConnected = useAppSelector(authSelectors.isAdminConnected);
   const agencyAddress = useAppSelector(
     makeGeocodingLocatorSelector("agency-address"),
   );
@@ -78,6 +84,8 @@ export const AgencyFormCommonFields = ({
     };
 
   const formValues = getValues();
+  const shouldShowGroupName =
+    mode === "edit" && (isAdminConnected || Boolean(formValues.groupName));
   const [validationSteps, setValidationSteps] = useState<ValidationSteps>(
     formValues.counsellorEmails.length || refersToOtherAgency
       ? "counsellorsAndValidators"
@@ -173,6 +181,19 @@ export const AgencyFormCommonFields = ({
         {...getFieldError("name")}
         disabled={disableAgencyKeyFields}
       />
+      {shouldShowGroupName && (
+        <Input
+          label={formContents.groupName.label}
+          disabled={!isAdminConnected}
+          nativeInputProps={{
+            ...register("groupName", {
+              setValueAs: setValueAsNull,
+            }),
+            id: formContents.groupName.id,
+          }}
+          {...getFieldError("groupName")}
+        />
+      )}
       <AddressAutocomplete
         countryCode={defaultCountryCode}
         locator="agency-address"
