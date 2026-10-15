@@ -112,6 +112,11 @@ export const immersionDurations = [
 
 export type ImmersionDuration = (typeof immersionDurations)[number];
 
+export type Discussion1Eleve1StageImmersionObjective = Extract<
+  ImmersionObjective,
+  typeof discoverObjective
+>;
+
 export const immersionDurationLabels: Record<ImmersionDuration, string> = {
   short: "Moins d'une semaine",
   medium: "1 semaine",
@@ -151,7 +156,7 @@ export type CreateDiscussionIFDto = ContactInformations<"IF"> &
 export type CreateDiscussion1Eleve1StageDto =
   ContactInformations<"1_ELEVE_1_STAGE"> &
     CreateDiscussionDtoCommon & {
-      immersionObjective: Extract<ImmersionObjective, typeof discoverObjective>;
+      immersionObjective: Discussion1Eleve1StageImmersionObjective;
     };
 
 export type CreateDiscussionDto =
@@ -173,7 +178,7 @@ type WithDiscussionKindProps<D extends DiscussionKind> = D extends "IF"
     }
   : {
       levelOfEducation: ContactLevelOfEducation;
-      immersionObjective: Extract<ImmersionObjective, typeof discoverObjective>;
+      immersionObjective: Discussion1Eleve1StageImmersionObjective;
     };
 
 export type PotentialBeneficiaryCommonProps = {
