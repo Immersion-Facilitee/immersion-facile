@@ -4,7 +4,7 @@ export {
   renderButtonsGroup,
 } from "./blocks/buttonsGroup";
 export { renderDivider } from "./blocks/divider";
-export { type HighlightVariant, renderHighlight } from "./blocks/highlight";
+export { renderHighlight } from "./blocks/highlight";
 export { renderList } from "./blocks/list";
 export { renderParagraph } from "./blocks/paragraph";
 export { renderFooter } from "./layout/footer";
