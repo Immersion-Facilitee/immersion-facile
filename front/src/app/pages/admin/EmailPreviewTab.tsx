@@ -14,9 +14,12 @@ import {
   domElementIds,
   type EmailTemplatesByName,
   emailTemplatesByName,
+  frontRoutes,
   internshipKinds,
+  keys,
 } from "shared";
 import { BackofficeDashboardTabContent } from "src/app/components/layout/BackofficeDashboardTabContent";
+import { useAdminEmailPreviewRoute } from "src/app/routes/routes.hooks";
 import { useStyles } from "tss-react/dsfr";
 
 const defaultEmailPreviewUrl =
@@ -24,12 +27,20 @@ const defaultEmailPreviewUrl =
 
 type TemplateName = keyof EmailTemplatesByName;
 
+const defaultTemplateName: TemplateName = "DEMO_EMAIL_COMPONENTS";
+
+const isTemplateName = (
+  templateName: string | undefined,
+): templateName is TemplateName =>
+  keys(emailTemplatesByName).some((name) => name === templateName);
+
 export const EmailPreviewTab = () => {
   const { cx } = useStyles();
+  const route = useAdminEmailPreviewRoute();
 
-  const [currentTemplate, setCurrentTemplate] = useState<TemplateName>(
-    "DEMO_EMAIL_COMPONENTS",
-  );
+  const currentTemplate = isTemplateName(route.params.templateName)
+    ? route.params.templateName
+    : defaultTemplateName;
 
   const [emailVariables, setEmailVariables] = useState(
     defaultEmailValueByEmailKind[currentTemplate],
@@ -49,7 +60,7 @@ export const EmailPreviewTab = () => {
   });
 
   const onTemplateChange = (templateName: TemplateName) => {
-    setCurrentTemplate(templateName);
+    frontRoutes.adminEmailPreview({ templateName }).replace();
     setEmailVariables(defaultEmailValueByEmailKind[templateName]);
   };
 

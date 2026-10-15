@@ -104,3 +104,13 @@ const useCreateDiscussionTypedRoute =
 
 export const useCreateDiscussionRoute = () =>
   useCreateDiscussionTypedRoute(createDiscussionRouteNames);
+
+const adminEmailPreviewRouteNames = [
+  frontRoutes.adminEmailPreview.name,
+] as const;
+
+const useAdminEmailPreviewTypedRoute =
+  makeUseTypedRoute<(typeof frontRoutes.adminEmailPreview)["name"]>();
+
+export const useAdminEmailPreviewRoute = () =>
+  useAdminEmailPreviewTypedRoute(adminEmailPreviewRouteNames);

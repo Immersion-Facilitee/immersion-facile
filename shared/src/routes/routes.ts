@@ -210,6 +210,10 @@ export const {
   ),
   admin,
   ...restOfAdminRoutes,
+  adminEmailPreview: admin.extend(
+    { templateName: param.query.optional.string },
+    () => `/${adminTabs.adminEmailPreview.slug}`,
+  ),
   adminConventions,
   adminConventionDetail: adminConventions.extend(
     { conventionId: param.path.string },
