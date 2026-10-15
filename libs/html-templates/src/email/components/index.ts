@@ -3,6 +3,10 @@ export {
   type EmailButtonsGroupProps,
   renderButtonsGroup,
 } from "./blocks/buttonsGroup";
+export {
+  type EmailCalloutProps,
+  renderCallout,
+} from "./blocks/callout";
 export { renderDivider } from "./blocks/divider";
 export { renderHighlight } from "./blocks/highlight";
 export { renderList } from "./blocks/list";
