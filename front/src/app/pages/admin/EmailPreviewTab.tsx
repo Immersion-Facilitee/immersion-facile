@@ -28,7 +28,7 @@ export const EmailPreviewTab = () => {
   const { cx } = useStyles();
 
   const [currentTemplate, setCurrentTemplate] = useState<TemplateName>(
-    "AGENCY_WAS_ACTIVATED",
+    "DEMO_EMAIL_COMPONENTS",
   );
 
   const [emailVariables, setEmailVariables] = useState(
@@ -70,6 +70,7 @@ export const EmailPreviewTab = () => {
               nativeSelectProps={{
                 id: domElementIds.admin.emailPreviewTab.emailTemplateNameSelect,
                 name: "templateName",
+                value: currentTemplate,
                 onChange: (event) =>
                   onTemplateChange(event.currentTarget.value),
               }}
