@@ -1832,57 +1832,13 @@ Tél : ${beneficiaryPhone}`,
           },
           {
             kind: "paragraph",
-            content: "<strong>highlight default</strong>",
+            content: "<strong>highlight</strong>",
             marginBottom: "sm",
           },
           {
             kind: "highlight",
-            content: `highlight — variante default (bleu France)
+            content: `highlight
               avec du HTML en ligne : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>.`,
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>highlight info</strong>",
-            marginBottom: "sm",
-          },
-          {
-            kind: "highlight",
-            variant: "info",
-            content: "highlight — variante info (bleu)",
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>highlight success</strong>",
-            marginBottom: "sm",
-          },
-          {
-            kind: "highlight",
-            variant: "success",
-            content: "highlight — variante success (vert)",
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>highlight warning</strong>",
-            marginBottom: "sm",
-          },
-          {
-            kind: "highlight",
-            variant: "warning",
-            content: "highlight — variante warning (orange)",
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>highlight error</strong>",
-            marginBottom: "sm",
-          },
-          {
-            kind: "highlight",
-            variant: "error",
-            content: "highlight — variante error (rouge)",
             marginBottom: "lg",
           },
           {
