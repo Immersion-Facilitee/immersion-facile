@@ -335,6 +335,7 @@ const createNewAgencies = async ({
         },
       },
       codeSafir: null,
+      groupName: null,
       statusJustification: null,
     });
   });

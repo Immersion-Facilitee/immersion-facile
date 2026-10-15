@@ -51,6 +51,7 @@ const emptyAgency: AgencyDto = {
   refersToAgencyName: null,
   refersToAgencyContactEmail: null,
   codeSafir: null,
+  groupName: null,
   statusJustification: null,
   phoneNumber: "+33600000000",
   delegationAgencyInfo: null,
@@ -123,6 +124,13 @@ export class AgencyDtoBuilder implements Builder<AgencyDto> {
     return new AgencyDtoBuilder({
       ...this.#agency,
       codeSafir: code,
+    });
+  }
+
+  public withGroupName(groupName: string | null) {
+    return new AgencyDtoBuilder({
+      ...this.#agency,
+      groupName,
     });
   }
 

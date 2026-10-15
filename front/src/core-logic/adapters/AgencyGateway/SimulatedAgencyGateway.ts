@@ -98,6 +98,7 @@ export class SimulatedAgencyGateway implements AgencyGateway {
       updatedAt: new Date().toISOString(),
       status: "needsReview",
       codeSafir: null,
+      groupName: null,
       statusJustification: null,
     };
   }

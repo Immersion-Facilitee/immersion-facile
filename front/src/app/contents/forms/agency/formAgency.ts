@@ -11,6 +11,7 @@ export type FormAgencyFieldsLabels = FormFieldsObjectForContent<
   Record<
     Partial<
       | keyof CreateAgencyDto
+      | "groupName"
       | "stepsForValidation"
       | `address.${keyof AddressDto}`
       | `position.${keyof GeoPositionDto}`
@@ -38,6 +39,10 @@ export const formAgencyFieldsLabels: FormAgencyFieldsLabels = {
     required: true,
     id: domElementIds.addAgency.nameInput,
     autoComplete: "organization",
+  },
+  groupName: {
+    label: "Groupe d’appartenance",
+    id: domElementIds.admin.agencyTab.editAgencyFormGroupNameInput,
   },
   coveredDepartments: {
     id: domElementIds.addAgency.coveredDepartmentsInput,

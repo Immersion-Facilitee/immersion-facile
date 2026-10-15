@@ -152,6 +152,9 @@ const withCounsellorsAndRequiredValidatorEmailsSchema = z.object({
 export const agencyNameSchema: ZodSchemaWithInputMatchingOutput<string> =
   stringWithMaxLength255;
 
+const groupNameSchema: ZodSchemaWithInputMatchingOutput<string | null> =
+  stringWithMaxLength255.or(z.null());
+
 const commonAgencyShape = {
   id: agencyIdSchema,
   createdAt: makeDateStringSchema(),
@@ -244,6 +247,7 @@ export const editAgencySchema: ZodSchemaWithInputMatchingOutput<AgencyDto> = z
       updatedAt: dateTimeIsoStringSchema,
       status: agencyStatusSchema,
       codeSafir: zStringMinLength1Max1024.or(z.null()),
+      groupName: groupNameSchema,
       refersToAgencyId: refersToAgencyIdSchema.or(z.null()),
       refersToAgencyName: zStringMinLength1Max1024.or(z.null()),
       refersToAgencyContactEmail: emailSchema.or(z.null()),
@@ -276,6 +280,7 @@ export const agencyDtoForAgencyUsersAndAdminsSchema: ZodSchemaWithInputMatchingO
         updatedAt: dateTimeIsoStringSchema,
         status: agencyStatusSchema,
         codeSafir: zStringMinLength1Max1024.or(z.null()),
+        groupName: groupNameSchema,
         refersToAgencyId: refersToAgencyIdSchema.or(z.null()),
         refersToAgencyName: zStringMinLength1Max1024.or(z.null()),
         refersToAgencyContactEmail: emailSchema.or(z.null()),
@@ -293,6 +298,7 @@ export const agencySchema: ZodSchemaWithInputMatchingOutput<AgencyDto> = z
     status: agencyStatusSchema,
     updatedAt: dateTimeIsoStringSchema,
     codeSafir: zStringMinLength1Max1024.or(z.null()),
+    groupName: groupNameSchema,
     refersToAgencyId: refersToAgencyIdSchema.or(z.null()),
     refersToAgencyName: zStringMinLength1Max1024.or(z.null()),
     refersToAgencyContactEmail: emailSchema.or(z.null()),

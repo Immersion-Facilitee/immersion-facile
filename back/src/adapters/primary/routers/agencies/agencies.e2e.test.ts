@@ -260,6 +260,7 @@ describe("Agency routes", () => {
               status: "needsReview",
               refersToAgencyId: null,
               codeSafir: null,
+              groupName: null,
               statusJustification: null,
               counsellorEmails: [],
               validatorEmails: [],
