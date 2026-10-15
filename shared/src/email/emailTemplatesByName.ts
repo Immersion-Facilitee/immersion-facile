@@ -1843,6 +1843,60 @@ Tél : ${beneficiaryPhone}`,
           },
           {
             kind: "paragraph",
+            content: "<strong>callout primary</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "callout",
+            blocks: [
+              {
+                kind: "paragraph",
+                content: `<strong>callout — variante primary (par défaut) :</strong> paragraphes et listes, avec du HTML en ligne : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>.`,
+              },
+              {
+                kind: "paragraph",
+                content: "<strong>Une liste à puces :</strong>",
+              },
+              { kind: "list", items: ["item 1", "item 2", "..."] },
+              {
+                kind: "paragraph",
+                content: "<strong>Une liste numérotée :</strong>",
+              },
+              {
+                kind: "list",
+                numbered: true,
+                items: ["item 1", "item 2", "..."],
+              },
+            ],
+            buttonsGroup: {
+              layout: "horizontal",
+              buttons: [
+                { label: "Bouton 1", url: demoUrl },
+                { label: "Bouton 2", url: demoUrl, priority: "secondary" },
+                { label: "Bouton 3", url: demoUrl, priority: "tertiary" },
+              ],
+            },
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>callout secondary</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "callout",
+            variant: "secondary",
+            blocks: [
+              {
+                kind: "paragraph",
+                content:
+                  "<strong>callout — variante secondary :</strong> le buttonsGroup en footer est optionnel.",
+              },
+            ],
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
             content: "<strong>divider</strong>",
             marginBottom: "sm",
           },
