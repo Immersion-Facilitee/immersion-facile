@@ -2,7 +2,6 @@ import { match } from "ts-pattern";
 import {
   type EmailButtonProps,
   type EmailButtonsGroupProps,
-  type HighlightVariant,
   renderButton,
   renderButtonsGroup,
   renderDivider,
@@ -28,7 +27,7 @@ export type EmailBlock = (
   | { kind: "list"; numbered?: boolean; items: string[] }
   | ({ kind: "button" } & EmailButtonProps)
   | ({ kind: "buttonsGroup" } & EmailButtonsGroupProps)
-  | { kind: "highlight"; variant?: HighlightVariant; content: string }
+  | { kind: "highlight"; content: string }
   | { kind: "divider" }
 ) &
   CommonEmailBlockProps;
@@ -45,8 +44,6 @@ export const renderEmailBlock = (block: EmailBlock): string | undefined =>
     .with({ kind: "buttonsGroup" }, ({ buttons, layout }) =>
       renderButtonsGroup({ buttons, layout }),
     )
-    .with({ kind: "highlight" }, ({ content, variant }) =>
-      renderHighlight({ content, variant }),
-    )
+    .with({ kind: "highlight" }, ({ content }) => renderHighlight(content))
     .with({ kind: "divider" }, () => renderDivider())
     .exhaustive();
