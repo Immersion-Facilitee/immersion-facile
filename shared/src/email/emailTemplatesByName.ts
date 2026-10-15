@@ -1721,7 +1721,7 @@ Tél : ${beneficiaryPhone}`,
           },
           {
             kind: "paragraph",
-            content: `paragraph — avec du HTML en ligne : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>.`,
+            content: `Du texte écrit en HTML, qui accepte du <strong>gras</strong>, de l'<em>italique</em> ou un <a href="${demoUrl}">lien</a>.`,
             marginBottom: "lg",
           },
           {
@@ -1732,87 +1732,60 @@ Tél : ${beneficiaryPhone}`,
           {
             kind: "list",
             items: [
-              "list — état 1 : à puces",
+              "à puces (par défaut)",
               "deuxième élément, avec du <strong>gras</strong>",
               `troisième élément, avec un <a href="${demoUrl}">lien</a>`,
             ],
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>list numbered</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "list",
             numbered: true,
-            items: [
-              "list — état 2 : numérotée",
-              "deuxième élément",
-              "troisième élément",
-            ],
+            items: ["numbered", "deuxième élément", "troisième élément"],
             marginBottom: "lg",
           },
           {
             kind: "paragraph",
-            content: "<strong>button primary</strong>",
+            content: "<strong>button</strong>",
             marginBottom: "sm",
           },
           {
             kind: "button",
-            label: "button — primary (par défaut)",
+            label: "primary (par défaut)",
             url: demoUrl,
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>button secondary</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "button",
-            label: "button — secondary",
+            label: "secondary",
             url: demoUrl,
             priority: "secondary",
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>button tertiary</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "button",
-            label: "button — tertiary",
+            label: "tertiary",
             url: demoUrl,
             priority: "tertiary",
             marginBottom: "lg",
           },
           {
             kind: "paragraph",
-            content: "<strong>buttonsGroup vertical</strong>",
+            content: "<strong>buttonsGroup</strong>",
             marginBottom: "sm",
           },
           {
             kind: "buttonsGroup",
             buttons: [
-              { label: "buttonsGroup — vertical (par défaut)", url: demoUrl },
+              { label: "vertical (par défaut)", url: demoUrl },
               { label: "secondary", url: demoUrl, priority: "secondary" },
               { label: "tertiary", url: demoUrl, priority: "tertiary" },
             ],
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>buttonsGroup horizontal</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "buttonsGroup",
             layout: "horizontal",
             buttons: [
-              { label: "buttonsGroup — horizontal", url: demoUrl },
+              { label: "horizontal", url: demoUrl },
               { label: "secondary", url: demoUrl, priority: "secondary" },
+              { label: "tertiary", url: demoUrl, priority: "tertiary" },
             ],
             marginBottom: "lg",
           },
@@ -1823,13 +1796,12 @@ Tél : ${beneficiaryPhone}`,
           },
           {
             kind: "highlight",
-            content: `highlight
-              avec du HTML en ligne : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>.`,
+            content: `Du texte écrit en HTML, qui accepte du <strong>gras</strong>, de l'<em>italique</em> ou un <a href="${demoUrl}">lien</a>.`,
             marginBottom: "lg",
           },
           {
             kind: "paragraph",
-            content: "<strong>callout primary</strong>",
+            content: "<strong>callout</strong>",
             marginBottom: "sm",
           },
           {
@@ -1837,7 +1809,55 @@ Tél : ${beneficiaryPhone}`,
             blocks: [
               {
                 kind: "paragraph",
-                content: `<strong>callout — variante primary (par défaut) :</strong> paragraphes et listes, avec du HTML en ligne : du <strong>gras</strong>, de l'<em>italique</em>, un <a href="${demoUrl}">lien</a>.`,
+                content: `<strong>primary (par défaut), sans buttonsGroup :</strong> du texte écrit en HTML, qui accepte du <strong>gras</strong>, de l'<em>italique</em> ou un <a href="${demoUrl}">lien</a>.`,
+              },
+              {
+                kind: "paragraph",
+                content: "<strong>Une liste à puces :</strong>",
+              },
+              { kind: "list", items: ["item 1", "item 2", "..."] },
+              {
+                kind: "paragraph",
+                content: "<strong>Une liste numérotée :</strong>",
+              },
+              {
+                kind: "list",
+                numbered: true,
+                items: ["item 1", "item 2", "..."],
+              },
+            ],
+          },
+          {
+            kind: "callout",
+            variant: "secondary",
+            blocks: [
+              {
+                kind: "paragraph",
+                content: `<strong>secondary, sans buttonsGroup :</strong> du texte écrit en HTML, qui accepte du <strong>gras</strong>, de l'<em>italique</em> ou un <a href="${demoUrl}">lien</a>.`,
+              },
+              {
+                kind: "paragraph",
+                content: "<strong>Une liste à puces :</strong>",
+              },
+              { kind: "list", items: ["item 1", "item 2", "..."] },
+              {
+                kind: "paragraph",
+                content: "<strong>Une liste numérotée :</strong>",
+              },
+              {
+                kind: "list",
+                numbered: true,
+                items: ["item 1", "item 2", "..."],
+              },
+            ],
+            marginBottom: "lg",
+          },
+          {
+            kind: "callout",
+            blocks: [
+              {
+                kind: "paragraph",
+                content: `<strong>primary (par défaut), avec buttonsGroup :</strong> du texte écrit en HTML, qui accepte du <strong>gras</strong>, de l'<em>italique</em> ou un <a href="${demoUrl}">lien</a>.`,
               },
               {
                 kind: "paragraph",
@@ -1862,12 +1882,6 @@ Tél : ${beneficiaryPhone}`,
                 { label: "Bouton 3", url: demoUrl, priority: "tertiary" },
               ],
             },
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>callout secondary</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "callout",
@@ -1875,11 +1889,31 @@ Tél : ${beneficiaryPhone}`,
             blocks: [
               {
                 kind: "paragraph",
-                content:
-                  "<strong>callout — variante secondary :</strong> le buttonsGroup en footer est optionnel.",
+                content: `<strong>secondary, avec buttonsGroup :</strong> du texte écrit en HTML, qui accepte du <strong>gras</strong>, de l'<em>italique</em> ou un <a href="${demoUrl}">lien</a>.`,
+              },
+              {
+                kind: "paragraph",
+                content: "<strong>Une liste à puces :</strong>",
+              },
+              { kind: "list", items: ["item 1", "item 2", "..."] },
+              {
+                kind: "paragraph",
+                content: "<strong>Une liste numérotée :</strong>",
+              },
+              {
+                kind: "list",
+                numbered: true,
+                items: ["item 1", "item 2", "..."],
               },
             ],
-            marginBottom: "lg",
+            buttonsGroup: {
+              layout: "horizontal",
+              buttons: [
+                { label: "Bouton 1", url: demoUrl },
+                { label: "Bouton 2", url: demoUrl, priority: "secondary" },
+                { label: "Bouton 3", url: demoUrl, priority: "tertiary" },
+              ],
+            },
           },
           {
             kind: "paragraph",
@@ -1897,16 +1931,16 @@ Tél : ${beneficiaryPhone}`,
           },
           {
             kind: "paragraph",
-            content: "marginBottom — sm (8px)",
+            content: "sm (8px)",
             marginBottom: "sm",
           },
           {
             kind: "paragraph",
-            content: "marginBottom — md (16px), valeur par défaut",
+            content: "md (16px, par défaut)",
           },
           {
             kind: "paragraph",
-            content: "marginBottom — lg (32px)",
+            content: "lg (32px)",
             marginBottom: "lg",
           },
           {
