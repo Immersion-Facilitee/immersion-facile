@@ -520,6 +520,60 @@ describe("Update agency", () => {
     });
   });
 
+  it("backoffice admin can update groupName", async () => {
+    uow.agencyRepository.agencies = [
+      toAgencyWithRights(initialAgencyInRepo, {}),
+    ];
+
+    const updatedAgency = new AgencyDtoBuilder(initialAgencyInRepo)
+      .withGroupName("Réseau Cap-Emploi 75")
+      .build();
+
+    await updateAgency.execute(
+      { ...updatedAgency, validatorEmails: ["validator@mail.com"] },
+      connectedAdmin,
+    );
+
+    expectToEqual(uow.agencyRepository.agencies, [
+      toAgencyWithRights(
+        { ...updatedAgency, updatedAt: timeGateway.now().toISOString() },
+        {},
+      ),
+    ]);
+  });
+
+  it("throws Forbidden when an agency-admin (not backoffice) changes groupName", async () => {
+    const agencyWithGroupName = new AgencyDtoBuilder(initialAgencyInRepo)
+      .withGroupName("Réseau Cap-Emploi 75")
+      .build();
+    uow.userRepository.users = [agencyAdmin];
+    uow.agencyRepository.agencies = [
+      toAgencyWithRights(agencyWithGroupName, {}),
+    ];
+
+    const payloadWithAlteredGroupName = new AgencyDtoBuilder(
+      agencyWithGroupName,
+    )
+      .withName("L'agence modifié")
+      .withGroupName("Autre groupe")
+      .build();
+
+    await expectPromiseToFailWithError(
+      updateAgency.execute(
+        {
+          ...payloadWithAlteredGroupName,
+          validatorEmails: ["validator@mail.com"],
+        },
+        connectedAgencyAdmin,
+      ),
+      errors.user.forbidden({ userId: agencyAdmin.id }),
+    );
+    expectToEqual(uow.agencyRepository.agencies, [
+      toAgencyWithRights(agencyWithGroupName, {}),
+    ]);
+    expectToEqual(uow.outboxRepository.events, []);
+  });
+
   it("updates agency with delegationAgencyInfo", async () => {
     const agencyWithDelegation = new AgencyDtoBuilder()
       .withId("agency-with-delegation")

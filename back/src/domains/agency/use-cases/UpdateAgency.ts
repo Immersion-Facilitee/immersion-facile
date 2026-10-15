@@ -68,12 +68,13 @@ export const makeUpdateAgency = useCaseBuilder("UpdateAgency")
     if (!existingAgency) throw errors.agency.notFound({ agencyId: agency.id });
 
     const statusChanged = existingAgency.status !== agency.status;
+    const groupNameChanged = existingAgency.groupName !== agency.groupName;
     const statusChangedEventTopic = getStatusChangedEventTopic(
       existingAgency.status,
       agency.status,
     );
 
-    if (statusChanged) throwIfNotAdmin(currentUser);
+    if (statusChanged || groupNameChanged) throwIfNotAdmin(currentUser);
     else
       throwIfNotAgencyAdminOrBackofficeAdmin({
         agencyIds: [agency.id],
