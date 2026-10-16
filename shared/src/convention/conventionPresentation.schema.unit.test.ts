@@ -71,6 +71,34 @@ describe("makeConventionPresentationSchemaWithNormalizedInput", () => {
       },
     );
 
+    it("ignores the agency kind filter when all agency kinds are selected", () => {
+      expectToEqual(
+        schema.parse({
+          id: validConventionId,
+          name: "Modèle immersion toutes structures",
+          internshipKind: "immersion",
+          agencyKind: "all",
+        }),
+        {
+          id: validConventionId,
+          name: "Modèle immersion toutes structures",
+          internshipKind: "immersion",
+          agencyKind: undefined,
+        },
+      );
+    });
+
+    it("keeps a supported agency kind", () => {
+      const conventionTemplate = {
+        id: validConventionId,
+        name: "Modèle immersion France Travail",
+        internshipKind: "immersion" as InternshipKind,
+        agencyKind: "france-travail" as const,
+      };
+
+      expectToEqual(schema.parse(conventionTemplate), conventionTemplate);
+    });
+
     it.each([
       {
         id: validConventionId,
@@ -87,6 +115,12 @@ describe("makeConventionPresentationSchemaWithNormalizedInput", () => {
         signatories: {
           beneficiary: { email: "beneficiary@test.com" },
         },
+      },
+      {
+        id: validConventionId,
+        name: "Modèle immersion",
+        internshipKind: "immersion" as InternshipKind,
+        agencyKind: "not-a-kind",
       },
     ])("throws on invalid data", (conventionTemplate) => {
       expect(() => schema.parse(conventionTemplate)).toThrow();

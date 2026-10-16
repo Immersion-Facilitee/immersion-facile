@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAllAgencyKinds } from "../agency/agency.dto";
 import { agencyKindSchema } from "../agency/agency.schema";
 import { emailSchema } from "../email/email.schema";
 import { getNestedValue, isObject } from "../utils";
@@ -112,7 +113,10 @@ const baseConventionDraftSchema = makeConventionDeepPartialSchema(
   .and(
     z.object({
       id: conventionDraftIdSchema,
-      agencyKind: agencyKindSchema.optional(),
+      agencyKind: z.preprocess(
+        (val) => (isAllAgencyKinds(val) ? undefined : val),
+        agencyKindSchema.optional(),
+      ),
       agencyDepartment: agencyDepartmentSchema.optional(),
     }),
   );

@@ -46,6 +46,7 @@ import {
   establishmentFormOfferSchema,
   frontRoutes,
   type InternshipKind,
+  isAllAgencyKinds,
   isBeneficiaryMinor,
   isConventionTemplateFromRoute,
   isCreateConventionPresentationInitialValues,
@@ -70,7 +71,6 @@ import { AddressAutocompleteWithCountrySelect } from "src/app/components/forms/a
 import {
   AgencySelector,
   departmentOptions,
-  isAllAgencyKinds,
 } from "src/app/components/forms/commons/AgencySelector";
 import {
   type ConventionFormMode,

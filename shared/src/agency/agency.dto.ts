@@ -159,6 +159,12 @@ export type AllowedAgencyKindToAdd = Exclude<
   "immersion-facile" | "prepa-apprentissage"
 >;
 
+export const allAgencyKindsValue = "all" as const;
+
+export const isAllAgencyKinds = (
+  value: unknown,
+): value is typeof allAgencyKindsValue => value === allAgencyKindsValue;
+
 export const agencyKindToLabel: Record<AllowedAgencyKindToAdd, string> = {
   "france-travail": "France Travail (anciennement Pôle emploi)",
   "mission-locale": "Mission Locale",

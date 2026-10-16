@@ -179,6 +179,21 @@ describe("conventionDraftSchema schema validation", () => {
     expect(() => conventionDraftSchema.parse(convention)).not.toThrow();
   });
 
+  it("ignores the agency kind filter when all agency kinds are selected", () => {
+    expectToEqual(
+      conventionDraftSchema.parse({
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "immersion",
+        agencyKind: "all",
+      }),
+      {
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "immersion",
+        agencyKind: undefined,
+      },
+    );
+  });
+
   it.each([
     {
       id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",

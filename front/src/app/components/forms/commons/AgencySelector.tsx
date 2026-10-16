@@ -9,11 +9,13 @@ import {
   type AllowedAgencyKindToAdd,
   agencyKindToLabel,
   allAgencyKindsAllowedToAdd,
+  allAgencyKindsValue,
   type ConventionReadDto,
   type CreateAgencyDto,
   type DepartmentCode,
   departmentNameToDepartmentCode,
   fitForDelegationAgencyKind,
+  isAllAgencyKinds,
   orderedAgencyKindList,
 } from "shared";
 import type { FormFieldAttributes } from "src/app/contents/forms/types";
@@ -35,14 +37,9 @@ type AgencySelectorProps = {
   shouldFilterDelegationPrescriptionAgencyKind: boolean;
 };
 
-export const allAgencyKindsValue = "all" as const;
 type AgencyKindForSelector =
   | AllowedAgencyKindToAdd
   | typeof allAgencyKindsValue;
-
-export const isAllAgencyKinds = (
-  value: unknown,
-): value is typeof allAgencyKindsValue => value === allAgencyKindsValue;
 
 const isAllowedAgencyKind = (value: unknown): value is AllowedAgencyKindToAdd =>
   allAgencyKindsAllowedToAdd.some((agencyKind) => agencyKind === value);
