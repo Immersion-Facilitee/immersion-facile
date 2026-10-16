@@ -1,6 +1,6 @@
 import type { OpenAPIV3_1 as OpenAPI } from "openapi-types";
+import { publicApiV3SearchEstablishmentRoutes } from "shared";
 import { createOpenApiSpecV3 } from "./createOpenApiV3";
-import { publicApiV3SearchEstablishmentRoutes } from "./publicApiV3.routes";
 
 describe("createOpenApiSpecV3", () => {
   const spec = createOpenApiSpecV3("test");

@@ -4,6 +4,9 @@ import {
   expectHttpResponseToEqual,
   expectToEqual,
   type Location,
+  type PublicApiV3SearchEstablishmentRoutes,
+  publicApiV3SearchEstablishmentRoutes,
+  type SearchImmersionResultPublicV3,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -24,11 +27,6 @@ import {
 } from "../../../../domains/establishment/helpers/EstablishmentBuilders";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { buildTestApp } from "../../../../utils/buildTestApp";
-import type { SearchImmersionResultPublicV3 } from "../DtoAndSchemas/v3/output/SearchImmersionResultPublicV3.dto";
-import {
-  type PublicApiV3SearchEstablishmentRoutes,
-  publicApiV3SearchEstablishmentRoutes,
-} from "./publicApiV3.routes";
 
 const styliste: AppellationAndRomeDto = {
   romeCode: "B1805",

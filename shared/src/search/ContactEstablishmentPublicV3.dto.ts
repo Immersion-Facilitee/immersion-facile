@@ -1,15 +1,14 @@
+import type { LocationId } from "../address/address.dto";
+import type { ImmersionObjective } from "../convention/convention.dto";
 import type {
-  AppellationCode,
   ContactLevelOfEducation,
-  ContactMode,
   CreateDiscussionDto,
-  Email,
-  Firstname,
-  ImmersionObjective,
-  Lastname,
-  LocationId,
-  SiretDto,
-} from "shared";
+} from "../discussion/discussion.dto";
+import type { Email } from "../email/email.dto";
+import type { ContactMode } from "../formEstablishment/FormEstablishment.dto";
+import type { AppellationCode } from "../romeAndAppellationDtos/romeAndAppellation.dto";
+import type { SiretDto } from "../siret/siret";
+import type { Firstname, Lastname } from "../user/user.dto";
 
 type ContactEstablishmentPublicV3CommonDto = {
   appellationCode: AppellationCode;

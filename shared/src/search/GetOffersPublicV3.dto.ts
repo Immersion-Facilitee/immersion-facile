@@ -1,16 +1,17 @@
+import type { WithAcquisition } from "../acquisition.dto";
+import type { DepartmentCode, LocationId } from "../address/address.dto";
 import type {
-  AppellationCode,
-  DepartmentCode,
   EstablishmentSearchableByValue,
   FitForDisableWorkerOption,
-  LocationId,
-  NafCode,
+} from "../formEstablishment/FormEstablishment.dto";
+import type { NafCode } from "../naf/naf.dto";
+import type {
   PaginationQueryParams,
-  SiretDto,
   SortDirection,
-  WithAcquisition,
-  WithOptionalRemoteWorkModes,
-} from "shared";
+} from "../pagination/pagination.dto";
+import type { WithOptionalRemoteWorkModes } from "../remoteWorkMode/remoteWorkMode.dto";
+import type { AppellationCode } from "../romeAndAppellationDtos/romeAndAppellation.dto";
+import type { SiretDto } from "../siret/siret";
 
 type GetOffersFlatParamsPublicV3Common = WithAcquisition & {
   place?: string;
