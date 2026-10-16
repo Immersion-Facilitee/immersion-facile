@@ -52,10 +52,24 @@ Search for a pull request whose head is the current branch, including non-open p
 - Use `.github/PULL_REQUEST_TEMPLATE.md` as the pull request body without removing or rewriting its checklist. Prepend `Fixes #<issue-number>` and a blank line.
 - Do not overwrite useful content in an existing pull request. Add or correct only missing linkage or required metadata, and ask before materially rewriting user-authored content.
 
+## Track the issue in the project
+
+The team board is the [Immersion Facilitée project](https://github.com/orgs/Immersion-Facilitee/projects/1) (`--owner Immersion-Facilitee`, number `1`, id `PVT_kwDOEn1wMc4BetAT`). These commands require the `project` scope; if `gh` reports it missing, ask the user to run `gh auth refresh -s project`.
+
+1. Add the issue, which returns the existing item when it is already on the board:
+   `gh project item-add 1 --owner Immersion-Facilitee --url <issue-url> --format json --jq .id`
+2. Read the item's current `Status` and `Sprint` with `gh project item-list 1 --owner Immersion-Facilitee --format json` or `gh issue view <N> --json projectItems`.
+3. Set `Status` (field `PVTSSF_lADOEn1wMc4BetATzhZFO70`) to `En développement` (option `47fc9ee4`), unless it is already `Ready for review`, `En staging`, `En production` or `Monitoring Déploiement`:
+   `gh project item-edit --project-id PVT_kwDOEn1wMc4BetAT --id <item-id> --field-id PVTSSF_lADOEn1wMc4BetATzhZFO70 --single-select-option-id 47fc9ee4`
+4. Set `Sprint` (field `PVTIF_lADOEn1wMc4BetATzhZFO80`) to the iteration containing today when it is empty. If it holds another sprint, ask before changing it. Resolve the current iteration with:
+   `gh api graphql -f query='query { node(id: "PVTIF_lADOEn1wMc4BetATzhZFO80") { ... on ProjectV2IterationField { configuration { iterations { id title startDate duration } } } } }' --jq '.data.node.configuration.iterations[] | select((.startDate | strptime("%Y-%m-%d") | mktime) <= now and now < ((.startDate | strptime("%Y-%m-%d") | mktime) + .duration * 86400))'`
+   then `gh project item-edit --project-id PVT_kwDOEn1wMc4BetAT --id <item-id> --field-id PVTIF_lADOEn1wMc4BetATzhZFO80 --iteration-id <iteration-id>`.
+   If no iteration contains today, leave `Sprint` empty and report it.
+
 ## Document the issue
 
 Read and follow the [`document-issue` skill](../document-issue/SKILL.md), using the issue already resolved by this workflow. When the pull request already existed, still ensure the marked documentation comment exists and is current.
 
 ## Finish
 
-Return the issue and pull request URLs, the branch name, and a concise list of actions performed or remaining. If the workflow stopped partway through, make the partial state explicit and do not repeat successful external mutations on retry.
+Return the issue and pull request URLs, the branch name, the project Status and Sprint set, and a concise list of actions performed or remaining. If the workflow stopped partway through, make the partial state explicit and do not repeat successful external mutations on retry.
