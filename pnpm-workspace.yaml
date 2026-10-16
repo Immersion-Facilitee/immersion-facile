@@ -5,6 +5,7 @@ packages:
   - "libs/*"
   - "playwright-e2e"
   - "load-tests"
+  - "mcp"
 allowBuilds:
   '@parcel/watcher': false
   '@scarf/scarf': false

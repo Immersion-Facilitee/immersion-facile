@@ -1,9 +1,13 @@
 import { Router } from "express";
 import {
   type ApiConsumer,
+  contactEstablishmentPublicV3Schema,
+  contactEstablishmentPublicV3ToDomain,
+  domainToSearchImmersionResultPublicV3,
   errors,
   isApiConsumerAllowed,
   pipeWithValue,
+  publicApiV3SearchEstablishmentRoutes,
   type WithAcquisition,
 } from "shared";
 import { createExpressSharedRouter } from "shared-routes/express";
@@ -11,10 +15,6 @@ import type { AppDependencies } from "../../../../config/bootstrap/createAppDepe
 import { sendHttpResponse } from "../../../../config/helpers/sendHttpResponse";
 import { validateAndParseZodSchema } from "../../../../config/helpers/validateAndParseZodSchema";
 import { createLogger } from "../../../../utils/logger";
-import { contactEstablishmentPublicV3ToDomain } from "../DtoAndSchemas/v3/input/ContactEstablishmentPublicV3.dto";
-import { contactEstablishmentPublicV3Schema } from "../DtoAndSchemas/v3/input/ContactEstablishmentPublicV3.schema";
-import { domainToSearchImmersionResultPublicV3 } from "../DtoAndSchemas/v3/output/SearchImmersionResultPublicV3.dto";
-import { publicApiV3SearchEstablishmentRoutes } from "./publicApiV3.routes";
 
 const logger = createLogger(__filename);
 
