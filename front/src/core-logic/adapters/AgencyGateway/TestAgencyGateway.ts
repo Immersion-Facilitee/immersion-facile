@@ -4,6 +4,7 @@ import type {
   AgencyId,
   AgencyOption,
   AgencyPublicDisplayDto,
+  AgencyUserForListing,
   CloseAgencyAndTransferConventionsRequestDto,
   ConnectedUser,
   ConnectedUserJwt,
@@ -27,6 +28,8 @@ export class TestAgencyGateway implements AgencyGateway {
   public customAgencyId$ = new Subject<AgencyId | undefined>();
 
   public fetchedAgency$ = new Subject<AgencyDto>();
+
+  public getAgencyUsersResponse$ = new Subject<AgencyUserForListing[]>();
 
   public updateAgencyResponse$ = new Subject<undefined>();
 
@@ -60,6 +63,10 @@ export class TestAgencyGateway implements AgencyGateway {
     _agencyId: WithAgencyId,
   ): Observable<AgencyPublicDisplayDto> {
     return this.agencyInfo$;
+  }
+
+  public getAgencyUsers$(): Observable<AgencyUserForListing[]> {
+    return this.getAgencyUsersResponse$;
   }
 
   public listAgencyOptionsByFilter$(

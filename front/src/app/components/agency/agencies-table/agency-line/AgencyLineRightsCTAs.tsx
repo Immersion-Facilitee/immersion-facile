@@ -15,6 +15,7 @@ import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import {
   makeRemoveUserAgencyRightsButtonProps,
   makeRemoveUserAgencyRightsModalProps,
+  type UserRightToRemove,
 } from "../../removeUserAgencyRights";
 
 export const AgencyLineRightsCTAs = ({
@@ -31,8 +32,13 @@ export const AgencyLineRightsCTAs = ({
   user: User;
 }): ReactNode => {
   const removeUserModalId = `${domElementIds.agencyDashboard.agencyTab.removeAgencyRightModal}-${agencyRight.agency.id}-${user.id}`;
-  const userRightToRemove = {
-    agencyRight,
+  const userRightToRemove: UserRightToRemove = {
+    agency: {
+      id: agencyRight.agency.id,
+      name: agencyRight.agency.name,
+      refersToAgencyId: agencyRight.agency.refersToAgencyId,
+    },
+    roles: agencyRight.roles,
     userEmail: user.email,
     userId: user.id,
     isSelfRemoval: true,
@@ -111,7 +117,7 @@ export const AgencyLineRightsCTAs = ({
                 removeUserFromAgencySlice.actions.removeUserFromAgencyRequested(
                   {
                     userId: userRightToRemove.userId,
-                    agencyId: userRightToRemove.agencyRight.agency.id,
+                    agencyId: userRightToRemove.agency.id,
                     feedbackTopic: "agency-user-right-self",
                   },
                 ),

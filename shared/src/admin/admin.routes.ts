@@ -26,6 +26,7 @@ import {
   getUsersFiltersSchema,
   rejectIcUserRoleForAgencyParamsSchema,
   userParamsForAgencySchema,
+  withUserFiltersSchema,
 } from "./admin.schema";
 
 export type AdminRoutes = typeof adminRoutes;
@@ -63,6 +64,19 @@ export const adminRoutes = defineRoutes({
       400: httpErrorSchema,
       401: httpErrorSchema,
       404: httpErrorSchema,
+    },
+  }),
+
+  getConnectedUsers: defineRoute({
+    method: "get",
+    url: "/admin/inclusion-connected/users",
+    queryParamsSchema: withUserFiltersSchema,
+    ...withAuthorizationHeaders,
+    responses: {
+      200: z.array(connectedUserSchema),
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
     },
   }),
 

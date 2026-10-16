@@ -1,5 +1,6 @@
 import {
   AgencyDtoBuilder,
+  type AgencyUserForListing,
   ConnectedUserBuilder,
   expectToEqual,
   toAgencyDtoForAgencyUsersAndAdmins,
@@ -20,8 +21,17 @@ import type { ReduxStore } from "src/core-logic/storeConfig/store";
 describe("usersToReview", () => {
   let store: ReduxStore;
   let dependencies: TestDependencies;
-  const connectedUser = new ConnectedUserBuilder().build();
   const agency = new AgencyDtoBuilder().build();
+  const agencyForUsers = toAgencyDtoForAgencyUsersAndAdmins(agency, []);
+  const connectedUser = new ConnectedUserBuilder()
+    .withAgencyRights([
+      {
+        agency: agencyForUsers,
+        roles: ["agency-admin"],
+        isNotifiedByEmail: false,
+      },
+    ])
+    .build();
 
   beforeEach(() => {
     ({ store, dependencies } = createTestStore({
@@ -33,7 +43,8 @@ describe("usersToReview", () => {
     store.dispatch(
       usersToReviewSlice.actions.fetchUsersToReviewRequested({
         feedbackTopic: "agency-users-to-review",
-        agencyIds: ["agency-id"],
+        agencies: [agencyForUsers],
+        agencyRole: "to-review",
       }),
     );
 
@@ -42,18 +53,25 @@ describe("usersToReview", () => {
       isLoading: true,
     });
 
-    dependencies.authGateway.getConnectedUsersResponse$.next([
-      {
-        ...connectedUser,
-        agencyRights: [
-          {
-            agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
-            roles: ["to-review"],
-            isNotifiedByEmail: false,
-          },
-        ],
-      },
-    ]);
+    const agencyUser: AgencyUserForListing = {
+      id: connectedUser.id,
+      email: connectedUser.email,
+      firstName: connectedUser.firstName,
+      lastName: connectedUser.lastName,
+      createdAt: connectedUser.createdAt,
+      preventToDelete: connectedUser.preventToDelete,
+      lastLoginAt: connectedUser.lastLoginAt,
+      isProConnectUser: connectedUser.proConnect !== null,
+      agencyRights: [
+        {
+          agencyId: agencyForUsers.id,
+          roles: ["to-review"],
+          isNotifiedByEmail: false,
+        },
+      ],
+    };
+
+    dependencies.agencyGateway.getAgencyUsersResponse$.next([agencyUser]);
 
     expectToEqual(store.getState().usersToReview, {
       usersToReview: [
@@ -62,7 +80,7 @@ describe("usersToReview", () => {
           email: connectedUser.email,
           firstName: connectedUser.firstName,
           lastName: connectedUser.lastName,
-          agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+          agency: agencyForUsers,
         },
       ],
       isLoading: false,
@@ -73,7 +91,8 @@ describe("usersToReview", () => {
     store.dispatch(
       usersToReviewSlice.actions.fetchUsersToReviewRequested({
         feedbackTopic: "agency-users-to-review",
-        agencyIds: ["agency-id"],
+        agencies: [agencyForUsers],
+        agencyRole: "to-review",
       }),
     );
 
@@ -83,7 +102,7 @@ describe("usersToReview", () => {
     });
 
     const errorMessage = "Error fetching users in review";
-    dependencies.authGateway.getConnectedUsersResponse$.error(
+    dependencies.agencyGateway.getAgencyUsersResponse$.error(
       new Error(errorMessage),
     );
 

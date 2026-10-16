@@ -20,8 +20,6 @@ export class TestAuthGateway implements AuthGateway {
 
   public getConnectedUserResponse$ = new Subject<ConnectedUser>();
 
-  public getConnectedUsersResponse$ = new Subject<ConnectedUser[]>();
-
   public renewExpiredJwtResponse$ = new Subject<void>();
 
   public loginByEmail$(_params: InitiateLoginByEmailParams): Observable<void> {
@@ -36,10 +34,6 @@ export class TestAuthGateway implements AuthGateway {
     userId?: UserId;
   }): Observable<ConnectedUser> {
     return this.getConnectedUserResponse$;
-  }
-
-  public getConnectedUsers$(): Observable<ConnectedUser[]> {
-    return this.getConnectedUsersResponse$;
   }
 
   public confirmLoginByMagicLink$(

@@ -1,10 +1,10 @@
 import {
   type AgencyId,
+  type AgencyRole,
   type ConnectedUser,
   errors,
   type UserParamsForAgency,
 } from "shared";
-import type { ConnectedUserWithNormalizedAgencyRights } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 
 export const updateUserAgencyRights = (
   user: ConnectedUser,
@@ -36,9 +36,9 @@ export const hasCounsellorRoles = ({
   users,
   agencyId,
 }: {
-  users: ConnectedUserWithNormalizedAgencyRights[];
+  users: { agencyRights: Partial<Record<AgencyId, { roles: AgencyRole[] }>> }[];
   agencyId: AgencyId;
-}) =>
+}): boolean =>
   users.some((user) =>
     user.agencyRights[agencyId]?.roles.includes("counsellor"),
   );

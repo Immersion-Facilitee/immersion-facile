@@ -1,11 +1,13 @@
 import { filter } from "rxjs";
 import { map, switchMap } from "rxjs/operators";
-import type { WithAgencyId } from "shared";
+import type { AgencyUserForListing, UserId, WithAgencyId } from "shared";
 import { getConnectedUserJwt } from "src/core-logic/domain/admin/admin.helpers";
-import { normalizeUsers } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.epics";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { closeAgencyAndTransferConventionsSlice } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.slice";
-import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
+import {
+  type AgencyUserForManagement,
+  fetchAgencySlice,
+} from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import type {
   PayloadActionWithFeedbackTopic,
   PayloadActionWithOrWithoutFeedbackTopic,
@@ -63,12 +65,12 @@ const getAgencyUsersEpic: FetchAgencyEpic = (action$, state$, dependencies) =>
   action$.pipe(
     filter(fetchAgencySlice.actions.fetchAgencyUsersRequested.match),
     switchMap((action: PayloadActionWithOrWithoutFeedbackTopic<WithAgencyId>) =>
-      dependencies.authGateway
-        .getConnectedUsers$(getConnectedUserJwt(state$.value), {
+      dependencies.agencyGateway
+        .getAgencyUsers$(getConnectedUserJwt(state$.value), {
           agencyIds: [action.payload.agencyId],
         })
         .pipe(
-          map(normalizeUsers),
+          map(normalizeAgencyUsersForManagement),
           map((users) =>
             fetchAgencySlice.actions.fetchAgencyUsersSucceeded(users),
           ),
@@ -85,3 +87,23 @@ const getAgencyUsersEpic: FetchAgencyEpic = (action$, state$, dependencies) =>
   );
 
 export const fetchAgencyEpics = [getAgencyEpic, getAgencyUsersEpic];
+
+const normalizeAgencyUsersForManagement = (
+  users: AgencyUserForListing[],
+): Record<UserId, AgencyUserForManagement> =>
+  users.reduce(
+    (acc, user) => ({
+      ...acc,
+      [user.id]: {
+        ...user,
+        agencyRights: user.agencyRights.reduce(
+          (rightsAcc, right) => ({
+            ...rightsAcc,
+            [right.agencyId]: right,
+          }),
+          {},
+        ),
+      },
+    }),
+    {},
+  );

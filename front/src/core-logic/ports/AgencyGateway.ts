@@ -4,10 +4,12 @@ import type {
   AgencyId,
   AgencyOption,
   AgencyPublicDisplayDto,
+  AgencyUserForListing,
   CloseAgencyAndTransferConventionsRequestDto,
   ConnectedUser,
   ConnectedUserJwt,
   CreateAgencyDto,
+  GetAgencyUsersFilters,
   ListAgencyOptionsRequestDto,
   UserParamsForAgency,
   WithAgencyId,
@@ -27,6 +29,10 @@ export interface AgencyGateway {
   getAgencyPublicInfoById$(
     agencyId: WithAgencyId,
   ): Observable<AgencyPublicDisplayDto>;
+  getAgencyUsers$(
+    token: ConnectedUserJwt,
+    filters: GetAgencyUsersFilters,
+  ): Observable<AgencyUserForListing[]>;
   listAgencyOptionsByFilter$(
     filter: ListAgencyOptionsRequestDto,
   ): Observable<AgencyOption[]>;

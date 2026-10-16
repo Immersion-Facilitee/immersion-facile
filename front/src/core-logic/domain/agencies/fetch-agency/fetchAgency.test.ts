@@ -8,14 +8,13 @@ import {
   noAgencyDashboards,
   noEstablishmentDashboard,
   toAgencyDtoForAgencyUsersAndAdmins,
+  type UserId,
 } from "shared";
-import type {
-  ConnectedUsersWithNormalizedAgencyRightsById,
-  ConnectedUserWithNormalizedAgencyRights,
-} from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import type { ConnectedUserWithNormalizedAgencyRights } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { agenciesPreloadedState } from "src/core-logic/domain/agencies/agenciesPreloadedState";
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
+import type { AgencyUserForManagement } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import {
   type FetchAgencyState,
   fetchAgencyInitialState,
@@ -35,55 +34,41 @@ import type { ReduxStore } from "src/core-logic/storeConfig/store";
 const agencyDto = new AgencyDtoBuilder().build();
 const agencyWithAdminEmails = toAgencyDtoForAgencyUsersAndAdmins(agencyDto, []);
 
-const user1: ConnectedUserWithNormalizedAgencyRights = {
+const user1: AgencyUserForManagement = {
   id: "fake-user-id-1",
   email: "jbon8745@wanadoo.fr",
   firstName: "Jean",
   lastName: "Bon",
   agencyRights: {
     [agencyDto.id]: {
-      agency: agencyWithAdminEmails,
+      agencyId: agencyDto.id,
       isNotifiedByEmail: true,
       roles: ["agency-admin"],
     },
   },
-  dashboards: {
-    agencies: noAgencyDashboards,
-    establishments: noEstablishmentDashboard,
-  },
-  proConnect: {
-    externalId: "fake-user-external-id-1",
-    siret: "00000000001111",
-  },
   createdAt: new Date().toISOString(),
   preventToDelete: false,
+  isProConnectUser: true,
 };
 
-const user2: ConnectedUserWithNormalizedAgencyRights = {
+const user2: AgencyUserForManagement = {
   id: "user-in-error",
   email: "fake-user-email-4@test.fr",
   firstName: "Jean-Michel",
   lastName: "Jeplante",
   agencyRights: {
     [agencyDto.id]: {
-      agency: agencyWithAdminEmails,
+      agencyId: agencyDto.id,
       isNotifiedByEmail: true,
       roles: ["agency-admin"],
     },
   },
-  dashboards: {
-    agencies: noAgencyDashboards,
-    establishments: noEstablishmentDashboard,
-  },
-  proConnect: {
-    externalId: "fake-user-in-error-external-id",
-    siret: "00000000000000",
-  },
   createdAt: new Date().toISOString(),
   preventToDelete: false,
+  isProConnectUser: true,
 };
 
-const fakeAgencyUsers: ConnectedUsersWithNormalizedAgencyRightsById = {
+const fakeAgencyUsers: Record<UserId, AgencyUserForManagement> = {
   [user1.id]: user1,
   [user2.id]: user2,
 };
@@ -200,7 +185,7 @@ describe("fetchAgency", () => {
         isLoading: true,
       });
 
-      dependencies.authGateway.getConnectedUsersResponse$.error(
+      dependencies.agencyGateway.getAgencyUsersResponse$.error(
         new Error(
           "Une erreur est survenue lors de la récupération de la liste des utilisateurs de cette agence",
         ),
@@ -365,10 +350,17 @@ describe("fetchAgency", () => {
           agencyUsers: {
             ...fakeAgencyUsers,
             [userToCreate.id]: {
-              ...user,
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              createdAt: user.createdAt,
+              preventToDelete: user.preventToDelete,
+              lastLoginAt: user.lastLoginAt,
+              isProConnectUser: false,
               agencyRights: {
                 [agencyDto.id]: {
-                  agency: agencyWithAdminEmails,
+                  agencyId: agencyDto.id,
                   roles: ["validator"],
                   isNotifiedByEmail: false,
                 },
@@ -469,20 +461,19 @@ describe("fetchAgency", () => {
         });
       });
 
-      it("if  no agency in state, do nothing", () => {
+      it("if user is not in state, do nothing", () => {
         ({ store, dependencies } = createTestStore({
           agency: agenciesPreloadedState({
             fetchAgency: fetchAgencyInitialState,
           }),
         }));
-        const userToRemove = fakeAgencyUsers[user2.id];
 
         expectFetchAgencyStateToMatch(fetchAgencyInitialState);
 
         store.dispatch(
           removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
-            userId: userToRemove.id,
             agencyId: agencyDto.id,
+            userId: "not-in-state",
             feedbackTopic: "agency-user-for-dashboard",
           }),
         );
@@ -497,6 +488,19 @@ describe("fetchAgency", () => {
 
     describe("updateUser", () => {
       it("should update user successfully", () => {
+        const originalUser = fakeAgencyUsers[user1.id];
+        const updatedUser: AgencyUserForManagement = {
+          ...originalUser,
+          email: "updated-email@email.fr",
+          agencyRights: {
+            [agencyDto.id]: {
+              agencyId: agencyDto.id,
+              roles: ["agency-admin", "validator"],
+              isNotifiedByEmail: false,
+            },
+          },
+        };
+
         ({ store, dependencies } = createTestStore({
           agency: agenciesPreloadedState({
             fetchAgency: {
@@ -506,21 +510,6 @@ describe("fetchAgency", () => {
           }),
         }));
 
-        const originalUser = fakeAgencyUsers[user1.id];
-
-        const updatedUser: ConnectedUserWithNormalizedAgencyRights = {
-          ...originalUser,
-          email: "updated-email@email.fr",
-          agencyRights: {
-            ...originalUser.agencyRights,
-            [agencyDto.id]: {
-              ...originalUser.agencyRights[agencyDto.id],
-              roles: ["agency-admin", "validator"],
-              isNotifiedByEmail: false,
-            },
-          },
-        };
-
         expectFetchAgencyStateToMatch({
           agencyUsers: fakeAgencyUsers,
           agency: null,
@@ -529,12 +518,12 @@ describe("fetchAgency", () => {
 
         store.dispatch(
           updateUserOnAgencySlice.actions.updateUserAgencyRightRequested({
-            userId: originalUser.id,
+            userId: user1.id,
             agencyId: agencyDto.id,
-            roles: updatedUser.agencyRights[agencyDto.id].roles,
+            roles: ["agency-admin", "validator"],
             feedbackTopic: "agency-user-for-dashboard",
             isNotifiedByEmail: false,
-            email: updatedUser.email,
+            email: "updated-email@email.fr",
           }),
         );
 
@@ -549,7 +538,7 @@ describe("fetchAgency", () => {
         });
       });
 
-      it("if it is not user in state, do nothing", () => {
+      it("if user is not in state, do nothing", () => {
         ({ store, dependencies } = createTestStore({
           agency: agenciesPreloadedState({
             fetchAgency: {
@@ -601,12 +590,12 @@ describe("fetchAgency", () => {
     dependencies.agencyGateway.fetchedAgency$.next(agency);
   };
   const feedWithFetchedAgencyUsers = (
-    agencyUsers: ConnectedUsersWithNormalizedAgencyRightsById,
+    agencyUsers: Record<UserId, AgencyUserForManagement>,
   ) => {
-    dependencies.authGateway.getConnectedUsersResponse$.next(
+    dependencies.agencyGateway.getAgencyUsersResponse$.next(
       values(agencyUsers).map((agencyUser) => ({
         ...agencyUser,
-        agencyRights: values(agencyUser.agencyRights),
+        agencyRights: Object.values(agencyUser.agencyRights),
       })),
     );
   };

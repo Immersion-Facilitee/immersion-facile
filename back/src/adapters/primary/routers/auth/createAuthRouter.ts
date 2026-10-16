@@ -74,17 +74,6 @@ export const createAuthRouter = (deps: AppDependencies) => {
       ),
   );
 
-  authSharedRouter.getConnectedUsers(
-    deps.connectedUserAuthMiddleware,
-    (req, res) =>
-      sendHttpResponse(req, res, () =>
-        deps.useCases.getConnectedUsers.execute(
-          req.query,
-          getGenericAuthOrThrow(req.payloads?.currentUser),
-        ),
-      ),
-  );
-
   authSharedRouter.renewExpiredJwt((req, res) =>
     sendHttpResponse(req, res, () =>
       deps.useCases.renewExpiredJwt.execute(req.query),

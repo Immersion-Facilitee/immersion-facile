@@ -9,18 +9,16 @@ import { useDispatch } from "react-redux";
 import {
   type AgencyDto,
   domElementIds,
+  type UserId,
   type UserParamsForAgency,
 } from "shared";
 import { AgencyUserModificationForm } from "src/app/components/agency/AgencyUserModificationForm";
 import { AgencyUsersTable } from "src/app/components/agency/AgencyUsersTable";
 import { UsersWithoutNameHint } from "src/app/components/agency/UsersWithoutNameHint";
 import type { AgencyOverviewRouteName } from "src/app/components/forms/agency/AgencyOverview";
-import {
-  type ConnectedUsersWithNormalizedAgencyRightsById,
-  type ConnectedUserWithNormalizedAgencyRights,
-  connectedUsersAdminSlice,
-} from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
+import type { AgencyUserForManagement } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { v4 as uuidV4 } from "uuid";
@@ -28,7 +26,7 @@ import { Feedback } from "../feedback/Feedback";
 
 type AgencyUsersProperties = {
   agency: AgencyDto;
-  agencyUsersById: ConnectedUsersWithNormalizedAgencyRightsById;
+  agencyUsersById: Record<UserId, AgencyUserForManagement>;
   routeName: AgencyOverviewRouteName;
 };
 
@@ -55,14 +53,12 @@ export const AgencyUsers = ({
   const dispatch = useDispatch();
 
   const [selectedUserData, setSelectedUserData] = useState<
-    (UserParamsForAgency & { isIcUser: boolean }) | null
+    (UserParamsForAgency & { isProConnectUser: boolean }) | null
   >(null);
 
   const [mode, setMode] = useState<"add" | "update" | null>(null);
 
-  const onModifyClicked = (
-    agencyUser: ConnectedUserWithNormalizedAgencyRights,
-  ) => {
+  const onModifyClicked = (agencyUser: AgencyUserForManagement) => {
     dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
     setMode("update");
     setSelectedUserData({
@@ -71,7 +67,7 @@ export const AgencyUsers = ({
       roles: agencyUser.agencyRights[agency.id].roles,
       email: agencyUser.email,
       isNotifiedByEmail: agencyUser.agencyRights[agency.id].isNotifiedByEmail,
-      isIcUser: !!agencyUser.proConnect,
+      isProConnectUser: agencyUser.isProConnectUser,
     });
     manageUserModal.open();
   };
@@ -145,7 +141,7 @@ export const AgencyUsers = ({
             roles: [],
             email: "",
             isNotifiedByEmail: true,
-            isIcUser: false,
+            isProConnectUser: false,
           });
           manageUserModal.open();
         }}
@@ -211,7 +207,7 @@ export const AgencyUsers = ({
                   Informations personnelles
                 </h3>
                 <p className={fr.cx("fr-text--sm")}>
-                  {selectedUserData.isIcUser
+                  {selectedUserData.isProConnectUser
                     ? `Pour modifier ses informations personnelles, l'utilisateur doit passer par son compte ProConnect créé avec l'email ${selectedUserData.email}`
                     : `Pour ajouter un nom, prénom et mot de passe, l'utilisateur doit se créer un compte 
                   via ProConnect, avec l'email ${selectedUserData.email}.

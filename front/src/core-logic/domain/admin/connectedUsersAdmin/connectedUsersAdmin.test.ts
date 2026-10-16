@@ -182,7 +182,7 @@ describe("Agency registration for authenticated users", () => {
       );
       expectIsFetchingIcUsersNeedingReviewToBe(true);
 
-      dependencies.authGateway.getConnectedUsersResponse$.next([
+      dependencies.adminGateway.getConnectedUsersResponse$.next([
         {
           ...authUser1,
           agencyRights: [agency1Right, agency2Right],
@@ -222,7 +222,7 @@ describe("Agency registration for authenticated users", () => {
       );
       expectIsFetchingIcUsersNeedingReviewToBe(true);
 
-      dependencies.authGateway.getConnectedUsersResponse$.next([
+      dependencies.adminGateway.getConnectedUsersResponse$.next([
         {
           ...authUser1,
           agencyRights: [agency1Right, agency2Right],
@@ -269,7 +269,7 @@ describe("Agency registration for authenticated users", () => {
       );
       const errorMessage = "Error fetching users to review";
       expectIsFetchingIcUsersNeedingReviewToBe(true);
-      dependencies.authGateway.getConnectedUsersResponse$.error(
+      dependencies.adminGateway.getConnectedUsersResponse$.error(
         new Error(errorMessage),
       );
       expectIsFetchingIcUsersNeedingReviewToBe(false);
@@ -294,7 +294,7 @@ describe("Agency registration for authenticated users", () => {
       );
       expectIsFetchingAgencyUsersToBe(true);
 
-      dependencies.authGateway.getConnectedUsersResponse$.next([
+      dependencies.adminGateway.getConnectedUsersResponse$.next([
         {
           ...authUser1,
           agencyRights: [agency1Right, agency2Right],
@@ -318,7 +318,7 @@ describe("Agency registration for authenticated users", () => {
       );
       const errorMessage = "Error fetching users";
       expectIsFetchingAgencyUsersToBe(true);
-      dependencies.authGateway.getConnectedUsersResponse$.error(
+      dependencies.adminGateway.getConnectedUsersResponse$.error(
         new Error(errorMessage),
       );
       expectIsFetchingAgencyUsersToBe(false);
@@ -811,7 +811,7 @@ describe("Agency registration for authenticated users", () => {
         },
       );
 
-      dependencies.authGateway.getConnectedUsersResponse$.next([
+      dependencies.adminGateway.getConnectedUsersResponse$.next([
         {
           ...authUser1,
           agencyRights: values(authUser1.agencyRights),

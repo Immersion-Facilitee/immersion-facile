@@ -11,7 +11,7 @@ import { NameAndEmailInTable } from "src/app/components/admin/NameAndEmailInTabl
 import type { AgencyOverviewRouteName } from "src/app/components/forms/agency/AgencyOverview";
 import { agencyRolesToDisplay } from "src/app/contents/userRolesToDisplay";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import type { ConnectedUserWithNormalizedAgencyRights } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import type { AgencyUserForManagement } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
@@ -22,9 +22,9 @@ import {
 } from "./removeUserAgencyRights";
 
 type AgencyUsersTableProps = {
-  agencyUsers: ConnectedUserWithNormalizedAgencyRights[];
+  agencyUsers: AgencyUserForManagement[];
   agency: AgencyDto;
-  onModifyClicked: (user: ConnectedUserWithNormalizedAgencyRights) => void;
+  onModifyClicked: (user: AgencyUserForManagement) => void;
   routeName: AgencyOverviewRouteName;
 };
 
@@ -99,7 +99,7 @@ export const AgencyUsersTable = ({
                     removeUserFromAgencySlice.actions.removeUserFromAgencyRequested(
                       {
                         userId: userRightToRemove.userId,
-                        agencyId: userRightToRemove.agencyRight.agency.id,
+                        agencyId: userRightToRemove.agency.id,
                         feedbackTopic: isLocationAdmin
                           ? "agency-user"
                           : "agency-user-for-dashboard",
@@ -130,9 +130,9 @@ const TableLine = ({
   currentUser: ConnectedUser | null;
   isLocationAdmin: boolean;
   agency: AgencyDto;
-  agencyUser: ConnectedUserWithNormalizedAgencyRights;
+  agencyUser: AgencyUserForManagement;
   index: number;
-  onModifyClicked: (user: ConnectedUserWithNormalizedAgencyRights) => void;
+  onModifyClicked: (user: AgencyUserForManagement) => void;
   onDeleteClicked: (userRightToRemove: UserRightToRemove) => void;
 }): React.ReactNode[] => {
   const domElementIdSection = isLocationAdmin
@@ -140,8 +140,13 @@ const TableLine = ({
     : domElementIds.agencyDashboard.agencyDetails;
   const removeUserButtonId = `${domElementIdSection.editAgencyRemoveUserButton}-${agency.id}-${agencyUser.id}`;
 
-  const userRightToRemove = {
-    agencyRight: agencyUser.agencyRights[agency.id],
+  const userRightToRemove: UserRightToRemove = {
+    agency: {
+      id: agency.id,
+      name: agency.name,
+      refersToAgencyId: agency.refersToAgencyId,
+    },
+    roles: agencyUser.agencyRights[agency.id].roles,
     userEmail: agencyUser.email,
     userId: agencyUser.id,
     isSelfRemoval: currentUser?.id === agencyUser.id,

@@ -10,6 +10,7 @@ import "src/assets/admin.css";
 import { useDispatch } from "react-redux";
 import { connectedUsersAdminSelectors } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.selectors";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
+import { toAgencyUsersForManagementById } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { EditAgencyForm } from "../forms/agency/EditAgencyForm";
@@ -18,8 +19,11 @@ import { AgencyAdminAutocomplete } from "./AgencyAdminAutocomplete";
 
 export const EditAgency = () => {
   const agency = useAppSelector(fetchAgencySelectors.agency);
-  const agencyUsersById = useAppSelector(
+  const connectedAgencyUsersById = useAppSelector(
     connectedUsersAdminSelectors.agencyUsers,
+  );
+  const agencyUsersById = toAgencyUsersForManagementById(
+    connectedAgencyUsersById,
   );
   const isBackOfficeadmin = useAppSelector(authSelectors.isAdminConnected);
   const dispatch = useDispatch();
