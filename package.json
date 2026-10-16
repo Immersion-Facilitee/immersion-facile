@@ -21,6 +21,7 @@
     "back": "pnpm --dir back",
     "front": "pnpm --dir front",
     "shared": "pnpm --dir shared",
+    "mcp": "pnpm --dir mcp",
     "playwright": "pnpm --dir playwright-e2e",
     "playwright:test": "pnpm test:e2e",
     "test:e2e": "pnpm playwright test:e2e",

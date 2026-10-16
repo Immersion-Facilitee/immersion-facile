@@ -1,12 +1,13 @@
-import { httpErrorSchema, withAuthorizationHeaders } from "shared";
 import { defineRoute, defineRoutes } from "shared-routes";
 import { z } from "zod";
-import { contactEstablishmentPublicV3Schema } from "../DtoAndSchemas/v3/input/ContactEstablishmentPublicV3.schema";
-import { getOffersFlatParamsSchemaPublicV3Schema } from "../DtoAndSchemas/v3/input/GetOffersPublicV3.schema";
+import { withAuthorizationHeaders } from "../headers";
+import { httpErrorSchema } from "../httpClient/httpErrors.schema";
+import { contactEstablishmentPublicV3Schema } from "./ContactEstablishmentPublicV3.schema";
+import { getOffersFlatParamsSchemaPublicV3Schema } from "./GetOffersPublicV3.schema";
 import {
   paginatedSearchResultsPublicV3Schema,
   searchImmersionResultPublicV3Schema,
-} from "../DtoAndSchemas/v3/output/SearchImmersionResultPublicV3.schema";
+} from "./SearchImmersionResultPublicV3.schema";
 
 export type PublicApiV3SearchEstablishmentRoutes =
   typeof publicApiV3SearchEstablishmentRoutes;
