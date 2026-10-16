@@ -725,6 +725,7 @@ export const defaultEmailValueByEmailKind: {
     agencyLogoUrl: defaultEmailPreviewUrl,
     baseUrl: "http://IMMERSION_FACILE_BASE_URL",
     loginPersona: "beneficiary",
+    email: "beneficiary@mail.com",
     agencyName: "AGENCY_NAME",
     convention: new ConventionDtoBuilder().build(),
   },

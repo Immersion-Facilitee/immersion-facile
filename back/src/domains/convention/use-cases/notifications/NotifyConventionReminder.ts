@@ -235,6 +235,7 @@ const makeSignatoryReminderEmail = ({
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
             loginPersona: loginPersonaByConventionRole(role),
+            email,
           }),
           baseUrl: config.immersionFacileBaseUrl,
         })
@@ -316,6 +317,7 @@ const createAgencyReminderEmail = async ({
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({
                 conventionId: convention.id,
+                email: counsellorOrValidatorEmail,
               }),
               baseUrl: config.immersionFacileBaseUrl,
             }),
@@ -339,6 +341,7 @@ const createAgencyReminderEmail = async ({
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({
                 conventionId: convention.id,
+                email: counsellorOrValidatorEmail,
               }),
               baseUrl: config.immersionFacileBaseUrl,
             }),

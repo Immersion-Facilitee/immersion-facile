@@ -97,6 +97,7 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
         route: frontRoutes.assessmentDocument({
           conventionId: convention.id,
           loginPersona: "beneficiary",
+          email: convention.signatories.beneficiary.email,
         }),
         baseUrl: config.immersionFacileBaseUrl,
       });
@@ -153,13 +154,15 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
 
       await usecase.execute({ assessment: miniStageAssessment });
 
-      const assessmentDocumentLink = makeRouteAbsoluteUrl({
-        route: frontRoutes.assessmentDocument({
-          conventionId: cciConventionWithRepresentative.id,
-          loginPersona: "beneficiary",
-        }),
-        baseUrl: config.immersionFacileBaseUrl,
-      });
+      const makeAssessmentDocumentLink = (email: string) =>
+        makeRouteAbsoluteUrl({
+          route: frontRoutes.assessmentDocument({
+            conventionId: cciConventionWithRepresentative.id,
+            loginPersona: "beneficiary",
+            email,
+          }),
+          baseUrl: config.immersionFacileBaseUrl,
+        });
 
       const emailParams = {
         internshipKind: cciConventionWithRepresentative.internshipKind,
@@ -172,26 +175,36 @@ describe("NotifyBeneficiaryThatAssessmentIsCreated", () => {
           lastname:
             cciConventionWithRepresentative.signatories.beneficiary.lastName,
         }),
-        assessmentDocumentLink,
       };
+
+      const beneficiaryRepresentativeEmail =
+        // biome-ignore lint/style/noNonNullAssertion: set in this test
+        cciConventionWithRepresentative.signatories.beneficiaryRepresentative!
+          .email;
 
       expectSavedNotificationsAndEvents({
         emails: [
           {
             kind: "ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION",
-            params: emailParams,
+            params: {
+              ...emailParams,
+              assessmentDocumentLink: makeAssessmentDocumentLink(
+                cciConventionWithRepresentative.signatories.beneficiary.email,
+              ),
+            },
             recipients: [
               cciConventionWithRepresentative.signatories.beneficiary.email,
             ],
           },
           {
             kind: "ASSESSMENT_CREATED_BENEFICIARY_NOTIFICATION",
-            params: emailParams,
-            recipients: [
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
-              cciConventionWithRepresentative.signatories
-                .beneficiaryRepresentative!.email,
-            ],
+            params: {
+              ...emailParams,
+              assessmentDocumentLink: makeAssessmentDocumentLink(
+                beneficiaryRepresentativeEmail,
+              ),
+            },
+            recipients: [beneficiaryRepresentativeEmail],
           },
         ],
       });

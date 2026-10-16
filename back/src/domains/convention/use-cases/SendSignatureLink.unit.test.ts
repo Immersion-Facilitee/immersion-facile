@@ -1243,6 +1243,7 @@ describe("Send signature link", () => {
                     route: frontRoutes.manageConventionConnectedUser({
                       conventionId: convention.id,
                       loginPersona,
+                      email: recipient.email,
                       at_campaign: "email-signature-link",
                     }),
                     baseUrl: config.immersionFacileBaseUrl,

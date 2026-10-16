@@ -330,6 +330,7 @@ const sendAgencyAssessmentReminder = async ({
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({
                 conventionId: convention.id,
+                email,
               }),
               baseUrl: config.immersionFacileBaseUrl,
             }),

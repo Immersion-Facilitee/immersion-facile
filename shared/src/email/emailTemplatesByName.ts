@@ -3060,6 +3060,7 @@ L'équipe d'Immersion Facilitée`,
         agencyName,
         convention,
         loginPersona,
+        email,
         baseUrl,
       }) => {
         const emergencyContactInfos = displayEmergencyContactInfos({
@@ -3126,6 +3127,7 @@ L'équipe d'Immersion Facilitée`,
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona,
+                  email,
                 }),
                 baseUrl,
               }),

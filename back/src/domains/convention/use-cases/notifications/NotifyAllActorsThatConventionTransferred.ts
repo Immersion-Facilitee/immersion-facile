@@ -153,6 +153,7 @@ const sendAgencyEmails = async ({
           manageConventionLink: makeRouteAbsoluteUrl({
             route: frontRoutes.manageConventionConnectedUser({
               conventionId: convention.id,
+              email,
             }),
             baseUrl: config.immersionFacileBaseUrl,
           }),
@@ -199,6 +200,7 @@ const sendSignatoriesEmail = async (
             route: frontRoutes.manageConventionConnectedUser({
               conventionId: convention.id,
               loginPersona,
+              email,
             }),
             baseUrl: deps.config.immersionFacileBaseUrl,
           }),

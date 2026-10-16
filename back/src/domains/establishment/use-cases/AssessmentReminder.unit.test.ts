@@ -268,6 +268,7 @@ describe("AssessmentReminder", () => {
               manageConventionLink: makeRouteAbsoluteUrl({
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
+                  email: validator.email,
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
               }),
@@ -349,6 +350,7 @@ describe("AssessmentReminder", () => {
               manageConventionLink: makeRouteAbsoluteUrl({
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
+                  email: validator.email,
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
               }),
@@ -455,6 +457,7 @@ describe("AssessmentReminder", () => {
               manageConventionLink: makeRouteAbsoluteUrl({
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
+                  email: advisorEmail,
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
               }),

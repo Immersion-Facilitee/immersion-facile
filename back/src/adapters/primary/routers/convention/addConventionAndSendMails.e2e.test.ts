@@ -242,6 +242,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
         route: frontRoutes.manageConventionConnectedUser({
           conventionId: convention.id,
           loginPersona: "beneficiary",
+          email: convention.signatories.beneficiary.email,
           at_campaign: "email-signature-link",
         }),
         baseUrl: appConfig.immersionFacileBaseUrl,
@@ -263,6 +264,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
         route: frontRoutes.manageConventionConnectedUser({
           conventionId: convention.id,
           loginPersona: "professional",
+          email: convention.signatories.establishmentRepresentative.email,
           at_campaign: "email-signature-link",
         }),
         baseUrl: appConfig.immersionFacileBaseUrl,
@@ -373,11 +375,13 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
 
     const manageConventionUrl = (
       loginPersona: "beneficiary" | "professional",
+      email: string,
     ) =>
       makeRouteAbsoluteUrl({
         route: frontRoutes.manageConventionConnectedUser({
           conventionId: initialConvention.id,
           loginPersona,
+          email,
         }),
         baseUrl: appConfig.immersionFacileBaseUrl,
       });
@@ -392,13 +396,19 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       [
         {
           recipients: [initialConvention.signatories.beneficiary.email],
-          magicLink: manageConventionUrl("beneficiary"),
+          magicLink: manageConventionUrl(
+            "beneficiary",
+            initialConvention.signatories.beneficiary.email,
+          ),
         },
         {
           recipients: [
             initialConvention.signatories.establishmentRepresentative.email,
           ],
-          magicLink: manageConventionUrl("professional"),
+          magicLink: manageConventionUrl(
+            "professional",
+            initialConvention.signatories.establishmentRepresentative.email,
+          ),
         },
       ],
     );
@@ -469,11 +479,13 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
 
     const manageConventionUrl = (
       loginPersona: "beneficiary" | "professional",
+      email: string,
     ) =>
       makeRouteAbsoluteUrl({
         route: frontRoutes.manageConventionConnectedUser({
           conventionId: initialConvention.id,
           loginPersona,
+          email,
         }),
         baseUrl: appConfig.immersionFacileBaseUrl,
       });
@@ -490,19 +502,26 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
             route: frontRoutes.manageConventionConnectedUser({
               conventionId: email.params.convention.id,
               loginPersona: email.params.loginPersona,
+              email: email.params.email,
             }),
           }),
         })),
       [
         {
           recipients: [initialConvention.signatories.beneficiary.email],
-          magicLink: manageConventionUrl("beneficiary"),
+          magicLink: manageConventionUrl(
+            "beneficiary",
+            initialConvention.signatories.beneficiary.email,
+          ),
         },
         {
           recipients: [
             initialConvention.signatories.establishmentRepresentative.email,
           ],
-          magicLink: manageConventionUrl("professional"),
+          magicLink: manageConventionUrl(
+            "professional",
+            initialConvention.signatories.establishmentRepresentative.email,
+          ),
         },
       ],
     );

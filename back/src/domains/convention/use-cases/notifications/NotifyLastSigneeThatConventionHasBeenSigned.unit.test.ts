@@ -68,11 +68,13 @@ describe("NotifyLastSigneeThatConventionHasBeenSigned", () => {
   const manageConventionUrl = (
     conventionId: string,
     loginPersona: "beneficiary" | "professional",
+    email: string,
   ) =>
     makeRouteAbsoluteUrl({
       route: frontRoutes.manageConventionConnectedUser({
         conventionId,
         loginPersona,
+        email,
       }),
       baseUrl: config.immersionFacileBaseUrl,
     });
@@ -94,7 +96,11 @@ describe("NotifyLastSigneeThatConventionHasBeenSigned", () => {
             conventionId: signedConvention.id,
             // biome-ignore lint/style/noNonNullAssertion: signedAt is set in this test
             signedAt: signedConvention.signatories.beneficiary.signedAt!,
-            magicLink: manageConventionUrl(signedConvention.id, "beneficiary"),
+            magicLink: manageConventionUrl(
+              signedConvention.id,
+              "beneficiary",
+              signedConvention.signatories.beneficiary.email,
+            ),
             agencyLogoUrl: agency.logoUrl ?? undefined,
             agencyName: agency.name,
           },
@@ -124,7 +130,11 @@ describe("NotifyLastSigneeThatConventionHasBeenSigned", () => {
               signedConvention.signatories.establishmentRepresentative
                 .signedAt!,
             conventionId: signedConvention.id,
-            magicLink: manageConventionUrl(signedConvention.id, "professional"),
+            magicLink: manageConventionUrl(
+              signedConvention.id,
+              "professional",
+              signedConvention.signatories.establishmentRepresentative.email,
+            ),
             agencyLogoUrl: agency.logoUrl ?? undefined,
             agencyName: agency.name,
           },

@@ -39,13 +39,15 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
       establishmentSiret: convention.siret,
     };
 
-    const assessmentDocumentLink = makeRouteAbsoluteUrl({
-      route: frontRoutes.assessmentDocument({
-        conventionId: convention.id,
-        loginPersona: "beneficiary",
-      }),
-      baseUrl: deps.config.immersionFacileBaseUrl,
-    });
+    const makeAssessmentDocumentLink = (email: string) =>
+      makeRouteAbsoluteUrl({
+        route: frontRoutes.assessmentDocument({
+          conventionId: convention.id,
+          loginPersona: "beneficiary",
+          email,
+        }),
+        baseUrl: deps.config.immersionFacileBaseUrl,
+      });
 
     await deps.saveNotificationAndRelatedEvent(uow, {
       kind: "email",
@@ -61,7 +63,9 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
           beneficiaryFirstName: getFormattedFirstnameAndLastname({
             firstname: convention.signatories.beneficiary.firstName,
           }),
-          assessmentDocumentLink,
+          assessmentDocumentLink: makeAssessmentDocumentLink(
+            convention.signatories.beneficiary.email,
+          ),
         },
       },
       followedIds,
@@ -85,7 +89,9 @@ export const makeNotifyBeneficiaryThatAssessmentIsCreated = useCaseBuilder(
             beneficiaryFirstName: getFormattedFirstnameAndLastname({
               firstname: convention.signatories.beneficiary.firstName,
             }),
-            assessmentDocumentLink,
+            assessmentDocumentLink: makeAssessmentDocumentLink(
+              convention.signatories.beneficiaryRepresentative.email,
+            ),
           },
         },
         followedIds,

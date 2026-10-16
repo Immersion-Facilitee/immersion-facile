@@ -93,6 +93,7 @@ const makeEmail = (
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
             loginPersona,
+            email: lastSignee.email,
           }),
           baseUrl: config.immersionFacileBaseUrl,
         }),

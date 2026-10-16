@@ -160,11 +160,13 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
 
     const makeManageConventionLink = (
       loginPersona: "beneficiary" | "professional",
+      email: string,
     ) =>
       makeRouteAbsoluteUrl({
         route: frontRoutes.manageConventionConnectedUser({
           conventionId: convention.id,
           loginPersona,
+          email,
         }),
         baseUrl: config.immersionFacileBaseUrl,
       });
@@ -189,6 +191,7 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({
                 conventionId: convention.id,
+                email: connectedUser.email,
               }),
               baseUrl: config.immersionFacileBaseUrl,
             }),
@@ -207,7 +210,10 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
             agencyAddress: `${newAgency.address.streetNumberAndAddress} ${newAgency.address.postcode} ${newAgency.address.city}`,
             businessName: convention.businessName,
             justification: "agency change",
-            manageConventionLink: makeManageConventionLink("beneficiary"),
+            manageConventionLink: makeManageConventionLink(
+              "beneficiary",
+              convention.signatories.beneficiary.email,
+            ),
             conventionId: convention.id,
           },
         },
@@ -225,7 +231,10 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
             agencyAddress: `${newAgency.address.streetNumberAndAddress} ${newAgency.address.postcode} ${newAgency.address.city}`,
             businessName: convention.businessName,
             justification: "agency change",
-            manageConventionLink: makeManageConventionLink("professional"),
+            manageConventionLink: makeManageConventionLink(
+              "professional",
+              convention.signatories.establishmentRepresentative.email,
+            ),
             conventionId: convention.id,
           },
         },
@@ -241,7 +250,10 @@ describe("NotifyAllActorsThatConventionTransferred", () => {
             agencyAddress: `${newAgency.address.streetNumberAndAddress} ${newAgency.address.postcode} ${newAgency.address.city}`,
             businessName: convention.businessName,
             justification: "agency change",
-            manageConventionLink: makeManageConventionLink("professional"),
+            manageConventionLink: makeManageConventionLink(
+              "professional",
+              convention.establishmentTutor.email,
+            ),
             conventionId: convention.id,
           },
         },

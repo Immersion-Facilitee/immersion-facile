@@ -196,6 +196,7 @@ const sendAssessmentSignatureReminderEmail = async ({
           route: frontRoutes.assessmentDocument({
             conventionId: convention.id,
             loginPersona: "beneficiary",
+            email: beneficiary.email,
           }),
           baseUrl: config.immersionFacileBaseUrl,
         }),
