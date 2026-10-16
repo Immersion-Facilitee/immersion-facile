@@ -5,7 +5,13 @@ import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import Tile from "@codegouvfr/react-dsfr/Tile";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactElement, type ReactNode, useEffect, useState } from "react";
+import {
+  type ReactElement,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Loader,
   MainWrapper,
@@ -163,20 +169,20 @@ export const ConnectedPrivateRoutePage = ({
     authSelectors.afterLoginRedirectionUrl,
   );
 
-  const [emailFromQueryParam] = useState(() =>
+  const emailFromQueryParam = useRef(
     getEmailFromRouteParams(route.params),
-  );
+  ).current;
 
   useEffect(() => {
     const { token, provider, email } = route.params;
-    const hasFederatedToken =
+    const hasFederatedIdentityInToken =
       !!token &&
       !!provider &&
       isFederatedIdentityProvider(provider) &&
       provider !== "ftConnect";
     const hasEmailInQuery = email !== undefined;
 
-    if (hasFederatedToken) {
+    if (hasFederatedIdentityInToken) {
       dispatch(
         authSlice.actions.federatedIdentityProvided({
           federatedIdentity: {
@@ -188,7 +194,7 @@ export const ConnectedPrivateRoutePage = ({
       );
     }
 
-    if (!hasFederatedToken && !hasEmailInQuery) return;
+    if (!hasFederatedIdentityInToken && !hasEmailInQuery) return;
 
     const {
       token: _token,
@@ -304,7 +310,7 @@ export const ConnectedPrivateRoutePage = ({
                       <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
                         <LoginWithEmail
                           loginPersona={selectedLoginPersona}
-                          emailFromQueryParam={emailFromQueryParam}
+                          email={emailFromQueryParam}
                         />
                       </div>
                     ))
@@ -313,7 +319,7 @@ export const ConnectedPrivateRoutePage = ({
                         firstSection={
                           <LoginWithEmail
                             loginPersona={selectedLoginPersona}
-                            emailFromQueryParam={emailFromQueryParam}
+                            email={emailFromQueryParam}
                           />
                         }
                         secondSection={
@@ -547,10 +553,10 @@ const getEmailFromRouteParams = (
 
 const LoginWithEmail = ({
   loginPersona,
-  emailFromQueryParam,
+  email,
 }: {
   loginPersona: LoginPersona;
-  emailFromQueryParam: Email | undefined;
+  email?: Email;
 }) => {
   const route = useRoute();
   const methods = useForm<{
@@ -558,9 +564,7 @@ const LoginWithEmail = ({
   }>({
     resolver: zodResolver(z.object({ email: emailSchema })),
     mode: "onTouched",
-    ...(emailFromQueryParam
-      ? { defaultValues: { email: emailFromQueryParam } }
-      : {}),
+    ...(email ? { defaultValues: { email } } : {}),
   });
   const dispatch = useDispatch();
   const getFieldError = makeFieldError(methods.formState);
@@ -605,7 +609,6 @@ const LoginWithEmail = ({
           >
             <EmailValidationInput
               label={"Email"}
-              id={domElementIds.login.emailInput}
               nativeInputProps={{
                 ...methods.register("email", {
                   setValueAs: (value) => toLowerCaseWithoutDiacritics(value),
