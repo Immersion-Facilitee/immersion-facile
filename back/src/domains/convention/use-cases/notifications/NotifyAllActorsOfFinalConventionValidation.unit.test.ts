@@ -191,6 +191,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           agency,
           config,
           loginPersona,
+          email,
         }),
       })),
     });
@@ -240,6 +241,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           agency,
           config,
           loginPersona,
+          email,
         }),
       })),
     });
@@ -288,6 +290,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           agency,
           config,
           loginPersona,
+          email,
         }),
       })),
     });
@@ -338,6 +341,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           agency,
           config,
           loginPersona,
+          email,
         }),
       })),
     });
@@ -380,6 +384,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           agency,
           config,
           loginPersona,
+          email,
         }),
       })),
     });
@@ -431,6 +436,7 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
           agency,
           config,
           loginPersona,
+          email,
         }),
       })),
     });
@@ -441,16 +447,19 @@ describe("NotifyAllActorsOfFinalConventionValidation", () => {
     config,
     convention,
     loginPersona,
+    email,
   }: {
     convention: ConventionDto;
     agency: AgencyDto;
     config: AppConfig;
     loginPersona: LoginPersona;
+    email: Email;
   }): EmailParamsByEmailType["VALIDATED_CONVENTION_FINAL_CONFIRMATION"] => ({
     convention: convention,
     agencyLogoUrl: agency.logoUrl ?? undefined,
     agencyName: agency.name,
     baseUrl: config.immersionFacileBaseUrl,
     loginPersona,
+    email,
   });
 });

@@ -140,6 +140,7 @@ describe("NotifyFranceTravailUserAdvisorOnConventionFullySigned", () => {
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({
                 conventionId: conventionDtoFromEvent.id,
+                email: advisor.email,
               }),
               baseUrl: config.immersionFacileBaseUrl,
             }),

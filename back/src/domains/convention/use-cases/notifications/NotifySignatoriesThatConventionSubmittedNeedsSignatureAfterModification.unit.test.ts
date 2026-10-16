@@ -96,6 +96,7 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "beneficiary",
+                  email: convention.signatories.beneficiary.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -129,6 +130,8 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "professional",
+                  email:
+                    convention.signatories.establishmentRepresentative.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -178,6 +181,7 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "beneficiary",
+                  email: convention.signatories.beneficiary.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -211,6 +215,8 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "professional",
+                  email:
+                    convention.signatories.establishmentRepresentative.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -282,6 +288,7 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "beneficiary",
+                  email: convention.signatories.beneficiary.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -315,6 +322,8 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "professional",
+                  email:
+                    convention.signatories.establishmentRepresentative.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -351,6 +360,9 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "beneficiary",
+                  // biome-ignore lint/style/noNonNullAssertion: testing purpose
+                  email:
+                    convention.signatories.beneficiaryRepresentative!.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -394,6 +406,9 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "beneficiary",
+                  // biome-ignore lint/style/noNonNullAssertion: testing purpose
+                  email:
+                    convention.signatories.beneficiaryCurrentEmployer!.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -480,6 +495,8 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "professional",
+                  email:
+                    convention.signatories.establishmentRepresentative.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -506,6 +523,9 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "beneficiary",
+                  // biome-ignore lint/style/noNonNullAssertion: testing purpose
+                  email:
+                    convention.signatories.beneficiaryRepresentative!.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
@@ -539,6 +559,9 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
                   loginPersona: "beneficiary",
+                  // biome-ignore lint/style/noNonNullAssertion: testing purpose
+                  email:
+                    convention.signatories.beneficiaryCurrentEmployer!.email,
                   at_campaign: "email-signature-link-after-modification",
                 }),
                 baseUrl: config.immersionFacileBaseUrl,

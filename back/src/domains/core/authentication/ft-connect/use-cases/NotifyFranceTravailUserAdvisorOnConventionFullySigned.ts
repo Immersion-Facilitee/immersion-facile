@@ -63,6 +63,7 @@ export const makeNotifyFranceTravailUserAdvisorOnConventionFullySigned =
               manageConventionLink: makeRouteAbsoluteUrl({
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
+                  email: conventionFtAdvisor.email,
                 }),
                 baseUrl: deps.config.immersionFacileBaseUrl,
               }),

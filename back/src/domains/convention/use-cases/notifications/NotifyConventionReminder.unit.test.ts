@@ -199,12 +199,14 @@ describe("NotifyConventionReminder use case", () => {
 
           //Assert
 
-          const manageConventionLink: AbsoluteUrl = makeRouteAbsoluteUrl({
-            route: frontRoutes.manageConventionConnectedUser({
-              conventionId: convention.id,
-            }),
-            baseUrl: config.immersionFacileBaseUrl,
-          });
+          const manageConventionLink = (email: string): AbsoluteUrl =>
+            makeRouteAbsoluteUrl({
+              route: frontRoutes.manageConventionConnectedUser({
+                conventionId: convention.id,
+                email,
+              }),
+              baseUrl: config.immersionFacileBaseUrl,
+            });
 
           expectSavedNotificationsAndEvents({
             emails: [
@@ -212,25 +214,25 @@ describe("NotifyConventionReminder use case", () => {
                 email: validator1.email,
                 agency: agencyWithRight,
                 convention,
-                manageConventionLink,
+                manageConventionLink: manageConventionLink(validator1.email),
               }),
               makeAgencyFirstReminderEmail({
                 email: validator2.email,
                 agency: agencyWithRight,
                 convention,
-                manageConventionLink,
+                manageConventionLink: manageConventionLink(validator2.email),
               }),
               makeAgencyFirstReminderEmail({
                 email: councellor1.email,
                 agency: agencyWithRight,
                 convention,
-                manageConventionLink,
+                manageConventionLink: manageConventionLink(councellor1.email),
               }),
               makeAgencyFirstReminderEmail({
                 email: councellor2.email,
                 agency: agencyWithRight,
                 convention,
-                manageConventionLink,
+                manageConventionLink: manageConventionLink(councellor2.email),
               }),
             ],
           });
@@ -282,34 +284,36 @@ describe("NotifyConventionReminder use case", () => {
 
           //Assert
 
-          const manageConventionLink: AbsoluteUrl = makeRouteAbsoluteUrl({
-            route: frontRoutes.manageConventionConnectedUser({
-              conventionId: convention.id,
-            }),
-            baseUrl: config.immersionFacileBaseUrl,
-          });
+          const manageConventionLink = (email: string): AbsoluteUrl =>
+            makeRouteAbsoluteUrl({
+              route: frontRoutes.manageConventionConnectedUser({
+                conventionId: convention.id,
+                email,
+              }),
+              baseUrl: config.immersionFacileBaseUrl,
+            });
 
           expectSavedNotificationsAndEvents({
             emails: [
               makeAgencyLastReminderEmail({
                 email: validator1.email,
                 convention,
-                manageConventionLink,
+                manageConventionLink: manageConventionLink(validator1.email),
               }),
               makeAgencyLastReminderEmail({
                 email: validator2.email,
                 convention,
-                manageConventionLink,
+                manageConventionLink: manageConventionLink(validator2.email),
               }),
               makeAgencyLastReminderEmail({
                 email: councellor1.email,
                 convention,
-                manageConventionLink,
+                manageConventionLink: manageConventionLink(councellor1.email),
               }),
               makeAgencyLastReminderEmail({
                 email: councellor2.email,
                 convention,
-                manageConventionLink,
+                manageConventionLink: manageConventionLink(councellor2.email),
               }),
             ],
           });
@@ -393,6 +397,7 @@ describe("NotifyConventionReminder use case", () => {
               magicLinkUrl: makeSignatoryConnectedConventionUrl({
                 convention,
                 role: convention.signatories.beneficiary.role,
+                email: convention.signatories.beneficiary.email,
                 config,
               }),
             }),
@@ -402,6 +407,7 @@ describe("NotifyConventionReminder use case", () => {
               magicLinkUrl: makeSignatoryConnectedConventionUrl({
                 convention,
                 role: convention.signatories.establishmentRepresentative.role,
+                email: convention.signatories.establishmentRepresentative.email,
                 config,
               }),
             }),
@@ -467,6 +473,7 @@ describe("NotifyConventionReminder use case", () => {
               magicLinkUrl: makeSignatoryConnectedConventionUrl({
                 convention,
                 role: convention.signatories.beneficiary.role,
+                email: convention.signatories.beneficiary.email,
                 config,
               }),
             }),
@@ -476,6 +483,7 @@ describe("NotifyConventionReminder use case", () => {
               magicLinkUrl: makeSignatoryConnectedConventionUrl({
                 convention,
                 role: convention.signatories.establishmentRepresentative.role,
+                email: convention.signatories.establishmentRepresentative.email,
                 config,
               }),
             }),
@@ -663,6 +671,7 @@ describe("NotifyConventionReminder use case", () => {
               magicLinkUrl: makeSignatoryConnectedConventionUrl({
                 convention,
                 role: convention.signatories.beneficiary.role,
+                email: convention.signatories.beneficiary.email,
                 config,
               }),
             }),
@@ -672,6 +681,7 @@ describe("NotifyConventionReminder use case", () => {
               magicLinkUrl: makeSignatoryConnectedConventionUrl({
                 convention,
                 role: convention.signatories.establishmentRepresentative.role,
+                email: convention.signatories.establishmentRepresentative.email,
                 config,
               }),
             }),
@@ -719,6 +729,7 @@ describe("NotifyConventionReminder use case", () => {
             magicLinkUrl: makeSignatoryConnectedConventionUrl({
               convention,
               role: convention.signatories.beneficiary.role,
+              email: convention.signatories.beneficiary.email,
               config,
             }),
           }),
@@ -728,6 +739,7 @@ describe("NotifyConventionReminder use case", () => {
             magicLinkUrl: makeSignatoryConnectedConventionUrl({
               convention,
               role: convention.signatories.establishmentRepresentative.role,
+              email: convention.signatories.establishmentRepresentative.email,
               config,
             }),
           }),
@@ -805,16 +817,19 @@ const makeAgencyLastReminderEmail = ({
 const makeSignatoryConnectedConventionUrl = ({
   convention,
   role,
+  email,
   config,
 }: {
   convention: ConventionDto;
   role: ConventionActorRole;
+  email: string;
   config: AppConfig;
 }): AbsoluteUrl =>
   makeRouteAbsoluteUrl({
     route: frontRoutes.manageConventionConnectedUser({
       conventionId: convention.id,
       loginPersona: loginPersonaByConventionRole(role),
+      email,
     }),
     baseUrl: config.immersionFacileBaseUrl,
   });

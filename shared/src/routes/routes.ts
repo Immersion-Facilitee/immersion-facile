@@ -47,8 +47,11 @@ const connectedUserParams = {
   token: param.query.optional.string,
   provider: param.query.optional.string,
   alreadyUsedAuthentication: param.query.optional.string,
+  email: param.query.optional.string,
 } satisfies Record<
-  keyof ConnectedUserQueryParams | keyof AlreadyAuthenticatedUserQueryParams,
+  | keyof ConnectedUserQueryParams
+  | keyof AlreadyAuthenticatedUserQueryParams
+  | "email",
   typeof param.query.optional.string
 >;
 

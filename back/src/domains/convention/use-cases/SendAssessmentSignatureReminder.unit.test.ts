@@ -157,6 +157,7 @@ describe("SendAssessmentSignatureReminder", () => {
               route: frontRoutes.assessmentDocument({
                 conventionId: convention.id,
                 loginPersona: "beneficiary",
+                email: convention.signatories.beneficiary.email,
               }),
               baseUrl: config.immersionFacileBaseUrl,
             }),

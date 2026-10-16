@@ -83,6 +83,7 @@ const makeEmail = (
       route: frontRoutes.manageConventionConnectedUser({
         conventionId: convention.id,
         loginPersona: loginPersonaByConventionRole(signatory.role),
+        email: signatory.email,
         at_campaign: "email-signature-link-after-modification",
       }),
       baseUrl: config.immersionFacileBaseUrl,

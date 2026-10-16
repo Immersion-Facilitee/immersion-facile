@@ -67,6 +67,7 @@ export const makeNotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartial
         const manageConventionLink = makeRouteAbsoluteUrl({
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
+            email,
           }),
           baseUrl: deps.config.immersionFacileBaseUrl,
         });

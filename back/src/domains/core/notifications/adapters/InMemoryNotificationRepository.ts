@@ -326,6 +326,7 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
           route: frontRoutes.manageConventionConnectedUser({
             conventionId: convention.id,
             loginPersona: loginPersonaByConventionRole(signatory.role),
+            email: signatory.email,
             at_campaign: "email-signature-link",
           }),
           baseUrl: config.immersionFacileBaseUrl,

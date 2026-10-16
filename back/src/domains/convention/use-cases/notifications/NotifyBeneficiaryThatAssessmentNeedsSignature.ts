@@ -71,6 +71,7 @@ export const makeNotifyBeneficiaryThatAssessmentNeedsSignature = useCaseBuilder(
             route: frontRoutes.assessmentDocument({
               conventionId: convention.id,
               loginPersona: "beneficiary",
+              email: beneficiary.email,
             }),
             baseUrl: deps.config.immersionFacileBaseUrl,
           }),

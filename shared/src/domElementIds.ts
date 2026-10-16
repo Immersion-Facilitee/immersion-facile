@@ -256,6 +256,7 @@ export const domElementIds = {
   },
   login: {
     radioButtons: "im-login-form__persona-radio-buttons",
+    emailInput: "im-login-form__email-input",
     beneficiary: {
       byEmailButton: "im-login-form__connect-button--beneficiary",
       proConnectButton: "im-login-form__oauth-connect-button--beneficiary",

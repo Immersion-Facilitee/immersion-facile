@@ -163,15 +163,20 @@ export const ConnectedPrivateRoutePage = ({
     authSelectors.afterLoginRedirectionUrl,
   );
 
-  useEffect(() => {
-    const { token, provider } = route.params;
+  const [emailFromQueryParam] = useState(() =>
+    getEmailFromRouteParams(route.params),
+  );
 
-    if (
-      token &&
-      provider &&
+  useEffect(() => {
+    const { token, provider, email } = route.params;
+    const hasFederatedToken =
+      !!token &&
+      !!provider &&
       isFederatedIdentityProvider(provider) &&
-      provider !== "ftConnect"
-    ) {
+      provider !== "ftConnect";
+    const hasEmailInQuery = email !== undefined;
+
+    if (hasFederatedToken) {
       dispatch(
         authSlice.actions.federatedIdentityProvided({
           federatedIdentity: {
@@ -181,10 +186,16 @@ export const ConnectedPrivateRoutePage = ({
           feedbackTopic: "auth-global",
         }),
       );
-
-      const { token: _, ...routeParams } = route.params;
-      frontRoutes[route.name](routeParams as any).replace();
     }
+
+    if (!hasFederatedToken && !hasEmailInQuery) return;
+
+    const {
+      token: _token,
+      email: _email,
+      ...routeParamsWithoutSensitiveQuery
+    } = route.params;
+    frontRoutes[route.name](routeParamsWithoutSensitiveQuery as any).replace();
   }, [route.params, dispatch, route.name]);
 
   useEffect(() => {
@@ -291,13 +302,19 @@ export const ConnectedPrivateRoutePage = ({
                   {match(selectedLoginPersona)
                     .with("beneficiary", (selectedLoginPersona) => (
                       <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
-                        <LoginWithEmail loginPersona={selectedLoginPersona} />
+                        <LoginWithEmail
+                          loginPersona={selectedLoginPersona}
+                          emailFromQueryParam={emailFromQueryParam}
+                        />
                       </div>
                     ))
                     .with("professional", (selectedLoginPersona) => (
                       <SeparatedSection
                         firstSection={
-                          <LoginWithEmail loginPersona={selectedLoginPersona} />
+                          <LoginWithEmail
+                            loginPersona={selectedLoginPersona}
+                            emailFromQueryParam={emailFromQueryParam}
+                          />
                         }
                         secondSection={
                           <LoginWithProConnect
@@ -518,13 +535,32 @@ const loginCardsByPersona: Record<LoginPersona, LoginPersonaCard[]> = {
   ],
 };
 
-const LoginWithEmail = ({ loginPersona }: { loginPersona: LoginPersona }) => {
+const getEmailFromRouteParams = (
+  routeParams: ConnectPrivateRoute["params"],
+): Email | undefined => {
+  if (!("email" in routeParams) || !routeParams.email) return undefined;
+  const parsedEmail = emailSchema.safeParse(
+    toLowerCaseWithoutDiacritics(routeParams.email),
+  );
+  return parsedEmail.success ? parsedEmail.data : undefined;
+};
+
+const LoginWithEmail = ({
+  loginPersona,
+  emailFromQueryParam,
+}: {
+  loginPersona: LoginPersona;
+  emailFromQueryParam: Email | undefined;
+}) => {
   const route = useRoute();
   const methods = useForm<{
     email: Email;
   }>({
     resolver: zodResolver(z.object({ email: emailSchema })),
     mode: "onTouched",
+    ...(emailFromQueryParam
+      ? { defaultValues: { email: emailFromQueryParam } }
+      : {}),
   });
   const dispatch = useDispatch();
   const getFieldError = makeFieldError(methods.formState);
@@ -569,6 +605,7 @@ const LoginWithEmail = ({ loginPersona }: { loginPersona: LoginPersona }) => {
           >
             <EmailValidationInput
               label={"Email"}
+              id={domElementIds.login.emailInput}
               nativeInputProps={{
                 ...methods.register("email", {
                   setValueAs: (value) => toLowerCaseWithoutDiacritics(value),

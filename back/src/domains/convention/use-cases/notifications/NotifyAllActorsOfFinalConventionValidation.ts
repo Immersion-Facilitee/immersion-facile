@@ -84,6 +84,7 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
           convention,
           agencyLogoUrl: agency.logoUrl ?? undefined,
           loginPersona: loginPersonaByConventionRole(role),
+          email,
           baseUrl: deps.config.immersionFacileBaseUrl,
           agencyName: agency.name,
         },

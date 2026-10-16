@@ -180,6 +180,7 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompl
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({
                 conventionId: convention.id,
+                email: validator.email,
               }),
               baseUrl: config.immersionFacileBaseUrl,
             }),
@@ -210,6 +211,7 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompl
             manageConventionLink: makeRouteAbsoluteUrl({
               route: frontRoutes.manageConventionConnectedUser({
                 conventionId: convention.id,
+                email: validator2.email,
               }),
               baseUrl: config.immersionFacileBaseUrl,
             }),
@@ -335,6 +337,7 @@ describe("NotifyAgencyThatAssessmentIsCreatedWithStatusCompletedOrPartiallyCompl
               manageConventionLink: makeRouteAbsoluteUrl({
                 route: frontRoutes.manageConventionConnectedUser({
                   conventionId: convention.id,
+                  email: advisorEmail,
                 }),
                 baseUrl: config.immersionFacileBaseUrl,
               }),
