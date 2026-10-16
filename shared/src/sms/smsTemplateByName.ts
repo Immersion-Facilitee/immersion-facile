@@ -41,15 +41,15 @@ export type SmsTemplateKind = keyof SmsParamsBySmsType;
 export const smsTemplatesByName = createSmsTemplates({
   ReminderForSignatories: {
     createContent: ({ shortLink }) =>
-      `Urgent Immersion Facilitée, veuillez signer la convention ${shortLink}`,
+      `Bonjour,\n\nSignez votre convention avec ce lien :\n${shortLink}\n\nImmersion Facilitée`,
   },
   ReminderForAssessment: {
     createContent: ({ shortLink }) =>
-      `Urgent Immersion Facilitée, veuillez compléter le bilan ${shortLink}`,
+      `Bonjour,\n\nComplétez le bilan avec ce lien :\n${shortLink}\n\nImmersion Facilitée`,
   },
   ReminderForAssessmentSignature: {
     createContent: ({ shortLink }) =>
-      `Urgent Immersion Facilitée, veuillez signer le bilan ${shortLink}`,
+      `Bonjour,\n\nSignez votre bilan avec ce lien :\n${shortLink}\n\nImmersion Facilitée`,
   },
   HelloWorld: {
     createContent: ({ testMessage }) =>
