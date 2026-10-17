@@ -4,8 +4,6 @@ import {
   AssessmentDtoBuilder,
   ConventionDtoBuilder,
   type ConventionReadDto,
-  errors,
-  expectPromiseToFailWithError,
   expectToEqual,
   makeEmptyLastReminders,
   UserBuilder,
@@ -89,7 +87,6 @@ describe("BroadcastToFranceTravailOrchestrator", () => {
     broadcastToFranceTravailOrchestrator =
       makeBroadcastToFranceTravailOrchestrator({
         uowPerformer: new InMemoryUowPerformer(uow),
-        eventType: "CONVENTION_UPDATED",
         broadcastToFranceTravailOnConventionUpdates: standardBroadcastToFT,
       });
 
@@ -112,13 +109,12 @@ describe("BroadcastToFranceTravailOrchestrator", () => {
     ];
   });
 
-  it("triggers standard broadcast on convention update with assessment when present", async () => {
+  it("triggers standard broadcast with assessment when present", async () => {
     await broadcastToFranceTravailOrchestrator.execute({
       conventionId: convention.id,
     });
     expectStandardBroadcastCallsToEqual([
       {
-        eventType: "CONVENTION_UPDATED",
         convention: conventionReadDto,
         assessment,
       },
@@ -152,7 +148,6 @@ describe("BroadcastToFranceTravailOrchestrator", () => {
 
     expectStandardBroadcastCallsToEqual([
       {
-        eventType: "CONVENTION_UPDATED",
         convention: conventionReadDtoWithoutAssessment,
       },
     ]);
@@ -188,8 +183,6 @@ describe("BroadcastToFranceTravailOrchestrator", () => {
 
     expectStandardBroadcastCallsToEqual([
       {
-        eventType: "CONVENTION_UPDATED",
-        previousAgencyId: undefined,
         convention: {
           ...conventionWithLegacyAssessment,
           agencyName: agency.name,
@@ -216,7 +209,7 @@ describe("BroadcastToFranceTravailOrchestrator", () => {
     ]);
   });
 
-  it("passes previousAgencyId through to standard broadcast", async () => {
+  it("passes previousAgencyId through to standard broadcast only when provided", async () => {
     const previousAgencyId: AgencyId = "previous-agency-id";
     await broadcastToFranceTravailOrchestrator.execute({
       conventionId: convention.id,
@@ -224,49 +217,11 @@ describe("BroadcastToFranceTravailOrchestrator", () => {
     });
     expectStandardBroadcastCallsToEqual([
       {
-        eventType: "CONVENTION_UPDATED",
         convention: conventionReadDto,
         previousAgencyId,
         assessment,
       },
     ]);
-  });
-
-  describe("when eventType is 'ASSESSMENT_CREATED'", () => {
-    let broadcastToFranceTravailOrchestratorForAssessmentCreated: BroadcastToFranceTravailOrchestrator;
-
-    beforeEach(() => {
-      broadcastToFranceTravailOrchestratorForAssessmentCreated =
-        makeBroadcastToFranceTravailOrchestrator({
-          uowPerformer: new InMemoryUowPerformer(uow),
-          eventType: "ASSESSMENT_CREATED",
-          broadcastToFranceTravailOnConventionUpdates: standardBroadcastToFT,
-        });
-    });
-
-    it("throws when assessment is missing", async () => {
-      await expectPromiseToFailWithError(
-        broadcastToFranceTravailOrchestratorForAssessmentCreated.execute({
-          conventionId: conventionWithoutAssessment.id,
-        }),
-        errors.assessment.missingAssessment({
-          conventionId: conventionWithoutAssessment.id,
-        }),
-      );
-    });
-
-    it("triggers standard broadcast with assessment when all is good", async () => {
-      await broadcastToFranceTravailOrchestratorForAssessmentCreated.execute({
-        conventionId: convention.id,
-      });
-      expectStandardBroadcastCallsToEqual([
-        {
-          eventType: "ASSESSMENT_CREATED",
-          convention: conventionReadDto,
-          assessment,
-        },
-      ]);
-    });
   });
 
   const expectStandardBroadcastCallsToEqual = (

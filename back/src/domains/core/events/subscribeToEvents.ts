@@ -267,7 +267,10 @@ const getUseCasesByTopics = (
   AssessmentCreated: [
     useCases.notifyBeneficiaryThatAssessmentNeedsSignature,
     extractConventionIdFromConvention(
-      useCases.broadcastToFranceTravailOnAssessmentCreated,
+      useCases.broadcastToFranceTravailOnConventionUpdates,
+    ),
+    extractConventionIdFromConvention(
+      useCases.broadcastToPartnersOnConventionUpdates,
     ),
     useCases.notifyAgencyThatAssessmentIsCreatedWithStatusDidNotShow,
   ],

@@ -8,9 +8,10 @@ import {
 import { createOpenApiGenerator } from "shared-routes/openapi";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import type { BroadcastPayload } from "../../../../domains/convention/use-cases/broadcast/broadcastConvention.dto";
+import { broadcastPayloadSchema } from "../../../../domains/convention/use-cases/broadcast/broadcastConvention.schema";
 import type { ConventionUpdatedSubscriptionCallbackBody } from "../../../../domains/core/api-consumer/ports/SubscribersGateway";
 import type { ConventionReadPublicV2Dto } from "../DtoAndSchemas/v2/input/ConventionReadPublicV2.dto";
-import { conventionReadPublicV2Schema } from "../DtoAndSchemas/v2/input/ConventionReadPublicV2.schema";
 
 import {
   publicApiV2ConventionRoutes,
@@ -105,16 +106,70 @@ const conventionExample: ConventionReadPublicV2Dto = {
   lastReminders: makeEmptyLastReminders(),
 };
 
+const callbackConventionBase = new ConventionDtoBuilder().build();
+
+const callbackPayloadExample: BroadcastPayload = {
+  convention: {
+    id: callbackConventionBase.id,
+    status: callbackConventionBase.status,
+    statusJustification: callbackConventionBase.statusJustification,
+    agencyId: callbackConventionBase.agencyId,
+    dateSubmission: callbackConventionBase.dateSubmission,
+    dateStart: callbackConventionBase.dateStart,
+    dateEnd: callbackConventionBase.dateEnd,
+    dateValidation: callbackConventionBase.dateValidation,
+    dateApproval: callbackConventionBase.dateApproval,
+    siret: callbackConventionBase.siret,
+    businessName: callbackConventionBase.businessName,
+    schedule: callbackConventionBase.schedule,
+    workConditions: callbackConventionBase.workConditions,
+    businessAdvantages: callbackConventionBase.businessAdvantages,
+    individualProtection: callbackConventionBase.individualProtection,
+    individualProtectionDescription:
+      callbackConventionBase.individualProtectionDescription,
+    sanitaryPrevention: callbackConventionBase.sanitaryPrevention,
+    sanitaryPreventionDescription:
+      callbackConventionBase.sanitaryPreventionDescription,
+    immersionAddress: callbackConventionBase.immersionAddress,
+    immersionObjective: callbackConventionBase.immersionObjective,
+    immersionAppellation: callbackConventionBase.immersionAppellation,
+    immersionActivities: callbackConventionBase.immersionActivities,
+    immersionSkills: callbackConventionBase.immersionSkills,
+    establishmentNumberEmployeesRange:
+      callbackConventionBase.establishmentNumberEmployeesRange,
+    establishmentTutor: callbackConventionBase.establishmentTutor,
+    validators: callbackConventionBase.validators,
+    agencyReferent: callbackConventionBase.agencyReferent,
+    renewed: callbackConventionBase.renewed,
+    internshipKind: callbackConventionBase.internshipKind,
+    signatories: callbackConventionBase.signatories,
+    agencyName: "Agence de test",
+    agencyDepartment: "75",
+    agencyKind: "pole-emploi",
+    agencySiret: "11112222000033",
+    agencyCodeSafir: "12345",
+    agencyValidatorEmails: ["validator@mail.com"],
+    isEstablishmentBanned: false,
+  },
+  assessment: {
+    conventionId: callbackConventionBase.id,
+    status: "COMPLETED",
+    endedWithAJob: false,
+    establishmentFeedback: "Ca s'est bien passé",
+    establishmentAdvices: "mon conseil",
+  },
+};
+
 const callbackBodySchema: ZodSchemaWithInputMatchingOutput<ConventionUpdatedSubscriptionCallbackBody> =
   z.object({
-    payload: z.object({ convention: conventionReadPublicV2Schema }),
+    payload: broadcastPayloadSchema,
     subscribedEvent: z.enum(["convention.updated"], {
       error: localization.invalidEnum,
     }),
   });
 
 const callbackBodyExample: ConventionUpdatedSubscriptionCallbackBody = {
-  payload: { convention: conventionExample },
+  payload: callbackPayloadExample,
   subscribedEvent: "convention.updated",
 };
 

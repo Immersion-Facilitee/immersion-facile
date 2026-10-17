@@ -1,16 +1,16 @@
 import MockAdapter from "axios-mock-adapter";
 import {
   type AbsoluteUrl,
+  AgencyDtoBuilder,
   ConventionDtoBuilder,
-  type ConventionReadDto,
   expectToEqual,
   makeEmptyLastReminders,
   type SubscriptionParams,
 } from "shared";
 import { AppConfig } from "../../../../config/bootstrap/appConfig";
 
-import { toPartnerAgencyKind } from "../../../../utils/agency";
 import { makeAxiosInstances } from "../../../../utils/axiosUtils";
+import { toBroadcastConvention } from "../../../convention/use-cases/broadcast/toBroadcastConvention";
 import type { ConventionUpdatedSubscriptionCallbackBody } from "../ports/SubscribersGateway";
 import { HttpSubscribersGateway } from "./HttpSubscribersGateway";
 
@@ -18,37 +18,34 @@ describe("HttpSubscribersGateway", () => {
   let httpSubscribersGateway: HttpSubscribersGateway;
   let mock: MockAdapter;
 
-  const conventionReadDto: ConventionReadDto = {
-    ...new ConventionDtoBuilder().build(),
-    agencyName: "Agence de test",
-    agencyDepartment: "75",
-    agencyContactEmail: "contact@mail.com",
-    agencyKind: "mission-locale",
-    agencySiret: "11112222000033",
-    agencyValidationSteps: "validator-only",
-    agencyRefersTo: undefined,
-    assessment: null,
-    isEstablishmentBanned: false,
-    lastReminders: makeEmptyLastReminders(),
-  };
+  const agency = new AgencyDtoBuilder()
+    .withName("Agence de test")
+    .withKind("mission-locale")
+    .withAgencySiret("11112222000033")
+    .withCodeSafir(null)
+    .withValidatorEmails(["validator@mail.com"])
+    .build();
 
-  const { agencyKind, agencyRefersTo, ...conventionWithoutAgencyKinds } =
-    conventionReadDto;
+  const convention = new ConventionDtoBuilder().build();
 
   const subscriptionBody: ConventionUpdatedSubscriptionCallbackBody = {
     payload: {
-      convention: {
-        ...conventionWithoutAgencyKinds,
-        agencyKind: toPartnerAgencyKind(agencyKind),
-        ...(agencyRefersTo
-          ? {
-              agencyRefersTo: {
-                ...agencyRefersTo,
-                kind: toPartnerAgencyKind(agencyRefersTo.kind),
-              },
-            }
-          : {}),
-      },
+      convention: toBroadcastConvention(
+        {
+          ...convention,
+          agencyName: agency.name,
+          agencyDepartment: agency.address.departmentCode,
+          agencyKind: agency.kind,
+          agencySiret: agency.agencySiret,
+          agencyContactEmail: agency.contactEmail,
+          agencyValidationSteps: "validator-only",
+          assessment: null,
+          isEstablishmentBanned: false,
+          lastReminders: makeEmptyLastReminders(),
+        },
+        agency,
+        null,
+      ),
     },
     subscribedEvent: "convention.updated",
   };
