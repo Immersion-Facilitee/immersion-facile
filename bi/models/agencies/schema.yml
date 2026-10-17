@@ -27,6 +27,8 @@ models:
         description: The name of the parent agency if applicable
       - name: status
         description: Current status of the agency
+      - name: group_name
+        description: Group label entered by IF admin. Null if not set.
       - name: delegation_agency_kind
         description: |
           Kind of the delegating agency, extracted from delegation_info JSON.

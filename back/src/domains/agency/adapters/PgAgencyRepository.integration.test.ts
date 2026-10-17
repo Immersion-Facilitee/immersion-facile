@@ -280,6 +280,38 @@ describe.each(adapterKind)(
         expectToEqual(retrievedAgency, agencyWithNullDelegation);
       });
 
+      it("inserts agency with groupName null", async () => {
+        const agencyWithNullGroupName = toAgencyWithRights(
+          agency1builder.withGroupName(null).build(),
+          {
+            [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+          },
+        );
+
+        await agencyRepository.insert(agencyWithNullGroupName);
+
+        const retrievedAgency = await agencyRepository.getById(
+          agencyWithNullGroupName.id,
+        );
+        expectToEqual(retrievedAgency, agencyWithNullGroupName);
+      });
+
+      it("inserts agency with groupName", async () => {
+        const agencyWithGroupName = toAgencyWithRights(
+          agency1builder.withGroupName("Réseau Île-de-France 75").build(),
+          {
+            [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+          },
+        );
+
+        await agencyRepository.insert(agencyWithGroupName);
+
+        const retrievedAgency = await agencyRepository.getById(
+          agencyWithGroupName.id,
+        );
+        expectToEqual(retrievedAgency, agencyWithGroupName);
+      });
+
       it("inserts two agencies with the same phone number", async () => {
         const phoneNumber = "+33610101010";
 
@@ -549,6 +581,58 @@ describe.each(adapterKind)(
         expectToEqual(retrievedAgency, {
           ...agencyWithDelegation,
           delegationAgencyInfo: updatedDelegationInfo,
+        });
+      });
+
+      it("updates groupName from null to filled", async () => {
+        const agencyWithoutGroupName = toAgencyWithRights(
+          agency1builder.withGroupName(null).build(),
+          {
+            [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+          },
+        );
+
+        await agencyRepository.insert(agencyWithoutGroupName);
+
+        const groupName = "Réseau Cap-Emploi 75";
+
+        await agencyRepository.update({
+          id: agencyWithoutGroupName.id,
+          status: agencyWithoutGroupName.status,
+          groupName,
+        });
+
+        const retrievedAgency = await agencyRepository.getById(
+          agencyWithoutGroupName.id,
+        );
+        expectToEqual(retrievedAgency, {
+          ...agencyWithoutGroupName,
+          groupName,
+        });
+      });
+
+      it("updates groupName from filled to null", async () => {
+        const agencyWithGroupName = toAgencyWithRights(
+          agency1builder.withGroupName("Groupe Île-de-France").build(),
+          {
+            [validator1.id]: { isNotifiedByEmail: false, roles: ["validator"] },
+          },
+        );
+
+        await agencyRepository.insert(agencyWithGroupName);
+
+        await agencyRepository.update({
+          id: agencyWithGroupName.id,
+          status: agencyWithGroupName.status,
+          groupName: null,
+        });
+
+        const retrievedAgency = await agencyRepository.getById(
+          agencyWithGroupName.id,
+        );
+        expectToEqual(retrievedAgency, {
+          ...agencyWithGroupName,
+          groupName: null,
         });
       });
 

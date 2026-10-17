@@ -75,6 +75,8 @@ sources:
             description: "Marketing keyword that led to the agency"
           - name: delegation_info
             description: "JSON object describing delegation: delegationAgencyKind, delegationAgencyName, delegationEndDate"
+          - name: group_name
+            description: "Optional group label entered by IF admin"
 
       - name: agency_groups
         description: "Groups of agencies"

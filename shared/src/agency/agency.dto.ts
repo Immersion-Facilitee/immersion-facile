@@ -59,10 +59,11 @@ export type CreateAgencyInitialValues = Omit<CreateAgencyDto, "kind"> & {
   kind: AgencyKind | "";
 };
 
-export type AgencyDtoSensitiveFields = {
+type AgencyDtoSensitiveFields = {
   status: AgencyStatus;
   statusJustification: string | null;
   codeSafir: CodeSafir | null;
+  groupName: string | null;
 };
 
 export type WithAgencyDto = {

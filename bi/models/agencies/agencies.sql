@@ -24,6 +24,7 @@ select
     a.status,
     a.agency_siret::text as agency_siret,
     a.code_safir,
+    a.group_name,
     a.logo_url,
     a.street_number_and_address,
     a.post_code,

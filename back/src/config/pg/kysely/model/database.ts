@@ -223,6 +223,7 @@ interface Agencies extends WithAcquisition {
   phone_id: number;
   contact_email: string;
   delegation_info: Json | null;
+  group_name: string | null;
 }
 
 interface ArchivedConventionRequests {
