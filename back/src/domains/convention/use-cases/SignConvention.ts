@@ -13,6 +13,7 @@ import {
   getSignatoryRoleAndUserFromJwtPayload,
   signConvention,
   throwErrorOnConventionIdMismatch,
+  throwIfConventionArchivedForNonAdmin,
 } from "../entities/Convention";
 
 export type SignConvention = ReturnType<typeof makeSignConvention>;
@@ -49,10 +50,18 @@ export const makeSignConvention = useCaseBuilder("SignConvention")
       if (!isSignatoryRole(role))
         throw errors.convention.roleNotAllowedToSign({ role });
 
+      const now = deps.timeGateway.now();
+      await throwIfConventionArchivedForNonAdmin({
+        convention,
+        now,
+        jwtPayload,
+        uow,
+      });
+
       const signedConvention = await signConvention({
         uow,
         convention,
-        now: deps.timeGateway.now().toISOString(),
+        now: now.toISOString(),
         role,
       });
 

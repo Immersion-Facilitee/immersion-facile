@@ -13,6 +13,7 @@ import {
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
+import { throwIfConventionArchivedForNonAdmin } from "../entities/Convention";
 import type { AddConvention } from "./AddConvention";
 
 export type RenewConvention = ReturnType<typeof makeRenewConvention>;
@@ -54,6 +55,13 @@ export const makeRenewConvention = useCaseBuilder("RenewConvention")
         throw new ForbiddenError(
           `The role '${roles}' is not allowed to renew convention`,
         );
+
+      await throwIfConventionArchivedForNonAdmin({
+        convention: conventionInRepo,
+        now: deps.timeGateway.now(),
+        jwtPayload,
+        uow,
+      });
 
       if (conventionInRepo.status !== "ACCEPTED_BY_VALIDATOR")
         throw new BadRequestError(

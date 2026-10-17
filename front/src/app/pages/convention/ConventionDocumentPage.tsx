@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import {
   type AgencyModifierRole,
   addressDtoToString,
+  archivedConventionErrorMessage,
   type ConventionId,
   type ConventionReadDto,
   convertLocaleDateToUtcTimezoneDate,
@@ -134,15 +135,21 @@ export const ConventionDocumentPage = ({
     }
   }, [convention?.agencyId, dispatch]);
 
-  if (fetchConventionError)
+  if (fetchConventionError) {
+    const conventionId = routeConventionId ?? jwtPayload.applicationId;
+    const message = conventionFormFeedback?.message ?? "";
+    if (conventionId && message.includes(archivedConventionErrorMessage))
+      throw frontErrors.convention.archived({ conventionId });
+
     return (
       <MainWrapper layout="default">
         <ShowConventionErrorOrRenewExpiredJwt
-          errorMessage={conventionFormFeedback?.message}
+          errorMessage={message}
           jwt={jwt}
         />
       </MainWrapper>
     );
+  }
 
   if (isLoading) return <Loader />;
   if (!convention) return <p>Pas de convention correspondante trouvée</p>;

@@ -1,4 +1,4 @@
-import { addDays } from "date-fns";
+import { addDays, subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AgencyId,
@@ -11,12 +11,15 @@ import {
   type ConventionRole,
   type ConventionStatus,
   conventionStatuses,
+  defaultMonthsThresholdForConventionsListing,
   type EstablishmentTutor,
   errors,
   expectArraysToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  makeBooleanFeatureFlag,
   type Role,
+  reasonableSchedule,
   type SignatoryRole,
   statusTransitionConfigs,
   UserBuilder,
@@ -1012,6 +1015,45 @@ describe("Update Convention", () => {
           conventionToUpdate,
         ]);
       });
+    });
+  });
+
+  describe("archived convention", () => {
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(convention)
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.userRepository.users = [connectedUser];
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [connectedUser.id]: {
+            roles: ["validator"],
+            isNotifiedByEmail: true,
+          },
+        }),
+      ];
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        updateConvention.execute(
+          { convention: archivedConvention },
+          { userId: connectedUser.id },
+        ),
+        errors.convention.archived({
+          conventionId: archivedConvention.id,
+        }),
+      );
     });
   });
 });

@@ -21,11 +21,13 @@ import {
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   retrieveConventionWithAgency,
   throwErrorOnConventionIdMismatch,
+  throwIfConventionArchivedForNonAdmin,
 } from "../entities/Convention";
 
 export const allowedConventionStatusesForEditWithFinalStatus =
@@ -53,6 +55,7 @@ export const makeEditConventionWithFinalStatus = useCaseBuilder(
   .withCurrentUser<ConventionRelatedJwtPayload>()
   .withDeps<{
     createNewEvent: CreateNewEvent;
+    timeGateway: TimeGateway;
   }>()
   .build(async ({ inputParams, uow, deps, currentUser: jwtPayload }) => {
     throwErrorOnConventionIdMismatch({
@@ -93,6 +96,13 @@ export const makeEditConventionWithFinalStatus = useCaseBuilder(
         errors.convention.editConventionWithFinalStatusNotAuthorizedForRole(),
       isPeAdvisorAllowed: true,
       isValidatorOfAgencyRefersToAllowed: true,
+    });
+
+    await throwIfConventionArchivedForNonAdmin({
+      convention,
+      now: deps.timeGateway.now(),
+      jwtPayload,
+      uow,
     });
 
     if (

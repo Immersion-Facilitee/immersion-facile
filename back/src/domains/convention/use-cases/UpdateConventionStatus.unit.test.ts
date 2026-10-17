@@ -1,3 +1,4 @@
+import { subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
@@ -5,11 +6,14 @@ import {
   type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
+  defaultMonthsThresholdForConventionsListing,
   errors,
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
   ForbiddenError,
+  makeBooleanFeatureFlag,
+  reasonableSchedule,
   validSignatoryRoles,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
@@ -644,6 +648,51 @@ describe("UpdateConventionStatus", () => {
       }),
     );
   });
+
+  describe("archived convention", () => {
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const { uow, updateConventionStatusUseCase, timeGateway } =
+        prepareUseCaseForStandAloneTests();
+      const user = new ConnectedUserBuilder()
+        .withEmail("validator@mail.com")
+        .buildUser();
+      const agency = toAgencyWithRights(new AgencyDtoBuilder().build(), {
+        [user.id]: { roles: ["validator"], isNotifiedByEmail: true },
+      });
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const convention = new ConventionDtoBuilder()
+        .withStatus("IN_REVIEW")
+        .withAgencyId(agency.id)
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+
+      uow.userRepository.users = [user];
+      uow.agencyRepository.agencies = [agency];
+      uow.conventionRepository.setConventions([convention]);
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        updateConventionStatusUseCase.execute(
+          { status: "READY_TO_SIGN", conventionId: convention.id },
+          createConventionMagicLinkPayload({
+            id: convention.id,
+            role: "validator",
+            email: user.email,
+            now: timeGateway.now(),
+          }),
+        ),
+        errors.convention.archived({ conventionId: convention.id }),
+      );
+    });
+  });
 });
 
 const prepareUseCaseForStandAloneTests = () => {
@@ -664,6 +713,7 @@ const prepareUseCaseForStandAloneTests = () => {
   return {
     uow,
     updateConventionStatusUseCase,
+    timeGateway,
   };
 };
 

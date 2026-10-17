@@ -1,4 +1,4 @@
-import { addDays, subDays, subHours } from "date-fns";
+import { addDays, subDays, subHours, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AgencyRole,
@@ -7,12 +7,14 @@ import {
   type ConnectedUserDomainJwtPayload,
   ConventionDtoBuilder,
   type ConventionRole,
+  defaultMonthsThresholdForConventionsListing,
   defaultPhoneNumber,
   type EstablishmentRole,
   errors,
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  makeBooleanFeatureFlag,
   type Notification,
   reasonableSchedule,
   type SignatoryRole,
@@ -1137,6 +1139,45 @@ describe("SendAssessmentLink", () => {
           }),
         );
       });
+    });
+  });
+
+  describe("archived convention", () => {
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(convention)
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [notConnectedUser.id]: {
+            roles: ["validator"],
+            isNotifiedByEmail: true,
+          },
+        }),
+      ];
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        usecase.execute(
+          {
+            conventionId: archivedConvention.id,
+            notificationKind: "email",
+          },
+          validatorJwtPayload,
+        ),
+        errors.convention.archived({ conventionId: archivedConvention.id }),
+      );
     });
   });
 });

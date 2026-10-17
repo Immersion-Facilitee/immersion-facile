@@ -1,4 +1,4 @@
-import { addDays, subDays } from "date-fns";
+import { addDays, subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AssessmentDto,
@@ -8,11 +8,13 @@ import {
   ConventionDtoBuilder,
   type ConventionRole,
   conventionStatuses,
+  defaultMonthsThresholdForConventionsListing,
   errors,
   expectArraysToEqual,
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   ForbiddenError,
+  makeBooleanFeatureFlag,
   type Role,
   reasonableSchedule,
   splitCasesBetweenPassingAndFailing,
@@ -118,16 +120,19 @@ describe("CreateAssessment", () => {
 
   let createAssessment: CreateAssessment;
   let uow: InMemoryUnitOfWork;
+  let timeGateway: CustomTimeGateway;
 
   beforeEach(() => {
     uow = createInMemoryUow();
+    timeGateway = new CustomTimeGateway();
     createAssessment = makeCreateAssessment({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         createNewEvent: makeCreateNewEvent({
-          timeGateway: new CustomTimeGateway(),
+          timeGateway,
           uuidGenerator: new TestUuidGenerator(),
         }),
+        timeGateway,
       },
     });
 
@@ -635,6 +640,36 @@ describe("CreateAssessment", () => {
           },
         },
       ]);
+    });
+  });
+
+  describe("archived convention", () => {
+    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+      const archivedDateEnd = subMonths(
+        timeGateway.now(),
+        defaultMonthsThresholdForConventionsListing + 1,
+      );
+      const archivedConvention = new ConventionDtoBuilder(validatedConvention)
+        .withDateSubmission(subDays(archivedDateEnd, 10).toISOString())
+        .withDateStart(subDays(archivedDateEnd, 4).toISOString())
+        .withDateEnd(archivedDateEnd.toISOString())
+        .withSchedule(reasonableSchedule)
+        .build();
+      uow.conventionRepository.setConventions([archivedConvention]);
+      uow.featureFlagRepository.featureFlags = {
+        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
+      };
+
+      await expectPromiseToFailWithError(
+        createAssessment.execute(
+          { ...assessment, conventionId: archivedConvention.id },
+          {
+            ...tutorPayload,
+            applicationId: archivedConvention.id,
+          },
+        ),
+        errors.convention.archived({ conventionId: archivedConvention.id }),
+      );
     });
   });
 });

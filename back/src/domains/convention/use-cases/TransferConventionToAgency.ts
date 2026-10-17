@@ -11,10 +11,12 @@ import { throwErrorIfConventionStatusNotAllowed } from "../../../utils/conventio
 import { throwIfNotAuthorizedForRole } from "../../connected-users/helpers/authorization.helper";
 import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
+import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   retrieveConventionWithAgency,
   throwErrorOnConventionIdMismatch,
+  throwIfConventionArchivedForNonAdmin,
 } from "../entities/Convention";
 
 export type TransferConventionToAgency = ReturnType<
@@ -31,6 +33,7 @@ export const makeTransferConventionToAgency = useCaseBuilder(
   .withCurrentUser<ConventionRelatedJwtPayload>()
   .withDeps<{
     createNewEvent: CreateNewEvent;
+    timeGateway: TimeGateway;
   }>()
   .build(async ({ inputParams, uow, deps, currentUser: jwtPayload }) => {
     throwErrorOnConventionIdMismatch({
@@ -65,6 +68,13 @@ export const makeTransferConventionToAgency = useCaseBuilder(
       jwtPayload,
       isPeAdvisorAllowed: true,
       isValidatorOfAgencyRefersToAllowed: false,
+    });
+
+    await throwIfConventionArchivedForNonAdmin({
+      convention,
+      now: deps.timeGateway.now(),
+      jwtPayload,
+      uow,
     });
 
     const triggeredBy: TriggeredBy =

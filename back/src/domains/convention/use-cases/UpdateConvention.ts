@@ -22,6 +22,7 @@ import {
   extractUserRolesOnConventionFromJwtPayload,
   retrieveConventionWithAgency,
   signConvention,
+  throwIfConventionArchivedForNonAdmin,
 } from "../entities/Convention";
 
 export type UpdateConvention = ReturnType<typeof makeUpdateConvention>;
@@ -56,6 +57,14 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
         isPeAdvisorAllowed: true,
         isValidatorOfAgencyRefersToAllowed:
           conventionFromRepo.status !== "ACCEPTED_BY_COUNSELLOR",
+      });
+
+      const now = deps.timeGateway.now();
+      await throwIfConventionArchivedForNonAdmin({
+        convention: conventionFromRepo,
+        now,
+        jwtPayload,
+        uow,
       });
 
       const minimalValidStatus: ConventionStatus = "READY_TO_SIGN";
@@ -121,7 +130,7 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
         const signedConvention = await signConvention({
           uow,
           convention: conventionWithSignatoriesSignedAtAndDateApprovalCleared,
-          now: deps.timeGateway.now().toISOString(),
+          now: now.toISOString(),
           role: signatoryRole,
         });
 

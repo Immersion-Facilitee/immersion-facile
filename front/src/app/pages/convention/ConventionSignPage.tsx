@@ -11,6 +11,7 @@ import {
 import { useDispatch } from "react-redux";
 import {
   allSignatoryRoles,
+  archivedConventionErrorMessage,
   type ConventionJwtPayload,
   decodeMagicLinkJwtWithoutSignatureCheck,
   errors,
@@ -21,6 +22,7 @@ import {
 import { ConventionSignForm } from "src/app/components/forms/convention/ConventionSignForm";
 import { labelAndSeverityByStatus } from "src/app/contents/convention/labelAndSeverityByStatus";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
+import { frontErrors } from "src/app/pages/error/front-errors";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import { match } from "ts-pattern";
 import { useStyles } from "tss-react/dsfr";
@@ -113,12 +115,18 @@ const ConventionSignPageContent = ({
         fetchConventionError,
       })
         .with({ isLoading: true }, () => <Loader />)
-        .with({ fetchConventionError: true }, () => (
-          <ShowConventionErrorOrRenewExpiredJwt
-            errorMessage={conventionFormFeedback?.message ?? ""}
-            jwt={jwt}
-          />
-        ))
+        .with({ fetchConventionError: true }, () => {
+          const message = conventionFormFeedback?.message ?? "";
+          if (message.includes(archivedConventionErrorMessage))
+            throw frontErrors.convention.archived({ conventionId });
+
+          return (
+            <ShowConventionErrorOrRenewExpiredJwt
+              errorMessage={message}
+              jwt={jwt}
+            />
+          );
+        })
         .with({ hasConvention: false }, () => (
           <Alert
             severity="error"
