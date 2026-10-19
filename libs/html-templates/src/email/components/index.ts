@@ -8,9 +8,12 @@ export {
   renderCallout,
 } from "./blocks/callout";
 export { renderDivider } from "./blocks/divider";
-export { renderHighlight } from "./blocks/highlight";
-export { renderList } from "./blocks/list";
-export { renderParagraph } from "./blocks/paragraph";
+export { type EmailHighlightProps, renderHighlight } from "./blocks/highlight";
+export { type EmailListProps, renderList } from "./blocks/list";
+export {
+  type EmailParagraphProps,
+  renderParagraph,
+} from "./blocks/paragraph";
 export { renderFooter } from "./layout/footer";
 export { renderGreetings } from "./layout/greetings";
 export { renderHead } from "./layout/head";
