@@ -396,13 +396,6 @@ export class AppConfig {
     return parseInteger(this.env.MAX_API_CONSUMER_CALLS_PER_SECOND, 5);
   }
 
-  public get backfillBroadcastFeedbackMaxBatchesPerPhase(): number | undefined {
-    return parseOptionalPositiveInteger(
-      this.env.BACKFILL_MAX_BATCHES_PER_PHASE,
-      "BACKFILL_MAX_BATCHES_PER_PHASE",
-    );
-  }
-
   public get maxConventionsToSyncWithPe() {
     return Number.parseInt(
       this.#throwIfNotDefinedOrDefault("MAX_CONVENTIONS_TO_SYNC_WITH_PE", "50"),
@@ -676,19 +669,6 @@ export class AppConfig {
 
 const parseInteger = (str: string | undefined, defaultValue: number): number =>
   str ? Number.parseInt(str, 10) : defaultValue;
-
-const parseOptionalPositiveInteger = (
-  str: string | undefined,
-  variableName: string,
-): number | undefined => {
-  if (!str) return undefined;
-  const parsed = Number(str);
-  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0)
-    throw new Error(
-      `Invalid ${variableName}=${str} (expected a positive integer)`,
-    );
-  return parsed;
-};
 
 // Format: <string>,<string>,...
 const parseStringList = (str: string | undefined, separator = ","): string[] =>
