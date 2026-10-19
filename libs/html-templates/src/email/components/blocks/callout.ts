@@ -3,12 +3,12 @@ import {
   type EmailButtonsGroupProps,
   renderButtonsGroup,
 } from "./buttonsGroup";
-import { renderList } from "./list";
-import { renderParagraph } from "./paragraph";
+import { type EmailListProps, renderList } from "./list";
+import { type EmailParagraphProps, renderParagraph } from "./paragraph";
 
 export type EmailCalloutContentBlock =
-  | { kind: "paragraph"; content: string }
-  | { kind: "list"; numbered?: boolean; items: string[] };
+  | ({ kind: "paragraph" } & EmailParagraphProps)
+  | ({ kind: "list" } & EmailListProps);
 
 export type EmailCalloutVariant = "primary" | "secondary";
 
@@ -28,7 +28,7 @@ const calloutStyleByVariant: Record<EmailCalloutVariant, string> = {
 
 const renderCalloutContentBlock = (block: EmailCalloutContentBlock): string =>
   match(block)
-    .with({ kind: "paragraph" }, ({ content }) => renderParagraph(content))
+    .with({ kind: "paragraph" }, ({ content }) => renderParagraph({ content }))
     .with({ kind: "list" }, ({ items, numbered }) =>
       renderList({ items, numbered }),
     )

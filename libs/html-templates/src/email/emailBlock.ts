@@ -3,6 +3,9 @@ import {
   type EmailButtonProps,
   type EmailButtonsGroupProps,
   type EmailCalloutProps,
+  type EmailHighlightProps,
+  type EmailListProps,
+  type EmailParagraphProps,
   renderButton,
   renderButtonsGroup,
   renderCallout,
@@ -25,11 +28,11 @@ type CommonEmailBlockProps = {
 };
 
 export type EmailBlock = (
-  | { kind: "paragraph"; content: string }
-  | { kind: "list"; numbered?: boolean; items: string[] }
+  | ({ kind: "paragraph" } & EmailParagraphProps)
+  | ({ kind: "list" } & EmailListProps)
   | ({ kind: "button" } & EmailButtonProps)
   | ({ kind: "buttonsGroup" } & EmailButtonsGroupProps)
-  | { kind: "highlight"; content: string }
+  | ({ kind: "highlight" } & EmailHighlightProps)
   | ({ kind: "callout" } & EmailCalloutProps)
   | { kind: "divider" }
 ) &
@@ -37,7 +40,7 @@ export type EmailBlock = (
 
 export const renderEmailBlock = (block: EmailBlock): string | undefined =>
   match(block)
-    .with({ kind: "paragraph" }, ({ content }) => renderParagraph(content))
+    .with({ kind: "paragraph" }, ({ content }) => renderParagraph({ content }))
     .with({ kind: "list" }, ({ items, numbered }) =>
       renderList({ items, numbered }),
     )
@@ -47,7 +50,7 @@ export const renderEmailBlock = (block: EmailBlock): string | undefined =>
     .with({ kind: "buttonsGroup" }, ({ buttons, layout }) =>
       renderButtonsGroup({ buttons, layout }),
     )
-    .with({ kind: "highlight" }, ({ content }) => renderHighlight(content))
+    .with({ kind: "highlight" }, ({ content }) => renderHighlight({ content }))
     .with({ kind: "callout" }, ({ blocks, buttonsGroup, variant }) =>
       renderCallout({ blocks, buttonsGroup, variant }),
     )

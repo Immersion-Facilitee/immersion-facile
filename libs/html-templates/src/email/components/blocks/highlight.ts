@@ -1,6 +1,10 @@
 import { ignoreTabs } from "../../../helpers/formatters";
 
-export const renderHighlight = (content: string): string =>
+export type EmailHighlightProps = {
+  content: string;
+};
+
+export const renderHighlight = ({ content }: EmailHighlightProps): string =>
   `<table>
     <tr>
       <td width="4" style="width: 4px; background-color: #6a6af4;"></td>
