@@ -93,6 +93,15 @@ export const AgencyTasks = ({
           },
         ),
       );
+    }
+  }, [connectedUserJwt, dateStartFrom1MonthAgoToIn5Days, dispatch]);
+
+  useEffect(() => {
+    if (
+      connectedUserJwt &&
+      currentUser &&
+      hasUserRightsOnAgencyBroadcast(currentUser)
+    ) {
       dispatch(
         conventionsWithBroadcastFeedbackSlice.actions.getConventionsWithErroredBroadcastFeedbackRequested(
           {
@@ -107,7 +116,7 @@ export const AgencyTasks = ({
         ),
       );
     }
-  }, [connectedUserJwt, dateStartFrom1MonthAgoToIn5Days, dispatch]);
+  }, [connectedUserJwt, currentUser, dispatch]);
 
   return (
     <HeadingSection
