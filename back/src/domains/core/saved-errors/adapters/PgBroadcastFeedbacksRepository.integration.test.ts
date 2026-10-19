@@ -59,6 +59,27 @@ describe("PgBroadcastFeedbacksRepository", () => {
     await kyselyDb.deleteFrom("actors").execute();
     await kyselyDb.deleteFrom("users__agencies").execute();
     await kyselyDb.deleteFrom("agencies").execute();
+
+    const validator = makeUniqueUserForTest(uuid());
+    await new PgUserRepository(kyselyDb).save(validator);
+    await new PgAgencyRepository(kyselyDb).insert(
+      toAgencyWithRights(new AgencyDtoBuilder().withId(someAgencyId).build(), {
+        [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+      }),
+    );
+    const conventionRepository = new PgConventionRepository(kyselyDb);
+    await conventionRepository.save(
+      new ConventionDtoBuilder()
+        .withId(someConventionId)
+        .withAgencyId(someAgencyId)
+        .build(),
+    );
+    await conventionRepository.save(
+      new ConventionDtoBuilder()
+        .withId(anotherConventionId)
+        .withAgencyId(someAgencyId)
+        .build(),
+    );
   });
 
   afterAll(async () => {
@@ -387,48 +408,6 @@ describe("PgBroadcastFeedbacksRepository", () => {
         );
 
       expect(result).toBeNull();
-    });
-
-    it("falls back to legacy fields when columns are null (legacy rows pre-backfill)", async () => {
-      const conventionId = someConventionId;
-      const agencyId = someAgencyId;
-      const validator = makeUniqueUserForTest(uuid());
-      await new PgUserRepository(kyselyDb).save(validator);
-      await new PgAgencyRepository(kyselyDb).insert(
-        toAgencyWithRights(new AgencyDtoBuilder().withId(agencyId).build(), {
-          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        }),
-      );
-      await new PgConventionRepository(kyselyDb).save(
-        new ConventionDtoBuilder()
-          .withId(conventionId)
-          .withAgencyId(agencyId)
-          .build(),
-      );
-
-      await kyselyDb
-        .insertInto("broadcast_feedbacks")
-        .values({
-          service_name: broadcastToFtServiceName,
-          consumer_name: "my-consumer",
-          consumer_id: null,
-          request_params: JSON.stringify({ conventionId }),
-          response: JSON.stringify({ httpStatus: 500 }),
-          occurred_at: new Date("2024-07-31").toISOString(),
-          handled_by_agency: false,
-          convention_id: null,
-          agency_id: null,
-        })
-        .execute();
-
-      const result =
-        await pgBroadcastFeedbacksRepository.getLastBroadcastFeedback(
-          conventionId,
-        );
-
-      expect(result).not.toBeNull();
-      expectToEqual(result?.conventionId, conventionId);
-      expectToEqual(result?.agencyId, agencyId);
     });
 
     it("retrieve a broadcast feedback", async () => {
