@@ -1,5 +1,5 @@
 import { parseISO } from "date-fns";
-import { createEmailTemplate, createTemplatesByName } from "html-templates";
+import { createTemplatesByName } from "html-templates";
 import {
   type AbsoluteUrl,
   immersionFacileHelpdeskRootUrl,
@@ -1719,7 +1719,7 @@ Tél : ${beneficiaryPhone}`,
       `,
       }),
     },
-    DEMO_EMAIL_COMPONENTS: createEmailTemplate({
+    DEMO_EMAIL_COMPONENTS: {
       niceName: "[DEMO] Composants email",
       tags: ["template:demo_email_components"],
       createEmailVariables: ({ agencyLogoUrl, demoUrl, internshipKind }) => ({
@@ -1731,17 +1731,14 @@ Tél : ${beneficiaryPhone}`,
           {
             kind: "paragraph",
             content: "<strong>paragraph</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "paragraph",
             content: `Du texte écrit en HTML, qui accepte du <strong>gras</strong>, de l'<em>italique</em> ou un <a href="${demoUrl}">lien</a>.`,
-            marginBottom: "lg",
           },
           {
             kind: "paragraph",
             content: "<strong>list</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "list",
@@ -1755,12 +1752,10 @@ Tél : ${beneficiaryPhone}`,
             kind: "list",
             numbered: true,
             items: ["numbered", "deuxième élément", "troisième élément"],
-            marginBottom: "lg",
           },
           {
             kind: "paragraph",
             content: "<strong>button</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "button",
@@ -1778,12 +1773,10 @@ Tél : ${beneficiaryPhone}`,
             label: "tertiary",
             url: demoUrl,
             priority: "tertiary",
-            marginBottom: "lg",
           },
           {
             kind: "paragraph",
             content: "<strong>buttonsGroup</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "buttonsGroup",
@@ -1801,22 +1794,18 @@ Tél : ${beneficiaryPhone}`,
               { label: "secondary", url: demoUrl, priority: "secondary" },
               { label: "tertiary", url: demoUrl, priority: "tertiary" },
             ],
-            marginBottom: "lg",
           },
           {
             kind: "paragraph",
             content: "<strong>highlight</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "highlight",
             content: `Du texte écrit en HTML, qui accepte du <strong>gras</strong>, de l'<em>italique</em> ou un <a href="${demoUrl}">lien</a>.`,
-            marginBottom: "lg",
           },
           {
             kind: "paragraph",
             content: "<strong>callout</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "callout",
@@ -1864,7 +1853,6 @@ Tél : ${beneficiaryPhone}`,
                 items: ["item 1", "item 2", "..."],
               },
             ],
-            marginBottom: "lg",
           },
           {
             kind: "callout",
@@ -1887,15 +1875,16 @@ Tél : ${beneficiaryPhone}`,
                 numbered: true,
                 items: ["item 1", "item 2", "..."],
               },
+              {
+                kind: "buttonsGroup",
+                layout: "horizontal",
+                buttons: [
+                  { label: "Bouton 1", url: demoUrl },
+                  { label: "Bouton 2", url: demoUrl, priority: "secondary" },
+                  { label: "Bouton 3", url: demoUrl, priority: "tertiary" },
+                ],
+              },
             ],
-            buttonsGroup: {
-              layout: "horizontal",
-              buttons: [
-                { label: "Bouton 1", url: demoUrl },
-                { label: "Bouton 2", url: demoUrl, priority: "secondary" },
-                { label: "Bouton 3", url: demoUrl, priority: "tertiary" },
-              ],
-            },
           },
           {
             kind: "callout",
@@ -1919,47 +1908,23 @@ Tél : ${beneficiaryPhone}`,
                 numbered: true,
                 items: ["item 1", "item 2", "..."],
               },
+              {
+                kind: "buttonsGroup",
+                layout: "horizontal",
+                buttons: [
+                  { label: "Bouton 1", url: demoUrl },
+                  { label: "Bouton 2", url: demoUrl, priority: "secondary" },
+                  { label: "Bouton 3", url: demoUrl, priority: "tertiary" },
+                ],
+              },
             ],
-            buttonsGroup: {
-              layout: "horizontal",
-              buttons: [
-                { label: "Bouton 1", url: demoUrl },
-                { label: "Bouton 2", url: demoUrl, priority: "secondary" },
-                { label: "Bouton 3", url: demoUrl, priority: "tertiary" },
-              ],
-            },
           },
           {
             kind: "paragraph",
             content: "<strong>divider</strong>",
-            marginBottom: "sm",
           },
           {
             kind: "divider",
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "<strong>marginBottom</strong>",
-            marginBottom: "sm",
-          },
-          {
-            kind: "paragraph",
-            content: "sm (8px)",
-            marginBottom: "sm",
-          },
-          {
-            kind: "paragraph",
-            content: "md (16px, par défaut)",
-          },
-          {
-            kind: "paragraph",
-            content: "lg (32px)",
-            marginBottom: "lg",
-          },
-          {
-            kind: "paragraph",
-            content: "bloc suivant",
           },
         ],
         signature: `<strong>[FIXE] signature</strong>
@@ -1969,7 +1934,7 @@ Tél : ${beneficiaryPhone}`,
           Toujours en dernier, précédé d'un divider. Le footer vient juste après, automatiquement.`,
         attachmentUrls: [emailAttachements.memoBeneficiary],
       }),
-    }),
+    },
     DEPRECATED_CONVENTION_NOTIFICATION: {
       niceName: "Convention - Obsolète",
       tags: [

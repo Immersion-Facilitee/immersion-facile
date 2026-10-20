@@ -1,6 +1,7 @@
 import type { EmailButtonProps } from "./components/email";
+import type { EmailVariables } from "./email/emailVariables";
 
-type CreateEmailVariable<P> = (params: P) => {
+type LegacyEmailVariables = {
   bypassLayout?: boolean;
   subject: string;
   greetings?: string;
@@ -19,6 +20,10 @@ type CreateEmailVariable<P> = (params: P) => {
   buttons?: EmailButtonProps[];
   attachmentUrls?: string[];
 };
+
+type CreateEmailVariable<P> = (
+  params: P,
+) => LegacyEmailVariables | EmailVariables;
 
 type Theme =
   | "authentification"

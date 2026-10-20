@@ -10,7 +10,7 @@ import {
 } from "./components/email";
 import { renderHighlightContentWithCTA } from "./components/email/highlightContentWithCTA";
 import type { HtmlTemplateEmailData } from "./createTemplatesByName";
-import { isEmailVariables } from "./email/createEmailTemplate";
+import { isEmailVariables } from "./email/emailVariables";
 import { renderEmail } from "./email/renderEmail";
 import { ignoreTabs } from "./helpers/formatters";
 
@@ -79,7 +79,7 @@ export const configureGenerateHtmlFromTemplate =
       attachmentUrls,
       bypassLayout,
       highlightContentWithCTA,
-    } = createEmailVariables(params as any);
+    } = emailVariables;
 
     const doctype =
       '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
