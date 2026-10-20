@@ -43,6 +43,7 @@ import { createLogger } from "../../../utils/logger";
 import {
   broadcastToFtConsumerName,
   broadcastToPartnersServiceName,
+  erroredBroadcastFeedbackMinSubmissionDate,
 } from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type {
   ConventionQueries,
@@ -542,7 +543,7 @@ export class PgConventionQueries implements ConventionQueries {
     const broadcastFeedbackBuilderParams = {
       transaction: this.transaction,
       userAgencyIds,
-      conventionSubmittedAfter: new Date("2025-01-01"),
+      conventionSubmittedAfter: erroredBroadcastFeedbackMinSubmissionDate,
       relevantConsumerAgencyIds,
       relevantConsumerNames,
     };
@@ -594,7 +595,7 @@ export class PgConventionQueries implements ConventionQueries {
               consumerId: row.consumerId,
               consumerName: row.consumerName,
               conventionId: row.conventionId,
-              agencyId: row.agencyId,
+              agencyId: row.broadcastAgencyId,
               handledByAgency: row.handledByAgency,
               occurredAt: row.occurredAt,
               requestParams: row.requestParams,

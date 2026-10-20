@@ -32,6 +32,7 @@ import { assesmentEntityToConventionAssessmentFields } from "../../../utils/conv
 import { createLogger } from "../../../utils/logger";
 import type { InMemoryAgencyRepository } from "../../agency/adapters/InMemoryAgencyRepository";
 import type { InMemoryBroadcastFeedbacksRepository } from "../../core/saved-errors/adapters/InMemoryBroadcastFeedbacksRepository";
+import { erroredBroadcastFeedbackMinSubmissionDate } from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import type { InMemoryBannedEstablishmentRepository } from "../../establishment/adapters/InMemoryBannedEstablishmentRepository";
 import type { BannedEstablishment } from "../../establishment/ports/BannedEstablishmentRepository";
 import type { AssessmentEntity } from "../entities/AssessmentEntity";
@@ -450,7 +451,10 @@ export class InMemoryConventionQueries implements ConventionQueries {
       };
 
     const userConventions = this.conventionRepository.conventions.filter(
-      (convention) => userAgencyIds.includes(convention.agencyId),
+      (convention) =>
+        userAgencyIds.includes(convention.agencyId) &&
+        new Date(convention.dateSubmission) >=
+          erroredBroadcastFeedbackMinSubmissionDate,
     );
 
     const results: ConventionWithBroadcastFeedback[] = await Promise.all(
@@ -489,7 +493,10 @@ export class InMemoryConventionQueries implements ConventionQueries {
           lastBroadcastFeedback: NonNullable<
             ConventionWithBroadcastFeedback["lastBroadcastFeedback"]
           >;
-        } => result.lastBroadcastFeedback !== null,
+        } =>
+          result.lastBroadcastFeedback !== null &&
+          result.lastBroadcastFeedback.subscriberErrorFeedback != null &&
+          !result.lastBroadcastFeedback.handledByAgency,
       )
       .filter((result) => {
         if (filters.broadcastErrorKind) {

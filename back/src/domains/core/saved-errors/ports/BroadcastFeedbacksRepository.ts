@@ -8,6 +8,8 @@ export const broadcastToFtServiceName =
 
 export const broadcastToFtConsumerName = "France Travail";
 
+export const erroredBroadcastFeedbackMinSubmissionDate = new Date("2025-01-01");
+
 export interface BroadcastFeedbacksRepository {
   save: (broadcastFeedback: BroadcastFeedback) => Promise<void>;
   markPartnersErroredConventionAsHandled: (id: ConventionId) => Promise<void>;

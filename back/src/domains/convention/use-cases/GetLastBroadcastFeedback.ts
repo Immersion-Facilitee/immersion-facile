@@ -11,6 +11,7 @@ import {
   userHasEnoughRightsOnConvention,
 } from "shared";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
+import { erroredBroadcastFeedbackMinSubmissionDate } from "../../core/saved-errors/ports/BroadcastFeedbacksRepository";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   getRelevantBroadcastConsumerNames,
@@ -81,7 +82,10 @@ const shouldBroadcastFeedbackBeHandled = (
   )
     return false;
 
-  if (new Date(convention.dateSubmission) < new Date("2025-01-01"))
+  if (
+    new Date(convention.dateSubmission) <
+    erroredBroadcastFeedbackMinSubmissionDate
+  )
     return false;
 
   if (isUnvalidatedConventionStatus(convention.status))

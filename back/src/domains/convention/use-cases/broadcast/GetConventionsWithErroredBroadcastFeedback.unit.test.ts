@@ -88,6 +88,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
   const convention2 = new ConventionDtoBuilder()
     .withId("convention-id-2")
     .withAgencyId(agencyId1)
+    .withDateSubmission("2025-01-02T00:00:00.000Z")
     .withAgencyReferent({
       firstname: "Anne",
       lastname: "Tro",
@@ -982,5 +983,96 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
         },
       });
     });
+  });
+
+  it("should exclude conventions with date_submission before 2025", async () => {
+    const conventionBefore2025 = new ConventionDtoBuilder()
+      .withId("convention-id-before-2025")
+      .withAgencyId(agencyId1)
+      .withDateSubmission("2024-12-31T23:59:59.000Z")
+      .build();
+    const errorBefore2025: BroadcastFeedback = {
+      ...unmanagedErrorFeedback,
+      conventionId: conventionBefore2025.id,
+      requestParams: { conventionId: conventionBefore2025.id },
+    };
+
+    uow.conventionRepository.setConventions([
+      convention1,
+      conventionBefore2025,
+    ]);
+    uow.broadcastFeedbacksRepository.broadcastFeedbacks = [
+      managedErrorFeedback,
+      errorBefore2025,
+    ];
+
+    const result = await useCase.execute(
+      {
+        pagination: { page: 1, perPage: 10 },
+      },
+      user1,
+    );
+
+    expectToEqual(
+      result.data.map((item) => item.id),
+      [convention1.id],
+    );
+  });
+
+  it("should exclude conventions whose last broadcast feedback is not an unhandled error", async () => {
+    const succeededConvention = new ConventionDtoBuilder()
+      .withId("convention-id-succeeded")
+      .withAgencyId(agencyId1)
+      .withDateSubmission("2025-01-02T00:00:00.000Z")
+      .build();
+    const handledConvention = new ConventionDtoBuilder()
+      .withId("convention-id-handled")
+      .withAgencyId(agencyId1)
+      .withDateSubmission("2025-01-02T00:00:00.000Z")
+      .build();
+    const successAfterError: BroadcastFeedback = {
+      ...unmanagedErrorFeedback,
+      conventionId: succeededConvention.id,
+      requestParams: { conventionId: succeededConvention.id },
+      occurredAt: "2024-01-16T12:00:00.000Z",
+      subscriberErrorFeedback: undefined,
+      response: { httpStatus: 200 },
+    };
+    const handledError: BroadcastFeedback = {
+      ...unmanagedErrorFeedback,
+      conventionId: handledConvention.id,
+      requestParams: { conventionId: handledConvention.id },
+      occurredAt: "2024-01-16T12:00:00.000Z",
+      handledByAgency: true,
+    };
+
+    uow.conventionRepository.setConventions([
+      convention1,
+      succeededConvention,
+      handledConvention,
+    ]);
+    uow.broadcastFeedbacksRepository.broadcastFeedbacks = [
+      managedErrorFeedback,
+      {
+        ...unmanagedErrorFeedback,
+        conventionId: succeededConvention.id,
+        requestParams: { conventionId: succeededConvention.id },
+        occurredAt: "2024-01-16T10:00:00.000Z",
+      },
+      successAfterError,
+      handledError,
+    ];
+
+    const result = await useCase.execute(
+      {
+        pagination: { page: 1, perPage: 10 },
+      },
+      user1,
+    );
+
+    expectToEqual(
+      result.data.map((item) => item.id),
+      [convention1.id],
+    );
   });
 });

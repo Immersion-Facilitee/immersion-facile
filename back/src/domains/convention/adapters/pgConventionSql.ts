@@ -21,6 +21,7 @@ import {
 import { validateAndParseZodSchema } from "../../../config/helpers/validateAndParseZodSchema";
 import {
   cast,
+  isInArray,
   jsonBuildObject,
   jsonStripNulls,
   type KyselyDb,
@@ -400,7 +401,7 @@ const createBroadcastFeedbackBaseBuilder = ({
   const cteBuilder = transaction.with(
     "conventions_with_latest_feedback",
     (qb) => {
-      let query = qb
+      const query = qb
         .selectFrom("conventions as c")
         .innerJoin(
           "actors as beneficiary",
@@ -415,11 +416,22 @@ const createBroadcastFeedbackBaseBuilder = ({
           "bce.id",
           "c.beneficiary_current_employer_id",
         )
-        .innerJoin("broadcast_feedbacks as bf", "bf.convention_id", "c.id")
+        .innerJoinLateral(
+          (eb) =>
+            eb
+              .selectFrom("broadcast_feedbacks")
+              .selectAll()
+              .whereRef("broadcast_feedbacks.convention_id", "=", "c.id")
+              .orderBy("broadcast_feedbacks.occurred_at", "desc")
+              .limit(1)
+              .as("bf"),
+          (join) => join.onTrue(),
+        )
         .select((eb) => [
           eb.ref("c.id").as("conventionId"),
           eb.ref("c.source_convention_draft_id").as("sourceConventionDraftId"),
           eb.ref("c.agency_id").as("agencyId"),
+          eb.ref("bf.agency_id").as("broadcastAgencyId"),
           eb.ref("c.status").as("status"),
           eb.ref("c.business_name").as("businessName"),
           eb.ref("c.siret").as("siret"),
@@ -442,20 +454,13 @@ const createBroadcastFeedbackBaseBuilder = ({
           eb.ref("bf.response").as("response"),
           eb.ref("c.date_submission").as("dateSubmission"),
         ])
-        .where("c.agency_id", "in", userAgencyIds)
+        .where((eb) => isInArray(eb, "c.agency_id", userAgencyIds))
         .where(
           sql<boolean>`(c.agency_id, bf.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
-        )
-        .distinctOn("c.id")
-        .orderBy("c.id")
-        .orderBy("bf.occurred_at", "desc");
+        );
 
       if (conventionSubmittedAfter)
-        query = query.where(
-          "c.date_submission",
-          ">=",
-          conventionSubmittedAfter,
-        );
+        return query.where("c.date_submission", ">=", conventionSubmittedAfter);
 
       return query;
     },
