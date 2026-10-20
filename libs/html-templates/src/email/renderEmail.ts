@@ -8,8 +8,10 @@ import {
   renderLegals,
   renderSignature,
 } from "./components";
-import type { EmailVariables } from "./createEmailTemplate";
-import { emailMarginInPx, renderEmailBlock } from "./emailBlock";
+import { renderEmailBlock } from "./emailBlock";
+import type { EmailVariables } from "./emailVariables";
+
+const emailRowsGapInPx = 16;
 
 const doctype =
   '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
@@ -54,12 +56,9 @@ export const renderEmail = ({
 } => {
   const rows = [
     renderHTMLRow(renderHeader(agencyLogoUrl, customParts.header)),
-    renderHTMLRow(renderGreetings(greetings), emailMarginInPx.md),
+    renderHTMLRow(renderGreetings(greetings), emailRowsGapInPx),
     ...blocks.map((block) =>
-      renderHTMLRow(
-        renderEmailBlock(block),
-        emailMarginInPx[block.marginBottom ?? "md"],
-      ),
+      renderHTMLRow(renderEmailBlock(block), emailRowsGapInPx),
     ),
     renderHTMLRow(renderSignature(signature)),
     renderHTMLRow(renderLegals(legals)),

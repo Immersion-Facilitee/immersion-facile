@@ -15,28 +15,14 @@ import {
   renderParagraph,
 } from "./components";
 
-export type EmailMargin = "sm" | "md" | "lg";
-
-export const emailMarginInPx: Record<EmailMargin, number> = {
-  sm: 8,
-  md: 16,
-  lg: 32,
-};
-
-type CommonEmailBlockProps = {
-  marginBottom?: EmailMargin;
-};
-
-export type EmailBlock = (
+export type EmailBlock =
   | ({ kind: "paragraph" } & EmailParagraphProps)
   | ({ kind: "list" } & EmailListProps)
   | ({ kind: "button" } & EmailButtonProps)
   | ({ kind: "buttonsGroup" } & EmailButtonsGroupProps)
   | ({ kind: "highlight" } & EmailHighlightProps)
   | ({ kind: "callout" } & EmailCalloutProps)
-  | { kind: "divider" }
-) &
-  CommonEmailBlockProps;
+  | { kind: "divider" };
 
 export const renderEmailBlock = (block: EmailBlock): string | undefined =>
   match(block)
@@ -51,8 +37,8 @@ export const renderEmailBlock = (block: EmailBlock): string | undefined =>
       renderButtonsGroup({ buttons, layout }),
     )
     .with({ kind: "highlight" }, ({ content }) => renderHighlight({ content }))
-    .with({ kind: "callout" }, ({ blocks, buttonsGroup, variant }) =>
-      renderCallout({ blocks, buttonsGroup, variant }),
+    .with({ kind: "callout" }, ({ blocks, variant }) =>
+      renderCallout({ blocks, variant }),
     )
     .with({ kind: "divider" }, () => renderDivider())
     .exhaustive();
