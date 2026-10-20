@@ -422,6 +422,9 @@ const createBroadcastFeedbackBaseBuilder = ({
               .selectFrom("broadcast_feedbacks")
               .selectAll()
               .whereRef("broadcast_feedbacks.convention_id", "=", "c.id")
+              .where(
+                sql<boolean>`(c.agency_id, broadcast_feedbacks.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
+              )
               .orderBy("broadcast_feedbacks.occurred_at", "desc")
               .limit(1)
               .as("bf"),
@@ -454,10 +457,7 @@ const createBroadcastFeedbackBaseBuilder = ({
           eb.ref("bf.response").as("response"),
           eb.ref("c.date_submission").as("dateSubmission"),
         ])
-        .where((eb) => isInArray(eb, "c.agency_id", userAgencyIds))
-        .where(
-          sql<boolean>`(c.agency_id, bf.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
-        );
+        .where((eb) => isInArray(eb, "c.agency_id", userAgencyIds));
 
       if (conventionSubmittedAfter)
         return query.where("c.date_submission", ">=", conventionSubmittedAfter);

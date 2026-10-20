@@ -543,6 +543,8 @@ export class InMemoryConventionQueries implements ConventionQueries {
         return true;
       });
 
+    const totalRecords = filteredResults.length;
+
     return {
       data: filteredResults
         .sort(
@@ -554,12 +556,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
           (pagination.page - 1) * pagination.perPage,
           pagination.page * pagination.perPage,
         ),
-      pagination: {
-        totalRecords: filteredResults.length,
-        currentPage: pagination.page,
-        totalPages: Math.ceil(filteredResults.length / pagination.perPage),
-        numberPerPage: pagination.perPage,
-      },
+      pagination: calculatePaginationResult({ ...pagination, totalRecords }),
     };
   }
 }
