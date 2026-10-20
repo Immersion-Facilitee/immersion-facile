@@ -1,6 +1,5 @@
 import { sql } from "kysely";
 import {
-  type AgencyId,
   type BroadcastFeedback,
   type ConventionId,
   type DateTimeIsoString,
@@ -19,49 +18,31 @@ export class PgBroadcastFeedbacksRepository
     id: ConventionId,
   ): Promise<BroadcastFeedback | null> {
     const result = await this.transaction
-      .with("latest_feedback", (qb) =>
-        qb
-          .selectFrom("broadcast_feedbacks as bf")
-          .where(sql`(bf.request_params ->> 'conventionId')::uuid`, "=", id)
-          .select([
-            "bf.consumer_id as consumerId",
-            "bf.consumer_name as consumerName",
-            "bf.service_name as serviceName",
-            "bf.subscriber_error_feedback as subscriberErrorFeedback",
-            "bf.request_params as requestParams",
-            sql<DateTimeIsoString>`date_to_iso(bf.occurred_at)`.as(
-              "occurredAt",
-            ),
-            "bf.handled_by_agency as handledByAgency",
-            "bf.response as response",
-            "bf.convention_id as conventionId",
-            "bf.agency_id as agencyId",
-            sql<number>`
-              ROW_NUMBER() OVER (
-                PARTITION BY (bf.request_params->>'conventionId')
-                ORDER BY bf.occurred_at DESC
-              )
-            `.as("rn"),
-          ]),
-      )
-      .selectFrom("latest_feedback as lf")
-      .selectAll()
-      .where("lf.rn", "=", 1)
+      .selectFrom("broadcast_feedbacks as bf")
+      .where("bf.convention_id", "=", id)
+      .select([
+        "bf.consumer_id as consumerId",
+        "bf.consumer_name as consumerName",
+        "bf.service_name as serviceName",
+        "bf.subscriber_error_feedback as subscriberErrorFeedback",
+        "bf.request_params as requestParams",
+        sql<DateTimeIsoString>`date_to_iso(bf.occurred_at)`.as("occurredAt"),
+        "bf.handled_by_agency as handledByAgency",
+        "bf.response as response",
+        "bf.convention_id as conventionId",
+        "bf.agency_id as agencyId",
+      ])
+      .orderBy("bf.occurred_at", "desc")
+      .limit(1)
       .executeTakeFirst();
 
     if (!result) return null;
 
-    const conventionId = (result.conventionId ??
-      result.requestParams.conventionId) as ConventionId;
-    const agencyId = result.agencyId ?? (await this.#getAgencyId(conventionId));
-
-    if (!agencyId) return null;
-
     return {
       consumerId: result.consumerId,
       consumerName: result.consumerName,
-      conventionId,
-      agencyId,
+      conventionId: result.conventionId,
+      agencyId: result.agencyId,
       handledByAgency: result.handledByAgency,
       occurredAt: result.occurredAt,
       requestParams: result.requestParams,
@@ -94,36 +75,20 @@ export class PgBroadcastFeedbacksRepository
       .orderBy("bf.occurred_at", "asc")
       .execute();
 
-    return rows.flatMap((row) => {
-      if (!row.conventionId || !row.agencyId) return [];
-
-      return [
-        {
-          consumerId: row.consumerId,
-          consumerName: row.consumerName,
-          conventionId: row.conventionId,
-          agencyId: row.agencyId,
-          handledByAgency: row.handledByAgency,
-          occurredAt: row.occurredAt,
-          requestParams: row.requestParams,
-          serviceName: row.serviceName,
-          response: row.response,
-          subscriberErrorFeedback: row.subscriberErrorFeedback
-            ? row.subscriberErrorFeedback
-            : undefined,
-        },
-      ];
-    });
-  }
-
-  async #getAgencyId(conventionId: ConventionId): Promise<AgencyId | null> {
-    const convention = await this.transaction
-      .selectFrom("conventions")
-      .select("agency_id")
-      .where("id", "=", conventionId)
-      .executeTakeFirst();
-
-    return (convention?.agency_id ?? null) as AgencyId | null;
+    return rows.map((row) => ({
+      consumerId: row.consumerId,
+      consumerName: row.consumerName,
+      conventionId: row.conventionId,
+      agencyId: row.agencyId,
+      handledByAgency: row.handledByAgency,
+      occurredAt: row.occurredAt,
+      requestParams: row.requestParams,
+      serviceName: row.serviceName,
+      response: row.response,
+      subscriberErrorFeedback: row.subscriberErrorFeedback
+        ? row.subscriberErrorFeedback
+        : undefined,
+    }));
   }
 
   public async markPartnersErroredConventionAsHandled(
@@ -132,7 +97,7 @@ export class PgBroadcastFeedbacksRepository
     const result = await this.transaction
       .updateTable("broadcast_feedbacks")
       .set({ handled_by_agency: true })
-      .where(sql`(request_params ->> 'conventionId')::uuid`, "=", conventionId)
+      .where("convention_id", "=", conventionId)
       .where("handled_by_agency", "=", false)
       .executeTakeFirst();
 

@@ -518,7 +518,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
           !hasPriorSuccessfulBroadcast(
             this.broadcastFeedbacksRepository.broadcastFeedbacks.filter(
               (bf) =>
-                bf.requestParams.conventionId === result.id &&
+                bf.conventionId === result.id &&
                 isBroadcastFeedbackRelevant(bf, relevantConsumerNames),
             ),
           )

@@ -4158,8 +4158,9 @@ describe("Pg implementation of ConventionQueries", () => {
                   firstname: convention.signatories.beneficiary.firstName,
                   lastname: convention.signatories.beneficiary.lastName,
                 },
-                lastBroadcastFeedback:
-                  toExpectedLastBroadcastFeedback(partnerErrorBroadcast),
+                lastBroadcastFeedback: toExpectedLastBroadcastFeedback(
+                  partnerErrorBroadcast,
+                ),
                 agencyReferent: null,
                 agencyId: convention.agencyId,
               },

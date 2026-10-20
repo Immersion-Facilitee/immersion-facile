@@ -54,9 +54,7 @@ export class InMemoryBroadcastFeedbacksRepository
   ): Promise<BroadcastFeedback | null> {
     return (
       this.#broadcastFeedbacks
-        .filter(
-          (broadcast) => broadcast.requestParams.conventionId === conventionId,
-        )
+        .filter((broadcast) => broadcast.conventionId === conventionId)
         .sort(
           (a, b) =>
             new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime(),
@@ -89,7 +87,5 @@ const isBroadcastFeedbackUnhandledErrorForConvention = (
   broadcastFeedback: BroadcastFeedback,
   conventionId: ConventionId,
 ) =>
-  broadcastFeedback.requestParams &&
-  "conventionId" in broadcastFeedback.requestParams &&
-  broadcastFeedback.requestParams.conventionId === conventionId &&
+  broadcastFeedback.conventionId === conventionId &&
   broadcastFeedback.handledByAgency === false;

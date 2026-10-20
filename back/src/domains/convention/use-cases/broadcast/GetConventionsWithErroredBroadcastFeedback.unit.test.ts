@@ -891,7 +891,7 @@ describe("GetConventionsWithErroredBroadcastFeedback", () => {
         pagination: {
           totalRecords: 0,
           currentPage: 1,
-          totalPages: 0,
+          totalPages: 1,
           numberPerPage: 10,
         },
       });
