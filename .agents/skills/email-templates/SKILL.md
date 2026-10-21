@@ -38,7 +38,7 @@ The step is done when `shared` and `front` typecheck and the email renders in th
 The `EmailBlock` union in `libs/html-templates/src/email/emailBlock.ts` is the source of truth for the available kinds and their props. Write blocks as object literals with `kind` first: TypeScript then narrows completion to that kind's props.
 
 - Text props are HTML strings: use `<strong>`, `<em>` and `<a href>` inline. Indentation tabs are stripped, so indented template literals are safe. Line breaks become `<br/>` in `greetings`, `signature`, `legals`, `paragraph` and `highlight`.
-- Spacing between blocks is fixed by the layout; templates do not set margins.
+- Every block accepts `marginBottom` (`sm` 8px, `md` 16px or `lg` 32px), defaulting to `md`. Override it only to group related blocks: `sm` between a title paragraph and its content, `lg` before the next section.
 - A `callout` holds `paragraph`, `list` and `buttonsGroup` blocks, rendered in array order.
 - Express emphasis through the existing blocks (`highlight`, `callout`, button priorities) and keep inline `style` attributes out of templates.
 

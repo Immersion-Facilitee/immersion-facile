@@ -1,6 +1,6 @@
 # Email components
 
-Components live in `libs/html-templates/src/email/components/`: `blocks/` for what a template can place in `blocks`, `layout/` for the fixed parts around them. `renderEmail.ts` assembles the layout and spaces every row with the same fixed gap.
+Components live in `libs/html-templates/src/email/components/`: `blocks/` for what a template can place in `blocks`, `layout/` for the fixed parts around them. `renderEmail.ts` assembles the layout and spaces rows with `marginBottom`.
 
 ## Block component
 

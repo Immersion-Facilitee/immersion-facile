@@ -1922,9 +1922,34 @@ Tél : ${beneficiaryPhone}`,
           {
             kind: "paragraph",
             content: "<strong>divider</strong>",
+            marginBottom: "sm",
           },
           {
             kind: "divider",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>marginBottom</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "paragraph",
+            content: "sm (8px)",
+            marginBottom: "sm",
+          },
+          {
+            kind: "paragraph",
+            content: "md (16px, par défaut)",
+          },
+          {
+            kind: "paragraph",
+            content: "lg (32px)",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "bloc suivant",
           },
         ],
         signature: `<strong>[FIXE] signature</strong>
