@@ -361,9 +361,13 @@ const makeDiscussionDto = async ({
         {
           subject: emailContent.subject,
           sentAt: now.toISOString(),
-          message: `${emailContent.contentParts.greetings}
-              ${emailContent.contentParts.content}
-              ${emailContent.contentParts.subContent}`,
+          message: [
+            emailContent.contentParts.greetings,
+            emailContent.contentParts.contentWithoutButtons,
+            emailContent.contentParts.signature,
+          ]
+            .filter(Boolean)
+            .join("\n"),
           sender: "potentialBeneficiary",
           attachments: [],
         },

@@ -9,3 +9,6 @@ export const wrapElements = (children: string) => `
     </td>
   </tr>
 </table>`;
+
+export const convertTextToHtml = (text: string): string =>
+  `<p>${ignoreTabs(text).split("\n").join("<br/>")}</p>`;
