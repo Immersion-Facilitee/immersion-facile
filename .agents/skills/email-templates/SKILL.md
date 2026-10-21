@@ -7,8 +7,6 @@ description: Create or change a transactional email template, its blocks, or the
 
 An email is a list of **blocks** placed inside a fixed layout. A template only describes its subject, texts and blocks; `libs/html-templates` owns all the HTML.
 
-Templates whose `createEmailVariables` returns `blocks` follow this block-based model. Other templates in `emailTemplatesByName.ts` are legacy; keep their shape unless the task is migrating them.
-
 Before editing TypeScript, read [the repository TypeScript style](../../references/typescript-code-style.md). Read [email components](references/email-components.md) only when adding or changing a block or layout component.
 
 ## Adding an email
@@ -25,13 +23,15 @@ The step is done when `shared` and `front` typecheck and the email renders in th
 `createEmailVariables` returns `EmailVariables` (`libs/html-templates/src/email/emailVariables.ts`). The layout order is fixed:
 
 1. header, chosen by the generator configuration (default or CCI), showing `agencyLogoUrl` when provided;
-2. `greetings`;
+2. `greetings`, optional;
 3. `blocks`, in array order;
-4. `signature`, usually `defaultSignature(internshipKind)`;
+4. `signature`, optional, usually `defaultSignature(internshipKind)`;
 5. `legals`, optional, always preceded by a divider;
 6. footer, chosen by the generator configuration.
 
 `subject` and `attachmentUrls` complete the variables; reuse `emailAttachements` from `shared/src/email/email.content.ts` for attachments.
+
+An email relayed between discussion participants returns `RawEmailVariables` (`subject` and `rawContent`) instead: it is sent without layout, under the reply separator header.
 
 ## Blocks
 

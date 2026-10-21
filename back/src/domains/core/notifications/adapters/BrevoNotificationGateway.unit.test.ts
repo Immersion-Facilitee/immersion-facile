@@ -194,37 +194,27 @@ describe("BrevoNotificationGateway unit", () => {
       </td>
       </tr>
       <tr>
-      <td>
-      <p>Bonjour,</p>
+      <td style="padding-bottom: 16px;">
+      <p style="margin: 0;">Bonjour,</p>
       </td>
       </tr>
       <tr>
-      <td>
-      <table 
-      width="600">
-      <tr>
-      <td>
-      <p><strong>Votre organisme prescripteur AGENCY_NAME est activée sur Immersion facilitée !</strong> 
+      <td style="padding-bottom: 16px;">
+      <p style="margin: 0;"><strong>Votre organisme prescripteur AGENCY_NAME est activée sur Immersion facilitée !</strong> 
       <br/>
       <br/>Vous pouvez dès à présent valider les conventions dématérialisées sur Immersion Facilitée.
       <br/>
       <br/>false</p>
       </td>
       </tr>
-      </table>
-      </td>
-      </tr>
       <tr>
-      <td>
-      <table>
+      <td style="padding-bottom: 16px;">
+      <table 
+      width="100%">
       <tr>
-      <td 
-      align="center" 
-      width="600"
-      style="padding: 20px; padding-top: 10px; padding-bottom: 30px;"
-      >
+      <td align="center">
       <a
-      style="text-decoration: none; display: inline-block; padding: 10px 20px; text-align: center; background-color: #000091; color: #fff;"
+      style="display: inline-block; padding: 7px 15px; font-size: 16px; line-height: 24px; font-weight: 500; text-align: center; text-decoration: none; background-image: none; background-color: #000091; color: #f5f5fe; border: 1px solid #000091;"
       href="https://immersion-facile.beta.gouv.fr/tableau-de-bord-agence/dashboard"
       target="_blank"
       >
@@ -236,12 +226,8 @@ describe("BrevoNotificationGateway unit", () => {
       </td>
       </tr>
       <tr>
-      <td>
-      <table 
-      width="600">
-      <tr>
-      <td>
-      <p><strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong>
+      <td style="padding-bottom: 16px;">
+      <p style="margin: 0;"><strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong>
       <br/>
       <br/>• <strong>Pour les responsables de votre structure</strong> :
       <br/><a 
@@ -267,10 +253,16 @@ describe("BrevoNotificationGateway unit", () => {
       href=https://aide.immersion-facile.beta.gouv.fr/fr 
       target="_blank">
       <br/>support d’Immersion Facilitée
-      <br/></a>.
-      <br/>
-      <br/>
-      <br/>Bonne journée,
+      <br/></a>.</p>
+      </td>
+      </tr>
+      <tr>
+      <td>
+      <table 
+      width="600">
+      <tr>
+      <td>
+      <p style="margin: 0;">Bonne journée,
       <br/>L'équipe Immersion Facilitée</p>
       </td>
       </tr>
