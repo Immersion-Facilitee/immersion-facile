@@ -3,13 +3,18 @@ import type { EmailBlock } from "./emailBlock";
 export type EmailVariables = {
   subject: string;
   agencyLogoUrl?: string;
-  greetings: string;
+  greetings?: string;
   blocks: EmailBlock[];
-  signature: string;
+  signature?: string;
   legals?: string;
   attachmentUrls?: string[];
 };
 
-export const isEmailVariables = (
-  variables: object,
-): variables is EmailVariables => "blocks" in variables;
+export type RawEmailVariables = {
+  subject: string;
+  rawContent: string;
+};
+
+export const isRawEmailVariables = (
+  variables: EmailVariables | RawEmailVariables,
+): variables is RawEmailVariables => "rawContent" in variables;

@@ -1,4 +1,4 @@
-import { renderContent } from "html-templates/src/components/email";
+import { convertTextToHtml } from "html-templates";
 import {
   type BrevoEmailItem,
   type DiscussionDto,
@@ -53,11 +53,7 @@ const cleanContactEmailFromMessage = (message: string) =>
 export const processInboundParsingEmailMessage = (item: BrevoEmailItem) => {
   const emailContent =
     item.RawHtmlBody ||
-    (item.RawTextBody &&
-      renderContent(item.RawTextBody, {
-        wrapInTable: false,
-        replaceNewLines: true,
-      })) ||
+    (item.RawTextBody && convertTextToHtml(item.RawTextBody)) ||
     "Pas de contenu";
   return cleanContactEmailFromMessage(emailContent);
 };

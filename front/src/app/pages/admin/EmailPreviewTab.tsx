@@ -1,10 +1,10 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
-import { configureGenerateHtmlFromTemplate } from "html-templates";
 import {
   cciCustomHtmlHeader,
+  configureGenerateHtmlFromTemplate,
   defaultEmailFooter,
-} from "html-templates/src/components/email";
+} from "html-templates";
 import { toPairs } from "ramda";
 import { useState } from "react";
 import { ImmersionTextField } from "react-design-system";
@@ -133,18 +133,13 @@ export const EmailPreviewTab = () => {
             <h6 className={fr.cx("fr-mt-4w")}>Pièces jointes</h6>
             {fakeContent.attachment ? (
               <ul>
-                {fakeContent.attachment.map((att) => {
-                  if ("url" in att) {
-                    return (
-                      <li key={att.url}>
-                        <a target={"_blank"} href={att.url} rel="noreferrer">
-                          {att.url}
-                        </a>
-                      </li>
-                    );
-                  }
-                  return <li key={att.name}>{att.name}</li>;
-                })}
+                {fakeContent.attachment.map(({ url }) => (
+                  <li key={url}>
+                    <a target={"_blank"} href={url} rel="noreferrer">
+                      {url}
+                    </a>
+                  </li>
+                ))}
               </ul>
             ) : (
               <p>Ce template de mail n'a pas de pièces jointes.</p>
