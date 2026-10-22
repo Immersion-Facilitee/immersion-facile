@@ -21,5 +21,5 @@ Email clients ignore most CSS, so components produce table-based HTML:
 - Lay out with `<table>`, `<tr>` and `<td>`; use `width` and `align` attributes for sizing and alignment.
 - Style with inline `style` attributes only, using DSFR hex colours already present in sibling components.
 - Space elements with `padding` on `<td>`, reserving `margin: 0` for text elements.
-- Pass text content through `ignoreTabs` and turn `\n` into `<br/>`, as `paragraph.ts` does.
+- Pass text content through `convertLineBreaksToHtml` (`helpers/formatters.ts`), as `paragraph.ts` does.
 - Name numeric constants with their unit (`calloutPaddingInPx`) and keep variant styles in a `Record` keyed by the variant type.

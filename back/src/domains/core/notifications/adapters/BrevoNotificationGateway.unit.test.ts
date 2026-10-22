@@ -202,9 +202,7 @@ describe("BrevoNotificationGateway unit", () => {
       <td style="padding-bottom: 16px;">
       <p style="margin: 0;"><strong>Votre organisme prescripteur AGENCY_NAME est activée sur Immersion facilitée !</strong> 
       <br/>
-      <br/>Vous pouvez dès à présent valider les conventions dématérialisées sur Immersion Facilitée.
-      <br/>
-      <br/>false</p>
+      <br/>Vous pouvez dès à présent valider les conventions dématérialisées sur Immersion Facilitée.</p>
       </td>
       </tr>
       <tr>
@@ -226,22 +224,26 @@ describe("BrevoNotificationGateway unit", () => {
       </td>
       </tr>
       <tr>
+      <td style="padding-bottom: 8px;">
+      <p style="margin: 0;"><strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong></p>
+      </td>
+      </tr>
+      <tr>
       <td style="padding-bottom: 16px;">
-      <p style="margin: 0;"><strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong>
-      <br/>
-      <br/>• <strong>Pour les responsables de votre structure</strong> :
+      <ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0;"><strong>Pour les responsables de votre structure</strong> :
       <br/><a 
       href="https://aide.immersion-facile.beta.gouv.fr/fr/article/administrateur-gerer-votre-organisme-sbjao/" 
       target="_blank">Un article d'aide pour paramétrer votre compte</a>
-      <br/>(une vidéo est disponible à la fin de l'article, mettez le son)
-      <br/>
-      <br/>• <strong>Pour l'ensemble de vos collaborateurs</strong> :
+      <br/>(une vidéo est disponible à la fin de l'article, mettez le son)</li><li style="margin: 0 0 0px 0;"><strong>Pour l'ensemble de vos collaborateurs</strong> :
       <br/><a 
       href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" 
       target="_blank">Un temps de présentation de toutes les fonctionnalités du site</a>
-      <br/>(30 minutes de présentation et 30 minutes pour poser les questions)
-      <br/>
-      <br/>N'hésitez pas à leur partager ce lien :
+      <br/>(30 minutes de présentation et 30 minutes pour poser les questions)</li></ul>
+      </td>
+      </tr>
+      <tr>
+      <td style="padding-bottom: 16px;">
+      <p style="margin: 0;">N'hésitez pas à leur partager ce lien :
       <br/><a 
       href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" 
       target="_blank">https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee</a>
@@ -258,15 +260,8 @@ describe("BrevoNotificationGateway unit", () => {
       </tr>
       <tr>
       <td>
-      <table 
-      width="600">
-      <tr>
-      <td>
       <p style="margin: 0;">Bonne journée,
       <br/>L'équipe Immersion Facilitée</p>
-      </td>
-      </tr>
-      </table>
       </td>
       </tr>
       <tr>

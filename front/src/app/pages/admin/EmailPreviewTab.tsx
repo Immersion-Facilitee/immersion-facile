@@ -42,9 +42,11 @@ export const EmailPreviewTab = () => {
     ? route.params.templateName
     : defaultTemplateName;
 
-  const [emailVariables, setEmailVariables] = useState(
-    defaultEmailValueByEmailKind[currentTemplate],
+  const [emailVariablesByTemplate, setEmailVariablesByTemplate] = useState(
+    defaultEmailValueByEmailKind,
   );
+
+  const emailVariables = emailVariablesByTemplate[currentTemplate];
 
   const fakeContent = configureGenerateHtmlFromTemplate(
     emailTemplatesByName,
@@ -61,7 +63,6 @@ export const EmailPreviewTab = () => {
 
   const onTemplateChange = (templateName: TemplateName) => {
     frontRoutes.adminEmailPreview({ templateName }).replace();
-    setEmailVariables(defaultEmailValueByEmailKind[templateName]);
   };
 
   return (
@@ -121,9 +122,12 @@ export const EmailPreviewTab = () => {
                         ]
                       }
                       onChange={(value) =>
-                        setEmailVariables({
-                          ...emailVariables,
-                          [variableName]: value,
+                        setEmailVariablesByTemplate({
+                          ...emailVariablesByTemplate,
+                          [currentTemplate]: {
+                            ...emailVariables,
+                            [variableName]: value,
+                          },
                         })
                       }
                     />
@@ -562,13 +566,6 @@ export const defaultEmailValueByEmailKind: {
     businessName: "BUSINESS_NAME",
     registerEstablishmentShortLink: "REGISTRATION_LINK",
     unsubscribeToEmailShortLink: "REJECT_REGISTRATION_LINK",
-  },
-  FULL_PREVIEW_EMAIL: {
-    internshipKind: "immersion",
-    beneficiaryName: "BENEFICIARY_NAME",
-    conventionId: "CONVENTION_ID",
-    conventionStatusLink: "CONVENTION_STATUS_LINK",
-    agencyLogoUrl: defaultEmailPreviewUrl,
   },
   IC_USER_REGISTRATION_TO_AGENCY_REJECTED: {
     agencyName: "AGENCY_NAME",

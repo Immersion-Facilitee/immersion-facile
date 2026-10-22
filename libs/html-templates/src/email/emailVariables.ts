@@ -3,9 +3,9 @@ import type { EmailBlock } from "./emailBlock";
 export type EmailVariables = {
   subject: string;
   agencyLogoUrl?: string;
-  greetings?: string;
+  greetings: string;
   blocks: EmailBlock[];
-  signature?: string;
+  signature: string;
   legals?: string;
   attachmentUrls?: string[];
 };

@@ -1,5 +1,5 @@
 import { parseISO } from "date-fns";
-import { createTemplatesByName } from "html-templates";
+import { createTemplatesByName, type EmailBlock } from "html-templates";
 import {
   type AbsoluteUrl,
   immersionFacileHelpdeskRootUrl,
@@ -22,6 +22,7 @@ import type { AgencyRole } from "../role/role.dto";
 import { titleByRole } from "../role/role.utils";
 import { frontRoutes, makeRouteAbsoluteUrl } from "../routes/routes";
 import type { Firstname, Lastname } from "../user/user.dto";
+import { filterNotFalsy } from "../utils";
 import { displayEmergencyContactInfos } from "../utils/beneficiary";
 import {
   isStringDate,
@@ -33,7 +34,6 @@ import {
   joinWithCommasAnd,
 } from "../utils/string";
 import { advices } from "./advices";
-import { defaultConventionFinalLegals } from "./defaultConventionFinalLegals";
 import type { EmailParamsByEmailType } from "./EmailParamsByEmailType";
 import { emailAttachements } from "./email.content";
 import {
@@ -81,12 +81,21 @@ export const emailTemplatesByName =
           {
             kind: "paragraph",
             content: `Vous avez des utilisateurs en attente de rattachement sur Immersion Facilitée.
-        
-        <strong>Récapitulatif des demandes en attente</strong> :
-        <ul>
-          ${agencies.map((agency) => `<li><strong>${agency.agencyName}</strong> : ${agency.numberOfUsersToReview} demande${agency.numberOfUsersToReview > 1 ? "s" : ""}</li>`).join("")}
-        </ul>
-        En validant ces demandes, vous permettez à vos collaborateurs d’accéder aux conventions et aux statistiques de vos organismes.`,
+
+        <strong>Récapitulatif des demandes en attente</strong> :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: agencies.map(
+              (agency) =>
+                `<strong>${agency.agencyName}</strong> : ${agency.numberOfUsersToReview} demande${agency.numberOfUsersToReview > 1 ? "s" : ""}`,
+            ),
+          },
+          {
+            kind: "paragraph",
+            content:
+              "En validant ces demandes, vous permettez à vos collaborateurs d’accéder aux conventions et aux statistiques de vos organismes.",
           },
           {
             kind: "button",
@@ -137,31 +146,40 @@ export const emailTemplatesByName =
 
       À ce jour, nous n'avons pas reçu de nouvelle convention en cours de validité. Par conséquent, votre accès à la plateforme Immersion Facilitée est désormais suspendu.
 
-      <strong>Comment réactiver votre accès ?</strong>
-
-      <strong>• Vous avez votre nouvelle convention</strong>
-      Transmettez-nous le document immédiatement à l'adresse : <a href="mailto:${immersionFacileDelegationEmail}" target="_blank">${immersionFacileDelegationEmail}</a>. Votre référencement sera réactivé dès sa réception.
-
-      <strong>• Vous devez encore en faire la demande</strong>
-      Adressez-vous directement à votre prescripteur de droit : <strong>${delegationAgencyName}</strong>.
-      ${
-        delegationAgencyKind === "france-travail"
-          ? `• Pour France Travail : utilisez ce formulaire pour obtenir le bon interlocuteur : <a href="https://tally.so/r/w7WM49" target="_blank">https://tally.so/r/w7WM49</a>`
-          : ""
-      }
-
-      Notre équipe est à votre disposition pour vous accompagner dans cette démarche.
-      N'hésitez pas à nous contacter à l'adresse : <a href="mailto:${immersionFacileContactEmail}" target="_blank">${immersionFacileContactEmail}</a>
-    `,
+      <strong>Comment réactiver votre accès ?</strong>`,
           },
           {
             kind: "paragraph",
-            content: `
+            content: `<strong>Vous avez votre nouvelle convention</strong>
+      Transmettez-nous le document immédiatement à l'adresse : <a href="mailto:${immersionFacileDelegationEmail}" target="_blank">${immersionFacileDelegationEmail}</a>. Votre référencement sera réactivé dès sa réception.`,
+          },
+          {
+            kind: "paragraph",
+            content: `<strong>Vous devez encore en faire la demande</strong>
+      Adressez-vous directement à votre prescripteur de droit : <strong>${delegationAgencyName}</strong>.`,
+            marginBottom:
+              delegationAgencyKind === "france-travail" ? "sm" : "md",
+          },
+          ...(delegationAgencyKind === "france-travail"
+            ? [
+                {
+                  kind: "list",
+                  items: [
+                    `Pour France Travail : utilisez ce formulaire pour obtenir le bon interlocuteur : <a href="https://tally.so/r/w7WM49" target="_blank">https://tally.so/r/w7WM49</a>`,
+                  ],
+                } satisfies EmailBlock,
+              ]
+            : []),
+          {
+            kind: "paragraph",
+            content: `Notre équipe est à votre disposition pour vous accompagner dans cette démarche.
+      N'hésitez pas à nous contacter à l'adresse : <a href="mailto:${immersionFacileContactEmail}" target="_blank">${immersionFacileContactEmail}</a>`,
+          },
+        ],
+        signature: `
       Bien cordialement,
       L'équipe Immersion Facilitée
     `,
-          },
-        ],
       }),
     },
     AGENCY_DELEGATION_CONVENTION_EXPIRING_SOON: {
@@ -199,32 +217,39 @@ export const emailTemplatesByName =
 
       Afin de maintenir votre référencement sur la plateforme Immersion Facilitée, merci de nous transmettre votre nouvelle convention avant cette date.
 
-      <strong>Deux situations possibles :</strong>
-        
-          <strong>• Vous avez déjà votre nouvelle convention</strong>
-          Envoyez-nous le document dès maintenant à l'adresse suivante : <a href="mailto:${immersionFacileDelegationEmail}" target="_blank">${immersionFacileDelegationEmail}</a>
-       
-        
-          <strong>• Vous n'avez pas encore la nouvelle convention</strong>
-          Faites-en la demande dès que possible auprès du prescripteur de droit qui vous a délivré la première.
-          • Pour une demande auprès de France Travail, vous pouvez utiliser ce formulaire pour obtenir le bon interlocuteur : <a href="https://tally.so/r/w7WM49" target="_blank">https://tally.so/r/w7WM49</a>
-          • Besoin d'un modèle ? Un exemplaire standard est joint à cet email à titre indicatif.
-          
-      <strong>Que se passe-t-il si la date est dépassée ?</strong>
-
-      Sans réception d'un document en cours de validité nous serons contraints de suspendre votre référencement le <strong>${displayedDelegationEndDate}</strong>. Il pourra bien sûr être réactivé dès réception de la nouvelle convention !
-
-      Nous vous remercions et restons à votre disposition pour toute question à l'adresse <a href="mailto:${immersionFacileContactEmail}" target="_blank">${immersionFacileContactEmail}</a>
-    `,
+      <strong>Deux situations possibles :</strong>`,
             },
             {
               kind: "paragraph",
-              content: `
+              content: `<strong>Vous avez déjà votre nouvelle convention</strong>
+          Envoyez-nous le document dès maintenant à l'adresse suivante : <a href="mailto:${immersionFacileDelegationEmail}" target="_blank">${immersionFacileDelegationEmail}</a>`,
+            },
+            {
+              kind: "paragraph",
+              content: `<strong>Vous n'avez pas encore la nouvelle convention</strong>
+          Faites-en la demande dès que possible auprès du prescripteur de droit qui vous a délivré la première.`,
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                `Pour une demande auprès de France Travail, vous pouvez utiliser ce formulaire pour obtenir le bon interlocuteur : <a href="https://tally.so/r/w7WM49" target="_blank">https://tally.so/r/w7WM49</a>`,
+                "Besoin d'un modèle ? Un exemplaire standard est joint à cet email à titre indicatif.",
+              ],
+            },
+            {
+              kind: "paragraph",
+              content: `<strong>Que se passe-t-il si la date est dépassée ?</strong>
+
+      Sans réception d'un document en cours de validité nous serons contraints de suspendre votre référencement le <strong>${displayedDelegationEndDate}</strong>. Il pourra bien sûr être réactivé dès réception de la nouvelle convention !
+
+      Nous vous remercions et restons à votre disposition pour toute question à l'adresse <a href="mailto:${immersionFacileContactEmail}" target="_blank">${immersionFacileContactEmail}</a>`,
+            },
+          ],
+          signature: `
       Bien cordialement,
       L'équipe Immersion Facilitée
     `,
-            },
-          ],
         };
       },
     },
@@ -246,60 +271,99 @@ export const emailTemplatesByName =
             content: `
         Vous souhaitez solliciter France Travail pour bénéficier d’une convention de délégation.
 
-        Avant d’effectuer votre demande, vous devez vous avoir pris connaissance des <a href="https://travail-emploi.gouv.fr/les-periodes-de-mise-en-situation-en-milieu-professionnel-pmsmp#anchor-navigation-768" target="_blank">obligations légales</a>, notamment celles liées :
-
-          • à la cotisation à l’URSSAF pour le risque AT/MP
-          • à l’assurance pour les périodes d’immersion
-
-        <strong>Pour finaliser votre demande, vous devez :</strong>
-
-          1. Copier les éléments ci-dessous
-          2. Les compléter
-          3. Les envoyer à ${delegationProviderMail}
-
-        Si vous n’avez pas de réponse sous trois semaines, merci de nous en informer à l’adresse suivante : <a href="mailto:delegation@immersion-facile.beta.gouv.fr" target="_blank">delegation@immersion-facile.beta.gouv.fr</a>
-      `,
+        Avant d’effectuer votre demande, vous devez vous avoir pris connaissance des <a href="https://travail-emploi.gouv.fr/les-periodes-de-mise-en-situation-en-milieu-professionnel-pmsmp#anchor-navigation-768" target="_blank">obligations légales</a>, notamment celles liées :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "à la cotisation à l’URSSAF pour le risque AT/MP",
+              "à l’assurance pour les périodes d’immersion",
+            ],
           },
           {
             kind: "paragraph",
-            content: `
-        Bonne journée,
-        L'équipe Immersion Facilitée
-  
-        <p style="border-top:1px solid #d9d9d9; border-bottom:1px solid #d9d9d9; font-style:italic; color:#4a4a4a; font-family:Arial, Helvetica, sans-serif; padding:0 0 20px 0;">
-          Éléments à copier ci dessous (mail type à envoyer à la Direction Régionale)
-        </p>
+            content:
+              "<strong>Pour finaliser votre demande, vous devez :</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            numbered: true,
+            items: [
+              "Copier les éléments ci-dessous",
+              "Les compléter",
+              `Les envoyer à ${delegationProviderMail}`,
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `Si vous n’avez pas de réponse sous trois semaines, merci de nous en informer à l’adresse suivante : <a href="mailto:delegation@immersion-facile.beta.gouv.fr" target="_blank">delegation@immersion-facile.beta.gouv.fr</a>`,
+          },
+          {
+            kind: "callout",
+            variant: "secondary",
+            blocks: [
+              {
+                kind: "paragraph",
+                content:
+                  "<em>Éléments à copier ci dessous (mail type à envoyer à la Direction Régionale)</em>",
+              },
+              {
+                kind: "paragraph",
+                content: `
         Bonjour,
 
         Ma structure souhaite bénéficier d’une convention de délégation afin de pouvoir prescrire des immersions (PMSMP).
 
-        Vous trouverez ci-dessous les informations nécessaires au traitement de ma demande :
-
-        <strong>Informations légales de ma structure</strong>
-        
-          • SIRET :
-          • Nom de la structure :
-          • Adresse :
-          • Nom et prénom de la personne représentant la structure :
-          • Adresse mail de(s) personne(s) à contacter pour établir la convention de délégation :
-          • Numéro de téléphone à joindre en cas de besoin :
-          • Cette demande est-elle effectuée dans le cadre d’un marché de prestations ? (Oui / Non)
-        
-        <strong>Informations concernant les immersions</strong>
-        
-          • Descriptif du public qui sera concerné par les immersions
-          • Le territoire concerné par la demande (périmètre géographique)
-          • Estimation du nombre d’immersions prévues sur une année
-        
-        <strong>Informations complémentaires</strong>
-        
-          • Je confirme que ma structure va cotiser au risque AT/MP : (Oui / Non)
-          • Je confirme que ma structure est assurée pour couvrir les périodes d’immersion : (Oui / Non)
-
-        Cordialement,
-      `,
+        Vous trouverez ci-dessous les informations nécessaires au traitement de ma demande :`,
+              },
+              {
+                kind: "paragraph",
+                content:
+                  "<strong>Informations légales de ma structure</strong>",
+              },
+              {
+                kind: "list",
+                items: [
+                  "SIRET :",
+                  "Nom de la structure :",
+                  "Adresse :",
+                  "Nom et prénom de la personne représentant la structure :",
+                  "Adresse mail de(s) personne(s) à contacter pour établir la convention de délégation :",
+                  "Numéro de téléphone à joindre en cas de besoin :",
+                  "Cette demande est-elle effectuée dans le cadre d’un marché de prestations ? (Oui / Non)",
+                ],
+              },
+              {
+                kind: "paragraph",
+                content:
+                  "<strong>Informations concernant les immersions</strong>",
+              },
+              {
+                kind: "list",
+                items: [
+                  "Descriptif du public qui sera concerné par les immersions",
+                  "Le territoire concerné par la demande (périmètre géographique)",
+                  "Estimation du nombre d’immersions prévues sur une année",
+                ],
+              },
+              {
+                kind: "paragraph",
+                content: "<strong>Informations complémentaires</strong>",
+              },
+              {
+                kind: "list",
+                items: [
+                  "Je confirme que ma structure va cotiser au risque AT/MP : (Oui / Non)",
+                  "Je confirme que ma structure est assurée pour couvrir les périodes d’immersion : (Oui / Non)",
+                ],
+              },
+              { kind: "paragraph", content: "Cordialement," },
+            ],
           },
         ],
+        signature: defaultSignature("immersion"),
       }),
     },
     AGENCY_FIRST_REMINDER: {
@@ -328,37 +392,34 @@ export const emailTemplatesByName =
         blocks: [
           {
             kind: "paragraph",
-            content: `
-      Merci de ne pas oublier de traiter la demande de convention d'immersion qui concerne :
-
-      <strong>Bénéficiaire :</strong> ${beneficiaryFirstName} ${beneficiaryLastName}
-      ${
-        agencyReferentName &&
-        `
-        <strong>Conseiller :</strong> ${agencyReferentName}
-        `
-      }
-      <strong>Entreprise :</strong> ${businessName}
-
-      <strong>Structure d'accompagnement :</strong> ${agencyName}
-
-      <strong>Dates de l'immersion :</strong>
-      - du ${dateStart}
-      - au ${dateEnd}
-
-      Cette demande d'immersion a bien été signée par le bénéficiaire et l'entreprise d'accueil.`,
+            content:
+              "Merci de ne pas oublier de traiter la demande de convention d'immersion qui concerne :",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              `<strong>Bénéficiaire :</strong> ${beneficiaryFirstName} ${beneficiaryLastName}`,
+              ...(agencyReferentName
+                ? [`<strong>Conseiller :</strong> ${agencyReferentName}`]
+                : []),
+              `<strong>Entreprise :</strong> ${businessName}`,
+              `<strong>Structure d'accompagnement :</strong> ${agencyName}`,
+              `<strong>Dates de l'immersion :</strong> du ${dateStart} au ${dateEnd}`,
+            ],
+          },
+          {
+            kind: "paragraph",
+            content:
+              "Cette demande d'immersion a bien été signée par le bénéficiaire et l'entreprise d'accueil.",
           },
           {
             kind: "button",
             label: "Voir la convention",
             url: manageConventionLink,
           },
-          {
-            kind: "paragraph",
-            content: `Bonne journée,
-      L'équipe Immersion Facilitée`,
-          },
         ],
+        signature: defaultSignature("immersion"),
       }),
     },
     AGENCY_HAS_BEEN_PUT_ON_HOLD: {
@@ -400,12 +461,13 @@ export const emailTemplatesByName =
             kind: "paragraph",
             content: `
       Nous restons disponibles pour vous accompagner.
-
-      Bien cordialement,
-      L’équipe Immersion Facilitée
       `,
           },
         ],
+        signature: `
+      Bien cordialement,
+      L’équipe Immersion Facilitée
+      `,
       }),
     },
     AGENCY_LAST_REMINDER: {
@@ -434,10 +496,11 @@ export const emailTemplatesByName =
             content: `
       L'immersion demandée par Bénéficiaire <strong>${beneficiaryFirstName} ${beneficiaryLastName}</strong> au sein de l'entreprise <strong>${businessName}</strong> doit démarrer demain.
       ${
-        agencyReferentName &&
-        `
+        agencyReferentName
+          ? `
         <strong>Conseiller :</strong> ${agencyReferentName}
         `
+          : ""
       }
       Nous vous remercions d'examiner rapidement la demande de convention qui vous a été envoyée afin que votre décision soit transmise au bénéficiaire et à l'entreprise.`,
           },
@@ -450,12 +513,10 @@ export const emailTemplatesByName =
             kind: "paragraph",
             content: `
       Pour rappel, nous vous transmettons tous les renseignements nécessaires pour examiner la demande. Si vous la validez, la convention est automatiquement établie.
-
-      Bonne journée,
-      L'équipe Immersion Facilitée
       `,
           },
         ],
+        signature: defaultSignature("immersion"),
       }),
     },
     AGENCY_OF_TYPE_OTHER_ADDED: {
@@ -499,15 +560,13 @@ export const emailTemplatesByName =
       ],
       createEmailVariables: ({ agencies, immersionBaseUrl }) => {
         const isPlural = agencies.length > 1;
-        const agenciesList = agencies
-          .map(({ agencyName, adminEmails }) => {
-            const agencyStatus =
-              adminEmails.length > 0
-                ? `demande transmise à : ${joinWithCommasAnd(adminEmails)}`
-                : `aucun administrateur n'a été défini pour cet organisme, veuillez <a href=${immersionFacileHelpdeskRootUrl} target="_blank">contacter le support</a>.`;
-            return `• <strong>${agencyName}</strong> : ${agencyStatus}`;
-          })
-          .join("\n\n");
+        const agenciesItems = agencies.map(({ agencyName, adminEmails }) => {
+          const agencyStatus =
+            adminEmails.length > 0
+              ? `demande transmise à : ${joinWithCommasAnd(adminEmails)}`
+              : `aucun administrateur n'a été défini pour cet organisme, veuillez <a href=${immersionFacileHelpdeskRootUrl} target="_blank">contacter le support</a>.`;
+          return `<strong>${agencyName}</strong> : ${agencyStatus}`;
+        });
 
         return {
           subject: "Confirmation de votre demande de rattachement",
@@ -521,13 +580,18 @@ export const emailTemplatesByName =
 
         Votre demande va être étudiée prochainement par les administrateurs concernés.
 
-        <strong>Pour votre information, voici les personnes en charge de valider vos accès :</strong>
-
-        ${agenciesList}
-
-        Vous recevrez un e-mail dès qu'une décision sera prise pour ${
-          isPlural ? "chacune de vos demandes" : "votre demande"
-        }.`,
+        <strong>Pour votre information, voici les personnes en charge de valider vos accès :</strong>`,
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: agenciesItems,
+            },
+            {
+              kind: "paragraph",
+              content: `Vous recevrez un e-mail dès qu'une décision sera prise pour ${
+                isPlural ? "chacune de vos demandes" : "votre demande"
+              }.`,
             },
             {
               kind: "button",
@@ -565,9 +629,19 @@ export const emailTemplatesByName =
 
           Nous vous confirmons la bonne réception de votre demande d'accès à une convention d'immersion archivée.
 
-          <strong>Que va-t-il se passer ensuite ?</strong>
-          <ul><li>Notre équipe va examiner votre demande (motif et informations fournies) pour s'assurer que nous pouvons vous transmettre ces documents de manière légitime.</li>
-          <li>Si votre demande est validée, la convention ainsi que le bilan d'immersion vous seront envoyés directement par email d'ici quelques jours.</li></ul>
+          <strong>Que va-t-il se passer ensuite ?</strong>`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Notre équipe va examiner votre demande (motif et informations fournies) pour s'assurer que nous pouvons vous transmettre ces documents de manière légitime.",
+              "Si votre demande est validée, la convention ainsi que le bilan d'immersion vous seront envoyés directement par email d'ici quelques jours.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `
           Si nous avons besoin d'informations complémentaires pour retrouver votre convention, nous vous contacterons à cette adresse.
 
           Vous n'avez aucune autre action à réaliser pour le moment.
@@ -607,8 +681,9 @@ export const emailTemplatesByName =
         Vous pouvez dès à présent ${refersToOtherAgency ? "pré-valider" : "valider"} les conventions dématérialisées sur Immersion Facilitée.
 
         ${
-          refersToOtherAgency &&
-          `Elles seront ensuite validée par ${agencyReferdToName}.`
+          refersToOtherAgency
+            ? `Elles seront ensuite validée par ${agencyReferdToName}.`
+            : ""
         }`,
           },
           {
@@ -618,18 +693,24 @@ export const emailTemplatesByName =
           },
           {
             kind: "paragraph",
-            content: `
-        <strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong>
-        
-        • <strong>Pour les responsables de votre structure</strong> :
-        <a href="${immersionFacileHelpdeskRootUrl}/article/administrateur-gerer-votre-organisme-sbjao/" target="_blank">Un article d'aide pour paramétrer votre compte</a>
-        (une vidéo est disponible à la fin de l'article, mettez le son)
-
-        • <strong>Pour l'ensemble de vos collaborateurs</strong> :
-        <a href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" target="_blank">Un temps de présentation de toutes les fonctionnalités du site</a>
-        (30 minutes de présentation et 30 minutes pour poser les questions)
-
-        N'hésitez pas à leur partager ce lien :
+            content:
+              "<strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              `<strong>Pour les responsables de votre structure</strong> :
+              <a href="${immersionFacileHelpdeskRootUrl}/article/administrateur-gerer-votre-organisme-sbjao/" target="_blank">Un article d'aide pour paramétrer votre compte</a>
+              (une vidéo est disponible à la fin de l'article, mettez le son)`,
+              `<strong>Pour l'ensemble de vos collaborateurs</strong> :
+              <a href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" target="_blank">Un temps de présentation de toutes les fonctionnalités du site</a>
+              (30 minutes de présentation et 30 minutes pour poser les questions)`,
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `N'hésitez pas à leur partager ce lien :
         <a href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" target="_blank">https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee</a>
 
         Si aucune date ne vous convient, inscrivez-vous et nous vous enverrons le replay.
@@ -696,18 +777,29 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 
         Cette fermeture n’a pas d’impact sur les conventions qui auraient déjà été signées et archivées.
 
-        Si votre organisme <strong>accueille des personnes en immersion</strong>, rien ne change :
-
-        • si vous proposez des offres d’immersion vous pouvez continuer à recevoir des candidatures ;
-        • vous pouvez continuer à signer les conventions en tant qu’entreprise accueillante.
-
-        Notre équipe est à votre disposition si :
-
-        • vous souhaitez reprendre votre activité de prescripteur en utilisant les conventions dématérialisées ;
-        • cette fermeture ne correspond pas à votre situation ;
-        • vous rencontrez des difficultés pour mobiliser le dispositif ou utiliser Immersion Facilitée ;
-        • vous avez besoin de mettre à jour les coordonnées de votre structure.
-        `,
+        Si votre organisme <strong>accueille des personnes en immersion</strong>, rien ne change :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "si vous proposez des offres d’immersion vous pouvez continuer à recevoir des candidatures ;",
+              "vous pouvez continuer à signer les conventions en tant qu’entreprise accueillante.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: "Notre équipe est à votre disposition si :",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "vous souhaitez reprendre votre activité de prescripteur en utilisant les conventions dématérialisées ;",
+              "cette fermeture ne correspond pas à votre situation ;",
+              "vous rencontrez des difficultés pour mobiliser le dispositif ou utiliser Immersion Facilitée ;",
+              "vous avez besoin de mettre à jour les coordonnées de votre structure.",
+            ],
           },
           {
             kind: "button",
@@ -737,14 +829,20 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
             kind: "paragraph",
             content: `Nous constatons qu’<strong>aucune convention d’immersion n’a été validée (ou n'est en cours de validation) depuis 3 mois pour votre structure ${agencyName}</strong>.
         
-        Vous rencontrez peut-être une difficulté pour :
-        <ul>
-          <li>utiliser la convention dématérialisée ;</li>
-          <li>comprendre le dispositif de l’immersion professionnelle ;</li>
-          <li>mobiliser Immersion Facilitée dans l’accompagnement de vos bénéficiaires.</li>
-        </ul>
-
-        Ou peut-être n’avez pas l’occasion de prescrire régulièrement des immersions.
+        Vous rencontrez peut-être une difficulté pour :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "utiliser la convention dématérialisée ;",
+              "comprendre le dispositif de l’immersion professionnelle ;",
+              "mobiliser Immersion Facilitée dans l’accompagnement de vos bénéficiaires.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `Ou peut-être n’avez pas l’occasion de prescrire régulièrement des immersions.
 
         Quelle que soit votre situation, <strong>notre équipe peut vous accompagner</strong>, répondre à vos questions ou vérifier avec vous si votre référencement est toujours adapté.
         `,
@@ -837,28 +935,30 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
             : " du mini stage"
         } de ${beneficiaryFirstName} ${beneficiaryLastName} n'a pas encore été complété par l’entreprise ${businessName}.
       
-      Afin de clôturer cette étape, vous pouvez:
-      
-      1. <a href="mailto:${tutorEmail}" target="_blank">Relancer directement l'entreprise</a> pour qu'elle remplisse le bilan en ligne.
-      2. Les contacter par téléphone pour les accompagner dans la saisie du bilan.
-      `,
+      Afin de clôturer cette étape, vous pouvez :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            numbered: true,
+            items: [
+              `<a href="mailto:${tutorEmail}" target="_blank">Relancer directement l'entreprise</a> pour qu'elle remplisse le bilan en ligne.`,
+              "Les contacter par téléphone pour les accompagner dans la saisie du bilan.",
+            ],
           },
           {
             kind: "button",
             label: "Piloter la convention",
             url: manageConventionLink,
           },
-          {
-            kind: "paragraph",
-            content: `
-      ${
-        agencyReferentName &&
-        `
-        <strong>Conseiller : </strong>${agencyReferentName}
-        `
-      }
-      `,
-          },
+          ...(agencyReferentName
+            ? [
+                {
+                  kind: "paragraph",
+                  content: `<strong>Conseiller : </strong>${agencyReferentName}`,
+                } satisfies EmailBlock,
+              ]
+            : []),
         ],
         signature: defaultSignature(internshipKind),
 
@@ -908,12 +1008,19 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 
         <strong>Votre signature est nécessaire</strong>
 
-        Une fois que votre tuteur aura complété le formulaire, vous recevrez un second mail vous invitant à :
-
-        • Consulter et signer votre bilan en ligne
-        • Ajouter votre propre commentaire si vous souhaitez apporter des précisions sur votre expérience
-        
-        <strong>Et après ?</strong>
+        Une fois que votre tuteur aura complété le formulaire, vous recevrez un second mail vous invitant à :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Consulter et signer votre bilan en ligne",
+              "Ajouter votre propre commentaire si vous souhaitez apporter des précisions sur votre expérience",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `<strong>Et après ?</strong>
 
         Une fois signé, le bilan final vous sera envoyé par mail ainsi qu'à votre conseiller.
         Ce document est précieux pour la suite de votre parcours professionnel, que ce soit pour une formation, une embauche ou une découverte de métier.
@@ -982,12 +1089,21 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
             },
             {
               kind: "paragraph",
-              content: `<strong>Lors de la signature, vous aurez trois possibilités :</strong>
-          • J’ai bien lu, je suis d’accord, rien à ajouter
-          • J’ai bien lu, je suis d’accord, je veux commenter
-          • J’ai bien lu, je ne suis pas d’accord, je veux commenter
-
-        Si vous décidez d’ajouter un commentaire, il sera intégré directement dans le bilan final.
+              content:
+                "<strong>Lors de la signature, vous aurez trois possibilités :</strong>",
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                "J’ai bien lu, je suis d’accord, rien à ajouter",
+                "J’ai bien lu, je suis d’accord, je veux commenter",
+                "J’ai bien lu, je ne suis pas d’accord, je veux commenter",
+              ],
+            },
+            {
+              kind: "paragraph",
+              content: `Si vous décidez d’ajouter un commentaire, il sera intégré directement dans le bilan final.
 
         Une fois signé, un lien vous permettant de télécharger le bilan vous sera automatiquement envoyé, ainsi qu'à l’entreprise et à votre accompagnateur au format PDF.
         `,
@@ -1142,57 +1258,74 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
                 internshipKind === "immersion"
                   ? "de l'immersion"
                   : "du mini-stage"
-              } de ${beneficiaryFirstName} ${beneficiaryLastName} au sein de l'entreprise ${businessName} est désormais finalisé et signé par le candidat.
-  
-          <strong>📄 Informations principales</strong>
-          <ul>
-            <li>Métier observé : ${immersionAppellationLabel}</li>
-            <li>Objectif ${
-              internshipKind === "immersion"
-                ? "de l'immersion"
-                : "du mini-stage"
-            } : ${immersionObjective}</li>
-            <li>Immersion réalisée : Oui</li>
-            <li>Nombre d'heures totales de l'immersion : ${numberOfHoursMade}</li>
-            <li>Date réelle de fin de l'immersion : ${toDisplayedDate({
-              date: new Date(lastDayOfPresence),
-              withHours: false,
-            })}</li>
-          </ul>
-
-          <strong>📊 Résultats de l'immersion :</strong>
-          <ul>   
-           <li>Embauche : ${assessment.endedWithAJob ? "Oui" : "Non"}</li>        
-           ${
-             assessment.endedWithAJob
-               ? `          
-             <li>Date d'embauche : ${toDisplayedDate({
-               date: new Date(assessment.contractStartDate),
-             })}</li>   
-             <li>Type de contrat : ${assessment.typeOfContract}</li>`
-               : ""
-}
-          </ul>
-
-          <strong>⭐ Evaluation de l'entreprise</strong>
-          <ul>
-            <li>Appréciation générale : ${assessment.establishmentFeedback}</li>
-            <li>Conseils pour la suite : ${assessment.establishmentAdvices}</li>
-          </ul>
-
-          <strong>✍️ Validation du candidat</strong>
-          <ul>
-            <li>Choix exprimés : ${assessment.beneficiaryAgreement ? "J'ai bien lu, je suis d'accord" : "J'ai bien lu, je ne suis pas d'accord"}</li>
-            ${
-              assessment.beneficiaryFeedback
-                ? `
-            <li>Commentaire : ${assessment.beneficiaryFeedback}</li>
-            `
-                : ""
-            }
-          </ul>
-          
-          `,
+              } de ${beneficiaryFirstName} ${beneficiaryLastName} au sein de l'entreprise ${businessName} est désormais finalisé et signé par le candidat.`,
+            },
+            {
+              kind: "paragraph",
+              content: "<strong>📄 Informations principales</strong>",
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                `Métier observé : ${immersionAppellationLabel}`,
+                `Objectif ${
+                  internshipKind === "immersion"
+                    ? "de l'immersion"
+                    : "du mini-stage"
+                } : ${immersionObjective}`,
+                "Immersion réalisée : Oui",
+                `Nombre d'heures totales de l'immersion : ${numberOfHoursMade}`,
+                `Date réelle de fin de l'immersion : ${toDisplayedDate({
+                  date: new Date(lastDayOfPresence),
+                  withHours: false,
+                })}`,
+              ],
+            },
+            {
+              kind: "paragraph",
+              content: "<strong>📊 Résultats de l'immersion :</strong>",
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                `Embauche : ${assessment.endedWithAJob ? "Oui" : "Non"}`,
+                ...(assessment.endedWithAJob
+                  ? [
+                      `Date d'embauche : ${toDisplayedDate({
+                        date: new Date(assessment.contractStartDate),
+                      })}`,
+                      `Type de contrat : ${assessment.typeOfContract}`,
+                    ]
+                  : []),
+              ],
+            },
+            {
+              kind: "paragraph",
+              content: "<strong>⭐ Evaluation de l'entreprise</strong>",
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                `Appréciation générale : ${assessment.establishmentFeedback}`,
+                `Conseils pour la suite : ${assessment.establishmentAdvices}`,
+              ],
+            },
+            {
+              kind: "paragraph",
+              content: "<strong>✍️ Validation du candidat</strong>",
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                `Choix exprimés : ${assessment.beneficiaryAgreement ? "J'ai bien lu, je suis d'accord" : "J'ai bien lu, je ne suis pas d'accord"}`,
+                ...(assessment.beneficiaryFeedback
+                  ? [`Commentaire : ${assessment.beneficiaryFeedback}`]
+                  : []),
+              ],
             },
             {
               kind: "button",
@@ -1204,10 +1337,11 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
               content: `
           Ce document a également été communiqué à l’entreprise et au candidat.
           ${
-            agencyReferentName &&
-            `
+            agencyReferentName
+              ? `
             <strong>Conseiller : </strong>${agencyReferentName}
             `
+              : ""
           }
 
           `,
@@ -1246,21 +1380,29 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
             kind: "paragraph",
             content: `${
               internshipKind === "immersion" ? "L'immersion" : "Le mini-stage"
-            } prévue pour ${beneficiaryFirstName} ${beneficiaryLastName}, au sein de l'entreprise ${businessName} n'a pas eu lieu.
-  
-          <strong>Métier observé : ${immersionAppellationLabel}</strong>
-          <strong>Objectif ${
-            internshipKind === "immersion" ? "de l'immersion" : "du mini-stage"
-          } : ${immersionObjective}
-          </strong>
-          
-          Nous vous invitons à contacter l'entreprise si vous souhaitez obtenir des précisions supplémentaires.
+            } prévue pour ${beneficiaryFirstName} ${beneficiaryLastName}, au sein de l'entreprise ${businessName} n'a pas eu lieu.`,
+          },
+          {
+            kind: "list",
+            items: [
+              `<strong>Métier observé :</strong> ${immersionAppellationLabel}`,
+              `<strong>Objectif ${
+                internshipKind === "immersion"
+                  ? "de l'immersion"
+                  : "du mini-stage"
+              } :</strong> ${immersionObjective}`,
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `Nous vous invitons à contacter l'entreprise si vous souhaitez obtenir des précisions supplémentaires.
           
           ${
-            agencyReferentName &&
-            `
+            agencyReferentName
+              ? `
             <strong>Conseiller :</strong> ${agencyReferentName}
             `
+              : ""
           }
           `,
           },
@@ -1367,13 +1509,20 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           },
           {
             kind: "paragraph",
-            content: `
-        <strong>Ce bilan est essentiel :</strong>
-        - Il permet au candidat d'avoir un retour sur son expérience,
-        - Il aide les prescripteurs à mieux l'accompagner dans la suite de son parcours,
-        - Il contribue à améliorer le fonctionnement de notre service.
-        
-        En cas de difficulté, prévenez au plus vite la structure d'accompagnement pour que vous soyez conseillé au mieux.
+            content: "<strong>Ce bilan est essentiel :</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Il permet au candidat d'avoir un retour sur son expérience,",
+              "Il aide les prescripteurs à mieux l'accompagner dans la suite de son parcours,",
+              "Il contribue à améliorer le fonctionnement de notre service.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `En cas de difficulté, prévenez au plus vite la structure d'accompagnement pour que vous soyez conseillé au mieux.
         
         Merci !
         
@@ -1409,9 +1558,9 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         } de ${beneficiaryName} a été supprimé par l’équipe Immersion Facilitée.
 
         <strong>Motif indiqué :</strong>
-        <p>${justification}</p>
+        ${justification}
 
-        <p> Un nouveau bilan peut désormais être complété :
+        Un nouveau bilan peut désormais être complété :
         `,
           },
           {
@@ -1526,12 +1675,11 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           ? ""
           : " de la Chambre consulaire ayant émis la convention"
       } pour en échanger ou établir une nouvelle demande si nécessaire.      
-      
-      Bien cordialement,       
-      ${signature} 
       `,
           },
         ],
+        signature: `Bien cordialement,
+      ${signature}`,
         agencyLogoUrl,
       }),
     },
@@ -1568,11 +1716,19 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           },
           {
             kind: "paragraph",
-            content: `<strong>Comment maximiser vos chances ?</strong>
-          • Si l'entreprise ne répond pas sous <strong>15 jours</strong>, appelez-la directement.
-          • Postulez à au moins <strong>3 entreprises</strong> pour multiplier vos opportunités.
-          
-          Les entreprises ne répondent pas toujours, mais cela ne remet pas en cause votre valeur. Gardez confiance !
+            content: "<strong>Comment maximiser vos chances ?</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Si l'entreprise ne répond pas sous <strong>15 jours</strong>, appelez-la directement.",
+              "Postulez à au moins <strong>3 entreprises</strong> pour multiplier vos opportunités.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `Les entreprises ne répondent pas toujours, mais cela ne remet pas en cause votre valeur. Gardez confiance !
           
           Si vous avez besoin d'aide pour préparer votre relance, n'hésitez pas à contacter votre conseiller.
           
@@ -1609,16 +1765,12 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           `<strong>Métier :</strong> ${appellationLabel}`,
           potentialBeneficiaryDatePreferences &&
             `<strong>Période :</strong> ${potentialBeneficiaryDatePreferences}`,
-        ]
-          .filter(Boolean)
-          .join("\n");
+        ].filter(filterNotFalsy);
 
         const profile = [
           levelOfEducation &&
-            `• <strong>Classe :</strong> ${labelsForContactLevelOfEducation[levelOfEducation]}`,
-        ]
-          .filter(Boolean)
-          .join("\n");
+            `<strong>Classe :</strong> ${labelsForContactLevelOfEducation[levelOfEducation]}`,
+        ].filter(filterNotFalsy);
 
         return {
           subject: `${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })} vous contacte pour une demande de stage sur le métier de ${appellationLabel}`,
@@ -1631,11 +1783,20 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
               kind: "paragraph",
               content: `Vous avez reçu une nouvelle demande de stage via Immersion Facilitée pour votre entreprise <strong>${businessName}</strong> (${businessAddress}) :
 
-<strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>
-
-${details}
-${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` : ""}`,
+<strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>`,
+              marginBottom: "sm",
             },
+            { kind: "list", items: details },
+            ...(profile.length > 0
+              ? [
+                  {
+                    kind: "paragraph",
+                    content: "<strong>En savoir plus sur son profil :</strong>",
+                    marginBottom: "sm",
+                  } satisfies EmailBlock,
+                  { kind: "list", items: profile } satisfies EmailBlock,
+                ]
+              : []),
             {
               kind: "button",
               label: `Répondre à ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} via mon espace`,
@@ -1647,12 +1808,11 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
 
           ${transferReplyWarning}
 
-          En cas d'absence de réponse par email, vous pouvez aussi appeler ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} directement par téléphone : ${potentialBeneficiaryPhone}.
-
-          À bientôt,
-          L'équipe Immersion Facilitée`,
+          En cas d'absence de réponse par email, vous pouvez aussi appeler ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} directement par téléphone : ${potentialBeneficiaryPhone}.`,
             },
           ],
+          signature: `À bientôt,
+          L'équipe Immersion Facilitée`,
         };
       },
     },
@@ -1690,20 +1850,16 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
             `<strong>Période :</strong> ${potentialBeneficiaryDatePreferences}`,
           potentialBeneficiaryDurationPreferences &&
             `<strong>Durée :</strong> ${potentialBeneficiaryDurationPreferences}`,
-        ]
-          .filter(Boolean)
-          .join("\n");
+        ].filter(filterNotFalsy);
 
         const profile = [
           potentialBeneficiaryMotivation &&
-            `• <strong>Pourquoi cette immersion :</strong> ${potentialBeneficiaryMotivation}`,
+            `<strong>Pourquoi cette immersion :</strong> ${potentialBeneficiaryMotivation}`,
           potentialBeneficiaryExperienceAdditionalInformation &&
-            `• <strong>Compétences, expériences et savoirs-être :</strong> ${potentialBeneficiaryExperienceAdditionalInformation}`,
+            `<strong>Compétences, expériences et savoirs-être :</strong> ${potentialBeneficiaryExperienceAdditionalInformation}`,
           potentialBeneficiaryResumeLink &&
-            `• <strong>CV ou profil en ligne :</strong> ${potentialBeneficiaryResumeLink}`,
-        ]
-          .filter(Boolean)
-          .join("\n");
+            `<strong>CV ou profil en ligne :</strong> ${potentialBeneficiaryResumeLink}`,
+        ].filter(filterNotFalsy);
 
         return {
           subject: `${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })} vous contacte pour une demande d'immersion sur le métier de ${appellationLabel}`,
@@ -1716,11 +1872,20 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
               kind: "paragraph",
               content: `Vous avez reçu une nouvelle demande d'immersion via Immersion Facilitée pour votre entreprise <strong>${businessName}</strong> (${businessAddress}) :
 
-<strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>
-
-${details}
-${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` : ""}`,
+<strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>`,
+              marginBottom: "sm",
             },
+            { kind: "list", items: details },
+            ...(profile.length > 0
+              ? [
+                  {
+                    kind: "paragraph",
+                    content: "<strong>En savoir plus sur son profil :</strong>",
+                    marginBottom: "sm",
+                  } satisfies EmailBlock,
+                  { kind: "list", items: profile } satisfies EmailBlock,
+                ]
+              : []),
             {
               kind: "button",
               label: `Répondre à ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} via mon espace`,
@@ -1732,12 +1897,11 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
 
           ${transferReplyWarning}
 
-          En cas d'absence de réponse par email, vous pouvez aussi appeler ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} directement par téléphone : ${potentialBeneficiaryPhone}.
-
-          À bientôt,
-          L'équipe Immersion Facilitée`,
+          En cas d'absence de réponse par email, vous pouvez aussi appeler ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} directement par téléphone : ${potentialBeneficiaryPhone}.`,
             },
           ],
+          signature: `À bientôt,
+          L'équipe Immersion Facilitée`,
         };
       },
     },
@@ -1767,17 +1931,28 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
       Vous avez manifesté de l’intérêt pour réaliser ${kind === "IF" ? "une immersion professionnelle" : "un stage"} au sein de l’entreprise ${businessName}.
       Cette entreprise a souhaité être contactée par téléphone.
 
-      Voici ses coordonnées :
-      ${contactFirstName && contactLastName ? `- Personne à contacter : ${contactFirstName} ${contactLastName}` : ""}
-      - Numéro de téléphone  :  ${contactPhone}      
-      
-      Ces informations sont personnelles et confidentielles. Elles ne peuvent pas être communiquées à d’autres personnes. 
-      Merci !
-
-      ${kind === "IF" ? advices : ""}
-      `,
+      Voici ses coordonnées :`,
+            marginBottom: "sm",
           },
+          {
+            kind: "list",
+            items: [
+              ...(contactFirstName && contactLastName
+                ? [
+                    `Personne à contacter : ${contactFirstName} ${contactLastName}`,
+                  ]
+                : []),
+              `Numéro de téléphone : ${contactPhone}`,
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `Ces informations sont personnelles et confidentielles. Elles ne peuvent pas être communiquées à d’autres personnes.
+      Merci !`,
+          },
+          ...(kind === "IF" ? advices : []),
         ],
+        signature: defaultSignature("immersion"),
       }),
     },
     CONTACT_IN_PERSON_INSTRUCTIONS: {
@@ -1806,10 +1981,19 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
 
     Cette entreprise souhaite que vous vous rendiez sur place pour présenter votre demande. 
 
-    Voici les coordonnées :
-    ${contactFirstName && contactLastName ? `- Personne à contacter : <strong>${contactFirstName} ${contactLastName}</strong>` : ""}
-    - Adresse de l'entreprise : <strong>${welcomeAddress}</strong>
-    `,
+    Voici les coordonnées :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              ...(contactFirstName && contactLastName
+                ? [
+                    `Personne à contacter : <strong>${contactFirstName} ${contactLastName}</strong>`,
+                  ]
+                : []),
+              `Adresse de l'entreprise : <strong>${welcomeAddress}</strong>`,
+            ],
           },
           {
             kind: "highlight",
@@ -1875,6 +2059,7 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
         `,
           },
         ],
+        signature: defaultSignature("immersion"),
       }),
     },
     CONVENTION_TRANSFERRED_AGENCY_NOTIFICATION: {
@@ -1906,9 +2091,12 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
 
 ${justification}
 
-Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLastName}
-Email : ${beneficiaryEmail}
-Tél : ${beneficiaryPhone}`,
+Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLastName} :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [`Email : ${beneficiaryEmail}`, `Tél : ${beneficiaryPhone}`],
           },
           {
             kind: "button",
@@ -2250,9 +2438,7 @@ Tél : ${beneficiaryPhone}`,
           : "un mini stage"
       } du ${displayDate(dateStart)} au ${displayDate(dateEnd)} dans l'entreprise ${businessName} est supprimée.
       
-      Les raisons en sont: ${deprecationReason}         
-      
-      Bien cordialement,       
+      Les raisons en sont: ${deprecationReason}
       `,
           },
         ],
@@ -2284,32 +2470,43 @@ Tél : ${beneficiaryPhone}`,
             content: `
         Vous avez contacté l’entreprise ${businessName} il y a 15 jours par email pour demander une immersion, mais vous n’avez pas encore reçu de réponse.
 
-        Vous pouvez relancer l’entreprise par téléphone :
-        - Nom de la personne à contacter : ${contactFirstName} ${contactLastName}
-        ${contactJob ? `- Fonction : ${contactJob}` : ""}
-        - Numéro de téléphone : ${contactPhone}
-
-        N’hésitez pas à vous présenter brièvement, à rappeler l’objet de votre demande, et à mentionner que vous avez obtenu ces informations via Immersion Facilitée.
-
-        ⚠️ Ces informations sont personnelles et confidentielles. Merci de ne pas les transmettre à d’autres personnes.
-
-        
-
-        📝 <strong>Besoin de conseils ?</strong>
+        Vous pouvez relancer l’entreprise par téléphone :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              `Nom de la personne à contacter : ${contactFirstName} ${contactLastName}`,
+              ...(contactJob ? [`Fonction : ${contactJob}`] : []),
+              `Numéro de téléphone : ${contactPhone}`,
+            ],
+          },
+          {
+            kind: "paragraph",
+            content:
+              "N’hésitez pas à vous présenter brièvement, à rappeler l’objet de votre demande, et à mentionner que vous avez obtenu ces informations via Immersion Facilitée.",
+          },
+          {
+            kind: "highlight",
+            content:
+              "⚠️ Ces informations sont personnelles et confidentielles. Merci de ne pas les transmettre à d’autres personnes.",
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: `📝 <strong>Besoin de conseils ?</strong>
 
         Voici un exemple de phrase pour démarrer la conversation :
-        « Bonjour, je m'appelle ${beneficiaryFirstName} ${beneficiaryLastName}, je vous contacte car j’ai envoyé une demande d’immersion via Immersion Facilitée il y a quelques jours. Je souhaite découvrir le métier de [nom du métier] dans votre entreprise et je voulais savoir si cela était possible. »
-
-
-
-        N’hésitez pas à nous contacter si vous avez des questions.
-
-        Bonne journée,
-        <br/>
-        L'équipe Immersion Facilitée
-        `,
+        « Bonjour, je m'appelle ${beneficiaryFirstName} ${beneficiaryLastName}, je vous contacte car j’ai envoyé une demande d’immersion via Immersion Facilitée il y a quelques jours. Je souhaite découvrir le métier de [nom du métier] dans votre entreprise et je voulais savoir si cela était possible. »`,
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content:
+              "N’hésitez pas à nous contacter si vous avez des questions.",
           },
         ],
+        signature: defaultSignature("immersion"),
       }),
     },
     DISCUSSION_DEPRECATED_NOTIFICATION_BENEFICIARY: {
@@ -2328,17 +2525,21 @@ Tél : ${beneficiaryPhone}`,
         businessName,
       }) => ({
         subject: `Votre demande d’immersion chez ${businessName} a été clôturée`,
+        greetings: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},`,
         blocks: [
           {
             kind: "paragraph",
-            content: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},
+            content: `La candidature pour une immersion au sein de l'entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, est restée sans réponse pendant plus de 3 mois. Nous l’avons donc automatiquement clôturée afin de garantir des échanges à jour sur Immersion Facilitée.
 
-        La candidature pour une immersion au sein de l'entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, est restée sans réponse pendant plus de 3 mois. Nous l’avons donc automatiquement clôturée afin de garantir des échanges à jour sur Immersion Facilitée.
-
-        <strong>Si vous êtes toujours intéressé(e) par une immersion, nous vous invitons à :</strong>
-
-        • Relancer l'entreprise par téléphone
-        • Rechercher d'autres opportunités d'immersion`,
+        <strong>Si vous êtes toujours intéressé(e) par une immersion, nous vous invitons à :</strong>`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Relancer l'entreprise par téléphone",
+              "Rechercher d'autres opportunités d'immersion",
+            ],
           },
           {
             kind: "button",
@@ -2378,17 +2579,21 @@ Tél : ${beneficiaryPhone}`,
         businessName,
       }) => ({
         subject: `La candidature de ${beneficiaryFirstName} ${beneficiaryLastName} a été clôturée`,
+        greetings: "Bonjour,",
         blocks: [
           {
             kind: "paragraph",
-            content: `Bonjour,
+            content: `La candidature de ${beneficiaryFirstName} ${beneficiaryLastName} pour une immersion au sein de votre entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, est restée sans réponse pendant plus de 3 mois. Nous l’avons donc automatiquement clôturée afin de garantir des échanges à jour sur Immersion Facilitée.
 
-        La candidature de ${beneficiaryFirstName} ${beneficiaryLastName} pour une immersion au sein de votre entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, est restée sans réponse pendant plus de 3 mois. Nous l’avons donc automatiquement clôturée afin de garantir des échanges à jour sur Immersion Facilitée.
-
-        <strong>Nous vous recommandons de :</strong>
-
-        • Mettre à jour votre fiche établissement et vos offres
-        • Répondre rapidement aux prochaines demandes d'immersion`,
+        <strong>Nous vous recommandons de :</strong>`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Mettre à jour votre fiche établissement et vos offres",
+              "Répondre rapidement aux prochaines demandes d'immersion",
+            ],
           },
           {
             kind: "button",
@@ -2429,21 +2634,15 @@ Tél : ${beneficiaryPhone}`,
         "theme:MER",
         "role:utilisateurInitiateur",
       ],
-      createEmailVariables: (params) => {
-        const { content, button } =
+      createEmailVariables: (params) => ({
+        subject: "Réponse à la candidature impossible",
+        greetings: "Bonjour",
+        blocks:
           discussionExchangeForbiddenContents(params)[params.sender][
             params.reason
-          ].emailContent;
-        return {
-          subject: "Réponse à la candidature impossible",
-          greetings: "Bonjour",
-          blocks: [
-            { kind: "paragraph", content },
-            ...(button ? [{ kind: "button" as const, ...button }] : []),
-          ],
-          signature: defaultSignature("immersion"),
-        };
-      },
+          ].emailBlocks,
+        signature: defaultSignature("immersion"),
+      }),
     },
     ESTABLISHMENT_CONTACT_REQUEST_REMINDER: {
       niceName: "Etablissement - Relance mise en relation",
@@ -2493,13 +2692,11 @@ Tél : ${beneficiaryPhone}`,
 
 
         Si la connexion ne fonctionne pas ou si vous ne recevez pas le lien de réinitialisation du mot de passe, c’est probablement que vous n’avez pas encore créé votre compte.
-        Créez-le simplement avec <strong>la même adresse email</strong> que celle utilisée par les candidats pour vous contacter.
-        
-
-        A très vite sur Immersion Facilitée,
-        L'équipe d'Immersion Facilitée`,
+        Créez-le simplement avec <strong>la même adresse email</strong> que celle utilisée par les candidats pour vous contacter.`,
           },
         ],
+        signature: `A très vite sur Immersion Facilitée,
+        L'équipe d'Immersion Facilitée`,
       }),
     },
     ESTABLISHMENT_DELETED: {
@@ -2521,12 +2718,9 @@ Tél : ${beneficiaryPhone}`,
         Suite à votre demande de suppression de votre établissement (SIRET ${siret} - ${businessName} - ${businessAddresses[0]}), nous vous confirmons que ce dernier a été supprimé définitivement de la liste des entreprises accueillantes exposées sur Immersion Facilitée.
         `,
           },
-          {
-            kind: "paragraph",
-            content: `Bien cordialement,
-        l'équipe d'Immersion Facilitée`,
-          },
         ],
+        signature: `Bien cordialement,
+        l'équipe d'Immersion Facilitée`,
       }),
     },
     ESTABLISHMENT_BANNED_NOTIFICATION_TO_ESTABLISHMENT_USERS: {
@@ -2548,13 +2742,20 @@ Tél : ${beneficiaryPhone}`,
             content: `
         Nous vous informons que votre établissement ${businessName} (SIRET : ${siret}) n'a plus accès aux services d'Immersion Facilitée.
         
-        <strong>Ce qu'il faut savoir :</strong>
-
-        • Votre référencement sur notre site est supprimé.
-        • Vos candidatures et conventions en cours sont annulées.
-        • Vous ne pouvez plus créer de nouvelles conventions d’immersions.
-
-        <strong>Pourquoi cette décision ?</strong>
+        <strong>Ce qu'il faut savoir :</strong>`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Votre référencement sur notre site est supprimé.",
+              "Vos candidatures et conventions en cours sont annulées.",
+              "Vous ne pouvez plus créer de nouvelles conventions d’immersions.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `<strong>Pourquoi cette décision ?</strong>
 
         Cette mesure fait suite à des signalements concernant le non-respect des règles de l'immersion.
 
@@ -2581,12 +2782,11 @@ Tél : ${beneficiaryPhone}`,
         businessName,
       }) => ({
         subject: `Votre demande d’immersion chez ${businessName} a été clôturée`,
+        greetings: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},`,
         blocks: [
           {
             kind: "paragraph",
-            content: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},
-
-        La candidature pour une immersion au sein de l'entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, a été clôturée car l'entreprise s'est désinscrite d'Immersion Facilitée.
+            content: `La candidature pour une immersion au sein de l'entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, a été clôturée car l'entreprise s'est désinscrite d'Immersion Facilitée.
 
         <strong>Si vous êtes toujours intéressé(e) par une immersion, nous vous invitons à rechercher d'autres opportunités :</strong>`,
           },
@@ -2631,18 +2831,29 @@ Tél : ${beneficiaryPhone}`,
 
         Nous vous informons que cette entreprise a été bannie de notre site car elle ne respectait pas la législation en matière d'immersion. Par conséquent, votre démarche ne peut pas continuer.
 
-        <strong>Ce que cela implique pour vous :</strong>
+        <strong>Ce que cela implique pour vous :</strong>`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "<strong>Si vous aviez une candidature en cours :</strong> Celle-ci est désormais suspendue. Vous ne pouvez plus échanger avec cette entreprise.",
+              "<strong>Si vous aviez une convention en cours :</strong> Veuillez contacter rapidement votre conseiller pour procéder à son annulation.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `<strong>Comment rebondir ?</strong>
 
-          • <strong>Si vous aviez une candidature en cours :</strong> Celle-ci est désormais suspendue. Vous ne pouvez plus échanger avec cette entreprise..
-          • <strong>Si vous aviez une convention en cours :</strong> Veuillez contacter rapidement votre conseiller pour procéder à son annulation.
-
-        <strong>Comment rebondir ?</strong>
-        
-        Ne vous découragez pas ! De nombreuses autres entreprises sont prêtes à vous accueillir. Si vous souhaitez toujours réaliser une immersion, vous pouvez :
-
-          • Rechercher d'autres immersions sur notre site.
-          • Contacter votre conseiller pour vous aider dans vos recherches.
-        `,
+        Ne vous découragez pas ! De nombreuses autres entreprises sont prêtes à vous accueillir. Si vous souhaitez toujours réaliser une immersion, vous pouvez :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Rechercher d'autres immersions sur notre site.",
+              "Contacter votre conseiller pour vous aider dans vos recherches.",
+            ],
           },
           {
             kind: "button",
@@ -2685,11 +2896,15 @@ Tél : ${beneficiaryPhone}`,
 
         Nous vous informons que <strong>cette entreprise a été bannie de notre plateforme</strong> suite à des signalements, car elle ne respectait pas la législation ou le cadre bienveillant exigé en matière d'immersion.
 
-        <strong>Que pouvez-vous faire ?</strong>
-
-          • <strong>Si l'immersion n'a pas encore commencé :</strong> Nous vous recommandons fortement de procéder à l'annulation de cette convention afin de protéger le bénéficiaire.
-          • <strong>Si l'immersion est actuellement en cours :</strong> Nous vous conseillons de contacter le bénéficiaire dans les plus brefs délais pour faire un point sur sa situation au sein de l'établissement. S'il s'avère que les conditions d'accueil ne sont pas respectées, vous pouvez procéder à une rupture anticipée de l’immersion.
-        `,
+        <strong>Que pouvez-vous faire ?</strong>`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "<strong>Si l'immersion n'a pas encore commencé :</strong> Nous vous recommandons fortement de procéder à l'annulation de cette convention afin de protéger le bénéficiaire.",
+              "<strong>Si l'immersion est actuellement en cours :</strong> Nous vous conseillons de contacter le bénéficiaire dans les plus brefs délais pour faire un point sur sa situation au sein de l'établissement. S'il s'avère que les conditions d'accueil ne sont pas respectées, vous pouvez procéder à une rupture anticipée de l’immersion.",
+            ],
           },
           {
             kind: "button",
@@ -2751,13 +2966,8 @@ Tél : ${beneficiaryPhone}`,
             content:
               "Pour gagner du temps lors de l’inscription, utilisez la même adresse email que celle indiquée dans la convention d’immersion. Certaines informations de votre entreprise pourront ainsi être préremplies automatiquement.",
           },
-          {
-            kind: "paragraph",
-            content: `Bonne journée,
-      L'équipe Immersion Facilitée`,
-          },
         ],
-
+        signature: defaultSignature("immersion"),
         legals: `<a href=${unsubscribeToEmailShortLink}>Je ne souhaite pas devenir entreprise accueillante</a>`,
       }),
     },
@@ -2882,13 +3092,13 @@ Tél : ${beneficiaryPhone}`,
             ...(updatedStatus === "ACCEPTED"
               ? [
                   {
-                    kind: "button" as const,
+                    kind: "button",
                     label: "Accéder à mon espace",
                     url: makeRouteAbsoluteUrl({
                       route: frontRoutes.establishmentDashboard(),
                       baseUrl: immersionBaseUrl,
                     }),
-                  },
+                  } satisfies EmailBlock,
                 ]
               : []),
           ],
@@ -2897,84 +3107,6 @@ Tél : ${beneficiaryPhone}`,
       },
     },
 
-    FULL_PREVIEW_EMAIL: {
-      niceName: "Tech - Preview email complet (tous les blocs)",
-      tags: [
-        "template:aperçu pour tests",
-        "theme:MER",
-        "theme:acquisitionEntreprise",
-        "theme:authentification",
-        "theme:bilan",
-        "theme:convention",
-        "theme:espaceEntreprise",
-        "theme:espacePrescripteur",
-        "acteur:candidat",
-        "acteur:entreprise",
-        "acteur:prescripteur",
-        "role:admin",
-        "role:adminIF",
-        "role:beneficiaire",
-        "role:contact",
-        "role:employeurActuel",
-        "role:lecteur",
-        "role:preValideur",
-        "role:representantEntreprise",
-        "role:representantLégal",
-        "role:tuteur",
-      ],
-      createEmailVariables: ({
-        agencyLogoUrl,
-        beneficiaryName,
-        conventionId,
-        internshipKind,
-      }) => ({
-        subject: "Test contenant toutes les blocs email",
-        greetings: greetingsWithConventionId(conventionId, beneficiaryName),
-        blocks: [
-          {
-            kind: "paragraph",
-            content: `Merci d'avoir confirmé votre demande ${
-              internshipKind ? "d'immersion" : "de mini stage"
-            }. Elle va être transmise à votre ${
-              internshipKind === "immersion"
-                ? "conseiller"
-                : "conseiller de la Chambre consulaire ayant émis la convention"
-            } référent.
-      
-      Il vous informera par mail de la validation ou non ${
-        internshipKind === "immersion" ? "de l'immersion" : "du mini stage"
-      }. Le tuteur qui vous encadrera pendant cette période recevra aussi la réponse.`,
-          },
-          {
-            kind: "button",
-            label: "Label de bouton",
-            url: "http://www.example.com",
-          },
-          {
-            kind: "highlight",
-            content: `Attention, ne démarrez pas ${
-              internshipKind === "immersion"
-                ? "cette immersion"
-                : "ce mini stage"
-            } tant que vous n'avez pas reçu cette validation !`,
-          },
-          {
-            kind: "paragraph",
-            content: `Il vous informera par mail de la validation ou non ${
-              internshipKind === "immersion"
-                ? "de l'immersion"
-                : "du mini stage"
-            }. Le tuteur qui vous encadrera pendant cette période recevra aussi la réponse.
-      
-      `,
-          },
-        ],
-        signature: defaultSignature(internshipKind),
-        legals: defaultConventionFinalLegals(internshipKind),
-
-        agencyLogoUrl,
-      }),
-    },
     IC_USER_REGISTRATION_TO_AGENCY_REJECTED: {
       niceName: "ProConnect - Rejet de rattachement a une agence",
       tags: [
@@ -3024,17 +3156,17 @@ Tél : ${beneficiaryPhone}`,
             content: `
         Vous pouvez désormais accéder au tableau de bord de votre structure&nbsp: ${agencyName}.
 
-        <strong>Voici le récapitulatif de votre profil utilisateur :</strong>
-        ${generateUserInfo(
-          firstName,
-          lastName,
-          email,
-          roles,
-          isNotifiedByEmail,
-          agencyName,
-        )}
-      `,
+        <strong>Voici le récapitulatif de votre profil utilisateur :</strong>`,
+            marginBottom: "sm",
           },
+          makeUserInfoCallout(
+            firstName,
+            lastName,
+            email,
+            roles,
+            isNotifiedByEmail,
+            agencyName,
+          ),
         ],
         signature: defaultSignature("immersion"),
       }),
@@ -3067,12 +3199,13 @@ Tél : ${beneficiaryPhone}`,
           Ce lien est valable jusqu’à ${displayedExpiresAt} et ne peut être utilisé qu’une seule fois.
           
           Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.
-          
-          À bientôt,
-          L’équipe Immersion Facilitée
         `,
             },
           ],
+          signature: `
+          À bientôt,
+          L’équipe Immersion Facilitée
+        `,
         };
       },
     },
@@ -3144,12 +3277,18 @@ Tél : ${beneficiaryPhone}`,
 
           🖊️ <strong>Comment signer la demande ${
             renewed ? "de renouvellement" : "de convention"
-          } ?</strong>
-
-          1. Cliquez sur le bouton ci-dessous.
-          2. Connectez-vous à Immersion Facilitée avec l'adresse email <strong>${signatoryEmail}</strong>.
-          3. Une fois connecté, vérifiez les informations puis cliquez sur <strong>«Signer la convention»</strong>.
-          4. Si les informations ne sont pas correctes, cliquez sur le bouton <strong>«Modifier une autre information»</strong>.`,
+          } ?</strong>`,
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              numbered: true,
+              items: [
+                "Cliquez sur le bouton ci-dessous.",
+                `Connectez-vous à Immersion Facilitée avec l'adresse email <strong>${signatoryEmail}</strong>.`,
+                "Une fois connecté, vérifiez les informations puis cliquez sur <strong>«Signer la convention»</strong>.",
+                "Si les informations ne sont pas correctes, cliquez sur le bouton <strong>«Modifier une autre information»</strong>.",
+              ],
             },
             {
               kind: "button",
@@ -3273,14 +3412,21 @@ Tél : ${beneficiaryPhone}`,
 
       <strong>👤 Votre rôle en tant qu'administrateur</strong>
 
-      Vous êtes maintenant admin de l'entreprise. À ce titre, vous pouvez :
-
-        • gérer les informations et les offres de l'entreprise ;
-        • suivre les demandes d'immersion ;
-        • accéder aux conventions ;
-        • ajouter ou retirer des administrateurs et des contacts.
-
-      Les contacts peuvent consulter les conventions et les candidatures de l'entreprise, et y répondre.`,
+      Vous êtes maintenant admin de l'entreprise. À ce titre, vous pouvez :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "gérer les informations et les offres de l'entreprise ;",
+              "suivre les demandes d'immersion ;",
+              "accéder aux conventions ;",
+              "ajouter ou retirer des administrateurs et des contacts.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `Les contacts peuvent consulter les conventions et les candidatures de l'entreprise, et y répondre.`,
           },
           {
             kind: "button",
@@ -3289,18 +3435,31 @@ Tél : ${beneficiaryPhone}`,
           },
           {
             kind: "paragraph",
-            content: `         
-      <strong>🏢 Votre entreprise</strong>
-      
-      Votre entreprise apparaîtra dans les résultats de recherche correspondant aux critères suivants :
-      
-      <strong>Métier(s) :</strong>
+            content: `<strong>🏢 Votre entreprise</strong>
 
-      ${appelationLabels.map((label) => `• ${label}\n`).join("")}
-      <strong>Lieu(x) d'immersion :</strong>
-
-      ${businessAddresses.map((address) => `• ${address}\n`).join("")}
-      Pour ces demandes, il n'est pas nécessaire de demander un CV. L'objectif est simplement de passer quelques jours ensemble pour une découverte réciproque. 
+      Votre entreprise apparaîtra dans les résultats de recherche correspondant aux critères suivants :`,
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>Métier(s) :</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: appelationLabels,
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>Lieu(x) d'immersion :</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: businessAddresses,
+          },
+          {
+            kind: "paragraph",
+            content: `Pour ces demandes, il n'est pas nécessaire de demander un CV. L'objectif est simplement de passer quelques jours ensemble pour une découverte réciproque. 
 
       Si une immersion se passe bien et que vous souhaitez aller plus loin, un conseiller emploi pourra vous accompagner et, si besoin, proposer un plan de formation sur mesure.
       `,
@@ -3354,17 +3513,14 @@ Tél : ${beneficiaryPhone}`,
             content: `
       Vous pouvez demander des modifications ou la refuser, si nécessaire  ou la valider si cette demande correspond au projet de ${beneficiaryFirstName} ${beneficiaryLastName}, ${beneficiaryEmail}.      
       
-      N'hésitez pas à le joindre ou à appeler l'entreprise. Leurs coordonnées sont présentes dans la demande de convention.        
-      
-      <strong>Dates de l'immersion :</strong> 
-      - du ${displayDate(dateStart)}
-      - au ${displayDate(dateEnd)}
-      
-      <strong>Entreprise d'accueil :</strong>
-      - ${businessName}
-      - ${immersionAddress}
-
-      `,
+      N'hésitez pas à le joindre ou à appeler l'entreprise. Leurs coordonnées sont présentes dans la demande de convention.`,
+          },
+          {
+            kind: "list",
+            items: [
+              `<strong>Dates de l'immersion :</strong> du ${displayDate(dateStart)} au ${displayDate(dateEnd)}`,
+              `<strong>Entreprise d'accueil :</strong> ${businessName}, ${immersionAddress}`,
+            ],
           },
         ],
         signature: defaultSignature("immersion"),
@@ -3424,12 +3580,11 @@ Tél : ${beneficiaryPhone}`,
           ? ""
           : " de la Chambre consulaire ayant émis la convention"
       } pour en échanger.      
-      
-      Bien cordialement,       
-      ${signature} 
       `,
           },
         ],
+        signature: `Bien cordialement,
+      ${signature}`,
         agencyLogoUrl,
       }),
     },
@@ -3597,19 +3752,35 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
             content: `Votre entreprise <strong>${businessName}</strong> fait déjà partie des entreprises accueillantes sur Immersion Facilitée, merci pour votre engagement !
         
         🌟 <strong>Devenez une Super Entreprise</strong>
-        Les entreprises les plus actives peuvent désormais obtenir le <strong>label “Super Entreprise”</strong>. Ce label :
-        • valorise votre engagement RSE,
-        • vous fait remonter en tête des résultats de recherche,
-        • et renforce votre attractivité auprès des candidats
-        Une belle reconnaissance pour votre implication dans la découverte des métiers et de l’inclusion !
-
-        🎥 <strong>Webinaire : “Comment devenir une Super Entreprise ?”</strong>
-        Découvrez comment :
-        • obtenir le label “Super Entreprise” engagée
-        • booster la visibilité de vos offres d’immersion
-        • utiliser tout le potentiel de votre espace entreprise
-
-      `,
+        Les entreprises les plus actives peuvent désormais obtenir le <strong>label “Super Entreprise”</strong>. Ce label :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "valorise votre engagement RSE,",
+              "vous fait remonter en tête des résultats de recherche,",
+              "et renforce votre attractivité auprès des candidats",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content:
+              "Une belle reconnaissance pour votre implication dans la découverte des métiers et de l’inclusion !",
+          },
+          {
+            kind: "paragraph",
+            content: `🎥 <strong>Webinaire : “Comment devenir une Super Entreprise ?”</strong>
+        Découvrez comment :`,
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "obtenir le label “Super Entreprise” engagée",
+              "booster la visibilité de vos offres d’immersion",
+              "utiliser tout le potentiel de votre espace entreprise",
+            ],
           },
           {
             kind: "button",
@@ -3618,12 +3789,22 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
           },
           {
             kind: "paragraph",
-            content: `💡 <strong>Au quotidien, votre espace Immersion Facilitée vous permet de :</strong>
-      • gérer vos candidatures reçues chaque mois
-      • traiter efficacement les demandes d’immersion
-      • gérer les utilisateurs reliés à votre espace entreprise
-      • paramétrer vos offres pour attirer des talents
-      Ces outils vous simplifient la gestion et renforcent votre visibilité.
+            content:
+              "💡 <strong>Au quotidien, votre espace Immersion Facilitée vous permet de :</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "gérer vos candidatures reçues chaque mois",
+              "traiter efficacement les demandes d’immersion",
+              "gérer les utilisateurs reliés à votre espace entreprise",
+              "paramétrer vos offres pour attirer des talents",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: `Ces outils vous simplifient la gestion et renforcent votre visibilité.
 
       Votre engagement compte, et ensemble, nous facilitons la découverte des métiers partout en France.      
       `,
@@ -3669,20 +3850,17 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
         blocks: [
           {
             kind: "paragraph",
-            content: `
-          Cet email vous a été envoyé dans le cadre d'un test.
-
-          - Input1 : ${input1}
-          - Input2 : ${input2}
-        `,
+            content: "Cet email vous a été envoyé dans le cadre d'un test.",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [`Input1 : ${input1}`, `Input2 : ${input2}`],
           },
           { kind: "button", label: "Bouton de test", url },
-          {
-            kind: "paragraph",
-            content: `A très vite sur Immersion Facilitée,
-L'équipe d'Immersion Facilitée`,
-          },
         ],
+        signature: `A très vite sur Immersion Facilitée,
+L'équipe d'Immersion Facilitée`,
       }),
     },
     VALIDATED_CONVENTION_FINAL_CONFIRMATION: {
@@ -3746,25 +3924,30 @@ L'équipe d'Immersion Facilitée`,
         convention.internshipKind === "immersion"
           ? "de l'immersion"
           : "du mini stage"
-      } :</strong>
-      <ul>
-        <li><strong>Dates :</strong> du ${parseISO(convention.dateStart).toLocaleDateString("fr")} au ${parseISO(convention.dateEnd).toLocaleDateString("fr")}</li>
-        <li><strong>Entreprise :</strong> ${displayedBusinessName}</li>
-        <li><strong>Tuteur :</strong> ${getFormattedFirstnameAndLastname({
-          firstname: convention.establishmentTutor.firstName,
-          lastname: convention.establishmentTutor.lastName,
-        })}</li>
-        <li><strong>Validation :</strong> ${agencyName}${
-          convention.validators?.agencyValidator
-            ? ` (par ${getFormattedFirstnameAndLastname(
-                convention.validators.agencyValidator,
-              )})`
-            : ""
-        }</li>
-      </ul>
-
-      ${convention.internshipKind === "immersion" ? "L'immersion" : "Le mini stage"} peut donc démarrer aux dates convenues.       
-      `,
+      } :</strong>`,
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                `<strong>Dates :</strong> du ${parseISO(convention.dateStart).toLocaleDateString("fr")} au ${parseISO(convention.dateEnd).toLocaleDateString("fr")}`,
+                `<strong>Entreprise :</strong> ${displayedBusinessName}`,
+                `<strong>Tuteur :</strong> ${getFormattedFirstnameAndLastname({
+                  firstname: convention.establishmentTutor.firstName,
+                  lastname: convention.establishmentTutor.lastName,
+                })}`,
+                `<strong>Validation :</strong> ${agencyName}${
+                  convention.validators?.agencyValidator
+                    ? ` (par ${getFormattedFirstnameAndLastname(
+                        convention.validators.agencyValidator,
+                      )})`
+                    : ""
+                }`,
+              ],
+            },
+            {
+              kind: "paragraph",
+              content: `${convention.internshipKind === "immersion" ? "L'immersion" : "Le mini stage"} peut donc démarrer aux dates convenues.`,
             },
             {
               kind: "button",
@@ -3783,21 +3966,28 @@ L'équipe d'Immersion Facilitée`,
             },
             {
               kind: "paragraph",
+              content:
+                "<strong>Depuis cette page, vous pouvez notamment :</strong>",
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                "consulter et télécharger la convention au format PDF ;",
+                `<strong>déclarer une fin anticipée</strong> si ${
+                  convention.internshipKind === "immersion"
+                    ? "l'immersion"
+                    : "le mini stage"
+                } doit être ${
+                  convention.internshipKind === "immersion"
+                    ? "interrompue"
+                    : "interrompu"
+                } (abandon, arrêt anticipé, ...).`,
+              ],
+            },
+            {
+              kind: "paragraph",
               content: `
-      <strong>Depuis cette page, vous pouvez notamment :</strong>
-      <ul>
-        <li>consulter et télécharger la convention au format PDF ;</li>
-        <li><strong>déclarer une fin anticipée</strong> si ${
-          convention.internshipKind === "immersion"
-            ? "l'immersion"
-            : "le mini stage"
-        } doit être ${
-          convention.internshipKind === "immersion"
-            ? "interrompue"
-            : "interrompu"
-        } (abandon, arrêt anticipé, ...).</li>
-      </ul>
-
       En cas de difficulté, prévenez au plus vite ${
         convention.internshipKind === "immersion"
           ? "le conseiller"
@@ -3838,12 +4028,12 @@ L'équipe d'Immersion Facilitée`,
           { kind: "button", label: "Se connecter à mon espace", url: loginUrl },
           {
             kind: "paragraph",
-            content: `Sans action de votre part, le compte sera supprimé automatiquement et l'accès ne sera plus possible.
-
-        Bien cordialement,
-        L'équipe Immersion Facilitée`,
+            content:
+              "Sans action de votre part, le compte sera supprimé automatiquement et l'accès ne sera plus possible.",
           },
         ],
+        signature: `Bien cordialement,
+        L'équipe Immersion Facilitée`,
       }),
     },
     WARN_DISCUSSION_DELIVERY_FAILED: {
@@ -3903,15 +4093,19 @@ L'équipe d'Immersion Facilitée`,
         return {
           subject:
             "Immersion Facilitée - Demande de rattachement en attente pour votre entreprise",
+          greetings: `Bonjour${adminFullName},`,
           blocks: [
             {
               kind: "paragraph",
-              content: `
-        Bonjour${adminFullName},
-
-        Vous avez une nouvelle demande de rattachement à votre espace entreprise Immersion Facilitée :
-        - ${pendingUserFullNameOrEmail} - ${titleByRole[pendingUserRole]}
-        `,
+              content:
+                "Vous avez une nouvelle demande de rattachement à votre espace entreprise Immersion Facilitée :",
+              marginBottom: "sm",
+            },
+            {
+              kind: "list",
+              items: [
+                `${pendingUserFullNameOrEmail} - ${titleByRole[pendingUserRole]}`,
+              ],
             },
             {
               kind: "button",
@@ -3962,32 +4156,38 @@ const descriptionByRole: Record<AgencyRole, string> = {
     "<strong>À valider</strong> (Souhaite être rattaché à l'organisme)",
 };
 
-const generateUserInfo = (
+const makeUserInfoCallout = (
   firstName: string,
   lastName: string,
   email: string,
   roles: AgencyRole[],
   isNotified: boolean,
   agencyName: string,
-): string => {
-  const rolesDescriptionList = roles
-    .filter((role) => role !== "to-review")
-    .map((role) => `<li>${descriptionByRole[role]}</li>`)
-    .join("\n");
-
+): EmailBlock => {
   const nameDisplay =
     firstName && lastName ? `${firstName} ${lastName} - ${email}` : email;
 
-  return `
-    <ul style="list-style-type: none; border: 1px solid #ddd; padding: 16px;"><li><strong>${nameDisplay}</strong></li>
-      ${rolesDescriptionList}
-      <li>${
-        isNotified
-          ? "Reçoit les emails de toutes les conventions de "
-          : "Ne reçoit aucun email pour "
-      } ${agencyName}</li>
-      <li><a href="https://immersion-facile.beta.gouv.fr/tableau-de-bord-agence" target="_blank">Espace personnel</a></li></ul>
-  `;
+  return {
+    kind: "callout",
+    variant: "secondary",
+    blocks: [
+      { kind: "paragraph", content: `<strong>${nameDisplay}</strong>` },
+      {
+        kind: "list",
+        items: [
+          ...roles
+            .filter((role) => role !== "to-review")
+            .map((role) => descriptionByRole[role]),
+          `${
+            isNotified
+              ? "Reçoit les emails de toutes les conventions de "
+              : "Ne reçoit aucun email pour "
+          } ${agencyName}`,
+          '<a href="https://immersion-facile.beta.gouv.fr/tableau-de-bord-agence" target="_blank">Espace personnel</a>',
+        ],
+      },
+    ],
+  };
 };
 
 export const discussionExchangeForbiddenContents = (
@@ -3997,121 +4197,153 @@ export const discussionExchangeForbiddenContents = (
   Record<
     DiscussionExchangeForbiddenReason,
     {
-      emailContent: {
-        content: string;
-        button?: {
-          label: string;
-          url: string;
-        };
-      };
+      emailBlocks: EmailBlock[];
       errorMessageFeedback: string;
     }
   >
 > => ({
   establishment: {
     user_unknown_or_missing_rights_on_establishment: {
-      emailContent: {
-        content: `
+      emailBlocks: [
+        {
+          kind: "paragraph",
+          content: `
           Vous avez tenté de répondre à un candidat depuis un email de candidature Immersion Facilitée.
           Malheureusement, <strong>votre message n’a pas pu être transmis</strong> : vous ne disposez pas des droits nécessaires pour répondre au nom de l’entreprise concernée.
           
           Pour pouvoir répondre au candidat via Immersion Facilitée, vous devez être inscrit(e) dans l’espace entreprise avec les bons droits. 
       `,
-        button:
-          isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl(
-            params,
-          )
-            ? {
+        },
+        ...(isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl(
+          params,
+        )
+          ? [
+              {
+                kind: "button",
                 label: "Demander le rattachement",
                 url: params.requestEstablishmentRegistrationUrl,
-              }
-            : undefined,
-      },
+              } satisfies EmailBlock,
+            ]
+          : []),
+      ],
       errorMessageFeedback:
         "Vous n'avez pas les droits nécessaires pour répondre à cette candidature.",
     },
     discussion_completed: {
-      emailContent: {
-        content: `
+      emailBlocks: [
+        {
+          kind: "paragraph",
+          content: `
           La candidature à laquelle vous souhaitez répondre n'est plus en cours.
           Le candidat ne recevra pas votre message.`,
-      },
+        },
+      ],
       errorMessageFeedback: "La candidature n'est plus en cours.",
     },
     establishment_missing: {
-      emailContent: {
-        content: `
+      emailBlocks: [
+        {
+          kind: "paragraph",
+          content: `
           L'entreprise liée à cette candidature s’est récemment désinscrite d’Immersion Facilitée.
         Le candidat ne recevra pas votre message.
 
           Nous vous invitons à réinscrire votre entreprise si vous souhaitez de nouveau répondre aux candidatures.`,
-      },
+        },
+      ],
       errorMessageFeedback:
         "L'entreprise liée à cette candidature s'est récemment désinscrite.",
     },
     establishment_banned: {
-      emailContent: {
-        content: `
+      emailBlocks: [
+        {
+          kind: "paragraph",
+          content: `
           Vous avez tenté de répondre à un candidat via Immersion Facilitée depuis un email de candidature Immersion Facilitée.
 
-          Malheureusement, <strong>votre message n’a pas pu être transmis</strong> :
-          <ul>
-            <li>Votre établissement ${params.establishmentName} n'a plus accès aux services d'Immersion Facilitée.</li>
-            <li>Vous ne pouvez plus échanger avec les candidats via notre plateforme.</li>
-            <li>Toutes vos demandes en cours sont annulées.</li>
-          </ul>
-          Si vous estimez qu'il s'agit d'une erreur, vous pouvez <a href="mailto:${immersionFacileContactEmail}">contacter notre support</a>.
-        `,
-      },
+          Malheureusement, <strong>votre message n’a pas pu être transmis</strong> :`,
+          marginBottom: "sm",
+        },
+        {
+          kind: "list",
+          items: [
+            `Votre établissement ${params.establishmentName} n'a plus accès aux services d'Immersion Facilitée.`,
+            "Vous ne pouvez plus échanger avec les candidats via notre plateforme.",
+            "Toutes vos demandes en cours sont annulées.",
+          ],
+        },
+        {
+          kind: "paragraph",
+          content: `Si vous estimez qu'il s'agit d'une erreur, vous pouvez <a href="mailto:${immersionFacileContactEmail}">contacter notre support</a>.`,
+        },
+      ],
       errorMessageFeedback:
         "Votre établissement est banni et n'a plus accès aux services d'Immersion Facilitée.",
     },
   },
   potentialBeneficiary: {
     user_unknown_or_missing_rights_on_establishment: {
-      emailContent: {
-        content: `
+      emailBlocks: [
+        {
+          kind: "paragraph",
+          content: `
           Vous n'êtes pas le candidat associé à cette candidature.
         `,
-      },
+        },
+      ],
       errorMessageFeedback:
         "Vous n'êtes pas le candidat associé à cette candidature.",
     },
     discussion_completed: {
-      emailContent: {
-        content: `
+      emailBlocks: [
+        {
+          kind: "paragraph",
+          content: `
           La candidature à laquelle vous souhaitez répondre n'est plus en cours.
           L'entreprise ne recevra pas votre message.
 
           Nous vous invitons à chercher une autre entreprise dans l’annuaire pour poursuivre votre démarche.`,
-      },
+        },
+      ],
       errorMessageFeedback: "La candidature n'est plus en cours.",
     },
     establishment_missing: {
-      emailContent: {
-        content: `
+      emailBlocks: [
+        {
+          kind: "paragraph",
+          content: `
           L’entreprise que vous souhaitez contacter s’est récemment désinscrite d’Immersion Facilitée.
           Elle ne recevra pas votre message et ne propose plus d’immersion pour le moment.
 
           Nous vous invitons à chercher une autre entreprise dans l’annuaire pour poursuivre votre démarche`,
-      },
+        },
+      ],
       errorMessageFeedback:
         "L'entreprise liée à cette candidature s'est récemment désinscrite.",
     },
     establishment_banned: {
-      emailContent: {
-        content: `
+      emailBlocks: [
+        {
+          kind: "paragraph",
+          content: `
           Vous avez tenté d'envoyer un message à l'entreprise ${params.establishmentName} concernant votre immersion.
 
-          Malheureusement, <strong>votre message n’a pas pu être transmis</strong> :
-          <ul>
-            <li>L'entreprise ${params.establishmentName} n'est plus disponible sur notre site.</li>
-            <li>Les échanges avec cet établissement sont désormais fermés.</li>
-            <li>Votre candidature auprès de cette entreprise est annulée.</li>
-          </ul>
-          Si vous estimez qu'il s'agit d'une erreur, vous pouvez <a href="mailto:${immersionFacileContactEmail}">contacter notre support</a>.
-        `,
-      },
+          Malheureusement, <strong>votre message n’a pas pu être transmis</strong> :`,
+          marginBottom: "sm",
+        },
+        {
+          kind: "list",
+          items: [
+            `L'entreprise ${params.establishmentName} n'est plus disponible sur notre site.`,
+            "Les échanges avec cet établissement sont désormais fermés.",
+            "Votre candidature auprès de cette entreprise est annulée.",
+          ],
+        },
+        {
+          kind: "paragraph",
+          content: `Si vous estimez qu'il s'agit d'une erreur, vous pouvez <a href="mailto:${immersionFacileContactEmail}">contacter notre support</a>.`,
+        },
+      ],
       errorMessageFeedback: "L'entreprise liée à cette candidature est bannie.",
     },
   },

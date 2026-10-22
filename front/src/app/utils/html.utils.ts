@@ -4,7 +4,11 @@ export const convertHtmlToText = (message: string): string => {
 
   const body = matches?.[0] ?? message;
 
-  return body.replace(/<(?!br\s*\/?)[^>]+>/g, "") || "Pas de contenu";
+  return (
+    body
+      .replace(/<\/(p|li|ul|ol)>/g, "\n")
+      .replace(/<(?!br\s*\/?)[^>]+>/g, "") || "Pas de contenu"
+  );
 };
 
 export const addLineBreakOnNewLines = (text: string): string =>
