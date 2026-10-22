@@ -77,12 +77,18 @@ const makeNotification = async ({
 
   const conventionsToManage = (await getConventionsToManage(uow, now, agencyId))
     .length;
+  const conventionsToReview = (await getConventionsToReview(uow, now, agencyId))
+    .length;
   const newConventions = (await getNewConventions(uow, now, agencyId)).length;
   const validatedConventions = (
     await getValidatedConventions(uow, now, agencyId)
   ).length;
 
-  return conventionsToManage + newConventions + validatedConventions > 0
+  return conventionsToManage +
+    conventionsToReview +
+    newConventions +
+    validatedConventions >
+    0
     ? {
         kind: "email",
         followedIds: {
@@ -95,6 +101,7 @@ const makeNotification = async ({
             domain: appConfig.immersionFacileDomain,
             agencyName: agency.name,
             conventionsToManage,
+            conventionsToReview,
             newConventions,
             validatedConventions,
           },
@@ -114,7 +121,12 @@ const getConventionsToManage = async (
   const conventionIds = await uow.conventionQueries.getConventionIdsByFilters({
     filters: {
       withAgencyIds: [agencyId],
-      withStatuses: ["IN_REVIEW", "ACCEPTED_BY_COUNSELLOR"],
+      withStatuses: [
+        "READY_TO_SIGN",
+        "PARTIALLY_SIGNED",
+        "IN_REVIEW",
+        "ACCEPTED_BY_COUNSELLOR",
+      ],
       withDateStart: { from: oneMonthAgo, to: inFiveDays },
     },
   });
@@ -129,6 +141,38 @@ const getConventionsToManage = async (
             withAgencyIds: referedAgencies.map(({ id }) => id),
             withStatuses: ["ACCEPTED_BY_COUNSELLOR"],
             withDateStart: { from: oneMonthAgo, to: inFiveDays },
+          },
+        })
+      : [];
+
+  return [...conventionIds, ...referedConventionIds];
+};
+
+const getConventionsToReview = async (
+  uow: UnitOfWork,
+  now: Date,
+  agencyId: AgencyId,
+): Promise<ConventionId[]> => {
+  const oneMonthAgo = subMonths(now, 1);
+
+  const conventionIds = await uow.conventionQueries.getConventionIdsByFilters({
+    filters: {
+      withAgencyIds: [agencyId],
+      withStatuses: ["IN_REVIEW", "ACCEPTED_BY_COUNSELLOR"],
+      withDateStart: { from: oneMonthAgo },
+    },
+  });
+
+  const referedAgencies =
+    await uow.agencyRepository.getAgenciesRelatedToAgency(agencyId);
+
+  const referedConventionIds =
+    referedAgencies.length > 0
+      ? await uow.conventionQueries.getConventionIdsByFilters({
+          filters: {
+            withAgencyIds: referedAgencies.map(({ id }) => id),
+            withStatuses: ["ACCEPTED_BY_COUNSELLOR"],
+            withDateStart: { from: oneMonthAgo },
           },
         })
       : [];
@@ -158,6 +202,6 @@ const getValidatedConventions = (
     filters: {
       withAgencyIds: [agencyId],
       withStatuses: ["ACCEPTED_BY_VALIDATOR"],
-      withValidationDate: { from: subDays(now, 1) },
+      withValidationDate: { from: startOfDay(subDays(now, 1)) },
     },
   });
