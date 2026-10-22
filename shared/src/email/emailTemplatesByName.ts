@@ -1609,6 +1609,7 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
       ],
       createEmailVariables: ({
         conventionsToManage,
+        conventionsToReview,
         newConventions,
         validatedConventions,
         agencyName,
@@ -1616,7 +1617,7 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
       }) => ({
         subject: "Vos conventions d'immersion à traiter aujourd'hui",
         greetings: "Bonjour,",
-        content: `Voici le récapitulatif quotidien des conventions d'immersion à traiter par votre agence : ${agencyName}.`,
+        content: `Voici le récapitulatif quotidien des conventions d'immersion à traiter par votre agence : <strong>${agencyName}</strong>.`,
         highlightContentWithCTA: {
           button: {
             label: "Accéder au tableau de bord",
@@ -1626,15 +1627,23 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
             }),
             target: "_blank",
           },
-          content: `<strong>${conventionsToManage} convention(s) à traiter</strong>
-        Ces conventions à pré-valider et/ou à valider nécéssitent votre action.`,
+          content: `<strong>${conventionsToManage} action(s) urgente(s)</strong>
+        Ces conventions démarrent dans moins de 5 jours et nécessitent votre action.`,
         },
-        subContent: `<strong>🆕 ${newConventions} nouvelle(s) convention(s)</strong>
-        ${newConventions} nouvelles conventions sont disponibles dans votre tableau de bord. Vous pouvez dès maintenant vérifier les informations renseignées et suivre leur signature.
-
-        <strong>🚀 ${validatedConventions} nouvelle(s) immersions sont désormais confirmées</strong>
-        ${validatedConventions} convention(s) ont été validées par votre agence au cours des dernières 24 heures.
-        `,
+        subContent: `${[
+          conventionsToReview > 0 &&
+            `<strong>🖊️ ${conventionsToReview} convention(s) à examiner</strong>
+        Ces conventions sont en attente de pré-validation ou de validation.`,
+          newConventions > 0 &&
+            `<strong>🆕 ${newConventions} nouvelle(s) convention(s)</strong>
+        Vous pouvez dès maintenant vérifier les informations renseignées et suivre leur signature.`,
+          validatedConventions > 0 &&
+            `<strong>🚀 ${validatedConventions} nouvelle(s) immersions sont désormais confirmées</strong>
+        Ces conventions ont été validées par votre agence au cours des dernières 24 heures.`,
+        ]
+          .filter(Boolean)
+          .join("\n\n")}
+        ${defaultSignature("immersion")}`,
       }),
     },
     CONVENTION_TRANSFERRED_AGENCY_NOTIFICATION: {

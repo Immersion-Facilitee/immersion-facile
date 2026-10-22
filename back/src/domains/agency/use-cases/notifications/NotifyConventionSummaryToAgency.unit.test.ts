@@ -12,7 +12,6 @@ import {
   type AgencyUsersRights,
   ConnectedUserBuilder,
   ConventionDtoBuilder,
-  type ConventionStatus,
 } from "shared";
 import { v4 as uuid } from "uuid";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
@@ -39,7 +38,8 @@ describe("NotifyConventionSummaryToAgency", () => {
   const inFiveDays = addDays(now, 5);
   const afterFiveDays = addMilliseconds(inFiveDays, 1);
   const oneDayAgo = subDays(now, 1);
-  const beforeOneDayAgo = subMilliseconds(oneDayAgo, 1);
+  const startOfOneDayAgo = startOfDay(oneDayAgo);
+  const beforeStartOfOneDayAgo = subMilliseconds(startOfOneDayAgo, 1);
   const oneMonthAgo = subMonths(now, 1);
   const beforeOneMonthAgo = subMilliseconds(oneMonthAgo, 1);
 
@@ -137,6 +137,7 @@ describe("NotifyConventionSummaryToAgency", () => {
                 agencyName: agency.name,
                 domain: appConfig.immersionFacileDomain,
                 conventionsToManage: 0,
+                conventionsToReview: 0,
                 newConventions: 0,
                 validatedConventions: 1,
               },
@@ -159,17 +160,24 @@ describe("NotifyConventionSummaryToAgency", () => {
   });
 
   describe("validated conventions", () => {
-    it("include conventions only with status ACCEPTED_BY_VALIDATOR validated from one day ago", async () => {
-      const validatedConventionBeforeOneDayAgo = new ConventionDtoBuilder(
+    it("include conventions only with status ACCEPTED_BY_VALIDATOR validated from start of yesterday", async () => {
+      const validatedConventionAtStartOfYesterday = new ConventionDtoBuilder(
         validatedConventionOneDayAgo,
       )
         .withId(uuid())
-        .withDateValidation(beforeOneDayAgo.toISOString())
+        .withDateValidation(startOfOneDayAgo.toISOString())
         .build();
+
+      const validatedConventionBeforeStartOfYesterday =
+        new ConventionDtoBuilder(validatedConventionOneDayAgo)
+          .withId(uuid())
+          .withDateValidation(beforeStartOfOneDayAgo.toISOString())
+          .build();
 
       uow.conventionRepository.setConventions([
         validatedConventionOneDayAgo,
-        validatedConventionBeforeOneDayAgo,
+        validatedConventionAtStartOfYesterday,
+        validatedConventionBeforeStartOfYesterday,
       ]);
 
       await useCase.execute();
@@ -182,49 +190,18 @@ describe("NotifyConventionSummaryToAgency", () => {
               agencyName: activeAgencyRelatedToConvention.name,
               domain: appConfig.immersionFacileDomain,
               conventionsToManage: 0,
+              conventionsToReview: 0,
               newConventions: 0,
-              validatedConventions: 1,
+              validatedConventions: 2,
             },
             bcc: [agencyUser.email],
           },
         ],
       });
     });
-
-    it.each<ConventionStatus>([
-      "ACCEPTED_BY_COUNSELLOR",
-      "CANCELLED",
-      "DEPRECATED",
-      "IN_REVIEW",
-      "PARTIALLY_SIGNED",
-      "READY_TO_SIGN",
-      "REJECTED",
-    ])(
-      "exclude conventions validated from one day ago with bad status %s",
-      async (status) => {
-        const validatedConventionOneDayAgoWithBadStatus =
-          new ConventionDtoBuilder(validatedConventionOneDayAgo)
-            .withId(uuid())
-            .withStatus(status)
-            .build();
-
-        uow.conventionRepository.setConventions([
-          validatedConventionOneDayAgoWithBadStatus,
-        ]);
-
-        await useCase.execute();
-
-        expectSavedNotificationsAndEvents({
-          emails: [],
-        });
-      },
-    );
   });
 
   describe("new conventions", () => {
-    const startOfOneDayAgo = startOfDay(oneDayAgo);
-    const beforeStartOfOneDayAgo = subMilliseconds(startOfOneDayAgo, 1);
-
     it("include conventions only with status PARTIALLY_SIGNED or READY_TO_SIGN submitted from one day ago", async () => {
       const partiallySignedConventionOneDayAgo = new ConventionDtoBuilder()
         .withId(uuid())
@@ -268,6 +245,7 @@ describe("NotifyConventionSummaryToAgency", () => {
               agencyName: activeAgencyRelatedToConvention.name,
               domain: appConfig.immersionFacileDomain,
               conventionsToManage: 0,
+              conventionsToReview: 0,
               newConventions: 2,
               validatedConventions: 0,
             },
@@ -276,35 +254,6 @@ describe("NotifyConventionSummaryToAgency", () => {
         ],
       });
     });
-
-    it.each<ConventionStatus>([
-      "ACCEPTED_BY_COUNSELLOR",
-      "ACCEPTED_BY_VALIDATOR",
-      "CANCELLED",
-      "DEPRECATED",
-      "IN_REVIEW",
-      "REJECTED",
-    ])(
-      "exclude conventions submitted from one day ago with status %s",
-      async (status) => {
-        const submittedConventionOneDayAgoWithStatus =
-          new ConventionDtoBuilder()
-            .withId(uuid())
-            .withDateSubmission(startOfOneDayAgo.toISOString())
-            .withStatus(status)
-            .build();
-
-        uow.conventionRepository.setConventions([
-          submittedConventionOneDayAgoWithStatus,
-        ]);
-
-        await useCase.execute();
-
-        expectSavedNotificationsAndEvents({
-          emails: [],
-        });
-      },
-    );
   });
 
   describe("conventions to manage", () => {
@@ -382,6 +331,7 @@ describe("NotifyConventionSummaryToAgency", () => {
               agencyName: activeAgencyRelatedToConvention.name,
               domain: appConfig.immersionFacileDomain,
               conventionsToManage: 4,
+              conventionsToReview: 6,
               newConventions: 0,
               validatedConventions: 0,
             },
@@ -391,33 +341,88 @@ describe("NotifyConventionSummaryToAgency", () => {
       });
     });
 
-    it.each<ConventionStatus>([
-      "CANCELLED",
-      "ACCEPTED_BY_VALIDATOR",
-      "DEPRECATED",
-      "PARTIALLY_SIGNED",
-      "READY_TO_SIGN",
-      "REJECTED",
-    ])(
-      "exclude conventions with status %s with date start from one month ago to in five days",
-      async (status) => {
-        const conventionOneMonthAgoWithBadStatus = new ConventionDtoBuilder()
-          .withId(uuid())
-          .withStatus(status)
-          .withDateStart(oneMonthAgo.toISOString())
-          .build();
+    it("include conventions with status READY_TO_SIGN or PARTIALLY_SIGNED with date start from one month ago to in five days", async () => {
+      const readyToSignConventionOneMonthAgo = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withStatus("READY_TO_SIGN")
+        .withDateStart(oneMonthAgo.toISOString())
+        .build();
 
-        uow.conventionRepository.setConventions([
-          conventionOneMonthAgoWithBadStatus,
-        ]);
+      const partiallySignedConventionInFiveDays = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withStatus("PARTIALLY_SIGNED")
+        .withDateStart(inFiveDays.toISOString())
+        .build();
 
-        await useCase.execute();
+      const readyToSignConventionBeforeOneMonthAgo = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withStatus("READY_TO_SIGN")
+        .withDateStart(beforeOneMonthAgo.toISOString())
+        .build();
 
-        expectSavedNotificationsAndEvents({
-          emails: [],
-        });
-      },
-    );
+      const partiallySignedConventionAfterFiveDays = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withStatus("PARTIALLY_SIGNED")
+        .withDateStart(afterFiveDays.toISOString())
+        .build();
+
+      uow.conventionRepository.setConventions([
+        readyToSignConventionOneMonthAgo,
+        partiallySignedConventionInFiveDays,
+        readyToSignConventionBeforeOneMonthAgo,
+        partiallySignedConventionAfterFiveDays,
+      ]);
+
+      await useCase.execute();
+
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
+            params: {
+              agencyName: activeAgencyRelatedToConvention.name,
+              domain: appConfig.immersionFacileDomain,
+              conventionsToManage: 2,
+              conventionsToReview: 0,
+              newConventions: 0,
+              validatedConventions: 0,
+            },
+            bcc: [agencyUser.email],
+          },
+        ],
+      });
+    });
+
+    it("do not include IN_REVIEW convention after five days in conventionsToManage but still send notification", async () => {
+      const inReviewConventionAfterFiveDays = new ConventionDtoBuilder()
+        .withId(uuid())
+        .withStatus("IN_REVIEW")
+        .withDateStart(afterFiveDays.toISOString())
+        .build();
+
+      uow.conventionRepository.setConventions([
+        inReviewConventionAfterFiveDays,
+      ]);
+
+      await useCase.execute();
+
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
+            params: {
+              agencyName: activeAgencyRelatedToConvention.name,
+              domain: appConfig.immersionFacileDomain,
+              conventionsToManage: 0,
+              conventionsToReview: 1,
+              newConventions: 0,
+              validatedConventions: 0,
+            },
+            bcc: [agencyUser.email],
+          },
+        ],
+      });
+    });
 
     describe("With agencies related to agencies", () => {
       const mainAgency = new AgencyDtoBuilder()
@@ -527,6 +532,7 @@ describe("NotifyConventionSummaryToAgency", () => {
                 agencyName: mainAgency.name,
                 domain: appConfig.immersionFacileDomain,
                 conventionsToManage: 2,
+                conventionsToReview: 3,
                 newConventions: 0,
                 validatedConventions: 0,
               },
@@ -538,6 +544,7 @@ describe("NotifyConventionSummaryToAgency", () => {
                 agencyName: agencyWithRefersTo.name,
                 domain: appConfig.immersionFacileDomain,
                 conventionsToManage: 4,
+                conventionsToReview: 6,
                 newConventions: 0,
                 validatedConventions: 0,
               },
@@ -547,49 +554,36 @@ describe("NotifyConventionSummaryToAgency", () => {
         });
       });
 
-      it.each<ConventionStatus>([
-        "ACCEPTED_BY_VALIDATOR",
-        "CANCELLED",
-        "DEPRECATED",
-        "IN_REVIEW",
-        "PARTIALLY_SIGNED",
-        "READY_TO_SIGN",
-        "REJECTED",
-      ])(
-        "exclude conventions of agencies related to agencies with status %s with date start from one month ago to in five days",
-        async (status) => {
-          const conventionOneMonthAgoWithBasStatus = new ConventionDtoBuilder()
-            .withId(uuid())
-            .withStatus(status)
-            .withDateStart(oneMonthAgo.toISOString())
-            .build();
+      it("exclude conventions of agencies related to agencies with status READY_TO_SIGN from the referring agency", async () => {
+        const readyToSignConventionOneMonthAgo = new ConventionDtoBuilder()
+          .withId(uuid())
+          .withStatus("READY_TO_SIGN")
+          .withDateStart(oneMonthAgo.toISOString())
+          .build();
 
-          uow.conventionRepository.setConventions([
-            conventionOneMonthAgoWithBasStatus,
-          ]);
+        uow.conventionRepository.setConventions([
+          readyToSignConventionOneMonthAgo,
+        ]);
 
-          await useCase.execute();
+        await useCase.execute();
 
-          expectSavedNotificationsAndEvents({
-            emails:
-              conventionOneMonthAgoWithBasStatus.status === "IN_REVIEW"
-                ? [
-                    {
-                      kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
-                      params: {
-                        agencyName: agencyWithRefersTo.name,
-                        domain: appConfig.immersionFacileDomain,
-                        conventionsToManage: 1,
-                        newConventions: 0,
-                        validatedConventions: 0,
-                      },
-                      bcc: [agencyRefersToUser.email],
-                    },
-                  ]
-                : [],
-          });
-        },
-      );
+        expectSavedNotificationsAndEvents({
+          emails: [
+            {
+              kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
+              params: {
+                agencyName: agencyWithRefersTo.name,
+                domain: appConfig.immersionFacileDomain,
+                conventionsToManage: 1,
+                conventionsToReview: 0,
+                newConventions: 0,
+                validatedConventions: 0,
+              },
+              bcc: [agencyRefersToUser.email],
+            },
+          ],
+        });
+      });
     });
   });
 });

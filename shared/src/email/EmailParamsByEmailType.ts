@@ -306,6 +306,7 @@ export type EmailParamsByEmailType = {
   CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY: {
     agencyName: string;
     conventionsToManage: number;
+    conventionsToReview: number;
     newConventions: number;
     validatedConventions: number;
     domain: string;

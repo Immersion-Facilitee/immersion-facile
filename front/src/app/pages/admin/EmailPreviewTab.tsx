@@ -447,7 +447,8 @@ export const defaultEmailValueByEmailKind: {
     potentialBeneficiaryLastName: "POTENTIAL_BENEFICIARY_LAST_NAME",
   },
   CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY: {
-    conventionsToManage: 666,
+    conventionsToManage: 77,
+    conventionsToReview: 3,
     newConventions: 1,
     validatedConventions: 40,
     agencyName: "AGENCY_NAME",
@@ -538,9 +539,9 @@ export const defaultEmailValueByEmailKind: {
     businessAddresses: [
       addressDtoToString({
         city: "CHOUCHEN-VILLE",
-        departmentCode: "666",
-        postcode: "66600",
-        streetNumberAndAddress: "666 boulevard des porcs",
+        departmentCode: "77",
+        postcode: "77700",
+        streetNumberAndAddress: "777 boulevard des porcs",
       }),
     ],
     businessName: "Machin CORP",
