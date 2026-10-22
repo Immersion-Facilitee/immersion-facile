@@ -167,7 +167,6 @@ const Email = ({ email }: { email: EmailNotification }) => (
             const links: EmailVariables[] = [
               "agencyLogoUrl",
               "conventionFormUrl",
-              "conventionStatusLink",
               "assessmentCreationLink",
               "magicLink",
               "conventionSignatureLink",

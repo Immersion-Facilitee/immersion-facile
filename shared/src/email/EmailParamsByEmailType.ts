@@ -447,13 +447,6 @@ export type EmailParamsByEmailType = {
       | "REJECTED";
     immersionBaseUrl: AbsoluteUrl;
   };
-  FULL_PREVIEW_EMAIL: {
-    agencyLogoUrl: AbsoluteUrl | undefined;
-    beneficiaryName: string;
-    conventionId: ConventionId;
-    conventionStatusLink: string;
-    internshipKind: InternshipKind;
-  };
   IC_USER_REGISTRATION_TO_AGENCY_REJECTED: {
     agencyName: string;
     justification: string;
