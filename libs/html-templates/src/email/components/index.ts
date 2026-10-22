@@ -15,8 +15,6 @@ export {
   renderParagraph,
 } from "./blocks/paragraph";
 export { renderFooter } from "./layout/footer";
-export { renderGreetings } from "./layout/greetings";
 export { renderHead } from "./layout/head";
 export { renderHeader } from "./layout/header";
 export { renderLegals } from "./layout/legals";
-export { renderSignature } from "./layout/signature";

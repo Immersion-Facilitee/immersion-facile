@@ -1,4 +1,4 @@
-import { ignoreTabs } from "../../../helpers/formatters";
+import { convertLineBreaksToHtml } from "../../../helpers/formatters";
 import { renderDivider } from "../blocks/divider";
 
 export const renderLegals = (content: string | undefined): string | undefined =>
@@ -20,7 +20,7 @@ export const renderLegals = (content: string | undefined): string | undefined =>
     <tr>
       <td>
        <p style="color: #666; font-size: 10px; line-height: 1.6;">
-        ${ignoreTabs(content).split("\n").join("<br/>")}
+        ${convertLineBreaksToHtml(content)}
        </p>
       </td>
     </tr>

@@ -38,21 +38,13 @@ export type EmailBlock = (
 ) &
   CommonEmailBlockProps;
 
-export const renderEmailBlock = (block: EmailBlock): string | undefined =>
+export const renderEmailBlock = (block: EmailBlock): string =>
   match(block)
-    .with({ kind: "paragraph" }, ({ content }) => renderParagraph({ content }))
-    .with({ kind: "list" }, ({ items, numbered }) =>
-      renderList({ items, numbered }),
-    )
-    .with({ kind: "button" }, ({ url, label, priority }) =>
-      renderButton({ url, label, priority }),
-    )
-    .with({ kind: "buttonsGroup" }, ({ buttons, layout }) =>
-      renderButtonsGroup({ buttons, layout }),
-    )
-    .with({ kind: "highlight" }, ({ content }) => renderHighlight({ content }))
-    .with({ kind: "callout" }, ({ blocks, variant }) =>
-      renderCallout({ blocks, variant }),
-    )
-    .with({ kind: "divider" }, () => renderDivider())
+    .with({ kind: "paragraph" }, renderParagraph)
+    .with({ kind: "list" }, renderList)
+    .with({ kind: "button" }, renderButton)
+    .with({ kind: "buttonsGroup" }, renderButtonsGroup)
+    .with({ kind: "highlight" }, renderHighlight)
+    .with({ kind: "callout" }, renderCallout)
+    .with({ kind: "divider" }, renderDivider)
     .exhaustive();

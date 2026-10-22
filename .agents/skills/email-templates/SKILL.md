@@ -23,9 +23,9 @@ The step is done when `shared` and `front` typecheck and the email renders in th
 `createEmailVariables` returns `EmailVariables` (`libs/html-templates/src/email/emailVariables.ts`). The layout order is fixed:
 
 1. header, chosen by the generator configuration (default or CCI), showing `agencyLogoUrl` when provided;
-2. `greetings`, optional;
+2. `greetings`, required;
 3. `blocks`, in array order;
-4. `signature`, optional, usually `defaultSignature(internshipKind)`;
+4. `signature`, required, usually `defaultSignature(internshipKind)`;
 5. `legals`, optional, always preceded by a divider;
 6. footer, chosen by the generator configuration.
 
@@ -37,7 +37,7 @@ An email relayed between discussion participants returns `RawEmailVariables` (`s
 
 The `EmailBlock` union in `libs/html-templates/src/email/emailBlock.ts` is the source of truth for the available kinds and their props. Write blocks as object literals with `kind` first: TypeScript then narrows completion to that kind's props.
 
-- Text props are HTML strings: use `<strong>`, `<em>` and `<a href>` inline. Indentation tabs are stripped, so indented template literals are safe. Line breaks become `<br/>` in `greetings`, `signature`, `legals`, `paragraph` and `highlight`.
+- Text props are HTML strings: use `<strong>`, `<em>` and `<a href>` inline. Indentation tabs are stripped, so indented template literals are safe. Line breaks become `<br/>` in `greetings`, `signature`, `legals`, `paragraph`, `highlight` and `list` items.
 - Every block accepts `marginBottom` (`sm` 8px, `md` 16px or `lg` 32px), defaulting to `md`. Override it only to group related blocks: `sm` between a title paragraph and its content, `lg` before the next section.
 - A `callout` holds `paragraph`, `list` and `buttonsGroup` blocks, rendered in array order.
 - Express emphasis through the existing blocks (`highlight`, `callout`, button priorities) and keep inline `style` attributes out of templates.

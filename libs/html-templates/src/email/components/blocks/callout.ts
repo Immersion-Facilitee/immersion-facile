@@ -28,13 +28,9 @@ const calloutStyleByVariant: Record<EmailCalloutVariant, string> = {
 
 const renderCalloutContentBlock = (block: EmailCalloutContentBlock): string =>
   match(block)
-    .with({ kind: "paragraph" }, ({ content }) => renderParagraph({ content }))
-    .with({ kind: "list" }, ({ items, numbered }) =>
-      renderList({ items, numbered }),
-    )
-    .with({ kind: "buttonsGroup" }, ({ buttons, layout }) =>
-      renderButtonsGroup({ buttons, layout }),
-    )
+    .with({ kind: "paragraph" }, renderParagraph)
+    .with({ kind: "list" }, renderList)
+    .with({ kind: "buttonsGroup" }, renderButtonsGroup)
     .exhaustive();
 
 export const renderCallout = ({

@@ -1,8 +1,8 @@
-import { ignoreTabs } from "../../../helpers/formatters";
+import { convertLineBreaksToHtml } from "../../../helpers/formatters";
 
 export type EmailParagraphProps = {
   content: string;
 };
 
 export const renderParagraph = ({ content }: EmailParagraphProps): string =>
-  `<p style="margin: 0;">${ignoreTabs(content).split("\n").join("<br/>")}</p>`;
+  `<p style="margin: 0;">${convertLineBreaksToHtml(content)}</p>`;

@@ -2,11 +2,10 @@ import type { GenerateHtmlOptions } from "../configureGenerateHtmlFromTemplate";
 import { ignoreTabs } from "../helpers/formatters";
 import {
   renderFooter,
-  renderGreetings,
   renderHead,
   renderHeader,
   renderLegals,
-  renderSignature,
+  renderParagraph,
 } from "./components";
 import {
   type EmailBlock,
@@ -16,9 +15,9 @@ import {
 import type { EmailVariables, RawEmailVariables } from "./emailVariables";
 
 export type EmailContentParts = {
-  greetings: string | undefined;
+  greetings: string;
   contentWithoutButtons: string;
-  signature: string | undefined;
+  signature: string;
 };
 
 export type RenderedEmail = {
@@ -107,8 +106,8 @@ export const renderEmail = ({
   };
   options: GenerateHtmlOptions;
 }): RenderedEmail => {
-  const renderedGreetings = renderGreetings(greetings);
-  const renderedSignature = signature && renderSignature(signature);
+  const renderedGreetings = renderParagraph({ content: greetings });
+  const renderedSignature = renderParagraph({ content: signature });
 
   const rows = [
     renderHTMLRow(renderHeader(agencyLogoUrl, customParts.header)),
