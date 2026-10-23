@@ -1,5 +1,7 @@
 import { filter, map, switchMap } from "rxjs";
 import { authExpiredBaseMessage } from "shared";
+import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
+import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import type { AuthAction } from "src/core-logic/domain/auth/auth.epics";
 import { authSlice } from "src/core-logic/domain/auth/auth.slice";
 import { connectedUserSlice } from "src/core-logic/domain/connected-user/connectedUser.slice";
@@ -112,9 +114,49 @@ const registerAgenciesEpic: ConnectedUserEpic = (
     ),
   );
 
+const fetchCurrentUserOnAgencyRightUpdatedEpic: ConnectedUserEpic = (
+  action$,
+  state$,
+) =>
+  action$.pipe(
+    filter(
+      updateUserOnAgencySlice.actions.updateUserAgencyRightSucceeded.match,
+    ),
+    filter(
+      (action) =>
+        state$.value.connectedUser.currentUser?.id === action.payload.userId,
+    ),
+    map((action) =>
+      connectedUserSlice.actions.currentUserFetchRequested({
+        feedbackTopic: action.payload.feedbackTopic,
+      }),
+    ),
+  );
+
+const fetchCurrentUserOnRemovedFromAgencyEpic: ConnectedUserEpic = (
+  action$,
+  state$,
+) =>
+  action$.pipe(
+    filter(
+      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded.match,
+    ),
+    filter(
+      (action) =>
+        state$.value.connectedUser.currentUser?.id === action.payload.userId,
+    ),
+    map((action) =>
+      connectedUserSlice.actions.currentUserFetchRequested({
+        feedbackTopic: action.payload.feedbackTopic,
+      }),
+    ),
+  );
+
 export const connectedUserEpics = [
   getCurrentUserEpic,
   registerAgenciesEpic,
   federatedIdentityFoundInDeviceEpic,
   federatedIdentityFromStoreToDeviceStorageSucceededEpic,
+  fetchCurrentUserOnAgencyRightUpdatedEpic,
+  fetchCurrentUserOnRemovedFromAgencyEpic,
 ];

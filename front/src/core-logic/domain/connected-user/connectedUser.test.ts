@@ -368,7 +368,8 @@ describe("InclusionConnected", () => {
         updateUserOnAgencySelectors.isLoading(store.getState()),
         false,
       );
-      expectToEqual(connectedUserSelectors.currentUser(store.getState()), {
+
+      const updatedUser: ConnectedUser = {
         ...user,
         agencyRights: [
           {
@@ -376,7 +377,13 @@ describe("InclusionConnected", () => {
             roles: [...agencyRight.roles, "counsellor"],
           },
         ],
-      });
+      };
+      dependencies.authGateway.getConnectedUserResponse$.next(updatedUser);
+
+      expectToEqual(
+        connectedUserSelectors.currentUser(store.getState()),
+        updatedUser,
+      );
     });
 
     it("if it is not himself, do nothing", () => {
@@ -474,14 +481,20 @@ describe("InclusionConnected", () => {
         removeUserFromAgencySelectors.isLoading(store.getState()),
         false,
       );
-      expectToEqual(connectedUserSelectors.currentUser(store.getState()), {
+
+      const updatedUser: ConnectedUser = {
         ...user,
         agencyRights: [],
-      });
+      };
+      dependencies.authGateway.getConnectedUserResponse$.next(updatedUser);
+
+      expectToEqual(
+        connectedUserSelectors.currentUser(store.getState()),
+        updatedUser,
+      );
     });
 
     it("if it is not himself, do nothing", () => {
-      // const agency = new AgencyDtoBuilder().build();
       store.dispatch(
         removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
           userId: "another-user-id",

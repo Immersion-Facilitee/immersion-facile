@@ -50,6 +50,7 @@ describe("usersToReview", () => {
     expectToEqual(store.getState().usersToReview, {
       usersToReview: [],
       isLoading: true,
+      filters: { agencies: [agencyForUsers] },
     });
 
     const agencyUser: AgencyUserForListing = {
@@ -80,6 +81,7 @@ describe("usersToReview", () => {
         },
       ],
       isLoading: false,
+      filters: { agencies: [agencyForUsers] },
     });
   });
 
@@ -94,6 +96,7 @@ describe("usersToReview", () => {
     expectToEqual(store.getState().usersToReview, {
       usersToReview: [],
       isLoading: true,
+      filters: { agencies: [agencyForUsers] },
     });
 
     const errorMessage = "Error fetching users in review";
@@ -104,6 +107,7 @@ describe("usersToReview", () => {
     expectToEqual(store.getState().usersToReview, {
       usersToReview: [],
       isLoading: false,
+      filters: { agencies: [agencyForUsers] },
     });
 
     expectToEqual(
@@ -118,28 +122,35 @@ describe("usersToReview", () => {
     );
   });
 
-  it("should remove the rejected user registration from the list", () => {
+  it("should refetch users after rejecting a registration", () => {
     const otherAgency = new AgencyDtoBuilder()
       .withId("other-agency-id")
       .withName("Other agency")
       .build();
+    const otherAgencyForUsers = toAgencyDtoForAgencyUsersAndAdmins(
+      otherAgency,
+      [],
+    );
 
     const userToReview: UserToReview = {
       id: connectedUser.id,
       email: connectedUser.email,
       firstName: connectedUser.firstName,
       lastName: connectedUser.lastName,
-      agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+      agency: agencyForUsers,
     };
     const otherUserToReview: UserToReview = {
       ...userToReview,
-      agency: toAgencyDtoForAgencyUsersAndAdmins(otherAgency, []),
+      agency: otherAgencyForUsers,
     };
 
-    ({ store } = createTestStore({
+    ({ store, dependencies } = createTestStore({
       usersToReview: {
         usersToReview: [userToReview, otherUserToReview],
         isLoading: false,
+        filters: {
+          agencies: [agencyForUsers, otherAgencyForUsers],
+        },
       },
     }));
 
@@ -152,9 +163,33 @@ describe("usersToReview", () => {
       }),
     );
 
+    expectToEqual(store.getState().usersToReview.isLoading, true);
+
+    const remainingAgencyUser: AgencyUserForListing = {
+      id: connectedUser.id,
+      email: connectedUser.email,
+      firstName: connectedUser.firstName,
+      lastName: connectedUser.lastName,
+      isProConnectUser: connectedUser.proConnect !== null,
+      agencyRightsByAgencyId: {
+        [otherAgencyForUsers.id]: {
+          agency: otherAgencyForUsers,
+          roles: ["to-review"],
+          isNotifiedByEmail: false,
+        },
+      },
+    };
+
+    dependencies.agencyGateway.getAgencyUsersResponse$.next([
+      remainingAgencyUser,
+    ]);
+
     expectToEqual(store.getState().usersToReview, {
       usersToReview: [otherUserToReview],
       isLoading: false,
+      filters: {
+        agencies: [agencyForUsers, otherAgencyForUsers],
+      },
     });
 
     expectToEqual(
@@ -168,28 +203,35 @@ describe("usersToReview", () => {
     );
   });
 
-  it("should remove the registered user from the list", () => {
+  it("should refetch users after registering a user", () => {
     const otherAgency = new AgencyDtoBuilder()
       .withId("other-agency-id")
       .withName("Other agency")
       .build();
+    const otherAgencyForUsers = toAgencyDtoForAgencyUsersAndAdmins(
+      otherAgency,
+      [],
+    );
 
     const userToReview: UserToReview = {
       id: connectedUser.id,
       email: connectedUser.email,
       firstName: connectedUser.firstName,
       lastName: connectedUser.lastName,
-      agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+      agency: agencyForUsers,
     };
     const otherUserToReview: UserToReview = {
       ...userToReview,
-      agency: toAgencyDtoForAgencyUsersAndAdmins(otherAgency, []),
+      agency: otherAgencyForUsers,
     };
 
-    ({ store } = createTestStore({
+    ({ store, dependencies } = createTestStore({
       usersToReview: {
         usersToReview: [userToReview, otherUserToReview],
         isLoading: false,
+        filters: {
+          agencies: [agencyForUsers, otherAgencyForUsers],
+        },
       },
     }));
 
@@ -204,9 +246,33 @@ describe("usersToReview", () => {
       }),
     );
 
+    expectToEqual(store.getState().usersToReview.isLoading, true);
+
+    const remainingAgencyUser: AgencyUserForListing = {
+      id: connectedUser.id,
+      email: connectedUser.email,
+      firstName: connectedUser.firstName,
+      lastName: connectedUser.lastName,
+      isProConnectUser: connectedUser.proConnect !== null,
+      agencyRightsByAgencyId: {
+        [otherAgencyForUsers.id]: {
+          agency: otherAgencyForUsers,
+          roles: ["to-review"],
+          isNotifiedByEmail: false,
+        },
+      },
+    };
+
+    dependencies.agencyGateway.getAgencyUsersResponse$.next([
+      remainingAgencyUser,
+    ]);
+
     expectToEqual(store.getState().usersToReview, {
       usersToReview: [otherUserToReview],
       isLoading: false,
+      filters: {
+        agencies: [agencyForUsers, otherAgencyForUsers],
+      },
     });
 
     expectToEqual(

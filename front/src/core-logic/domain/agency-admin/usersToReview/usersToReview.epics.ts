@@ -1,7 +1,8 @@
 import { values } from "ramda";
-import { filter, map, switchMap } from "rxjs";
+import { EMPTY, filter, map, mergeMap, switchMap } from "rxjs";
 import { hasAllowedRole } from "shared";
 import { getConnectedUserJwt } from "src/core-logic/domain/admin/admin.helpers";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { usersToReviewSlice } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
 import { catchEpicError } from "src/core-logic/storeConfig/catchEpicError";
 import type {
@@ -11,6 +12,7 @@ import type {
 
 export type UsersInReviewAction = ActionOfSlice<typeof usersToReviewSlice>;
 type UsersInReviewEpic = AppEpic<UsersInReviewAction>;
+type ConnectedUsersAdminAction = ActionOfSlice<typeof connectedUsersAdminSlice>;
 
 const getUsersInReviewEpic: UsersInReviewEpic = (
   action$,
@@ -56,4 +58,32 @@ const getUsersInReviewEpic: UsersInReviewEpic = (
     ),
   );
 
-export const usersInReviewEpics = [getUsersInReviewEpic];
+const refetchUsersToReviewOnRegistrationDecisionEpic: AppEpic<
+  UsersInReviewAction | ConnectedUsersAdminAction
+> = (action$, state$) =>
+  action$.pipe(
+    filter(
+      (action) =>
+        connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserSucceeded.match(
+          action,
+        ) ||
+        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserSucceeded.match(
+          action,
+        ),
+    ),
+    mergeMap((action) => {
+      const { filters } = state$.value.usersToReview;
+      if (!filters) return EMPTY;
+      return [
+        usersToReviewSlice.actions.fetchUsersToReviewRequested({
+          ...filters,
+          feedbackTopic: action.payload.feedbackTopic,
+        }),
+      ];
+    }),
+  );
+
+export const usersInReviewEpics = [
+  getUsersInReviewEpic,
+  refetchUsersToReviewOnRegistrationDecisionEpic,
+];

@@ -1,13 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type {
-  AgencyDto,
-  AgencyRight,
-  ConnectedUser,
-  WithAgencyIds,
-} from "shared";
-import { updateUserAgencyRights } from "src/core-logic/domain/agencies/agencies.helpers";
-import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
-import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
+import type { AgencyDto, ConnectedUser, WithAgencyIds } from "shared";
 import type {
   PayloadActionWithFeedbackTopic,
   PayloadActionWithFeedbackTopicError,
@@ -60,7 +52,6 @@ export const connectedUserSlice = createSlice({
       _action: PayloadActionWithFeedbackTopic<WithAgencyIds>,
     ) => {
       state.isLoading = false;
-      //state.feedback = { kind: "agencyRegistrationSuccess" };
     },
     registerAgenciesFailed: (
       state,
@@ -73,34 +64,5 @@ export const connectedUserSlice = createSlice({
     builder.addCase(authSlice.actions.fetchLogoutUrlSucceeded, (state) => {
       state.currentUser = null;
     });
-
-    builder.addCase(
-      updateUserOnAgencySlice.actions.updateUserAgencyRightSucceeded,
-      (state, action) => {
-        if (
-          !state.currentUser ||
-          state.currentUser.id !== action.payload.userId
-        )
-          return;
-        state.currentUser = updateUserAgencyRights(
-          state.currentUser,
-          action.payload,
-        );
-      },
-    );
-    builder.addCase(
-      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded,
-      (state, action) => {
-        if (
-          !state.currentUser ||
-          state.currentUser.id !== action.payload.userId
-        )
-          return;
-
-        state.currentUser.agencyRights = state.currentUser.agencyRights.filter(
-          (right: AgencyRight) => right.agency.id !== action.payload.agencyId,
-        );
-      },
-    );
   },
 });
