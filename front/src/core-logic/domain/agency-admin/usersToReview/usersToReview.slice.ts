@@ -1,8 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type {
-  AgencyDtoForAgencyUsersAndAdmins,
-  UserId,
-} from "shared";
+import type { AgencyDtoForAgencyUsersAndAdmins, UserId } from "shared";
 import type { PayloadActionWithFeedbackTopic } from "src/core-logic/domain/feedback/feedback.slice";
 
 export type UserToReview = {
