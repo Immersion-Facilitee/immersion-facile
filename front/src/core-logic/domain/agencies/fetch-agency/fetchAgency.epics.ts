@@ -2,6 +2,7 @@ import { filter } from "rxjs";
 import { map, switchMap } from "rxjs/operators";
 import type { AgencyId, WithAgencyId } from "shared";
 import { getConnectedUserJwt } from "src/core-logic/domain/admin/admin.helpers";
+import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { closeAgencyAndTransferConventionsSlice } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.slice";
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
@@ -38,6 +39,21 @@ const getAgencyEpic: FetchAgencyEpic = (action$, state$, dependencies) =>
         fetchAgencySlice.actions.fetchAgencyRequested.match(action) ||
         updateAgencySlice.actions.updateAgencySucceeded.match(action) ||
         closeAgencyAndTransferConventionsSlice.actions.closeAgencyAndTransferConventionsSucceeded.match(
+          action,
+        ) ||
+        createUserOnAgencySlice.actions.createUserOnAgencySucceeded.match(
+          action,
+        ) ||
+        updateUserOnAgencySlice.actions.updateUserAgencyRightSucceeded.match(
+          action,
+        ) ||
+        connectedUsersAdminSlice.actions.createUserOnAgencySucceeded.match(
+          action,
+        ) ||
+        connectedUsersAdminSlice.actions.updateUserOnAgencySucceeded.match(
+          action,
+        ) ||
+        removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded.match(
           action,
         ),
     ),
@@ -111,13 +127,16 @@ const refetchAgencyUsersOnMutationEpic: FetchAgencyEpic = (action$, state$) =>
     ),
     filter((action) => {
       const { agency, agencyUsers } = state$.value.agency.fetchAgency;
-      if (agency?.id === action.payload.agencyId) return true;
       if (
+        createUserOnAgencySlice.actions.createUserOnAgencySucceeded.match(
+          action,
+        )
+      )
+        return agency?.id === action.payload.agencyId;
+      return (
         "userId" in action.payload &&
         agencyUsers[action.payload.userId] !== undefined
-      )
-        return true;
-      return false;
+      );
     }),
     map((action) =>
       fetchAgencySlice.actions.fetchAgencyUsersRequested({
