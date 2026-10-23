@@ -1,5 +1,5 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { filter } from "rxjs";
+import { EMPTY, filter, mergeMap } from "rxjs";
 import { map, switchMap } from "rxjs/operators";
 import type {
   AgencyUserForListing,
@@ -9,7 +9,6 @@ import type {
   WithUserFilters,
 } from "shared";
 import { getConnectedUserJwt } from "src/core-logic/domain/admin/admin.helpers";
-import { toAgencyUserForListing } from "src/core-logic/domain/agencies/agencies.helpers";
 import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import type { PayloadActionWithFeedbackTopic } from "src/core-logic/domain/feedback/feedback.slice";
 import { catchEpicError } from "src/core-logic/storeConfig/catchEpicError";
@@ -153,9 +152,8 @@ const createUserOnAgencyEpic: ConnectedUsersAdminActionEpic = (
       adminGateway
         .createUserForAgency$(action.payload, getConnectedUserJwt(state$.value))
         .pipe(
-          map((user) =>
+          map(() =>
             connectedUsersAdminSlice.actions.createUserOnAgencySucceeded({
-              icUser: toAgencyUserForListing(user),
               agencyId: action.payload.agencyId,
               feedbackTopic: action.payload.feedbackTopic,
             }),
@@ -199,19 +197,65 @@ const updateUserOnAgencyEpic: ConnectedUsersAdminActionEpic = (
     ),
   );
 
-const fetchAgencyUsersOnUserRemovedEpic: AppEpic<
+const refetchUsersToReviewOnRegistrationDecisionEpic: ConnectedUsersAdminActionEpic =
+  (action$, state$) =>
+    action$.pipe(
+      filter(
+        (action) =>
+          connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserSucceeded.match(
+            action,
+          ) ||
+          connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserSucceeded.match(
+            action,
+          ),
+      ),
+      mergeMap(() => {
+        const filters = state$.value.admin.connectedUsersAdmin
+          .usersToReviewFilters ?? {
+          agencyRole: "to-review" as const,
+        };
+        return [
+          connectedUsersAdminSlice.actions.fetchConnectedUsersToReviewRequested(
+            filters,
+          ),
+        ];
+      }),
+    );
+
+const refetchAgencyUsersOnMutationEpic: AppEpic<
   ConnectedUsersAdminAction | RemoveUserFromAgencyAction
-> = (action$) =>
+> = (action$, state$) =>
   action$.pipe(
     filter(
-      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded.match,
+      (action) =>
+        removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded.match(
+          action,
+        ) ||
+        connectedUsersAdminSlice.actions.createUserOnAgencySucceeded.match(
+          action,
+        ) ||
+        connectedUsersAdminSlice.actions.updateUserOnAgencySucceeded.match(
+          action,
+        ),
     ),
-    filter((action) => action.payload.feedbackTopic === "agency-user"),
-    map((action) =>
-      connectedUsersAdminSlice.actions.fetchAgencyUsersRequested({
+    mergeMap((action) => {
+      const { agencyUsersFilters } = state$.value.admin.connectedUsersAdmin;
+      const filters: WithUserFilters = agencyUsersFilters ?? {
         agencyIds: [action.payload.agencyId],
-      }),
-    ),
+      };
+
+      if (
+        removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded.match(
+          action,
+        ) &&
+        action.payload.feedbackTopic !== "agency-user"
+      )
+        return EMPTY;
+
+      return [
+        connectedUsersAdminSlice.actions.fetchAgencyUsersRequested(filters),
+      ];
+    }),
   );
 
 const updateUserPreventToDeleteEpic: ConnectedUsersAdminActionEpic = (
@@ -265,7 +309,8 @@ export const connectedUsersAdminEpics = [
   rejectAgencyToUserEpic,
   fetchConnectedUsersWithAgencyIdEpic,
   updateUserOnAgencyEpic,
-  fetchAgencyUsersOnUserRemovedEpic,
+  refetchUsersToReviewOnRegistrationDecisionEpic,
+  refetchAgencyUsersOnMutationEpic,
   createUserOnAgencyEpic,
   updateUserPreventToDeleteEpic,
 ];
