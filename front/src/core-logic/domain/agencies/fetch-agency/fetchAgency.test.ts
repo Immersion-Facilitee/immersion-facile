@@ -229,9 +229,9 @@ describe("fetchAgency", () => {
     });
   });
 
-  describe("extra reducers", () => {
+  describe("refetch after mutations", () => {
     describe("updateAgency", () => {
-      it("should update agency successfully", () => {
+      it("should refetch agency successfully", () => {
         ({ store, dependencies } = createTestStore({
           agency: agenciesPreloadedState({
             fetchAgency: { ...fetchAgencyInitialState, agency: agencyDto },
@@ -250,6 +250,7 @@ describe("fetchAgency", () => {
         );
 
         dependencies.agencyGateway.updateAgencyResponse$.next(undefined);
+        feedWithFetchedAgency(updatedAgency);
 
         expectFetchAgencyStateToMatch({
           agency: updatedAgency,
@@ -283,7 +284,7 @@ describe("fetchAgency", () => {
     });
 
     describe("createUser", () => {
-      it("should create user successfully", () => {
+      it("should refetch agency users successfully", () => {
         ({ store, dependencies } = createTestStore({
           agency: agenciesPreloadedState({
             fetchAgency: {
@@ -330,6 +331,11 @@ describe("fetchAgency", () => {
           agencyRights: [agencyRight],
         };
 
+        const agencyUsersAfterCreate = {
+          ...fakeAgencyUsers,
+          [userToCreate.id]: userToCreate,
+        };
+
         store.dispatch(
           createUserOnAgencySlice.actions.createUserOnAgencyRequested({
             agencyId: agencyDto.id,
@@ -342,17 +348,15 @@ describe("fetchAgency", () => {
         );
 
         dependencies.agencyGateway.createUserForAgencyResponse$.next(user);
+        feedWithFetchedAgencyUsers(agencyUsersAfterCreate);
 
         expectFetchAgencyStateToMatch({
           agency: agencyDto,
-          agencyUsers: {
-            ...fakeAgencyUsers,
-            [userToCreate.id]: userToCreate,
-          },
+          agencyUsers: agencyUsersAfterCreate,
         });
       });
 
-      it("if  no agency in state, do nothing", () => {
+      it("if no agency in state, do nothing", () => {
         ({ store, dependencies } = createTestStore({
           agency: agenciesPreloadedState({
             fetchAgency: fetchAgencyInitialState,
@@ -410,7 +414,7 @@ describe("fetchAgency", () => {
     });
 
     describe("removeUser", () => {
-      it("should remove user successfully", () => {
+      it("should refetch agency users successfully", () => {
         ({ store, dependencies } = createTestStore({
           agency: agenciesPreloadedState({
             fetchAgency: {
@@ -420,6 +424,9 @@ describe("fetchAgency", () => {
           }),
         }));
         const userToRemove = fakeAgencyUsers[user2.id];
+        const agencyUsersAfterRemove = {
+          [user1.id]: fakeAgencyUsers[user1.id],
+        };
 
         expectFetchAgencyStateToMatch({
           agencyUsers: fakeAgencyUsers,
@@ -438,15 +445,16 @@ describe("fetchAgency", () => {
         dependencies.agencyGateway.removeUserFromAgencyResponse$.next(
           undefined,
         );
+        feedWithFetchedAgencyUsers(agencyUsersAfterRemove);
 
         expectFetchAgencyStateToMatch({
           agency: null,
           isLoading: false,
-          agencyUsers: { [user1.id]: fakeAgencyUsers[user1.id] },
+          agencyUsers: agencyUsersAfterRemove,
         });
       });
 
-      it("if user is not in state, do nothing", () => {
+      it("if no agency users in state, do nothing", () => {
         ({ store, dependencies } = createTestStore({
           agency: agenciesPreloadedState({
             fetchAgency: fetchAgencyInitialState,
@@ -472,7 +480,16 @@ describe("fetchAgency", () => {
     });
 
     describe("updateUser", () => {
-      it("should update user successfully", () => {
+      it("should refetch agency users successfully", () => {
+        ({ store, dependencies } = createTestStore({
+          agency: agenciesPreloadedState({
+            fetchAgency: {
+              ...fetchAgencyInitialState,
+              agencyUsers: fakeAgencyUsers,
+            },
+          }),
+        }));
+
         const originalUser = fakeAgencyUsers[user1.id];
         const updatedUser: AgencyUserForListing = {
           ...originalUser,
@@ -485,15 +502,10 @@ describe("fetchAgency", () => {
             },
           },
         };
-
-        ({ store, dependencies } = createTestStore({
-          agency: agenciesPreloadedState({
-            fetchAgency: {
-              ...fetchAgencyInitialState,
-              agencyUsers: fakeAgencyUsers,
-            },
-          }),
-        }));
+        const agencyUsersAfterUpdate = {
+          ...fakeAgencyUsers,
+          [originalUser.id]: updatedUser,
+        };
 
         expectFetchAgencyStateToMatch({
           agencyUsers: fakeAgencyUsers,
@@ -515,9 +527,10 @@ describe("fetchAgency", () => {
         dependencies.agencyGateway.updateUserAgencyRightResponse$.next(
           undefined,
         );
+        feedWithFetchedAgencyUsers(agencyUsersAfterUpdate);
 
         expectFetchAgencyStateToMatch({
-          agencyUsers: { ...fakeAgencyUsers, [originalUser.id]: updatedUser },
+          agencyUsers: agencyUsersAfterUpdate,
           agency: null,
           isLoading: false,
         });

@@ -1,8 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { AgencyRight, ConnectedUser, UserId } from "shared";
-import { updateUserAgencyRights } from "src/core-logic/domain/agencies/agencies.helpers";
-import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
-import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
+import type { ConnectedUser, UserId } from "shared";
 
 export type FetchUserState = {
   user: ConnectedUser | null;
@@ -25,24 +22,5 @@ export const fetchUserSlice = createSlice({
       state.user = action.payload;
       state.isFetching = false;
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(
-      updateUserOnAgencySlice.actions.updateUserAgencyRightSucceeded,
-      (state, action) => {
-        if (!state.user || state.user.id !== action.payload.userId) return;
-        state.user = updateUserAgencyRights(state.user, action.payload);
-      },
-    );
-    builder.addCase(
-      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded,
-      (state, action) => {
-        if (!state.user || state.user.id !== action.payload.userId) return;
-
-        state.user.agencyRights = state.user.agencyRights.filter(
-          (right: AgencyRight) => right.agency.id !== action.payload.agencyId,
-        );
-      },
-    );
   },
 });

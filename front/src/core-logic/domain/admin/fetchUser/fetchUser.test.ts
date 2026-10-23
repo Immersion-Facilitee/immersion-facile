@@ -99,17 +99,26 @@ describe("Admin Users slice", () => {
         false,
       );
 
+      const updatedUser: ConnectedUser = {
+        ...user,
+        agencyRights: [
+          {
+            ...agencyRight,
+            roles: [...agencyRight.roles, "counsellor"],
+          },
+        ],
+      };
+
+      expectAdminFetchUserSelectors({
+        isFetching: true,
+        user,
+      });
+
+      feedWithUsers(updatedUser);
+
       expectAdminFetchUserSelectors({
         isFetching: false,
-        user: {
-          ...user,
-          agencyRights: [
-            {
-              ...agencyRight,
-              roles: [...agencyRight.roles, "counsellor"],
-            },
-          ],
-        },
+        user: updatedUser,
       });
     });
 
@@ -207,12 +216,21 @@ describe("Admin Users slice", () => {
         false,
       );
 
+      const updatedUser: ConnectedUser = {
+        ...user,
+        agencyRights: [],
+      };
+
+      expectAdminFetchUserSelectors({
+        isFetching: true,
+        user,
+      });
+
+      feedWithUsers(updatedUser);
+
       expectAdminFetchUserSelectors({
         isFetching: false,
-        user: {
-          ...user,
-          agencyRights: [],
-        },
+        user: updatedUser,
       });
     });
 

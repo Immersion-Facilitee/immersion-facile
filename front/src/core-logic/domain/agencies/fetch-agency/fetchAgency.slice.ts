@@ -1,15 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { filter } from "ramda";
 import type {
   AgencyDto,
-  AgencyUserForListing,
   AgencyUsersForListingById,
   WithAgencyId,
 } from "shared";
-import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
-import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
-import { updateAgencySlice } from "src/core-logic/domain/agencies/update-agency/updateAgency.slice";
-import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import type {
   PayloadActionWithFeedbackTopic,
   PayloadActionWithOrWithoutFeedbackTopic,
@@ -78,59 +72,5 @@ export const fetchAgencySlice = createSlice({
       state.agency = null;
       state.agencyUsers = {};
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(
-      updateAgencySlice.actions.updateAgencySucceeded,
-      (state, action) => {
-        if (!state.agency || state.agency.id !== action.payload.id) return;
-        const { feedbackTopic: _, ...agency } = action.payload;
-        state.agency = agency;
-      },
-    );
-    builder.addCase(
-      createUserOnAgencySlice.actions.createUserOnAgencySucceeded,
-      (state, action) => {
-        if (!state.agencyUsers) return;
-        if (!state.agencyUsers || state.agency?.id !== action.payload.agencyId)
-          return;
-        const { id } = action.payload.icUser;
-        state.agencyUsers[id] = action.payload.icUser;
-      },
-    );
-    builder.addCase(
-      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded,
-      (state, action) => {
-        if (!state.agencyUsers || !state.agencyUsers[action.payload.userId])
-          return;
-        state.agencyUsers = filter(
-          (agencyUser: AgencyUserForListing) =>
-            agencyUser.id !== action.payload.userId,
-          state.agencyUsers,
-        );
-      },
-    );
-    builder.addCase(
-      updateUserOnAgencySlice.actions.updateUserAgencyRightSucceeded,
-      (state, action) => {
-        if (!state.agencyUsers || !state.agencyUsers[action.payload.userId])
-          return;
-
-        const {
-          userId,
-          agencyId,
-          roles: newRoles,
-          email,
-          isNotifiedByEmail,
-        } = action.payload;
-        state.agencyUsers[userId].agencyRightsByAgencyId[agencyId].roles =
-          newRoles;
-        state.agencyUsers[userId].agencyRightsByAgencyId[
-          agencyId
-        ].isNotifiedByEmail = isNotifiedByEmail;
-        state.agencyUsers[userId].email =
-          email ?? state.agencyUsers[userId].email;
-      },
-    );
   },
 });
