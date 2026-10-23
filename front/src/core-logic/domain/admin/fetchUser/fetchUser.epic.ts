@@ -47,30 +47,18 @@ const fetchUserOnPreventToDeleteUpdatedEpic: AppEpic<
     ),
   );
 
-const fetchUserOnAgencyRightUpdatedEpic: AppEpic<
-  FetchUserAction | UpdateUserOnAgencyAction
+const fetchUserOnUpdateEpic: AppEpic<
+  FetchUserAction | UpdateUserOnAgencyAction | RemoveUserFromAgencyAction
 > = (action$, state$) =>
   action$.pipe(
-    filter(
-      updateUserOnAgencySlice.actions.updateUserAgencyRightSucceeded.match,
-    ),
     filter(
       (action) =>
-        state$.value.admin.fetchUser.user?.id === action.payload.userId,
-    ),
-    map((action) =>
-      fetchUserSlice.actions.fetchUserRequested({
-        userId: action.payload.userId,
-      }),
-    ),
-  );
-
-const fetchUserOnRemovedFromAgencyEpic: AppEpic<
-  FetchUserAction | RemoveUserFromAgencyAction
-> = (action$, state$) =>
-  action$.pipe(
-    filter(
-      removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded.match,
+        updateUserOnAgencySlice.actions.updateUserAgencyRightSucceeded.match(
+          action,
+        ) ||
+        removeUserFromAgencySlice.actions.removeUserFromAgencySucceeded.match(
+          action,
+        ),
     ),
     filter(
       (action) =>
@@ -86,6 +74,5 @@ const fetchUserOnRemovedFromAgencyEpic: AppEpic<
 export const fetchUserEpics = [
   fetchUserEpic,
   fetchUserOnPreventToDeleteUpdatedEpic,
-  fetchUserOnAgencyRightUpdatedEpic,
-  fetchUserOnRemovedFromAgencyEpic,
+  fetchUserOnUpdateEpic,
 ];
