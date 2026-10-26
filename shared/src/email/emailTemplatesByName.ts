@@ -300,68 +300,65 @@ export const emailTemplatesByName =
             kind: "paragraph",
             content: `Si vous n’avez pas de réponse sous trois semaines, merci de nous en informer à l’adresse suivante : <a href="mailto:delegation@immersion-facile.beta.gouv.fr" target="_blank">delegation@immersion-facile.beta.gouv.fr</a>`,
           },
+          { kind: "divider" },
           {
-            kind: "callout",
-            variant: "secondary",
-            blocks: [
-              {
-                kind: "paragraph",
-                content:
-                  "<em>Éléments à copier ci dessous (mail type à envoyer à la Direction Régionale)</em>",
-              },
-              {
-                kind: "paragraph",
-                content: `
+            kind: "paragraph",
+            content:
+              "<em>Éléments à copier ci dessous (mail type à envoyer à la Direction Régionale)</em>",
+          },
+          { kind: "divider" },
+          {
+            kind: "paragraph",
+            content: `
         Bonjour,
 
         Ma structure souhaite bénéficier d’une convention de délégation afin de pouvoir prescrire des immersions (PMSMP).
 
         Vous trouverez ci-dessous les informations nécessaires au traitement de ma demande :`,
-              },
-              {
-                kind: "paragraph",
-                content:
-                  "<strong>Informations légales de ma structure</strong>",
-              },
-              {
-                kind: "list",
-                items: [
-                  "SIRET :",
-                  "Nom de la structure :",
-                  "Adresse :",
-                  "Nom et prénom de la personne représentant la structure :",
-                  "Adresse mail de(s) personne(s) à contacter pour établir la convention de délégation :",
-                  "Numéro de téléphone à joindre en cas de besoin :",
-                  "Cette demande est-elle effectuée dans le cadre d’un marché de prestations ? (Oui / Non)",
-                ],
-              },
-              {
-                kind: "paragraph",
-                content:
-                  "<strong>Informations concernant les immersions</strong>",
-              },
-              {
-                kind: "list",
-                items: [
-                  "Descriptif du public qui sera concerné par les immersions",
-                  "Le territoire concerné par la demande (périmètre géographique)",
-                  "Estimation du nombre d’immersions prévues sur une année",
-                ],
-              },
-              {
-                kind: "paragraph",
-                content: "<strong>Informations complémentaires</strong>",
-              },
-              {
-                kind: "list",
-                items: [
-                  "Je confirme que ma structure va cotiser au risque AT/MP : (Oui / Non)",
-                  "Je confirme que ma structure est assurée pour couvrir les périodes d’immersion : (Oui / Non)",
-                ],
-              },
-              { kind: "paragraph", content: "Cordialement," },
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>Informations légales de ma structure</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "SIRET :",
+              "Nom de la structure :",
+              "Adresse :",
+              "Nom et prénom de la personne représentant la structure :",
+              "Adresse mail de(s) personne(s) à contacter pour établir la convention de délégation :",
+              "Numéro de téléphone à joindre en cas de besoin :",
+              "Cette demande est-elle effectuée dans le cadre d’un marché de prestations ? (Oui / Non)",
             ],
           },
+          {
+            kind: "paragraph",
+            content: "<strong>Informations concernant les immersions</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Descriptif du public qui sera concerné par les immersions",
+              "Le territoire concerné par la demande (périmètre géographique)",
+              "Estimation du nombre d’immersions prévues sur une année",
+            ],
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>Informations complémentaires</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            items: [
+              "Je confirme que ma structure va cotiser au risque AT/MP : (Oui / Non)",
+              "Je confirme que ma structure est assurée pour couvrir les périodes d’immersion : (Oui / Non)",
+            ],
+          },
+          { kind: "paragraph", content: "Cordialement," },
         ],
         signature: defaultSignature("immersion"),
       }),
