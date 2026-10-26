@@ -49,7 +49,11 @@ export const RegisterAgenciesForm = ({
     );
   };
 
-  if (inputValue === undefined && currentUser.proConnect) {
+  if (
+    inputValue === undefined &&
+    currentUser.proConnect &&
+    currentUser.agencyRights.length === 0
+  ) {
     setInputValue(currentUser.proConnect.siret);
   }
 
