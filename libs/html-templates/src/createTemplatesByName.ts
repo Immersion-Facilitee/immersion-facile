@@ -1,24 +1,6 @@
-import type { EmailButtonProps } from "./components/email";
+import type { EmailVariables, RawEmailVariables } from "./email/emailVariables";
 
-type CreateEmailVariable<P> = (params: P) => {
-  bypassLayout?: boolean;
-  subject: string;
-  greetings?: string;
-  content?: string;
-  highlight?: {
-    kind?: "success" | "error" | "warning" | "info";
-    content?: string;
-  };
-  highlightContentWithCTA?: {
-    content?: string;
-    button?: EmailButtonProps;
-  };
-  subContent?: string;
-  legals?: string;
-  agencyLogoUrl?: string;
-  buttons?: EmailButtonProps[];
-  attachmentUrls?: string[];
-};
+type CreateEmailVariable<P> = (params: P) => EmailVariables | RawEmailVariables;
 
 type Theme =
   | "authentification"

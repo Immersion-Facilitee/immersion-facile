@@ -1,0 +1,17 @@
+import { convertLineBreaksToHtml } from "../../../helpers/formatters";
+
+export type EmailListProps = {
+  items: string[];
+  numbered?: boolean;
+};
+
+export const renderList = ({ items, numbered }: EmailListProps): string => {
+  const tag = numbered ? "ol" : "ul";
+  const marginLeft = numbered ? "32px" : "24px";
+  return `<${tag} style="margin: 0 0 0 ${marginLeft}; padding: 0;">${items
+    .map(
+      (item, index) =>
+        `<li style="margin: 0 0 ${index === items.length - 1 ? 0 : 4}px 0;">${convertLineBreaksToHtml(item)}</li>`,
+    )
+    .join("")}</${tag}>`;
+};

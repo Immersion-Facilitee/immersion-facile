@@ -332,6 +332,11 @@ export type EmailParamsByEmailType = {
     manageConventionLink: AbsoluteUrl;
     conventionId: ConventionId;
   };
+  DEMO_EMAIL_COMPONENTS: {
+    internshipKind: InternshipKind;
+    agencyLogoUrl: AbsoluteUrl | undefined;
+    demoUrl: AbsoluteUrl;
+  };
   DEPRECATED_CONVENTION_NOTIFICATION: {
     beneficiaryFirstName: string;
     beneficiaryLastName: string;
@@ -440,13 +445,6 @@ export type EmailParamsByEmailType = {
       | Extract<EstablishmentUserRightStatus, "ACCEPTED">
       | "REJECTED";
     immersionBaseUrl: AbsoluteUrl;
-  };
-  FULL_PREVIEW_EMAIL: {
-    agencyLogoUrl: AbsoluteUrl | undefined;
-    beneficiaryName: string;
-    conventionId: ConventionId;
-    conventionStatusLink: string;
-    internshipKind: InternshipKind;
   };
   IC_USER_REGISTRATION_TO_AGENCY_REJECTED: {
     agencyName: string;

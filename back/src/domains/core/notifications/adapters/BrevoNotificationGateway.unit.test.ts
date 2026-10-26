@@ -194,37 +194,25 @@ describe("BrevoNotificationGateway unit", () => {
       </td>
       </tr>
       <tr>
-      <td>
-      <p>Bonjour,</p>
+      <td style="padding-bottom: 16px;">
+      <p style="margin: 0;">Bonjour,</p>
       </td>
       </tr>
       <tr>
-      <td>
+      <td style="padding-bottom: 16px;">
+      <p style="margin: 0;"><strong>Votre organisme prescripteur AGENCY_NAME est activée sur Immersion facilitée !</strong> 
+      <br/>
+      <br/>Vous pouvez dès à présent valider les conventions dématérialisées sur Immersion Facilitée.</p>
+      </td>
+      </tr>
+      <tr>
+      <td style="padding-bottom: 16px;">
       <table 
-      width="600">
+      width="100%">
       <tr>
-      <td>
-      <p><strong>Votre organisme prescripteur AGENCY_NAME est activée sur Immersion facilitée !</strong> 
-      <br/>
-      <br/>Vous pouvez dès à présent valider les conventions dématérialisées sur Immersion Facilitée.
-      <br/>
-      <br/>false</p>
-      </td>
-      </tr>
-      </table>
-      </td>
-      </tr>
-      <tr>
-      <td>
-      <table>
-      <tr>
-      <td 
-      align="center" 
-      width="600"
-      style="padding: 20px; padding-top: 10px; padding-bottom: 30px;"
-      >
+      <td align="center">
       <a
-      style="text-decoration: none; display: inline-block; padding: 10px 20px; text-align: center; background-color: #000091; color: #fff;"
+      style="display: inline-block; padding: 7px 15px; font-size: 16px; line-height: 24px; font-weight: 500; text-align: center; text-decoration: none; background-image: none; background-color: #000091; color: #f5f5fe; border: 1px solid #000091;"
       href="https://immersion-facile.beta.gouv.fr/tableau-de-bord-agence/dashboard"
       target="_blank"
       >
@@ -236,26 +224,26 @@ describe("BrevoNotificationGateway unit", () => {
       </td>
       </tr>
       <tr>
-      <td>
-      <table 
-      width="600">
+      <td style="padding-bottom: 8px;">
+      <p style="margin: 0;"><strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong></p>
+      </td>
+      </tr>
       <tr>
-      <td>
-      <p><strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong>
-      <br/>
-      <br/>• <strong>Pour les responsables de votre structure</strong> :
+      <td style="padding-bottom: 16px;">
+      <ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0;"><strong>Pour les responsables de votre structure</strong> :
       <br/><a 
       href="https://aide.immersion-facile.beta.gouv.fr/fr/article/administrateur-gerer-votre-organisme-sbjao/" 
       target="_blank">Un article d'aide pour paramétrer votre compte</a>
-      <br/>(une vidéo est disponible à la fin de l'article, mettez le son)
-      <br/>
-      <br/>• <strong>Pour l'ensemble de vos collaborateurs</strong> :
+      <br/>(une vidéo est disponible à la fin de l'article, mettez le son)</li><li style="margin: 0 0 0px 0;"><strong>Pour l'ensemble de vos collaborateurs</strong> :
       <br/><a 
       href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" 
       target="_blank">Un temps de présentation de toutes les fonctionnalités du site</a>
-      <br/>(30 minutes de présentation et 30 minutes pour poser les questions)
-      <br/>
-      <br/>N'hésitez pas à leur partager ce lien :
+      <br/>(30 minutes de présentation et 30 minutes pour poser les questions)</li></ul>
+      </td>
+      </tr>
+      <tr>
+      <td style="padding-bottom: 16px;">
+      <p style="margin: 0;">N'hésitez pas à leur partager ce lien :
       <br/><a 
       href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" 
       target="_blank">https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee</a>
@@ -267,14 +255,13 @@ describe("BrevoNotificationGateway unit", () => {
       href=https://aide.immersion-facile.beta.gouv.fr/fr 
       target="_blank">
       <br/>support d’Immersion Facilitée
-      <br/></a>.
-      <br/>
-      <br/>
-      <br/>Bonne journée,
-      <br/>L'équipe Immersion Facilitée</p>
+      <br/></a>.</p>
       </td>
       </tr>
-      </table>
+      <tr>
+      <td>
+      <p style="margin: 0;">Bonne journée,
+      <br/>L'équipe Immersion Facilitée</p>
       </td>
       </tr>
       <tr>

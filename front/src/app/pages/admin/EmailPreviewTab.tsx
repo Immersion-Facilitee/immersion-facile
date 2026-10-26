@@ -1,10 +1,10 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
-import { configureGenerateHtmlFromTemplate } from "html-templates";
 import {
   cciCustomHtmlHeader,
+  configureGenerateHtmlFromTemplate,
   defaultEmailFooter,
-} from "html-templates/src/components/email";
+} from "html-templates";
 import { toPairs } from "ramda";
 import { useState } from "react";
 import { ImmersionTextField } from "react-design-system";
@@ -14,9 +14,12 @@ import {
   domElementIds,
   type EmailTemplatesByName,
   emailTemplatesByName,
+  frontRoutes,
   internshipKinds,
+  keys,
 } from "shared";
 import { BackofficeDashboardTabContent } from "src/app/components/layout/BackofficeDashboardTabContent";
+import { useAdminEmailPreviewRoute } from "src/app/routes/routes.hooks";
 import { useStyles } from "tss-react/dsfr";
 
 const defaultEmailPreviewUrl =
@@ -24,16 +27,26 @@ const defaultEmailPreviewUrl =
 
 type TemplateName = keyof EmailTemplatesByName;
 
+const defaultTemplateName: TemplateName = "DEMO_EMAIL_COMPONENTS";
+
+const isTemplateName = (
+  templateName: string | undefined,
+): templateName is TemplateName =>
+  keys(emailTemplatesByName).some((name) => name === templateName);
+
 export const EmailPreviewTab = () => {
   const { cx } = useStyles();
+  const route = useAdminEmailPreviewRoute();
 
-  const [currentTemplate, setCurrentTemplate] = useState<TemplateName>(
-    "AGENCY_WAS_ACTIVATED",
+  const currentTemplate = isTemplateName(route.params.templateName)
+    ? route.params.templateName
+    : defaultTemplateName;
+
+  const [emailVariablesByTemplate, setEmailVariablesByTemplate] = useState(
+    defaultEmailValueByEmailKind,
   );
 
-  const [emailVariables, setEmailVariables] = useState(
-    defaultEmailValueByEmailKind[currentTemplate],
-  );
+  const emailVariables = emailVariablesByTemplate[currentTemplate];
 
   const fakeContent = configureGenerateHtmlFromTemplate(
     emailTemplatesByName,
@@ -49,8 +62,7 @@ export const EmailPreviewTab = () => {
   });
 
   const onTemplateChange = (templateName: TemplateName) => {
-    setCurrentTemplate(templateName);
-    setEmailVariables(defaultEmailValueByEmailKind[templateName]);
+    frontRoutes.adminEmailPreview({ templateName }).replace();
   };
 
   return (
@@ -70,6 +82,7 @@ export const EmailPreviewTab = () => {
               nativeSelectProps={{
                 id: domElementIds.admin.emailPreviewTab.emailTemplateNameSelect,
                 name: "templateName",
+                value: currentTemplate,
                 onChange: (event) =>
                   onTemplateChange(event.currentTarget.value),
               }}
@@ -109,9 +122,12 @@ export const EmailPreviewTab = () => {
                         ]
                       }
                       onChange={(value) =>
-                        setEmailVariables({
-                          ...emailVariables,
-                          [variableName]: value,
+                        setEmailVariablesByTemplate({
+                          ...emailVariablesByTemplate,
+                          [currentTemplate]: {
+                            ...emailVariables,
+                            [variableName]: value,
+                          },
                         })
                       }
                     />
@@ -121,18 +137,13 @@ export const EmailPreviewTab = () => {
             <h6 className={fr.cx("fr-mt-4w")}>Pièces jointes</h6>
             {fakeContent.attachment ? (
               <ul>
-                {fakeContent.attachment.map((att) => {
-                  if ("url" in att) {
-                    return (
-                      <li key={att.url}>
-                        <a target={"_blank"} href={att.url} rel="noreferrer">
-                          {att.url}
-                        </a>
-                      </li>
-                    );
-                  }
-                  return <li key={att.name}>{att.name}</li>;
-                })}
+                {fakeContent.attachment.map(({ url }) => (
+                  <li key={url}>
+                    <a target={"_blank"} href={url} rel="noreferrer">
+                      {url}
+                    </a>
+                  </li>
+                ))}
               </ul>
             ) : (
               <p>Ce template de mail n'a pas de pièces jointes.</p>
@@ -206,6 +217,11 @@ export const defaultEmailValueByEmailKind: {
     expiresAt: new Date("2025-01-01T13:32:00.000Z").toISOString(),
     loginLink: "https://google.com",
     fullname: "BOB",
+  },
+  DEMO_EMAIL_COMPONENTS: {
+    internshipKind: "immersion",
+    agencyLogoUrl: undefined,
+    demoUrl: "https://immersion-facile.beta.gouv.fr",
   },
   TEST_EMAIL: {
     input1: "input1",
@@ -550,13 +566,6 @@ export const defaultEmailValueByEmailKind: {
     businessName: "BUSINESS_NAME",
     registerEstablishmentShortLink: "REGISTRATION_LINK",
     unsubscribeToEmailShortLink: "REJECT_REGISTRATION_LINK",
-  },
-  FULL_PREVIEW_EMAIL: {
-    internshipKind: "immersion",
-    beneficiaryName: "BENEFICIARY_NAME",
-    conventionId: "CONVENTION_ID",
-    conventionStatusLink: "CONVENTION_STATUS_LINK",
-    agencyLogoUrl: defaultEmailPreviewUrl,
   },
   IC_USER_REGISTRATION_TO_AGENCY_REJECTED: {
     agencyName: "AGENCY_NAME",

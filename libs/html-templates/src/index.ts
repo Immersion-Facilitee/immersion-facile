@@ -1,9 +1,14 @@
 import { configureGenerateHtmlFromTemplate } from "./configureGenerateHtmlFromTemplate";
 import { createTemplatesByName } from "./createTemplatesByName";
-import { ignoreTabs } from "./helpers/formatters";
+import { convertTextToHtml, ignoreTabs } from "./helpers/formatters";
 
-export type { EmailButtonProps } from "./components/email/button";
-export { defaultEmailFooter } from "./components/email/footer";
-export { cciCustomHtmlHeader } from "./components/email/header";
 export type { GenerateHtmlOptions } from "./configureGenerateHtmlFromTemplate";
-export { configureGenerateHtmlFromTemplate, createTemplatesByName, ignoreTabs };
+export { defaultEmailFooter } from "./email/components/layout/footer";
+export { cciCustomHtmlHeader } from "./email/components/layout/header";
+export type { EmailBlock } from "./email/emailBlock";
+export {
+  configureGenerateHtmlFromTemplate,
+  convertTextToHtml,
+  createTemplatesByName,
+  ignoreTabs,
+};

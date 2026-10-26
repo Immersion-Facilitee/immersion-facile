@@ -150,6 +150,7 @@ const {
   adminAgencies,
   adminUsers,
   adminEstablishments,
+  adminEmailPreview,
   ...restOfAdminRoutes
 } = adminTabRouteNames.reduce(
   (acc, adminTabName) => ({
@@ -213,6 +214,10 @@ export const {
   ),
   admin,
   ...restOfAdminRoutes,
+  adminEmailPreview: adminEmailPreview.extend(
+    { templateName: param.query.optional.string },
+    () => "/",
+  ),
   adminConventions,
   adminConventionDetail: adminConventions.extend(
     { conventionId: param.path.string },
