@@ -1,5 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
+import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
 import Input from "@codegouvfr/react-dsfr/Input";
 import {
@@ -9,10 +10,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { ResponsiveTable, Tag } from "react-design-system";
+import { Loader, ResponsiveTable, Tag } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AgencyId,
+  type AgencyOption,
   agencyKindToLabelIncludingIFAndPrepa,
   type ConnectedUser,
   domElementIds,
@@ -37,6 +39,14 @@ export const RegisterAgenciesForm = ({
 
   const [selectedAgencyIds, setSelectedAgencyIds] = useState<AgencyId[]>([]);
 
+  const isFetching = useAppSelector(agenciesSelectors.isLoading);
+  const userAgencyIds = currentUser.agencyRights.map(
+    (agencyRight) => agencyRight.agency.id,
+  );
+  const agencySearchResults = useAppSelector(agenciesSelectors.options).filter(
+    (agency) => !userAgencyIds.includes(agency.id),
+  );
+
   const onAgencySearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.currentTarget.value);
     setSelectedAgencyIds([]);
@@ -54,11 +64,19 @@ export const RegisterAgenciesForm = ({
     currentUser.proConnect &&
     currentUser.agencyRights.length === 0
   ) {
-    setInputValue(currentUser.proConnect.siret);
+    const siret = currentUser.proConnect.siret;
+    setInputValue(siret);
+    dispatch(
+      agenciesSlice.actions.fetchAgencyOptionsRequested({
+        siret,
+        status: ["active", "from-api-PE"],
+      }),
+    );
   }
 
   return (
     <>
+      {isFetching && <Loader />}
       <div className={fr.cx("fr-mt-4w", "fr-mb-2w")}>
         <Input
           label="Se rattacher à un organisme"
@@ -87,64 +105,133 @@ export const RegisterAgenciesForm = ({
         Retrouver votre siret sur l'Annuaire des Entreprises
       </a>
 
-      {inputValue && (
+      {inputValue && !isFetching && (
         <>
-          <section className={fr.cx("fr-mt-6w")}>
-            <div className={fr.cx("fr-grid-row")}>
-              <div className={fr.cx("fr-col-12", "fr-col-md")}>
-                <strong>Résultats pour votre recherche "{inputValue}"</strong>
-
-                <p className={fr.cx("fr-hint-text")}>
-                  {selectedAgencyIds.length}{" "}
-                  {selectedAgencyIds.length <= 1
-                    ? "organisme sélectionné"
-                    : "organismes sélectionnés"}
-                </p>
-              </div>
-              <div className={fr.cx("fr-ml-md-auto")}>
-                <Button
-                  className={fr.cx("fr-mb-2w")}
-                  id={
-                    domElementIds.agencyDashboard.registerAgencies.submitButton
-                  }
-                  priority="secondary"
-                  onClick={() => {
-                    dispatch(
-                      connectedUserSlice.actions.registerAgenciesRequested({
-                        agencies: selectedAgencyIds,
-                        feedbackTopic: "agency-user-registration",
-                      }),
-                    );
-                  }}
-                  disabled={selectedAgencyIds.length === 0}
-                >
-                  Demander l'accès aux organismes sélectionnés
-                </Button>
-              </div>
-            </div>
-            <AgencyTable
-              checkedAgencies={selectedAgencyIds}
-              setCheckedAgencies={setSelectedAgencyIds}
-              currentUser={currentUser}
+          {agencySearchResults.length > 0 && (
+            <AgencySearchWithResults
+              inputValue={inputValue}
+              selectedAgencyIds={selectedAgencyIds}
+              setSelectedAgencyIds={setSelectedAgencyIds}
+              agencies={agencySearchResults}
             />
-          </section>
-          <section>
-            <h2 className={fr.cx("fr-text--lead")}>
-              Vous ne trouvez pas votre organisme ?
-            </h2>
-            <Button
-              id={
-                domElementIds.agencyDashboard.registerAgencies.newAgencyButton
-              }
-              linkProps={{
-                href: immersionFacileAgencyRegistrationHelpFormUrl,
-              }}
-            >
-              Créer un nouvel organisme sur Immersion Facilitée
-            </Button>
-          </section>
+          )}
+          {agencySearchResults.length === 0 && (
+            <AgencySearchNoResults inputValue={inputValue} />
+          )}
         </>
       )}
+    </>
+  );
+};
+
+const AgencySearchNoResults = ({ inputValue }: { inputValue: string }) => (
+  <>
+    <p className={fr.cx("fr-mt-4w")}>
+      <strong>
+        Aucun organisme trouvé pour votre recherche "{inputValue}"
+      </strong>
+    </p>
+    <CallOut
+      iconId="fr-icon-info-line"
+      title="Avant d'inscrire un nouvel organisme"
+      buttonProps={{
+        children: "Inscrire un nouvel organisme",
+        id: domElementIds.agencyDashboard.registerAgencies.newAgencyButton,
+        linkProps: {
+          href: immersionFacileAgencyRegistrationHelpFormUrl,
+        },
+      }}
+    >
+      <ol className={fr.cx("fr-text--md")}>
+        <li>
+          Essayez une autre méthode de recherche : par exemple, recherchez par
+          nom de votre agence en commençant à taper quelques lettres à la place
+          du numéro de SIRET.
+        </li>
+        <li>
+          Si vous êtes certain·e que cet organisme n'existe pas encore sur la
+          plateforme, inscrivez-le&nbsp;: vous pourrez valider ses conventions
+          en ligne et accéder à ses statistiques.
+        </li>
+      </ol>
+    </CallOut>
+  </>
+);
+
+const AgencySearchWithResults = ({
+  inputValue,
+  selectedAgencyIds,
+  setSelectedAgencyIds,
+  agencies,
+}: {
+  inputValue: string;
+  selectedAgencyIds: AgencyId[];
+  setSelectedAgencyIds: (agencies: AgencyId[]) => void;
+  agencies: AgencyOption[];
+}) => {
+  const dispatch = useDispatch();
+
+  return (
+    <>
+      <section className={fr.cx("fr-mt-6w")}>
+        <div className={fr.cx("fr-grid-row")}>
+          <div className={fr.cx("fr-col-12", "fr-col-md")}>
+            <strong>Résultats pour votre recherche "{inputValue}"</strong>
+
+            <p className={fr.cx("fr-hint-text")}>
+              {selectedAgencyIds.length}{" "}
+              {selectedAgencyIds.length <= 1
+                ? "organisme sélectionné"
+                : "organismes sélectionnés"}
+            </p>
+          </div>
+          <div className={fr.cx("fr-ml-md-auto")}>
+            <Button
+              className={fr.cx("fr-mb-2w")}
+              id={domElementIds.agencyDashboard.registerAgencies.submitButton}
+              priority="secondary"
+              onClick={() => {
+                dispatch(
+                  connectedUserSlice.actions.registerAgenciesRequested({
+                    agencies: selectedAgencyIds,
+                    feedbackTopic: "agency-user-registration",
+                  }),
+                );
+              }}
+              disabled={selectedAgencyIds.length === 0}
+            >
+              Demander l'accès aux organismes sélectionnés
+            </Button>
+          </div>
+        </div>
+        <AgencyTable
+          checkedAgencies={selectedAgencyIds}
+          setCheckedAgencies={setSelectedAgencyIds}
+          agencies={agencies}
+        />
+      </section>
+      <section>
+        <h2 className={fr.cx("fr-text--lead")}>
+          Votre organisme ne fait pas partie de cette liste ?
+        </h2>
+        <ol className={fr.cx("fr-mt-2w")}>
+          <li>
+            Essayez une autre méthode de recherche : par exemple, recherchez par
+            nom de votre agence en commençant à taper quelques lettres à la
+            place du numéro de SIRET.
+          </li>
+          <li>
+            Si les résultats ne correspondent toujours pas à votre besoin :{" "}
+            <a
+              href={immersionFacileAgencyRegistrationHelpFormUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Inscrivez un nouvel organisme
+            </a>
+          </li>
+        </ol>
+      </section>
     </>
   );
 };
@@ -152,67 +239,55 @@ export const RegisterAgenciesForm = ({
 const AgencyTable = ({
   checkedAgencies,
   setCheckedAgencies,
-  currentUser,
+  agencies,
 }: {
   checkedAgencies: AgencyId[];
   setCheckedAgencies: (agencies: AgencyId[]) => void;
-  currentUser: ConnectedUser;
-}) => {
-  const isFetching = useAppSelector(agenciesSelectors.isLoading);
-  const userAgencyIds = currentUser.agencyRights.map(
-    (agencyRight) => agencyRight.agency.id,
-  );
-  const agencies = useAppSelector(agenciesSelectors.options).filter(
-    (agency) => !userAgencyIds.includes(agency.id),
-  );
-  if (isFetching) return <p>Chargement en cours...</p>;
-  if (agencies.length === 0)
-    return <p>Aucun organisme correspondant à votre recherche</p>;
-  return (
-    <ResponsiveTable
-      id={domElementIds.agencyDashboard.registerAgencies.table}
-      headers={["", "Organismes"]}
-      data={agencies.map((agency) => [
-        <Checkbox
-          key={`${agency.id}-checkbox`}
-          options={[
-            {
-              label: "Sélectionner cet organisme",
-              nativeInputProps: {
-                checked: checkedAgencies.includes(agency.id),
-                onChange: (event) => {
-                  const checked = event.currentTarget.checked;
-                  if (checked) {
-                    setCheckedAgencies([...checkedAgencies, agency.id]);
-                  } else {
-                    setCheckedAgencies(
-                      checkedAgencies.filter((id) => id !== agency.id),
-                    );
-                  }
-                },
+  agencies: AgencyOption[];
+}) => (
+  <ResponsiveTable
+    id={domElementIds.agencyDashboard.registerAgencies.table}
+    headers={["", "Organismes"]}
+    data={agencies.map((agency) => [
+      <Checkbox
+        key={`${agency.id}-checkbox`}
+        options={[
+          {
+            label: "Sélectionner cet organisme",
+            nativeInputProps: {
+              checked: checkedAgencies.includes(agency.id),
+              onChange: (event) => {
+                const checked = event.currentTarget.checked;
+                if (checked) {
+                  setCheckedAgencies([...checkedAgencies, agency.id]);
+                } else {
+                  setCheckedAgencies(
+                    checkedAgencies.filter((id) => id !== agency.id),
+                  );
+                }
               },
             },
-          ]}
-        />,
-        <Fragment key={`${agency.id}-infos`}>
-          <Tag
-            theme={
-              agency.refersToAgencyName
-                ? "structureAccompagnement"
-                : "prescripteur"
-            }
-            label={`${
-              agency.refersToAgencyName
-                ? "Structure d'accompagnement"
-                : "Prescripteur"
-            } - ${agencyKindToLabelIncludingIFAndPrepa[agency.kind]}`}
-          />
-          <br />
-          <strong>{agency.name}</strong>
-          <br />
-          <p>{agency.address.streetNumberAndAddress}</p>
-        </Fragment>,
-      ])}
-    />
-  );
-};
+          },
+        ]}
+      />,
+      <Fragment key={`${agency.id}-infos`}>
+        <Tag
+          theme={
+            agency.refersToAgencyName
+              ? "structureAccompagnement"
+              : "prescripteur"
+          }
+          label={`${
+            agency.refersToAgencyName
+              ? "Structure d'accompagnement"
+              : "Prescripteur"
+          } - ${agencyKindToLabelIncludingIFAndPrepa[agency.kind]}`}
+        />
+        <br />
+        <strong>{agency.name}</strong>
+        <br />
+        <p>{agency.address.streetNumberAndAddress}</p>
+      </Fragment>,
+    ])}
+  />
+);
