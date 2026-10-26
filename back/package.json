@@ -97,7 +97,7 @@
     "jsonwebtoken": "^9.0.2",
     "kysely": "^0.28.17",
     "libphonenumber-js": "^1.13.8",
-    "multer": "2.4.0",
+    "multer": "2.5.0",
     "nanoid": "^6.0.1",
     "node-pg-migrate": "^6.2.1",
     "papaparse": "^5.3.2",
