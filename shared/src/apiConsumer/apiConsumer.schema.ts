@@ -99,11 +99,11 @@ const conventionRightCommonSchema = z.object({
   scope: z
     .object({
       agencyKinds: z.array(agencyKindSchema),
-      agencyIds: z.undefined(),
+      agencyIds: z.undefined().optional(),
     })
     .or(
       z.object({
-        agencyKinds: z.undefined(),
+        agencyKinds: z.undefined().optional(),
         agencyIds: z.array(agencyIdSchema),
       }),
     ),

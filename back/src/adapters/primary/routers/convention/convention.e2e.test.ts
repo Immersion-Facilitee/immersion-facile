@@ -266,6 +266,7 @@ describe("convention e2e", () => {
               "Shared-route schema 'requestBodySchema' was not respected in adapter 'express'.\nRoute: POST /convention-drafts",
             issues: [
               "senderEmail : Veuillez saisir une adresse e-mail valide - email fourni : 'invalid-email'",
+              ` : Unrecognized keys: "details", "senderEmail"`,
             ],
           },
         });

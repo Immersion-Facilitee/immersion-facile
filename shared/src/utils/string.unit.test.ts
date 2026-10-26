@@ -678,7 +678,7 @@ describe("string schemas", () => {
               format: "regex",
               pattern: "/tata/",
               path: [],
-              message: "Invalid string: must match pattern /tata/",
+              message: localization.required,
             } as $ZodIssue,
           ]),
         },
