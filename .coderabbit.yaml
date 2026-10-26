@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+reviews:
+  auto_review:
+    enabled: false
+    auto_incremental_review: false
+    drafts: false
+  commit_status: false
+  review_status: false
+  high_level_summary: false
+  in_progress_fortune: false
+  sequence_diagrams: false
+  suggested_labels: false
+  suggested_reviewers: false
+  related_issues: false
+  related_prs: false
+  assess_linked_issues: false
+  estimate_code_review_effort: false
+  slop_detection:
+    enabled: false
+chat:
+  auto_reply: false
+  allow_non_org_members: false
+issue_enrichment:
+  planning:
+    enabled: false
