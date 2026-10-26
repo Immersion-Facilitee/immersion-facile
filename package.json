@@ -53,7 +53,7 @@
     "typescript": "^7.0.2"
   },
   "engines": {
-    "node": "^24.14.0"
+    "node": "^24.22.1"
   },
   "packageManager": "pnpm@11.13.1"
 }
