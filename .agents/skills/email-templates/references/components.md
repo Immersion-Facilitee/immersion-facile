@@ -14,6 +14,8 @@ Each block file exports an `Email<Kind>Props` type and a `render<Kind>(props)` f
 
 A component is done when every kind and variant appears in the demo email and renders in the admin email preview.
 
+Changing the HTML of an existing component also changes the rendered emails asserted in `BrevoNotificationGateway.unit.test.ts` and `ContactEstablishment.unit.test.ts`; run them and update their expectations.
+
 ## Email HTML
 
 Email clients ignore most CSS, so components produce table-based HTML:
