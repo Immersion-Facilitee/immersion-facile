@@ -10,6 +10,7 @@ import {
   type ConventionDraftId,
   ConventionDtoBuilder,
   type ConventionId,
+  type ConventionJwtPayload,
   type ConventionMagicLinkRoutes,
   type ConventionReadDto,
   type ConventionRole,
@@ -928,6 +929,29 @@ describe("convention e2e", () => {
         status: 401,
         body: { status: 401, message: invalidTokenMessage },
       });
+    });
+
+    it("401 - JWT without convention nor user identity", async () => {
+      const updatedConvention = new ConventionDtoBuilder(convention)
+        .withStatus("READY_TO_SIGN")
+        .withStatusJustification("justif")
+        .build();
+
+      const response = await magicLinkRequest.updateConvention({
+        headers: {
+          authorization: generateConventionJwt({
+            version: currentJwtVersions.convention,
+          } as ConventionJwtPayload),
+        },
+        urlParams: { conventionId: convention.id },
+        body: { convention: updatedConvention },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
+      });
+      expectToEqual(inMemoryUow.conventionRepository.conventions, [convention]);
     });
 
     it("403 - convention id does not match the one in token", async () => {

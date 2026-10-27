@@ -68,7 +68,7 @@ export const throwIfNotAuthorizedForRole = async ({
 }): Promise<void> => {
   const agency = await agencyWithRightToAgencyDto(uow, agencyWithUserRights);
   if ("userId" in jwtPayload) {
-    await onConnectedUser({
+    return onConnectedUser({
       uow,
       jwtPayload,
       authorizedRoles,
@@ -81,7 +81,7 @@ export const throwIfNotAuthorizedForRole = async ({
   }
 
   if ("applicationId" in jwtPayload) {
-    await onMagicLink({
+    return onMagicLink({
       uow,
       jwtPayload,
       authorizedRoles,
@@ -92,6 +92,8 @@ export const throwIfNotAuthorizedForRole = async ({
       isValidatorOfAgencyRefersToAllowed,
     });
   }
+
+  throw errorToThrow;
 };
 
 const onMagicLink = async ({
