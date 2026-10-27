@@ -139,6 +139,8 @@ const AgencySearchNoResults = ({ inputValue }: { inputValue: string }) => (
         id: domElementIds.agencyDashboard.registerAgencies.newAgencyButton,
         linkProps: {
           href: immersionFacileAgencyRegistrationHelpFormUrl,
+          target: "_blank",
+          rel: "noreferrer",
         },
       }}
     >
@@ -223,6 +225,7 @@ const AgencySearchWithResults = ({
           <li>
             Si les résultats ne correspondent toujours pas à votre besoin :{" "}
             <a
+              id={domElementIds.agencyDashboard.registerAgencies.newAgencyLink}
               href={immersionFacileAgencyRegistrationHelpFormUrl}
               target="_blank"
               rel="noreferrer"
