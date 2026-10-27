@@ -17,4 +17,8 @@ export const conventionListSelectors = {
     conventionListState,
     ({ establishmentConventionList }) => establishmentConventionList,
   ),
+  adminConventionList: createSelector(
+    conventionListState,
+    ({ adminConventionList }) => adminConventionList,
+  ),
 };

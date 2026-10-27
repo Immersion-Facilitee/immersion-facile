@@ -95,7 +95,8 @@ export const RichTable = ({
   );
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearchValue = useDebounce(searchValue, 500);
-  const searchBarRefOnSubmitRef = useRef(searchBar?.onSubmit).current;
+  const searchBarOnSubmitRef = useRef(searchBar?.onSubmit);
+  searchBarOnSubmitRef.current = searchBar?.onSubmit;
   const tableRef = useRef<HTMLDivElement>(null);
   const headersWithControls = headers.map((header) => {
     if (!header.sort) {
@@ -126,8 +127,8 @@ export const RichTable = ({
   }, [headers, selectedViewMode]);
 
   useEffect(() => {
-    searchBarRefOnSubmitRef?.(debouncedSearchValue);
-  }, [debouncedSearchValue, searchBarRefOnSubmitRef]);
+    searchBarOnSubmitRef.current?.(debouncedSearchValue);
+  }, [debouncedSearchValue]);
 
   useEffect(() => {
     setSelectedViewMode(isLayoutDesktop ? "table" : "grid");
