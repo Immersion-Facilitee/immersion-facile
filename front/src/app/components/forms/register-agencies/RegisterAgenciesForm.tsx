@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
@@ -40,6 +41,7 @@ export const RegisterAgenciesForm = ({
   const [selectedAgencyIds, setSelectedAgencyIds] = useState<AgencyId[]>([]);
 
   const isFetching = useAppSelector(agenciesSelectors.isLoading);
+  const feedback = useAppSelector(agenciesSelectors.feedback);
   const userAgencyIds = currentUser.agencyRights.map(
     (agencyRight) => agencyRight.agency.id,
   );
@@ -50,6 +52,7 @@ export const RegisterAgenciesForm = ({
   const onAgencySearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.currentTarget.value);
     setSelectedAgencyIds([]);
+    dispatch(agenciesSlice.actions.clearFeedback());
     dispatch(
       agenciesSlice.actions.fetchAgencyOptionsRequested({
         [looksLikeSiret(event.currentTarget.value) ? "siret" : "nameIncludes"]:
@@ -105,7 +108,16 @@ export const RegisterAgenciesForm = ({
         Retrouver votre siret sur l'Annuaire des Entreprises
       </a>
 
-      {inputValue && !isFetching && (
+      {feedback.kind === "errored" && (
+        <Alert
+          severity="error"
+          title="Une erreur est survenue"
+          description="Les résultats de votre recherche n'ont pas pu être récupérés."
+          className={fr.cx("fr-mt-2w")}
+        />
+      )}
+
+      {inputValue && !isFetching && feedback.kind !== "errored" && (
         <>
           {agencySearchResults.length > 0 && (
             <AgencySearchWithResults
