@@ -471,7 +471,7 @@ const BeneficiaryDiscussionTable = ({
         id: discussion.id,
         title: discussion.businessName,
         cta: {
-          linkProps: frontRoutes.establishmentDashboardDiscussions({
+          linkProps: frontRoutes.beneficiaryDashboardDiscussions({
             discussionId: discussion.id,
           }),
           children: "Voir la candidature",
@@ -483,7 +483,7 @@ const BeneficiaryDiscussionTable = ({
           <DiscussionListBadges
             key={discussion.id}
             discussion={discussion}
-            viewer="establishment"
+            viewer="potentialBeneficiary"
           />
         ),
         content: (
