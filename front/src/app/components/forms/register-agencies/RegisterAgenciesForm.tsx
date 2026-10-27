@@ -143,6 +143,7 @@ const AgencySearchNoResults = ({ inputValue }: { inputValue: string }) => (
       </strong>
     </p>
     <CallOut
+      bodyAs="div"
       iconId="fr-icon-info-line"
       title="Avant d'inscrire un nouvel organisme"
       buttonProps={{
