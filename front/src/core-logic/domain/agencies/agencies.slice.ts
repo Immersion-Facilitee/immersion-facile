@@ -67,6 +67,7 @@ export const agenciesSlice = createSlice({
     fetchAgencyOptionsFailed: (state, action: PayloadAction<string>) => {
       state.feedback = { kind: "errored", errorMessage: action.payload };
       state.isLoading = false;
+      state.options = [];
     },
     addAgencyRequested: (state, _action: PayloadAction<CreateAgencyDto>) => {
       state.isLoading = true;
@@ -87,6 +88,9 @@ export const agenciesSlice = createSlice({
     addAgencyClearRequested: (state, _action: PayloadAction<void>) => {
       state.feedback = { kind: "idle" };
       state.isLoading = false;
+    },
+    clearFeedback: (state, _action: PayloadAction<void>) => {
+      state.feedback = { kind: "idle" };
     },
   },
 });

@@ -15,6 +15,20 @@ describe("Agencies in store", () => {
   let store: ReduxStore;
   let dependencies: TestDependencies;
   const fakeAgencyId = "1111";
+  const agencyOption: AgencyOption = {
+    id: "0",
+    name: "Agence de Bougoin",
+    kind: "autre",
+    status: "active",
+    address: {
+      streetNumberAndAddress: "",
+      postcode: "75002",
+      departmentCode: "75",
+      city: "Paris",
+    },
+    refersToAgencyName: null,
+  };
+
   beforeEach(() => {
     ({ store, dependencies } = createTestStore());
   });
@@ -77,36 +91,39 @@ describe("Agencies in store", () => {
     });
 
     it("retrieves agencies from API by department code and store in state", () => {
-      // Arrange
-      const agenciesFromApi: AgencyOption[] = [
-        {
-          id: "0",
-          name: "Agence de Bougoin",
-          kind: "autre",
-          status: "active",
-          address: {
-            streetNumberAndAddress: "",
-            postcode: "75002",
-            departmentCode: "75",
-            city: "Paris",
-          },
-          refersToAgencyName: null,
-        },
-      ];
-
       const departmentCode = "11";
 
-      // Execute
       store.dispatch(
         agenciesSlice.actions.fetchAgencyOptionsRequested({ departmentCode }),
       );
       expectIsLoadingToBe(true);
-      dependencies.agencyGateway.agencyOptions$.next(agenciesFromApi);
+      dependencies.agencyGateway.agencyOptions$.next([agencyOption]);
 
-      // Expect
       expectIsLoadingToBe(false);
       expectFeedbackToEqual({ kind: "agencyOptionsFetched" });
-      expectOptionsToEqual(agenciesFromApi);
+      expectOptionsToEqual([agencyOption]);
+    });
+
+    it("clears agency options when fetch fails", () => {
+      ({ store, dependencies } = createTestStore({
+        agencies: {
+          ...agenciesSlice.getInitialState(),
+          options: [agencyOption],
+        },
+      }));
+      expectOptionsToEqual([agencyOption]);
+
+      const errorMessage = "Error fetching agency options";
+      store.dispatch(
+        agenciesSlice.actions.fetchAgencyOptionsRequested({
+          departmentCode: "11",
+        }),
+      );
+      dependencies.agencyGateway.agencyOptions$.error(new Error(errorMessage));
+
+      expectIsLoadingToBe(false);
+      expectFeedbackToEqual({ kind: "errored", errorMessage });
+      expectOptionsToEqual([]);
     });
   });
 

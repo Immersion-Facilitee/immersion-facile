@@ -34,11 +34,14 @@ const getFetchAgencyOptionsEpic: AppEpic<AgencyInfoAction> = (
   action$.pipe(
     filter(agenciesSlice.actions.fetchAgencyOptionsRequested.match),
     switchMap((action) =>
-      dependencies.agencyGateway.listAgencyOptionsByFilter$(action.payload),
-    ),
-    map(agenciesSlice.actions.fetchAgencyOptionsSucceeded),
-    catchEpicError((error) =>
-      agenciesSlice.actions.fetchAgencyOptionsFailed(error.message),
+      dependencies.agencyGateway
+        .listAgencyOptionsByFilter$(action.payload)
+        .pipe(
+          map(agenciesSlice.actions.fetchAgencyOptionsSucceeded),
+          catchEpicError((error) =>
+            agenciesSlice.actions.fetchAgencyOptionsFailed(error.message),
+          ),
+        ),
     ),
   );
 
