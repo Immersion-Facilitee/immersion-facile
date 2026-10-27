@@ -91,6 +91,9 @@ export const makeMagicLinkAuthMiddleware = (
         );
       }
 
+      if (!("applicationId" in payload) && !("userId" in payload))
+        return sendAuthenticationError(res, errors.user.invalidJwt());
+
       req.payloads = { [payloadKey]: payload };
 
       next();
