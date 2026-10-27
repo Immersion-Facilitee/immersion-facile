@@ -1,4 +1,5 @@
 import {
+  type AdminConventionListDto,
   type AgencyUserConventionListDto,
   type BeneficiaryConventionListDto,
   type DataWithPagination,
@@ -6,6 +7,7 @@ import {
   type EstablishmentUserConventionListDto,
   expectToEqual,
   type FlatGetBeneficiaryConventionListParams,
+  type FlatGetConventionsForAdminParams,
   type FlatGetConventionsForAgencyUserParams,
   type FlatGetConventionsForEstablishmentUserParams,
 } from "shared";
@@ -13,6 +15,7 @@ import { conventionListSelectors } from "src/core-logic/domain/connected-user/co
 import {
   type ConventionListState,
   conventionListSlice,
+  initialAdminConventionList,
   initialBeneficiaryConventionList,
   initialConventionWithPagination,
   initialEstablishmentConventionList,
@@ -37,6 +40,7 @@ describe("ConnectedUserConventionList", () => {
     conventionsWithPagination: initialConventionWithPagination,
     beneficiaryConventionList: initialBeneficiaryConventionList,
     establishmentConventionList: initialEstablishmentConventionList,
+    adminConventionList: initialAdminConventionList,
   };
   const jwt = "my-jwt";
 
@@ -695,11 +699,116 @@ describe("ConnectedUserConventionList", () => {
     };
   });
 
+  describe("adminConventionList", () => {
+    const adminConvention: AdminConventionListDto = {
+      id: "admin-convention-1",
+      sourceConventionDraftId: "draft-1",
+      status: "IN_REVIEW",
+      dateSubmission: "2024-01-05",
+      agency: {
+        name: "Mission locale de Paris",
+        kind: "mission-locale",
+        refersToAgencyName: null,
+        departmentName: "Paris",
+      },
+      businessName: "Boulangerie",
+      siret: "12345678901234",
+      immersionAppellation: {
+        romeCode: "D1102",
+        romeLabel: "Boulangerie - viennoiserie",
+        appellationCode: "11573",
+        appellationLabel: "Boulanger / Boulangère",
+      },
+      dateStart: "2024-01-15",
+      dateEnd: "2024-01-20",
+      beneficiary: {
+        firstName: "John",
+        lastName: "Doe",
+      },
+    };
+
+    const adminConventionList: DataWithPagination<AdminConventionListDto> = {
+      data: [adminConvention],
+      pagination: {
+        totalRecords: 1,
+        currentPage: 1,
+        totalPages: 1,
+        numberPerPage: defaultPerPageInWebPagination,
+      },
+    };
+
+    const filters: FlatGetConventionsForAdminParams = {
+      statuses: ["IN_REVIEW"],
+      agencyNameContains: "mission locale",
+      page: 1,
+      perPage: defaultPerPageInWebPagination,
+    };
+
+    it("fetches admin convention list with filters then clears it", () => {
+      store.dispatch(
+        conventionListSlice.actions.fetchAdminConventionListRequested({
+          jwt,
+          filters,
+          feedbackTopic: "admin-convention-list",
+        }),
+      );
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        isLoading: true,
+        adminConventionList: { ...initialAdminConventionList, filters },
+      });
+
+      dependencies.conventionGateway.getConventionsForAdminResult$.next(
+        adminConventionList,
+      );
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        adminConventionList: { ...adminConventionList, filters },
+      });
+
+      store.dispatch(
+        conventionListSlice.actions.clearAdminConventionListRequested(),
+      );
+
+      expectConventionListSelectors(defaultConventionListState);
+    });
+
+    it("on admin convention list fetch failed", () => {
+      store.dispatch(
+        conventionListSlice.actions.fetchAdminConventionListRequested({
+          jwt,
+          filters,
+          feedbackTopic: "admin-convention-list",
+        }),
+      );
+
+      dependencies.conventionGateway.getConventionsForAdminResult$.error(
+        conventionListFetchError,
+      );
+
+      expectConventionListSelectors({
+        ...defaultConventionListState,
+        adminConventionList: { ...initialAdminConventionList, filters },
+      });
+      expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
+        "admin-convention-list": {
+          on: "fetch",
+          level: "error",
+          title: "Problème lors de la récupération des conventions",
+          message: conventionListFetchErrorMessage,
+        },
+      });
+    });
+  });
+
   const expectConventionListSelectors = ({
     isLoading,
     conventionsWithPagination,
     beneficiaryConventionList,
     establishmentConventionList,
+    adminConventionList,
   }: ConventionListState) => {
     expectToEqual(
       conventionListSelectors.isLoading(store.getState()),
@@ -716,6 +825,10 @@ describe("ConnectedUserConventionList", () => {
     expectToEqual(
       conventionListSelectors.establishmentConventionList(store.getState()),
       establishmentConventionList,
+    );
+    expectToEqual(
+      conventionListSelectors.adminConventionList(store.getState()),
+      adminConventionList,
     );
   };
 });

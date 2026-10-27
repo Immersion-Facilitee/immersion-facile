@@ -1,6 +1,7 @@
 import { from, type Observable, Subject } from "rxjs";
 import {
   type AddConventionInput,
+  type AdminConventionListDto,
   type AgencyOption,
   type AgencyUserConventionListDto,
   type ApiConsumerName,
@@ -27,6 +28,7 @@ import {
   type EstablishmentUserConventionListDto,
   type FindSimilarConventionsParams,
   type FlatGetBeneficiaryConventionListParams,
+  type FlatGetConventionsForAdminParams,
   type FlatGetConventionsForAgencyUserParams,
   type FlatGetConventionsForEstablishmentUserParams,
   type FlatGetConventionsWithUnfinalizedAssessmentParams,
@@ -102,6 +104,9 @@ export class InMemoryConventionGateway implements ConventionGateway {
 
   public getConventionsForUserResult$ = new Subject<
     DataWithPagination<AgencyUserConventionListDto>
+  >();
+  public getConventionsForAdminResult$ = new Subject<
+    DataWithPagination<AdminConventionListDto>
   >();
   public getConventionsForEstablishmentUserResult$ = new Subject<
     DataWithPagination<EstablishmentUserConventionListDto>
@@ -327,6 +332,13 @@ export class InMemoryConventionGateway implements ConventionGateway {
     _jwt: string,
   ): Observable<DataWithPagination<AgencyUserConventionListDto>> {
     return this.getConventionsForUserResult$;
+  }
+
+  public getConventionsForAdmin$(
+    _params: FlatGetConventionsForAdminParams,
+    _jwt: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminConventionListDto>> {
+    return this.getConventionsForAdminResult$;
   }
 
   public getConventionsForEstablishmentUser$(

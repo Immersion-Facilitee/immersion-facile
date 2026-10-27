@@ -1,5 +1,4 @@
 import type { AgencyId } from "../agency/agency.dto";
-import type { ConventionId } from "../convention/convention.dto";
 import type { Email } from "../email/email.dto";
 import type { AgencyRole } from "../role/role.dto";
 import type { SiretDto } from "../siret/siret";
@@ -23,10 +22,6 @@ export type RejectConnectedUserRoleForAgencyParams = WithAgencyIdAndUserId & {
 export type WithUserFilters = {
   agencyIds?: AgencyId[];
   agencyRole?: AgencyRole;
-};
-
-export type ManageConventionAdminForm = {
-  conventionId: ConventionId;
 };
 
 export type ManageEstablishmentAdminForm = {

@@ -4,7 +4,6 @@ import {
   agencyIdsSchema,
   agencyRoleSchema,
 } from "../agency/agency.schema";
-import { conventionIdSchema } from "../convention/convention.schema";
 import { emailSchema } from "../email/email.schema";
 import { withEstablishmentBannishmentJustificationSchema } from "../establishment/bannedEstablishmentInformations.schema";
 import { siretSchema } from "../siret/siret.schema";
@@ -17,7 +16,6 @@ import {
 import type {
   BanEstablishmentAdminForm,
   GetUsersFilters,
-  ManageConventionAdminForm,
   ManageEstablishmentAdminForm,
   RejectConnectedUserRoleForAgencyParams,
   UserParamsForAgency,
@@ -53,11 +51,6 @@ export const withUserFiltersSchema: ZodSchemaWithInputMatchingOutput<WithUserFil
   z.object({
     agencyIds: agencyIdsSchema.optional(),
     agencyRole: agencyRoleSchema.optional(),
-  });
-
-export const manageConventionAdminFormSchema: ZodSchemaWithInputMatchingOutput<ManageConventionAdminForm> =
-  z.object({
-    conventionId: conventionIdSchema,
   });
 
 export const manageEstablishmentAdminFormSchema: ZodSchemaWithInputMatchingOutput<ManageEstablishmentAdminForm> =
