@@ -13,6 +13,7 @@ import {
 } from "shared";
 import type { GetApiConsumerById } from "../../domains/core/api-consumer/ports/ApiConsumerRepository";
 import { type JwtKind, makeVerifyJwtES256 } from "../../domains/core/jwt";
+import { conventionSupportedJwtPayloadSchema } from "../../domains/core/jwtPayload.schema";
 import type { TimeGateway } from "../../domains/core/time-gateway/ports/TimeGateway";
 import { createLogger } from "../../utils/logger";
 import type { AppConfig } from "./appConfig";
@@ -90,6 +91,11 @@ export const makeMagicLinkAuthMiddleware = (
           ),
         );
       }
+
+      const payloadValidation =
+        conventionSupportedJwtPayloadSchema.safeParse(payload);
+      if (!payloadValidation.success)
+        return sendAuthenticationError(res, errors.user.invalidJwt());
 
       req.payloads = { [payloadKey]: payload };
 

@@ -6,7 +6,6 @@ import {
   type ConnectedUserDomainJwtPayload,
   type ConventionDomainJwtPayload,
   type ConventionDto,
-  type ConventionRelatedJwtPayload,
   closedOrRejectedAgencyStatuses,
   errors,
   getConventionManageAllowedRoles,
@@ -18,6 +17,7 @@ import { conventionEmailsByRole } from "../../../utils/convention";
 import { isHashMatchPeAdvisorEmail } from "../../../utils/emailHash";
 import { isSomeEmailMatchingEmailHash } from "../../../utils/jwt";
 import { throwErrorOnConventionIdMismatch } from "../../convention/entities/Convention";
+import { conventionRelatedJwtPayloadSchema } from "../../core/jwtPayload.schema";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { getUserWithRights } from "./userRights.helper";
 
@@ -49,7 +49,7 @@ export const throwIfNotAgencyAdminOrBackofficeAdmin = ({
 
 export const throwIfNotAuthorizedForRole = async ({
   uow,
-  jwtPayload,
+  jwtPayload: unsafeJwtPayload,
   authorizedRoles,
   errorToThrow,
   convention,
@@ -58,7 +58,7 @@ export const throwIfNotAuthorizedForRole = async ({
   isValidatorOfAgencyRefersToAllowed,
 }: {
   uow: UnitOfWork;
-  jwtPayload: ConventionRelatedJwtPayload;
+  jwtPayload: unknown;
   authorizedRoles: Role[];
   errorToThrow: Error;
   convention: ConventionDto;
@@ -66,9 +66,14 @@ export const throwIfNotAuthorizedForRole = async ({
   isPeAdvisorAllowed: boolean;
   isValidatorOfAgencyRefersToAllowed: boolean;
 }): Promise<void> => {
+  const payloadValidation =
+    conventionRelatedJwtPayloadSchema.safeParse(unsafeJwtPayload);
+  if (!payloadValidation.success) throw errorToThrow;
+  const jwtPayload = payloadValidation.data;
+
   const agency = await agencyWithRightToAgencyDto(uow, agencyWithUserRights);
   if ("userId" in jwtPayload) {
-    await onConnectedUser({
+    return onConnectedUser({
       uow,
       jwtPayload,
       authorizedRoles,
@@ -80,18 +85,16 @@ export const throwIfNotAuthorizedForRole = async ({
     });
   }
 
-  if ("applicationId" in jwtPayload) {
-    await onMagicLink({
-      uow,
-      jwtPayload,
-      authorizedRoles,
-      errorToThrow,
-      convention,
-      agency,
-      isPeAdvisorAllowed,
-      isValidatorOfAgencyRefersToAllowed,
-    });
-  }
+  return onMagicLink({
+    uow,
+    jwtPayload,
+    authorizedRoles,
+    errorToThrow,
+    convention,
+    agency,
+    isPeAdvisorAllowed,
+    isValidatorOfAgencyRefersToAllowed,
+  });
 };
 
 const onMagicLink = async ({

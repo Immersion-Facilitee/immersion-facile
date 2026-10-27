@@ -12,7 +12,6 @@ import {
   type ConventionId,
   type ConventionMagicLinkRoutes,
   type ConventionReadDto,
-  type ConventionRole,
   conventionMagicLinkRoutes,
   currentJwtVersions,
   defaultMonthsThresholdForConventionsListing,
@@ -1451,7 +1450,7 @@ describe("convention e2e", () => {
       const jwt = generateConventionJwt(
         createConventionMagicLinkPayload({
           id: conventionWithValidStatus.id,
-          role: "agency-viewer" as ConventionRole,
+          role: "establishment-tutor",
           email: conventionWithValidStatus.establishmentTutor.email,
           now: gateways.timeGateway.now(),
         }),
