@@ -4,10 +4,12 @@ import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
 import type { AbsoluteUrl } from "shared";
 
 export const MetabaseFullScreenButton = ({
+  id,
   url,
   tooltipText,
   label = "Ouvrir en plein écran",
 }: {
+  id?: string;
   url: AbsoluteUrl;
   label?: string;
   tooltipText?: string;
@@ -16,6 +18,7 @@ export const MetabaseFullScreenButton = ({
     return (
       <Tooltip title={tooltipText}>
         <Button
+          id={id}
           linkProps={{
             target: "_blank",
             rel: "noreferrer",
@@ -32,6 +35,7 @@ export const MetabaseFullScreenButton = ({
 
   return (
     <Button
+      id={id}
       linkProps={{
         target: "_blank",
         rel: "noreferrer",

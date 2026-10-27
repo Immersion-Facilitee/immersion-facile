@@ -60,12 +60,15 @@ export type EstablishmentUserAccessFilter = {
 
 export type GetPaginatedConventionsFilters = {
   search?: string;
+  identifierOrNameSearch?: string;
   statuses?: ConventionStatus[];
   agencyIds?: AgencyId[];
+  agencyNameContains?: string;
   omitStatusesForAgencies?: OmitStatusesForAgenciesFilter;
   dateStart?: DateFilter;
   dateEnd?: DateFilter;
   dateSubmission?: DateFilter;
+  dateValidation?: DateFilter;
   assessmentCompletionStatus?: AssessmentCompletionStatusFilter[];
   beneficiaryEmail?: Email;
   establishmentUserAccess?: EstablishmentUserAccessFilter;
@@ -75,6 +78,7 @@ export type GetPaginatedConventionsParams = {
   filters?: GetPaginatedConventionsFilters;
   sort?: WithSort<GetPaginatedConventionsSortBy>["sort"];
   pagination: Required<PaginationQueryParams>;
+  maxTotalRecords?: number;
 };
 
 export type GetConventionIdsParams = {

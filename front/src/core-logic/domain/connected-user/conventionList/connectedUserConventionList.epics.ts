@@ -106,8 +106,36 @@ const fetchEstablishmentConventionListEpic: ConnectedUserConventionListEpic = (
     ),
   );
 
+const fetchAdminConventionListEpic: ConnectedUserConventionListEpic = (
+  action$,
+  _state$,
+  { conventionGateway },
+) =>
+  action$.pipe(
+    filter(conventionListSlice.actions.fetchAdminConventionListRequested.match),
+    switchMap((action) =>
+      conventionGateway
+        .getConventionsForAdmin$(action.payload.filters, action.payload.jwt)
+        .pipe(
+          map((adminConventionList) =>
+            conventionListSlice.actions.fetchAdminConventionListSucceeded({
+              adminConventionList,
+              feedbackTopic: action.payload.feedbackTopic,
+            }),
+          ),
+          catchEpicError((error) =>
+            conventionListSlice.actions.fetchAdminConventionListFailed({
+              errorMessage: error.message,
+              feedbackTopic: action.payload.feedbackTopic,
+            }),
+          ),
+        ),
+    ),
+  );
+
 export const connectedUserConventionListEpics = [
   fetchConventionListEpic,
   fetchBeneficiaryConventionListEpic,
   fetchEstablishmentConventionListEpic,
+  fetchAdminConventionListEpic,
 ];

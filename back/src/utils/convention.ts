@@ -14,6 +14,8 @@ import {
   type Email,
   errors,
   executeInSequence,
+  type FtConnectIdentity,
+  type FtConnectIdentityWithoutToken,
   isConventionActorRole,
   isTruthy,
   makeEmptyLastReminders,
@@ -240,15 +242,6 @@ export const conventionDtosToAgencyUserConventionListDtos = async (
 
     const { beneficiary } = convention.signatories;
 
-    const federatedIdentity = beneficiary.federatedIdentity
-      ? {
-          provider: beneficiary.federatedIdentity.provider,
-          ...(beneficiary.federatedIdentity.payload
-            ? { payload: beneficiary.federatedIdentity.payload }
-            : {}),
-        }
-      : undefined;
-
     return {
       id: convention.id,
       status: convention.status,
@@ -263,11 +256,25 @@ export const conventionDtosToAgencyUserConventionListDtos = async (
       beneficiary: {
         firstName: beneficiary.firstName,
         lastName: beneficiary.lastName,
-        federatedIdentity,
+        federatedIdentity: toFederatedIdentityWithoutToken(
+          beneficiary.federatedIdentity,
+        ),
       },
     };
   });
 };
+
+export const toFederatedIdentityWithoutToken = (
+  federatedIdentity: FtConnectIdentity | undefined,
+): FtConnectIdentityWithoutToken | undefined =>
+  federatedIdentity
+    ? {
+        provider: federatedIdentity.provider,
+        ...(federatedIdentity.payload
+          ? { payload: federatedIdentity.payload }
+          : {}),
+      }
+    : undefined;
 
 const getConventionLastRemindersFields = async (
   convention: ConventionDto,

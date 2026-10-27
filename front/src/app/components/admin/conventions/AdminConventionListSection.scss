@@ -1,0 +1,20 @@
+.im-admin-convention-list {
+  tbody tr {
+    position: relative;
+
+    &:hover td {
+      background-color: var(--hover);
+    }
+  }
+
+  &__row-link {
+    background-image: none;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+  }
+}
