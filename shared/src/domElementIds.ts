@@ -1001,6 +1001,7 @@ export const domElementIds = {
   agencyDashboard: {
     registerAgencies: {
       newAgencyButton: "im-register-agencies__new-agency-button",
+      newAgencyLink: "im-register-agencies__new-agency-link",
       showRegistrationFormButton:
         "im-register-agencies__show-registration-form-button",
       table: "im-register-agencies-table",
