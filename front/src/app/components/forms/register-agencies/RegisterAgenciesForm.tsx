@@ -8,10 +8,11 @@ import {
   type ChangeEvent,
   type ElementRef,
   Fragment,
+  useEffect,
   useRef,
   useState,
 } from "react";
-import { Loader, ResponsiveTable, Tag } from "react-design-system";
+import { Loader, ResponsiveTable, Tag, useDebounce } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AgencyId,
@@ -35,6 +36,7 @@ export const RegisterAgenciesForm = ({
 }) => {
   const dispatch = useDispatch();
   const [inputValue, setInputValue] = useState<SiretDto | undefined>(undefined);
+  const debouncedInputValue = useDebounce(inputValue, 500);
 
   const agencySearchBySiretOrNameInput = useRef<ElementRef<"input">>(null);
 
@@ -52,14 +54,6 @@ export const RegisterAgenciesForm = ({
   const onAgencySearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.currentTarget.value);
     setSelectedAgencyIds([]);
-    dispatch(agenciesSlice.actions.clearFeedback());
-    dispatch(
-      agenciesSlice.actions.fetchAgencyOptionsRequested({
-        [looksLikeSiret(event.currentTarget.value) ? "siret" : "nameIncludes"]:
-          event.currentTarget.value,
-        status: ["active", "from-api-PE"],
-      }),
-    );
   };
 
   if (
@@ -67,15 +61,20 @@ export const RegisterAgenciesForm = ({
     currentUser.proConnect &&
     currentUser.agencyRights.length === 0
   ) {
-    const siret = currentUser.proConnect.siret;
-    setInputValue(siret);
+    setInputValue(currentUser.proConnect.siret);
+  }
+
+  useEffect(() => {
+    if (!debouncedInputValue) return;
+    dispatch(agenciesSlice.actions.clearFeedback());
     dispatch(
       agenciesSlice.actions.fetchAgencyOptionsRequested({
-        siret,
+        [looksLikeSiret(debouncedInputValue) ? "siret" : "nameIncludes"]:
+          debouncedInputValue,
         status: ["active", "from-api-PE"],
       }),
     );
-  }
+  }, [debouncedInputValue, dispatch]);
 
   return (
     <>
