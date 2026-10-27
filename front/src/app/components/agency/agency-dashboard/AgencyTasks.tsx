@@ -118,26 +118,34 @@ export const AgencyTasks = ({
     }
   }, [connectedUserJwt, currentUser, dispatch]);
 
+  const isLoadingTasks =
+    isLoadingConventionsToManage ||
+    isLoadingConventionsWithUnfinalizedAssessment ||
+    isLoadingConventionsWithBroadcastError;
+
+  const hasNoUrgentTasks =
+    currentUser !== null &&
+    !isLoadingTasks &&
+    conventionsToManagePagination?.totalRecords === 0 &&
+    conventionsWithUnfinalizedAssessmentPagination?.totalRecords === 0 &&
+    conventionsWithErroredBroadcastFeedbackPagination.pagination
+      .totalRecords === 0;
+
   return (
     <HeadingSection
       title="Tâches à traiter"
       titleAs={titleAs}
       className={fr.cx("fr-mt-2w", "fr-mb-4w")}
     >
-      {(isLoadingConventionsToManage ||
-        isLoadingConventionsWithUnfinalizedAssessment ||
-        isLoadingConventionsWithBroadcastError) && <Loader />}
-      {conventionsToManagePagination?.totalRecords === 0 &&
-        conventionsWithUnfinalizedAssessmentPagination?.totalRecords === 0 &&
-        conventionsWithErroredBroadcastFeedbackPagination.pagination
-          .totalRecords === 0 && (
-          <p>
-            Tout est à jour ! 🎉 Vous n’avez aucune action urgente à effectuer
-            pour le moment. <br />
-            Pensez à consulter le tableau des conventions pour suivre leur
-            avancement ou préparer vos prochaines démarches.
-          </p>
-        )}
+      {isLoadingTasks && <Loader />}
+      {hasNoUrgentTasks && (
+        <p>
+          Tout est à jour ! 🎉 Vous n’avez aucune action urgente à effectuer
+          pour le moment. <br />
+          Pensez à consulter le tableau des conventions pour suivre leur
+          avancement ou préparer vos prochaines démarches.
+        </p>
+      )}
       <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
         {conventionsToManagePagination?.totalRecords !== undefined &&
           conventionsToManagePagination.totalRecords > 0 && (

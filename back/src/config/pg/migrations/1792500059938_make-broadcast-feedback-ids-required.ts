@@ -9,6 +9,16 @@ const unhandledErrorsIndexName = "idx_bf_unhandled_errors";
 export async function up(pgm: MigrationBuilder): Promise<void> {
   pgm.noTransaction();
 
+  pgm.sql(`
+    DELETE FROM broadcast_feedbacks
+    WHERE convention_id IS NULL
+       OR agency_id IS NULL
+       OR NOT EXISTS (
+         SELECT 1 FROM conventions
+         WHERE conventions.id = broadcast_feedbacks.convention_id
+       );
+  `);
+
   pgm.addConstraint("broadcast_feedbacks", conventionIdFk, {
     foreignKeys: {
       columns: "convention_id",
