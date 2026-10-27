@@ -29,6 +29,7 @@ import {
   type GetPaginatedConventionsSortBy,
   type PaginationQueryParams,
   pipeWithValue,
+  type SiretDto,
   unvalidatedConventionStatuses,
   type WithSort,
 } from "shared";
@@ -269,6 +270,7 @@ export class PgConventionQueries implements ConventionQueries {
     filters = {},
     pagination,
     sort,
+    maxTotalRecords,
   }: GetPaginatedConventionsParams): Promise<
     DataWithPagination<ConventionDto>
   > {
@@ -276,12 +278,20 @@ export class PgConventionQueries implements ConventionQueries {
       search,
       statuses,
       agencyIds,
+      agencyNameContains,
       omitStatusesForAgencies,
       dateStart,
       dateEnd,
       dateSubmission,
+      dateValidation,
       assessmentCompletionStatus,
       beneficiaryEmail,
+      beneficiaryNameContains,
+      beneficiaryRepresentativeEmail,
+      establishmentTutorEmail,
+      establishmentRepresentativeEmail,
+      businessNameContains,
+      siret,
       establishmentUserAccess,
       ...rest
     } = filters;
@@ -303,20 +313,50 @@ export class PgConventionQueries implements ConventionQueries {
       createPaginatedConventionsBaseBuilder({
         transaction: this.transaction,
       }),
+      (builder) =>
+        pipeWithValue(
+          builder,
+          filterDate("date_start", dateStart),
+          filterDate("date_end", dateEnd),
+          filterDate("date_submission", dateSubmission),
+          filterDate("date_validation", dateValidation),
+        ),
       filterByAgencyIds(agencyIds),
-      filterByBeneficiaryEmail(beneficiaryEmail),
+      filterByAgencyNameContains(agencyNameContains),
+      (builder) =>
+        pipeWithValue(
+          builder,
+          filterByBeneficiaryEmail(beneficiaryEmail),
+          filterByBeneficiaryNameContains(beneficiaryNameContains),
+          filterByActorEmail("br", beneficiaryRepresentativeEmail),
+          filterByActorEmail("et", establishmentTutorEmail),
+          filterByActorEmail("er", establishmentRepresentativeEmail),
+        ),
+      filterByBusinessNameContains(businessNameContains),
+      filterBySiret(siret),
       filterByEstablishmentUserAccess(establishmentUserAccess),
       filterOmitStatusesForAgencies(omitStatusesForAgencies),
       filterSearch(trimmedSearch),
-      filterDate("date_start", dateStart),
-      filterDate("date_end", dateEnd),
-      filterDate("date_submission", dateSubmission),
       filterInList("status", statuses),
       filterByAssessmentCompletionStatus(assessmentCompletionStatus),
     );
 
-    const countQuery = filteredBuilder.select((eb) =>
-      sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
+    const countQuery = this.transaction
+      .selectFrom(
+        (maxTotalRecords
+          ? filteredBuilder.limit(maxTotalRecords)
+          : filteredBuilder
+        )
+          .select("conventions.id")
+          .as("counted_conventions"),
+      )
+      .select((eb) =>
+        sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
+      );
+
+    const limitAndOffset = toLimitAndOffsetWithinMaxTotalRecords(
+      pagination,
+      maxTotalRecords,
     );
 
     const dataQuery = pipeWithValue(
@@ -325,14 +365,14 @@ export class PgConventionQueries implements ConventionQueries {
         filteredBuilder: pipeWithValue(
           filteredBuilder,
           sortConventions(sort),
-          applyPagination(pagination),
+          applyLimitAndOffset(limitAndOffset),
         ),
       }),
       sortConventions(sort),
     );
 
     const [data, countResult] = await Promise.all([
-      dataQuery.execute(),
+      limitAndOffset.limit > 0 ? dataQuery.execute() : [],
       countQuery.executeTakeFirstOrThrow(),
     ]);
 
@@ -624,13 +664,27 @@ export class PgConventionQueries implements ConventionQueries {
   }
 }
 
-const applyPagination =
-  (pagination: Required<PaginationQueryParams>) =>
-  <T extends ConventionBaseQueryBuilder>(builder: T): T => {
-    const { page, perPage } = pagination;
-    const offset = (page - 1) * perPage;
-    return builder.limit(perPage).offset(offset) as T;
+type LimitAndOffset = { limit: number; offset: number };
+
+// Point of attention: pages beyond maxTotalRecords are not reachable from the UI,
+// they return no data rather than records outside the announced total.
+const toLimitAndOffsetWithinMaxTotalRecords = (
+  { page, perPage }: Required<PaginationQueryParams>,
+  maxTotalRecords: number | undefined,
+): LimitAndOffset => {
+  const offset = (page - 1) * perPage;
+  return {
+    offset,
+    limit: maxTotalRecords
+      ? Math.max(Math.min(perPage, maxTotalRecords - offset), 0)
+      : perPage,
   };
+};
+
+const applyLimitAndOffset =
+  ({ limit, offset }: LimitAndOffset) =>
+  <T extends ConventionBaseQueryBuilder>(builder: T): T =>
+    builder.limit(limit).offset(offset) as T;
 
 const sortConventions =
   (sort?: WithSort<GetPaginatedConventionsSortBy>["sort"]) =>
@@ -668,6 +722,51 @@ const filterByBeneficiaryEmail =
   (email: Email | undefined) =>
   (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
     email ? builder.where("b.email", "=", email) : builder;
+
+const filterByActorEmail =
+  (actorAlias: "br" | "et" | "er", email: Email | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
+    email ? builder.where(`${actorAlias}.email`, "=", email) : builder;
+
+const filterByAgencyNameContains =
+  (agencyNameContains: string | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
+    agencyNameContains
+      ? builder.where("conventions.agency_id", "in", (eb) =>
+          eb
+            .selectFrom("agencies")
+            .select("agencies.id")
+            .where("agencies.name", "ilike", `%${agencyNameContains}%`),
+        )
+      : builder;
+
+const filterByBeneficiaryNameContains =
+  (beneficiaryNameContains: string | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder => {
+    if (!beneficiaryNameContains) return builder;
+    const pattern = `%${beneficiaryNameContains}%`;
+
+    return builder.where(
+      (eb) =>
+        sql<boolean>`${eb.ref("b.first_name")} || ' ' || ${eb.ref("b.last_name")} || ' ' || ${eb.ref("b.first_name")} ILIKE ${pattern}`,
+    );
+  };
+
+const filterByBusinessNameContains =
+  (businessNameContains: string | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
+    businessNameContains
+      ? builder.where(
+          "conventions.business_name",
+          "ilike",
+          `%${businessNameContains}%`,
+        )
+      : builder;
+
+const filterBySiret =
+  (siret: SiretDto | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
+    siret ? builder.where("conventions.siret", "=", siret) : builder;
 
 const filterByEstablishmentUserAccess =
   (establishmentUserAccess: EstablishmentUserAccessFilter | undefined) =>

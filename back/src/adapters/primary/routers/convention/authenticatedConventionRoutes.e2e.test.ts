@@ -588,6 +588,137 @@ describe("authenticatedConventionRoutes", () => {
     });
   });
 
+  describe(`${displayRouteName(
+    authenticatedConventionRoutes.getConventionsForAdmin,
+  )}`, () => {
+    const admin = new ConnectedUserBuilder()
+      .withId("admin")
+      .withEmail("admin@mail.com")
+      .withIsAdmin(true)
+      .buildUser();
+    const dupontConvention = new ConventionDtoBuilder()
+      .withId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
+      .withAgencyId(agency.id)
+      .withBusinessName("Boulangerie Dupont")
+      .build();
+    const martinConvention = new ConventionDtoBuilder()
+      .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
+      .withAgencyId(agency.id)
+      .withBusinessName("Boulangerie Martin")
+      .build();
+
+    beforeEach(() => {
+      inMemoryUow.userRepository.users = [validator, admin];
+      inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
+      inMemoryUow.conventionRepository.setConventions([
+        dupontConvention,
+        martinConvention,
+      ]);
+    });
+
+    it("401 - Unauthorized when not correctly authenticated", async () => {
+      const response = await httpClient.getConventionsForAdmin({
+        headers: { authorization: "invalid-token" },
+        queryParams: {},
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
+      });
+    });
+
+    it("403 - Forbidden when user is not backoffice admin", async () => {
+      const response = await httpClient.getConventionsForAdmin({
+        headers: { authorization: validToken },
+        queryParams: {},
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: errors.user.forbidden({ userId: validator.id }).message,
+        },
+      });
+    });
+
+    it("400 - Bad request when an email filter is invalid", async () => {
+      const response = await httpClient.getConventionsForAdmin({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: admin.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        queryParams: { establishmentTutorEmail: "not-an-email" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 400,
+        body: {
+          issues: [
+            "establishmentTutorEmail : Veuillez saisir une adresse e-mail valide - email fourni : 'not-an-email'",
+          ],
+          message:
+            "Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: GET /conventions-for-admin",
+          status: 400,
+        },
+      });
+    });
+
+    it("200 - returns conventions matching the filters", async () => {
+      const response = await httpClient.getConventionsForAdmin({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: admin.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        queryParams: {
+          page: 1,
+          perPage: 10,
+          businessNameContains: "dupont",
+          statuses: [dupontConvention.status],
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          data: [
+            {
+              id: dupontConvention.id,
+              status: dupontConvention.status,
+              dateSubmission: dupontConvention.dateSubmission,
+              agency: {
+                name: agency.name,
+                kind: agency.kind,
+                refersToAgencyName: null,
+                departmentName: "Vienne",
+              },
+              businessName: dupontConvention.businessName,
+              siret: dupontConvention.siret,
+              immersionAppellation: dupontConvention.immersionAppellation,
+              dateStart: dupontConvention.dateStart,
+              dateEnd: dupontConvention.dateEnd,
+              beneficiary: {
+                firstName: dupontConvention.signatories.beneficiary.firstName,
+                lastName: dupontConvention.signatories.beneficiary.lastName,
+              },
+            },
+          ],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            numberPerPage: 10,
+            totalRecords: 1,
+          },
+        },
+      });
+    });
+  });
+
   describe("GetConventionsForEstablishmentUser", () => {
     const establishmentUser = new ConnectedUserBuilder()
       .withId("establishment-user")

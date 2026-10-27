@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  type AdminConventionListDto,
   type AgencyUserConventionListDto,
   type BeneficiaryConventionListDto,
   type ConnectedUserJwt,
@@ -7,6 +8,7 @@ import {
   defaultPerPageInWebPagination,
   type EstablishmentUserConventionListDto,
   type FlatGetBeneficiaryConventionListParams,
+  type FlatGetConventionsForAdminParams,
   type FlatGetConventionsForAgencyUserParams,
   type FlatGetConventionsForEstablishmentUserParams,
 } from "shared";
@@ -31,6 +33,16 @@ export type FetchEstablishmentConventionListRequestedPayload = {
   filters: FlatGetConventionsForEstablishmentUserParams;
 };
 
+export type FetchAdminConventionListRequestedPayload = {
+  jwt: ConnectedUserJwt;
+  filters: FlatGetConventionsForAdminParams;
+};
+
+export type AdminConventionListState =
+  DataWithPagination<AdminConventionListDto> & {
+    filters: FlatGetConventionsForAdminParams;
+  };
+
 export type BeneficiaryConventionListState = BeneficiaryConventionListDto & {
   filters: FlatGetBeneficiaryConventionListParams;
 };
@@ -44,6 +56,7 @@ export type ConventionListState = {
   establishmentConventionList: DataWithPagination<EstablishmentUserConventionListDto> & {
     filters: FlatGetConventionsForEstablishmentUserParams;
   };
+  adminConventionList: AdminConventionListState;
 };
 
 export const initialConventionWithPagination: DataWithPagination<AgencyUserConventionListDto> & {
@@ -95,11 +108,26 @@ export const initialEstablishmentConventionList: DataWithPagination<Establishmen
   },
 };
 
+export const initialAdminConventionList: AdminConventionListState = {
+  data: [],
+  pagination: {
+    totalRecords: 0,
+    currentPage: 1,
+    totalPages: 1,
+    numberPerPage: defaultPerPageInWebPagination,
+  },
+  filters: {
+    page: 1,
+    perPage: defaultPerPageInWebPagination,
+  },
+};
+
 const initialConventionListState: ConventionListState = {
   isLoading: false,
   conventionsWithPagination: initialConventionWithPagination,
   beneficiaryConventionList: initialBeneficiaryConventionList,
   establishmentConventionList: initialEstablishmentConventionList,
+  adminConventionList: initialAdminConventionList,
 };
 
 export const conventionListSlice = createSlice({
@@ -203,6 +231,39 @@ export const conventionListSlice = createSlice({
 
     clearEstablishmentConventionListRequested: (state) => {
       state.establishmentConventionList = initialEstablishmentConventionList;
+    },
+
+    fetchAdminConventionListRequested: (
+      state,
+      action: PayloadActionWithFeedbackTopic<FetchAdminConventionListRequestedPayload>,
+    ) => {
+      state.isLoading = true;
+      state.adminConventionList = {
+        ...state.adminConventionList,
+        filters: action.payload.filters,
+      };
+    },
+    fetchAdminConventionListSucceeded: (
+      state,
+      action: PayloadActionWithFeedbackTopic<{
+        adminConventionList: DataWithPagination<AdminConventionListDto>;
+      }>,
+    ) => {
+      state.adminConventionList = {
+        ...state.adminConventionList,
+        ...action.payload.adminConventionList,
+      };
+      state.isLoading = false;
+    },
+    fetchAdminConventionListFailed: (
+      state,
+      _action: PayloadActionWithFeedbackTopicError,
+    ) => {
+      state.isLoading = false;
+    },
+
+    clearAdminConventionListRequested: (state) => {
+      state.adminConventionList = initialAdminConventionList;
     },
   },
 });
