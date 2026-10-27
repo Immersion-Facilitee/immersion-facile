@@ -223,6 +223,42 @@ const multipleBeneficiariesError: BroadcastFeedbackError = {
     ),
 };
 
+const unknownEstablishmentError: BroadcastFeedbackError = {
+  description: "L'entreprise n'existe pas au sein d'Oscar",
+  solution: (statusCategory) =>
+    statusCategory === "pendingValidation" ? (
+      <>
+        <p>
+          Je crée l'entreprise via RCE, si besoin, je contacte mon référent
+          métier.
+        </p>
+        <ul>
+          <li>
+            Je peux rediffuser la convention pour qu’elle s’installe dans mes
+            applicatifs,
+          </li>
+          <li>
+            Ou dès validation de la convention, elle s’installera
+            automatiquement.
+          </li>
+        </ul>
+      </>
+    ) : (
+      <>
+        <p>
+          Je crée l'entreprise via RCE, si besoin, je contacte mon référent
+          métier.
+        </p>
+        <ul>
+          <li>
+            Je rediffuse la convention pour qu’elle s’installe dans mes
+            applicatifs.
+          </li>
+        </ul>
+      </>
+    ),
+};
+
 export const broadcastFeedbackErrorMessageMap: Record<
   FunctionalBroadcastFeedbackErrorMessage,
   BroadcastFeedbackError
@@ -431,6 +467,8 @@ export const broadcastFeedbackErrorMessageMap: Record<
       </>
     ),
   },
+  "Etablissement inconnu du référentiel employeur de France Travail":
+    unknownEstablishmentError,
 } satisfies Record<
   FunctionalBroadcastFeedbackErrorMessage,
   BroadcastFeedbackError

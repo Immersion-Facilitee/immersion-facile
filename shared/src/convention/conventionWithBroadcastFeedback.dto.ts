@@ -54,6 +54,7 @@ export const functionalBroadcastFeedbackErrorMessage = [
   "Plusieurs Identifiants nationaux DE trouvés avec mail et téléphone ",
   "Le bénéficiaire FT connect est un candidat",
   "Accord non signé pour ce type de structure d'accompagnement",
+  "Etablissement inconnu du référentiel employeur de France Travail",
 ] as const;
 
 export type FunctionalBroadcastFeedbackErrorMessage =
