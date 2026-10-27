@@ -171,6 +171,7 @@ describe("InclusionConnected", () => {
         new Error(errorMessage),
       );
       expectCurrentUserToBe(null);
+      expectConnectedUserSelectorIsLoadingToBe(false);
       expectToEqual(authSelectors.federatedIdentity(store.getState()), null);
     });
 
