@@ -1628,7 +1628,7 @@ ${profile ? `\n<strong>En savoir plus sur son profil :</strong>\n\n${profile}` :
             target: "_blank",
           },
           content: `<strong>${conventionsToManage} action(s) urgente(s)</strong>
-        Ces conventions démarrent dans moins de 5 jours et nécessitent votre action.`,
+          Ces conventions ont déjà commencé ou démarrent dans les 5 jours et nécessitent une action de votre part.`,
         },
         subContent: `${[
           conventionsToReview > 0 &&
