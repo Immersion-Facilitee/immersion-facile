@@ -4,6 +4,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
 import Input from "@codegouvfr/react-dsfr/Input";
+import { partition } from "ramda";
 import {
   type ChangeEvent,
   type ElementRef,
@@ -20,6 +21,7 @@ import {
   agencyKindToLabelIncludingIFAndPrepa,
   type ConnectedUser,
   domElementIds,
+  frontRoutes,
   immersionFacileAgencyRegistrationHelpFormUrl,
   looksLikeSiret,
   type SiretDto,
@@ -47,8 +49,9 @@ export const RegisterAgenciesForm = ({
   const userAgencyIds = currentUser.agencyRights.map(
     (agencyRight) => agencyRight.agency.id,
   );
-  const agencySearchResults = useAppSelector(agenciesSelectors.options).filter(
-    (agency) => !userAgencyIds.includes(agency.id),
+  const [alreadyRegisteredAgencies, agencySearchResults] = partition(
+    (agency) => userAgencyIds.includes(agency.id),
+    useAppSelector(agenciesSelectors.options),
   );
 
   const onAgencySearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -127,7 +130,10 @@ export const RegisterAgenciesForm = ({
             />
           )}
           {agencySearchResults.length === 0 && (
-            <AgencySearchNoResults inputValue={inputValue} />
+            <AgencySearchNoResults
+              inputValue={inputValue}
+              alreadyRegisteredAgencies={alreadyRegisteredAgencies}
+            />
           )}
         </>
       )}
@@ -135,42 +141,73 @@ export const RegisterAgenciesForm = ({
   );
 };
 
-const AgencySearchNoResults = ({ inputValue }: { inputValue: string }) => (
-  <>
-    <p className={fr.cx("fr-mt-4w")}>
-      <strong>
-        Aucun organisme trouvé pour votre recherche "{inputValue}"
-      </strong>
-    </p>
-    <CallOut
-      bodyAs="div"
-      iconId="fr-icon-info-line"
-      title="Avant d'inscrire un nouvel organisme"
-      buttonProps={{
-        children: "Inscrire un nouvel organisme",
-        id: domElementIds.agencyDashboard.registerAgencies.newAgencyButton,
-        linkProps: {
-          href: immersionFacileAgencyRegistrationHelpFormUrl,
+const AgencySearchNoResults = ({
+  inputValue,
+  alreadyRegisteredAgencies,
+}: {
+  inputValue: string;
+  alreadyRegisteredAgencies: AgencyOption[];
+}) =>
+  alreadyRegisteredAgencies.length > 0 ? (
+    <>
+      <h3 className={fr.cx("fr-mt-4w")}>
+        Cet organisme est déjà dans votre espace
+      </h3>
+      <p>
+        {alreadyRegisteredAgencies[0].name} est déjà dans vos organismes ou vous
+        avez déjà une demande en attente.
+      </p>
+      <p>
+        Sur cette page vous trouverez la liste des administrateurs de
+        l'organisme. Contactez-les pour modifier vos droits ou relancer votre
+        demande.
+      </p>
+      <Button
+        linkProps={{
+          href: frontRoutes.agencyDashboardAgencies().href,
           target: "_blank",
           rel: "noreferrer",
-        },
-      }}
-    >
-      <ol className={fr.cx("fr-text--md")}>
-        <li>
-          Essayez une autre méthode de recherche : par exemple, recherchez par
-          nom de votre agence en commençant à taper quelques lettres à la place
-          du numéro de SIRET.
-        </li>
-        <li>
-          Si vous êtes certain·e que cet organisme n'existe pas encore sur la
-          plateforme, inscrivez-le&nbsp;: vous pourrez valider ses conventions
-          en ligne et accéder à ses statistiques.
-        </li>
-      </ol>
-    </CallOut>
-  </>
-);
+        }}
+      >
+        Voir mes organismes
+      </Button>
+    </>
+  ) : (
+    <>
+      <p className={fr.cx("fr-mt-4w")}>
+        <strong>
+          Aucun organisme trouvé pour votre recherche "{inputValue}"
+        </strong>
+      </p>
+      <CallOut
+        bodyAs="div"
+        iconId="fr-icon-info-line"
+        title="Avant d'inscrire un nouvel organisme"
+        buttonProps={{
+          children: "Inscrire un nouvel organisme",
+          id: domElementIds.agencyDashboard.registerAgencies.newAgencyButton,
+          linkProps: {
+            href: immersionFacileAgencyRegistrationHelpFormUrl,
+            target: "_blank",
+            rel: "noreferrer",
+          },
+        }}
+      >
+        <ol className={fr.cx("fr-text--md")}>
+          <li>
+            Essayez une autre méthode de recherche : par exemple, recherchez par
+            nom de votre agence en commençant à taper quelques lettres à la
+            place du numéro de SIRET.
+          </li>
+          <li>
+            Si vous êtes certain·e que cet organisme n'existe pas encore sur la
+            plateforme, inscrivez-le&nbsp;: vous pourrez valider ses conventions
+            en ligne et accéder à ses statistiques.
+          </li>
+        </ol>
+      </CallOut>
+    </>
+  );
 
 const AgencySearchWithResults = ({
   inputValue,
