@@ -25,11 +25,15 @@ export const RegisterUsersToAgencies = () => {
   const feedback = useAppSelector(connectedUsersAdminSelectors.feedback);
 
   useEffect(() => {
+    dispatch(connectedUsersAdminSlice.actions.feedbackClearRequested());
     dispatch(
       connectedUsersAdminSlice.actions.fetchConnectedUsersToReviewRequested({
         agencyRole: "to-review",
       }),
     );
+    return () => {
+      dispatch(connectedUsersAdminSlice.actions.feedbackClearRequested());
+    };
   }, [dispatch]);
 
   useEffect(() => {

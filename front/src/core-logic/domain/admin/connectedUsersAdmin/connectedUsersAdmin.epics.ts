@@ -210,13 +210,11 @@ const refetchUsersToReviewOnRegistrationDecisionEpic: ConnectedUsersAdminActionE
           ),
       ),
       mergeMap(() => {
-        const filters = state$.value.admin.connectedUsersAdmin
-          .usersToReviewFilters ?? {
-          agencyRole: "to-review" as const,
-        };
+        const { usersToReviewFilters } = state$.value.admin.connectedUsersAdmin;
+        if (!usersToReviewFilters) return EMPTY;
         return [
           connectedUsersAdminSlice.actions.fetchConnectedUsersToReviewRequested(
-            filters,
+            usersToReviewFilters,
           ),
         ];
       }),
