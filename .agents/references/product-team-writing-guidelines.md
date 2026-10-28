@@ -17,10 +17,7 @@ Do not include filenames, function names, code excerpts or low-level implementat
 
 ## Pull request
 
-Use one of these title formats:
-
-- `#<issue-number> - <clear French description>`;
-- `#<issue-number> - Tech - <clear French description>` when the change only affects infrastructure, tooling, performance, CI/CD, dependencies, internal refactoring or maintenance with no visible functional impact.
+Use the title format `#<issue-number> - <clear French description>`. Do not add a technical prefix, even when the change only affects infrastructure, tooling, performance, CI/CD, dependencies, internal refactoring or maintenance.
 
 Start the body with:
 
