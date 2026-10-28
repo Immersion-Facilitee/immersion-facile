@@ -227,35 +227,30 @@ const unknownEstablishmentError: BroadcastFeedbackError = {
   description: "L'entreprise n'existe pas au sein d'Oscar",
   solution: (statusCategory) =>
     statusCategory === "pendingValidation" ? (
-      <>
-        <p>
+      <ul>
+        <li>
           Je crée l'entreprise via RCE, si besoin, je contacte mon référent
           métier.
-        </p>
-        <ul>
-          <li>
-            Je peux rediffuser la convention pour qu’elle s’installe dans mes
-            applicatifs,
-          </li>
-          <li>
-            Ou dès validation de la convention, elle s’installera
-            automatiquement.
-          </li>
-        </ul>
-      </>
+        </li>
+        <li>
+          Je peux rediffuser la convention pour qu’elle s’installe dans mes
+          applicatifs,
+        </li>
+        <li>
+          Ou dès validation de la convention, elle s’installera automatiquement.
+        </li>
+      </ul>
     ) : (
-      <>
-        <p>
+      <ul>
+        <li>
           Je crée l'entreprise via RCE, si besoin, je contacte mon référent
           métier.
-        </p>
-        <ul>
-          <li>
-            Je rediffuse la convention pour qu’elle s’installe dans mes
-            applicatifs.
-          </li>
-        </ul>
-      </>
+        </li>
+        <li>
+          Je rediffuse la convention pour qu’elle s’installe dans mes
+          applicatifs.
+        </li>
+      </ul>
     ),
 };
 
