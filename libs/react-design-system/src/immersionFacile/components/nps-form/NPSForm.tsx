@@ -55,6 +55,21 @@ type TallyWindow = Window & {
 };
 const componentName = "im-nps-form";
 
+type Device = "mobile" | "tablet" | "desktop";
+
+const getDevice = (): Device => {
+  const { userAgent, maxTouchPoints } = navigator;
+  const isIpadWithDesktopUserAgent =
+    /Macintosh/i.test(userAgent) && maxTouchPoints > 1;
+  if (
+    isIpadWithDesktopUserAgent ||
+    /iPad|Tablet|Android(?!.*Mobile)/i.test(userAgent)
+  )
+    return "tablet";
+  if (/Mobi|iPhone|iPod|Android/i.test(userAgent)) return "mobile";
+  return "desktop";
+};
+
 export const NPSForm = ({
   title,
   conventionInfos,
@@ -62,9 +77,10 @@ export const NPSForm = ({
   mode,
 }: NPSFormProps) => {
   const { cx } = useStyles();
-  const paramsAsString = keys(conventionInfos)
-    .map((key) => `${key}=${conventionInfos[key]}`)
-    .join("&");
+  const paramsAsString = [
+    ...keys(conventionInfos).map((key) => `${key}=${conventionInfos[key]}`),
+    `device=${getDevice()}`,
+  ].join("&");
 
   useEffect(() => {
     if (mode === "popup") {
@@ -81,6 +97,7 @@ export const NPSForm = ({
           hiddenFields: {
             id: conventionInfos.id,
             role: conventionInfos.role,
+            device: getDevice(),
           },
           open: {
             trigger: "time",
