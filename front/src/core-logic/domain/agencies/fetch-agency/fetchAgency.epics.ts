@@ -20,8 +20,28 @@ import type {
 } from "src/core-logic/storeConfig/redux.helpers";
 
 export type FetchAgencyAction = ActionOfSlice<typeof fetchAgencySlice>;
+type UpdateAgencyAction = ActionOfSlice<typeof updateAgencySlice>;
+type CloseAgencyAndTransferConventionsAction = ActionOfSlice<
+  typeof closeAgencyAndTransferConventionsSlice
+>;
+type CreateUserOnAgencyAction = ActionOfSlice<typeof createUserOnAgencySlice>;
+type UpdateUserOnAgencyAction = ActionOfSlice<typeof updateUserOnAgencySlice>;
+type RemoveUserFromAgencyAction = ActionOfSlice<
+  typeof removeUserFromAgencySlice
+>;
+type ConnectedUsersAdminAction = ActionOfSlice<typeof connectedUsersAdminSlice>;
 
-type FetchAgencyEpic = AppEpic<FetchAgencyAction | { type: "do-nothing" }>;
+type FetchAgencyEpicInput =
+  | FetchAgencyAction
+  | UpdateAgencyAction
+  | CloseAgencyAndTransferConventionsAction
+  | CreateUserOnAgencyAction
+  | UpdateUserOnAgencyAction
+  | ConnectedUsersAdminAction
+  | RemoveUserFromAgencyAction
+  | { type: "do-nothing" };
+
+type FetchAgencyEpic = AppEpic<FetchAgencyEpicInput>;
 
 const agencyIdFromFetchOrMutationPayload = (payload: {
   agencyId?: AgencyId;
@@ -111,7 +131,12 @@ const getAgencyUsersEpic: FetchAgencyEpic = (action$, state$, dependencies) =>
     ),
   );
 
-const refetchAgencyUsersOnMutationEpic: FetchAgencyEpic = (action$, state$) =>
+const refetchAgencyUsersOnMutationEpic: AppEpic<
+  | FetchAgencyAction
+  | CreateUserOnAgencyAction
+  | RemoveUserFromAgencyAction
+  | UpdateUserOnAgencyAction
+> = (action$, state$) =>
   action$.pipe(
     filter(
       (action) =>

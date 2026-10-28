@@ -216,5 +216,9 @@ export const connectedUsersAdminSlice = createSlice({
     ) => {
       state.isUpdatingUserPreventToDelete = false;
     },
+
+    feedbackClearRequested: (state) => {
+      state.feedback = { kind: "idle" };
+    },
   },
 });

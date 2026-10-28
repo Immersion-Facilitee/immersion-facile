@@ -263,6 +263,7 @@ describe("Agency registration for authenticated users", () => {
             ...connectedUsersAdminInitialState,
             connectedUsersNeedingReview: testUserSet,
             selectedUser: authUser2,
+            usersToReviewFilters: { agencyRole: "to-review" },
           },
         }),
       }));
@@ -293,6 +294,7 @@ describe("Agency registration for authenticated users", () => {
       );
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
+      expectIsFetchingIcUsersNeedingReviewToBe(true);
 
       dependencies.adminGateway.getConnectedUsersResponse$.next([
         {
@@ -311,6 +313,29 @@ describe("Agency registration for authenticated users", () => {
         [agency4Right],
       );
       expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
+    });
+
+    it("does not refetch users to review when filters are null", () => {
+      const payload: UserParamsForAgency = {
+        agencyId: "agency-3",
+        userId: "user-id",
+        roles: ["validator"],
+        isNotifiedByEmail: false,
+        email: "email@email.fr",
+      };
+
+      store.dispatch(
+        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested({
+          ...payload,
+          feedbackTopic: "agency-users-to-review",
+        }),
+      );
+      dependencies.adminGateway.updateAgencyRoleForUserResponse$.next(
+        undefined,
+      );
+
+      expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
+      expectIsFetchingIcUsersNeedingReviewToBe(false);
     });
 
     it("stores error message when something goes wrong in the update", () => {
@@ -345,6 +370,7 @@ describe("Agency registration for authenticated users", () => {
           connectedUsersAdmin: {
             ...connectedUsersAdminInitialState,
             connectedUsersNeedingReview: testUserSet,
+            usersToReviewFilters: { agencyRole: "to-review" },
           },
         }),
       }));
@@ -367,6 +393,7 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
+      expectIsFetchingIcUsersNeedingReviewToBe(true);
 
       dependencies.adminGateway.getConnectedUsersResponse$.next([
         authUser1,
@@ -389,7 +416,32 @@ describe("Agency registration for authenticated users", () => {
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
     });
 
+    it("does not refetch users to review when filters are null", () => {
+      store.dispatch(
+        connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested({
+          agencyId: "agency-id",
+          justification: "osef",
+          userId: "user-to-reject-id",
+          feedbackTopic: "agency-users-to-review",
+        }),
+      );
+
+      dependencies.adminGateway.rejectUserToAgencyResponse$.next();
+
+      expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
+      expectIsFetchingIcUsersNeedingReviewToBe(false);
+    });
+
     it("rejects successfully even if user is not in connectedUsersNeedingReview", () => {
+      ({ store, dependencies } = createTestStore({
+        admin: adminPreloadedState({
+          connectedUsersAdmin: {
+            ...connectedUsersAdminInitialState,
+            usersToReviewFilters: { agencyRole: "to-review" },
+          },
+        }),
+      }));
+
       store.dispatch(
         connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested({
           agencyId: "agency-id",
@@ -438,6 +490,23 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "errored", errorMessage });
+    });
+  });
+
+  describe("feedback clear", () => {
+    it("resets feedback to idle", () => {
+      ({ store } = createTestStore({
+        admin: adminPreloadedState({
+          connectedUsersAdmin: {
+            ...connectedUsersAdminInitialState,
+            feedback: { kind: "agencyRegisterToUserSuccess" },
+          },
+        }),
+      }));
+
+      store.dispatch(connectedUsersAdminSlice.actions.feedbackClearRequested());
+
+      expectFeedbackToEqual({ kind: "idle" });
     });
   });
 
