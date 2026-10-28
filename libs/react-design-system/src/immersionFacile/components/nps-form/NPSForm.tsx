@@ -1,6 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { useEffect } from "react";
 import { useStyles } from "tss-react/dsfr";
+import { useDevice } from "../../hooks";
 import { keys } from "../../utils";
 
 export type NPSFormProps = {
@@ -55,21 +56,6 @@ type TallyWindow = Window & {
 };
 const componentName = "im-nps-form";
 
-type Device = "mobile" | "tablet" | "desktop";
-
-const getDevice = (): Device => {
-  const { userAgent, maxTouchPoints } = navigator;
-  const isIpadWithDesktopUserAgent =
-    /Macintosh/i.test(userAgent) && maxTouchPoints > 1;
-  if (
-    isIpadWithDesktopUserAgent ||
-    /iPad|Tablet|Android(?!.*Mobile)/i.test(userAgent)
-  )
-    return "tablet";
-  if (/Mobi|iPhone|iPod|Android/i.test(userAgent)) return "mobile";
-  return "desktop";
-};
-
 export const NPSForm = ({
   title,
   conventionInfos,
@@ -77,9 +63,10 @@ export const NPSForm = ({
   mode,
 }: NPSFormProps) => {
   const { cx } = useStyles();
+  const device = useDevice();
   const paramsAsString = [
     ...keys(conventionInfos).map((key) => `${key}=${conventionInfos[key]}`),
-    `device=${getDevice()}`,
+    `device=${device}`,
   ].join("&");
 
   useEffect(() => {
@@ -97,7 +84,7 @@ export const NPSForm = ({
           hiddenFields: {
             id: conventionInfos.id,
             role: conventionInfos.role,
-            device: getDevice(),
+            device,
           },
           open: {
             trigger: "time",
