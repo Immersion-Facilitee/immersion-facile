@@ -5,6 +5,7 @@ import {
   type AgencyUsersRights,
   type Email,
   SEED_AGENCY_WITH_REFERS_TO_ID,
+  SEED_CCI_AGENCY_ID,
   SEED_FT_AGENCY_ID,
   type UserId,
 } from "shared";
@@ -90,7 +91,7 @@ export const insertSpecificAgenciesWithUserRight = async ({
     .build();
 
   const cciAgency = new AgencyDtoBuilder()
-    .withId("40400c99-9c0b-bbbb-bb6d-6bb9bd300707")
+    .withId(SEED_CCI_AGENCY_ID)
     .withName("CCI Paris")
     .withSignature("mission locale agency signature")
     .withKind("cci")
