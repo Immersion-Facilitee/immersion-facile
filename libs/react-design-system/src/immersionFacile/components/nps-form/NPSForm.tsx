@@ -1,6 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { useEffect } from "react";
 import { useStyles } from "tss-react/dsfr";
+import { useDevice } from "../../hooks";
 import { keys } from "../../utils";
 
 export type NPSFormProps = {
@@ -62,9 +63,11 @@ export const NPSForm = ({
   mode,
 }: NPSFormProps) => {
   const { cx } = useStyles();
-  const paramsAsString = keys(conventionInfos)
-    .map((key) => `${key}=${conventionInfos[key]}`)
-    .join("&");
+  const device = useDevice();
+  const paramsAsString = [
+    ...keys(conventionInfos).map((key) => `${key}=${conventionInfos[key]}`),
+    `device=${device}`,
+  ].join("&");
 
   useEffect(() => {
     if (mode === "popup") {
@@ -81,6 +84,7 @@ export const NPSForm = ({
           hiddenFields: {
             id: conventionInfos.id,
             role: conventionInfos.role,
+            device,
           },
           open: {
             trigger: "time",
