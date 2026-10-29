@@ -6,6 +6,8 @@ import {
 import {
   allRoles,
   allSignatoryRoles,
+  type ConventionActorRole,
+  conventionActorRoles,
   type EstablishmentRole,
   establishmentsRoles,
   type Role,
@@ -18,6 +20,11 @@ export const roleSchema: ZodSchemaWithInputMatchingOutput<Role> = z.enum(
     error: localization.invalidEnum,
   },
 );
+
+export const conventionActorRoleSchema: ZodSchemaWithInputMatchingOutput<ConventionActorRole> =
+  z.enum(conventionActorRoles, {
+    error: localization.invalidEnum,
+  });
 
 export const signatoryRoleSchema: ZodSchemaWithInputMatchingOutput<SignatoryRole> =
   z.enum(allSignatoryRoles, {
