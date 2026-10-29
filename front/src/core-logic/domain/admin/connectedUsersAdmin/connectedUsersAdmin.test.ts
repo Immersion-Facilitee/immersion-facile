@@ -263,6 +263,7 @@ describe("Agency registration for authenticated users", () => {
             ...connectedUsersAdminInitialState,
             connectedUsersNeedingReview: testUserSet,
             selectedUser: authUser2,
+            usersToReviewFilters: { agencyRole: "to-review" },
           },
         }),
       }));
@@ -292,6 +293,18 @@ describe("Agency registration for authenticated users", () => {
         undefined,
       );
       expectIsUpdatingUserAgencyToBe(false);
+      expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
+      expectIsFetchingIcUsersNeedingReviewToBe(true);
+
+      dependencies.adminGateway.getConnectedUsersResponse$.next([
+        {
+          ...authUser2,
+          agencyRightsByAgencyId: {
+            [agency3.id]: { ...agency3Right, roles: ["validator"] },
+            [agency4.id]: agency4Right,
+          },
+        },
+      ]);
 
       expectToEqual(
         connectedUsersAdminSelectors.agenciesNeedingReviewForSelectedUser(
@@ -300,6 +313,29 @@ describe("Agency registration for authenticated users", () => {
         [agency4Right],
       );
       expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
+    });
+
+    it("does not refetch users to review when filters are null", () => {
+      const payload: UserParamsForAgency = {
+        agencyId: "agency-3",
+        userId: "user-id",
+        roles: ["validator"],
+        isNotifiedByEmail: false,
+        email: "email@email.fr",
+      };
+
+      store.dispatch(
+        connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserRequested({
+          ...payload,
+          feedbackTopic: "agency-users-to-review",
+        }),
+      );
+      dependencies.adminGateway.updateAgencyRoleForUserResponse$.next(
+        undefined,
+      );
+
+      expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
+      expectIsFetchingIcUsersNeedingReviewToBe(false);
     });
 
     it("stores error message when something goes wrong in the update", () => {
@@ -334,6 +370,7 @@ describe("Agency registration for authenticated users", () => {
           connectedUsersAdmin: {
             ...connectedUsersAdminInitialState,
             connectedUsersNeedingReview: testUserSet,
+            usersToReviewFilters: { agencyRole: "to-review" },
           },
         }),
       }));
@@ -356,9 +393,55 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
+      expectIsFetchingIcUsersNeedingReviewToBe(true);
+
+      dependencies.adminGateway.getConnectedUsersResponse$.next([
+        authUser1,
+        {
+          ...authUser2,
+          agencyRightsByAgencyId: { [agency4.id]: agency4Right },
+        },
+      ]);
+
+      expectToEqual(
+        store.getState().admin.connectedUsersAdmin.connectedUsersNeedingReview,
+        {
+          [authUser1.id]: authUser1,
+          [authUser2.id]: {
+            ...authUser2,
+            agencyRightsByAgencyId: { [agency4.id]: agency4Right },
+          },
+        },
+      );
+      expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
+    });
+
+    it("does not refetch users to review when filters are null", () => {
+      store.dispatch(
+        connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested({
+          agencyId: "agency-id",
+          justification: "osef",
+          userId: "user-to-reject-id",
+          feedbackTopic: "agency-users-to-review",
+        }),
+      );
+
+      dependencies.adminGateway.rejectUserToAgencyResponse$.next();
+
+      expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
+      expectIsFetchingIcUsersNeedingReviewToBe(false);
     });
 
     it("rejects successfully even if user is not in connectedUsersNeedingReview", () => {
+      ({ store, dependencies } = createTestStore({
+        admin: adminPreloadedState({
+          connectedUsersAdmin: {
+            ...connectedUsersAdminInitialState,
+            usersToReviewFilters: { agencyRole: "to-review" },
+          },
+        }),
+      }));
+
       store.dispatch(
         connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested({
           agencyId: "agency-id",
@@ -374,10 +457,14 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
+
+      dependencies.adminGateway.getConnectedUsersResponse$.next([]);
+
       expectToEqual(
         store.getState().admin.connectedUsersAdmin.connectedUsersNeedingReview,
         {},
       );
+      expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
     });
 
     it("Fail to rejects the user for agency", () => {
@@ -403,6 +490,23 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "errored", errorMessage });
+    });
+  });
+
+  describe("feedback clear", () => {
+    it("resets feedback to idle", () => {
+      ({ store } = createTestStore({
+        admin: adminPreloadedState({
+          connectedUsersAdmin: {
+            ...connectedUsersAdminInitialState,
+            feedback: { kind: "agencyRegisterToUserSuccess" },
+          },
+        }),
+      }));
+
+      store.dispatch(connectedUsersAdminSlice.actions.feedbackClearRequested());
+
+      expectFeedbackToEqual({ kind: "idle" });
     });
   });
 
@@ -451,15 +555,21 @@ describe("Agency registration for authenticated users", () => {
       dependencies.adminGateway.updateAgencyRoleForUserResponse$.next(
         undefined,
       );
-      const expected: AgencyUsersForListingById = {
-        ...connectedUsersAdminSelectors.agencyUsers(store.getState()),
-        [originalUser.id]: updatedUser,
-      };
       expectIsUpdatingUserAgencyToBe(false);
+      expectIsFetchingAgencyUsersToBe(true);
 
+      dependencies.adminGateway.getConnectedUsersResponse$.next([
+        updatedUser,
+        authUser2,
+      ]);
+
+      expectIsFetchingAgencyUsersToBe(false);
       expectToEqual(
         connectedUsersAdminSelectors.agencyUsers(store.getState()),
-        expected,
+        {
+          [originalUser.id]: updatedUser,
+          [authUser2.id]: authUser2,
+        },
       );
       expectToEqual(
         feedbacksSelectors.feedbacks(store.getState())["agency-user"],
@@ -519,7 +629,7 @@ describe("Agency registration for authenticated users", () => {
       );
     });
     it("should refetch agency after user updates", () => {
-      const agency = new AgencyDtoBuilder().withId("1").build();
+      const agency = new AgencyDtoBuilder().withId(agency3.id).build();
 
       ({ store, dependencies } = createTestStore({
         admin: adminPreloadedState({
@@ -527,6 +637,7 @@ describe("Agency registration for authenticated users", () => {
           connectedUsersAdmin: {
             ...connectedUsersAdminInitialState,
             agencyUsers: testUserSet,
+            agencyUsersFilters: { agencyIds: [agency3.id] },
           },
         }),
         agency: {
@@ -619,24 +730,26 @@ describe("Agency registration for authenticated users", () => {
       dependencies.adminGateway.createUserForAgencyResponse$.next(user);
 
       expectIsUpdatingUserAgencyToBe(false);
+      expectIsFetchingAgencyUsersToBe(true);
 
+      const createdUser: AgencyUserForListing = {
+        ...userToCreate,
+        agencyRightsByAgencyId: {
+          [agency2.id]: {
+            agency: toAgencyDtoForAgencyUsersAndAdmins(agency2, []),
+            roles: ["validator"],
+            isNotifiedByEmail: false,
+          },
+        },
+      };
+
+      dependencies.adminGateway.getConnectedUsersResponse$.next([createdUser]);
+
+      expectIsFetchingAgencyUsersToBe(false);
       expectToEqual(
         connectedUsersAdminSelectors.agencyUsers(store.getState()),
         {
-          [userToCreate.id]: {
-            id: userToCreate.id,
-            email: userToCreate.email,
-            firstName: userToCreate.firstName,
-            lastName: userToCreate.lastName,
-            isProConnectUser: false,
-            agencyRightsByAgencyId: {
-              [agency2.id]: {
-                agency: toAgencyDtoForAgencyUsersAndAdmins(agency2, []),
-                roles: ["validator"],
-                isNotifiedByEmail: false,
-              },
-            },
-          },
+          [userToCreate.id]: createdUser,
         },
       );
       expectToEqual(

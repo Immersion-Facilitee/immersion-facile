@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
-  AgencyRole,
   AgencyUserForListing,
   AgencyUsersForListingById,
   RejectConnectedUserRoleForAgencyParams,
@@ -31,6 +30,8 @@ export type ConnectedUsersAdminState = {
   isFetchingAgencyUsers: boolean;
   isUpdatingUserPreventToDelete: boolean;
   feedback: ConnectedUsersAdminFeedback;
+  usersToReviewFilters: WithUserFilters | null;
+  agencyUsersFilters: WithUserFilters | null;
 };
 
 export const connectedUsersAdminInitialState: ConnectedUsersAdminState = {
@@ -42,6 +43,8 @@ export const connectedUsersAdminInitialState: ConnectedUsersAdminState = {
   isFetchingAgencyUsers: false,
   isUpdatingUserPreventToDelete: false,
   feedback: { kind: "idle" },
+  usersToReviewFilters: null,
+  agencyUsersFilters: null,
 };
 
 export const connectedUsersAdminSlice = createSlice({
@@ -58,9 +61,10 @@ export const connectedUsersAdminSlice = createSlice({
     },
     fetchConnectedUsersToReviewRequested: (
       state,
-      _action: PayloadAction<WithUserFilters>,
+      action: PayloadAction<WithUserFilters>,
     ) => {
       state.isFetchingAgenciesNeedingReviewForIcUser = true;
+      state.usersToReviewFilters = action.payload;
     },
     fetchConnectedUsersToReviewFailed: (
       state,
@@ -75,14 +79,19 @@ export const connectedUsersAdminSlice = createSlice({
     ) => {
       state.isFetchingAgenciesNeedingReviewForIcUser = false;
       state.connectedUsersNeedingReview = action.payload;
-      state.feedback.kind = "usersToReviewFetchSuccess";
+      if (
+        state.feedback.kind !== "agencyRegisterToUserSuccess" &&
+        state.feedback.kind !== "agencyRejectionForUserSuccess"
+      )
+        state.feedback.kind = "usersToReviewFetchSuccess";
     },
     fetchAgencyUsersRequested: (
       state,
-      _action: PayloadAction<WithUserFilters>,
+      action: PayloadAction<WithUserFilters>,
     ) => {
       state.agencyUsers = connectedUsersAdminInitialState.agencyUsers;
       state.isFetchingAgencyUsers = true;
+      state.agencyUsersFilters = action.payload;
     },
     fetchAgencyUsersFailed: (state, action: PayloadAction<string>) => {
       state.isFetchingAgencyUsers = false;
@@ -104,21 +113,10 @@ export const connectedUsersAdminSlice = createSlice({
     },
     registerAgencyWithRoleToUserSucceeded: (
       state,
-      action: PayloadActionWithFeedbackTopic<UserParamsForAgency>,
+      _action: PayloadActionWithFeedbackTopic<UserParamsForAgency>,
     ) => {
-      const { userId, agencyId, roles: newRoles } = action.payload;
       state.isUpdatingConnectedUserAgency = false;
       state.feedback.kind = "agencyRegisterToUserSuccess";
-
-      const userNeedingReview = state.connectedUsersNeedingReview[userId];
-      if (!userNeedingReview) return;
-
-      if (
-        !userNeedingReview.agencyRightsByAgencyId[agencyId].roles.some(
-          (role: AgencyRole) => newRoles.includes(role),
-        )
-      )
-        userNeedingReview.agencyRightsByAgencyId[agencyId].roles = newRoles;
     },
     registerAgencyWithRoleToUserFailed: (
       state,
@@ -139,18 +137,10 @@ export const connectedUsersAdminSlice = createSlice({
 
     rejectAgencyWithRoleToUserSucceeded: (
       state,
-      action: PayloadActionWithFeedbackTopic<RejectConnectedUserRoleForAgencyParams>,
+      _action: PayloadActionWithFeedbackTopic<RejectConnectedUserRoleForAgencyParams>,
     ) => {
-      const { userId, agencyId } = action.payload;
       state.isUpdatingConnectedUserAgency = false;
       state.feedback.kind = "agencyRejectionForUserSuccess";
-
-      const userNeedingReview = state.connectedUsersNeedingReview[userId];
-      if (!userNeedingReview) return;
-
-      const { [agencyId]: _agency, ...agenciesFiltered } =
-        userNeedingReview.agencyRightsByAgencyId;
-      userNeedingReview.agencyRightsByAgencyId = agenciesFiltered;
     },
 
     rejectAgencyWithRoleToUserFailed: (
@@ -175,16 +165,9 @@ export const connectedUsersAdminSlice = createSlice({
 
     createUserOnAgencySucceeded: (
       state,
-      action: PayloadActionWithFeedbackTopic<
-        {
-          icUser: AgencyUserForListing;
-        } & WithAgencyId
-      >,
+      _action: PayloadActionWithFeedbackTopic<WithAgencyId>,
     ) => {
       state.isUpdatingConnectedUserAgency = false;
-      const { id } = action.payload.icUser;
-
-      state.agencyUsers[id] = action.payload.icUser;
     },
 
     createUserOnAgencyFailed: (
@@ -203,23 +186,9 @@ export const connectedUsersAdminSlice = createSlice({
 
     updateUserOnAgencySucceeded: (
       state,
-      action: PayloadActionWithFeedbackTopic<UserParamsForAgency>,
+      _action: PayloadActionWithFeedbackTopic<UserParamsForAgency>,
     ) => {
       state.isUpdatingConnectedUserAgency = false;
-      const {
-        userId,
-        agencyId,
-        roles: newRoles,
-        email,
-        isNotifiedByEmail,
-      } = action.payload;
-      state.agencyUsers[userId].agencyRightsByAgencyId[agencyId].roles =
-        newRoles;
-      state.agencyUsers[userId].agencyRightsByAgencyId[
-        agencyId
-      ].isNotifiedByEmail = isNotifiedByEmail;
-      state.agencyUsers[userId].email =
-        email ?? state.agencyUsers[userId].email;
     },
 
     updateUserOnAgencyFailed: (
@@ -246,6 +215,10 @@ export const connectedUsersAdminSlice = createSlice({
       _action: PayloadActionWithFeedbackTopic<{ errorMessage: string }>,
     ) => {
       state.isUpdatingUserPreventToDelete = false;
+    },
+
+    feedbackClearRequested: (state) => {
+      state.feedback = { kind: "idle" };
     },
   },
 });

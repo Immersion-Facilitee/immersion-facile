@@ -1,10 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type {
-  AgencyDtoForAgencyUsersAndAdmins,
-  AgencyId,
-  UserId,
-} from "shared";
-import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import type { AgencyDtoForAgencyUsersAndAdmins, UserId } from "shared";
 import type { PayloadActionWithFeedbackTopic } from "src/core-logic/domain/feedback/feedback.slice";
 
 export type UserToReview = {
@@ -22,11 +17,13 @@ type FetchUsersToReviewPayload = {
 type UsersToReviewState = {
   isLoading: boolean;
   usersToReview: UserToReview[];
+  filters: FetchUsersToReviewPayload | null;
 };
 
 export const usersToReviewState: UsersToReviewState = {
   usersToReview: [],
   isLoading: false,
+  filters: null,
 };
 
 export const usersToReviewSlice = createSlice({
@@ -35,9 +32,11 @@ export const usersToReviewSlice = createSlice({
   reducers: {
     fetchUsersToReviewRequested: (
       state,
-      _action: PayloadActionWithFeedbackTopic<FetchUsersToReviewPayload>,
+      action: PayloadActionWithFeedbackTopic<FetchUsersToReviewPayload>,
     ) => {
       state.isLoading = true;
+      const { feedbackTopic: _, ...filters } = action.payload;
+      state.filters = filters;
     },
     fetchUsersToReviewSucceeded: (
       state,
@@ -54,28 +53,5 @@ export const usersToReviewSlice = createSlice({
     ) => {
       state.isLoading = false;
     },
-  },
-  extraReducers: (builder) => {
-    const removeUserRegistration = (
-      state: UsersToReviewState,
-      action: { payload: { userId: UserId; agencyId: AgencyId } },
-    ) => {
-      state.usersToReview = state.usersToReview.filter(
-        (user) =>
-          !(
-            user.id === action.payload.userId &&
-            user.agency.id === action.payload.agencyId
-          ),
-      );
-    };
-
-    builder.addCase(
-      connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserSucceeded,
-      removeUserRegistration,
-    );
-    builder.addCase(
-      connectedUsersAdminSlice.actions.registerAgencyWithRoleToUserSucceeded,
-      removeUserRegistration,
-    );
   },
 });
