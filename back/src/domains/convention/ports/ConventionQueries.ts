@@ -62,12 +62,20 @@ export type GetPaginatedConventionsFilters = {
   search?: string;
   statuses?: ConventionStatus[];
   agencyIds?: AgencyId[];
+  agencyNameContains?: string;
   omitStatusesForAgencies?: OmitStatusesForAgenciesFilter;
   dateStart?: DateFilter;
   dateEnd?: DateFilter;
   dateSubmission?: DateFilter;
+  dateValidation?: DateFilter;
   assessmentCompletionStatus?: AssessmentCompletionStatusFilter[];
   beneficiaryEmail?: Email;
+  beneficiaryNameContains?: string;
+  beneficiaryRepresentativeEmail?: Email;
+  establishmentTutorEmail?: Email;
+  establishmentRepresentativeEmail?: Email;
+  businessNameContains?: string;
+  siret?: SiretDto;
   establishmentUserAccess?: EstablishmentUserAccessFilter;
 };
 
@@ -75,6 +83,7 @@ export type GetPaginatedConventionsParams = {
   filters?: GetPaginatedConventionsFilters;
   sort?: WithSort<GetPaginatedConventionsSortBy>["sort"];
   pagination: Required<PaginationQueryParams>;
+  maxTotalRecords?: number;
 };
 
 export type GetConventionIdsParams = {

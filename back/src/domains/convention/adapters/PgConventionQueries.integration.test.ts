@@ -2575,6 +2575,211 @@ describe("Pg implementation of ConventionQueries", () => {
           expectToEqual(result.pagination.totalRecords, 0);
         });
       });
+
+      describe("admin filters", () => {
+        it("should filter conventions by agency name contains, case insensitive", async () => {
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: { agencyNameContains: "different AG" },
+          });
+
+          expectToEqual(result.data, [conventionD]);
+          expectToEqual(result.pagination.totalRecords, 1);
+        });
+
+        it("should filter conventions by beneficiary name contains on first name, last name or full name", async () => {
+          const byLastName = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: { beneficiaryNameContains: "DOE" },
+          });
+          const byFullName = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: { beneficiaryNameContains: "jane smi" },
+          });
+          const byLastNameThenFirstName =
+            await conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: { beneficiaryNameContains: "smith ja" },
+            });
+
+          expectToEqual(byLastName.data, [conventionA]);
+          expectToEqual(byFullName.data, [conventionB]);
+          expectToEqual(byLastNameThenFirstName.data, [conventionB]);
+        });
+
+        it("should filter conventions by business name contains, case insensitive", async () => {
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: { businessNameContains: "ness c" },
+          });
+
+          expectToEqual(result.data, [conventionC]);
+        });
+
+        it("should filter conventions by siret", async () => {
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: { siret: conventionA.siret },
+          });
+
+          expectToEqual(result.data, [conventionA]);
+        });
+
+        it("should filter conventions by beneficiary representative email", async () => {
+          const conventionWithBeneficiaryRepresentative =
+            new ConventionDtoBuilder(conventionA)
+              .withBeneficiaryRepresentative({
+                firstName: "Jean",
+                lastName: "Repr",
+                email: "representative@convention-a.com",
+                role: "beneficiary-representative",
+                phone: "+33123456789",
+              })
+              .build();
+          await conventionRepository.update(
+            conventionWithBeneficiaryRepresentative,
+            anyConventionUpdatedAt,
+          );
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              beneficiaryRepresentativeEmail: "representative@convention-a.com",
+            },
+          });
+
+          expectToEqual(result.data, [conventionWithBeneficiaryRepresentative]);
+        });
+
+        it("should filter conventions by establishment tutor email", async () => {
+          const conventionWithTutor = new ConventionDtoBuilder(conventionC)
+            .withEstablishmentTutorEmail("tutor@convention-c.com")
+            .build();
+          await conventionRepository.update(
+            conventionWithTutor,
+            anyConventionUpdatedAt,
+          );
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: { establishmentTutorEmail: "tutor@convention-c.com" },
+          });
+
+          expectToEqual(result.data, [conventionWithTutor]);
+        });
+
+        it("should filter conventions by establishment representative email", async () => {
+          const conventionWithRepresentative = new ConventionDtoBuilder(
+            conventionD,
+          )
+            .withEstablishmentRepresentativeEmail(
+              "representative@convention-d.com",
+            )
+            .build();
+          await conventionRepository.update(
+            conventionWithRepresentative,
+            anyConventionUpdatedAt,
+          );
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              establishmentRepresentativeEmail:
+                "representative@convention-d.com",
+            },
+          });
+
+          expectToEqual(result.data, [conventionWithRepresentative]);
+        });
+
+        it("should filter conventions by validation date range", async () => {
+          const validatedInJanuary = new ConventionDtoBuilder(conventionA)
+            .withDateValidation(new Date("2023-01-12").toISOString())
+            .build();
+          const validatedInFebruary = new ConventionDtoBuilder(conventionB)
+            .withDateValidation(new Date("2023-02-12").toISOString())
+            .build();
+          await conventionRepository.update(
+            validatedInJanuary,
+            anyConventionUpdatedAt,
+          );
+          await conventionRepository.update(
+            validatedInFebruary,
+            anyConventionUpdatedAt,
+          );
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              dateValidation: {
+                from: new Date("2023-02-01").toISOString(),
+                to: new Date("2023-02-28").toISOString(),
+              },
+            },
+          });
+
+          expectToEqual(result.data, [validatedInFebruary]);
+        });
+
+        it("should combine admin filters", async () => {
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              agencyNameContains: "test agency",
+              beneficiaryNameContains: "john",
+              businessNameContains: "business",
+              statuses: ["READY_TO_SIGN", "IN_REVIEW"],
+              dateStart: { from: new Date("2023-01-01").toISOString() },
+            },
+            sort: { by: "dateSubmission", direction: "desc" },
+          });
+
+          expectToEqual(result.data, [conventionA]);
+          expectToEqual(result.pagination.totalRecords, 1);
+        });
+
+        it("should cap total records while keeping the requested page", async () => {
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 2 },
+            sort: { by: "dateSubmission", direction: "desc" },
+            maxTotalRecords: 3,
+          });
+
+          expectToEqual(result.data.length, 2);
+          expectToEqual(result.pagination, {
+            currentPage: 1,
+            numberPerPage: 2,
+            totalPages: 2,
+            totalRecords: 3,
+          });
+        });
+
+        it("should not return records beyond max total records", async () => {
+          const lastReachablePage =
+            await conventionQueries.getPaginatedConventions({
+              pagination: { page: 2, perPage: 2 },
+              sort: { by: "dateSubmission", direction: "desc" },
+              maxTotalRecords: 3,
+            });
+          const pageBeyondMaxTotalRecords =
+            await conventionQueries.getPaginatedConventions({
+              pagination: { page: 3, perPage: 2 },
+              sort: { by: "dateSubmission", direction: "desc" },
+              maxTotalRecords: 3,
+            });
+
+          expectToEqual(lastReachablePage.data.length, 1);
+          expectToEqual(pageBeyondMaxTotalRecords, {
+            data: [],
+            pagination: {
+              currentPage: 3,
+              numberPerPage: 2,
+              totalPages: 2,
+              totalRecords: 3,
+            },
+          });
+        });
+      });
     },
   );
 

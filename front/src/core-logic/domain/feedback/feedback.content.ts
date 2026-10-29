@@ -41,6 +41,7 @@ type FeedbackWithActionName = {
 };
 
 const topics = [
+  "admin-convention-list",
   "agency-admin",
   "agency-for-dashboard",
   "agency-user-for-dashboard",
@@ -1128,6 +1129,14 @@ export const feedbacks: Record<
     "fetch.error": {
       action:
         conventionListSlice.actions.fetchEstablishmentConventionListFailed,
+      title: "Problème lors de la récupération des conventions",
+      message:
+        "Une erreur est survenue lors de la récupération des conventions",
+    },
+  },
+  "admin-convention-list": {
+    "fetch.error": {
+      action: conventionListSlice.actions.fetchAdminConventionListFailed,
       title: "Problème lors de la récupération des conventions",
       message:
         "Une erreur est survenue lors de la récupération des conventions",

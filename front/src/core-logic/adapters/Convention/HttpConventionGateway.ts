@@ -1,6 +1,7 @@
 import { from, type Observable } from "rxjs";
 import type {
   AddConventionInput,
+  AdminConventionListDto,
   AgencyUserConventionListDto,
   ApiConsumerName,
   ArchivedConventionRequestDto,
@@ -27,6 +28,7 @@ import type {
   EstablishmentUserConventionListDto,
   FindSimilarConventionsParams,
   FlatGetBeneficiaryConventionListParams,
+  FlatGetConventionsForAdminParams,
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsForEstablishmentUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
@@ -558,6 +560,26 @@ export class HttpConventionGateway implements ConventionGateway {
             .with({ status: 200 }, ({ body }) => body)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: 401 }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public getConventionsForAdmin$(
+    params: FlatGetConventionsForAdminParams,
+    jwt: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminConventionListDto>> {
+    return from(
+      this.authenticatedHttpClient
+        .getConventionsForAdmin({
+          queryParams: params,
+          headers: { authorization: jwt },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

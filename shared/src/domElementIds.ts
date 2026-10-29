@@ -1298,6 +1298,21 @@ export const domElementIds = {
   },
   adminAgencies: {},
   adminConventions: {
+    conventionListTable: "im-admin-conventions__convention-list-table",
+    conventionListFilterInput:
+      "im-admin-conventions__convention-list-filter-input",
+    conventionListStatusCheckbox:
+      "im-admin-conventions__convention-list-status-checkbox",
+    conventionListConventionLink:
+      "im-admin-conventions__convention-list-convention-link",
+    conventionListCopyConventionIdButton:
+      "im-admin-conventions__convention-list-copy-convention-id-button",
+    conventionListCopyDraftIdButton:
+      "im-admin-conventions__convention-list-copy-draft-id-button",
+    conventionListSubmitButton:
+      "im-admin-conventions__convention-list-submit-button",
+    conventionListResetButton:
+      "im-admin-conventions__convention-list-reset-button",
     handleArchivedConventionRequestButton:
       "im-admin-conventions__handle-archived-convention-request-button",
     handleArchivedConventionRequestModal:

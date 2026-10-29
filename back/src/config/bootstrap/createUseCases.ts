@@ -49,6 +49,7 @@ import { makeGetAssessmentByConventionId } from "../../domains/convention/use-ca
 import { makeGetBeneficiaryConventionList } from "../../domains/convention/use-cases/GetBeneficiaryConventionList";
 import { makeGetConvention } from "../../domains/convention/use-cases/GetConvention";
 import { makeGetConventionDraftById } from "../../domains/convention/use-cases/GetConventionDraftById";
+import { makeGetConventionsForAdmin } from "../../domains/convention/use-cases/GetConventionsForAdmin";
 import { makeGetConventionsForAgencyUser } from "../../domains/convention/use-cases/GetConventionsForAgencyUser";
 import { makeGetConventionsForApiConsumer } from "../../domains/convention/use-cases/GetConventionsForApiConsumer";
 import { makeGetConventionsForEstablishmentUser } from "../../domains/convention/use-cases/GetConventionsForEstablishmentUser";
@@ -1119,6 +1120,9 @@ export const createUseCases = ({
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         createNewEvent,
       },
+    }),
+    getConventionsForAdmin: makeGetConventionsForAdmin({
+      uowPerformer,
     }),
     getConventionsForAgencyUser: makeGetConventionsForAgencyUser({
       uowPerformer,

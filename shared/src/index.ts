@@ -34,6 +34,8 @@ export * from "./broadcast/broadcastFeedback.schema";
 export * from "./contactEstablishmentRequest/legacyContactEstablishmentRequest.dto";
 export * from "./contactEstablishmentRequest/legacyContactEstablishmentRequest.schema";
 export * from "./convention/addConventionInput";
+export * from "./convention/adminConventionList.dto";
+export * from "./convention/adminConventionList.schema";
 export * from "./convention/agencyUserConventionList.dto";
 export * from "./convention/agencyUserConventionList.schema";
 export * from "./convention/ConventionDtoBuilder";

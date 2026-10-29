@@ -1,5 +1,6 @@
 import type { Observable } from "rxjs";
 import type {
+  AdminConventionListDto,
   AgencyUserConventionListDto,
   ApiConsumerName,
   ArchivedConventionRequestDto,
@@ -25,6 +26,7 @@ import type {
   EstablishmentUserConventionListDto,
   FindSimilarConventionsParams,
   FlatGetBeneficiaryConventionListParams,
+  FlatGetConventionsForAdminParams,
   FlatGetConventionsForAgencyUserParams,
   FlatGetConventionsForEstablishmentUserParams,
   FlatGetConventionsWithErroredBroadcastFeedbackParams,
@@ -111,6 +113,10 @@ export interface ConventionGateway {
     params: FlatGetConventionsForAgencyUserParams,
     jwt: string,
   ): Observable<DataWithPagination<AgencyUserConventionListDto>>;
+  getConventionsForAdmin$(
+    params: FlatGetConventionsForAdminParams,
+    jwt: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminConventionListDto>>;
   getConventionsForEstablishmentUser$(
     params: FlatGetConventionsForEstablishmentUserParams,
     jwt: string,

@@ -2,6 +2,7 @@ import { addDays, isAfter, isBefore, subDays, subMonths } from "date-fns";
 import { propEq } from "ramda";
 import {
   type AgencyId,
+  type AgencyWithUsersRights,
   ASSESSEMENT_SIGNATURE_RELEASE_DATE,
   type ConventionDto,
   type ConventionId,
@@ -137,6 +138,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
     filters = {},
     pagination,
     sort,
+    maxTotalRecords,
   }: GetPaginatedConventionsParams): Promise<
     DataWithPagination<ConventionDto>
   > {
@@ -150,7 +152,10 @@ export class InMemoryConventionQueries implements ConventionQueries {
       };
 
     const filteredConventions = this.conventionRepository.conventions.filter(
-      makeApplyPaginatedFiltersToConventions(filters),
+      makeApplyPaginatedFiltersToConventions(
+        filters,
+        this.agencyRepository.agencies,
+      ),
     );
 
     const withAssessmentFilter = filters.assessmentCompletionStatus?.length
@@ -171,10 +176,18 @@ export class InMemoryConventionQueries implements ConventionQueries {
     const startIndex = (page - 1) * perPage;
 
     return {
-      data: sortedConventions.slice(startIndex, startIndex + perPage),
+      data: sortedConventions.slice(
+        startIndex,
+        Math.min(
+          startIndex + perPage,
+          maxTotalRecords ?? Number.POSITIVE_INFINITY,
+        ),
+      ),
       pagination: calculatePaginationResult({
         ...pagination,
-        totalRecords: sortedConventions.length,
+        totalRecords: maxTotalRecords
+          ? Math.min(sortedConventions.length, maxTotalRecords)
+          : sortedConventions.length,
       }),
     };
   }
@@ -714,6 +727,9 @@ const matchesDateFilter = (
   return true;
 };
 
+const includesIgnoringCase = (value: string, searched: string): boolean =>
+  value.toLowerCase().includes(searched.toLowerCase());
+
 const matchesConventionSearch = (
   convention: ConventionDto,
   search: string,
@@ -783,17 +799,28 @@ const sortConventionsInMemory = (
 };
 
 const makeApplyPaginatedFiltersToConventions =
-  ({
-    search,
-    statuses,
-    agencyIds,
-    omitStatusesForAgencies,
-    dateStart,
-    dateEnd,
-    dateSubmission,
-    beneficiaryEmail,
-    establishmentUserAccess,
-  }: GetPaginatedConventionsFilters) =>
+  (
+    {
+      search,
+      statuses,
+      agencyIds,
+      agencyNameContains,
+      omitStatusesForAgencies,
+      dateStart,
+      dateEnd,
+      dateSubmission,
+      dateValidation,
+      beneficiaryEmail,
+      beneficiaryNameContains,
+      beneficiaryRepresentativeEmail,
+      establishmentTutorEmail,
+      establishmentRepresentativeEmail,
+      businessNameContains,
+      siret: siretFilter,
+      establishmentUserAccess,
+    }: GetPaginatedConventionsFilters,
+    agencies: AgencyWithUsersRights[],
+  ) =>
   (convention: ConventionDto) => {
     const trimmedSearch = search?.trim();
 
@@ -807,12 +834,51 @@ const makeApplyPaginatedFiltersToConventions =
           beneficiaryEmail
             ? signatories.beneficiary.email === beneficiaryEmail
             : true,
+        ({ signatories }) =>
+          beneficiaryRepresentativeEmail
+            ? signatories.beneficiaryRepresentative?.email ===
+              beneficiaryRepresentativeEmail
+            : true,
+        ({ establishmentTutor }) =>
+          establishmentTutorEmail
+            ? establishmentTutor.email === establishmentTutorEmail
+            : true,
+        ({ signatories }) =>
+          establishmentRepresentativeEmail
+            ? signatories.establishmentRepresentative.email ===
+              establishmentRepresentativeEmail
+            : true,
+        ({ signatories: { beneficiary } }) =>
+          beneficiaryNameContains
+            ? includesIgnoringCase(
+                `${beneficiary.firstName} ${beneficiary.lastName} ${beneficiary.firstName}`,
+                beneficiaryNameContains,
+              )
+            : true,
+        ({ businessName }) =>
+          businessNameContains
+            ? includesIgnoringCase(businessName, businessNameContains)
+            : true,
+        ({ siret }) => (siretFilter ? siret === siretFilter : true),
+        ({ agencyId }) =>
+          agencyNameContains
+            ? agencies.some(
+                ({ id, name }) =>
+                  id === agencyId &&
+                  includesIgnoringCase(name, agencyNameContains),
+              )
+            : true,
         ({ dateStart: conventionDateStart }) =>
           matchesDateFilter(conventionDateStart, dateStart),
         ({ dateEnd: conventionDateEnd }) =>
           matchesDateFilter(conventionDateEnd, dateEnd),
         ({ dateSubmission: conventionDateSubmission }) =>
           matchesDateFilter(conventionDateSubmission, dateSubmission),
+        ({ dateValidation: conventionDateValidation }) =>
+          dateValidation
+            ? !!conventionDateValidation &&
+              matchesDateFilter(conventionDateValidation, dateValidation)
+            : true,
         ({ status }) =>
           statuses && statuses.length > 0 ? statuses.includes(status) : true,
         ({ agencyId }) =>
