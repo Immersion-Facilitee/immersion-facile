@@ -307,6 +307,8 @@ models:
         description: Foreign key to agencies
       - name: agency_name
         description: Name of the managing agency
+      - name: agency_group_name
+        description: Group label entered by IF admin on the managing agency. Null if not set.
       - name: status_technical
         description: Technical status code (e.g., DRAFT, ACCEPTED_BY_VALIDATOR)
       - name: agency_status
