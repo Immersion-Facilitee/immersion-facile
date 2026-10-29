@@ -4,10 +4,7 @@ import { conventionDtosToConventionReadDtos } from "../../../../utils/convention
 import type { UnitOfWorkPerformer } from "../../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { getOnlyAssessmentDto } from "../../entities/AssessmentEntity";
 import type { BroadcastToFranceTravailOnConventionUpdates } from "./BroadcastToFranceTravailOnConventionUpdates";
-import type {
-  BroadcastConventionParams,
-  WithConventionIdAndPreviousAgencyId,
-} from "./broadcastConventionParams";
+import type { WithConventionIdAndPreviousAgencyId } from "./broadcastConventionParams";
 
 export type BroadcastToFranceTravailOrchestrator = ReturnType<
   typeof makeBroadcastToFranceTravailOrchestrator
@@ -15,10 +12,8 @@ export type BroadcastToFranceTravailOrchestrator = ReturnType<
 export const makeBroadcastToFranceTravailOrchestrator = ({
   uowPerformer,
   broadcastToFranceTravailOnConventionUpdates,
-  eventType,
 }: {
   uowPerformer: UnitOfWorkPerformer;
-  eventType: BroadcastConventionParams["eventType"];
   broadcastToFranceTravailOnConventionUpdates: BroadcastToFranceTravailOnConventionUpdates;
 }): InstantiatedUseCase<WithConventionIdAndPreviousAgencyId> => ({
   useCaseName: "BroadcastToFranceTravailOrchestrator",
@@ -48,23 +43,11 @@ export const makeBroadcastToFranceTravailOrchestrator = ({
       ? getOnlyAssessmentDto(assessment)
       : undefined;
 
-    if (eventType === "ASSESSMENT_CREATED") {
-      if (!assessmentDto)
-        throw errors.assessment.missingAssessment({
-          conventionId: convention.id,
-        });
-
-      return broadcastToFranceTravailOnConventionUpdates.execute({
-        eventType: "ASSESSMENT_CREATED",
-        convention: conventionRead,
-        assessment: assessmentDto,
-      });
-    }
-
     return broadcastToFranceTravailOnConventionUpdates.execute({
-      eventType: "CONVENTION_UPDATED",
       convention: conventionRead,
-      previousAgencyId: params.previousAgencyId,
+      ...(params.previousAgencyId
+        ? { previousAgencyId: params.previousAgencyId }
+        : {}),
       ...(assessmentDto ? { assessment: assessmentDto } : {}),
     });
   },
