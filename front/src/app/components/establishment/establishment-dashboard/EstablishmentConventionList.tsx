@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import type { ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { Fragment, type ReactNode, useEffect } from "react";
 import { RichTable } from "react-design-system";
@@ -176,6 +177,10 @@ const toEstablishmentConventionGridData = (
     const shouldShowAssessmentBadge =
       isConventionValidated(convention.status) &&
       !isConventionEndingInOneDayOrMore(convention.dateEnd);
+    const isArchived = isConventionArchived({
+      dateEnd: convention.dateEnd,
+      now: new Date(),
+    });
     return {
       id: convention.id,
       title: getFormattedFirstnameAndLastname({
@@ -197,6 +202,11 @@ const toEstablishmentConventionGridData = (
                 conventionParams={convention}
                 userKind="establishment"
               />
+            </li>
+          )}
+          {isArchived && (
+            <li>
+              <Badge small>Archivée</Badge>
             </li>
           )}
         </ul>
@@ -285,10 +295,22 @@ const toEstablishmentConventionTableData = (
       </p>
     </Fragment>,
     <Fragment key={`${convention.id}-status`}>
-      <ConventionStatusBadge
-        conventionStatus={convention.status}
-        userKind="establishment"
-      />
+      <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
+        <li>
+          <ConventionStatusBadge
+            conventionStatus={convention.status}
+            userKind="establishment"
+          />
+        </li>
+        {isConventionArchived({
+          dateEnd: convention.dateEnd,
+          now: new Date(),
+        }) && (
+          <li>
+            <Badge small>Archivée</Badge>
+          </li>
+        )}
+      </ul>
     </Fragment>,
     <Fragment key={`${convention.id}-assessment`}>
       <ConventionAssessmentStatusBadge
