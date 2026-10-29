@@ -10,6 +10,8 @@ import {
   frontRoutes,
   getFormattedFirstnameAndLastname,
   isConventionArchived,
+  isConventionEndingInOneDayOrMore,
+  isConventionValidated,
   toDisplayedDate,
 } from "shared";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
@@ -170,48 +172,55 @@ const getEstablishmentConventionTableHeaders = ({
 const toEstablishmentConventionGridData = (
   conventions: EstablishmentUserConventionListDto[],
 ): EstablishmentConventionGridItem[] =>
-  conventions.map((convention) => ({
-    id: convention.id,
-    title: getFormattedFirstnameAndLastname({
-      firstname: convention.beneficiary.firstName,
-      lastname: convention.beneficiary.lastName,
-    }),
-    subTitle: `${convention.immersionAppellation.appellationLabel} - ${convention.businessName}`,
-    badge: (
-      <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
-        <li>
-          <ConventionStatusBadge
-            conventionStatus={convention.status}
-            userKind="establishment"
-          />
-        </li>
-        <li>
-          <ConventionAssessmentStatusBadge
-            conventionParams={convention}
-            userKind="establishment"
-          />
-        </li>
-      </ul>
-    ),
-    content: (
-      <dl className={fr.cx("fr-raw-list", "fr-mt-1w")}>
-        <dt className={fr.cx("fr-text--xs", "fr-mb-0")}>Dates</dt>
-        <dd className={fr.cx("fr-text--sm", "fr-text--bold")}>
-          {`Du ${toDisplayedDate({
-            date: new Date(convention.dateStart),
-            withHours: false,
-          })} au ${toDisplayedDate({
-            date: new Date(convention.dateEnd),
-            withHours: false,
-          })}`}
-        </dd>
-      </dl>
-    ),
-    cta: toEstablishmentConventionGridCta({
-      convention,
-      isDisabled: false,
-    }),
-  }));
+  conventions.map((convention) => {
+    const shouldShowAssessmentBadge =
+      isConventionValidated(convention.status) &&
+      !isConventionEndingInOneDayOrMore(convention.dateEnd);
+    return {
+      id: convention.id,
+      title: getFormattedFirstnameAndLastname({
+        firstname: convention.beneficiary.firstName,
+        lastname: convention.beneficiary.lastName,
+      }),
+      subTitle: `${convention.immersionAppellation.appellationLabel} - ${convention.businessName}`,
+      badge: (
+        <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
+          <li>
+            <ConventionStatusBadge
+              conventionStatus={convention.status}
+              userKind="establishment"
+            />
+          </li>
+          {shouldShowAssessmentBadge && (
+            <li>
+              <ConventionAssessmentStatusBadge
+                conventionParams={convention}
+                userKind="establishment"
+              />
+            </li>
+          )}
+        </ul>
+      ),
+      content: (
+        <dl className={fr.cx("fr-raw-list", "fr-mt-1w")}>
+          <dt className={fr.cx("fr-text--xs", "fr-mb-0")}>Dates</dt>
+          <dd className={fr.cx("fr-text--sm", "fr-text--bold")}>
+            {`Du ${toDisplayedDate({
+              date: new Date(convention.dateStart),
+              withHours: false,
+            })} au ${toDisplayedDate({
+              date: new Date(convention.dateEnd),
+              withHours: false,
+            })}`}
+          </dd>
+        </dl>
+      ),
+      cta: toEstablishmentConventionGridCta({
+        convention,
+        isDisabled: false,
+      }),
+    };
+  });
 
 const toEstablishmentConventionGridCta = ({
   convention,
