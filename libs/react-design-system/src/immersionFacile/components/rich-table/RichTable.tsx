@@ -31,7 +31,7 @@ type GridItemProps = {
   title: string;
   subTitle?: string;
   content: ReactNode;
-  footerLeftNode: string;
+  footerLeftNode?: string;
   cta: ButtonProps;
 };
 
@@ -224,9 +224,11 @@ export const RichTable = ({
                 <div>{gridItem.content}</div>
                 <hr className={fr.cx("fr-hr", "fr-mt-2w", "fr-pb-2w")} />
                 <div className={fr.cx("fr-grid-row", "fr-grid-row--center")}>
-                  <span className={fr.cx("fr-hint-text")}>
-                    {gridItem.footerLeftNode}
-                  </span>
+                  {gridItem.footerLeftNode && (
+                    <span className={fr.cx("fr-hint-text")}>
+                      {gridItem.footerLeftNode}
+                    </span>
+                  )}
                   <Button
                     className={fr.cx("fr-ml-auto")}
                     size="small"
