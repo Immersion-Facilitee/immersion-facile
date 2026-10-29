@@ -1,7 +1,10 @@
+import { parsePhoneNumberWithError } from "libphonenumber-js";
 import {
   type ConventionActorRole,
   type ConventionDto,
+  type Email,
   errors,
+  type PhoneNumber,
   type VisitorOtpJwtPayload,
 } from "shared";
 import { match } from "ts-pattern";
@@ -13,6 +16,11 @@ type MaskedOtpRecipients = {
   phone: string | null;
 };
 
+type OtpRecipients = {
+  email: Email;
+  phone: PhoneNumber;
+};
+
 export type GetMaskedOtpRecipients = ReturnType<
   typeof makeGetMaskedOtpRecipients
 >;
@@ -22,88 +30,72 @@ export const makeGetMaskedOtpRecipients = useCaseBuilder(
 )
   .withCurrentUser<VisitorOtpJwtPayload>()
   .withOutput<MaskedOtpRecipients>()
-  .build(async ({ currentUser, uow }) => {
-    return match(currentUser.purpose)
+  .build(async ({ currentUser, uow }) =>
+    match(currentUser.purpose)
       .with("manageConvention", async (): Promise<MaskedOtpRecipients> => {
-        const conventionId = currentUser.subject.conventionId;
+        const { conventionId, emailHash, role } = currentUser.subject;
 
-        // get la convention
         const convention = await uow.conventionRepository.getById(conventionId);
 
-        if (!convention)
-          throw errors.convention.notFound({
-            conventionId: currentUser.subject.conventionId,
-          });
+        if (!convention) throw errors.convention.notFound({ conventionId });
 
-        const isEmailHashMatchingGivenRole: boolean =
-          getIsEmailHashMatchingGivenRole({
-            convention,
-            emailHash: currentUser.subject.emailHash,
-            role: currentUser.subject.role,
-          });
+        const recipients = getConventionActorRecipients({ convention, role });
 
-        if (!isEmailHashMatchingGivenRole)
+        if (makeEmailHash(recipients.email) !== emailHash)
           throw errors.convention.forbiddenMissingRightsEmailHash({
-            conventionId: conventionId,
-            role: currentUser.subject.role,
-            emailHash: currentUser.subject.emailHash,
+            conventionId,
+            role,
+            emailHash,
           });
 
-        // si pas présent dans la conv erreur
-        // sinon on masque et on return
-        return { email: null, phone: null };
+        return {
+          email: maskEmail(recipients.email),
+          phone: maskPhone(recipients.phone),
+        };
       })
-      .exhaustive();
-  });
+      .exhaustive(),
+  );
 
-const getIsEmailHashMatchingGivenRole = ({
+const getConventionActorRecipients = ({
   convention,
-  emailHash,
   role,
 }: {
   convention: ConventionDto;
-  emailHash: string;
   role: ConventionActorRole;
-}): boolean =>
+}): OtpRecipients =>
   match(role)
-    .with(
-      "beneficiary",
-      () =>
-        makeEmailHash(convention.signatories.beneficiary.email) === emailHash,
-    )
+    .with("beneficiary", () => convention.signatories.beneficiary)
     .with(
       "establishment-representative",
-      () =>
-        makeEmailHash(
-          convention.signatories.establishmentRepresentative.email,
-        ) === emailHash,
+      () => convention.signatories.establishmentRepresentative,
     )
-    .with(
-      "establishment-tutor",
-      () => makeEmailHash(convention.establishmentTutor.email) === emailHash,
-    )
+    .with("establishment-tutor", () => convention.establishmentTutor)
     .with("beneficiary-representative", () => {
-      if (!convention.signatories.beneficiaryRepresentative?.email)
+      if (!convention.signatories.beneficiaryRepresentative)
         throw errors.convention.missingActor({
           conventionId: convention.id,
-          role: "beneficiary-current-employer",
+          role,
         });
-      return (
-        makeEmailHash(
-          convention.signatories.beneficiaryRepresentative.email,
-        ) === emailHash
-      );
+      return convention.signatories.beneficiaryRepresentative;
     })
     .with("beneficiary-current-employer", () => {
-      if (!convention.signatories.beneficiaryCurrentEmployer?.email)
+      if (!convention.signatories.beneficiaryCurrentEmployer)
         throw errors.convention.missingActor({
           conventionId: convention.id,
-          role: "beneficiary-current-employer",
+          role,
         });
-      return (
-        makeEmailHash(
-          convention.signatories.beneficiaryCurrentEmployer.email,
-        ) === emailHash
-      );
+      return convention.signatories.beneficiaryCurrentEmployer;
     })
     .exhaustive();
+
+const maskEmail = (email: Email): string => {
+  const [localPart, domain] = email.split("@");
+  return `${localPart.charAt(0)}${"*".repeat(localPart.length - 1)}@${domain}`;
+};
+
+const maskPhone = (phone: PhoneNumber): string => {
+  const { countryCallingCode, nationalNumber } =
+    parsePhoneNumberWithError(phone);
+  const visibleDigitsCount = 2;
+  return `+${countryCallingCode}${"*".repeat(nationalNumber.length - visibleDigitsCount)}${nationalNumber.slice(-visibleDigitsCount)}`;
+};
