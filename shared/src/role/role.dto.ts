@@ -35,15 +35,6 @@ export type ConventionRole = ExtractFromExisting<
   | "validator"
 >;
 
-export type ConventionActorRole = ExtractFromExisting<
-  ConventionRole,
-  | "beneficiary"
-  | "beneficiary-current-employer"
-  | "beneficiary-representative"
-  | "establishment-representative"
-  | "establishment-tutor"
->;
-
 export const allSignatoryRoles = [
   "beneficiary",
   "beneficiary-representative",
@@ -52,6 +43,13 @@ export const allSignatoryRoles = [
 ] as const satisfies ReadonlyArray<
   Required<Signatories>[keyof Required<Signatories>]["role"]
 >;
+
+export const conventionActorRoles = [
+  ...allSignatoryRoles,
+  "establishment-tutor",
+] as const;
+
+export type ConventionActorRole = (typeof conventionActorRoles)[number];
 
 export const conventionEstablishmentsRoles = [
   "establishment-representative",
