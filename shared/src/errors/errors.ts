@@ -13,6 +13,7 @@ import type {
 } from "../apiConsumer/ApiConsumer";
 import type { AssessmentMode } from "../assessment/assessment.dto";
 import { authExpiredMessage, type OAuthState } from "../auth/auth.dto";
+import type { OtpChallengeId } from "../auth/otpChallenge/otpChallenge.dto";
 import type {
   ConventionDto,
   ConventionId,
@@ -75,6 +76,10 @@ export const badSchemaErrorMessagePrefix = "Schema validation failed";
 export const archivedConventionErrorMessage =
   "Cette convention est archivée et n'est plus accessible";
 export const errors = {
+  otpChallenge: {
+    alreadyExists: (id: OtpChallengeId) =>
+      new ConflictError(`Le challenge OTP ${id} existe déjà.`),
+  },
   fetch: {
     errorResponse: async (errorResponse: Response) => {
       const textbody = await errorResponse
