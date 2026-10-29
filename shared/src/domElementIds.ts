@@ -1335,6 +1335,8 @@ export const domElementIds = {
   establishmentDashboardConventions: {
     goToConventionButton:
       "im-establishment-dashboard-conventions__see-convention-button",
+    unarchiveConventionButton:
+      "im-establishment-dashboard-conventions__unarchive-convention-button",
   },
   establishmentDashboardFormEstablishment: {},
   openApiDoc: {},
