@@ -14,7 +14,15 @@ import { InMemoryOtpChallengeRepository } from "./InMemoryOtpChallengeRepository
 import { PgOtpChallengeRepository } from "./PgOtpChallengeRepository";
 
 const unknownOtpChallengeId = "99999999-9999-4999-a999-999999999999";
-const otpChallenge = new OtpChallengeDtoBuilder().build();
+const emailOtpChallenge = new OtpChallengeDtoBuilder().build();
+const smsOtpChallenge = new OtpChallengeDtoBuilder()
+  .withId("22222222-2222-4222-a222-222222222222")
+  .withChannel("sms")
+  .withRecipient("+33612345678")
+  .withAttempts(2)
+  .withExpiresAt("2024-04-28T12:15:00.000Z")
+  .withUsedAt("2024-04-28T12:05:00.000Z")
+  .build();
 
 describe.each(["Pg", "InMemory"])("%s OtpChallengeRepository", (adapter) => {
   let pool: Pool;
@@ -44,21 +52,26 @@ describe.each(["Pg", "InMemory"])("%s OtpChallengeRepository", (adapter) => {
   });
 
   describe("save", () => {
-    it("saves an otp challenge", async () => {
-      await otpChallengeRepository.save(otpChallenge);
+    it("saves email and sms otp challenges", async () => {
+      await otpChallengeRepository.save(emailOtpChallenge);
+      await otpChallengeRepository.save(smsOtpChallenge);
 
       expectToEqual(
-        await otpChallengeRepository.getById(otpChallenge.id),
-        otpChallenge,
+        await otpChallengeRepository.getById(emailOtpChallenge.id),
+        emailOtpChallenge,
+      );
+      expectToEqual(
+        await otpChallengeRepository.getById(smsOtpChallenge.id),
+        smsOtpChallenge,
       );
     });
 
     it("fails to save an otp challenge if it already exists", async () => {
-      await otpChallengeRepository.save(otpChallenge);
+      await otpChallengeRepository.save(emailOtpChallenge);
 
       await expectPromiseToFailWithError(
-        otpChallengeRepository.save(otpChallenge),
-        errors.otpChallenge.alreadyExists(otpChallenge.id),
+        otpChallengeRepository.save(emailOtpChallenge),
+        errors.otpChallenge.alreadyExists(emailOtpChallenge.id),
       );
     });
   });
@@ -71,12 +84,13 @@ describe.each(["Pg", "InMemory"])("%s OtpChallengeRepository", (adapter) => {
       );
     });
 
-    it("returns the otp challenge when it exists", async () => {
-      await otpChallengeRepository.save(otpChallenge);
+    it("returns the otp challenge matching the id", async () => {
+      await otpChallengeRepository.save(emailOtpChallenge);
+      await otpChallengeRepository.save(smsOtpChallenge);
 
       expectToEqual(
-        await otpChallengeRepository.getById(otpChallenge.id),
-        otpChallenge,
+        await otpChallengeRepository.getById(smsOtpChallenge.id),
+        smsOtpChallenge,
       );
     });
 
