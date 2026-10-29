@@ -1,4 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Badge from "@codegouvfr/react-dsfr/Badge";
+import type { ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { Fragment, type ReactNode, useEffect } from "react";
 import { RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
@@ -6,7 +8,12 @@ import {
   type AbsoluteUrl,
   domElementIds,
   type EstablishmentUserConventionListDto,
+  frontRoutes,
   getFormattedFirstnameAndLastname,
+  isConventionArchived,
+  isConventionEndingInOneDayOrMore,
+  isConventionValidated,
+  toDisplayedDate,
 } from "shared";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { MetabaseFullScreenButton } from "src/app/components/MetabaseFullScreenButton";
@@ -26,6 +33,15 @@ const establishmentConventionListFeedbackTopic: FeedbackTopic =
 
 type EstablishmentConventionListProps = {
   conventionsDashboardUrl: AbsoluteUrl | null;
+};
+
+type EstablishmentConventionGridItem = {
+  badge: ReactNode;
+  id: string;
+  title: string;
+  subTitle: string;
+  content: ReactNode;
+  cta: ButtonProps;
 };
 
 export const EstablishmentConventionList = ({
@@ -83,7 +99,8 @@ export const EstablishmentConventionList = ({
           })}
           isLoading={isLoading}
           label={"Listing des conventions"}
-          hasViewSwitch={false}
+          hasViewSwitch={true}
+          gridData={toEstablishmentConventionGridData(conventions)}
           tableData={toEstablishmentConventionTableData(conventions)}
           searchBar={{
             label: "Rechercher",
@@ -153,6 +170,113 @@ const getEstablishmentConventionTableHeaders = ({
     ])
     .otherwise(() => ["Nous n'avons pas trouvé de convention."]);
 
+const toEstablishmentConventionGridData = (
+  conventions: EstablishmentUserConventionListDto[],
+): EstablishmentConventionGridItem[] =>
+  conventions.map((convention) => {
+    const shouldShowAssessmentBadge =
+      isConventionValidated(convention.status) &&
+      !isConventionEndingInOneDayOrMore(convention.dateEnd);
+    const isArchived = isConventionArchived({
+      dateEnd: convention.dateEnd,
+      now: new Date(),
+    });
+    return {
+      id: convention.id,
+      title: getFormattedFirstnameAndLastname({
+        firstname: convention.beneficiary.firstName,
+        lastname: convention.beneficiary.lastName,
+      }),
+      subTitle: `${convention.immersionAppellation.appellationLabel} - ${convention.businessName}`,
+      badge: (
+        <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
+          <li>
+            <ConventionStatusBadge
+              conventionStatus={convention.status}
+              userKind="establishment"
+            />
+          </li>
+          {shouldShowAssessmentBadge && (
+            <li>
+              <ConventionAssessmentStatusBadge
+                conventionParams={convention}
+                userKind="establishment"
+              />
+            </li>
+          )}
+          {isArchived && (
+            <li>
+              <Badge small>Archivée</Badge>
+            </li>
+          )}
+        </ul>
+      ),
+      content: (
+        <dl className={fr.cx("fr-raw-list", "fr-mt-1w")}>
+          <dt className={fr.cx("fr-text--xs", "fr-mb-0")}>Dates</dt>
+          <dd className={fr.cx("fr-text--sm", "fr-text--bold")}>
+            {`Du ${toDisplayedDate({
+              date: new Date(convention.dateStart),
+              withHours: false,
+            })} au ${toDisplayedDate({
+              date: new Date(convention.dateEnd),
+              withHours: false,
+            })}`}
+          </dd>
+        </dl>
+      ),
+      cta: toEstablishmentConventionGridCta({
+        convention,
+        isDisabled: false,
+      }),
+    };
+  });
+
+const toEstablishmentConventionGridCta = ({
+  convention,
+  isDisabled,
+}: {
+  convention: EstablishmentUserConventionListDto;
+  isDisabled: boolean;
+}): ButtonProps => {
+  const id = `${domElementIds.establishmentDashboardConventions.goToConventionButton}--${convention.id}`;
+
+  if (isDisabled)
+    return {
+      id,
+      disabled: true,
+      children: "Voir la convention",
+    };
+
+  if (
+    isConventionArchived({
+      dateEnd: convention.dateEnd,
+      now: new Date(),
+    })
+  )
+    return {
+      id: `${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${convention.id}`,
+      children: "Désarchiver",
+      linkProps: {
+        ...frontRoutes.archivedConventionRequest({
+          conventionId: convention.id,
+        }).link,
+        target: "_blank",
+      },
+    };
+
+  return {
+    id,
+    children: "Voir la convention",
+    linkProps: {
+      ...frontRoutes.manageConventionConnectedUser({
+        conventionId: convention.id,
+      }).link,
+      target: "_blank",
+    },
+  };
+};
+
 const toEstablishmentConventionTableData = (
   conventions: EstablishmentUserConventionListDto[],
 ): ReactNode[][] =>
@@ -171,10 +295,22 @@ const toEstablishmentConventionTableData = (
       </p>
     </Fragment>,
     <Fragment key={`${convention.id}-status`}>
-      <ConventionStatusBadge
-        conventionStatus={convention.status}
-        userKind="establishment"
-      />
+      <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
+        <li>
+          <ConventionStatusBadge
+            conventionStatus={convention.status}
+            userKind="establishment"
+          />
+        </li>
+        {isConventionArchived({
+          dateEnd: convention.dateEnd,
+          now: new Date(),
+        }) && (
+          <li>
+            <Badge small>Archivée</Badge>
+          </li>
+        )}
+      </ul>
     </Fragment>,
     <Fragment key={`${convention.id}-assessment`}>
       <ConventionAssessmentStatusBadge
