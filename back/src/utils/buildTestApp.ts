@@ -7,6 +7,7 @@ import type { InMemoryAddressGateway } from "../domains/core/address/adapters/In
 import type { InMemorySubscribersGateway } from "../domains/core/api-consumer/adapters/InMemorySubscribersGateway";
 import type { InMemoryProConnectOAuthGateway } from "../domains/core/authentication/connected-user/adapters/oauth-gateway/InMemoryOAuthGateway";
 import type { InMemoryFtConnectGateway } from "../domains/core/authentication/ft-connect/adapters/ft-connect-gateway/InMemoryFtConnectGateway";
+import type { DeterministicOtpCodeGeneratorGateway } from "../domains/core/authentication/otp-challenge/adapters/otp-code-generator-gateway/DeterministicOtpCodeGeneratorGateway";
 import type { WithCache } from "../domains/core/caching-gateway/port/WithCache";
 import type { StubDashboardGateway } from "../domains/core/dashboard/adapters/StubDashboardGateway";
 import type { InMemoryEmailValidationGateway } from "../domains/core/email-validation/adapters/InMemoryEmailValidationGateway";
@@ -53,6 +54,7 @@ export type InMemoryGateways = {
   timeGateway: CustomTimeGateway;
   emailValidationGateway: InMemoryEmailValidationGateway;
   shortLinkGenerator: DeterministShortLinkIdGeneratorGateway;
+  otpCodeGeneratorGateway: DeterministicOtpCodeGeneratorGateway;
   subscribersGateway: InMemorySubscribersGateway;
   appellationsGateway: InMemoryAppellationsGateway;
   establishmentMarketingGateway: InMemoryEstablishmentMarketingGateway;
@@ -99,12 +101,15 @@ export const buildTestApp = async (
     TIME_GATEWAY: "CUSTOM",
     EMAIL_VALIDATION_GATEWAY: "IN_MEMORY",
     SHORT_LINK_ID_GENERATOR_GATEWAY: "DETERMINIST",
+    OTP_CODE_GENERATOR_GATEWAY: "DETERMINIST",
     INBOUND_EMAIL_ALLOWED_IPS: "::ffff:127.0.0.1",
     MAX_API_CONSUMER_CALLS_PER_SECOND: "2",
     ...appConfigOverrides?.configParams,
   }).build();
 
   if (appConfig.shortLinkIdGeneratorGateway !== "DETERMINIST")
+    throwNotSupportedError();
+  if (appConfig.otpCodeGeneratorGateway !== "DETERMINIST")
     throwNotSupportedError();
   if (appConfig.notificationGateway !== "IN_MEMORY") throwNotSupportedError();
   if (appConfig.repositories !== "IN_MEMORY") throwNotSupportedError();

@@ -454,6 +454,14 @@ export class AppConfig {
     });
   }
 
+  public get otpCodeGeneratorGateway() {
+    return this.#throwIfNotInArray({
+      variableName: "OTP_CODE_GENERATOR_GATEWAY",
+      authorizedValues: ["CRYPTO", "DETERMINIST"],
+      defaultValue: "CRYPTO",
+    });
+  }
+
   public get otpCodeHmacSecret() {
     return this.#throwIfNotDefinedOrDefault("OTP_CODE_HMAC_SECRET");
   }
