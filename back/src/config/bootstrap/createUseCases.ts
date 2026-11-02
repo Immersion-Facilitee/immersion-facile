@@ -108,6 +108,7 @@ import { makeInitiateLoginByEmail } from "../../domains/core/authentication/conn
 import { makeInitiateLoginByOAuth } from "../../domains/core/authentication/connected-user/use-cases/InitiateLoginByOAuth";
 import { makeRenewExpiredJwt } from "../../domains/core/authentication/connected-user/use-cases/RenewExpiredJwt";
 import { makeNotifyFranceTravailUserAdvisorOnConventionFullySigned } from "../../domains/core/authentication/ft-connect/use-cases/NotifyFranceTravailUserAdvisorOnConventionFullySigned";
+import { makeGetMaskedOtpRecipients } from "../../domains/core/authentication/otp-challenge/use-cases/GetMaskedOtpRecipients";
 import type { DashboardGateway } from "../../domains/core/dashboard/port/DashboardGateway";
 import { makeGetDashboardUrl } from "../../domains/core/dashboard/useCases/GetDashboardUrl";
 import { makeValidateEmail } from "../../domains/core/email-validation/use-cases/ValidateEmail";
@@ -1353,6 +1354,10 @@ export const createUseCases = ({
         generateApiConsumerJwt,
         timeGateway,
       },
+    }),
+
+    getMaskedOtpRecipients: makeGetMaskedOtpRecipients({
+      uowPerformer,
     }),
   } satisfies Record<string, InstantiatedUseCase<any, any, any>>;
 };

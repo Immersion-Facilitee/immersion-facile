@@ -28,6 +28,7 @@ export * from "./auth/auth.routes";
 export * from "./auth/auth.schema";
 export * from "./auth/otpChallenge/OtpChallengeDtoBuilder";
 export * from "./auth/otpChallenge/otpChallenge.dto";
+export * from "./auth/otpChallenge/otpChallenge.routes";
 export * from "./auth/otpChallenge/otpChallenge.schema";
 export * from "./auth/proConnect/proConnect.dto";
 export * from "./auth/proConnect/proConnect.schema";
