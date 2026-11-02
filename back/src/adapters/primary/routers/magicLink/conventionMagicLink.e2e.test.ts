@@ -1198,7 +1198,7 @@ describe("Magic link router", () => {
       });
     });
 
-    it("200 - validator with valid magic link JWT can send signature link", async () => {
+    it("400 - validator magic link JWT has no magic link", async () => {
       inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
           [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
@@ -1228,8 +1228,12 @@ describe("Magic link router", () => {
       });
 
       expectHttpResponseToEqual(response, {
-        status: 200,
-        body: "",
+        status: 400,
+        body: {
+          status: 400,
+          message: errors.convention.roleHasNoMagicLink({ role: "validator" })
+            .message,
+        },
       });
     });
 

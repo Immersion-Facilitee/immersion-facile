@@ -95,17 +95,11 @@ const viewerJwtPayload = createConventionMagicLinkPayload({
 const notConnectedUser = new UserBuilder()
   .withEmail("validator@mail.com")
   .build();
-const validatorJwtPayload = createConventionMagicLinkPayload({
-  id: conventionId,
-  role: "validator",
-  email: notConnectedUser.email,
-  now: new Date(),
-});
 
-const counsellorJwtPayload = createConventionMagicLinkPayload({
+const establishmentRepresentativeJwtPayload = createConventionMagicLinkPayload({
   id: conventionId,
-  role: "counsellor",
-  email: notConnectedUser.email,
+  role: "establishment-representative",
+  email: convention.signatories.establishmentRepresentative.email,
   now: new Date(),
 });
 
@@ -201,11 +195,11 @@ describe("Send signature link", () => {
             signatoryRole: "beneficiary-representative",
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.forbiddenConventionIdMismatch({
-          jwtConventionId: validatorJwtPayload.applicationId,
-          jwtRole: validatorJwtPayload.role,
+          jwtConventionId: establishmentRepresentativeJwtPayload.applicationId,
+          jwtRole: establishmentRepresentativeJwtPayload.role,
           requestedConventionId,
         }),
       );
@@ -219,7 +213,7 @@ describe("Send signature link", () => {
             signatoryRole: "beneficiary-representative",
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.notFound({ conventionId }),
       );
@@ -246,7 +240,7 @@ describe("Send signature link", () => {
               signatoryRole: "beneficiary-representative",
               notificationKind: "sms",
             },
-            validatorJwtPayload,
+            establishmentRepresentativeJwtPayload,
           ),
           errors.convention.sendSignatureLinkNotAllowedForStatus({
             status: convention.status,
@@ -256,16 +250,8 @@ describe("Send signature link", () => {
     );
 
     it("throws bad request if role to send signature link does not exist", async () => {
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
       uow.conventionRepository.setConventions([convention]);
-      uow.userRepository.users = [notConnectedUser];
 
       await expectPromiseToFailWithError(
         usecase.execute(
@@ -274,7 +260,7 @@ describe("Send signature link", () => {
             signatoryRole: "beneficiary-current-employer",
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.missingActor({
           conventionId: convention.id,
@@ -371,10 +357,8 @@ describe("Send signature link", () => {
         );
       });
 
-      it("throws unauthorized if role in payload is valid but user has no actual rights on agency", async () => {
-        uow.userRepository.users = [notConnectedUser];
+      it("throws unauthorized if role in payload is valid but email hash does not match", async () => {
         uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
-
         uow.conventionRepository.setConventions([convention]);
 
         await expectPromiseToFailWithError(
@@ -384,10 +368,14 @@ describe("Send signature link", () => {
               signatoryRole: "beneficiary-representative",
               notificationKind: "sms",
             },
-            validatorJwtPayload,
+            {
+              applicationId: conventionId,
+              role: "establishment-representative",
+              emailHash: "unmatched-hash",
+            },
           ),
           errors.convention.emailNotLinkedToConvention(
-            validatorJwtPayload.role,
+            "establishment-representative",
           ),
         );
       });
@@ -429,15 +417,7 @@ describe("Send signature link", () => {
       const shortLinkId = "link2";
       shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
       uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
-      uow.userRepository.users = [notConnectedUser];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
       uow.notificationRepository.notifications = [
         {
           id: "past-notification-id",
@@ -467,7 +447,7 @@ describe("Send signature link", () => {
             signatoryRole: "establishment-representative",
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.signatureLinkAlreadySent({
           signatoryRole: "establishment-representative",
@@ -482,15 +462,7 @@ describe("Send signature link", () => {
       const shortLinkId = "link2";
       shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
       uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
-      uow.userRepository.users = [notConnectedUser];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
       uow.notificationRepository.notifications = [
         {
           id: "past-email-notification-id",
@@ -537,7 +509,7 @@ describe("Send signature link", () => {
             signatoryRole: "establishment-representative",
             notificationKind: "email",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.signatureLinkAlreadySent({
           signatoryRole: "establishment-representative",
@@ -570,15 +542,7 @@ describe("Send signature link", () => {
         uow.conventionRepository.setConventions([
           conventionWithIncorrectPhoneFormat,
         ]);
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [notConnectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
-            },
-          }),
-        ];
-        uow.userRepository.users = [notConnectedUser];
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
 
         await expectPromiseToFailWithError(
           usecase.execute(
@@ -587,7 +551,7 @@ describe("Send signature link", () => {
               signatoryRole: "beneficiary",
               notificationKind: "sms",
             },
-            validatorJwtPayload,
+            establishmentRepresentativeJwtPayload,
           ),
           errors.convention.invalidMobilePhoneNumber({
             conventionId: conventionWithIncorrectPhoneFormat.id,
@@ -602,15 +566,7 @@ describe("Send signature link", () => {
         .withBeneficiarySignedAt(new Date())
         .build();
       uow.conventionRepository.setConventions([conventionAlreadySigned]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
-      uow.userRepository.users = [notConnectedUser];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
 
       await expectPromiseToFailWithError(
         usecase.execute(
@@ -619,7 +575,7 @@ describe("Send signature link", () => {
             signatoryRole: "beneficiary",
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.signatoryAlreadySigned({
           conventionId: conventionAlreadySigned.id,
@@ -995,69 +951,6 @@ describe("Send signature link", () => {
     });
 
     describe("from magiclink", () => {
-      it.each(["validator", "counsellor"] as const)(
-        "When not connected agency user %s triggers it",
-        async (role) => {
-          const shortLinkId = "link1";
-          shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-
-          uow.conventionRepository.setConventions([convention]);
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [notConnectedUser.id]: {
-                roles: [role],
-                isNotifiedByEmail: true,
-              },
-            }),
-          ];
-          uow.userRepository.users = [notConnectedUser];
-
-          await usecase.execute(
-            {
-              conventionId,
-              signatoryRole: "establishment-representative",
-              notificationKind: "sms",
-            },
-            role === "validator" ? validatorJwtPayload : counsellorJwtPayload,
-          );
-
-          expectObjectInArrayToMatch(uow.outboxRepository.events, [
-            { topic: "NotificationAdded" },
-            {
-              topic: "ConventionSignatureLinkManuallySent",
-              payload: {
-                convention,
-                recipientRole: "establishment-representative",
-                transport: "sms",
-                triggeredBy: {
-                  kind: "convention-magic-link",
-                  role,
-                },
-              },
-            },
-          ]);
-          expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-            {
-              kind: "sms",
-              followedIds: {
-                conventionId: convention.id,
-                agencyId: convention.agencyId,
-                establishmentSiret: convention.siret,
-                userId: undefined,
-              },
-              templatedContent: {
-                recipientPhone:
-                  convention.signatories.establishmentRepresentative.phone,
-                kind: "ReminderForSignatories",
-                params: {
-                  shortLink: makeShortLinkUrl(config, shortLinkId),
-                },
-              },
-            },
-          ]);
-        },
-      );
-
       it.each([
         "beneficiary",
         "beneficiary-representative",
@@ -1133,15 +1026,7 @@ describe("Send signature link", () => {
           .build();
 
         uow.conventionRepository.setConventions([conventionWithDefaultPhone]);
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [notConnectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
-            },
-          }),
-        ];
-        uow.userRepository.users = [notConnectedUser];
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
 
         await expectPromiseToFailWithError(
           usecase.execute(
@@ -1150,7 +1035,7 @@ describe("Send signature link", () => {
               signatoryRole: "beneficiary",
               notificationKind: "sms",
             },
-            validatorJwtPayload,
+            establishmentRepresentativeJwtPayload,
           ),
           errors.convention.invalidMobilePhoneNumber({
             conventionId: conventionWithDefaultPhone.id,
@@ -1275,16 +1160,8 @@ describe("Send signature link", () => {
         .withSchedule(reasonableSchedule)
         .build();
 
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
       uow.conventionRepository.setConventions([archivedConvention]);
-      uow.userRepository.users = [notConnectedUser];
       uow.featureFlagRepository.featureFlags = {
         enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
       };
@@ -1296,7 +1173,7 @@ describe("Send signature link", () => {
             signatoryRole: "beneficiary",
             notificationKind: "email",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.archived({ conventionId: archivedConvention.id }),
       );
