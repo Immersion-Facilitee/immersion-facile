@@ -1,8 +1,5 @@
-import { toPairs } from "ramda";
 import {
-  type AgencyDto,
   type AgencyId,
-  type AgencyWithUsersRights,
   type Beneficiary,
   type ConventionDto,
   type ConventionRole,
@@ -12,36 +9,15 @@ import {
   type Role,
   type UserWithAdminRights,
 } from "shared";
-import { usersToEmails } from "../domains/connected-users/helpers/connectedUser.helper";
 import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
 import { agencyWithRightToAgencyDto } from "./agency";
 import { conventionEmailsByRole } from "./convention";
-import { isSomeEmailMatchingEmailHash, makeEmailHash } from "./jwt";
+import { makeEmailHash } from "./jwt";
 
-export const isHashMatchNotNotifiedCounsellorOrValidator = async ({
-  emailHash,
-  agency,
-  uow,
-}: {
-  emailHash: EmailHash;
-  agency: AgencyWithUsersRights;
-  uow: UnitOfWork;
-}): Promise<boolean> => {
-  const notNotitifedCounsellorsAndValidators = toPairs(agency.usersRights)
-    .filter(
-      ([_, right]) =>
-        right?.roles.some((role) =>
-          ["validator", "counsellor"].includes(role),
-        ) && !right.isNotifiedByEmail,
-    )
-    .map(([id]) => id);
-
-  return uow.userRepository
-    .getByIds(notNotitifedCounsellorsAndValidators)
-    .then((users) =>
-      isSomeEmailMatchingEmailHash(usersToEmails(users), emailHash),
-    );
-};
+export const isSomeEmailMatchingEmailHash = (
+  emails: Email[],
+  emailHash: EmailHash,
+): boolean => emails.some((email) => makeEmailHash(email) === emailHash);
 
 export const getAgencyEmailFromEmailHash = async (
   uow: UnitOfWork,
@@ -69,10 +45,9 @@ export const isHashMatchConventionEmails = ({
   role,
 }: {
   convention: ConventionDto;
-  agency: AgencyDto;
   emailHash: EmailHash;
   role: ConventionRole;
-}) => {
+}): boolean => {
   const emailsByRole = conventionEmailsByRole(convention)(role);
   return isSomeEmailMatchingEmailHash(emailsByRole, emailHash);
 };
@@ -83,7 +58,7 @@ export const isHashMatchPeAdvisorEmail = ({
 }: {
   beneficiary: Beneficiary<"immersion" | "mini-stage-cci">;
   emailHash: EmailHash;
-}) => {
+}): boolean => {
   const peAdvisorEmail = beneficiary.federatedIdentity?.payload?.advisor?.email;
 
   return peAdvisorEmail

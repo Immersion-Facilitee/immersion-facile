@@ -1,5 +1,4 @@
 import {
-  type AgencyWithUsersRights,
   type ApiConsumer,
   type ConventionDomainJwtPayload,
   type ConventionDto,
@@ -10,11 +9,9 @@ import {
   type UserId,
   withConventionIdSchema,
 } from "shared";
-import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import { conventionDtosToConventionReadDtos } from "../../../utils/convention";
 import {
   isHashMatchConventionEmails,
-  isHashMatchNotNotifiedCounsellorOrValidator,
   isHashMatchPeAdvisorEmail,
 } from "../../../utils/emailHash";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
@@ -80,7 +77,6 @@ const getAuthorizedConvention = async ({
   if ("emailHash" in jwtPayload)
     return isConventionDomainPayloadHasRight({
       jwtPayload,
-      uow,
       convention,
     });
   return onConnectedUserPayload({
@@ -133,31 +129,20 @@ const onConnectedUserPayload = async ({
   });
 };
 
-const isConventionDomainPayloadHasRight = async ({
+const isConventionDomainPayloadHasRight = ({
   jwtPayload,
   convention,
-  uow,
 }: {
   jwtPayload: ConventionDomainJwtPayload;
   convention: ConventionReadDto;
-  uow: UnitOfWork;
-}): Promise<ConventionReadDto> => {
+}): ConventionReadDto => {
   throwErrorOnConventionIdMismatch({
     jwtPayload,
     requestedConventionId: convention.id,
   });
 
-  const agency = await uow.agencyRepository.getById(convention.agencyId);
-  if (!agency) throw errors.agency.notFound({ agencyId: convention.agencyId });
+  if (isEmailHashMatch({ payload: jwtPayload, convention })) return convention;
 
-  const isUserHasRight = await isEmailHashMatch({
-    payload: jwtPayload,
-    convention,
-    agencyWithUserRights: agency,
-    uow,
-  });
-
-  if (isUserHasRight) return convention;
   throw errors.convention.forbiddenMissingRightsEmailHash({
     conventionId: convention.id,
     emailHash: jwtPayload.emailHash,
@@ -165,27 +150,13 @@ const isConventionDomainPayloadHasRight = async ({
   });
 };
 
-const isEmailHashMatch = async ({
+const isEmailHashMatch = ({
   payload: { emailHash, role },
   convention,
-  agencyWithUserRights,
-  uow,
 }: {
   payload: ConventionDomainJwtPayload;
   convention: ConventionDto;
-  agencyWithUserRights: AgencyWithUsersRights;
-  uow: UnitOfWork;
-}): Promise<boolean> => {
-  if (
-    isHashMatchConventionEmails({
-      role,
-      emailHash,
-      convention,
-      agency: await agencyWithRightToAgencyDto(uow, agencyWithUserRights),
-    })
-  )
-    return true;
-
+}): boolean => {
   if (
     isHashMatchPeAdvisorEmail({
       beneficiary: convention.signatories.beneficiary,
@@ -194,9 +165,9 @@ const isEmailHashMatch = async ({
   )
     return true;
 
-  return await isHashMatchNotNotifiedCounsellorOrValidator({
-    uow,
+  return isHashMatchConventionEmails({
+    role,
     emailHash,
-    agency: agencyWithUserRights,
+    convention,
   });
 };

@@ -15,8 +15,10 @@ import {
 } from "shared";
 import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import { conventionEmailsByRole } from "../../../utils/convention";
-import { isHashMatchPeAdvisorEmail } from "../../../utils/emailHash";
-import { isSomeEmailMatchingEmailHash } from "../../../utils/jwt";
+import {
+  isHashMatchPeAdvisorEmail,
+  isSomeEmailMatchingEmailHash,
+} from "../../../utils/emailHash";
 import { throwErrorOnConventionIdMismatch } from "../../convention/entities/Convention";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { getUserWithRights } from "./userRights.helper";
@@ -66,8 +68,8 @@ export const throwIfNotAuthorizedForRole = async ({
   isPeAdvisorAllowed: boolean;
   isValidatorOfAgencyRefersToAllowed: boolean;
 }): Promise<void> => {
-  const agency = await agencyWithRightToAgencyDto(uow, agencyWithUserRights);
   if ("userId" in jwtPayload) {
+    const agency = await agencyWithRightToAgencyDto(uow, agencyWithUserRights);
     return onConnectedUser({
       uow,
       jwtPayload,
@@ -82,36 +84,30 @@ export const throwIfNotAuthorizedForRole = async ({
 
   if ("applicationId" in jwtPayload) {
     return onMagicLink({
-      uow,
       jwtPayload,
       authorizedRoles,
       errorToThrow,
       convention,
       isPeAdvisorAllowed,
-      isValidatorOfAgencyRefersToAllowed,
     });
   }
 
   throw errorToThrow;
 };
 
-const onMagicLink = async ({
-  uow,
+const onMagicLink = ({
   jwtPayload,
   authorizedRoles,
   errorToThrow,
   convention,
   isPeAdvisorAllowed,
-  isValidatorOfAgencyRefersToAllowed,
 }: {
-  uow: UnitOfWork;
   jwtPayload: ConventionDomainJwtPayload;
   authorizedRoles: Role[];
   errorToThrow: Error;
   convention: ConventionDto;
   isPeAdvisorAllowed: boolean;
-  isValidatorOfAgencyRefersToAllowed: boolean;
-}) => {
+}): void => {
   const { emailHash, role } = jwtPayload;
 
   throwErrorOnConventionIdMismatch({
@@ -132,23 +128,10 @@ const onMagicLink = async ({
     throw errorToThrow;
   }
 
-  const emailsOrError = conventionEmailsByRole(convention)(role);
+  const emails = conventionEmailsByRole(convention)(role);
 
-  if (!isSomeEmailMatchingEmailHash(emailsOrError, emailHash))
+  if (!isSomeEmailMatchingEmailHash(emails, emailHash))
     throw errors.convention.emailNotLinkedToConvention(role);
-
-  // Validate agency refers to logic for applicationId payload
-  if (!isValidatorOfAgencyRefersToAllowed) {
-    const agency = await uow.agencyRepository.getById(convention.agencyId);
-
-    if (!agency)
-      throw errors.agency.notFound({ agencyId: convention.agencyId });
-
-    if (agency.refersToAgencyId) {
-      if (role === "validator")
-        throw errors.convention.validatorOfAgencyRefersToNotAllowed();
-    }
-  }
 };
 
 const onConnectedUser = async ({

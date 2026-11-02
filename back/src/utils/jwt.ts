@@ -9,7 +9,6 @@ import {
   type Email,
   type EmailAuthCodeDomainJwtPayload,
   type EmailAuthCodeJwtPayload,
-  type EmailHash,
   errors,
   getJwtExpiredSinceInSeconds,
   oneDayInSecond,
@@ -144,8 +143,3 @@ export const createEmailAuthCodeJwtPayload = ({
     exp,
   };
 };
-
-export const isSomeEmailMatchingEmailHash = (
-  emails: Email[],
-  emailHash: EmailHash,
-): boolean => emails.some((email) => makeEmailHash(email) === emailHash);
