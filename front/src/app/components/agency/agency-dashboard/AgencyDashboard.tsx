@@ -1,7 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import { Button } from "@codegouvfr/react-dsfr/Button";
 import Tabs from "@codegouvfr/react-dsfr/Tabs";
-import { SectionHighlight } from "react-design-system";
 import {
   type AgencyRight,
   activeAgencyStatuses,
@@ -10,6 +8,7 @@ import {
   frontRoutes,
   type WithDashboards,
 } from "shared";
+import { DashboardHighlight } from "src/app/components/DashboardHighlight";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useFeatureFlags } from "src/app/hooks/useFeatureFlags";
@@ -58,26 +57,7 @@ export const AgencyDashboard = ({
         className="fr-mb-2w"
         closable
       />
-      {enableAgencyDashboardHighlight.isActive && (
-        <SectionHighlight>
-          <h2 className={fr.cx("fr-h6", "fr-mb-1w")}>
-            {enableAgencyDashboardHighlight.value.title}
-          </h2>
-          <p className={fr.cx("fr-text--lg", "fr-mb-2w")}>
-            {enableAgencyDashboardHighlight.value.message}
-          </p>
-          <Button
-            size="small"
-            linkProps={{
-              href: enableAgencyDashboardHighlight.value.href,
-              target: "_blank",
-              rel: "noopener noreferrer",
-            }}
-          >
-            {enableAgencyDashboardHighlight.value.label}
-          </Button>
-        </SectionHighlight>
-      )}
+      <DashboardHighlight highlight={enableAgencyDashboardHighlight} />
       <Tabs
         className={fr.cx("fr-mt-4w")}
         style={{ overflow: "visible" }}

@@ -41,6 +41,12 @@ const initialState: FeatureFlagsState = {
     href: "",
     label: "",
   }),
+  enableCandidateDashboardHighlight: makeHighlightFeatureFlag(false, {
+    title: "",
+    message: "",
+    href: "",
+    label: "",
+  }),
   enableInactiveUsersCleanup: makeBooleanFeatureFlag(false),
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
   enableRequestArchivedConvention: makeBooleanFeatureFlag(false),

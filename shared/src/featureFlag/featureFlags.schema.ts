@@ -116,6 +116,7 @@ export const featureFlagsSchema: ZodSchemaWithInputMatchingOutput<FeatureFlags> 
     enableBroadcastOfMissionLocaleToFT: featureFlagBooleanSchema,
     enableEstablishmentDashboardHighlight: featureFlagHighlightSchema,
     enableAgencyDashboardHighlight: featureFlagHighlightSchema,
+    enableCandidateDashboardHighlight: featureFlagHighlightSchema,
     enableInactiveUsersCleanup: featureFlagBooleanSchema,
     enableInactiveUsersDeletionAutoProcessing: featureFlagBooleanSchema,
     enableRequestArchivedConvention: featureFlagBooleanSchema,

@@ -58,6 +58,10 @@ const defaultFeatureFlags: FeatureFlags = {
     false,
     defaultHighlightFeatureFlagValue,
   ),
+  enableCandidateDashboardHighlight: makeHighlightFeatureFlag(
+    false,
+    defaultHighlightFeatureFlagValue,
+  ),
   enableInactiveUsersCleanup: makeBooleanFeatureFlag(false),
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
   enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
@@ -87,6 +91,10 @@ const flagsFromApi: FeatureFlags = {
     highlightFeatureFlagFromApi,
   ),
   enableAgencyDashboardHighlight: makeHighlightFeatureFlag(
+    false,
+    highlightFeatureFlagFromApi,
+  ),
+  enableCandidateDashboardHighlight: makeHighlightFeatureFlag(
     false,
     highlightFeatureFlagFromApi,
   ),

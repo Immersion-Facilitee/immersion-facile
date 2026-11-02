@@ -15,6 +15,7 @@ export const featureFlagNames = [
   "enableBroadcastOfCapEmploiToFT",
   "enableEstablishmentDashboardHighlight",
   "enableAgencyDashboardHighlight",
+  "enableCandidateDashboardHighlight",
   "enableInactiveUsersCleanup",
   "enableInactiveUsersDeletionAutoProcessing",
   "enableRequestArchivedConvention",
@@ -89,6 +90,7 @@ export type FeatureFlags = {
   enableBroadcastOfCapEmploiToFT: FeatureFlagBoolean;
   enableEstablishmentDashboardHighlight: FeatureFlagHighlight;
   enableAgencyDashboardHighlight: FeatureFlagHighlight;
+  enableCandidateDashboardHighlight: FeatureFlagHighlight;
   enableInactiveUsersCleanup: FeatureFlagBoolean;
   enableInactiveUsersDeletionAutoProcessing: FeatureFlagBoolean;
   enableRequestArchivedConvention: FeatureFlagBoolean;

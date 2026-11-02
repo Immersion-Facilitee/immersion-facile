@@ -1,14 +1,16 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Tabs from "@codegouvfr/react-dsfr/Tabs";
 import { useMemo } from "react";
-import { Loader, SectionHighlight } from "react-design-system";
+import { Loader } from "react-design-system";
 import {
   type BeneficiaryDashboardTab,
   domElementIds,
   frontRoutes,
 } from "shared";
+import { DashboardHighlight } from "src/app/components/DashboardHighlight";
 import { DiscussionTabContent } from "src/app/components/discussion/DiscussionTabContent";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { useFeatureFlags } from "src/app/hooks/useFeatureFlags";
 import type { DashboardTab } from "src/app/utils/dashboard";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { discussionSelectors } from "src/core-logic/domain/discussion/discussion.selectors";
@@ -33,22 +35,13 @@ export const BeneficiaryDashboardPage = ({
   const isLoadingDiscussionList = useAppSelector(discussionSelectors.isLoading);
 
   const tabsWithIsDefault = makeTabsWithIsDefault(tabs, currentTab);
+  const { enableCandidateDashboardHighlight } = useFeatureFlags();
 
   return (
     <>
       {(isLoadingUser || isLoadingDiscussionList) && <Loader />}
       <h1>Mon espace candidat</h1>
-      <SectionHighlight>
-        <h2 className={fr.cx("fr-h6", "fr-mb-1w")}>
-          Bienvenue dans votre nouvel espace candidat !
-        </h2>
-        <p className={fr.cx("fr-text--lg", "fr-mb-2w")}>
-          Immersion Facilitée évolue pour simplifier vos démarches. Désormais,
-          vous pouvez consulter et gérer vos candidatures ainsi que vos
-          conventions. D'autres services arriveront très prochainement pour vous
-          accompagner dans votre parcours.
-        </p>
-      </SectionHighlight>
+      <DashboardHighlight highlight={enableCandidateDashboardHighlight} />
       <Tabs
         tabs={tabsWithIsDefault}
         id={domElementIds.beneficiaryDashboard.tabContainer}
