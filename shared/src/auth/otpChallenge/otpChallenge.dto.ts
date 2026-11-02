@@ -36,3 +36,8 @@ export type OtpChallenge = {
     createdAt: DateTimeIsoString;
   };
 }[OtpChallengePurpose];
+
+export type MaskedOtpRecipients = {
+  maskedEmail: string;
+  maskedPhone: string | null;
+};

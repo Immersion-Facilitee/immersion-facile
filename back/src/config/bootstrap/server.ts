@@ -15,6 +15,7 @@ import { createEstablishmentLeadRouter } from "../../adapters/primary/routers/es
 import { createFormCompletionRouter } from "../../adapters/primary/routers/formCompletion/createFormCompletionRouter";
 import { createMagicLinkRouter } from "../../adapters/primary/routers/magicLink/createMagicLinkRouter";
 import { createNafRouter } from "../../adapters/primary/routers/naf/createNafRouter";
+import { createOtpChallengeRouter } from "../../adapters/primary/routers/otpChallenge/createOtpChallengeRouter";
 import { createRootApiRouter } from "../../adapters/primary/routers/rootApi/createRootApiRouter";
 import { createSearchRouter } from "../../adapters/primary/routers/search/createSearchRouter";
 import { createTechnicalRouter } from "../../adapters/primary/routers/technical/createTechnicalRouter";
@@ -23,6 +24,7 @@ import type {
   GenerateApiConsumerJwt,
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
+  GenerateVisitorOtpJwt,
 } from "../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import type { OutOfTransactionQueries } from "../../domains/core/unit-of-work/ports/UnitOfWork";
@@ -44,6 +46,7 @@ type CreateAppProperties = {
   generateApiConsumerJwt: GenerateApiConsumerJwt;
   generateConventionJwt: GenerateConventionJwt;
   generateConnectedUserJwt: GenerateConnectedUserJwt;
+  generateVisitorOtpJwt: GenerateVisitorOtpJwt;
   uuidGenerator: UuidGenerator;
   inMemoryUow?: InMemoryUnitOfWork;
   queries: OutOfTransactionQueries;
@@ -105,6 +108,7 @@ export const createApp = async (
   app.use(createConventionRouter(deps));
   app.use(createAgenciesRouter(deps));
   app.use(createAuthRouter(deps));
+  app.use(createOtpChallengeRouter(deps));
   // Auth issues below this last router
   app.use(createEstablishmentRouter(deps));
   app.use(createEstablishmentLeadRouter(deps));
@@ -119,6 +123,7 @@ export const createApp = async (
     generateApiConsumerJwt: deps.generateApiConsumerJwt,
     generateConventionJwt: deps.generateConventionJwt,
     generateConnectedUserJwt: deps.generateConnectedUserJwt,
+    generateVisitorOtpJwt: deps.generateVisitorOtpJwt,
     uuidGenerator: deps.uuidGenerator,
     queries: deps.queries,
   };

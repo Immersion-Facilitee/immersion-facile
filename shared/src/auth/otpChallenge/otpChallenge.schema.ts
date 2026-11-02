@@ -8,6 +8,7 @@ import { zStringMinLength1Max255 } from "../../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../../zodUtils";
 import type {
   ManageConventionSubject,
+  MaskedOtpRecipients,
   OtpChallenge,
   OtpChallengePurpose,
 } from "./otpChallenge.dto";
@@ -38,4 +39,10 @@ export const otpChallengeSchema: ZodSchemaWithInputMatchingOutput<OtpChallenge> 
     expiresAt: dateTimeIsoStringSchema,
     usedAt: dateTimeIsoStringSchema.nullable(),
     createdAt: dateTimeIsoStringSchema,
+  });
+
+export const maskedOtpRecipientsSchema: ZodSchemaWithInputMatchingOutput<MaskedOtpRecipients> =
+  z.object({
+    maskedEmail: zStringMinLength1Max255,
+    maskedPhone: zStringMinLength1Max255.nullable(),
   });

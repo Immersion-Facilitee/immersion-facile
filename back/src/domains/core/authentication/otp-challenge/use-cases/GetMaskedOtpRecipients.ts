@@ -46,8 +46,8 @@ export const makeGetMaskedOtpRecipients = useCaseBuilder(
           });
 
         return {
-          email: maskEmail(recipients.email),
-          phone: isValidMobilePhone(recipients.phone)
+          maskedEmail: maskEmail(recipients.email),
+          maskedPhone: isValidMobilePhone(recipients.phone)
             ? maskPhone(recipients.phone)
             : null,
         };
