@@ -413,7 +413,7 @@ describe("technical router", () => {
         href: "https://www.example.com",
         label: "Mon label de highlight pour l'agence",
       }),
-      enableCandidateDashboardHighlight: makeHighlightFeatureFlag(false, {
+      enableBeneficiaryDashboardHighlight: makeHighlightFeatureFlag(false, {
         title: "Mon titre de highlight pour le candidat",
         message: "Mon message de highlight pour le candidat",
         href: "https://www.example.com",

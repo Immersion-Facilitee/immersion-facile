@@ -35,7 +35,7 @@ const defaultFlagsInFront: FeatureFlags = {
     href: "",
     label: "",
   }),
-  enableCandidateDashboardHighlight: makeHighlightFeatureFlag(false, {
+  enableBeneficiaryDashboardHighlight: makeHighlightFeatureFlag(false, {
     title: "",
     message: "",
     href: "",

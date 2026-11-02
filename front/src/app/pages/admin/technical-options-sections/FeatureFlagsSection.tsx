@@ -152,7 +152,7 @@ const labelsByFeatureFlag: Record<
     title: null,
     enableLabel: "Promotion sur le tableau de bord prescripteur",
   },
-  enableCandidateDashboardHighlight: {
+  enableBeneficiaryDashboardHighlight: {
     title: null,
     enableLabel: "Promotion sur le tableau de bord candidat",
   },
