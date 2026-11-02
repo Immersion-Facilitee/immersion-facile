@@ -15,6 +15,8 @@ import {
   oneDayInSecond,
   oneHourInSeconds,
   oneMinuteInSeconds,
+  type VisitorOtpDomainJwtPayload,
+  type VisitorOtpJwtPayload,
 } from "shared";
 import type { JwtKind, VerifyJwtFn } from "../domains/core/jwt";
 import type { TimeGateway } from "../domains/core/time-gateway/ports/TimeGateway";
@@ -114,6 +116,34 @@ export const createConnectedUserJwtPayload = ({
   return {
     version: currentJwtVersions.connectedUser,
     userId,
+    iat,
+    exp,
+  };
+};
+
+export type CreateVisitorOtpJwtPayloadProperties = {
+  now: Date;
+  durationHours?: number;
+  expOverride?: number;
+} & VisitorOtpDomainJwtPayload;
+
+export const createVisitorOtpJwtPayload = ({
+  purpose,
+  subject,
+  now,
+  durationHours = 1,
+  expOverride,
+}: CreateVisitorOtpJwtPayloadProperties): VisitorOtpJwtPayload & {
+  iat: number;
+  exp: number;
+} => {
+  const iat = Math.round(now.getTime() / 1000);
+  const exp = expOverride ?? iat + durationHours * oneHourInSeconds;
+
+  return {
+    purpose,
+    subject,
+    version: currentJwtVersions.visitorOtp,
     iat,
     exp,
   };
