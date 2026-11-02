@@ -118,6 +118,7 @@ export const ConventionFormWrapper = ({
   const userRolesForFetchedConvention = useAppSelector(
     connectedUserSelectors.userRolesForFetchedConvention,
   );
+  const signatoryData = useAppSelector(conventionSelectors.signatoryData);
   const conventionIsLoading = useAppSelector(conventionSelectors.isLoading);
   const conventionDraftIsLoading = useAppSelector(
     conventionDraftSelectors.isLoading,
@@ -187,13 +188,11 @@ export const ConventionFormWrapper = ({
         ? [roleFromJwt]
         : userRolesForFetchedConvention;
       setUserRolesOnConvention(roles);
-      const signatoryRole = roles.find((role) => isSignatory(role));
-
-      if (signatoryRole) {
-        dispatch(
-          conventionSlice.actions.currentSignatoryRoleChanged(signatoryRole),
-        );
-      }
+      dispatch(
+        conventionSlice.actions.currentSignatoryRoleChanged(
+          roles.find((role) => isSignatory(role)) ?? null,
+        ),
+      );
     }
   }, [dispatch, routeJwt, userRolesForFetchedConvention]);
 
@@ -215,6 +214,7 @@ export const ConventionFormWrapper = ({
     userRolesOnConvention,
     route,
     fetchedConvention,
+    isSignatoryAfterUpdate: signatoryData.signatory !== null,
   });
 
   if (routeConventionDraftId && fetchConventionDraftError) {
@@ -681,18 +681,35 @@ const getRouteToRedirectAfterSubmit = ({
   userRolesOnConvention,
   route,
   fetchedConvention,
+  isSignatoryAfterUpdate,
 }: {
   mode: ConventionFormMode;
   userRolesOnConvention: Role[];
   route: SupportedConventionRoutes;
   fetchedConvention: { id: string } | null;
+  isSignatoryAfterUpdate: boolean;
 }) =>
   match({
     mode,
     userRolesOnConvention,
     route,
     fetchedConvention,
+    isSignatoryAfterUpdate,
   })
+    .with(
+      {
+        mode: "edit-convention",
+        userRolesOnConvention: P.when((roles) =>
+          roles.some((role) => isSignatory(role)),
+        ),
+        fetchedConvention: { id: P.string },
+        isSignatoryAfterUpdate: false,
+      },
+      ({ fetchedConvention }) =>
+        frontRoutes.conventionConfirmation({
+          conventionId: fetchedConvention.id,
+        }),
+    )
     .with({ fetchedConvention: null }, () => undefined)
     .with(
       {

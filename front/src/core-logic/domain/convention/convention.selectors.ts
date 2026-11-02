@@ -3,6 +3,7 @@ import {
   type ConventionDto,
   type ConventionField,
   getConventionFieldName,
+  isRequesterStillSignatory,
   type Signatory,
   type SignatoryRole,
 } from "shared";
@@ -13,6 +14,11 @@ const conventionState = (state: RootState) => state.convention;
 const convention = createSelector(
   conventionState,
   ({ convention }) => convention,
+);
+
+const initialFetchedConvention = createSelector(
+  conventionState,
+  ({ initialFetchedConvention }) => initialFetchedConvention,
 );
 
 const isLoading = createSelector(conventionState, ({ isLoading }) => isLoading);
@@ -50,8 +56,21 @@ type SignatoryData = {
 
 const signatoryData = createSelector(
   conventionState,
-  ({ convention, currentSignatoryRole }): SignatoryData => {
+  ({
+    convention,
+    initialFetchedConvention,
+    currentSignatoryRole,
+  }): SignatoryData => {
     if (!convention || !currentSignatoryRole)
+      return { signatory: null, signedAtFieldName: null };
+    if (
+      initialFetchedConvention &&
+      !isRequesterStillSignatory({
+        signatoryRole: currentSignatoryRole,
+        initialConvention: initialFetchedConvention,
+        updatedConvention: convention,
+      })
+    )
       return { signatory: null, signedAtFieldName: null };
     return signatoryDataFromConvention(convention, currentSignatoryRole);
   },
@@ -69,6 +88,7 @@ const currentStep = createSelector(
 
 export const conventionSelectors = {
   convention,
+  initialFetchedConvention,
   signatoryData,
   isLoading,
   isMinor,

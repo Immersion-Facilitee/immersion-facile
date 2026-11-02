@@ -31,6 +31,7 @@ export interface ConventionState {
   jwt: string | null;
   isLoading: boolean;
   convention: ConventionReadDto | null;
+  initialFetchedConvention: ConventionReadDto | null;
   conventionStatusDashboardUrl: AbsoluteUrl | null;
   currentSignatoryRole: SignatoryRole | null;
   similarConventionIds: ConventionId[];
@@ -48,6 +49,7 @@ export const initialConventionState: ConventionState = {
   },
   jwt: null,
   convention: null,
+  initialFetchedConvention: null,
   conventionStatusDashboardUrl: null,
   isLoading: false,
   currentSignatoryRole: null,
@@ -142,6 +144,7 @@ export const conventionSlice = createSlice({
       }>,
     ) => {
       state.convention = action.payload.convention ?? null;
+      state.initialFetchedConvention = action.payload.convention ?? null;
       state.isLoading = false;
     },
     fetchConventionFailed: (
@@ -195,6 +198,8 @@ export const conventionSlice = createSlice({
 
     clearFetchedConvention: (state) => {
       state.convention = initialConventionState.convention;
+      state.initialFetchedConvention =
+        initialConventionState.initialFetchedConvention;
       state.formUi = initialConventionState.formUi;
     },
 
