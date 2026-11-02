@@ -1,8 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { useEffect } from "react";
 import { useStyles } from "tss-react/dsfr";
-import { getDevice } from "../../hooks";
-import { keys } from "../../utils";
+import { getDevice, keys } from "../../utils";
 
 export type NPSFormProps = {
   title?: string;
