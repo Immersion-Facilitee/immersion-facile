@@ -8,7 +8,7 @@ import {
   startFreshContainer,
   stopAndCleanup,
 } from "./e2e-container";
-import { ensureJwtEnv } from "./e2e-env";
+import { ensureSecretsEnv } from "./e2e-env";
 import { runPlaywright } from "./e2e-playwright";
 
 dotEnv.config({ path: resolve(__dirname, ".env"), override: true });
@@ -16,7 +16,7 @@ dotEnv.config({ path: resolve(__dirname, ".env"), override: true });
 const main = async () => {
   process.env.TESTCONTAINERS_REUSE_ENABLE = "false";
   process.env.TESTCONTAINERS_RYUK_DISABLED = "true";
-  ensureJwtEnv();
+  ensureSecretsEnv();
 
   const { flags, playwrightArgs } = parseE2eArgs(process.argv.slice(2));
 

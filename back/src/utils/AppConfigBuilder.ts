@@ -17,6 +17,8 @@ const defaultConfigParams = {
     "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIPnK7kOKC6VqJwmsXCcCgNfVEAMyt0IFm68g/dwg3/iVoAoGCCqGSM49\nAwEHoUQDQgAEXNo97BD4w2huuAYsmINnn/+TPolxYUexkcD49YyxsjJPA2d91B2r\nDzteUKnEsloNYDTeYW88oLPMdgmbzm+sQg==\n-----END EC PRIVATE KEY-----",
   API_JWT_PUBLIC_KEY:
     "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEXNo97BD4w2huuAYsmINnn/+TPolx\nYUexkcD49YyxsjJPA2d91B2rDzteUKnEsloNYDTeYW88oLPMdgmbzm+sQg==\n-----END PUBLIC KEY-----",
+  OTP_CODE_HMAC_SECRET:
+    "221eb0fd65081da2029f75dbf635a38b1c62c48bcb377debdd2efe55aa10baed",
 
   BACKOFFICE_USERNAME: "e2e_tests",
   BACKOFFICE_PASSWORD: "e2e",

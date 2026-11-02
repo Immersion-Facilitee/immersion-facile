@@ -454,6 +454,10 @@ export class AppConfig {
     });
   }
 
+  public get otpCodeHmacSecret() {
+    return this.#throwIfNotDefinedOrDefault("OTP_CODE_HMAC_SECRET");
+  }
+
   public get passEmploiGateway() {
     return this.#throwIfNotInArray({
       variableName: "PASS_EMPLOI_GATEWAY",
