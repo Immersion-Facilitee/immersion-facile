@@ -1,9 +1,9 @@
 import { uniq } from "ramda";
 import {
-  type AgencyDto,
   type AgencyId,
   type AgencyUserConventionListDto,
   type AgencyWithUsersRights,
+  type ConventionActorRole,
   type ConventionAssessmentFields,
   type ConventionDto,
   type ConventionId,
@@ -15,6 +15,7 @@ import {
   type Email,
   errors,
   executeInSequence,
+  isConventionActorRole,
   isTruthy,
   makeEmptyLastReminders,
   type SiretDto,
@@ -27,9 +28,12 @@ import type { BannedEstablishment } from "../domains/establishment/ports/BannedE
 import { agencyDtoToConventionAgencyFields } from "./agency";
 
 export const conventionEmailsByRole =
-  (convention: ConventionDto, agency: AgencyDto) =>
+  (convention: ConventionDto) =>
   (role: ConventionRole): Email[] => {
-    const emailsByRole: Record<ConventionRole, Email[] | Error | undefined> = {
+    if (!isConventionActorRole(role))
+      throw errors.convention.roleHasNoMagicLink({ role });
+
+    const emailsByRole: Record<ConventionActorRole, Email[] | Error> = {
       beneficiary: [convention.signatories.beneficiary.email],
       "beneficiary-current-employer": convention.signatories
         .beneficiaryCurrentEmployer
@@ -45,16 +49,13 @@ export const conventionEmailsByRole =
             conventionId: convention.id,
             role: "beneficiary-representative",
           }),
-      counsellor: agency.counsellorEmails,
-      validator: agency.validatorEmails,
       "establishment-representative": [
         convention.signatories.establishmentRepresentative.email,
       ],
       "establishment-tutor": [convention.establishmentTutor.email],
     };
-    const emails = emailsByRole[role as ConventionRole];
+    const emails = emailsByRole[role];
 
-    if (!emails) throw errors.convention.roleHasNoMagicLink({ role });
     if (emails instanceof Error) throw emails;
     return emails;
   };
