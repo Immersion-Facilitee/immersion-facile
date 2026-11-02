@@ -17,7 +17,7 @@ import { z } from "zod";
 import { getUserWithRights } from "../domains/connected-users/helpers/userRights.helper";
 import type { AssessmentEntity } from "../domains/convention/entities/AssessmentEntity";
 import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
-import { isSomeEmailMatchingEmailHash } from "./jwt";
+import { isSomeEmailMatchingEmailHash } from "./emailHash";
 
 export const throwForbiddenIfNotAllowedForAssessments = async ({
   mode,

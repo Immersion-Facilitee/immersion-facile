@@ -157,8 +157,6 @@ describe("RenewExpiredJwt use case", () => {
           validConvention.signatories.establishmentRepresentative.email,
         ],
         ["establishment-tutor", validConvention.establishmentTutor.email],
-        ["counsellor", counsellor.email],
-        ["validator", validator.email],
       ])(
         "Posts an event to deliver a correct JWT for correct responses for role %s",
         async (expectedRole, expectedEmail) => {
@@ -298,25 +296,27 @@ describe("RenewExpiredJwt use case", () => {
         );
       });
 
-      // Admins use non-magic-link based authentication, so no need to renew these.
-      it("Refuses to generate backoffice magic links", async () => {
-        await expectPromiseToFailWithError(
-          useCase.execute({
-            kind: "convention",
-            originalUrl:
-              "http://immersionfacile.fr/verifier-et-signer?jwt=toto",
-            expiredJwt: generateConventionJwt(
-              createConventionMagicLinkPayload({
-                id: validConvention.id,
-                role: "back-office" as ConventionRole,
-                email: counsellor.email,
-                now: timeGateway.now(),
-              }),
-            ),
-          }),
-          errors.convention.roleHasNoMagicLink({ role: "back-office" }),
-        );
-      });
+      it.each(["counsellor", "validator", "back-office"] as const)(
+        "refuses to generate magic links for role %s",
+        async (role) => {
+          await expectPromiseToFailWithError(
+            useCase.execute({
+              kind: "convention",
+              originalUrl:
+                "http://immersionfacile.fr/verifier-et-signer?jwt=toto",
+              expiredJwt: generateConventionJwt(
+                createConventionMagicLinkPayload({
+                  id: validConvention.id,
+                  role: role as ConventionRole,
+                  email: counsellor.email,
+                  now: timeGateway.now(),
+                }),
+              ),
+            }),
+            errors.convention.roleHasNoMagicLink({ role }),
+          );
+        },
+      );
 
       it("does not accept to renew links from url that are not supported", async () => {
         const request: RenewExpiredJwtRequestDto = {
@@ -325,8 +325,8 @@ describe("RenewExpiredJwt use case", () => {
           expiredJwt: generateConventionJwt(
             createConventionMagicLinkPayload({
               id: validConvention.id,
-              role: "counsellor",
-              email: counsellor.email,
+              role: "beneficiary",
+              email: validConvention.signatories.beneficiary.email,
               now: timeGateway.now(),
             }),
           ),
@@ -408,8 +408,6 @@ describe("RenewExpiredJwt use case", () => {
           validConvention.signatories.establishmentRepresentative.email,
         ],
         ["establishment-tutor", validConvention.establishmentTutor.email],
-        ["counsellor", counsellor.email],
-        ["validator", validator.email],
       ])(
         "posts an event to deliver a correct JWT for role %s using shortLink originalUrl",
         async (expectedRole, expectedEmail) => {
@@ -505,23 +503,26 @@ describe("RenewExpiredJwt use case", () => {
         );
       });
 
-      it("refuses to generate backoffice magic links", async () => {
-        await expectPromiseToFailWithError(
-          useCase.execute({
-            kind: "conventionFromShortLink",
-            shortLinkId: existingShortLinkId,
-            expiredJwt: generateConventionJwt(
-              createConventionMagicLinkPayload({
-                id: validConvention.id,
-                role: "back-office" as ConventionRole,
-                email: counsellor.email,
-                now: timeGateway.now(),
-              }),
-            ),
-          }),
-          errors.convention.roleHasNoMagicLink({ role: "back-office" }),
-        );
-      });
+      it.each(["counsellor", "validator", "back-office"] as const)(
+        "refuses to generate magic links for role %s",
+        async (role) => {
+          await expectPromiseToFailWithError(
+            useCase.execute({
+              kind: "conventionFromShortLink",
+              shortLinkId: existingShortLinkId,
+              expiredJwt: generateConventionJwt(
+                createConventionMagicLinkPayload({
+                  id: validConvention.id,
+                  role: role as ConventionRole,
+                  email: counsellor.email,
+                  now: timeGateway.now(),
+                }),
+              ),
+            }),
+            errors.convention.roleHasNoMagicLink({ role }),
+          );
+        },
+      );
 
       it("throws when JWT is not a convention payload", async () => {
         const generateConnectedUserJwt = makeGenerateJwtES256<"connectedUser">(

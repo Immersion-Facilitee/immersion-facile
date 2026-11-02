@@ -722,28 +722,10 @@ describe("Update Convention", () => {
     });
 
     it.each([
-      {
-        applicationId: convention.id,
-        role: "validator",
-        emailHash: makeHashByRolesForTest(
-          convention,
-          counsellorUser,
-          validatorUser,
-        ).validator,
-      },
-      {
-        applicationId: convention.id,
-        role: "counsellor",
-        emailHash: makeHashByRolesForTest(
-          convention,
-          counsellorUser,
-          validatorUser,
-        ).counsellor,
-      },
       { userId: backofficeAdminUser.id },
       { userId: validatorUser.id },
       { userId: counsellorUser.id },
-    ] as (ConventionDomainJwtPayload | ConnectedUserDomainJwtPayload)[])(
+    ] satisfies ConnectedUserDomainJwtPayload[])(
       "updates the Convention in the repository updated by non signatories user",
       async (payload) => {
         uow.userRepository.users = [
@@ -784,15 +766,8 @@ describe("Update Convention", () => {
             payload: {
               convention: updatedConvention,
               triggeredBy: {
-                ...("userId" in payload
-                  ? {
-                      kind: "connected-user",
-                      userId: payload.userId,
-                    }
-                  : {
-                      kind: "convention-magic-link",
-                      role: payload.role,
-                    }),
+                kind: "connected-user",
+                userId: payload.userId,
               },
             },
           }),

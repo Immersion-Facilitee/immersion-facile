@@ -5,7 +5,6 @@ import type {
   ConnectedUser,
   ConnectedUserDomainJwtPayload,
   ConventionRelatedJwtPayload,
-  ConventionRole,
   ConventionStatus,
   FtConnectIdentity,
   FtConnectImmersionAdvisorDto,
@@ -27,7 +26,6 @@ import {
   UserBuilder,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
-import { createConventionMagicLinkPayload } from "../../../utils/jwt";
 import {
   type CreateNewEvent,
   makeCreateNewEvent,
@@ -93,17 +91,6 @@ describe("TransferConventionToAgency", () => {
     .withAgencyId(agencyWithRefersTo.id)
     .build();
 
-  const notConnectedUser = new UserBuilder()
-    .withEmail("validator@mail.com")
-    .build();
-
-  const validatorJwtPayload = createConventionMagicLinkPayload({
-    id: conventionId,
-    role: "validator",
-    email: notConnectedUser.email,
-    now: new Date(),
-  });
-
   const connectedUserPayload: ConnectedUserDomainJwtPayload = {
     userId: "bcc5c20e-6dd2-45cf-affe-927358005262",
   };
@@ -150,15 +137,9 @@ describe("TransferConventionToAgency", () => {
           .signedByBeneficiary(signedAt)
           .signedByEstablishmentRepresentative(signedAt)
           .build();
-        uow.userRepository.users = [notConnectedUser];
         uow.conventionRepository.setConventions([conventionWithStatus]);
         uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [notConnectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
-            },
-          }),
+          toAgencyWithRights(agency, {}),
           toAgencyWithRights(otherAgency, {}),
         ];
 
@@ -169,7 +150,7 @@ describe("TransferConventionToAgency", () => {
               agencyId: otherAgency.id,
               justification: "test",
             },
-            validatorJwtPayload,
+            connectedUserPayload,
           ),
           errors.convention.transferNotAllowedForStatus({
             status,
@@ -214,7 +195,7 @@ describe("TransferConventionToAgency", () => {
             agencyId: otherAgency.id,
             justification: "test",
           },
-          validatorJwtPayload,
+          connectedUserPayload,
         ),
         errors.convention.notFound({
           conventionId,
@@ -232,7 +213,7 @@ describe("TransferConventionToAgency", () => {
             agencyId: otherAgency.id,
             justification: "test",
           },
-          validatorJwtPayload,
+          connectedUserPayload,
         ),
         errors.agency.notFound({
           agencyId: otherAgency.id,
@@ -341,95 +322,6 @@ describe("TransferConventionToAgency", () => {
               justification: "test",
             },
             connectedUserPayload,
-          ),
-          errors.convention.validatorOfAgencyRefersToNotAllowed(),
-        );
-      });
-    });
-
-    describe("with convention jwt payload", () => {
-      it("throws bad request if requested convention does not match the one in jwt", async () => {
-        const requestedConventionId = "1dd5c20e-6dd2-45af-affe-927358005250";
-
-        await expectPromiseToFailWithError(
-          usecase.execute(
-            {
-              conventionId: requestedConventionId,
-              agencyId: otherAgency.id,
-              justification: "test",
-            },
-            validatorJwtPayload,
-          ),
-          errors.convention.forbiddenConventionIdMismatch({
-            jwtConventionId: validatorJwtPayload.applicationId,
-            jwtRole: validatorJwtPayload.role,
-            requestedConventionId,
-          }),
-        );
-      });
-
-      it.each(["to-review", "agency-viewer", "agency-admin"] as AgencyRole[])(
-        "throws bad request if unauthorized if user role is not allowed",
-        async (role) => {
-          uow.conventionRepository.setConventions([convention]);
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {}),
-            toAgencyWithRights(otherAgency, {}),
-          ];
-          const jwtPayload = createConventionMagicLinkPayload({
-            id: conventionId,
-            role: role as ConventionRole,
-            email: notConnectedUser.email,
-            now: new Date(),
-          });
-
-          await expectPromiseToFailWithError(
-            usecase.execute(
-              {
-                conventionId,
-                agencyId: otherAgency.id,
-                justification: "test",
-              },
-              jwtPayload,
-            ),
-            errors.convention.transferNotAuthorizedForRole(),
-          );
-        },
-      );
-
-      it("if agencyWithRefersTo, throws an error if validator attempts to change agency", async () => {
-        uow.conventionRepository.setConventions([preValidatedConvention]);
-        uow.userRepository.users = [notConnectedUser];
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [notConnectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
-            },
-          }),
-          toAgencyWithRights(agencyWithRefersTo, {
-            [notConnectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
-            },
-          }),
-          toAgencyWithRights(otherAgency, {}),
-        ];
-        const jwtPayload = createConventionMagicLinkPayload({
-          id: preValidatedConvention.id,
-          role: "validator",
-          email: notConnectedUser.email,
-          now: new Date(),
-        });
-
-        await expectPromiseToFailWithError(
-          usecase.execute(
-            {
-              conventionId: preValidatedConvention.id,
-              agencyId: otherAgency.id,
-              justification: "test",
-            },
-            jwtPayload,
           ),
           errors.convention.validatorOfAgencyRefersToNotAllowed(),
         );
@@ -787,320 +679,6 @@ describe("TransferConventionToAgency", () => {
         });
       });
     });
-
-    describe("with convention jwt payload", () => {
-      it.each(["validator", "counsellor"] as ConventionRole[])(
-        "triggered by jwt role %s",
-        async (role) => {
-          uow.conventionRepository.setConventions([convention]);
-          uow.userRepository.users = [notConnectedUser];
-
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(
-              agency,
-              role === "validator" || role === "counsellor"
-                ? {
-                    [notConnectedUser.id]: {
-                      roles: [role],
-                      isNotifiedByEmail: true,
-                    },
-                  }
-                : {},
-            ),
-            toAgencyWithRights(otherAgency, {}),
-          ];
-
-          const jwtPayload = createConventionMagicLinkPayload({
-            id: conventionId,
-            role,
-            email: notConnectedUser.email,
-            now: new Date(),
-          });
-
-          await usecase.execute(
-            {
-              conventionId,
-              agencyId: otherAgency.id,
-              justification: "change of agency",
-            },
-            jwtPayload,
-          );
-
-          const expectedConvention = {
-            ...convention,
-            agencyId: otherAgency.id,
-          };
-
-          expectToEqual(uow.conventionRepository.conventions, [
-            expectedConvention,
-          ]);
-
-          expectArraysToMatch(uow.outboxRepository.events, [
-            {
-              topic: "ConventionTransferredToAgency",
-              payload: {
-                convention: expectedConvention,
-                agencyId: otherAgency.id,
-                justification: "change of agency",
-                previousAgencyId: convention.agencyId,
-                shouldNotifyActors: true,
-                triggeredBy: {
-                  kind: "convention-magic-link",
-                  role: jwtPayload.role,
-                },
-              },
-            },
-          ]);
-        },
-      );
-
-      it.each(conventionStatusesWithoutJustificationNorValidator)(
-        "with status %s",
-        async (status) => {
-          const signedAt = new Date("2024-01-01").toISOString();
-          const initialConvention = new ConventionDtoBuilder(convention)
-            .withStatus(status)
-            .signedByBeneficiary(status === "IN_REVIEW" ? signedAt : undefined)
-            .signedByEstablishmentRepresentative(
-              status === "IN_REVIEW" ? signedAt : undefined,
-            )
-            .build();
-          uow.conventionRepository.setConventions([initialConvention]);
-          uow.userRepository.users = [notConnectedUser];
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [notConnectedUser.id]: {
-                roles: ["validator"],
-                isNotifiedByEmail: true,
-              },
-            }),
-            toAgencyWithRights(otherAgency, {}),
-          ];
-
-          await usecase.execute(
-            {
-              conventionId,
-              agencyId: otherAgency.id,
-              justification: "change of agency",
-            },
-            validatorJwtPayload,
-          );
-
-          const expectedConvention = {
-            ...initialConvention,
-            agencyId: otherAgency.id,
-          };
-
-          expectToEqual(uow.conventionRepository.conventions, [
-            expectedConvention,
-          ]);
-
-          expectArraysToMatch(uow.outboxRepository.events, [
-            {
-              topic: "ConventionTransferredToAgency",
-              payload: {
-                agencyId: otherAgency.id,
-                convention: expectedConvention,
-                justification: "change of agency",
-                previousAgencyId: initialConvention.agencyId,
-                shouldNotifyActors: true,
-                triggeredBy: {
-                  kind: "convention-magic-link",
-                  role: validatorJwtPayload.role,
-                },
-              },
-            },
-          ]);
-        },
-      );
-
-      it("counsellor of an agency with refersTo can transfer convention to agency", async () => {
-        const counsellorPayload = createConventionMagicLinkPayload({
-          id: conventionId,
-          role: "counsellor",
-          email: notConnectedUser.email,
-          now: new Date(),
-        });
-        const conventionWithAgencyRefersTo = new ConventionDtoBuilder(
-          convention,
-        )
-          .withAgencyId(agencyWithRefersTo.id)
-          .build();
-        uow.conventionRepository.setConventions([conventionWithAgencyRefersTo]);
-        uow.userRepository.users = [notConnectedUser];
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(otherAgency, {}),
-          toAgencyWithRights(agencyWithRefersTo, {
-            [notConnectedUser.id]: {
-              roles: ["counsellor"],
-              isNotifiedByEmail: true,
-            },
-          }),
-        ];
-
-        await usecase.execute(
-          {
-            conventionId: conventionWithAgencyRefersTo.id,
-            agencyId: otherAgency.id,
-            justification: "change of agency",
-          },
-          counsellorPayload,
-        );
-
-        const expectedConvention = {
-          ...conventionWithAgencyRefersTo,
-          agencyId: otherAgency.id,
-        };
-
-        expectToEqual(uow.conventionRepository.conventions, [
-          expectedConvention,
-        ]);
-
-        expectArraysToMatch(uow.outboxRepository.events, [
-          {
-            topic: "ConventionTransferredToAgency",
-            payload: {
-              agencyId: otherAgency.id,
-              convention: expectedConvention,
-              justification: "change of agency",
-              previousAgencyId: conventionWithAgencyRefersTo.agencyId,
-              shouldNotifyActors: true,
-              triggeredBy: {
-                kind: "convention-magic-link",
-                role: "counsellor",
-              },
-            },
-          },
-        ]);
-      });
-
-      describe("federatedIdentity is set in initial convention", () => {
-        beforeEach(async () => {
-          uow.conventionRepository.setConventions([
-            conventionWithFederatedIdentity,
-          ]);
-          uow.userRepository.users = [notConnectedUser];
-        });
-
-        it("should keep federated identity if new agency is france-travail", async () => {
-          const transferredToAgency: AgencyDto = {
-            ...otherAgency,
-            kind: "france-travail",
-          };
-
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [notConnectedUser.id]: {
-                roles: ["validator"],
-                isNotifiedByEmail: true,
-              },
-            }),
-            toAgencyWithRights(transferredToAgency, {}),
-          ];
-
-          const jwtPayload = createConventionMagicLinkPayload({
-            id: conventionId,
-            role: "validator",
-            email: notConnectedUser.email,
-            now: new Date(),
-          });
-
-          await usecase.execute(
-            {
-              conventionId,
-              agencyId: transferredToAgency.id,
-              justification: "change of agency",
-            },
-            jwtPayload,
-          );
-
-          const expectedConvention = {
-            ...conventionWithFederatedIdentity,
-            agencyId: otherAgency.id,
-          };
-
-          expectToEqual(uow.conventionRepository.conventions, [
-            expectedConvention,
-          ]);
-
-          expectArraysToMatch(uow.outboxRepository.events, [
-            {
-              topic: "ConventionTransferredToAgency",
-              payload: {
-                convention: expectedConvention,
-                agencyId: otherAgency.id,
-                justification: "change of agency",
-                previousAgencyId: convention.agencyId,
-                shouldNotifyActors: true,
-                triggeredBy: {
-                  kind: "convention-magic-link",
-                  role: jwtPayload.role,
-                },
-              },
-            },
-          ]);
-        });
-
-        it("should keep federated identity if new agency is not france-travail", async () => {
-          const transferredToAgency: AgencyDto = {
-            ...otherAgency,
-            kind: "mission-locale",
-          };
-
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [notConnectedUser.id]: {
-                roles: ["validator"],
-                isNotifiedByEmail: true,
-              },
-            }),
-            toAgencyWithRights(transferredToAgency, {}),
-          ];
-
-          const jwtPayload = createConventionMagicLinkPayload({
-            id: conventionId,
-            role: "validator",
-            email: notConnectedUser.email,
-            now: new Date(),
-          });
-
-          await usecase.execute(
-            {
-              conventionId,
-              agencyId: transferredToAgency.id,
-              justification: "change of agency kind",
-            },
-            jwtPayload,
-          );
-
-          const expectedConvention = {
-            ...conventionWithFederatedIdentity,
-            agencyId: otherAgency.id,
-          };
-
-          expectToEqual(uow.conventionRepository.conventions, [
-            expectedConvention,
-          ]);
-
-          expectArraysToMatch(uow.outboxRepository.events, [
-            {
-              topic: "ConventionTransferredToAgency",
-              payload: {
-                convention: expectedConvention,
-                agencyId: otherAgency.id,
-                justification: "change of agency kind",
-                previousAgencyId: convention.agencyId,
-                shouldNotifyActors: true,
-                triggeredBy: {
-                  kind: "convention-magic-link",
-                  role: jwtPayload.role,
-                },
-              },
-            },
-          ]);
-        });
-      });
-    });
   });
 
   describe("archived convention", () => {
@@ -1116,11 +694,11 @@ describe("TransferConventionToAgency", () => {
         .withSchedule(reasonableSchedule)
         .build();
 
-      uow.userRepository.users = [notConnectedUser];
+      uow.userRepository.users = [connectedUser];
       uow.conventionRepository.setConventions([archivedConvention]);
       uow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
+          [connectedUser.id]: {
             roles: ["validator"],
             isNotifiedByEmail: true,
           },
@@ -1138,7 +716,7 @@ describe("TransferConventionToAgency", () => {
             agencyId: otherAgency.id,
             justification: "change of agency",
           },
-          validatorJwtPayload,
+          connectedUserPayload,
         ),
         errors.convention.archived({ conventionId: archivedConvention.id }),
       );

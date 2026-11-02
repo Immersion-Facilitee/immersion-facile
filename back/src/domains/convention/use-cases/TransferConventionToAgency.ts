@@ -1,7 +1,7 @@
 import {
   agencyModifierRoles,
+  type ConnectedUserDomainJwtPayload,
   type ConventionDto,
-  type ConventionRelatedJwtPayload,
   errors,
   type TransferConventionToAgencyRequestDto,
   transferConventionToAgencyRequestSchema,
@@ -9,13 +9,11 @@ import {
 import { throwErrorIfAgencyNotFound } from "../../../utils/agency";
 import { throwErrorIfConventionStatusNotAllowed } from "../../../utils/convention";
 import { throwIfNotAuthorizedForRole } from "../../connected-users/helpers/authorization.helper";
-import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
   retrieveConventionWithAgency,
-  throwErrorOnConventionIdMismatch,
   throwIfConventionArchivedAndUserIsNotAdmin,
 } from "../entities/Convention";
 
@@ -30,17 +28,12 @@ export const makeTransferConventionToAgency = useCaseBuilder(
     transferConventionToAgencyRequestSchema,
   )
   .withOutput<void>()
-  .withCurrentUser<ConventionRelatedJwtPayload>()
+  .withCurrentUser<ConnectedUserDomainJwtPayload>()
   .withDeps<{
     createNewEvent: CreateNewEvent;
     timeGateway: TimeGateway;
   }>()
-  .build(async ({ inputParams, uow, deps, currentUser: jwtPayload }) => {
-    throwErrorOnConventionIdMismatch({
-      requestedConventionId: inputParams.conventionId,
-      jwtPayload,
-    });
-
+  .build(async ({ inputParams, uow, deps, currentUser }) => {
     const { agency, convention } = await retrieveConventionWithAgency(
       uow,
       inputParams.conventionId,
@@ -65,28 +58,17 @@ export const makeTransferConventionToAgency = useCaseBuilder(
       agencyWithUserRights: agency,
       authorizedRoles: [...agencyModifierRoles, "back-office"],
       errorToThrow: errors.convention.transferNotAuthorizedForRole(),
-      jwtPayload,
-      isPeAdvisorAllowed: true,
+      jwtPayload: currentUser,
+      isPeAdvisorAllowed: false,
       isValidatorOfAgencyRefersToAllowed: false,
     });
 
     await throwIfConventionArchivedAndUserIsNotAdmin({
       convention,
       now: deps.timeGateway.now(),
-      jwtPayload,
+      jwtPayload: currentUser,
       uow,
     });
-
-    const triggeredBy: TriggeredBy =
-      "userId" in jwtPayload
-        ? {
-            kind: "connected-user",
-            userId: jwtPayload.userId,
-          }
-        : {
-            kind: "convention-magic-link",
-            role: jwtPayload.role,
-          };
 
     const updatedConvention: ConventionDto = {
       ...convention,
@@ -103,7 +85,10 @@ export const makeTransferConventionToAgency = useCaseBuilder(
           justification: inputParams.justification,
           previousAgencyId: convention.agencyId,
           shouldNotifyActors: true,
-          triggeredBy,
+          triggeredBy: {
+            kind: "connected-user",
+            userId: currentUser.userId,
+          },
         },
       }),
     );

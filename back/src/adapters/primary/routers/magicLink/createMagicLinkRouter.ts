@@ -131,23 +131,23 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.transferConventionToAgency(
-    deps.conventionMagicLinkAuthMiddleware,
+    deps.connectedUserAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.transferConventionToAgency.execute(
           req.body,
-          getConventionRelatedJwtPayload(req.payloads),
+          getGenericAuthOrThrow(req.payloads?.connectedUser),
         ),
       ),
   );
 
   sharedRouter.editConventionCounsellorName(
-    deps.conventionMagicLinkAuthMiddleware,
+    deps.connectedUserAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.editConventionCounsellorName.execute(
           req.body,
-          getConventionRelatedJwtPayload(req.payloads),
+          getGenericAuthOrThrow(req.payloads?.connectedUser),
         ),
       ),
   );
