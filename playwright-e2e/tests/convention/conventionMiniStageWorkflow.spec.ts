@@ -37,11 +37,13 @@ test.describe("Mini-stage convention creation", () => {
     );
 
     await birthdateInput.fill(miniStageMinorBirthdate);
+    await birthdateInput.blur();
     await expect(representativeFirstName).toBeVisible();
     await expect(isMinorRadio).toBeHidden();
     await expect(emergencyContact).toBeHidden();
 
     await birthdateInput.fill(miniStageAdultBirthdate);
+    await birthdateInput.blur();
     await expect(isMinorRadio).toBeVisible();
     await expect(representativeFirstName).toBeHidden();
     await expect(emergencyContact).toBeVisible();

@@ -62,12 +62,13 @@ export const updatedEndDateDisplayed = format(
   "dd/MM/yyyy",
 );
 
+const miniStageMinorBirthdateDate = subYears(new Date(), 17);
 export const miniStageMinorBirthdate = format(
-  subYears(new Date(), 17),
+  miniStageMinorBirthdateDate,
   "yyyy-MM-dd",
 );
 export const miniStageMinorBirthdateDisplayed = format(
-  new Date(miniStageMinorBirthdate),
+  miniStageMinorBirthdateDate,
   "dd/MM/yyyy",
 );
 export const miniStageAdultBirthdate = format(
@@ -114,141 +115,34 @@ export const fillMiniStageConventionForm = async (
   page: Page,
   { birthdate }: { birthdate: string },
 ): Promise<void> => {
-  await page.selectOption(
-    `#${domElementIds.conventionImmersion.conventionSection.agencyDepartment}`,
-    "75",
-  );
-  await page.selectOption(
-    `#${domElementIds.conventionImmersion.conventionSection.agencyId}`,
-    SEED_CCI_AGENCY_ID,
-  );
-
-  await openConventionAccordionSection(page, 1);
-  await page.fill(
-    `#${domElementIds.conventionImmersion.beneficiarySection.firstName}`,
-    faker.person.firstName(),
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.beneficiarySection.lastName}`,
-    faker.person.lastName(),
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.beneficiarySection.email}`,
-    "recette+beneficiary@immersion-facile.beta.gouv.fr",
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.beneficiarySection.phone}`,
-    validPhonesData.beneficiary,
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.beneficiarySection.birthdate}`,
+  await fillConventionForm(page, {
+    agencyId: SEED_CCI_AGENCY_ID,
     birthdate,
-  );
-  await fillAutocomplete({
-    page,
-    locator: `#${domElementIds.conventionImmersion.beneficiarySection.address}`,
-    value: getRandomizedData("addressQueries"),
-    endpoint: addressRoutes.lookupStreetAddress.url,
+    immersionObjectiveIndex: 0,
+    afterBeneficiaryBasicFields: async () => {
+      await fillAutocomplete({
+        page,
+        locator: `#${domElementIds.conventionImmersion.beneficiarySection.address}`,
+        value: getRandomizedData("addressQueries"),
+        endpoint: addressRoutes.lookupStreetAddress.url,
+      });
+      await page.selectOption(
+        `#${domElementIds.conventionImmersion.beneficiarySection.levelOfEducation}`,
+        "3ème",
+      );
+      await page.fill(
+        `#${domElementIds.conventionImmersion.beneficiarySection.schoolName}`,
+        "Collège Victor Hugo",
+      );
+      await page.fill(
+        `#${domElementIds.conventionImmersion.beneficiarySection.schoolPostcode}`,
+        "75001",
+      );
+
+      if (isBeneficiaryMinorAccordingToAge(currentDate, birthdate))
+        await fillMiniStageBeneficiaryRepresentative(page);
+    },
   });
-  await page.selectOption(
-    `#${domElementIds.conventionImmersion.beneficiarySection.levelOfEducation}`,
-    "3ème",
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.beneficiarySection.schoolName}`,
-    "Collège Victor Hugo",
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.beneficiarySection.schoolPostcode}`,
-    "75001",
-  );
-
-  if (isBeneficiaryMinorAccordingToAge(currentDate, birthdate))
-    await fillMiniStageBeneficiaryRepresentative(page);
-
-  await openConventionAccordionSection(page, 2);
-  const siretInput = page.locator(
-    `#${domElementIds.conventionImmersion.conventionSection.siret}`,
-  );
-  await siretInput.clear();
-  await siretInput.pressSequentially(defaultE2eSiret);
-
-  const establishmentFirstName = page.locator(
-    `#${domElementIds.conventionImmersion.establishmentRepresentativeSection.firstName}`,
-  );
-  await expect(establishmentFirstName).toBeEnabled({ timeout: 15_000 });
-  await establishmentFirstName.fill(faker.person.firstName());
-  await page.fill(
-    `#${domElementIds.conventionImmersion.establishmentRepresentativeSection.lastName}`,
-    faker.person.lastName(),
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.establishmentRepresentativeSection.phone}`,
-    validPhonesData.establishmentRepresentative,
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.establishmentRepresentativeSection.email}`,
-    "recette+establishment-tutor@immersion-facile.beta.gouv.fr",
-  );
-  await page.fill(
-    `#${domElementIds.conventionImmersion.establishmentTutorSection.job}`,
-    faker.person.jobType(),
-  );
-
-  await openConventionAccordionSection(page, 3);
-  await page.fill(
-    `#${domElementIds.conventionImmersion.conventionSection.dateStart}`,
-    currentDate,
-  );
-  await page.focus(
-    `#${domElementIds.conventionImmersion.conventionSection.dateEnd}`,
-  );
-  await expect(
-    page.locator(
-      `#${domElementIds.conventionImmersion.conventionSection.dateStart}`,
-    ),
-  ).toHaveValue(currentDate);
-  await page.fill(
-    `#${domElementIds.conventionImmersion.conventionSection.dateEnd}`,
-    tomorrowDate,
-  );
-  await page.click(
-    `#${domElementIds.conventionImmersion.conventionSection.addHoursButton}`,
-  );
-  await fillAutocomplete({
-    page,
-    locator: `#${domElementIds.conventionImmersion.conventionSection.immersionAddress}`,
-    value: getRandomizedData("addressQueries"),
-    endpoint: addressRoutes.lookupStreetAddress.url,
-  });
-  await page.click(
-    `[for='${domElementIds.conventionImmersion.conventionSection.remoteWorkMode}-${remoteModeIndexMap.ON_SITE}']`,
-  );
-  await expect(
-    page.locator(
-      `#${domElementIds.conventionImmersion.conventionSection.dateEnd}`,
-    ),
-  ).toHaveValue(tomorrowDate);
-
-  await openConventionAccordionSection(page, 4);
-  await page.click(
-    `[for="${domElementIds.conventionImmersion.conventionSection.individualProtection}-0"]`,
-  );
-  await page.click(
-    `[for="${domElementIds.conventionImmersion.conventionSection.sanitaryPrevention}-0"]`,
-  );
-  await page.click(
-    `[for="${domElementIds.conventionImmersion.conventionSection.immersionObjective}-0"]`,
-  );
-  await fillAutocomplete({
-    page,
-    locator: `#${domElementIds.conventionImmersion.conventionSection.immersionAppellation}`,
-    value: getRandomizedData("jobs"),
-  });
-  await page.fill(
-    `#${domElementIds.conventionImmersion.conventionSection.immersionActivities}`,
-    faker.word.words(8),
-  );
 };
 
 export const submitBasicMiniStageConventionForm = async (
@@ -269,7 +163,22 @@ export const submitBasicMiniStageConventionForm = async (
   };
 };
 
-export const fillConventionForm = async (page: Page) => {
+type FillConventionFormOptions = {
+  agencyId?: AgencyId;
+  birthdate?: string;
+  immersionObjectiveIndex?: 0 | 1;
+  afterBeneficiaryBasicFields?: () => Promise<void>;
+};
+
+export const fillConventionForm = async (
+  page: Page,
+  {
+    agencyId = SEED_FT_AGENCY_ID,
+    birthdate = beneficiaryBirthdate,
+    immersionObjectiveIndex = 1,
+    afterBeneficiaryBasicFields,
+  }: FillConventionFormOptions = {},
+) => {
   await page.selectOption(
     `#${domElementIds.conventionImmersion.conventionSection.agencyDepartment}`,
     "75",
@@ -277,7 +186,7 @@ export const fillConventionForm = async (page: Page) => {
 
   await page.selectOption(
     `#${domElementIds.conventionImmersion.conventionSection.agencyId}`,
-    SEED_FT_AGENCY_ID,
+    agencyId,
   );
   await openConventionAccordionSection(page, 1); // Open Beneficiary section
   await page.fill(
@@ -296,10 +205,12 @@ export const fillConventionForm = async (page: Page) => {
     `#${domElementIds.conventionImmersion.beneficiarySection.phone}`,
     validPhonesData.beneficiary,
   );
-  await page.fill(
+  const birthdateInput = page.locator(
     `#${domElementIds.conventionImmersion.beneficiarySection.birthdate}`,
-    beneficiaryBirthdate,
   );
+  await birthdateInput.fill(birthdate);
+  await birthdateInput.blur();
+  if (afterBeneficiaryBasicFields) await afterBeneficiaryBasicFields();
   await openConventionAccordionSection(page, 2); // Open Establishment section
 
   const siretInput = page.locator(
@@ -375,7 +286,7 @@ export const fillConventionForm = async (page: Page) => {
     `[for="${domElementIds.conventionImmersion.conventionSection.sanitaryPrevention}-0"]`,
   );
   await page.click(
-    `[for="${domElementIds.conventionImmersion.conventionSection.immersionObjective}-1"]`,
+    `[for="${domElementIds.conventionImmersion.conventionSection.immersionObjective}-${immersionObjectiveIndex}"]`,
   );
   await fillAutocomplete({
     page,
