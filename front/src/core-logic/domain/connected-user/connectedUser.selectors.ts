@@ -17,7 +17,7 @@ const currentUser = createSelector(
 
 const userRolesForFetchedConvention = createSelector(
   currentUser,
-  conventionSelectors.convention,
+  conventionSelectors.initialFetchedConvention,
   (icUser, convention) =>
     convention && icUser
       ? getConventionManageAllowedRoles(convention, icUser)

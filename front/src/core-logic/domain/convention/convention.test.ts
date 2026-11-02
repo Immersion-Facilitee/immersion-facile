@@ -108,6 +108,7 @@ describe("Convention slice", () => {
           },
           jwt: "some-correct-jwt",
           convention: null,
+          initialFetchedConvention: null,
           conventionStatusDashboardUrl: null,
           isLoading: false,
           currentSignatoryRole: null,
@@ -250,6 +251,7 @@ describe("Convention slice", () => {
       feedGatewayWithConvention(undefined);
       expectConventionState({
         convention: null,
+        initialFetchedConvention: null,
         isLoading: false,
       });
     });
@@ -316,6 +318,7 @@ describe("Convention slice", () => {
             },
           },
         } as ConventionReadDto,
+        initialFetchedConvention: conventionRead,
       });
     });
 
@@ -348,6 +351,7 @@ describe("Convention slice", () => {
       feedGatewayWithConvention(conventionRead);
       expectConventionState({
         convention: conventionRead,
+        initialFetchedConvention: conventionRead,
         isLoading: false,
       });
     });
@@ -368,6 +372,7 @@ describe("Convention slice", () => {
       feedGatewayWithErrorOnConventionFetch(new Error("I failed !"));
       expectConventionState({
         convention: null,
+        initialFetchedConvention: null,
         isLoading: false,
       });
       expectToEqual(
@@ -414,6 +419,7 @@ describe("Convention slice", () => {
           feedGatewayWithConvention(conventionRead);
           expectConventionState({
             convention: conventionRead,
+            initialFetchedConvention: conventionRead,
             isLoading: false,
             formUi: {
               preselectedAgencyId: null,
@@ -472,6 +478,7 @@ describe("Convention slice", () => {
           feedGatewayWithConvention(conventionRead);
           expectConventionState({
             convention: conventionRead,
+            initialFetchedConvention: conventionRead,
             isLoading: false,
             formUi: {
               preselectedAgencyId: null,
@@ -524,6 +531,7 @@ describe("Convention slice", () => {
           feedGatewayWithConvention(conventionRead);
           expectConventionState({
             convention: conventionRead,
+            initialFetchedConvention: conventionRead,
             isLoading: false,
             formUi: {
               preselectedAgencyId: null,
@@ -568,6 +576,7 @@ describe("Convention slice", () => {
           feedGatewayWithConvention(conventionRead);
           expectConventionState({
             convention: conventionRead,
+            initialFetchedConvention: conventionRead,
             isLoading: false,
             formUi: {
               preselectedAgencyId: null,
@@ -614,6 +623,7 @@ describe("Convention slice", () => {
           feedGatewayWithConvention(conventionRead);
           expectConventionState({
             convention: conventionRead,
+            initialFetchedConvention: conventionRead,
             isLoading: false,
             formUi: {
               preselectedAgencyId: null,
@@ -668,6 +678,7 @@ describe("Convention slice", () => {
           feedGatewayWithConvention(conventionRead);
           expectConventionState({
             convention: conventionRead,
+            initialFetchedConvention: conventionRead,
             isLoading: false,
             formUi: {
               preselectedAgencyId: null,
@@ -720,6 +731,7 @@ describe("Convention slice", () => {
           jwt: null,
           isLoading: false,
           convention,
+          initialFetchedConvention: null,
           conventionStatusDashboardUrl: null,
           currentSignatoryRole: null,
           similarConventionIds: [],
@@ -769,6 +781,7 @@ describe("Convention slice", () => {
           jwt: null,
           isLoading: false,
           convention,
+          initialFetchedConvention: null,
           conventionStatusDashboardUrl: null,
           currentSignatoryRole: "beneficiary",
           similarConventionIds: [],
@@ -780,6 +793,37 @@ describe("Convention slice", () => {
       expectToEqual(signatoryData, {
         signatory: beneficiary,
         signedAtFieldName: "signatories.beneficiary.signedAt",
+      });
+    });
+
+    it("returns null values when current signatory email has changed from initial convention", () => {
+      const initialFetchedConvention: ConventionReadDto = {
+        ...new ConventionDtoBuilder()
+          .withEstablishmentRepresentativeEmail("initial-rep@mail.com")
+          .build(),
+        ...conventionReadDtoRemainingProps,
+      };
+      const updatedConvention: ConventionReadDto = {
+        ...new ConventionDtoBuilder()
+          .withEstablishmentRepresentativeEmail("new-rep@mail.com")
+          .build(),
+        ...conventionReadDtoRemainingProps,
+      };
+
+      ({ store, dependencies } = createTestStore({
+        convention: {
+          ...initialConventionState,
+          convention: updatedConvention,
+          initialFetchedConvention,
+          currentSignatoryRole: "establishment-representative",
+        },
+      }));
+
+      const signatoryData = conventionSelectors.signatoryData(store.getState());
+
+      expectToEqual(signatoryData, {
+        signatory: null,
+        signedAtFieldName: null,
       });
     });
   });
@@ -853,6 +897,7 @@ describe("Convention slice", () => {
         },
         jwt: null,
         convention: null,
+        initialFetchedConvention: null,
         conventionStatusDashboardUrl: null,
         isLoading: false,
         currentSignatoryRole: null,
@@ -882,6 +927,7 @@ describe("Convention slice", () => {
         },
         jwt: null,
         convention: null,
+        initialFetchedConvention: null,
         conventionStatusDashboardUrl: null,
         isLoading: false,
         currentSignatoryRole: null,
@@ -915,6 +961,7 @@ describe("Convention slice", () => {
         },
         jwt: null,
         convention: null,
+        initialFetchedConvention: null,
         conventionStatusDashboardUrl: null,
         isLoading: false,
         currentSignatoryRole: null,
@@ -941,6 +988,36 @@ describe("Convention slice", () => {
     );
     expectConventionState({
       formUi: { ...store.getState().convention.formUi, showSummary: false },
+    });
+  });
+
+  it("keeps initialFetchedConvention when showSummary changes with an updated convention", () => {
+    const initialFetchedConvention: ConventionReadDto = {
+      ...convention,
+      ...conventionReadDtoRemainingProps,
+    };
+    const updatedConvention: ConventionReadDto = {
+      ...initialFetchedConvention,
+      immersionActivities: "updated activities",
+    };
+    ({ store } = createTestStore({
+      convention: {
+        ...initialConventionState,
+        convention: initialFetchedConvention,
+        initialFetchedConvention,
+      },
+    }));
+
+    store.dispatch(
+      conventionSlice.actions.showSummaryChangeRequested({
+        showSummary: true,
+        convention: updatedConvention,
+      }),
+    );
+
+    expectConventionState({
+      convention: updatedConvention,
+      initialFetchedConvention,
     });
   });
 
@@ -992,16 +1069,18 @@ describe("Convention slice", () => {
         },
         jwt: null,
         convention,
+        initialFetchedConvention: convention,
         conventionStatusDashboardUrl: null,
         isLoading: false,
         currentSignatoryRole: null,
         similarConventionIds: [],
       },
     }));
-    expectConventionState({ convention });
+    expectConventionState({ convention, initialFetchedConvention: convention });
     store.dispatch(conventionSlice.actions.clearFetchedConvention());
     expectConventionState({
       convention: initialConventionState.convention,
+      initialFetchedConvention: initialConventionState.initialFetchedConvention,
       formUi: initialConventionState.formUi,
     });
   });
