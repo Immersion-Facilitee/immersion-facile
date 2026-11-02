@@ -1,7 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { useEffect } from "react";
 import { useStyles } from "tss-react/dsfr";
-import { useDevice } from "../../hooks";
+import { getDevice } from "../../hooks";
 import { keys } from "../../utils";
 
 export type NPSFormProps = {
@@ -63,7 +63,7 @@ export const NPSForm = ({
   mode,
 }: NPSFormProps) => {
   const { cx } = useStyles();
-  const device = useDevice();
+  const device = getDevice();
   const paramsAsString = [
     ...keys(conventionInfos).map((key) => `${key}=${conventionInfos[key]}`),
     `device=${device}`,
