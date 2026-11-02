@@ -168,7 +168,7 @@ describe("GetMaskedOtpRecipients", () => {
           email: "beneficiary@email.fr",
           expectedMaskedRecipients: {
             email: "b**********@email.fr",
-            phone: "+33*******78",
+            phone: "06******78",
           },
         },
         {
@@ -176,7 +176,7 @@ describe("GetMaskedOtpRecipients", () => {
           email: "patron@email.com",
           expectedMaskedRecipients: {
             email: "p*****@email.com",
-            phone: "+33*******89",
+            phone: "06******89",
           },
         },
         {
@@ -184,7 +184,7 @@ describe("GetMaskedOtpRecipients", () => {
           email: "tuteur@email.com",
           expectedMaskedRecipients: {
             email: "t*****@email.com",
-            phone: "+33*******91",
+            phone: "06******91",
           },
         },
         {
@@ -192,7 +192,7 @@ describe("GetMaskedOtpRecipients", () => {
           email: "parent@email.com",
           expectedMaskedRecipients: {
             email: "p*****@email.com",
-            phone: "+33*******12",
+            phone: "06******12",
           },
         },
         {
@@ -200,7 +200,7 @@ describe("GetMaskedOtpRecipients", () => {
           email: "employeur@email.com",
           expectedMaskedRecipients: {
             email: "e********@email.com",
-            phone: "+33*******23",
+            phone: "06******23",
           },
         },
       ])(
@@ -223,6 +223,32 @@ describe("GetMaskedOtpRecipients", () => {
           expect(maskedRecipients).toEqual(expectedMaskedRecipients);
         },
       );
+    });
+
+    it("should not return the phone if it is not a mobile phone number", async () => {
+      const conventionWithLandlinePhone: ConventionDto =
+        new ConventionDtoBuilder()
+          .withBeneficiaryEmail("beneficiary@email.fr")
+          .withBeneficiaryPhone("+33123456789")
+          .build();
+
+      uow.conventionRepository.setConventions([conventionWithLandlinePhone]);
+
+      const maskedRecipients = await getMaskedOtpRecipients.execute(undefined, {
+        ...visitorOtpJwtPayload,
+        subject: {
+          conventionId: conventionWithLandlinePhone.id,
+          role: "beneficiary",
+          emailHash: makeEmailHash(
+            conventionWithLandlinePhone.signatories.beneficiary.email,
+          ),
+        },
+      });
+
+      expect(maskedRecipients).toEqual({
+        email: "b**********@email.fr",
+        phone: null,
+      });
     });
   });
 });
