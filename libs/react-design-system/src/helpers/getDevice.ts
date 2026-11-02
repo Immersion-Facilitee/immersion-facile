@@ -1,8 +1,6 @@
-import { useState } from "react";
-
 export type Device = "mobile" | "tablet" | "desktop";
 
-const getDevice = (): Device => {
+export const getDevice = (): Device => {
   const { userAgent, maxTouchPoints } = navigator;
   const isIpadWithDesktopUserAgent =
     /Macintosh/i.test(userAgent) && maxTouchPoints > 1;
@@ -13,9 +11,4 @@ const getDevice = (): Device => {
     return "tablet";
   if (/Mobi|iPhone|iPod|Android/i.test(userAgent)) return "mobile";
   return "desktop";
-};
-
-export const useDevice = (): Device => {
-  const [device] = useState(getDevice);
-  return device;
 };
