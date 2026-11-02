@@ -315,7 +315,7 @@ describe("Agency registration for authenticated users", () => {
       expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
     });
 
-    it("does not refetch users to review when filters are null", () => {
+    it("does not refetch users to review after register when filters are null", () => {
       const payload: UserParamsForAgency = {
         agencyId: "agency-3",
         userId: "user-id",
@@ -416,7 +416,7 @@ describe("Agency registration for authenticated users", () => {
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
     });
 
-    it("does not refetch users to review when filters are null", () => {
+    it("does not refetch users to review after reject when filters are null", () => {
       store.dispatch(
         connectedUsersAdminSlice.actions.rejectAgencyWithRoleToUserRequested({
           agencyId: "agency-id",
