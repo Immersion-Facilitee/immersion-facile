@@ -151,7 +151,7 @@ export const renderEmail = ({
         }
       : {}),
     ...(tags ? { tags } : {}),
-    ...(attachmentUrls
+    ...(attachmentUrls && attachmentUrls.length > 0
       ? {
           attachment: attachmentUrls.map((attachmentUrl) => ({
             url: attachmentUrl,
