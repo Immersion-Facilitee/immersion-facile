@@ -58,7 +58,7 @@ const defaultFeatureFlags: FeatureFlags = {
     false,
     defaultHighlightFeatureFlagValue,
   ),
-  enableCandidateDashboardHighlight: makeHighlightFeatureFlag(
+  enableBeneficiaryDashboardHighlight: makeHighlightFeatureFlag(
     false,
     defaultHighlightFeatureFlagValue,
   ),
@@ -94,7 +94,7 @@ const flagsFromApi: FeatureFlags = {
     false,
     highlightFeatureFlagFromApi,
   ),
-  enableCandidateDashboardHighlight: makeHighlightFeatureFlag(
+  enableBeneficiaryDashboardHighlight: makeHighlightFeatureFlag(
     false,
     highlightFeatureFlagFromApi,
   ),

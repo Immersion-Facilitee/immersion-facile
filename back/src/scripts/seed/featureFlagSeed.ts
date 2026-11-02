@@ -40,7 +40,7 @@ export const featureFlagsSeed = async (uow: UnitOfWork) => {
       href: "https://www.example.com",
       label: "Mon label de highlight",
     }),
-    enableCandidateDashboardHighlight: makeHighlightFeatureFlag(false, {
+    enableBeneficiaryDashboardHighlight: makeHighlightFeatureFlag(false, {
       title: "Mon titre de highlight",
       message: "Mon message de highlight",
       href: "https://www.example.com",

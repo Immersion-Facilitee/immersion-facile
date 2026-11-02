@@ -41,7 +41,7 @@ const initialState: FeatureFlagsState = {
     href: "",
     label: "",
   }),
-  enableCandidateDashboardHighlight: makeHighlightFeatureFlag(false, {
+  enableBeneficiaryDashboardHighlight: makeHighlightFeatureFlag(false, {
     title: "",
     message: "",
     href: "",
