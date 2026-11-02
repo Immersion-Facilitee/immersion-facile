@@ -1,10 +1,11 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Button from "@codegouvfr/react-dsfr/Button";
 import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Highlight from "@codegouvfr/react-dsfr/Highlight";
 import Tabs from "@codegouvfr/react-dsfr/Tabs";
 import { equals } from "ramda";
 import { type ReactNode, useMemo } from "react";
-import { HeadingSection } from "react-design-system";
+import { HeadingSection, SectionHighlight } from "react-design-system";
 import {
   type ConnectedUser,
   domElementIds,
@@ -17,7 +18,6 @@ import {
   type UserEstablishmentRightDetails,
 } from "shared";
 import { ConventionTemplatesList } from "src/app/components/agency/agency-dashboard/ConventionTemplatesList";
-import { DashboardHighlight } from "src/app/components/DashboardHighlight";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useFeatureFlags } from "src/app/hooks/useFeatureFlags";
 import type {
@@ -83,7 +83,26 @@ export const EstablishmentDashboardTabs = ({
 
   return (
     <>
-      <DashboardHighlight highlight={enableEstablishmentDashboardHighlight} />
+      {enableEstablishmentDashboardHighlight.isActive && (
+        <SectionHighlight>
+          <h2 className={fr.cx("fr-h6", "fr-mb-1w")}>
+            {enableEstablishmentDashboardHighlight.value.title}
+          </h2>
+          <p className={fr.cx("fr-text--lg", "fr-mb-2w")}>
+            {enableEstablishmentDashboardHighlight.value.message}
+          </p>
+          <Button
+            size="small"
+            linkProps={{
+              href: enableEstablishmentDashboardHighlight.value.href,
+              target: "_blank",
+              rel: "noopener noreferrer",
+            }}
+          >
+            {enableEstablishmentDashboardHighlight.value.label}
+          </Button>
+        </SectionHighlight>
+      )}
       <Tabs
         tabs={tabs}
         id={domElementIds.establishmentDashboard.tabContainer}

@@ -1,13 +1,13 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Button from "@codegouvfr/react-dsfr/Button";
 import Tabs from "@codegouvfr/react-dsfr/Tabs";
 import { useMemo } from "react";
-import { Loader } from "react-design-system";
+import { Loader, SectionHighlight } from "react-design-system";
 import {
   type BeneficiaryDashboardTab,
   domElementIds,
   frontRoutes,
 } from "shared";
-import { DashboardHighlight } from "src/app/components/DashboardHighlight";
 import { DiscussionTabContent } from "src/app/components/discussion/DiscussionTabContent";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useFeatureFlags } from "src/app/hooks/useFeatureFlags";
@@ -35,13 +35,32 @@ export const BeneficiaryDashboardPage = ({
   const isLoadingDiscussionList = useAppSelector(discussionSelectors.isLoading);
 
   const tabsWithIsDefault = makeTabsWithIsDefault(tabs, currentTab);
-  const { enableCandidateDashboardHighlight } = useFeatureFlags();
+  const { enableBeneficiaryDashboardHighlight } = useFeatureFlags();
 
   return (
     <>
       {(isLoadingUser || isLoadingDiscussionList) && <Loader />}
       <h1>Mon espace candidat</h1>
-      <DashboardHighlight highlight={enableCandidateDashboardHighlight} />
+      {enableBeneficiaryDashboardHighlight.isActive && (
+        <SectionHighlight>
+          <h2 className={fr.cx("fr-h6", "fr-mb-1w")}>
+            {enableBeneficiaryDashboardHighlight.value.title}
+          </h2>
+          <p className={fr.cx("fr-text--lg", "fr-mb-2w")}>
+            {enableBeneficiaryDashboardHighlight.value.message}
+          </p>
+          <Button
+            size="small"
+            linkProps={{
+              href: enableBeneficiaryDashboardHighlight.value.href,
+              target: "_blank",
+              rel: "noopener noreferrer",
+            }}
+          >
+            {enableBeneficiaryDashboardHighlight.value.label}
+          </Button>
+        </SectionHighlight>
+      )}
       <Tabs
         tabs={tabsWithIsDefault}
         id={domElementIds.beneficiaryDashboard.tabContainer}
