@@ -22,10 +22,8 @@ import type {
   GenerateConventionMagicLinkUrl,
   GenerateEmailAuthCodeUrl,
 } from "../../../../../config/bootstrap/magicLinkUrl";
-import { agencyWithRightToAgencyDto } from "../../../../../utils/agency";
 import { conventionEmailsByRole } from "../../../../../utils/convention";
 import { makeEmailHash } from "../../../../../utils/jwt";
-import { retrieveConventionWithAgency } from "../../../../convention/entities/Convention";
 import type { CreateNewEvent } from "../../../events/ports/EventBus";
 import type { SaveNotificationAndRelatedEvent } from "../../../notifications/helpers/Notification";
 import type { ShortLinkIdGeneratorGateway } from "../../../short-link/ports/ShortLinkIdGeneratorGateway";
@@ -210,15 +208,15 @@ const onConventionDomainJwtPayload = async (
   originalUrl: string,
   deps: Deps,
 ): Promise<void> => {
-  const { agency, convention } = await retrieveConventionWithAgency(
-    uow,
+  const convention = await uow.conventionRepository.getById(
     conventionJwt.applicationId,
   );
+  if (!convention)
+    throw errors.convention.notFound({
+      conventionId: conventionJwt.applicationId,
+    });
 
-  const emails = conventionEmailsByRole(
-    convention,
-    await agencyWithRightToAgencyDto(uow, agency),
-  )(conventionJwt.role);
+  const emails = conventionEmailsByRole(convention)(conventionJwt.role);
 
   const emailMatchingEmailHash = emails.find(
     (email) => makeEmailHash(email) === conventionJwt.emailHash,

@@ -298,32 +298,6 @@ describe("RenewExpiredJwt use case", () => {
         );
       });
 
-      it("requires a known agency id", async () => {
-        const storedUnknownId = "some unknown agency id";
-        const convention = new ConventionDtoBuilder()
-          .withAgencyId(storedUnknownId)
-          .build();
-        uow.conventionRepository.setConventions([convention]);
-
-        const request: RenewExpiredJwtRequestDto = {
-          kind: "convention",
-          originalUrl: "https://immersionfacile.com/%jwt%",
-          expiredJwt: generateConventionJwt(
-            createConventionMagicLinkPayload({
-              id: convention.id,
-              role: "counsellor",
-              email: counsellor.email,
-              now: timeGateway.now(),
-            }),
-          ),
-        };
-
-        await expectPromiseToFailWithError(
-          useCase.execute(request),
-          errors.agency.notFound({ agencyId: storedUnknownId }),
-        );
-      });
-
       // Admins use non-magic-link based authentication, so no need to renew these.
       it("Refuses to generate backoffice magic links", async () => {
         await expectPromiseToFailWithError(
@@ -528,30 +502,6 @@ describe("RenewExpiredJwt use case", () => {
             ),
           }),
           errors.convention.notFound({ conventionId: invalidConventionId }),
-        );
-      });
-
-      it("requires a known agency id", async () => {
-        const storedUnknownId = "some unknown agency id";
-        const convention = new ConventionDtoBuilder()
-          .withAgencyId(storedUnknownId)
-          .build();
-        uow.conventionRepository.setConventions([convention]);
-
-        await expectPromiseToFailWithError(
-          useCase.execute({
-            kind: "conventionFromShortLink",
-            shortLinkId: existingShortLinkId,
-            expiredJwt: generateConventionJwt(
-              createConventionMagicLinkPayload({
-                id: convention.id,
-                role: "counsellor",
-                email: counsellor.email,
-                now: timeGateway.now(),
-              }),
-            ),
-          }),
-          errors.agency.notFound({ agencyId: storedUnknownId }),
         );
       });
 
