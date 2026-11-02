@@ -25,7 +25,7 @@ import Styles from "./RichTable.styles";
 
 type ViewMode = "grid" | "table";
 
-type GridItemProps = {
+export type GridItemProps = {
   badge?: ReactNode;
   id: string;
   title: string;

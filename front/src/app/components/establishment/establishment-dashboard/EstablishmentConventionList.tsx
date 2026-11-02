@@ -2,7 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import type { ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { Fragment, type ReactNode, useEffect } from "react";
-import { RichTable } from "react-design-system";
+import { type GridItemProps, RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AbsoluteUrl,
@@ -33,15 +33,6 @@ const establishmentConventionListFeedbackTopic: FeedbackTopic =
 
 type EstablishmentConventionListProps = {
   conventionsDashboardUrl: AbsoluteUrl | null;
-};
-
-type EstablishmentConventionGridItem = {
-  badge: ReactNode;
-  id: string;
-  title: string;
-  subTitle: string;
-  content: ReactNode;
-  cta: ButtonProps;
 };
 
 export const EstablishmentConventionList = ({
@@ -172,7 +163,7 @@ const getEstablishmentConventionTableHeaders = ({
 
 const toEstablishmentConventionGridData = (
   conventions: EstablishmentUserConventionListDto[],
-): EstablishmentConventionGridItem[] =>
+): GridItemProps[] =>
   conventions.map((convention) => {
     const shouldShowAssessmentBadge =
       isConventionValidated(convention.status) &&
