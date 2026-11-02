@@ -4,17 +4,14 @@ import {
   type ConventionDto,
   type Email,
   errors,
+  isValidMobilePhone,
+  type MaskedOtpRecipients,
   type PhoneNumber,
   type VisitorOtpJwtPayload,
 } from "shared";
 import { match } from "ts-pattern";
 import { makeEmailHash } from "../../../../../utils/jwt";
 import { useCaseBuilder } from "../../../useCaseBuilder";
-
-type MaskedOtpRecipients = {
-  email: string | null;
-  phone: string | null;
-};
 
 type OtpRecipients = {
   email: Email;
@@ -50,7 +47,9 @@ export const makeGetMaskedOtpRecipients = useCaseBuilder(
 
         return {
           email: maskEmail(recipients.email),
-          phone: maskPhone(recipients.phone),
+          phone: isValidMobilePhone(recipients.phone)
+            ? maskPhone(recipients.phone)
+            : null,
         };
       })
       .exhaustive(),
@@ -94,8 +93,9 @@ const maskEmail = (email: Email): string => {
 };
 
 const maskPhone = (phone: PhoneNumber): string => {
-  const { countryCallingCode, nationalNumber } =
-    parsePhoneNumberWithError(phone);
+  const nationalDigits = parsePhoneNumberWithError(phone)
+    .formatNational()
+    .replace(/\D/g, "");
   const visibleDigitsCount = 2;
-  return `+${countryCallingCode}${"*".repeat(nationalNumber.length - visibleDigitsCount)}${nationalNumber.slice(-visibleDigitsCount)}`;
+  return `${nationalDigits.slice(0, visibleDigitsCount)}${"*".repeat(nationalDigits.length - 2 * visibleDigitsCount)}${nationalDigits.slice(-visibleDigitsCount)}`;
 };
