@@ -19,6 +19,8 @@ import { makeFtConnectExternalRoutes } from "../../domains/core/authentication/f
 import { HttpFtConnectGateway } from "../../domains/core/authentication/ft-connect/adapters/ft-connect-gateway/HttpFtConnectGateway";
 import { InMemoryFtConnectGateway } from "../../domains/core/authentication/ft-connect/adapters/ft-connect-gateway/InMemoryFtConnectGateway";
 import type { FtConnectGateway } from "../../domains/core/authentication/ft-connect/port/FtConnectGateway";
+import { CryptoOtpCodeGeneratorGateway } from "../../domains/core/authentication/otp-challenge/adapters/otp-code-generator-gateway/CryptoOtpCodeGeneratorGateway";
+import { DeterministicOtpCodeGeneratorGateway } from "../../domains/core/authentication/otp-challenge/adapters/otp-code-generator-gateway/DeterministicOtpCodeGeneratorGateway";
 import { MetabaseDashboardGateway } from "../../domains/core/dashboard/adapters/MetabaseDashboardGateway";
 import { StubDashboardGateway } from "../../domains/core/dashboard/adapters/StubDashboardGateway";
 import type { DashboardGateway } from "../../domains/core/dashboard/port/DashboardGateway";
@@ -431,6 +433,10 @@ export const createGateways = async (
       config.shortLinkIdGeneratorGateway === "NANO_ID"
         ? new NanoIdShortLinkIdGeneratorGateway()
         : new DeterministShortLinkIdGeneratorGateway(),
+    otpCodeGeneratorGateway:
+      config.otpCodeGeneratorGateway === "CRYPTO"
+        ? new CryptoOtpCodeGeneratorGateway()
+        : new DeterministicOtpCodeGeneratorGateway(),
   };
 };
 
