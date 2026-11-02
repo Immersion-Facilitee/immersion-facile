@@ -87,7 +87,6 @@ export const throwIfNotAuthorizedForRole = async ({
       authorizedRoles,
       errorToThrow,
       convention,
-      agency,
       isPeAdvisorAllowed,
       isValidatorOfAgencyRefersToAllowed,
     });
@@ -102,7 +101,6 @@ const onMagicLink = async ({
   authorizedRoles,
   errorToThrow,
   convention,
-  agency,
   isPeAdvisorAllowed,
   isValidatorOfAgencyRefersToAllowed,
 }: {
@@ -111,7 +109,6 @@ const onMagicLink = async ({
   authorizedRoles: Role[];
   errorToThrow: Error;
   convention: ConventionDto;
-  agency: AgencyDto;
   isPeAdvisorAllowed: boolean;
   isValidatorOfAgencyRefersToAllowed: boolean;
 }) => {
@@ -135,7 +132,7 @@ const onMagicLink = async ({
     throw errorToThrow;
   }
 
-  const emailsOrError = conventionEmailsByRole(convention, agency)(role);
+  const emailsOrError = conventionEmailsByRole(convention)(role);
 
   if (!isSomeEmailMatchingEmailHash(emailsOrError, emailHash))
     throw errors.convention.emailNotLinkedToConvention(role);

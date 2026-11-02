@@ -67,14 +67,13 @@ export const isHashMatchConventionEmails = ({
   convention,
   emailHash,
   role,
-  agency,
 }: {
   convention: ConventionDto;
   agency: AgencyDto;
   emailHash: EmailHash;
   role: ConventionRole;
 }) => {
-  const emailsByRole = conventionEmailsByRole(convention, agency)(role);
+  const emailsByRole = conventionEmailsByRole(convention)(role);
   return isSomeEmailMatchingEmailHash(emailsByRole, emailHash);
 };
 

@@ -16,7 +16,96 @@ import {
   type InMemoryUnitOfWork,
 } from "../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { toAgencyWithRights } from "./agency";
-import { conventionDtosToConventionReadDtos } from "./convention";
+import {
+  conventionDtosToConventionReadDtos,
+  conventionEmailsByRole,
+} from "./convention";
+
+describe("conventionEmailsByRole", () => {
+  const convention = new ConventionDtoBuilder()
+    .withBeneficiaryRepresentative({
+      email: "benef-rep@email.com",
+      firstName: "Joel",
+      lastName: "LeRep",
+      phone: "+33600000001",
+      role: "beneficiary-representative",
+      signedAt: new Date().toISOString(),
+    })
+    .withBeneficiaryCurrentEmployer({
+      email: "benef-employer@email.com",
+      firstName: "Julie",
+      lastName: "Lemployeur",
+      phone: "+33600000002",
+      businessAddress: "",
+      businessName: "Current employer",
+      businessSiret: "12345678912345",
+      job: "",
+      role: "beneficiary-current-employer",
+      signedAt: new Date().toISOString(),
+    })
+    .build();
+
+  const beneficiaryRepresentative =
+    convention.signatories.beneficiaryRepresentative;
+  const beneficiaryCurrentEmployer =
+    convention.signatories.beneficiaryCurrentEmployer;
+
+  if (!beneficiaryRepresentative || !beneficiaryCurrentEmployer)
+    throw new Error("Expected optional signatories to be set in fixture");
+
+  const emailsByRole = conventionEmailsByRole(convention);
+
+  it("returns emails of convention actors", () => {
+    expectToEqual(emailsByRole("beneficiary"), [
+      convention.signatories.beneficiary.email,
+    ]);
+    expectToEqual(emailsByRole("establishment-representative"), [
+      convention.signatories.establishmentRepresentative.email,
+    ]);
+    expectToEqual(emailsByRole("establishment-tutor"), [
+      convention.establishmentTutor.email,
+    ]);
+    expectToEqual(emailsByRole("beneficiary-representative"), [
+      beneficiaryRepresentative.email,
+    ]);
+    expectToEqual(emailsByRole("beneficiary-current-employer"), [
+      beneficiaryCurrentEmployer.email,
+    ]);
+  });
+
+  it("throws missingActor when optional actor is absent", () => {
+    const conventionWithoutOptionalActors = new ConventionDtoBuilder().build();
+    const emailsByRoleWithoutOptionalActors = conventionEmailsByRole(
+      conventionWithoutOptionalActors,
+    );
+
+    expect(() =>
+      emailsByRoleWithoutOptionalActors("beneficiary-representative"),
+    ).toThrow(
+      errors.convention.missingActor({
+        conventionId: conventionWithoutOptionalActors.id,
+        role: "beneficiary-representative",
+      }),
+    );
+    expect(() =>
+      emailsByRoleWithoutOptionalActors("beneficiary-current-employer"),
+    ).toThrow(
+      errors.convention.missingActor({
+        conventionId: conventionWithoutOptionalActors.id,
+        role: "beneficiary-current-employer",
+      }),
+    );
+  });
+
+  it.each(["counsellor", "validator"] as const)(
+    "throws roleHasNoMagicLink for %s",
+    (role) => {
+      expect(() => emailsByRole(role)).toThrow(
+        errors.convention.roleHasNoMagicLink({ role }),
+      );
+    },
+  );
+});
 
 describe("conventionDtosToConventionReadDtos", () => {
   const validator = new ConnectedUserBuilder()
