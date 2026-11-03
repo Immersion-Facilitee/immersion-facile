@@ -15,6 +15,8 @@ import {
   type Email,
   errors,
   executeInSequence,
+  type FtConnectIdentity,
+  type FtConnectIdentityWithoutToken,
   isTruthy,
   makeEmptyLastReminders,
   type SiretDto,
@@ -202,10 +204,27 @@ export const assesmentEntityToConventionAssessmentFields = (
       };
 };
 
-export const conventionDtosToAgencyUserConventionListDtos = async (
+export type ConventionWithAgencyAndAssessment = {
+  convention: ConventionDto;
+  agency: AgencyWithUsersRights;
+  assessment: AssessmentEntity | undefined;
+};
+
+export const conventionDtosToAgencyUserConventionListDtos = (
   conventions: ConventionDto[],
   uow: UnitOfWork,
-): Promise<AgencyUserConventionListDto[]> => {
+): Promise<AgencyUserConventionListDto[]> =>
+  mapConventionsWithAgencyAndAssessment(
+    conventions,
+    uow,
+    toAgencyUserConventionListDto,
+  );
+
+export const mapConventionsWithAgencyAndAssessment = async <Dto>(
+  conventions: ConventionDto[],
+  uow: UnitOfWork,
+  toDto: (params: ConventionWithAgencyAndAssessment) => Dto,
+): Promise<Dto[]> => {
   if (conventions.length === 0) return [];
 
   const agencyIds = uniq(conventions.map(({ agencyId }) => agencyId));
@@ -234,36 +253,52 @@ export const conventionDtosToAgencyUserConventionListDtos = async (
     if (!agency)
       throw errors.agency.notFound({ agencyId: convention.agencyId });
 
-    const { beneficiary } = convention.signatories;
-
-    const federatedIdentity = beneficiary.federatedIdentity
-      ? {
-          provider: beneficiary.federatedIdentity.provider,
-          ...(beneficiary.federatedIdentity.payload
-            ? { payload: beneficiary.federatedIdentity.payload }
-            : {}),
-        }
-      : undefined;
-
-    return {
-      id: convention.id,
-      status: convention.status,
-      dateStart: convention.dateStart,
-      dateEnd: convention.dateEnd,
-      businessName: convention.businessName,
-      agencyName: agency.name,
-      agencyReferent: convention.agencyReferent,
-      assessment: assesmentEntityToConventionAssessmentFields(
-        assessmentByConventionId[convention.id],
-      ).assessment,
-      beneficiary: {
-        firstName: beneficiary.firstName,
-        lastName: beneficiary.lastName,
-        federatedIdentity,
-      },
-    };
+    return toDto({
+      convention,
+      agency,
+      assessment: assessmentByConventionId[convention.id],
+    });
   });
 };
+
+export const toAgencyUserConventionListDto = ({
+  convention,
+  agency,
+  assessment,
+}: ConventionWithAgencyAndAssessment): AgencyUserConventionListDto => {
+  const { beneficiary } = convention.signatories;
+
+  return {
+    id: convention.id,
+    status: convention.status,
+    dateStart: convention.dateStart,
+    dateEnd: convention.dateEnd,
+    businessName: convention.businessName,
+    agencyName: agency.name,
+    agencyReferent: convention.agencyReferent,
+    assessment:
+      assesmentEntityToConventionAssessmentFields(assessment).assessment,
+    beneficiary: {
+      firstName: beneficiary.firstName,
+      lastName: beneficiary.lastName,
+      federatedIdentity: toFederatedIdentityWithoutToken(
+        beneficiary.federatedIdentity,
+      ),
+    },
+  };
+};
+
+const toFederatedIdentityWithoutToken = (
+  federatedIdentity: FtConnectIdentity | undefined,
+): FtConnectIdentityWithoutToken | undefined =>
+  federatedIdentity
+    ? {
+        provider: federatedIdentity.provider,
+        ...(federatedIdentity.payload
+          ? { payload: federatedIdentity.payload }
+          : {}),
+      }
+    : undefined;
 
 const getConventionLastRemindersFields = async (
   convention: ConventionDto,

@@ -964,7 +964,7 @@ export const statusSchema = z.enum(conventionStatuses, {
   error: localization.invalidEnum,
 });
 
-const assessmentCompletionStatusFilterSchema = z.enum(
+export const assessmentCompletionStatusFilterSchema = z.enum(
   assessmentCompletionStatusFilters,
   {
     error: localization.invalidEnum,

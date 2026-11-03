@@ -17,6 +17,7 @@ import {
   type ConventionWithBroadcastFeedback,
   type ConventionWithUnfinalizedAssessment,
   calculatePaginationResult,
+  conventionIdSchema,
   conventionSchema,
   conventionWithBroadcastFeedbackSchema,
   conventionWithUnfinalizedAssessmentSchema,
@@ -29,6 +30,7 @@ import {
   type GetPaginatedConventionsSortBy,
   type PaginationQueryParams,
   pipeWithValue,
+  toLowerCaseWithoutDiacritics,
   unvalidatedConventionStatuses,
   type WithSort,
 } from "shared";
@@ -270,17 +272,21 @@ export class PgConventionQueries implements ConventionQueries {
     filters = {},
     pagination,
     sort,
+    maxTotalRecords,
   }: GetPaginatedConventionsParams): Promise<
     DataWithPagination<ConventionDto>
   > {
     const {
       search,
+      identifierOrNameSearch,
       statuses,
       agencyIds,
+      agencyNameContains,
       omitStatusesForAgencies,
       dateStart,
       dateEnd,
       dateSubmission,
+      dateValidation,
       assessmentCompletionStatus,
       beneficiaryEmail,
       establishmentUserAccess,
@@ -305,20 +311,32 @@ export class PgConventionQueries implements ConventionQueries {
         transaction: this.transaction,
       }),
       filterByAgencyIds(agencyIds),
+      filterByAgencyNameContains(agencyNameContains),
       filterByBeneficiaryEmail(beneficiaryEmail),
       filterByEstablishmentUserAccess(establishmentUserAccess),
       filterOmitStatusesForAgencies(omitStatusesForAgencies),
       filterSearch(trimmedSearch),
+      filterByIdentifierOrNameSearch(identifierOrNameSearch),
       filterDate("date_start", dateStart),
       filterDate("date_end", dateEnd),
       filterDate("date_submission", dateSubmission),
+      filterDate("date_validation", dateValidation),
       filterInList("status", statuses),
       filterByAssessmentCompletionStatus(assessmentCompletionStatus),
     );
 
-    const countQuery = filteredBuilder.select((eb) =>
-      sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
-    );
+    const countQuery = this.transaction
+      .selectFrom(
+        (maxTotalRecords
+          ? filteredBuilder.limit(maxTotalRecords)
+          : filteredBuilder
+        )
+          .select("conventions.id")
+          .as("counted_conventions"),
+      )
+      .select((eb) =>
+        sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
+      );
 
     const dataQuery = pipeWithValue(
       wrapInMaterializedCteWithEnrichment({
@@ -326,7 +344,7 @@ export class PgConventionQueries implements ConventionQueries {
         filteredBuilder: pipeWithValue(
           filteredBuilder,
           sortConventions(sort),
-          applyPagination(pagination),
+          applyPagination(pagination, maxTotalRecords),
         ),
       }),
       sortConventions(sort),
@@ -626,11 +644,14 @@ export class PgConventionQueries implements ConventionQueries {
 }
 
 const applyPagination =
-  (pagination: Required<PaginationQueryParams>) =>
+  (pagination: Required<PaginationQueryParams>, maxTotalRecords?: number) =>
   <T extends ConventionBaseQueryBuilder>(builder: T): T => {
     const { page, perPage } = pagination;
     const offset = (page - 1) * perPage;
-    return builder.limit(perPage).offset(offset) as T;
+    const limit = maxTotalRecords
+      ? Math.max(Math.min(perPage, maxTotalRecords - offset), 0)
+      : perPage;
+    return builder.limit(limit).offset(offset) as T;
   };
 
 const sortConventions =
@@ -669,6 +690,115 @@ const filterByBeneficiaryEmail =
   (email: Email | undefined) =>
   (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
     email ? builder.where("b.email", "=", email) : builder;
+
+const filterByAgencyNameContains =
+  (agencyNameContains: string | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
+    agencyNameContains
+      ? builder.where("conventions.agency_id", "in", (eb) =>
+          eb
+            .selectFrom("agencies")
+            .select("agencies.id")
+            .where("agencies.name", "ilike", `%${agencyNameContains}%`),
+        )
+      : builder;
+
+const filterByIdentifierOrNameSearch =
+  (identifierOrNameSearch: string | undefined) =>
+  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder => {
+    if (!identifierOrNameSearch) return builder;
+
+    const namePattern = `%${identifierOrNameSearch}%`;
+    const email = toLowerCaseWithoutDiacritics(identifierOrNameSearch);
+
+    return builder.where((eb) => {
+      const idsMatchingBusinessName = eb
+        .selectFrom("conventions")
+        .select("conventions.id")
+        .where("conventions.business_name", "ilike", namePattern);
+
+      const idsMatchingBeneficiaryName = eb
+        .selectFrom("conventions")
+        .innerJoin(
+          "actors as searched_beneficiary",
+          "searched_beneficiary.id",
+          "conventions.beneficiary_id",
+        )
+        .select("conventions.id")
+        .where(
+          sql<boolean>`${sql.ref("searched_beneficiary.first_name")} || ' ' || ${sql.ref("searched_beneficiary.last_name")} || ' ' || ${sql.ref("searched_beneficiary.first_name")} ILIKE ${namePattern}`,
+        );
+
+      const idsMatchingAgencyReferentName = eb
+        .selectFrom("conventions")
+        .select("conventions.id")
+        .where(
+          sql<boolean>`coalesce(${sql.ref("conventions.agency_referent_first_name")}, '') || ' ' || coalesce(${sql.ref("conventions.agency_referent_last_name")}, '') || ' ' || coalesce(${sql.ref("conventions.agency_referent_first_name")}, '') ILIKE ${namePattern}`,
+        );
+
+      const idsMatchingActorEmail = eb
+        .selectFrom("conventions")
+        .innerJoin("actors as searched_actor", (join) =>
+          join.on((joinEb) =>
+            joinEb.or([
+              joinEb(
+                "searched_actor.id",
+                "=",
+                joinEb.ref("conventions.beneficiary_id"),
+              ),
+              joinEb(
+                "searched_actor.id",
+                "=",
+                joinEb.ref("conventions.beneficiary_representative_id"),
+              ),
+              joinEb(
+                "searched_actor.id",
+                "=",
+                joinEb.ref("conventions.establishment_tutor_id"),
+              ),
+              joinEb(
+                "searched_actor.id",
+                "=",
+                joinEb.ref("conventions.establishment_representative_id"),
+              ),
+              joinEb(
+                "searched_actor.id",
+                "=",
+                joinEb.ref("conventions.beneficiary_current_employer_id"),
+              ),
+            ]),
+          ),
+        )
+        .select("conventions.id")
+        .where("searched_actor.email", "=", email);
+
+      const idsMatchingSiret = eb
+        .selectFrom("conventions")
+        .select("conventions.id")
+        .where("conventions.siret", "=", identifierOrNameSearch);
+
+      const idsMatchingIdentifierOrName = idsMatchingBusinessName
+        .union(idsMatchingBeneficiaryName)
+        .union(idsMatchingAgencyReferentName)
+        .union(idsMatchingActorEmail)
+        .union(idsMatchingSiret);
+
+      return eb(
+        "conventions.id",
+        "=",
+        eb.fn.any(
+          conventionIdSchema.safeParse(identifierOrNameSearch).success
+            ? idsMatchingIdentifierOrName.union(
+                eb
+                  .selectFrom("conventions")
+                  .select("conventions.id")
+                  .where("conventions.id", "=", identifierOrNameSearch),
+              )
+            : idsMatchingIdentifierOrName,
+        ),
+      );
+    });
+  };
 
 const filterByEstablishmentUserAccess =
   (establishmentUserAccess: EstablishmentUserAccessFilter | undefined) =>

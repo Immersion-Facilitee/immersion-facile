@@ -1140,9 +1140,6 @@ export const domElementIds = {
       sendMessageSubmitButton:
         "im-manage-establishment__discussion-send-message-submit-button",
     },
-    manageConventionForm: {
-      submitButton: "im-manage-establishment__manage-convention-submit-button",
-    },
     manageDiscussion: {
       submitButton: "im-manage-establishment__manage-discussion-submit-button",
       discussionIdInput: "im-manage-establishment__manage-discussion-id-input",
@@ -1298,6 +1295,14 @@ export const domElementIds = {
   },
   adminAgencies: {},
   adminConventions: {
+    conventionListFilterInput:
+      "im-admin-conventions__convention-list-filter-input",
+    conventionListManageConventionButton:
+      "im-admin-conventions__convention-list-manage-convention-button",
+    conventionListFilterDropdown:
+      "im-admin-conventions__convention-list-filter-dropdown",
+    conventionListMetabaseBackupLink:
+      "im-admin-conventions__convention-list-metabase-backup-link",
     handleArchivedConventionRequestButton:
       "im-admin-conventions__handle-archived-convention-request-button",
     handleArchivedConventionRequestModal:

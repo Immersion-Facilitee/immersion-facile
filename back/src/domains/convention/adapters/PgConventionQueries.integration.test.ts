@@ -2575,6 +2575,150 @@ describe("Pg implementation of ConventionQueries", () => {
           expectToEqual(result.pagination.totalRecords, 0);
         });
       });
+
+      describe("admin filters", () => {
+        it("should filter conventions by agency name contains, case insensitive", async () => {
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: { agencyNameContains: "different AG" },
+          });
+
+          expectToEqual(result.data, [conventionD]);
+          expectToEqual(result.pagination.totalRecords, 1);
+        });
+
+        it("should filter conventions by validation date range", async () => {
+          const validatedInJanuary = new ConventionDtoBuilder(conventionA)
+            .withDateValidation(new Date("2023-01-12").toISOString())
+            .build();
+          const validatedInFebruary = new ConventionDtoBuilder(conventionB)
+            .withDateValidation(new Date("2023-02-12").toISOString())
+            .build();
+          await conventionRepository.update(
+            validatedInJanuary,
+            anyConventionUpdatedAt,
+          );
+          await conventionRepository.update(
+            validatedInFebruary,
+            anyConventionUpdatedAt,
+          );
+
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              dateValidation: {
+                from: new Date("2023-02-01").toISOString(),
+                to: new Date("2023-02-28").toISOString(),
+              },
+            },
+          });
+
+          expectToEqual(result.data, [validatedInFebruary]);
+        });
+
+        it("should combine admin filters", async () => {
+          const result = await conventionQueries.getPaginatedConventions({
+            pagination: { page: 1, perPage: 10 },
+            filters: {
+              agencyNameContains: "test agency",
+              identifierOrNameSearch: "john",
+              statuses: ["READY_TO_SIGN", "IN_REVIEW"],
+              dateStart: { from: new Date("2023-01-01").toISOString() },
+            },
+            sort: { by: "dateSubmission", direction: "desc" },
+          });
+
+          expectToEqual(result.data, [conventionA]);
+          expectToEqual(result.pagination.totalRecords, 1);
+        });
+
+        describe("identifier or name search", () => {
+          const searchConventions = (identifierOrNameSearch: string) =>
+            conventionQueries.getPaginatedConventions({
+              pagination: { page: 1, perPage: 10 },
+              filters: { identifierOrNameSearch },
+              sort: { by: "dateSubmission", direction: "desc" },
+            });
+
+          it("should find a convention by its id", async () => {
+            const result = await searchConventions(conventionC.id);
+
+            expectToEqual(result.data, [conventionC]);
+          });
+
+          it("should find conventions by siret", async () => {
+            const result = await searchConventions(conventionA.siret);
+
+            expectToEqual(result.data, [conventionA]);
+          });
+
+          it("should find conventions by exact actor email, ignoring case", async () => {
+            const conventionWithTutor = new ConventionDtoBuilder(conventionC)
+              .withEstablishmentTutorEmail("tutor@convention-c.com")
+              .build();
+            await conventionRepository.update(
+              conventionWithTutor,
+              anyConventionUpdatedAt,
+            );
+
+            const byExactEmail = await searchConventions(
+              "Tutor@Convention-C.com",
+            );
+            const byPartialEmail = await searchConventions("convention-c.com");
+
+            expectToEqual(byExactEmail.data, [conventionWithTutor]);
+            expectToEqual(byPartialEmail.data, []);
+          });
+
+          it("should find conventions by beneficiary name or business name contains", async () => {
+            const byBeneficiaryName = await searchConventions("john");
+            const byBeneficiaryLastNameThenFirstName =
+              await searchConventions("smith ja");
+            const byBusinessName = await searchConventions("ness d");
+
+            expectToEqual(byBeneficiaryName.data, [conventionC, conventionA]);
+            expectToEqual(byBeneficiaryLastNameThenFirstName.data, [
+              conventionB,
+            ]);
+            expectToEqual(byBusinessName.data, [conventionD]);
+          });
+
+          it("should find conventions by agency referent name contains", async () => {
+            const byAgencyReferentLastName = await searchConventions("martin");
+            const byAgencyReferentLastNameThenFirstName =
+              await searchConventions("dupont mar");
+
+            expectToEqual(byAgencyReferentLastName.data, [conventionB]);
+            expectToEqual(byAgencyReferentLastNameThenFirstName.data, [
+              conventionA,
+            ]);
+          });
+        });
+
+        it("should cap total records and return no records beyond them", async () => {
+          const getPage = (page: number) =>
+            conventionQueries.getPaginatedConventions({
+              pagination: { page, perPage: 2 },
+              sort: { by: "dateSubmission", direction: "desc" },
+              maxTotalRecords: 3,
+            });
+
+          const [firstPage, lastReachablePage, pageBeyondMaxTotalRecords] =
+            await Promise.all([getPage(1), getPage(2), getPage(3)]);
+
+          expectToEqual(firstPage.data.length, 2);
+          expectToEqual(lastReachablePage.data.length, 1);
+          expectToEqual(pageBeyondMaxTotalRecords, {
+            data: [],
+            pagination: {
+              currentPage: 3,
+              numberPerPage: 2,
+              totalPages: 2,
+              totalRecords: 3,
+            },
+          });
+        });
+      });
     },
   );
 

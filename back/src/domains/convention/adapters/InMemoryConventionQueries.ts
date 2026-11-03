@@ -2,6 +2,7 @@ import { addDays, isAfter, isBefore, subDays, subMonths } from "date-fns";
 import { propEq } from "ramda";
 import {
   type AgencyId,
+  type AgencyWithUsersRights,
   ASSESSEMENT_SIGNATURE_RELEASE_DATE,
   type ConventionDto,
   type ConventionId,
@@ -22,6 +23,7 @@ import {
   makeEmptyLastReminders,
   type PaginationQueryParams,
   type SiretDto,
+  toLowerCaseWithoutDiacritics,
   type WithBannedEstablishmentInformations,
   type WithSort,
 } from "shared";
@@ -137,6 +139,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
     filters = {},
     pagination,
     sort,
+    maxTotalRecords,
   }: GetPaginatedConventionsParams): Promise<
     DataWithPagination<ConventionDto>
   > {
@@ -150,7 +153,10 @@ export class InMemoryConventionQueries implements ConventionQueries {
       };
 
     const filteredConventions = this.conventionRepository.conventions.filter(
-      makeApplyPaginatedFiltersToConventions(filters),
+      makeApplyPaginatedFiltersToConventions(
+        filters,
+        this.agencyRepository.agencies,
+      ),
     );
 
     const withAssessmentFilter = filters.assessmentCompletionStatus?.length
@@ -165,7 +171,7 @@ export class InMemoryConventionQueries implements ConventionQueries {
     const sortedConventions = sortConventionsInMemory(
       withAssessmentFilter,
       sort,
-    );
+    ).slice(0, maxTotalRecords);
 
     const { page, perPage } = pagination;
     const startIndex = (page - 1) * perPage;
@@ -714,6 +720,9 @@ const matchesDateFilter = (
   return true;
 };
 
+const includesIgnoringCase = (value: string, searched: string): boolean =>
+  value.toLowerCase().includes(searched.toLowerCase());
+
 const matchesConventionSearch = (
   convention: ConventionDto,
   search: string,
@@ -782,18 +791,60 @@ const sortConventionsInMemory = (
   });
 };
 
+const matchesIdentifierOrNameSearch = (
+  {
+    id,
+    siret,
+    businessName,
+    signatories,
+    establishmentTutor,
+    agencyReferent,
+  }: ConventionDto,
+  identifierOrNameSearch: string,
+): boolean => {
+  const email = toLowerCaseWithoutDiacritics(identifierOrNameSearch);
+  const { beneficiary } = signatories;
+
+  return (
+    id === identifierOrNameSearch ||
+    siret === identifierOrNameSearch ||
+    [
+      beneficiary.email,
+      signatories.beneficiaryRepresentative?.email,
+      signatories.beneficiaryCurrentEmployer?.email,
+      signatories.establishmentRepresentative.email,
+      establishmentTutor.email,
+    ].includes(email) ||
+    includesIgnoringCase(businessName, identifierOrNameSearch) ||
+    includesIgnoringCase(
+      `${beneficiary.firstName} ${beneficiary.lastName} ${beneficiary.firstName}`,
+      identifierOrNameSearch,
+    ) ||
+    includesIgnoringCase(
+      `${agencyReferent?.firstname ?? ""} ${agencyReferent?.lastname ?? ""} ${agencyReferent?.firstname ?? ""}`,
+      identifierOrNameSearch,
+    )
+  );
+};
+
 const makeApplyPaginatedFiltersToConventions =
-  ({
-    search,
-    statuses,
-    agencyIds,
-    omitStatusesForAgencies,
-    dateStart,
-    dateEnd,
-    dateSubmission,
-    beneficiaryEmail,
-    establishmentUserAccess,
-  }: GetPaginatedConventionsFilters) =>
+  (
+    {
+      search,
+      identifierOrNameSearch,
+      statuses,
+      agencyIds,
+      agencyNameContains,
+      omitStatusesForAgencies,
+      dateStart,
+      dateEnd,
+      dateSubmission,
+      dateValidation,
+      beneficiaryEmail,
+      establishmentUserAccess,
+    }: GetPaginatedConventionsFilters,
+    agencies: AgencyWithUsersRights[],
+  ) =>
   (convention: ConventionDto) => {
     const trimmedSearch = search?.trim();
 
@@ -803,9 +854,21 @@ const makeApplyPaginatedFiltersToConventions =
           trimmedSearch
             ? matchesConventionSearch(convention, trimmedSearch)
             : true,
+        () =>
+          identifierOrNameSearch
+            ? matchesIdentifierOrNameSearch(convention, identifierOrNameSearch)
+            : true,
         ({ signatories }) =>
           beneficiaryEmail
             ? signatories.beneficiary.email === beneficiaryEmail
+            : true,
+        ({ agencyId }) =>
+          agencyNameContains
+            ? agencies.some(
+                ({ id, name }) =>
+                  id === agencyId &&
+                  includesIgnoringCase(name, agencyNameContains),
+              )
             : true,
         ({ dateStart: conventionDateStart }) =>
           matchesDateFilter(conventionDateStart, dateStart),
@@ -813,6 +876,11 @@ const makeApplyPaginatedFiltersToConventions =
           matchesDateFilter(conventionDateEnd, dateEnd),
         ({ dateSubmission: conventionDateSubmission }) =>
           matchesDateFilter(conventionDateSubmission, dateSubmission),
+        ({ dateValidation: conventionDateValidation }) =>
+          dateValidation
+            ? !!conventionDateValidation &&
+              matchesDateFilter(conventionDateValidation, dateValidation)
+            : true,
         ({ status }) =>
           statuses && statuses.length > 0 ? statuses.includes(status) : true,
         ({ agencyId }) =>

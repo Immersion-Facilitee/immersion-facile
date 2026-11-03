@@ -14,6 +14,10 @@ import {
 } from "../assessment/assessment.schema";
 import { conventionLastBroadcastFeedbackResponseSchema } from "../broadcast/broadcastFeedback.schema";
 import { addConventionInputSchema } from "../convention/addConventionInput";
+import {
+  flatGetConventionsForAdminParamsSchema,
+  paginatedAdminConventionListSchema,
+} from "../convention/adminConventionList.schema";
 import { paginatedAgencyUserConventionListSchema } from "../convention/agencyUserConventionList.schema";
 import {
   conventionReadSchema,
@@ -400,6 +404,19 @@ export const authenticatedConventionRoutes = defineRoutes({
       200: paginatedAgencyUserConventionListSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
+    },
+  }),
+
+  getConventionsForAdmin: defineRoute({
+    method: "get",
+    url: "/conventions-for-admin",
+    ...withAuthorizationHeaders,
+    queryParamsSchema: flatGetConventionsForAdminParamsSchema,
+    responses: {
+      200: paginatedAdminConventionListSchema,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
     },
   }),
 

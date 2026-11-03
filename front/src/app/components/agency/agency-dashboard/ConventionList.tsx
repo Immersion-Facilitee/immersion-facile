@@ -1,31 +1,18 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Checkbox, type CheckboxProps } from "@codegouvfr/react-dsfr/Checkbox";
-import { Input } from "@codegouvfr/react-dsfr/Input";
-import RadioButtons, {
-  type RadioButtonsProps,
-} from "@codegouvfr/react-dsfr/RadioButtons";
-import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
 import { equals, pick } from "ramda";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { HeadingSection, RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
-  type AssessmentCompletionStatusFilter,
-  assessmentCompletionStatusFilters,
-  type ConventionStatus,
-  conventionStatuses,
   defaultPerPageInWebPagination,
   domElementIds,
   type FlatGetConventionsForAgencyUserParams,
-  getFormattedFirstnameAndLastname,
   isNotEmptyArray,
 } from "shared";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { MetabaseFullScreenButton } from "src/app/components/MetabaseFullScreenButton";
-import { labelAndSeverityByStatus } from "src/app/contents/convention/labelAndSeverityByStatus";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { getAssessmentLabelsAndSeverityByStatus } from "src/app/utils/assessment.utils";
-import logoFtSvg from "src/assets/img/logo-ft.svg";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { conventionListSelectors } from "src/core-logic/domain/connected-user/conventionList/connectedUserConventionList.selectors";
@@ -34,30 +21,38 @@ import {
   initialConventionWithPagination,
 } from "src/core-logic/domain/connected-user/conventionList/connectedUserConventionList.slice";
 import { match, P } from "ts-pattern";
-import { useStyles } from "tss-react/dsfr";
 import { ConventionAssessmentStatusBadge } from "../../convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "../../convention/ConventionDatesDisplay";
 import { ConventionStatusBadge } from "../../convention/ConventionStatusBadge";
+import {
+  AgencyReferentCell,
+  BeneficiaryCell,
+} from "../../convention/convention-list/ConventionListCells";
+import {
+  BeforeOrAfterDateFilter,
+  type BeforeOrAfterDateFilterLabels,
+  makeAssessmentCompletionStatusOptions,
+  makeConventionStatusOptions,
+  toAppliedAssessmentCompletionStatusLabel,
+  toAppliedBeforeOrAfterDateLabel,
+  toAppliedConventionStatusesLabel,
+} from "../../convention/convention-list/conventionListFilters";
 import { UnarchivedOrManageConventionButton } from "../../convention/UnarchivedOrManageConventionButton";
 
-type DateFilterType = keyof Pick<
-  FlatGetConventionsForAgencyUserParams,
-  "dateStartFrom" | "dateStartTo" | "dateEndFrom" | "dateEndTo"
->;
-
-type DateFilterState = {
-  type: DateFilterType;
-  value: string;
+const dateStartFilterLabels: BeforeOrAfterDateFilterLabels = {
+  defaultLabel: "Date de début",
+  before: "Démarrant avant le",
+  after: "Démarrant après le",
 };
 
-type DateFilterStates = {
-  dateStart: DateFilterState;
-  dateEnd: DateFilterState;
+const dateEndFilterLabels: BeforeOrAfterDateFilterLabels = {
+  defaultLabel: "Date de fin",
+  before: "Se terminant avant le",
+  after: "Se terminant après le",
 };
 
 export const ConventionList = () => {
   const dispatch = useDispatch();
-  const { cx } = useStyles();
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const {
@@ -104,138 +99,6 @@ export const ConventionList = () => {
       >
     >(defaultFilters);
 
-  const [dateFilterStates, setDateFilterStates] = useState<DateFilterStates>({
-    dateStart: {
-      type: "dateStartFrom",
-      value: "",
-    },
-    dateEnd: {
-      type: "dateEndFrom",
-      value: "",
-    },
-  });
-
-  const assessmentOptions: CheckboxProps["options"] = useMemo(
-    () => [
-      {
-        label: getAssessmentLabelsAndSeverityByStatus({ isPlural: true })[
-          "to-complete"
-        ].longLabel,
-        nativeInputProps: {
-          value: "to-complete",
-          checked:
-            tempFilters.assessmentCompletionStatus?.includes("to-complete") ??
-            false,
-          onChange: (event) => {
-            const existingStatuses =
-              tempFilters.assessmentCompletionStatus ?? [];
-            const newStatuses =
-              event.currentTarget.checked &&
-              isAssessmentCompletionStatusFilter(event.currentTarget.value)
-                ? [...existingStatuses, event.currentTarget.value]
-                : existingStatuses.filter(
-                    (status) => status !== event.currentTarget.value,
-                  );
-
-            setTempFilters({
-              ...tempFilters,
-              assessmentCompletionStatus: isNotEmptyArray(newStatuses)
-                ? newStatuses
-                : undefined,
-            });
-          },
-        },
-      },
-      {
-        label: getAssessmentLabelsAndSeverityByStatus({ isPlural: true })[
-          "to-sign"
-        ].longLabel,
-        nativeInputProps: {
-          value: "to-sign",
-          checked:
-            tempFilters.assessmentCompletionStatus?.includes("to-sign") ??
-            false,
-          onChange: (event) => {
-            const existingStatuses =
-              tempFilters.assessmentCompletionStatus ?? [];
-            const newStatuses =
-              event.currentTarget.checked &&
-              isAssessmentCompletionStatusFilter(event.currentTarget.value)
-                ? [...existingStatuses, event.currentTarget.value]
-                : existingStatuses.filter(
-                    (status) => status !== event.currentTarget.value,
-                  );
-
-            setTempFilters({
-              ...tempFilters,
-              assessmentCompletionStatus: isNotEmptyArray(newStatuses)
-                ? newStatuses
-                : undefined,
-            });
-          },
-        },
-      },
-      {
-        label: getAssessmentLabelsAndSeverityByStatus({ isPlural: true })
-          .finalized.longLabel,
-        hintText: getAssessmentLabelsAndSeverityByStatus({ isPlural: true })
-          .finalized.description,
-        nativeInputProps: {
-          value: "finalized",
-          checked:
-            tempFilters.assessmentCompletionStatus?.includes("finalized") ??
-            false,
-          onChange: (event) => {
-            const existingStatuses =
-              tempFilters.assessmentCompletionStatus ?? [];
-            const newStatuses =
-              event.currentTarget.checked &&
-              isAssessmentCompletionStatusFilter(event.currentTarget.value)
-                ? [...existingStatuses, event.currentTarget.value]
-                : existingStatuses.filter(
-                    (status) => status !== event.currentTarget.value,
-                  );
-
-            setTempFilters({
-              ...tempFilters,
-              assessmentCompletionStatus: isNotEmptyArray(newStatuses)
-                ? newStatuses
-                : undefined,
-            });
-          },
-        },
-      },
-    ],
-    [tempFilters],
-  );
-
-  const statusOptions: CheckboxProps["options"] = useMemo(
-    () =>
-      conventionStatuses.map((status) => ({
-        label: labelAndSeverityByStatus[status].label.agency,
-        nativeInputProps: {
-          value: status,
-          checked: tempFilters.statuses?.includes(status) ?? false,
-          onChange: (event) => {
-            const existingStatuses = tempFilters.statuses ?? [];
-            const newStatuses =
-              event.currentTarget.checked &&
-              isStringConventionStatus(event.currentTarget.value)
-                ? [...existingStatuses, event.currentTarget.value]
-                : existingStatuses.filter(
-                    (status) => status !== event.currentTarget.value,
-                  );
-
-            setTempFilters({
-              ...tempFilters,
-              statuses: isNotEmptyArray(newStatuses) ? newStatuses : undefined,
-            });
-          },
-        },
-      })),
-    [tempFilters],
-  );
-
   const agencyOptions: CheckboxProps["options"] = useMemo(() => {
     if (!hasManyAgencies || !currentUser?.agencyRights) return [];
 
@@ -271,29 +134,10 @@ export const ConventionList = () => {
       }));
   }, [hasManyAgencies, currentUser?.agencyRights, tempFilters]);
 
-  const startDateOptions: RadioButtonsProps["options"] = useMemo(
-    () =>
-      createDateOptions(
-        "dateStart",
-        dateFilterStates.dateStart,
-        tempFilters,
-        setDateFilterStates,
-      ),
-    [dateFilterStates.dateStart, tempFilters],
-  );
-
-  const endDateOptions: RadioButtonsProps["options"] = useMemo(
-    () =>
-      createDateOptions(
-        "dateEnd",
-        dateFilterStates.dateEnd,
-        tempFilters,
-        setDateFilterStates,
-      ),
-    [dateFilterStates.dateEnd, tempFilters],
-  );
-
-  const onSubmit = (filtersToUse = tempFilters, searchQuery?: string) => {
+  const onSubmit = (
+    filtersToUse = tempFilters,
+    searchQuery = filters.search,
+  ) => {
     if (!connectedUserJwt) return;
 
     dispatch(
@@ -302,7 +146,7 @@ export const ConventionList = () => {
         filters: {
           ...filters,
           ...filtersToUse,
-          ...(searchQuery && { search: searchQuery }),
+          search: searchQuery || undefined,
           page: 1,
           perPage: defaultPerPageInWebPagination,
         },
@@ -386,15 +230,11 @@ export const ConventionList = () => {
               label={"Listing des conventions"}
               hasViewSwitch={false}
               tableData={conventions.map((convention) => [
-                <Fragment key={`${convention.id}-counsellor`}>
-                  <strong>
-                    {getFormattedFirstnameAndLastname({
-                      firstname: convention.agencyReferent?.firstname,
-                      lastname: convention.agencyReferent?.lastname,
-                    }) || "Non communiqué"}
-                  </strong>{" "}
-                  <Tooltip kind="hover" title={convention.agencyName} />
-                </Fragment>,
+                <AgencyReferentCell
+                  key={`${convention.id}-counsellor`}
+                  agencyReferent={convention.agencyReferent}
+                  agencyName={convention.agencyName}
+                />,
                 <Fragment key={`${convention.id}-status`}>
                   <ConventionStatusBadge
                     conventionStatus={convention.status}
@@ -408,30 +248,10 @@ export const ConventionList = () => {
                   />
                 </Fragment>,
 
-                <Fragment key={`${convention.id}-beneficiary`}>
-                  <strong>
-                    {getFormattedFirstnameAndLastname({
-                      firstname: convention.beneficiary.firstName,
-                      lastname: convention.beneficiary.lastName,
-                    })}
-                  </strong>
-                  {convention.beneficiary.federatedIdentity?.provider ===
-                    "ftConnect" && (
-                    <div className={fr.cx("fr-mt-1w")}>
-                      <img
-                        src={logoFtSvg}
-                        alt=""
-                        aria-hidden="true"
-                        className={fr.cx("fr-icon--sm", "fr-mr-1w")}
-                      />
-                      <strong
-                        className={fr.cx("fr-text--sm", "fr-label--info")}
-                      >
-                        FT Connect
-                      </strong>
-                    </div>
-                  )}
-                </Fragment>,
+                <BeneficiaryCell
+                  key={`${convention.id}-beneficiary`}
+                  beneficiary={convention.beneficiary}
+                />,
                 <Fragment key={`${convention.id}-establishment`}>
                   <strong>{convention.businessName}</strong>
                 </Fragment>,
@@ -457,29 +277,19 @@ export const ConventionList = () => {
                     id: "status",
                     iconId: "fr-icon-equalizer-line",
                     defaultValue: "Tous les statuts",
-                    values:
-                      filters.statuses?.length &&
-                      filters.statuses?.length !== conventionStatuses.length
-                        ? [
-                            `${filters.statuses.length > 1 ? "Statuts" : "Statut :"}  ${
-                              filters.statuses.length > 1
-                                ? `(${filters.statuses.length})`
-                                : filters.statuses
-                                    .map(
-                                      (status) =>
-                                        labelAndSeverityByStatus[status].label
-                                          .agency,
-                                    )
-                                    .join(", ")
-                            }`,
-                          ]
-                        : ["Tous les statuts"],
+                    values: [
+                      toAppliedConventionStatusesLabel(filters.statuses),
+                    ],
                     submenu: {
                       title: "Filtrer par statut",
                       content: (
-                        <>
-                          <Checkbox options={statusOptions} />
-                        </>
+                        <Checkbox
+                          options={makeConventionStatusOptions({
+                            selectedValues: tempFilters.statuses,
+                            onChange: (statuses) =>
+                              setTempFilters({ ...tempFilters, statuses }),
+                          })}
+                        />
                       ),
                     },
                     onReset: () => {
@@ -495,27 +305,25 @@ export const ConventionList = () => {
                     id: "assessment",
                     iconId: "fr-icon-checkbox-line",
                     defaultValue: "Tous les bilans",
-                    values:
-                      filters.assessmentCompletionStatus?.length &&
-                      filters.assessmentCompletionStatus.length !==
-                        assessmentCompletionStatusFilters.length
-                        ? [
-                            filters.assessmentCompletionStatus.length === 1
-                              ? `Bilan : ${
-                                  getAssessmentLabelsAndSeverityByStatus({
-                                    isPlural: true,
-                                  })[filters.assessmentCompletionStatus[0]]
-                                    .longLabel
-                                }`
-                              : `Bilans (${filters.assessmentCompletionStatus.length})`,
-                          ]
-                        : ["Tous les bilans"],
+                    values: [
+                      toAppliedAssessmentCompletionStatusLabel(
+                        filters.assessmentCompletionStatus,
+                      ),
+                    ],
                     submenu: {
                       title: "Filtrer par statut du bilan",
                       content: (
-                        <>
-                          <Checkbox options={assessmentOptions} />
-                        </>
+                        <Checkbox
+                          options={makeAssessmentCompletionStatusOptions({
+                            selectedValues:
+                              tempFilters.assessmentCompletionStatus,
+                            onChange: (assessmentCompletionStatus) =>
+                              setTempFilters({
+                                ...tempFilters,
+                                assessmentCompletionStatus,
+                              }),
+                          })}
+                        />
                       ),
                     },
                     onReset: () => {
@@ -530,62 +338,33 @@ export const ConventionList = () => {
                   {
                     id: "dateStart",
                     iconId: "fr-icon-calendar-line",
-                    defaultValue: "Date de début",
+                    defaultValue: dateStartFilterLabels.defaultLabel,
                     values: [
-                      (() => {
-                        if (filters.dateStartFrom) {
-                          return `Démarrant après le ${filters.dateStartFrom}`;
-                        }
-                        if (filters.dateStartTo) {
-                          return `Démarrant avant le ${filters.dateStartTo}`;
-                        }
-                        return "Date de début";
-                      })(),
+                      toAppliedBeforeOrAfterDateLabel(dateStartFilterLabels, {
+                        from: filters.dateStartFrom,
+                        to: filters.dateStartTo,
+                      }),
                     ],
                     submenu: {
                       title: "Filtrer par date de début",
                       content: (
-                        <>
-                          <RadioButtons options={startDateOptions} />
-                          <div className={cx("fr-mb-2w")}>
-                            <Input
-                              label="Date"
-                              nativeInputProps={{
-                                type: "date",
-                                value: dateFilterStates.dateStart.value,
-                                onChange: (event) => {
-                                  setDateFilterStates((prev) => ({
-                                    ...prev,
-                                    dateStart: {
-                                      ...prev.dateStart,
-                                      value: event.target.value,
-                                    },
-                                  }));
-                                  const newFilters = {
-                                    ...tempFilters,
-                                    [dateFilterStates.dateStart.type]:
-                                      event.target.value || undefined,
-                                    ...(dateFilterStates.dateStart.type ===
-                                    "dateStartFrom"
-                                      ? { dateStartTo: undefined }
-                                      : { dateStartFrom: undefined }),
-                                  };
-                                  setTempFilters(newFilters);
-                                },
-                              }}
-                            />
-                          </div>
-                        </>
+                        <BeforeOrAfterDateFilter
+                          labels={dateStartFilterLabels}
+                          value={{
+                            from: tempFilters.dateStartFrom,
+                            to: tempFilters.dateStartTo,
+                          }}
+                          onChange={({ from, to }) =>
+                            setTempFilters({
+                              ...tempFilters,
+                              dateStartFrom: from,
+                              dateStartTo: to,
+                            })
+                          }
+                        />
                       ),
                     },
                     onReset: () => {
-                      setDateFilterStates((prev) => ({
-                        ...prev,
-                        dateStart: {
-                          type: "dateStartFrom",
-                          value: "",
-                        },
-                      }));
                       const newFilters = {
                         ...tempFilters,
                         dateStartFrom: undefined,
@@ -598,62 +377,33 @@ export const ConventionList = () => {
                   {
                     id: "dateEnd",
                     iconId: "fr-icon-calendar-line",
-                    defaultValue: "Date de fin",
+                    defaultValue: dateEndFilterLabels.defaultLabel,
                     values: [
-                      (() => {
-                        if (filters.dateEndFrom) {
-                          return `Se terminant après le ${filters.dateEndFrom}`;
-                        }
-                        if (filters.dateEndTo) {
-                          return `Se terminant avant le ${filters.dateEndTo}`;
-                        }
-                        return "Date de fin";
-                      })(),
+                      toAppliedBeforeOrAfterDateLabel(dateEndFilterLabels, {
+                        from: filters.dateEndFrom,
+                        to: filters.dateEndTo,
+                      }),
                     ],
                     submenu: {
                       title: "Filtrer par date de fin",
                       content: (
-                        <>
-                          <RadioButtons options={endDateOptions} />
-                          <div className={cx("fr-mb-2w")}>
-                            <Input
-                              label="Date"
-                              nativeInputProps={{
-                                type: "date",
-                                value: dateFilterStates.dateEnd.value,
-                                onChange: (event) => {
-                                  setDateFilterStates((prev) => ({
-                                    ...prev,
-                                    dateEnd: {
-                                      ...prev.dateEnd,
-                                      value: event.target.value,
-                                    },
-                                  }));
-                                  const newFilters = {
-                                    ...tempFilters,
-                                    [dateFilterStates.dateEnd.type]:
-                                      event.target.value || undefined,
-                                    ...(dateFilterStates.dateEnd.type ===
-                                    "dateEndFrom"
-                                      ? { dateEndTo: undefined }
-                                      : { dateEndFrom: undefined }),
-                                  };
-                                  setTempFilters(newFilters);
-                                },
-                              }}
-                            />
-                          </div>
-                        </>
+                        <BeforeOrAfterDateFilter
+                          labels={dateEndFilterLabels}
+                          value={{
+                            from: tempFilters.dateEndFrom,
+                            to: tempFilters.dateEndTo,
+                          }}
+                          onChange={({ from, to }) =>
+                            setTempFilters({
+                              ...tempFilters,
+                              dateEndFrom: from,
+                              dateEndTo: to,
+                            })
+                          }
+                        />
                       ),
                     },
                     onReset: () => {
-                      setDateFilterStates((prev) => ({
-                        ...prev,
-                        dateEnd: {
-                          type: "dateEndFrom",
-                          value: "",
-                        },
-                      }));
                       const newFilters = {
                         ...tempFilters,
                         dateEndFrom: undefined,
@@ -755,86 +505,4 @@ export const ConventionList = () => {
       </WithFeedbackReplacer>
     </HeadingSection>
   );
-};
-
-const isStringConventionStatus = (value: string): value is ConventionStatus =>
-  conventionStatuses.includes(value as ConventionStatus);
-
-const isAssessmentCompletionStatusFilter = (
-  value: string,
-): value is AssessmentCompletionStatusFilter =>
-  assessmentCompletionStatusFilters.some((status) => status === value);
-
-const createDateOptions = (
-  filterType: "dateStart" | "dateEnd",
-  currentState: DateFilterState,
-  tempFilters: Pick<
-    FlatGetConventionsForAgencyUserParams,
-    "dateStartFrom" | "dateStartTo" | "dateEndFrom" | "dateEndTo"
-  >,
-  setDateFilterStates: React.Dispatch<React.SetStateAction<DateFilterStates>>,
-): RadioButtonsProps["options"] => {
-  const config: {
-    dateStart: {
-      labels: { before: string; after: string };
-      types: { to: "dateStartTo"; from: "dateStartFrom" };
-      values: { to: string | undefined; from: string | undefined };
-    };
-    dateEnd: {
-      labels: { before: string; after: string };
-      types: { to: "dateEndTo"; from: "dateEndFrom" };
-      values: { to: string | undefined; from: string | undefined };
-    };
-  } = {
-    dateStart: {
-      labels: { before: "Démarrant avant le", after: "Démarrant après le" },
-      types: { to: "dateStartTo", from: "dateStartFrom" },
-      values: { to: tempFilters.dateStartTo, from: tempFilters.dateStartFrom },
-    },
-    dateEnd: {
-      labels: {
-        before: "Se terminant avant le",
-        after: "Se terminant après le",
-      },
-      types: { to: "dateEndTo", from: "dateEndFrom" },
-      values: { to: tempFilters.dateEndTo, from: tempFilters.dateEndFrom },
-    },
-  };
-
-  const { labels, types, values } = config[filterType];
-
-  return [
-    {
-      label: labels.before,
-      nativeInputProps: {
-        value: types.to,
-        defaultChecked: currentState.type === types.to,
-        onChange: () => {
-          setDateFilterStates((prev) => ({
-            ...prev,
-            [filterType]: {
-              type: types.to,
-              value: values.to || "",
-            },
-          }));
-        },
-      },
-    },
-    {
-      label: labels.after,
-      nativeInputProps: {
-        value: types.from,
-        defaultChecked: currentState.type === types.from,
-        onChange: () => {
-          setDateFilterStates((prev) => ({
-            ...prev,
-            [filterType]: {
-              type: types.from,
-              value: values.from || "",
-            },
-          }));
-        },
-      },
-    },
-  ];
 };
