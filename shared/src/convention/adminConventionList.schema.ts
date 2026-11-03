@@ -1,18 +1,10 @@
 import { z } from "zod";
 import { agencyKindSchema } from "../agency/agency.schema";
-import { businessNameSchema } from "../establishment/businessComponents.schema";
-import { ftConnectIdentityWithoutTokenSchema } from "../federatedIdentities/federatedIdentity.schema";
 import type { DataWithPagination } from "../pagination/pagination.dto";
 import {
   createPaginatedSchema,
   paginationQueryParamsSchema,
 } from "../pagination/pagination.schema";
-import { appellationAndRomeDtoSchema } from "../romeAndAppellationDtos/romeAndAppellation.schema";
-import { siretSchema } from "../siret/siret.schema";
-import {
-  firstnameMandatorySchema,
-  lastnameMandatorySchema,
-} from "../user/user.schema";
 import { makeDateStringSchema } from "../utils/date";
 import {
   localization,
@@ -23,38 +15,20 @@ import {
   adminConventionListTextFilterMinLength,
   type FlatGetConventionsForAdminParams,
 } from "./adminConventionList.dto";
+import { agencyUserConventionListDtoSchema } from "./agencyUserConventionList.schema";
 import {
-  conventionDateEndSchema,
-  conventionDateStartSchema,
-  conventionIdSchema,
-  conventionStatusSchema,
+  assessmentCompletionStatusFilterSchema,
   statusSchema,
 } from "./convention.schema";
-import { conventionDraftIdSchema } from "./conventionDraftId";
 
 export const adminConventionListDtoSchema: ZodSchemaWithInputMatchingOutput<AdminConventionListDto> =
-  z.object({
-    id: conventionIdSchema,
-    sourceConventionDraftId: conventionDraftIdSchema.optional(),
-    status: conventionStatusSchema,
-    dateSubmission: makeDateStringSchema(),
-    agency: z.object({
-      name: z.string(),
-      kind: agencyKindSchema,
-      refersToAgencyName: z.string().nullable(),
-      departmentName: z.string().nullable(),
+  agencyUserConventionListDtoSchema.and(
+    z.object({
+      agencyKind: agencyKindSchema,
+      agencyDepartmentName: z.string().nullable(),
+      agencyRefersToAgencyName: z.string().nullable(),
     }),
-    businessName: businessNameSchema,
-    siret: siretSchema,
-    immersionAppellation: appellationAndRomeDtoSchema,
-    dateStart: conventionDateStartSchema,
-    dateEnd: conventionDateEndSchema,
-    beneficiary: z.object({
-      firstName: firstnameMandatorySchema,
-      lastName: lastnameMandatorySchema,
-      federatedIdentity: ftConnectIdentityWithoutTokenSchema.optional(),
-    }),
-  });
+  );
 
 export const paginatedAdminConventionListSchema: ZodSchemaWithInputMatchingOutput<
   DataWithPagination<AdminConventionListDto>
@@ -74,6 +48,12 @@ export const flatGetConventionsForAdminParamsSchema: ZodSchemaWithInputMatchingO
     z.object({
       search: textFilterSchema,
       statuses: z.tuple([statusSchema], statusSchema).optional(),
+      assessmentCompletionStatus: z
+        .tuple(
+          [assessmentCompletionStatusFilterSchema],
+          assessmentCompletionStatusFilterSchema,
+        )
+        .optional(),
       agencyNameContains: textFilterSchema,
       dateStartFrom: makeDateStringSchema().optional(),
       dateStartTo: makeDateStringSchema().optional(),

@@ -702,25 +702,16 @@ describe("ConnectedUserConventionList", () => {
   describe("adminConventionList", () => {
     const adminConvention: AdminConventionListDto = {
       id: "admin-convention-1",
-      sourceConventionDraftId: "draft-1",
       status: "IN_REVIEW",
-      dateSubmission: "2024-01-05",
-      agency: {
-        name: "Mission locale de Paris",
-        kind: "mission-locale",
-        refersToAgencyName: null,
-        departmentName: "Paris",
-      },
-      businessName: "Boulangerie",
-      siret: "12345678901234",
-      immersionAppellation: {
-        romeCode: "D1102",
-        romeLabel: "Boulangerie - viennoiserie",
-        appellationCode: "11573",
-        appellationLabel: "Boulanger / Boulangère",
-      },
       dateStart: "2024-01-15",
       dateEnd: "2024-01-20",
+      businessName: "Boulangerie",
+      agencyName: "Mission locale de Paris",
+      agencyKind: "mission-locale",
+      agencyDepartmentName: "Paris",
+      agencyRefersToAgencyName: null,
+      agencyReferent: { firstname: "Martine", lastname: "Référente" },
+      assessment: null,
       beneficiary: {
         firstName: "John",
         lastName: "Doe",
