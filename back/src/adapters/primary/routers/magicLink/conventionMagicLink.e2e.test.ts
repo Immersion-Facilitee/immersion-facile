@@ -3,11 +3,11 @@ import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
   type ConnectedUserJwtPayload,
+  type ConventionActorRole,
   type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
   type ConventionMagicLinkRoutes,
-  type ConventionRole,
   conventionMagicLinkRoutes,
   currentJwtVersions,
   defaultProConnectInfos,
@@ -257,7 +257,7 @@ describe("Magic link router", () => {
       role,
       conventionId,
     }: {
-      role: ConventionRole;
+      role: ConventionActorRole;
       conventionId: ConventionId;
     }) =>
       generateConventionJwt({
@@ -268,68 +268,6 @@ describe("Magic link router", () => {
         exp: Date.now() / 1000 + 1000,
         emailHash: "my-hash",
       });
-
-    it("200 - Creates a convention with provided data and convention jwt", async () => {
-      const existingConvention = new ConventionDtoBuilder()
-        .withStatus("ACCEPTED_BY_VALIDATOR")
-        .build();
-      inMemoryUow.conventionRepository.setConventions([existingConvention]);
-      const renewedConventionStartDate = addDays(
-        new Date(existingConvention.dateEnd),
-        1,
-      );
-      const renewedConventionEndDate = addDays(renewedConventionStartDate, 5);
-      const renewedConventionParams: RenewConventionParams = {
-        id: "22222222-2222-4222-9222-222222222222",
-        dateStart: renewedConventionStartDate.toISOString(),
-        dateEnd: renewedConventionEndDate.toISOString(),
-        schedule: new ScheduleDtoBuilder()
-          .withReasonableScheduleInInterval({
-            start: renewedConventionStartDate,
-            end: renewedConventionEndDate,
-          })
-          .build(),
-        renewed: {
-          from: existingConvention.id,
-          justification: "Il faut bien...",
-        },
-      };
-      const response = await request
-        .post(conventionMagicLinkRoutes.renewConvention.url)
-        .send(renewedConventionParams)
-        .set({
-          authorization: generateConventionJwt({
-            applicationId: existingConvention.id,
-            role: "validator",
-            version: 1,
-            iat: Date.now() / 1000,
-            exp: Date.now() / 1000 + 1000,
-            emailHash: "my-hash",
-          }),
-        });
-
-      expectToEqual(response.body, "");
-      expectToEqual(response.status, 200);
-      expectToEqual(inMemoryUow.conventionRepository.conventions, [
-        existingConvention,
-        {
-          ...existingConvention,
-          ...renewedConventionParams,
-          dateSubmission: gateways.timeGateway.now().toISOString(),
-          signatories: {
-            beneficiary: {
-              ...existingConvention.signatories.beneficiary,
-              signedAt: undefined,
-            },
-            establishmentRepresentative: {
-              ...existingConvention.signatories.establishmentRepresentative,
-              signedAt: undefined,
-            },
-          },
-          status: "READY_TO_SIGN",
-        },
-      ]);
-    });
 
     it("200 - Creates a convention with provided data and backoffice jwt", async () => {
       const existingConvention = new ConventionDtoBuilder()
@@ -487,10 +425,7 @@ describe("Magic link router", () => {
         .post(conventionMagicLinkRoutes.renewConvention.url)
         .send(renewedConventionParams)
         .set({
-          authorization: createTokenForRole({
-            role: "counsellor",
-            conventionId: existingConvention.id,
-          }),
+          authorization: generateConnectedUserJwt(backofficeAdminJwtPayload),
         });
 
       expectToEqual(response.body, {
@@ -1198,45 +1133,6 @@ describe("Magic link router", () => {
       });
     });
 
-    it("400 - validator magic link JWT has no magic link", async () => {
-      inMemoryUow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
-        }),
-      ];
-      inMemoryUow.userRepository.users = [
-        establishmentRepresentativeUser,
-        validator,
-      ];
-
-      const validatorJwt = generateConventionJwt(
-        createConventionMagicLinkPayload({
-          id: convention.id,
-          role: "validator",
-          email: validator.email,
-          now: new Date(),
-        }),
-      );
-
-      const response = await httpClient.sendSignatureLink({
-        body: {
-          conventionId: convention.id,
-          signatoryRole: "establishment-representative",
-          notificationKind: "sms",
-        },
-        headers: { authorization: validatorJwt },
-      });
-
-      expectHttpResponseToEqual(response, {
-        status: 400,
-        body: {
-          status: 400,
-          message: errors.convention.roleHasNoMagicLink({ role: "validator" })
-            .message,
-        },
-      });
-    });
-
     it("401 - invalid JWT", async () => {
       const response = await httpClient.sendSignatureLink({
         body: {
@@ -1259,7 +1155,7 @@ describe("Magic link router", () => {
       const jwt = generateConventionJwt(
         createConventionMagicLinkPayload({
           id: unknownConventionId,
-          role: "validator",
+          role: "beneficiary",
           email: "validator@mail.com",
           now: new Date(),
         }),
@@ -1305,8 +1201,8 @@ describe("Magic link router", () => {
       const jwt = generateConventionJwt(
         createConventionMagicLinkPayload({
           id: convention.id,
-          role: "validator",
-          email: "validator@mail.com",
+          role: "beneficiary",
+          email: convention.signatories.beneficiary.email,
           now: new Date(),
         }),
       );
@@ -1326,7 +1222,7 @@ describe("Magic link router", () => {
           status: 403,
           message: errors.convention.forbiddenConventionIdMismatch({
             jwtConventionId: convention.id,
-            jwtRole: "validator",
+            jwtRole: "beneficiary",
             requestedConventionId: anotherConventionId,
           }).message,
         },

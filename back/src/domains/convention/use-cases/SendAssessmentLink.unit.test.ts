@@ -6,7 +6,6 @@ import {
   ConnectedUserBuilder,
   type ConnectedUserDomainJwtPayload,
   ConventionDtoBuilder,
-  type ConventionRole,
   defaultMonthsThresholdForConventionsListing,
   defaultPhoneNumber,
   type EstablishmentRole,
@@ -388,38 +387,6 @@ describe("SendAssessmentLink", () => {
     });
 
     describe("from magiclink", () => {
-      it.each(["agency-admin", "agency-viewer", "to-review"] as AgencyRole[])(
-        "throws unauthorized if user has not enough rights on agency",
-        async (role) => {
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [notConnectedUser.id]: {
-                roles: [role],
-                isNotifiedByEmail: true,
-              },
-            }),
-          ];
-
-          const notConnectedUserJwtPayload = createConventionMagicLinkPayload({
-            id: convention.id,
-            role: role as ConventionRole,
-            email: notConnectedUser.email,
-            now: new Date(),
-          });
-
-          await expectPromiseToFailWithError(
-            usecase.execute(
-              {
-                conventionId: convention.id,
-                notificationKind: "sms",
-              },
-              notConnectedUserJwtPayload,
-            ),
-            errors.assessment.sendAssessmentLinkForbidden(),
-          );
-        },
-      );
-
       it.each([
         "beneficiary-representative",
         "beneficiary",

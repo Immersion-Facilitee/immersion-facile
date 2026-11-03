@@ -1,7 +1,6 @@
 import { subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
-  allRoles,
   allSignatoryRoles,
   type BeneficiaryCurrentEmployer,
   type BeneficiaryRepresentative,
@@ -10,8 +9,8 @@ import {
   type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
-  type ConventionRole,
   type ConventionStatus,
+  conventionActorRoles,
   conventionStatuses,
   defaultMonthsThresholdForConventionsListing,
   type EstablishmentRepresentative,
@@ -89,9 +88,9 @@ describe("Sign convention", () => {
   });
 
   const [allowedToSignRoles, forbiddenToSignRoles] =
-    splitCasesBetweenPassingAndFailing(allRoles, allSignatoryRoles);
+    splitCasesBetweenPassingAndFailing(conventionActorRoles, allSignatoryRoles);
 
-  const allowedRole = allRoles[0];
+  const allowedRole = allowedToSignRoles[0];
 
   const [allowedInitialStatuses, forbiddenInitialStatuses] =
     splitCasesBetweenPassingAndFailing(conventionStatuses, [
@@ -143,7 +142,7 @@ describe("Sign convention", () => {
             signConvention.execute(
               { conventionId },
               {
-                role: role as ConventionRole,
+                role,
                 applicationId: conventionId,
                 emailHash: "toto",
               },

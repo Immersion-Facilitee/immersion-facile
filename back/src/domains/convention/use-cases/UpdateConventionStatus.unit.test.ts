@@ -14,10 +14,10 @@ import {
   ForbiddenError,
   makeBooleanFeatureFlag,
   reasonableSchedule,
+  type UserId,
   validSignatoryRoles,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
-import { createConventionMagicLinkPayload } from "../../../utils/jwt";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import { createInMemoryUow } from "../../core/unit-of-work/adapters/createInMemoryUow";
@@ -31,6 +31,8 @@ import {
   executeUpdateConventionStatusUseCase,
   rejectStatusTransitionTests,
   setupInitialState,
+  userWithRoleCounsellor,
+  userWithRoleValidator,
 } from "./UpdateConventionStatus.testHelpers";
 
 describe("UpdateConventionStatus", () => {
@@ -41,11 +43,7 @@ describe("UpdateConventionStatus", () => {
         conventionId: conventionWithAgencyOneStepValidationId,
       },
       expectedDomainTopic: null,
-      allowedMagicLinkRoles: [
-        ...validSignatoryRoles,
-        "validator",
-        "counsellor",
-      ],
+      allowedMagicLinkRoles: [...validSignatoryRoles],
       allowedConnectedUsers: [
         "userWithRoleEstablishmentRepresentative",
         "userWithRoleBeneficiary",
@@ -65,11 +63,7 @@ describe("UpdateConventionStatus", () => {
         status: "READY_TO_SIGN",
         conventionId: conventionWithAgencyOneStepValidationId,
       },
-      allowedMagicLinkRoles: [
-        ...validSignatoryRoles,
-        "validator",
-        "counsellor",
-      ],
+      allowedMagicLinkRoles: validSignatoryRoles,
       allowedConnectedUsers: [
         "userWithRoleEstablishmentRepresentative",
         "userWithRoleBeneficiary",
@@ -135,19 +129,19 @@ describe("UpdateConventionStatus", () => {
         },
       },
       expectedDomainTopic: "ConventionAcceptedByCounsellor",
-      allowedMagicLinkRoles: ["counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: ["userWithRoleCounsellor"],
       allowedInitialStatuses: ["IN_REVIEW"],
     });
     rejectStatusTransitionTests({
       updateStatusParams: {
         status: "ACCEPTED_BY_COUNSELLOR",
-        conventionId: conventionWithAgencyOneStepValidationId,
+        conventionId: conventionWithAgencyTwoStepsValidationId,
         firstname: "Counsellor Firstname",
         lastname: "Counsellor Lastname",
         isAlsoAgencyReferent: false,
       },
-      allowedMagicLinkRoles: ["counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: ["userWithRoleCounsellor"],
       allowedInitialStatuses: ["IN_REVIEW"],
     });
@@ -164,7 +158,7 @@ describe("UpdateConventionStatus", () => {
         isAlsoAgencyReferent: false,
       },
       expectedDomainTopic: "ConventionAcceptedByValidator",
-      allowedMagicLinkRoles: ["validator"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleValidator",
         "userWithRoleBackofficeAdminAndValidator",
@@ -189,7 +183,7 @@ describe("UpdateConventionStatus", () => {
         lastname: "Validator Lastname",
         isAlsoAgencyReferent: false,
       },
-      allowedMagicLinkRoles: ["validator"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleValidator",
         "userWithRoleBackofficeAdminAndValidator",
@@ -207,7 +201,7 @@ describe("UpdateConventionStatus", () => {
           isAlsoAgencyReferent: false,
         },
         expectedDomainTopic: "ConventionAcceptedByValidator",
-        allowedMagicLinkRoles: ["validator"],
+        allowedMagicLinkRoles: [],
         allowedConnectedUsers: [
           "userWithRoleValidator",
           "userWithRoleBackofficeAdminAndValidator",
@@ -226,23 +220,15 @@ describe("UpdateConventionStatus", () => {
       });
 
       it("rejects ACCEPTED_BY_VALIDATOR from IN_REVIEW when counsellor validation is required", async () => {
-        const {
-          updateConventionStatusUseCase,
-          conventionRepository,
-          timeGateway,
-        } = setupInitialState({
-          initialStatus: "IN_REVIEW",
-          conventionId: conventionWithAgencyTwoStepsValidationId,
-        });
+        const { updateConventionStatusUseCase, conventionRepository } =
+          setupInitialState({
+            initialStatus: "IN_REVIEW",
+            conventionId: conventionWithAgencyTwoStepsValidationId,
+          });
 
         await expectPromiseToFailWithError(
           executeUpdateConventionStatusUseCase({
-            jwtPayload: createConventionMagicLinkPayload({
-              id: conventionWithAgencyTwoStepsValidationId,
-              role: "validator",
-              email: "",
-              now: timeGateway.now(),
-            }),
+            jwtPayload: { userId: userWithRoleValidator.id },
             updateStatusParams: {
               status: "ACCEPTED_BY_VALIDATOR",
               conventionId: conventionWithAgencyTwoStepsValidationId,
@@ -280,13 +266,6 @@ describe("UpdateConventionStatus", () => {
 
         uow.conventionRepository.setConventions([convention]);
 
-        const validatorJwtPayload = createConventionMagicLinkPayload({
-          id: convention.id,
-          role: "validator",
-          email: user.email,
-          now: new Date(),
-        });
-
         await updateConventionStatusUseCase.execute(
           {
             status: "ACCEPTED_BY_VALIDATOR",
@@ -295,7 +274,7 @@ describe("UpdateConventionStatus", () => {
             lastname: "Validator",
             isAlsoAgencyReferent: false,
           },
-          validatorJwtPayload,
+          { userId: user.id },
         );
 
         expectObjectInArrayToMatch(uow.conventionRepository.conventions, [
@@ -317,7 +296,7 @@ describe("UpdateConventionStatus", () => {
       },
       expectedDomainTopic: "ConventionRejected",
       updatedFields: { statusJustification: "my rejection justification" },
-      allowedMagicLinkRoles: ["validator", "counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleValidator",
         "userWithRoleBackofficeAdmin",
@@ -338,7 +317,7 @@ describe("UpdateConventionStatus", () => {
       },
       expectedDomainTopic: "ConventionRejected",
       updatedFields: { statusJustification: "my rejection justification" },
-      allowedMagicLinkRoles: ["validator", "counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleCounsellor",
         "userWithRoleValidator",
@@ -361,7 +340,7 @@ describe("UpdateConventionStatus", () => {
       },
       expectedDomainTopic: "ConventionRejected",
       updatedFields: { statusJustification: "my rejection justification" },
-      allowedMagicLinkRoles: ["validator", "counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleValidator",
         "userWithRoleCounsellor",
@@ -381,7 +360,7 @@ describe("UpdateConventionStatus", () => {
         statusJustification: "my rejection justification",
         conventionId: conventionWithAgencyOneStepValidationId,
       },
-      allowedMagicLinkRoles: ["validator", "counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleValidator",
         "userWithRoleCounsellor",
@@ -406,7 +385,7 @@ describe("UpdateConventionStatus", () => {
       },
       expectedDomainTopic: "ConventionCancelled",
       updatedFields: { statusJustification: "Cancelled justification" },
-      allowedMagicLinkRoles: ["validator", "counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleValidator",
         "userWithRoleBackofficeAdmin",
@@ -421,7 +400,7 @@ describe("UpdateConventionStatus", () => {
         statusJustification: "Cancelled justification",
         conventionId: conventionWithAgencyTwoStepsValidationId,
       },
-      allowedMagicLinkRoles: ["validator", "counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleValidator",
         "userWithRoleBackofficeAdmin",
@@ -432,24 +411,16 @@ describe("UpdateConventionStatus", () => {
     });
 
     it("fails when trying to cancel a convention with an assessment", async () => {
-      const {
-        updateConventionStatusUseCase,
-        conventionRepository,
-        timeGateway,
-      } = await setupInitialState({
-        initialStatus: "ACCEPTED_BY_VALIDATOR",
-        conventionId: conventionWithAgencyOneStepValidationId,
-        hasAssessment: true,
-      });
+      const { updateConventionStatusUseCase, conventionRepository } =
+        await setupInitialState({
+          initialStatus: "ACCEPTED_BY_VALIDATOR",
+          conventionId: conventionWithAgencyOneStepValidationId,
+          hasAssessment: true,
+        });
 
       await expectPromiseToFailWithError(
         executeUpdateConventionStatusUseCase({
-          jwtPayload: createConventionMagicLinkPayload({
-            id: conventionWithAgencyOneStepValidationId,
-            email: "test@test.fr",
-            role: "validator",
-            now: timeGateway.now(),
-          }),
+          jwtPayload: { userId: userWithRoleValidator.id },
           updateStatusParams: {
             status: "CANCELLED",
             conventionId: conventionWithAgencyOneStepValidationId,
@@ -472,7 +443,7 @@ describe("UpdateConventionStatus", () => {
       },
       expectedDomainTopic: "ConventionDeprecated",
       updatedFields: { statusJustification: "my deprecation justification" },
-      allowedMagicLinkRoles: ["validator", "counsellor"],
+      allowedMagicLinkRoles: [],
       allowedConnectedUsers: [
         "userWithRoleCounsellor",
         "userWithRoleValidator",
@@ -493,7 +464,7 @@ describe("UpdateConventionStatus", () => {
       const storedConvention = await updateConventionStatusWithValidator({
         conventionId: conventionWithAgencyOneStepValidationId,
         status: "ACCEPTED_BY_VALIDATOR",
-        role: "validator",
+        userId: userWithRoleValidator.id,
         isAlsoAgencyReferent: true,
       });
 
@@ -507,7 +478,7 @@ describe("UpdateConventionStatus", () => {
       const storedConvention = await updateConventionStatusWithValidator({
         conventionId: conventionWithAgencyTwoStepsValidationId,
         status: "ACCEPTED_BY_COUNSELLOR",
-        role: "counsellor",
+        userId: userWithRoleCounsellor.id,
         isAlsoAgencyReferent: true,
       });
 
@@ -521,7 +492,7 @@ describe("UpdateConventionStatus", () => {
       const storedConvention = await updateConventionStatusWithValidator({
         conventionId: conventionWithAgencyOneStepValidationId,
         status: "ACCEPTED_BY_VALIDATOR",
-        role: "validator",
+        userId: userWithRoleValidator.id,
         isAlsoAgencyReferent: false,
       });
 
@@ -534,7 +505,6 @@ describe("UpdateConventionStatus", () => {
         updateConventionStatusUseCase,
         conventionRepository,
         outboxRepository,
-        timeGateway,
       } = setupInitialState({
         initialStatus: "IN_REVIEW",
         conventionId: conventionWithAgencyOneStepValidationId,
@@ -548,12 +518,7 @@ describe("UpdateConventionStatus", () => {
             firstname: "Actor Firstname",
             lastname: "Actor Lastname",
           },
-          createConventionMagicLinkPayload({
-            id: originalConvention.id,
-            role: "validator",
-            email: "",
-            now: timeGateway.now(),
-          }),
+          { userId: userWithRoleValidator.id },
         ),
         errors.convention.isAlsoAgencyReferentRequired(),
       );
@@ -573,7 +538,7 @@ describe("UpdateConventionStatus", () => {
       const storedConvention = await updateConventionStatusWithValidator({
         conventionId: conventionWithAgencyOneStepValidationId,
         status: "ACCEPTED_BY_VALIDATOR",
-        role: "validator",
+        userId: userWithRoleValidator.id,
         isAlsoAgencyReferent: true,
         agencyReferent: existingAgencyReferent,
       });
@@ -586,7 +551,7 @@ describe("UpdateConventionStatus", () => {
     const missingConventionId: ConventionId =
       "add5c20e-6dd2-45af-affe-000000000000";
 
-    const { updateConventionStatusUseCase, conventionRepository, timeGateway } =
+    const { updateConventionStatusUseCase, conventionRepository } =
       await setupInitialState({
         initialStatus: "IN_REVIEW",
         conventionId: missingConventionId,
@@ -594,12 +559,7 @@ describe("UpdateConventionStatus", () => {
 
     await expectPromiseToFailWithError(
       executeUpdateConventionStatusUseCase({
-        jwtPayload: createConventionMagicLinkPayload({
-          id: missingConventionId,
-          email: "test@test.fr",
-          role: "validator",
-          now: timeGateway.now(),
-        }),
+        jwtPayload: { userId: userWithRoleValidator.id },
         updateStatusParams: {
           status: "ACCEPTED_BY_VALIDATOR",
           conventionId: missingConventionId,
@@ -682,12 +642,7 @@ describe("UpdateConventionStatus", () => {
       await expectPromiseToFailWithError(
         updateConventionStatusUseCase.execute(
           { status: "READY_TO_SIGN", conventionId: convention.id },
-          createConventionMagicLinkPayload({
-            id: convention.id,
-            role: "validator",
-            email: user.email,
-            now: timeGateway.now(),
-          }),
+          { userId: user.id },
         ),
         errors.convention.archived({ conventionId: convention.id }),
       );
@@ -720,13 +675,13 @@ const prepareUseCaseForStandAloneTests = () => {
 const updateConventionStatusWithValidator = async ({
   conventionId,
   status,
-  role,
+  userId,
   isAlsoAgencyReferent,
   agencyReferent,
 }: {
   conventionId: ConventionId;
   status: "ACCEPTED_BY_COUNSELLOR" | "ACCEPTED_BY_VALIDATOR";
-  role: "counsellor" | "validator";
+  userId: UserId;
   isAlsoAgencyReferent: boolean;
   agencyReferent?: { firstname: string; lastname: string };
 }): Promise<ConventionDto> => {
@@ -734,7 +689,6 @@ const updateConventionStatusWithValidator = async ({
     originalConvention,
     updateConventionStatusUseCase,
     conventionRepository,
-    timeGateway,
   } = setupInitialState({
     initialStatus: "IN_REVIEW",
     conventionId,
@@ -748,12 +702,7 @@ const updateConventionStatusWithValidator = async ({
     ]);
 
   return executeUpdateConventionStatusUseCase({
-    jwtPayload: createConventionMagicLinkPayload({
-      id: originalConvention.id,
-      role,
-      email: "",
-      now: timeGateway.now(),
-    }),
+    jwtPayload: { userId },
     updateStatusParams: {
       status,
       conventionId: originalConvention.id,

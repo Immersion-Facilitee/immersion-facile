@@ -18,7 +18,6 @@ import {
   type Role,
   type User,
 } from "shared";
-import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import { throwForbiddenIfNotAllowedForAssessments } from "../../../utils/assessment";
 import { makeEmailHash } from "../../../utils/jwt";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
@@ -65,7 +64,6 @@ export const makeCreateAssessment = useCaseBuilder("CreateAssessment")
       await throwForbiddenIfNotAllowedForAssessments({
         mode: "CreateAssessment",
         convention,
-        agency: await agencyWithRightToAgencyDto(uow, agency),
         jwtPayload: conventionJwtPayload,
         uow,
       });
