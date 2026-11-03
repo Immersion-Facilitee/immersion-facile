@@ -3,8 +3,6 @@ import { fileURLToPath } from "node:url";
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 
-import { registerTool } from "../lib/registerTool";
-
 const legalFrameworkPath = fileURLToPath(
   new URL("../../skill/references/legal-framework.md", import.meta.url),
 );
@@ -14,8 +12,7 @@ const sourcesPath = fileURLToPath(
 );
 
 export const registerGetLegalInfoTool = (server: McpServer) => {
-  registerTool<{ question: string }>(
-    server,
+  server.registerTool(
     "get_legal_info",
     {
       description: `
@@ -28,14 +25,14 @@ duration, convention, remuneration, insurance, rights and obligations,
 host companies, prescribers, or the regulatory framework surrounding
 a professional immersion.
       `.trim(),
-      inputSchema: {
+      inputSchema: z.object({
         question: z
           .string()
           .min(1)
           .describe(
             "The user's question about PMSMP or the legal framework of professional immersions.",
           ),
-      },
+      }),
     },
     async ({ question }) => {
       const [legalFramework, sources] = await Promise.all([

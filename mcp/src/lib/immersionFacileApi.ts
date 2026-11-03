@@ -1,4 +1,3 @@
-import axios, { type AxiosInstance } from "axios";
 import {
   type AbsoluteUrl,
   type AppellationCode,
@@ -10,16 +9,8 @@ import {
   type SearchImmersionResultPublicV3,
   toAbsoluteUrl,
 } from "shared";
-import { createAxiosSharedClient } from "shared-routes/axios";
+import { createFetchSharedClient } from "shared-routes/fetch";
 import { match, P } from "ts-pattern";
-
-const DEFAULT_API_BASE_URL = "https://immersion-facile.beta.gouv.fr/api";
-const DEFAULT_FRONT_BASE_URL = "https://immersion-facile.beta.gouv.fr";
-
-export type SearchImmersionOffersParams = GetOffersFlatParamsPublicV3;
-export type ImmersionOffer = SearchImmersionResultPublicV3;
-export type SearchImmersionOffersResult =
-  DataWithPagination<SearchImmersionResultPublicV3>;
 
 export class ImmersionFacileApiError extends Error {
   readonly status: number;
@@ -33,18 +24,34 @@ export class ImmersionFacileApiError extends Error {
   }
 }
 
-export const getApiBaseUrl = () =>
-  process.env.IMMERSION_FACILE_API_BASE_URL?.replace(/\/$/, "") ??
-  DEFAULT_API_BASE_URL;
+const getDomain = () => {
+  const domain = process.env.DOMAIN?.trim();
 
-export const getFrontBaseUrl = (): AbsoluteUrl =>
-  toAbsoluteUrl(
-    process.env.IMMERSION_FACILE_FRONT_BASE_URL?.replace(/\/$/, "") ??
-      DEFAULT_FRONT_BASE_URL,
+  if (!domain) {
+    throw new ImmersionFacileApiError(
+      500,
+      "DOMAIN is not configured on the MCP server.",
+    );
+  }
+
+  return domain.replace(/\/$/, "");
+};
+
+export const getFrontBaseUrl = (): AbsoluteUrl => {
+  const domain = getDomain();
+  return toAbsoluteUrl(
+    domain.includes("localhost") ? `http://${domain}` : `https://${domain}`,
   );
+};
+
+export const getApiBaseUrl = (): AbsoluteUrl =>
+  toAbsoluteUrl(`${getFrontBaseUrl()}/api`);
 
 export const buildOfferUrl = (
-  offer: Pick<ImmersionOffer, "siret" | "locationId" | "appellations">,
+  offer: Pick<
+    SearchImmersionResultPublicV3,
+    "siret" | "locationId" | "appellations"
+  >,
   preferredAppellationCodes?: AppellationCode[],
 ): string | undefined => {
   const preferredCode = preferredAppellationCodes?.find((code) =>
@@ -82,21 +89,14 @@ const getApiToken = () => {
   return token;
 };
 
-const createApiClient = () => {
-  const axiosInstance: AxiosInstance = axios.create({
+const createApiClient = () =>
+  createFetchSharedClient(publicApiV3SearchEstablishmentRoutes, fetch, {
     baseURL: getApiBaseUrl(),
-    validateStatus: () => true,
   });
 
-  return createAxiosSharedClient(
-    publicApiV3SearchEstablishmentRoutes,
-    axiosInstance,
-  );
-};
-
 export const searchImmersionOffers = async (
-  params: SearchImmersionOffersParams,
-): Promise<SearchImmersionOffersResult> => {
+  params: GetOffersFlatParamsPublicV3,
+): Promise<DataWithPagination<SearchImmersionResultPublicV3>> => {
   const response = await createApiClient().getOffers({
     headers: { authorization: getApiToken() },
     queryParams: params,

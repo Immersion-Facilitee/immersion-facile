@@ -8,7 +8,6 @@ import { toNodeHandler } from "@modelcontextprotocol/node";
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 
 import { registerGetLegalInfoTool } from "./tools/getLegalInfo";
-import { registerHealthCheckTool } from "./tools/healthCheck";
 import { registerSearchImmersionOffersTool } from "./tools/searchImmersionOffers";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -34,7 +33,6 @@ const createImmersionFacileMcpServer = () => {
     },
   );
 
-  registerHealthCheckTool(server);
   registerGetLegalInfoTool(server);
   registerSearchImmersionOffersTool(server);
 
