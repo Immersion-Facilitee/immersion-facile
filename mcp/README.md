@@ -6,13 +6,28 @@ L'objectif est de proposer progressivement une nouvelle façon de s'informer sur
 
 Le plugin s'appuie autant que possible sur les services et APIs déjà exposés par Immersion Facilitée.
 
+## Transport
+
+Le serveur MCP écoute en **HTTP** (pas de transport stdio pour l'instant), sur `HOST` / `PORT` (défaut `127.0.0.1:3100`).
+
+Endpoint typique pour un connecteur (ChatGPT / client MCP HTTP) :
+
+```text
+http://127.0.0.1:3100
+```
+
+Le bind loopback est volontaire : le serveur n'a pas d'auth MCP. Ne pas exposer hors localhost sans reverse-proxy / auth.
+
 ## Fonctionnalités
 
 ### V0 — Cadre légal de l'immersion
 
-La première version permet à ChatGPT de répondre aux questions concernant le cadre légal des **Périodes de Mise en Situation en Milieu Professionnel (PMSMP)**.
+La première version permet de répondre aux questions concernant le cadre légal des **Périodes de Mise en Situation en Milieu Professionnel (PMSMP)**.
 
-Cette fonctionnalité repose uniquement sur une **skill** et des ressources de référence officielles. Elle ne nécessite pas de serveur MCP.
+Elle repose sur :
+
+* une **skill** et des ressources de référence officielles (`mcp/skill/`) ;
+* le tool MCP `get_legal_info`, qui injecte ces références dans le contexte du modèle.
 
 Exemples de questions :
 
@@ -24,7 +39,7 @@ Exemples de questions :
 
 ### V1 — Recherche d'immersion
 
-Le serveur MCP expose le tool `search_immersion_offers`, qui interroge l'API publique Immersion Facilitée (v3) pour trouver des entreprises accueillantes.
+Le serveur MCP expose aussi le tool `search_immersion_offers`, qui interroge l'API publique Immersion Facilitée (v3) pour trouver des entreprises accueillantes.
 
 Exemple :
 
@@ -47,13 +62,13 @@ pnpm start
 # ou depuis la racine du monorepo : pnpm mcp start
 ```
 
-**Important :** redémarrer le serveur MCP après avoir modifié `.env`. Si le client démarre le process lui-même (stdio), vous pouvez aussi passer ces variables dans le bloc `env` de la config MCP.
+**Important :** redémarrer le serveur MCP après avoir modifié `.env`.
 
 Le token est envoyé dans le header `authorization` des appels à `GET /api/v3/offers`.
 
 #### Paramètres du tool
 
-Alignés sur `GetOffersFlatParamsPublicV3` (`shared/src/search/GetOffersPublicV3.dto.ts`) :
+Alignés sur `GetOffersFlatParamsPublicV3` / `getOffersFlatParamsSchemaPublicV3Schema` (`shared`) :
 
 | Paramètre | Description |
 | --- | --- |
@@ -78,4 +93,3 @@ Pas de paramètre texte libre `job` : le métier passe par `appellationCodes`.
 Permettre d'accompagner l'utilisateur dans la préparation d'une demande de convention, en s'appuyant sur les services d'Immersion Facilitée.
 
 L'objectif n'est pas nécessairement de reproduire l'ensemble du parcours existant dans ChatGPT : certaines étapes pourront continuer à être réalisées sur Immersion Facilitée lorsque l'interface dédiée est plus adaptée.
-

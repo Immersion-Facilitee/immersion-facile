@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 
+const MAX_QUESTION_LENGTH = 500;
+
 const legalFrameworkPath = fileURLToPath(
   new URL("../../skill/references/legal-framework.md", import.meta.url),
 );
@@ -10,6 +12,21 @@ const legalFrameworkPath = fileURLToPath(
 const sourcesPath = fileURLToPath(
   new URL("../../skill/references/sources.md", import.meta.url),
 );
+
+let cachedReferences: Promise<{
+  legalFramework: string;
+  sources: string;
+}> | null = null;
+
+const getLegalReferences = () => {
+  if (!cachedReferences) {
+    cachedReferences = Promise.all([
+      readFile(legalFrameworkPath, "utf8"),
+      readFile(sourcesPath, "utf8"),
+    ]).then(([legalFramework, sources]) => ({ legalFramework, sources }));
+  }
+  return cachedReferences;
+};
 
 export const registerGetLegalInfoTool = (server: McpServer) => {
   server.registerTool(
@@ -29,29 +46,25 @@ a professional immersion.
         question: z
           .string()
           .min(1)
+          .max(MAX_QUESTION_LENGTH)
           .describe(
             "The user's question about PMSMP or the legal framework of professional immersions.",
           ),
       }),
     },
     async ({ question }) => {
-      const [legalFramework, sources] = await Promise.all([
-        readFile(legalFrameworkPath, "utf8"),
-        readFile(sourcesPath, "utf8"),
-      ]);
+      const { legalFramework, sources } = await getLegalReferences();
 
       return {
         content: [
           {
             type: "text" as const,
             text: `
-# User question
-
-${question}
-
 # Instructions
 
-Use the reference material below as the primary source of truth.
+Answer the user's question using the reference material below as the primary source of truth.
+
+User question (truncated if needed): ${question.slice(0, MAX_QUESTION_LENGTH)}
 
 - Do not invent legal rules.
 - Do not invent durations, eligibility requirements, exceptions or legal references.
