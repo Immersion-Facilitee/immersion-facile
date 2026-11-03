@@ -609,6 +609,13 @@ describe("authenticatedConventionRoutes", () => {
       .withBusinessName("Boulangerie Martin")
       .build();
 
+    const adminAuthorization = () => ({
+      authorization: generateConnectedUserJwt({
+        userId: admin.id,
+        version: currentJwtVersions.connectedUser,
+      }),
+    });
+
     beforeEach(() => {
       inMemoryUow.userRepository.users = [validator, admin];
       inMemoryUow.agencyRepository.agencies = [toAgencyWithRights(agency)];
@@ -647,12 +654,7 @@ describe("authenticatedConventionRoutes", () => {
 
     it("400 - Bad request when the search is too short", async () => {
       const response = await httpClient.getConventionsForAdmin({
-        headers: {
-          authorization: generateConnectedUserJwt({
-            userId: admin.id,
-            version: currentJwtVersions.connectedUser,
-          }),
-        },
+        headers: adminAuthorization(),
         queryParams: { search: "du" },
       });
 
@@ -669,12 +671,7 @@ describe("authenticatedConventionRoutes", () => {
 
     it("200 - returns conventions matching the filters", async () => {
       const response = await httpClient.getConventionsForAdmin({
-        headers: {
-          authorization: generateConnectedUserJwt({
-            userId: admin.id,
-            version: currentJwtVersions.connectedUser,
-          }),
-        },
+        headers: adminAuthorization(),
         queryParams: {
           page: 1,
           perPage: 10,

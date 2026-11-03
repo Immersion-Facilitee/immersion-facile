@@ -140,9 +140,9 @@ export const ConventionList = () => {
       }));
   }, [hasManyAgencies, currentUser?.agencyRights, tempFilters]);
 
-  const fetchConventions = (
-    filtersToUse: typeof tempFilters,
-    search: string | undefined,
+  const onSubmit = (
+    filtersToUse = tempFilters,
+    searchQuery = filters.search,
   ) => {
     if (!connectedUserJwt) return;
 
@@ -152,7 +152,7 @@ export const ConventionList = () => {
         filters: {
           ...filters,
           ...filtersToUse,
-          search,
+          search: searchQuery || undefined,
           page: 1,
           perPage: defaultPerPageInWebPagination,
         },
@@ -160,9 +160,6 @@ export const ConventionList = () => {
       }),
     );
   };
-
-  const onSubmit = (filtersToUse = tempFilters) =>
-    fetchConventions(filtersToUse, filters.search);
 
   useEffect(() => {
     if (connectedUserJwt) {
@@ -501,7 +498,7 @@ export const ConventionList = () => {
                 placeholder:
                   "Rechercher une convention (ID, nom, prénom, conseiller, email, SIRET, etc.)",
                 onSubmit: (query: string) => {
-                  fetchConventions(tempFilters, query.trim() || undefined);
+                  onSubmit(tempFilters, query);
                 },
               }}
               pagination={{

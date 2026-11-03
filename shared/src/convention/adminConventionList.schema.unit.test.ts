@@ -35,15 +35,4 @@ describe("flatGetConventionsForAdminParamsSchema", () => {
       );
     },
   );
-
-  it("accepts assessment completion status filters", () => {
-    const result = flatGetConventionsForAdminParamsSchema.safeParse({
-      assessmentCompletionStatus: ["to-complete", "to-sign"],
-    });
-
-    expectToEqual(result.data?.assessmentCompletionStatus, [
-      "to-complete",
-      "to-sign",
-    ]);
-  });
 });

@@ -2695,36 +2695,18 @@ describe("Pg implementation of ConventionQueries", () => {
           });
         });
 
-        it("should cap total records while keeping the requested page", async () => {
-          const result = await conventionQueries.getPaginatedConventions({
-            pagination: { page: 1, perPage: 2 },
-            sort: { by: "dateSubmission", direction: "desc" },
-            maxTotalRecords: 3,
-          });
-
-          expectToEqual(result.data.length, 2);
-          expectToEqual(result.pagination, {
-            currentPage: 1,
-            numberPerPage: 2,
-            totalPages: 2,
-            totalRecords: 3,
-          });
-        });
-
-        it("should not return records beyond max total records", async () => {
-          const lastReachablePage =
-            await conventionQueries.getPaginatedConventions({
-              pagination: { page: 2, perPage: 2 },
-              sort: { by: "dateSubmission", direction: "desc" },
-              maxTotalRecords: 3,
-            });
-          const pageBeyondMaxTotalRecords =
-            await conventionQueries.getPaginatedConventions({
-              pagination: { page: 3, perPage: 2 },
+        it("should cap total records and return no records beyond them", async () => {
+          const getPage = (page: number) =>
+            conventionQueries.getPaginatedConventions({
+              pagination: { page, perPage: 2 },
               sort: { by: "dateSubmission", direction: "desc" },
               maxTotalRecords: 3,
             });
 
+          const [firstPage, lastReachablePage, pageBeyondMaxTotalRecords] =
+            await Promise.all([getPage(1), getPage(2), getPage(3)]);
+
+          expectToEqual(firstPage.data.length, 2);
           expectToEqual(lastReachablePage.data.length, 1);
           expectToEqual(pageBeyondMaxTotalRecords, {
             data: [],
