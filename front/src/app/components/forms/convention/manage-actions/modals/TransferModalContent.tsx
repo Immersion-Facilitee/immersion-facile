@@ -109,7 +109,7 @@ export const TransferModalContent = ({
         />
         <Input
           textArea
-          label="Justification"
+          label="Justification *"
           nativeTextAreaProps={{
             ...register("justification"),
           }}

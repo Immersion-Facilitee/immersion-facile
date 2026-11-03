@@ -29,7 +29,13 @@
     }
   }
 
+  &__card {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    height: 100%;
+  }
+
   th.has-date-text {
-    width: 7rem;
+    width: 8.5rem;
   }
 }
