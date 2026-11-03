@@ -9,6 +9,7 @@ import {
   domElementIds,
   executeInSequence,
   frontRoutes,
+  type ImmersionObjective,
   isBeneficiaryMinorAccordingToAge,
   SEED_CCI_AGENCY_ID,
   SEED_FT_AGENCY_ID,
@@ -26,6 +27,7 @@ import {
   expectElementToBeVisible,
   expectLocatorToBeVisibleAndEnabled,
   fillAutocomplete,
+  immersionObjectiveIndexMap,
   remoteModeIndexMap,
   validPhonesData,
 } from "./utils";
@@ -118,7 +120,7 @@ export const fillMiniStageConventionForm = async (
   await fillConventionForm(page, {
     agencyId: SEED_CCI_AGENCY_ID,
     birthdate,
-    immersionObjectiveIndex: 0,
+    immersionObjective: "Confirmer un projet professionnel",
     afterBeneficiaryBasicFields: async () => {
       await fillAutocomplete({
         page,
@@ -166,7 +168,7 @@ export const submitBasicMiniStageConventionForm = async (
 type FillConventionFormOptions = {
   agencyId?: AgencyId;
   birthdate?: string;
-  immersionObjectiveIndex?: 0 | 1;
+  immersionObjective?: ImmersionObjective;
   afterBeneficiaryBasicFields?: () => Promise<void>;
 };
 
@@ -175,7 +177,7 @@ export const fillConventionForm = async (
   {
     agencyId = SEED_FT_AGENCY_ID,
     birthdate = beneficiaryBirthdate,
-    immersionObjectiveIndex = 1,
+    immersionObjective = "Initier une démarche de recrutement",
     afterBeneficiaryBasicFields,
   }: FillConventionFormOptions = {},
 ) => {
@@ -286,7 +288,7 @@ export const fillConventionForm = async (
     `[for="${domElementIds.conventionImmersion.conventionSection.sanitaryPrevention}-0"]`,
   );
   await page.click(
-    `[for="${domElementIds.conventionImmersion.conventionSection.immersionObjective}-${immersionObjectiveIndex}"]`,
+    `[for="${domElementIds.conventionImmersion.conventionSection.immersionObjective}-${immersionObjectiveIndexMap[immersionObjective]}"]`,
   );
   await fillAutocomplete({
     page,

@@ -6,7 +6,11 @@ import {
   type PlaywrightTestArgs,
   type TestInfo,
 } from "@playwright/test";
-import type { RemoteWorkMode } from "shared";
+import {
+  conventionObjectiveOptions,
+  type ImmersionObjective,
+  type RemoteWorkMode,
+} from "shared";
 
 export type PlaywrightTestCallback = (
   args: PlaywrightTestArgs,
@@ -182,3 +186,8 @@ export const remoteModeIndexMap: Record<RemoteWorkMode, number> = {
   HYBRID: 1,
   FULL_REMOTE: 2,
 };
+
+export const immersionObjectiveIndexMap: Record<ImmersionObjective, number> =
+  Object.fromEntries(
+    conventionObjectiveOptions.map((objective, index) => [objective, index]),
+  ) as Record<ImmersionObjective, number>;
