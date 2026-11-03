@@ -1295,11 +1295,8 @@ export const domElementIds = {
   },
   adminAgencies: {},
   adminConventions: {
-    conventionListTable: "im-admin-conventions__convention-list-table",
     conventionListFilterInput:
       "im-admin-conventions__convention-list-filter-input",
-    conventionListStatusCheckbox:
-      "im-admin-conventions__convention-list-status-checkbox",
     conventionListManageConventionButton:
       "im-admin-conventions__convention-list-manage-convention-button",
     conventionListFilterDropdown:

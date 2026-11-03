@@ -288,7 +288,7 @@ export const toAgencyUserConventionListDto = ({
   };
 };
 
-export const toFederatedIdentityWithoutToken = (
+const toFederatedIdentityWithoutToken = (
   federatedIdentity: FtConnectIdentity | undefined,
 ): FtConnectIdentityWithoutToken | undefined =>
   federatedIdentity

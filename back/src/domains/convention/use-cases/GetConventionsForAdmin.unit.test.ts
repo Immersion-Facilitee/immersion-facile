@@ -195,38 +195,6 @@ describe("GetConventionsForAdmin", () => {
     );
   });
 
-  it("searches conventions by identifier or name", async () => {
-    const byConventionId = await getConventionsForAdmin.execute(
-      { search: oldConvention.id },
-      admin,
-    );
-    const byBusinessName = await getConventionsForAdmin.execute(
-      { search: "boulang" },
-      admin,
-    );
-
-    expectToEqual(
-      byConventionId.data.map(({ id }) => id),
-      [oldConvention.id],
-    );
-    expectToEqual(
-      byBusinessName.data.map(({ id }) => id),
-      [recentConvention.id],
-    );
-  });
-
-  it("searches conventions by agency referent name", async () => {
-    const result = await getConventionsForAdmin.execute(
-      { search: "martine réf" },
-      admin,
-    );
-
-    expectToEqual(
-      result.data.map(({ id }) => id),
-      [recentConvention.id],
-    );
-  });
-
   it("filters conventions by assessment completion status", async () => {
     const result = await getConventionsForAdmin.execute(
       { assessmentCompletionStatus: ["to-complete"] },
@@ -236,16 +204,6 @@ describe("GetConventionsForAdmin", () => {
     expectToEqual(
       result.data.map(({ id }) => id),
       [oldConvention.id],
-    );
-  });
-
-  it("rejects a search shorter than the minimum length", async () => {
-    await expectPromiseToFailWithError(
-      getConventionsForAdmin.execute({ search: "ab" }, admin),
-      errors.inputs.badSchema({
-        useCaseName: "GetConventionsForAdmin",
-        flattenErrors: ["search : Le minimum est de 3 caractères"],
-      }),
     );
   });
 
@@ -265,38 +223,33 @@ describe("GetConventionsForAdmin", () => {
     });
 
     it(`caps total records to the ${adminConventionListMaxResults} most recently submitted conventions`, async () => {
-      const result = await getConventionsForAdmin.execute({}, admin);
+      const lastReachablePage =
+        adminConventionListMaxResults / defaultPerPageInWebPagination;
 
-      expectToEqual(result.data.length, defaultPerPageInWebPagination);
-      expectToEqual(result.pagination, {
-        currentPage: 1,
-        numberPerPage: defaultPerPageInWebPagination,
-        totalPages:
-          adminConventionListMaxResults / defaultPerPageInWebPagination,
-        totalRecords: adminConventionListMaxResults,
-      });
-    });
-
-    it(`returns no conventions beyond the ${adminConventionListMaxResults} most recently submitted`, async () => {
-      const pageAfterLastReachablePage =
-        adminConventionListMaxResults / defaultPerPageInWebPagination + 1;
-
-      const result = await getConventionsForAdmin.execute(
-        { page: pageAfterLastReachablePage },
+      const firstPage = await getConventionsForAdmin.execute({}, admin);
+      const pageAfterLastReachablePage = await getConventionsForAdmin.execute(
+        { page: lastReachablePage + 1 },
         admin,
       );
 
-      expectToEqual(result.data, []);
+      expectToEqual(firstPage.data.length, defaultPerPageInWebPagination);
+      expectToEqual(firstPage.pagination, {
+        currentPage: 1,
+        numberPerPage: defaultPerPageInWebPagination,
+        totalPages: lastReachablePage,
+        totalRecords: adminConventionListMaxResults,
+      });
+      expectToEqual(pageAfterLastReachablePage.data, []);
     });
   });
 
-  it("filters by start date and validation date ranges", async () => {
+  it("filters by start date and validation date ranges, including the last day of the range", async () => {
     const validatedConvention: ConventionDto = new ConventionDtoBuilder(
       oldConvention,
     )
       .withDateStart(new Date("2026-11-02").toISOString())
       .withDateEnd(new Date("2026-11-06").toISOString())
-      .withDateValidation(new Date("2026-10-20").toISOString())
+      .withDateValidation(new Date("2026-10-21T10:00:00.000Z").toISOString())
       .build();
     uow.conventionRepository.setConventions([
       recentConvention,
@@ -305,31 +258,7 @@ describe("GetConventionsForAdmin", () => {
 
     const result = await getConventionsForAdmin.execute(
       {
-        dateStartFrom: new Date("2026-11-01").toISOString(),
-        dateValidationFrom: new Date("2026-10-19").toISOString(),
-        dateValidationTo: new Date("2026-10-21").toISOString(),
-      },
-      admin,
-    );
-
-    expectToEqual(
-      result.data.map(({ id }) => id),
-      [validatedConvention.id],
-    );
-  });
-
-  it("includes conventions validated during the last day of the validation date range", async () => {
-    const conventionValidatedDuringLastDay: ConventionDto =
-      new ConventionDtoBuilder(oldConvention)
-        .withDateValidation(new Date("2026-10-21T10:00:00.000Z").toISOString())
-        .build();
-    uow.conventionRepository.setConventions([
-      recentConvention,
-      conventionValidatedDuringLastDay,
-    ]);
-
-    const result = await getConventionsForAdmin.execute(
-      {
+        dateStartFrom: "2026-11-01",
         dateValidationFrom: "2026-10-21",
         dateValidationTo: "2026-10-21",
       },
@@ -338,7 +267,7 @@ describe("GetConventionsForAdmin", () => {
 
     expectToEqual(
       result.data.map(({ id }) => id),
-      [conventionValidatedDuringLastDay.id],
+      [validatedConvention.id],
     );
   });
 

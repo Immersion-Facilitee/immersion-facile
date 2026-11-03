@@ -46,7 +46,6 @@ import {
   initialAdminConventionList,
 } from "src/core-logic/domain/connected-user/conventionList/connectedUserConventionList.slice";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
-import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 
 type AdminConventionListFilters = Pick<
   FlatGetConventionsForAdminParams,
@@ -145,7 +144,6 @@ export const AdminConventionListSection = (): React.ReactNode => {
   const fetchConventions = (
     filtersToFetch: FlatGetConventionsForAdminParams,
   ): void => {
-    dispatch(feedbackSlice.actions.clearFeedbackTopics([feedbackTopic]));
     dispatch(
       conventionListSlice.actions.fetchAdminConventionListRequested({
         jwt: connectedUserJwt,
@@ -190,7 +188,6 @@ export const AdminConventionListSection = (): React.ReactNode => {
         title: "Filtrer par statut",
         content: (
           <Checkbox
-            id={domElementIds.adminConventions.conventionListStatusCheckbox}
             options={makeConventionStatusOptions({
               selectedValues: tempFilters.statuses,
               onChange: (statuses) =>
@@ -351,55 +348,53 @@ export const AdminConventionListSection = (): React.ReactNode => {
         <p className={fr.cx("fr-text--sm", "fr-mb-2w")}>
           {toResultCountLabel(pagination.totalRecords)}
         </p>
-        <div id={domElementIds.adminConventions.conventionListTable}>
-          <RichTable
-            label="Liste des conventions"
-            hasViewSwitch={false}
-            isLoading={isLoading}
-            searchBar={{
-              label: "Rechercher",
-              placeholder:
-                "Rechercher une convention (ID, nom, prénom, conseiller, entreprise, email, SIRET)",
-              hintText: `Astuce : saisir un nom de conseiller dans la recherche permet d’afficher uniquement ses conventions. Pour une agence, utilisez le filtre Agence. L'email et le SIRET doivent être complets, les noms peuvent être partiels (${adminConventionListTextFilterMinLength} caractères minimum).`,
-              onSubmit: searchConventions,
-            }}
-            dropdownFilters={{
-              items: dropdownFilters,
-              onSubmit: () => applyFilters(tempFilters, filters.search),
-            }}
-            headers={
-              conventions.length > 0
-                ? [
-                    "Conseiller",
-                    "Structure",
-                    "Statut",
-                    "Bilan",
-                    "Personne en immersion",
-                    "Établissement",
-                    "Dates",
-                    "Actions",
-                  ]
-                : [
-                    "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
-                  ]
-            }
-            tableData={conventions.map(makeAdminConventionListLine)}
-            pagination={{
-              count: pagination.totalPages,
-              defaultPage: pagination.currentPage,
-              showFirstLast: true,
-              getPageLinkProps: (pageNumber) => ({
-                title: `Résultats de recherche, page : ${pageNumber}`,
-                onClick: (event) => {
-                  event.preventDefault();
-                  fetchConventions({ ...filters, page: pageNumber });
-                },
-                href: "#",
-                key: `pagination-link-${pageNumber}`,
-              }),
-            }}
-          />
-        </div>
+        <RichTable
+          label="Liste des conventions"
+          hasViewSwitch={false}
+          isLoading={isLoading}
+          searchBar={{
+            label: "Rechercher",
+            placeholder:
+              "Rechercher une convention (ID, nom, prénom, conseiller, entreprise, email, SIRET)",
+            hintText: `Astuce : saisir un nom de conseiller dans la recherche permet d’afficher uniquement ses conventions. Pour une agence, utilisez le filtre Agence. L'email et le SIRET doivent être complets, les noms peuvent être partiels (${adminConventionListTextFilterMinLength} caractères minimum).`,
+            onSubmit: searchConventions,
+          }}
+          dropdownFilters={{
+            items: dropdownFilters,
+            onSubmit: () => applyFilters(tempFilters, filters.search),
+          }}
+          headers={
+            conventions.length > 0
+              ? [
+                  "Conseiller",
+                  "Structure",
+                  "Statut",
+                  "Bilan",
+                  "Personne en immersion",
+                  "Établissement",
+                  "Dates",
+                  "Actions",
+                ]
+              : [
+                  "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+                ]
+          }
+          tableData={conventions.map(makeAdminConventionListLine)}
+          pagination={{
+            count: pagination.totalPages,
+            defaultPage: pagination.currentPage,
+            showFirstLast: true,
+            getPageLinkProps: (pageNumber) => ({
+              title: `Résultats de recherche, page : ${pageNumber}`,
+              onClick: (event) => {
+                event.preventDefault();
+                fetchConventions({ ...filters, page: pageNumber });
+              },
+              href: "#",
+              key: `pagination-link-${pageNumber}`,
+            }),
+          }}
+        />
       </WithFeedbackReplacer>
     </BackofficeDashboardTabContent>
   );
@@ -420,18 +415,18 @@ const makeAdminConventionListLine = (
   />,
   <Fragment key={`${convention.id}-agency`}>
     <strong>{convention.agencyName}</strong>
-    <SecondaryLine>
+    <span className={fr.cx("fr-hint-text")}>
       {[
         agencyKindToShortLabel[convention.agencyKind],
         convention.agencyDepartmentName,
       ]
         .filter(Boolean)
         .join(" · ")}
-    </SecondaryLine>
+    </span>
     {convention.agencyRefersToAgencyName && (
-      <SecondaryLine>
+      <span className={fr.cx("fr-hint-text")}>
         Structure d'accompagnement liée à {convention.agencyRefersToAgencyName}
-      </SecondaryLine>
+      </span>
     )}
   </Fragment>,
   <ConventionStatusBadge
@@ -470,11 +465,3 @@ const makeAdminConventionListLine = (
     Piloter
   </Button>,
 ];
-
-const SecondaryLine = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactNode => (
-  <span className={fr.cx("fr-hint-text")}>{children}</span>
-);

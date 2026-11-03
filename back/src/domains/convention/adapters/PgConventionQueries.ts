@@ -310,6 +310,13 @@ export class PgConventionQueries implements ConventionQueries {
       createPaginatedConventionsBaseBuilder({
         transaction: this.transaction,
       }),
+      filterByAgencyIds(agencyIds),
+      filterByAgencyNameContains(agencyNameContains),
+      filterByBeneficiaryEmail(beneficiaryEmail),
+      filterByEstablishmentUserAccess(establishmentUserAccess),
+      filterOmitStatusesForAgencies(omitStatusesForAgencies),
+      filterSearch(trimmedSearch),
+      filterByIdentifierOrNameSearch(identifierOrNameSearch),
       (builder) =>
         pipeWithValue(
           builder,
@@ -318,13 +325,6 @@ export class PgConventionQueries implements ConventionQueries {
           filterDate("date_submission", dateSubmission),
           filterDate("date_validation", dateValidation),
         ),
-      filterByAgencyIds(agencyIds),
-      filterByAgencyNameContains(agencyNameContains),
-      filterByBeneficiaryEmail(beneficiaryEmail),
-      filterByEstablishmentUserAccess(establishmentUserAccess),
-      filterOmitStatusesForAgencies(omitStatusesForAgencies),
-      filterSearch(trimmedSearch),
-      filterByIdentifierOrNameSearch(identifierOrNameSearch),
       filterInList("status", statuses),
       filterByAssessmentCompletionStatus(assessmentCompletionStatus),
     );
@@ -342,25 +342,20 @@ export class PgConventionQueries implements ConventionQueries {
         sql<number>`CAST(${eb.fn.countAll()} AS INT)`.as("count"),
       );
 
-    const limitAndOffset = toLimitAndOffsetWithinMaxTotalRecords(
-      pagination,
-      maxTotalRecords,
-    );
-
     const dataQuery = pipeWithValue(
       wrapInMaterializedCteWithEnrichment({
         transaction: this.transaction,
         filteredBuilder: pipeWithValue(
           filteredBuilder,
           sortConventions(sort),
-          applyLimitAndOffset(limitAndOffset),
+          applyPagination(pagination, maxTotalRecords),
         ),
       }),
       sortConventions(sort),
     );
 
     const [data, countResult] = await Promise.all([
-      limitAndOffset.limit > 0 ? dataQuery.execute() : [],
+      dataQuery.execute(),
       countQuery.executeTakeFirstOrThrow(),
     ]);
 
@@ -652,25 +647,16 @@ export class PgConventionQueries implements ConventionQueries {
   }
 }
 
-type LimitAndOffset = { limit: number; offset: number };
-
-const toLimitAndOffsetWithinMaxTotalRecords = (
-  { page, perPage }: Required<PaginationQueryParams>,
-  maxTotalRecords: number | undefined,
-): LimitAndOffset => {
-  const offset = (page - 1) * perPage;
-  return {
-    offset,
-    limit: maxTotalRecords
+const applyPagination =
+  (pagination: Required<PaginationQueryParams>, maxTotalRecords?: number) =>
+  <T extends ConventionBaseQueryBuilder>(builder: T): T => {
+    const { page, perPage } = pagination;
+    const offset = (page - 1) * perPage;
+    const limit = maxTotalRecords
       ? Math.max(Math.min(perPage, maxTotalRecords - offset), 0)
-      : perPage,
+      : perPage;
+    return builder.limit(limit).offset(offset) as T;
   };
-};
-
-const applyLimitAndOffset =
-  ({ limit, offset }: LimitAndOffset) =>
-  (builder: ConventionBaseQueryBuilder): ConventionBaseQueryBuilder =>
-    builder.limit(limit).offset(offset);
 
 const sortConventions =
   (sort?: WithSort<GetPaginatedConventionsSortBy>["sort"]) =>

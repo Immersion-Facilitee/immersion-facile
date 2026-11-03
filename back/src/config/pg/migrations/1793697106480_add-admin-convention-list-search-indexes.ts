@@ -23,8 +23,6 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
     CREATE INDEX ${conventionsDateSubmissionIndex}
     ON conventions (date_submission DESC, id)
   `);
-  pgm.sql("ANALYZE actors");
-  pgm.sql("ANALYZE conventions");
 }
 
 export async function down(pgm: MigrationBuilder): Promise<void> {
