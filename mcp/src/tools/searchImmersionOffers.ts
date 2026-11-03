@@ -3,11 +3,14 @@ import {
   type AppellationCode,
   addressDepartmentCodeSchema,
   appellationCodeSchema,
+  type DataWithPagination,
   fitForDisabledWorkersSchema,
+  type GetOffersFlatParamsPublicV3,
   getOffersFlatParamsSchemaPublicV3Schema,
   localization,
   nafCodeSchema,
   remoteWorkModeSchema,
+  type SearchImmersionResultPublicV3,
   siretSchema,
   sortDirectionSchema,
   zToBoolean,
@@ -19,18 +22,14 @@ import { z } from "zod";
 import {
   buildOfferUrl,
   ImmersionFacileApiError,
-  type ImmersionOffer,
-  type SearchImmersionOffersParams,
-  type SearchImmersionOffersResult,
   searchImmersionOffers,
 } from "../lib/immersionFacileApi";
-import { registerTool } from "../lib/registerTool";
 
 const distanceKmSchema = zToNumber.pipe(
   z.number().positive("Cette valeur doit être positive").max(100),
 );
 
-const inputSchema = {
+const inputSchema = z.object({
   appellationCodes: z
     .array(appellationCodeSchema)
     .min(1)
@@ -119,9 +118,9 @@ const inputSchema = {
     .pipe(z.number().int().positive().max(500))
     .optional()
     .describe("Number of results per page (API default 100, max 500)."),
-};
+});
 
-const formatAddress = (offer: ImmersionOffer) => {
+const formatAddress = (offer: SearchImmersionResultPublicV3) => {
   const { streetNumberAndAddress, postcode, city } = offer.address;
   return [streetNumberAndAddress, `${postcode} ${city}`]
     .filter((part) => part.trim().length > 0)
@@ -129,7 +128,7 @@ const formatAddress = (offer: ImmersionOffer) => {
 };
 
 const formatOffer = (
-  offer: ImmersionOffer,
+  offer: SearchImmersionResultPublicV3,
   index: number,
   preferredAppellationCodes?: AppellationCode[],
 ) => {
@@ -182,8 +181,8 @@ const formatOffer = (
 };
 
 const formatSearchResult = (
-  result: SearchImmersionOffersResult,
-  apiParams: SearchImmersionOffersParams,
+  result: DataWithPagination<SearchImmersionResultPublicV3>,
+  apiParams: GetOffersFlatParamsPublicV3,
 ) => {
   const { data, pagination } = result;
 
@@ -216,8 +215,7 @@ const formatSearchResult = (
 };
 
 export const registerSearchImmersionOffersTool = (server: McpServer) => {
-  registerTool(
-    server,
+  server.registerTool(
     "search_immersion_offers",
     {
       description: `
@@ -248,7 +246,7 @@ Important:
           structuredContent: {
             query: apiParams,
             result,
-          } as unknown as Record<string, unknown>,
+          },
         };
       } catch (error) {
         if (error instanceof ImmersionFacileApiError) {

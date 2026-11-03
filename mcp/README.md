@@ -33,19 +33,21 @@ Exemple :
 #### Configuration
 
 1. Obtenir une clé API auprès de l'équipe Immersion Facilitée (scope *recherche d'entreprise*) — [documentation API v3](https://immersion-facile.beta.gouv.fr/doc-api?version=v3).
-2. Fournir le token au serveur MCP via la variable d'environnement `IMMERSION_FACILE_API_TOKEN` (voir `.env.example`).
+2. Configurer `DOMAIN` (même variable que le monorepo) et `IMMERSION_FACILE_API_TOKEN` (voir `.env.example`).
+   - Front : `http(s)://{DOMAIN}`
+   - API : `http(s)://{DOMAIN}/api`
 
 En local, le serveur charge automatiquement le fichier `.env` du package `mcp` :
 
 ```bash
 cd mcp
 cp .env.example .env
-# renseigner IMMERSION_FACILE_API_TOKEN=...
+# renseigner DOMAIN=... et IMMERSION_FACILE_API_TOKEN=...
 pnpm start
 # ou depuis la racine du monorepo : pnpm mcp start
 ```
 
-**Important :** redémarrer le serveur MCP après avoir modifié `.env`. Si le client démarre le process lui-même (stdio), vous pouvez aussi passer le token dans le bloc `env` de la config MCP.
+**Important :** redémarrer le serveur MCP après avoir modifié `.env`. Si le client démarre le process lui-même (stdio), vous pouvez aussi passer ces variables dans le bloc `env` de la config MCP.
 
 Le token est envoyé dans le header `authorization` des appels à `GET /api/v3/offers`.
 
