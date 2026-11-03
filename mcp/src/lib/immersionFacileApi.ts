@@ -94,10 +94,17 @@ const createApiClient = () =>
     baseURL: getApiBaseUrl(),
   });
 
+let apiClient: ReturnType<typeof createApiClient> | undefined;
+
+const getApiClient = () => {
+  apiClient ??= createApiClient();
+  return apiClient;
+};
+
 export const searchImmersionOffers = async (
   params: GetOffersFlatParamsPublicV3,
 ): Promise<DataWithPagination<SearchImmersionResultPublicV3>> => {
-  const response = await createApiClient().getOffers({
+  const response = await getApiClient().getOffers({
     headers: { authorization: getApiToken() },
     queryParams: params,
   });

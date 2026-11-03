@@ -1,14 +1,13 @@
 ---
-
 name: immersion-facile-legal-info
-description: 
+description: >
   Provides reliable information about Immersion Facilitée and the legal
   framework of PMSMP (Périodes de Mise en Situation en Milieu Professionnel)
   in France. Use when users ask about professional immersions, eligibility,
   conventions, duration, remuneration, employment status, insurance,
   rights and obligations, host companies, prescribers, or the regulatory
   framework surrounding a PMSMP.
-------------------------------
+---
 
 # Immersion Facilitée — Legal framework
 

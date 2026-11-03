@@ -16,7 +16,8 @@ if (existsSync(envPath)) {
   loadEnvFile(envPath);
 }
 
-const PORT = Number(process.env.PORT ?? 3000);
+const HOST = process.env.HOST ?? "127.0.0.1";
+const PORT = Number(process.env.PORT ?? 3100);
 
 const createImmersionFacileMcpServer = () => {
   const server = new McpServer(
@@ -43,8 +44,8 @@ const mcpHandler = createMcpHandler(() => createImmersionFacileMcpServer());
 
 const httpHandler = toNodeHandler(mcpHandler);
 
-createServer(httpHandler).listen(PORT, () => {
+createServer(httpHandler).listen(PORT, HOST, () => {
   console.log(
-    `Immersion Facilitée MCP server listening on http://localhost:${PORT}`,
+    `Immersion Facilitée MCP server listening on http://${HOST}:${PORT}`,
   );
 });
