@@ -1,14 +1,12 @@
 import type { AgencyKind } from "../agency/agency.dto";
-import type { BusinessName } from "../establishment/establishment.dto";
-import type { FtConnectIdentityWithoutToken } from "../federatedIdentities/federatedIdentity.dto";
 import type { PaginationQueryParams } from "../pagination/pagination.dto";
-import type { AppellationAndRomeDto } from "../romeAndAppellationDtos/romeAndAppellation.dto";
-import type { SiretDto } from "../siret/siret";
-import type { Firstname, Lastname } from "../user/user.dto";
 import type { NotEmptyArray } from "../utils";
 import type { DateString } from "../utils/date";
-import type { ConventionId, ConventionStatus } from "./convention.dto";
-import type { ConventionDraftId } from "./conventionDraftId";
+import type { AgencyUserConventionListDto } from "./agencyUserConventionList.dto";
+import type {
+  AssessmentCompletionStatusFilter,
+  ConventionStatus,
+} from "./convention.dto";
 
 export const adminConventionListMaxResults = 100;
 
@@ -17,6 +15,7 @@ export const adminConventionListTextFilterMinLength = 3;
 export type FlatGetConventionsForAdminParams = PaginationQueryParams & {
   search?: string;
   statuses?: NotEmptyArray<ConventionStatus>;
+  assessmentCompletionStatus?: NotEmptyArray<AssessmentCompletionStatusFilter>;
   agencyNameContains?: string;
   dateStartFrom?: DateString;
   dateStartTo?: DateString;
@@ -24,25 +23,8 @@ export type FlatGetConventionsForAdminParams = PaginationQueryParams & {
   dateValidationTo?: DateString;
 };
 
-export type AdminConventionListDto = {
-  id: ConventionId;
-  sourceConventionDraftId?: ConventionDraftId;
-  status: ConventionStatus;
-  dateSubmission: DateString;
-  agency: {
-    name: string;
-    kind: AgencyKind;
-    refersToAgencyName: string | null;
-    departmentName: string | null;
-  };
-  businessName: BusinessName;
-  siret: SiretDto;
-  immersionAppellation: AppellationAndRomeDto;
-  dateStart: DateString;
-  dateEnd: DateString;
-  beneficiary: {
-    firstName: Firstname;
-    lastName: Lastname;
-    federatedIdentity?: FtConnectIdentityWithoutToken;
-  };
+export type AdminConventionListDto = AgencyUserConventionListDto & {
+  agencyKind: AgencyKind;
+  agencyDepartmentName: string | null;
+  agencyRefersToAgencyName: string | null;
 };

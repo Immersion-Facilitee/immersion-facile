@@ -747,6 +747,13 @@ const filterByIdentifierOrNameSearch =
           sql<boolean>`${sql.ref("searched_beneficiary.first_name")} || ' ' || ${sql.ref("searched_beneficiary.last_name")} || ' ' || ${sql.ref("searched_beneficiary.first_name")} ILIKE ${namePattern}`,
         );
 
+      const idsMatchingAgencyReferentName = eb
+        .selectFrom("conventions")
+        .select("conventions.id")
+        .where(
+          sql<boolean>`coalesce(${sql.ref("conventions.agency_referent_first_name")}, '') || ' ' || coalesce(${sql.ref("conventions.agency_referent_last_name")}, '') || ' ' || coalesce(${sql.ref("conventions.agency_referent_first_name")}, '') ILIKE ${namePattern}`,
+        );
+
       const idsMatchingActorEmail = eb
         .selectFrom("conventions")
         .innerJoin("actors as searched_actor", (join) =>
@@ -790,6 +797,7 @@ const filterByIdentifierOrNameSearch =
 
       const idsMatchingIdentifierOrName = idsMatchingBusinessName
         .union(idsMatchingBeneficiaryName)
+        .union(idsMatchingAgencyReferentName)
         .union(idsMatchingActorEmail)
         .union(idsMatchingSiret);
 

@@ -1,21 +1,22 @@
-import { keys, uniq } from "ramda";
+import { keys } from "ramda";
 import {
   type AdminConventionListDto,
-  type AgencyWithUsersRights,
   adminConventionListMaxResults,
   type ConnectedUser,
-  type ConventionDto,
   type DataWithPagination,
   type DateFilter,
   type DateString,
   type DepartmentCode,
   departmentNameToDepartmentCode,
-  errors,
   type FlatGetConventionsForAdminParams,
   flatGetConventionsForAdminParamsSchema,
   getPaginationParamsForWeb,
 } from "shared";
-import { toFederatedIdentityWithoutToken } from "../../../utils/convention";
+import {
+  type ConventionWithAgencyAndAssessment,
+  mapConventionsWithAgencyAndAssessment,
+  toAgencyUserConventionListDto,
+} from "../../../utils/convention";
 import { throwIfNotAdmin } from "../../connected-users/helpers/authorization.helper";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 
@@ -58,13 +59,11 @@ export const makeGetConventionsForAdmin = useCaseBuilder(
         maxTotalRecords: adminConventionListMaxResults,
       });
 
-    const agencies = await uow.agencyRepository.getByIds(
-      uniq(paginatedConventions.data.map(({ agencyId }) => agencyId)),
-    );
-
     return {
-      data: paginatedConventions.data.map((convention) =>
-        toAdminConventionListDto(convention, agencies),
+      data: await mapConventionsWithAgencyAndAssessment(
+        paginatedConventions.data,
+        uow,
+        toAdminConventionListDto,
       ),
       pagination: paginatedConventions.pagination,
     };
@@ -89,38 +88,13 @@ const toDepartmentName = (departmentCode: DepartmentCode): string | null =>
   ) ?? null;
 
 const toAdminConventionListDto = (
-  convention: ConventionDto,
-  agencies: AgencyWithUsersRights[],
+  conventionWithAgencyAndAssessment: ConventionWithAgencyAndAssessment,
 ): AdminConventionListDto => {
-  const agency = agencies.find(({ id }) => id === convention.agencyId);
-  if (!agency) throw errors.agency.notFound({ agencyId: convention.agencyId });
-
-  const { beneficiary } = convention.signatories;
-
+  const { agency } = conventionWithAgencyAndAssessment;
   return {
-    id: convention.id,
-    ...(convention.sourceConventionDraftId
-      ? { sourceConventionDraftId: convention.sourceConventionDraftId }
-      : {}),
-    status: convention.status,
-    dateSubmission: convention.dateSubmission,
-    agency: {
-      name: agency.name,
-      kind: agency.kind,
-      refersToAgencyName: agency.refersToAgencyName,
-      departmentName: toDepartmentName(agency.address.departmentCode),
-    },
-    businessName: convention.businessName,
-    siret: convention.siret,
-    immersionAppellation: convention.immersionAppellation,
-    dateStart: convention.dateStart,
-    dateEnd: convention.dateEnd,
-    beneficiary: {
-      firstName: beneficiary.firstName,
-      lastName: beneficiary.lastName,
-      federatedIdentity: toFederatedIdentityWithoutToken(
-        beneficiary.federatedIdentity,
-      ),
-    },
+    ...toAgencyUserConventionListDto(conventionWithAgencyAndAssessment),
+    agencyKind: agency.kind,
+    agencyDepartmentName: toDepartmentName(agency.address.departmentCode),
+    agencyRefersToAgencyName: agency.refersToAgencyName,
   };
 };

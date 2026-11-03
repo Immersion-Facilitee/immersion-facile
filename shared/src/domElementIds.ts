@@ -1300,8 +1300,8 @@ export const domElementIds = {
       "im-admin-conventions__convention-list-filter-input",
     conventionListStatusCheckbox:
       "im-admin-conventions__convention-list-status-checkbox",
-    conventionListConventionLink:
-      "im-admin-conventions__convention-list-convention-link",
+    conventionListManageConventionButton:
+      "im-admin-conventions__convention-list-manage-convention-button",
     conventionListFilterDropdown:
       "im-admin-conventions__convention-list-filter-dropdown",
     conventionListMetabaseBackupLink:

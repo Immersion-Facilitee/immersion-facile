@@ -74,7 +74,7 @@ describe("GetConventionsForAdmin", () => {
     .withBeneficiaryLastName("Doe")
     .withBusinessName("Boulangerie")
     .withDateSubmission(subDays(now, 5).toISOString())
-    .withSourceConventionDraftId("dddddddd-dddd-4ddd-8ddd-dddddddddddd")
+    .withAgencyReferent({ firstname: "Martine", lastname: "Référente" })
     .withFederatedIdentity({
       provider: "ftConnect",
       token: "ft-token",
@@ -126,20 +126,16 @@ describe("GetConventionsForAdmin", () => {
       data: [
         {
           id: recentConvention.id,
-          sourceConventionDraftId: recentConvention.sourceConventionDraftId,
           status: recentConvention.status,
-          dateSubmission: recentConvention.dateSubmission,
-          agency: {
-            name: agency.name,
-            kind: "mission-locale",
-            refersToAgencyName: null,
-            departmentName: "Paris",
-          },
-          businessName: recentConvention.businessName,
-          siret: recentConvention.siret,
-          immersionAppellation: recentConvention.immersionAppellation,
           dateStart: recentConvention.dateStart,
           dateEnd: recentConvention.dateEnd,
+          businessName: recentConvention.businessName,
+          agencyName: agency.name,
+          agencyKind: "mission-locale",
+          agencyDepartmentName: "Paris",
+          agencyRefersToAgencyName: null,
+          agencyReferent: recentConvention.agencyReferent,
+          assessment: null,
           beneficiary: {
             firstName: "John",
             lastName: "Doe",
@@ -159,18 +155,15 @@ describe("GetConventionsForAdmin", () => {
         {
           id: oldConvention.id,
           status: oldConvention.status,
-          dateSubmission: oldConvention.dateSubmission,
-          agency: {
-            name: otherAgency.name,
-            kind: "autre",
-            refersToAgencyName: agency.name,
-            departmentName: "Rhône",
-          },
-          businessName: oldConvention.businessName,
-          siret: oldConvention.siret,
-          immersionAppellation: oldConvention.immersionAppellation,
           dateStart: oldConvention.dateStart,
           dateEnd: oldConvention.dateEnd,
+          businessName: oldConvention.businessName,
+          agencyName: otherAgency.name,
+          agencyKind: "autre",
+          agencyDepartmentName: "Rhône",
+          agencyRefersToAgencyName: agency.name,
+          agencyReferent: oldConvention.agencyReferent,
+          assessment: null,
           beneficiary: {
             firstName: "Jane",
             lastName: "Smith",
@@ -219,6 +212,30 @@ describe("GetConventionsForAdmin", () => {
     expectToEqual(
       byBusinessName.data.map(({ id }) => id),
       [recentConvention.id],
+    );
+  });
+
+  it("searches conventions by agency referent name", async () => {
+    const result = await getConventionsForAdmin.execute(
+      { search: "martine réf" },
+      admin,
+    );
+
+    expectToEqual(
+      result.data.map(({ id }) => id),
+      [recentConvention.id],
+    );
+  });
+
+  it("filters conventions by assessment completion status", async () => {
+    const result = await getConventionsForAdmin.execute(
+      { assessmentCompletionStatus: ["to-complete"] },
+      admin,
+    );
+
+    expectToEqual(
+      result.data.map(({ id }) => id),
+      [oldConvention.id],
     );
   });
 
