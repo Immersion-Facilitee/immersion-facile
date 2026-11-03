@@ -7,7 +7,6 @@ import {
   ConnectedUserBuilder,
   type ConnectedUserDomainJwtPayload,
   ConventionDtoBuilder,
-  type ConventionRole,
   conventionStatusesWithValidator,
   defaultMonthsThresholdForConventionsListing,
   defaultPhoneNumber,
@@ -85,10 +84,10 @@ const conventionWithAllSignatories = new ConventionDtoBuilder(convention)
 
 const agency = new AgencyDtoBuilder().withId(convention.agencyId).build();
 
-const viewerJwtPayload = createConventionMagicLinkPayload({
+const establishmentTutorJwtPayload = createConventionMagicLinkPayload({
   id: conventionId,
-  role: "agency-viewer" as ConventionRole,
-  email: "agency-viewer@mail.com",
+  role: "establishment-tutor",
+  email: convention.establishmentTutor.email,
   now: new Date(),
 });
 
@@ -351,7 +350,7 @@ describe("Send signature link", () => {
               signatoryRole: "beneficiary-representative",
               notificationKind: "sms",
             },
-            viewerJwtPayload,
+            establishmentTutorJwtPayload,
           ),
           errors.convention.sendSignatureLinkNotAuthorizedForRole(),
         );
@@ -381,12 +380,6 @@ describe("Send signature link", () => {
       });
 
       it("throws unauthorized if user has not enough rights on agency", async () => {
-        const agencyViewerJwtPayload = createConventionMagicLinkPayload({
-          id: conventionId,
-          role: "agency-viewer" as ConventionRole,
-          email: notConnectedUser.email,
-          now: new Date(),
-        });
         uow.userRepository.users = [notConnectedUser];
         uow.agencyRepository.agencies = [
           toAgencyWithRights(agency, {
@@ -406,7 +399,7 @@ describe("Send signature link", () => {
               signatoryRole: "beneficiary-representative",
               notificationKind: "sms",
             },
-            agencyViewerJwtPayload,
+            { userId: notConnectedUser.id },
           ),
           errors.convention.sendSignatureLinkNotAuthorizedForRole(),
         );

@@ -1,11 +1,11 @@
 import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
+  type ConventionActorRole,
   type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
   type ConventionJwt,
-  type ConventionRole,
   type Email,
   errors,
   expectObjectInArrayToMatch,
@@ -140,7 +140,7 @@ describe("RenewExpiredJwt use case", () => {
     );
 
     describe("Right paths", () => {
-      it.each<[ConventionRole, Email]>([
+      it.each<[ConventionActorRole, Email]>([
         ["beneficiary", validConvention.signatories.beneficiary.email],
         [
           "beneficiary-current-employer",
@@ -283,7 +283,7 @@ describe("RenewExpiredJwt use case", () => {
           expiredJwt: generateConventionJwt(
             createConventionMagicLinkPayload({
               id: invalidConventionId,
-              role: "counsellor",
+              role: "beneficiary",
               email: counsellor.email,
               now: timeGateway.now(),
             }),
@@ -307,7 +307,7 @@ describe("RenewExpiredJwt use case", () => {
               expiredJwt: generateConventionJwt(
                 createConventionMagicLinkPayload({
                   id: validConvention.id,
-                  role: role as ConventionRole,
+                  role: role as ConventionActorRole,
                   email: counsellor.email,
                   now: timeGateway.now(),
                 }),
@@ -391,7 +391,7 @@ describe("RenewExpiredJwt use case", () => {
     });
 
     describe("Right paths", () => {
-      it.each<[ConventionRole, Email]>([
+      it.each<[ConventionActorRole, Email]>([
         ["beneficiary", validConvention.signatories.beneficiary.email],
         [
           "beneficiary-current-employer",
@@ -493,7 +493,7 @@ describe("RenewExpiredJwt use case", () => {
             expiredJwt: generateConventionJwt(
               createConventionMagicLinkPayload({
                 id: invalidConventionId,
-                role: "counsellor",
+                role: "beneficiary",
                 email: counsellor.email,
                 now: timeGateway.now(),
               }),
@@ -513,7 +513,7 @@ describe("RenewExpiredJwt use case", () => {
               expiredJwt: generateConventionJwt(
                 createConventionMagicLinkPayload({
                   id: validConvention.id,
-                  role: role as ConventionRole,
+                  role: role as ConventionActorRole,
                   email: counsellor.email,
                   now: timeGateway.now(),
                 }),

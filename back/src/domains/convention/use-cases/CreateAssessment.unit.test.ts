@@ -4,11 +4,10 @@ import {
   type AssessmentCreator,
   type AssessmentCreatorRole,
   type AssessmentDto,
-  allRoles,
   ConnectedUserBuilder,
   type ConventionDomainJwtPayload,
   ConventionDtoBuilder,
-  type ConventionRole,
+  conventionActorRoles,
   conventionStatuses,
   defaultMonthsThresholdForConventionsListing,
   errors,
@@ -18,7 +17,6 @@ import {
   ForbiddenError,
   getDisplayedBusinessName,
   makeBooleanFeatureFlag,
-  type Role,
   reasonableSchedule,
   splitCasesBetweenPassingAndFailing,
   type User,
@@ -121,8 +119,8 @@ describe("CreateAssessment", () => {
   );
 
   const [passingRoles, failingRoles] = splitCasesBetweenPassingAndFailing(
-    allRoles,
-    ["establishment-tutor", "validator", "counsellor"],
+    conventionActorRoles,
+    ["establishment-tutor"],
   );
 
   const passingStatusAndRoles = passingStatuses.flatMap((status) =>
@@ -329,7 +327,7 @@ describe("CreateAssessment", () => {
               counsellor,
               validator,
             )[role],
-            role: role as ConventionRole,
+            role,
           }),
           errors.assessment.forbidden("CreateAssessment"),
         );
@@ -348,36 +346,6 @@ describe("CreateAssessment", () => {
         errors.assessment.forbidden("CreateAssessment"),
       );
     });
-
-    it.each(["counsellor", "validator"] satisfies Role[])(
-      "throw forbidden if the jwt role is '%s' the user is not notified on agency rights",
-      async (role) => {
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [counsellor.id]: {
-              isNotifiedByEmail: false,
-              roles: ["counsellor"],
-            },
-            [validator.id]: {
-              isNotifiedByEmail: false,
-              roles: ["validator"],
-            },
-          }),
-        ];
-        await expectPromiseToFailWithError(
-          createAssessment.execute(assessment, {
-            ...tutorPayload,
-            emailHash: makeHashByRolesForTest(
-              validatedConvention,
-              counsellor,
-              validator,
-            )[role],
-            role,
-          }),
-          errors.assessment.forbidden("CreateAssessment"),
-        );
-      },
-    );
   });
 
   describe("Right paths", () => {

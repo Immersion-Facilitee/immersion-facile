@@ -1,7 +1,6 @@
 import {
   type ApiConsumer,
   type ConventionDomainJwtPayload,
-  type ConventionDto,
   type ConventionReadDto,
   type ConventionRelatedJwtPayload,
   errors,
@@ -10,10 +9,7 @@ import {
   withConventionIdSchema,
 } from "shared";
 import { conventionDtosToConventionReadDtos } from "../../../utils/convention";
-import {
-  isHashMatchConventionEmails,
-  isHashMatchPeAdvisorEmail,
-} from "../../../utils/emailHash";
+import { isHashMatchConventionEmails } from "../../../utils/emailHash";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
@@ -141,33 +137,18 @@ const isConventionDomainPayloadHasRight = ({
     requestedConventionId: convention.id,
   });
 
-  if (isEmailHashMatch({ payload: jwtPayload, convention })) return convention;
+  if (
+    isHashMatchConventionEmails({
+      role: jwtPayload.role,
+      emailHash: jwtPayload.emailHash,
+      convention,
+    })
+  )
+    return convention;
 
   throw errors.convention.forbiddenMissingRightsEmailHash({
     conventionId: convention.id,
     emailHash: jwtPayload.emailHash,
     role: jwtPayload.role,
-  });
-};
-
-const isEmailHashMatch = ({
-  payload: { emailHash, role },
-  convention,
-}: {
-  payload: ConventionDomainJwtPayload;
-  convention: ConventionDto;
-}): boolean => {
-  if (
-    isHashMatchPeAdvisorEmail({
-      beneficiary: convention.signatories.beneficiary,
-      emailHash,
-    })
-  )
-    return true;
-
-  return isHashMatchConventionEmails({
-    role,
-    emailHash,
-    convention,
   });
 };

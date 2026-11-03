@@ -1,8 +1,6 @@
 import {
   type ConventionDto,
-  type ConventionId,
   type ConventionRelatedJwtPayload,
-  type ConventionRole,
   type ConventionStatus,
   type DateString,
   errors,
@@ -18,6 +16,7 @@ import {
   type WithConventionIdLegacy,
 } from "shared";
 import { getAgencyValidationSteps } from "../../../utils/agency";
+import { throwIfRoleHasNoMagicLink } from "../../../utils/convention";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { DomainTopic, TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
@@ -80,12 +79,7 @@ export const makeUpdateConventionStatus = useCaseBuilder(
         agencyId: convention.agencyId,
       });
 
-    const roleOrUser = await getRoleInPayloadOrUser(
-      uow,
-      payload,
-      inputParams.status,
-      convention.id,
-    );
+    const roleOrUser = await getRoleInPayloadOrUser(uow, payload);
 
     const roles =
       "roleInPayload" in roleOrUser
@@ -246,18 +240,9 @@ const throwIfMissingIsAlsoAgencyReferent = (
 const getRoleInPayloadOrUser = async (
   uow: UnitOfWork,
   payload: ConventionRelatedJwtPayload,
-  targetStatus: ConventionStatus,
-  conventionId: ConventionId,
 ): Promise<{ userWithRights: UserWithRights } | { roleInPayload: Role }> => {
-  if ("role" in payload) {
-    if (payload.role === ("back-office" as ConventionRole))
-      throw errors.convention.badRoleStatusChange({
-        roles: ["back-office"],
-        status: targetStatus,
-        conventionId,
-      });
-    return { roleInPayload: payload.role };
-  }
+  if ("role" in payload)
+    return { roleInPayload: throwIfRoleHasNoMagicLink(payload.role) };
 
   const userWithRights = await getUserWithRights(uow, payload.userId);
   if (!userWithRights)

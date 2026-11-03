@@ -3,11 +3,8 @@ import {
   AgencyDtoBuilder,
   BadRequestError,
   ConnectedUserBuilder,
-  type ConventionDomainJwtPayload,
   ConventionDtoBuilder,
-  type ConventionId,
   type ConventionRelatedJwtPayload,
-  type ConventionRole,
   defaultMonthsThresholdForConventionsListing,
   errors,
   expectPromiseToFailWithError,
@@ -112,27 +109,8 @@ describe("RenewConvention", () => {
     ];
   });
 
-  const createJwtPayload = ({
-    conventionId,
-    role,
-  }: {
-    conventionId: ConventionId;
-    role: ConventionRole;
-  }): ConventionDomainJwtPayload => ({
-    applicationId: conventionId,
-    role,
-    emailHash: "my-hash",
-  });
-
   describe("Happy paths", () => {
     it.each([
-      {
-        payloadKind: "convention",
-        payload: createJwtPayload({
-          role: "validator",
-          conventionId: existingValidatedConvention.id,
-        }),
-      },
       {
         payloadKind: "connected user backoffice admin",
         payload: { userId: backofficeAdmin.id },
@@ -193,13 +171,9 @@ describe("RenewConvention", () => {
 
       uow.conventionRepository.setConventions([preValidatedConvention]);
 
-      await renewConvention.execute(
-        renewConventionParams,
-        createJwtPayload({
-          role: "validator",
-          conventionId: preValidatedConvention.id,
-        }),
-      );
+      await renewConvention.execute(renewConventionParams, {
+        userId: validator.id,
+      });
 
       expectToEqual(uow.conventionRepository.conventions, [
         preValidatedConvention,
@@ -230,13 +204,11 @@ describe("RenewConvention", () => {
   describe("Wrong paths", () => {
     it("throws an error when convention id in params does not match to convention id in JWT payload", async () => {
       await expectPromiseToFailWithError(
-        renewConvention.execute(
-          renewConventionParams,
-          createJwtPayload({
-            role: "validator",
-            conventionId: "another-convention-id",
-          }),
-        ),
+        renewConvention.execute(renewConventionParams, {
+          applicationId: "another-convention-id",
+          role: "beneficiary",
+          emailHash: "my-hash",
+        }),
         new ForbiddenError(
           "This token is not allowed to renew this convention",
         ),
@@ -247,13 +219,9 @@ describe("RenewConvention", () => {
       uow.conventionRepository.setConventions([]);
 
       await expectPromiseToFailWithError(
-        renewConvention.execute(
-          renewConventionParams,
-          createJwtPayload({
-            role: "validator",
-            conventionId: existingValidatedConvention.id,
-          }),
-        ),
+        renewConvention.execute(renewConventionParams, {
+          userId: validator.id,
+        }),
         errors.convention.notFound({
           conventionId: existingValidatedConvention.id,
         }),
@@ -266,13 +234,9 @@ describe("RenewConvention", () => {
       uow.conventionRepository.setConventions([existingNotValidatedConvention]);
 
       await expectPromiseToFailWithError(
-        renewConvention.execute(
-          renewConventionParams,
-          createJwtPayload({
-            role: "validator",
-            conventionId: existingNotValidatedConvention.id,
-          }),
-        ),
+        renewConvention.execute(renewConventionParams, {
+          userId: validator.id,
+        }),
         new BadRequestError(
           `This convention cannot be renewed, as it has status : '${existingNotValidatedConvention.status}'`,
         ),
@@ -281,13 +245,11 @@ describe("RenewConvention", () => {
 
     it("throws an error when jwt role has not enough privileges", async () => {
       await expectPromiseToFailWithError(
-        renewConvention.execute(
-          renewConventionParams,
-          createJwtPayload({
-            role: "beneficiary",
-            conventionId: existingValidatedConvention.id,
-          }),
-        ),
+        renewConvention.execute(renewConventionParams, {
+          applicationId: existingValidatedConvention.id,
+          role: "beneficiary",
+          emailHash: "my-hash",
+        }),
         new ForbiddenError(
           `The role 'beneficiary' is not allowed to renew convention`,
         ),
@@ -348,13 +310,9 @@ describe("RenewConvention", () => {
       };
 
       await expectPromiseToFailWithError(
-        renewConvention.execute(
-          renewConventionParams,
-          createJwtPayload({
-            role: "validator",
-            conventionId: archivedConvention.id,
-          }),
-        ),
+        renewConvention.execute(renewConventionParams, {
+          userId: validator.id,
+        }),
         errors.convention.archived({ conventionId: archivedConvention.id }),
       );
     });

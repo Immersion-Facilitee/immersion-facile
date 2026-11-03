@@ -18,6 +18,7 @@ import {
   isConventionActorRole,
   isTruthy,
   makeEmptyLastReminders,
+  type Role,
   type SiretDto,
   type WithBannedEstablishmentInformations,
 } from "shared";
@@ -27,11 +28,16 @@ import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
 import type { BannedEstablishment } from "../domains/establishment/ports/BannedEstablishmentRepository";
 import { agencyDtoToConventionAgencyFields } from "./agency";
 
+export const throwIfRoleHasNoMagicLink = (role: Role): ConventionActorRole => {
+  if (!isConventionActorRole(role))
+    throw errors.convention.roleHasNoMagicLink({ role });
+  return role;
+};
+
 export const conventionEmailsByRole =
   (convention: ConventionDto) =>
   (role: ConventionRole): Email[] => {
-    if (!isConventionActorRole(role))
-      throw errors.convention.roleHasNoMagicLink({ role });
+    const actorRole = throwIfRoleHasNoMagicLink(role);
 
     const emailsByRole: Record<ConventionActorRole, Email[] | Error> = {
       beneficiary: [convention.signatories.beneficiary.email],
@@ -54,7 +60,7 @@ export const conventionEmailsByRole =
       ],
       "establishment-tutor": [convention.establishmentTutor.email],
     };
-    const emails = emailsByRole[role];
+    const emails = emailsByRole[actorRole];
 
     if (emails instanceof Error) throw emails;
     return emails;
