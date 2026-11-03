@@ -2,12 +2,11 @@ import { subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   type AssessmentDto,
-  allRoles,
   ConnectedUserBuilder,
   type ConventionDomainJwtPayload,
   ConventionDtoBuilder,
   type ConventionJwtPayload,
-  type ConventionRole,
+  conventionActorRoles,
   defaultMonthsThresholdForConventionsListing,
   errors,
   establishmentsRoles,
@@ -15,7 +14,6 @@ import {
   expectToEqual,
   type LegacyAssessmentDto,
   makeBooleanFeatureFlag,
-  type Role,
   reasonableSchedule,
   splitCasesBetweenPassingAndFailing,
 } from "shared";
@@ -131,12 +129,10 @@ describe("GetAssessmentByConventionId", () => {
     createdAt: new Date("2025-01-01").toISOString(),
   };
   const [passingRoles, failingRoles] = splitCasesBetweenPassingAndFailing(
-    allRoles,
+    conventionActorRoles,
     [
       "establishment-tutor",
       "establishment-representative",
-      "validator",
-      "counsellor",
       "beneficiary",
       "beneficiary-representative",
     ],
@@ -216,7 +212,7 @@ describe("GetAssessmentByConventionId", () => {
                 counsellor,
                 validator,
               )[role],
-              role: role as ConventionRole,
+              role,
             },
           ),
           errors.assessment.forbidden("GetAssessment"),
@@ -247,40 +243,6 @@ describe("GetAssessmentByConventionId", () => {
         errors.assessment.forbidden("GetAssessment"),
       );
     });
-
-    it.each(["counsellor", "validator"] satisfies Role[])(
-      "throw forbidden if the jwt role is '%s' the user is not notified on agency rights",
-      async (role) => {
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [counsellor.id]: {
-              isNotifiedByEmail: false,
-              roles: ["counsellor"],
-            },
-            [validator.id]: {
-              isNotifiedByEmail: false,
-              roles: ["validator"],
-            },
-          }),
-        ];
-
-        await expectPromiseToFailWithError(
-          getAssessment.execute(
-            { conventionId: convention.id },
-            {
-              ...establishmentTutorPayload,
-              emailHash: makeHashByRolesForTest(
-                convention,
-                counsellor,
-                validator,
-              )[role],
-              role,
-            },
-          ),
-          errors.assessment.forbidden("GetAssessment"),
-        );
-      },
-    );
 
     it("throw not found error when no assessment exist", async () => {
       uow.assessmentRepository.assessments = [];
@@ -432,12 +394,7 @@ describe("GetAssessmentByConventionId", () => {
 
       const assessment = await getAssessment.execute(
         { conventionId: convention.id },
-        {
-          role: "validator",
-          applicationId: convention.id,
-          emailHash: makeHashByRolesForTest(convention, counsellor, validator)
-            .validator,
-        },
+        establishmentTutorPayload,
       );
 
       expectToEqual(assessment, legacyAssessment);

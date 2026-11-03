@@ -6,6 +6,7 @@ import {
   AssessmentDtoBuilder,
   type BanEstablishmentPayload,
   ConnectedUserBuilder,
+  type ConventionActorRole,
   type ConventionDomainJwtPayload,
   ConventionDtoBuilder,
   type ConventionReadDto,
@@ -238,23 +239,6 @@ describe("Get Convention", () => {
     ])
     .build();
 
-  const ftAdvisorEmail = "ft-advisor@mail.fr";
-  const ftConnectedConvention = new ConventionDtoBuilder(convention)
-    .withId(uuidGenerator.new())
-    .withFederatedIdentity({
-      provider: "ftConnect",
-      token: "some-id",
-      payload: {
-        advisor: {
-          email: ftAdvisorEmail,
-          firstName: "john",
-          lastName: "doe",
-          type: "PLACEMENT",
-        },
-      },
-    })
-    .build();
-
   const assessment = new AssessmentDtoBuilder()
     .withConventionId(convention.id)
     .build();
@@ -272,7 +256,6 @@ describe("Get Convention", () => {
     uow.conventionRepository.setConventions([
       convention,
       conventionWithEstablishmentTutor,
-      ftConnectedConvention,
     ]);
     uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
     uow.userRepository.users = [
@@ -913,11 +896,17 @@ describe("Get Convention", () => {
           email: convention.signatories.beneficiary.email,
         },
       ] satisfies {
-        role: ConventionRole;
+        role: ConventionActorRole;
         email: string;
       }[])(
         "email hash match email hash for role '$role' in convention",
-        async ({ role, email }: { role: ConventionRole; email: string }) => {
+        async ({
+          role,
+          email,
+        }: {
+          role: ConventionActorRole;
+          email: string;
+        }) => {
           expectToEqual(
             await getConvention.execute(
               { conventionId: convention.id },
@@ -947,31 +936,6 @@ describe("Get Convention", () => {
           );
         },
       );
-
-      it("user is a FtAdvisor", async () => {
-        expectToEqual(
-          await getConvention.execute(
-            { conventionId: ftConnectedConvention.id },
-            {
-              role: "validator",
-              emailHash: makeEmailHash(ftAdvisorEmail),
-              applicationId: ftConnectedConvention.id,
-            },
-          ),
-          {
-            ...ftConnectedConvention,
-            agencyName: agency.name,
-            agencyDepartment: agency.address.departmentCode,
-            agencyContactEmail: agency.contactEmail,
-            agencyKind: agency.kind,
-            agencySiret: agency.agencySiret,
-            agencyValidationSteps: "validator-only",
-            assessment: null,
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-        );
-      });
     });
 
     describe("with ApiConsumer", () => {

@@ -137,7 +137,7 @@ describe("technical router", () => {
         exp: Date.now() / 1000 + 1000,
         iat: Date.now() / 1000,
         version: 1,
-        role: "validator",
+        role: "establishment-tutor",
         emailHash: "my-hash",
         applicationId: "convention-id",
       });

@@ -13,7 +13,6 @@ import {
   type ConventionJwtPayload,
   type ConventionMagicLinkRoutes,
   type ConventionReadDto,
-  type ConventionRole,
   conventionMagicLinkRoutes,
   currentJwtVersions,
   defaultMonthsThresholdForConventionsListing,
@@ -1057,20 +1056,10 @@ describe("convention e2e", () => {
       inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
     });
 
-    it.each(["ConventionJwt", "BackOfficeJwt", "ConnectedUserJwt"] as const)(
+    it.each(["BackOfficeJwt", "ConnectedUserJwt"] as const)(
       "200 - Succeeds with JWT %s",
       async (scenario) => {
         const jwt = match(scenario)
-          .with("ConventionJwt", () =>
-            generateConventionJwt(
-              createConventionMagicLinkPayload({
-                id: convention.id,
-                role: "counsellor",
-                email: "counsellor@pe.fr",
-                now: gateways.timeGateway.now(),
-              }),
-            ),
-          )
           .with("BackOfficeJwt", () =>
             generateConnectedUserJwt({
               userId: validator.id,
@@ -1132,14 +1121,11 @@ describe("convention e2e", () => {
     );
 
     it("when a convention is ACCEPTED_BY_VALIDATOR, an Establishment Lead is created", async () => {
-      const jwt = generateConventionJwt(
-        createConventionMagicLinkPayload({
-          id: convention.id,
-          role: "validator",
-          email: "validator@pe.fr",
-          now: gateways.timeGateway.now(),
-        }),
-      );
+      const jwt = generateConnectedUserJwt({
+        userId: validator.id,
+        version: currentJwtVersions.connectedUser,
+        iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+      });
 
       gateways.shortLinkGenerator.addMoreShortLinkIds([
         "short-link-1",
@@ -1282,14 +1268,11 @@ describe("convention e2e", () => {
           isAlsoAgencyReferent: false,
         },
         headers: {
-          authorization: generateConventionJwt(
-            createConventionMagicLinkPayload({
-              id: unknownId,
-              role: "counsellor",
-              email: "counsellor@pe.fr",
-              now: gateways.timeGateway.now(),
-            }),
-          ),
+          authorization: generateConnectedUserJwt({
+            userId: validator.id,
+            version: currentJwtVersions.connectedUser,
+            iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+          }),
         },
       });
 
@@ -1475,7 +1458,7 @@ describe("convention e2e", () => {
       const jwt = generateConventionJwt(
         createConventionMagicLinkPayload({
           id: conventionWithValidStatus.id,
-          role: "agency-viewer" as ConventionRole,
+          role: "establishment-tutor",
           email: conventionWithValidStatus.establishmentTutor.email,
           now: gateways.timeGateway.now(),
         }),

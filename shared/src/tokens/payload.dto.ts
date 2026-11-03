@@ -1,6 +1,6 @@
 import type { ApiConsumerId } from "../apiConsumer/ApiConsumer";
 import type { ConventionId } from "../convention/convention.dto";
-import type { ConventionRole } from "../role/role.dto";
+import type { ConventionActorRole } from "../role/role.dto";
 import type { Flavor } from "../typeFlavors";
 import type { ConnectedUser, UserId } from "../user/user.dto";
 
@@ -43,7 +43,7 @@ export type EmailHash = Flavor<string, "EmailHash">;
 
 export type ConventionDomainJwtPayload = {
   applicationId: ConventionId;
-  role: ConventionRole;
+  role: ConventionActorRole;
   emailHash: EmailHash; //< md5 of email
   sub?: string;
 };

@@ -6,7 +6,6 @@ import {
   type WithConventionId,
   withConventionIdSchema,
 } from "shared";
-import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import { throwForbiddenIfNotAllowedForAssessments } from "../../../utils/assessment";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
@@ -28,14 +27,13 @@ export const makeGetAssessmentByConventionId = useCaseBuilder(
   .withDeps<{ timeGateway: TimeGateway }>()
   .build(async ({ uow, currentUser, inputParams, deps }) => {
     if (!currentUser) throw errors.user.noJwtProvided();
-    const { agency, convention } = await retrieveConventionWithAgency(
+    const { convention } = await retrieveConventionWithAgency(
       uow,
       inputParams.conventionId,
     );
     await throwForbiddenIfNotAllowedForAssessments({
       mode: "GetAssessment",
       convention,
-      agency: await agencyWithRightToAgencyDto(uow, agency),
       jwtPayload: currentUser,
       uow,
     });

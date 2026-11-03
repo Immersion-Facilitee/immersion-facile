@@ -1,14 +1,14 @@
 import { values } from "ramda";
 import {
   AgencyDtoBuilder,
-  allRoles,
   type BadRequestError,
+  type ConventionActorRole,
   type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
   type ConventionRelatedJwtPayload,
-  type ConventionRole,
   type ConventionStatus,
+  conventionActorRoles,
   conventionStatuses,
   type Email,
   errors,
@@ -84,7 +84,7 @@ const userWithRoleToReview: UserWithAdminRights = {
   createdAt: new Date().toISOString(),
   preventToDelete: false,
 };
-const userWithRoleCounsellor: UserWithAdminRights = {
+export const userWithRoleCounsellor: UserWithAdminRights = {
   email: "userWithRoleCounsellor@mail.com",
   firstName: "userWithRoleCounsellor",
   id: "userWithRoleCounsellor",
@@ -97,7 +97,7 @@ const userWithRoleCounsellor: UserWithAdminRights = {
   preventToDelete: false,
 };
 
-const userWithRoleValidator: UserWithAdminRights = {
+export const userWithRoleValidator: UserWithAdminRights = {
   email: "userWithRoleValidator@mail.com",
   firstName: "userWithRoleValidator",
   id: "userWithRoleValidator",
@@ -395,7 +395,7 @@ const expectNewEvent = async <T extends DomainTopic>(
 
 type TestAcceptNewStatusParams = {
   initialStatus: ConventionStatus;
-} & ({ role: ConventionRole } | { userId: ConnectedTestUser });
+} & ({ role: ConventionActorRole } | { userId: ConnectedTestUser });
 
 type UpdatedFields = Partial<
   Omit<
@@ -521,7 +521,7 @@ type TestRejectsNewStatusParams = {
   expectedError: UnauthorizedError | BadRequestError;
 } & (
   | {
-      role: ConventionRole;
+      role: ConventionActorRole;
     }
   | {
       userId: ConnectedTestUser;
@@ -572,13 +572,16 @@ export const rejectStatusTransitionTests = ({
   allowedConnectedUsers,
   updateStatusParams,
 }: {
-  allowedMagicLinkRoles: ConventionRole[];
+  allowedMagicLinkRoles: ConventionActorRole[];
   allowedInitialStatuses: ConventionStatus[];
   allowedConnectedUsers: ConnectedTestUser[];
   updateStatusParams: UpdateConventionStatusRequestDto;
 }) => {
   const [allowedRolesToUpdate, notAllowedRolesToUpdate] =
-    splitCasesBetweenPassingAndFailing(allRoles, allowedMagicLinkRoles);
+    splitCasesBetweenPassingAndFailing(
+      conventionActorRoles,
+      allowedMagicLinkRoles,
+    );
   const [_allowedConnectedUsers, notAllowedConnectedUsers] =
     splitCasesBetweenPassingAndFailing(
       allConnectedTestUsers,
@@ -596,7 +599,7 @@ export const rejectStatusTransitionTests = ({
     );
 
   const someValidInitialStatus = authorizedInitialStatuses[0];
-  const someValidRole = allowedRolesToUpdate[0];
+  const someValidMagicLinkRole = allowedRolesToUpdate[0];
 
   const conventionAgencyId =
     updateStatusParams.conventionId === conventionWithAgencyTwoStepsValidationId
@@ -619,19 +622,16 @@ export const rejectStatusTransitionTests = ({
     if (notAllowedRolesToUpdate.length) {
       it.each(notAllowedRolesToUpdate.map((role) => ({ role })))(
         "Rejected from role '$role'",
-        ({ role }) => {
-          const userId = "userWithRoleEstablishmentRepresentative";
-          return testRejectsStatusUpdate({
-            userId,
-            role: role as ConventionRole,
+        ({ role }) =>
+          testRejectsStatusUpdate({
+            role,
             initialStatus: someValidInitialStatus,
             expectedError: errors.convention.badRoleStatusChange({
               roles: [role],
               status: updateStatusParams.status,
               conventionId: updateStatusParams.conventionId,
             }),
-          });
-        },
+          }),
       );
     }
 
@@ -675,11 +675,19 @@ export const rejectStatusTransitionTests = ({
               targetStatus: updateStatusParams.status,
             });
 
-        return testRejectsStatusUpdate({
-          role: someValidRole,
-          initialStatus: status,
-          expectedError: error,
-        });
+        return testRejectsStatusUpdate(
+          someValidMagicLinkRole
+            ? {
+                role: someValidMagicLinkRole,
+                initialStatus: status,
+                expectedError: error,
+              }
+            : {
+                userId: allowedConnectedUsers[0],
+                initialStatus: status,
+                expectedError: error,
+              },
+        );
       },
     );
   });
@@ -694,7 +702,7 @@ export const acceptStatusTransitionTests = ({
   nextDate,
   updateStatusParams,
 }: {
-  allowedMagicLinkRoles: ConventionRole[];
+  allowedMagicLinkRoles: ConventionActorRole[];
   expectedDomainTopic: ConventionDomainTopic;
   updatedFields?: UpdatedFields;
   allowedInitialStatuses: ConventionStatus[];
@@ -705,6 +713,7 @@ export const acceptStatusTransitionTests = ({
   describe(`Accepted with convention id ${updateStatusParams.conventionId}`, () => {
     const someValidInitialStatus = allowedInitialStatuses[0];
     const someValidRole = allowedMagicLinkRoles[0];
+    const someValidUserId = allowedConnectedUsers[0];
 
     const testAcceptsStatusUpdate = makeTestAcceptsStatusUpdate({
       updateStatusParams,
@@ -713,14 +722,15 @@ export const acceptStatusTransitionTests = ({
       nextDate,
     });
 
-    it.each(allowedMagicLinkRoles.map((role) => ({ role })))(
-      "Accepted from role '$role'",
-      ({ role }) =>
-        testAcceptsStatusUpdate({
-          role,
-          initialStatus: someValidInitialStatus,
-        }),
-    );
+    if (allowedMagicLinkRoles.length)
+      it.each(allowedMagicLinkRoles.map((role) => ({ role })))(
+        "Accepted from role '$role'",
+        ({ role }) =>
+          testAcceptsStatusUpdate({
+            role,
+            initialStatus: someValidInitialStatus,
+          }),
+      );
 
     if (allowedConnectedUsers.length)
       it.each(allowedConnectedUsers.map((userId) => ({ userId })))(
@@ -735,10 +745,11 @@ export const acceptStatusTransitionTests = ({
     it.each(allowedInitialStatuses.map((status) => ({ status })))(
       "Accepted from status $status",
       ({ status }) =>
-        testAcceptsStatusUpdate({
-          role: someValidRole,
-          initialStatus: status,
-        }),
+        testAcceptsStatusUpdate(
+          someValidRole
+            ? { role: someValidRole, initialStatus: status }
+            : { userId: someValidUserId, initialStatus: status },
+        ),
     );
   });
 };

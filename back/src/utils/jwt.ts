@@ -2,9 +2,9 @@ import { createHash, generateKeyPairSync } from "node:crypto";
 import {
   type ConnectedUserDomainJwtPayload,
   type ConnectedUserJwtPayload,
+  type ConventionActorRole,
   type ConventionId,
   type ConventionJwtPayload,
-  type ConventionRole,
   currentJwtVersions,
   type Email,
   type EmailAuthCodeDomainJwtPayload,
@@ -67,7 +67,7 @@ export const makeEmailHash = (email: Email): string => stringToMd5(email);
 
 export type CreateConventionMagicLinkPayloadProperties = {
   id: ConventionId;
-  role: ConventionRole;
+  role: ConventionActorRole;
   email: string;
   now: Date;
   durationDays?: number;

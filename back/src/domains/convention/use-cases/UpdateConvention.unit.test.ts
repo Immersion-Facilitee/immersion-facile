@@ -8,7 +8,6 @@ import {
   type ConventionDomainJwtPayload,
   type ConventionDto,
   ConventionDtoBuilder,
-  type ConventionRole,
   type ConventionStatus,
   conventionStatuses,
   defaultMonthsThresholdForConventionsListing,
@@ -18,15 +17,12 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
   makeBooleanFeatureFlag,
-  type Role,
   reasonableSchedule,
   type SignatoryRole,
   statusTransitionConfigs,
-  UserBuilder,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { makeHashByRolesForTest } from "../../../utils/emailHash";
-import { createConventionMagicLinkPayload } from "../../../utils/jwt";
 import {
   type CreateNewEvent,
   makeCreateNewEvent,
@@ -115,9 +111,6 @@ describe("Update Convention", () => {
 
   const connectedUser = new ConnectedUserBuilder()
     .withId("connected-user-id")
-    .build();
-  const notConnectedUser = new UserBuilder()
-    .withEmail("notconnecteduser@mail.com")
     .build();
   let updateConvention: UpdateConvention;
   let createNewEvent: CreateNewEvent;
@@ -285,36 +278,23 @@ describe("Update Convention", () => {
           );
         });
 
-        it.each([
-          "to-review",
-          "agency-viewer",
-          "agency-admin",
-          "establishment-tutor",
-        ] satisfies Role[])(
-          "throws forbiden if user role is not allowed",
-          async (role) => {
-            uow.conventionRepository.setConventions([convention]);
+        it("throws forbidden if magic link role is establishment-tutor", async () => {
+          uow.conventionRepository.setConventions([convention]);
 
-            const jwtPayload = createConventionMagicLinkPayload({
+          await expectPromiseToFailWithError(
+            updateConvention.execute(
+              { convention },
+              {
+                applicationId: convention.id,
+                role: "establishment-tutor",
+                emailHash: "any-hash",
+              },
+            ),
+            errors.convention.updateForbidden({
               id: convention.id,
-              role: role as ConventionRole,
-              email: notConnectedUser.email,
-              now: new Date(),
-            });
-
-            await expectPromiseToFailWithError(
-              updateConvention.execute(
-                {
-                  convention,
-                },
-                jwtPayload,
-              ),
-              errors.convention.updateForbidden({
-                id: convention.id,
-              }),
-            );
-          },
-        );
+            }),
+          );
+        });
       });
     });
 
