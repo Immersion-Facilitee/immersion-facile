@@ -40,7 +40,7 @@ export const conventionSignatoryRoleBySignatoryKey: Record<
   "establishment-representative": "establishmentRepresentative",
 };
 
-export const isRequesterStillSignatory = ({
+export const isStillSignatoryOnUpdatedConvention = ({
   signatoryRole,
   initialConvention,
   updatedConvention,

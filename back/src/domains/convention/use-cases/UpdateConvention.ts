@@ -6,8 +6,8 @@ import {
   type ConventionStatus,
   errors,
   type InternshipKind,
-  isRequesterStillSignatory,
   isSignatoryRole,
+  isStillSignatoryOnUpdatedConvention,
   type Signatories,
   statusTransitionConfigs,
   updateConventionRequestSchema,
@@ -99,7 +99,7 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
       const signatoryRole = userRolesOnConvention.find(isSignatoryRole);
       const signatoryRoleToSignWith =
         signatoryRole &&
-        isRequesterStillSignatory({
+        isStillSignatoryOnUpdatedConvention({
           signatoryRole,
           initialConvention: conventionFromRepo,
           updatedConvention: convention,

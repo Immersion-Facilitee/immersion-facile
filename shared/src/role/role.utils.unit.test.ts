@@ -1,6 +1,6 @@
 import { ConventionDtoBuilder } from "../convention/ConventionDtoBuilder";
 import { expectToEqual } from "../test.helpers";
-import { isRequesterStillSignatory } from "./role.utils";
+import { isStillSignatoryOnUpdatedConvention } from "./role.utils";
 
 describe("isStillSignatoryOnUpdatedConvention", () => {
   const initialConvention = new ConventionDtoBuilder()
@@ -10,7 +10,7 @@ describe("isStillSignatoryOnUpdatedConvention", () => {
 
   it("returns true when the signatory email is unchanged", () => {
     expectToEqual(
-      isRequesterStillSignatory({
+      isStillSignatoryOnUpdatedConvention({
         signatoryRole: "establishment-representative",
         initialConvention,
         updatedConvention: initialConvention,
@@ -25,7 +25,7 @@ describe("isStillSignatoryOnUpdatedConvention", () => {
       .build();
 
     expectToEqual(
-      isRequesterStillSignatory({
+      isStillSignatoryOnUpdatedConvention({
         signatoryRole: "establishment-representative",
         initialConvention,
         updatedConvention,
@@ -40,7 +40,7 @@ describe("isStillSignatoryOnUpdatedConvention", () => {
       .build();
 
     expectToEqual(
-      isRequesterStillSignatory({
+      isStillSignatoryOnUpdatedConvention({
         signatoryRole: "establishment-representative",
         initialConvention,
         updatedConvention,
