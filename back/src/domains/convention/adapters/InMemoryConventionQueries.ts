@@ -171,24 +171,16 @@ export class InMemoryConventionQueries implements ConventionQueries {
     const sortedConventions = sortConventionsInMemory(
       withAssessmentFilter,
       sort,
-    );
+    ).slice(0, maxTotalRecords);
 
     const { page, perPage } = pagination;
     const startIndex = (page - 1) * perPage;
 
     return {
-      data: sortedConventions.slice(
-        startIndex,
-        Math.min(
-          startIndex + perPage,
-          maxTotalRecords ?? Number.POSITIVE_INFINITY,
-        ),
-      ),
+      data: sortedConventions.slice(startIndex, startIndex + perPage),
       pagination: calculatePaginationResult({
         ...pagination,
-        totalRecords: maxTotalRecords
-          ? Math.min(sortedConventions.length, maxTotalRecords)
-          : sortedConventions.length,
+        totalRecords: sortedConventions.length,
       }),
     };
   }

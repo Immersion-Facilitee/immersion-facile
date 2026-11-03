@@ -120,7 +120,7 @@ export type BeforeOrAfterDateFilterLabels = {
   after: string;
 };
 
-export type BeforeOrAfterDateFilterValue = {
+type BeforeOrAfterDateFilterValue = {
   from: DateString | undefined;
   to: DateString | undefined;
 };

@@ -21,7 +21,7 @@ import {
   statusSchema,
 } from "./convention.schema";
 
-export const adminConventionListDtoSchema: ZodSchemaWithInputMatchingOutput<AdminConventionListDto> =
+const adminConventionListDtoSchema: ZodSchemaWithInputMatchingOutput<AdminConventionListDto> =
   agencyUserConventionListDtoSchema.and(
     z.object({
       agencyKind: agencyKindSchema,
