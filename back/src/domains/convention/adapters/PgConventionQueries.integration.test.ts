@@ -2683,10 +2683,15 @@ describe("Pg implementation of ConventionQueries", () => {
             expectToEqual(byBusinessName.data, [conventionD]);
           });
 
-          it("should not find conventions by agency referent name", async () => {
-            const result = await searchConventions("martin");
+          it("should find conventions by agency referent name contains", async () => {
+            const byAgencyReferentLastName = await searchConventions("martin");
+            const byAgencyReferentLastNameThenFirstName =
+              await searchConventions("dupont mar");
 
-            expectToEqual(result.data, []);
+            expectToEqual(byAgencyReferentLastName.data, [conventionB]);
+            expectToEqual(byAgencyReferentLastNameThenFirstName.data, [
+              conventionA,
+            ]);
           });
         });
 

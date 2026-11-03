@@ -800,7 +800,14 @@ const sortConventionsInMemory = (
 };
 
 const matchesIdentifierOrNameSearch = (
-  { id, siret, businessName, signatories, establishmentTutor }: ConventionDto,
+  {
+    id,
+    siret,
+    businessName,
+    signatories,
+    establishmentTutor,
+    agencyReferent,
+  }: ConventionDto,
   identifierOrNameSearch: string,
 ): boolean => {
   const email = toLowerCaseWithoutDiacritics(identifierOrNameSearch);
@@ -819,6 +826,10 @@ const matchesIdentifierOrNameSearch = (
     includesIgnoringCase(businessName, identifierOrNameSearch) ||
     includesIgnoringCase(
       `${beneficiary.firstName} ${beneficiary.lastName} ${beneficiary.firstName}`,
+      identifierOrNameSearch,
+    ) ||
+    includesIgnoringCase(
+      `${agencyReferent?.firstname ?? ""} ${agencyReferent?.lastname ?? ""} ${agencyReferent?.firstname ?? ""}`,
       identifierOrNameSearch,
     )
   );
