@@ -3,7 +3,7 @@ import {
   type ConventionDto,
   type ConventionField,
   getConventionFieldName,
-  isRequesterStillSignatory,
+  isStillSignatoryOnUpdatedConvention,
   type Signatory,
   type SignatoryRole,
 } from "shared";
@@ -61,15 +61,15 @@ const signatoryData = createSelector(
     initialFetchedConvention,
     currentSignatoryRole,
   }): SignatoryData => {
-    if (!convention || !currentSignatoryRole)
-      return { signatory: null, signedAtFieldName: null };
     if (
-      initialFetchedConvention &&
-      !isRequesterStillSignatory({
-        signatoryRole: currentSignatoryRole,
-        initialConvention: initialFetchedConvention,
-        updatedConvention: convention,
-      })
+      !convention ||
+      !currentSignatoryRole ||
+      (initialFetchedConvention &&
+        !isStillSignatoryOnUpdatedConvention({
+          signatoryRole: currentSignatoryRole,
+          initialConvention: initialFetchedConvention,
+          updatedConvention: convention,
+        }))
     )
       return { signatory: null, signedAtFieldName: null };
     return signatoryDataFromConvention(convention, currentSignatoryRole);
