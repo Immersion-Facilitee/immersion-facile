@@ -129,6 +129,24 @@ export function pipeWithValue<A, B, C, D, E, F, G, H, I, J, K, L, M>(
 ): M;
 
 // biome-ignore format: better readability without formatting
+export function pipeWithValue<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
+  a: A,
+  ab: (a: A) => B,
+  bc: (b: B) => C,
+  cd: (c: C) => D,
+  de: (d: D) => E,
+  ef: (e: E) => F,
+  fg: (f: F) => G,
+  gh: (g: G) => H,
+  hi: (h: H) => I,
+  ij: (i: I) => J,
+  jk: (j: J) => K,
+  kl: (k: K) => L,
+  lm: (l: L) => M,
+  mn: (m: M) => N,
+): N;
+
+// biome-ignore format: better readability without formatting
 export function pipeWithValue(
   a: unknown,
   ab?: AnyFunction,
@@ -143,6 +161,7 @@ export function pipeWithValue(
   jk?: AnyFunction,
   kl?: AnyFunction,
   lm?: AnyFunction,
+  mn?: AnyFunction,
 ): unknown {
   switch (arguments.length) {
     case 1:
@@ -171,6 +190,8 @@ export function pipeWithValue(
       return kl?.(jk?.(ij?.(hi?.(gh?.(fg?.(ef?.(de?.(cd?.(bc?.(ab?.(a)))))))))));
     case 13:
       return lm?.(kl?.(jk?.(ij?.(hi?.(gh?.(fg?.(ef?.(de?.(cd?.(bc?.(ab?.(a))))))))))));
+    case 14:
+      return mn?.(lm?.(kl?.(jk?.(ij?.(hi?.(gh?.(fg?.(ef?.(de?.(cd?.(bc?.(ab?.(a)))))))))))));
     default:
       throw Error(
         "Cannot handle so many arguments, check : https://github.com/gcanti/fp-ts/blob/master/src/function.ts",
