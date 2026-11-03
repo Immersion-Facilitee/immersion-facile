@@ -25,7 +25,7 @@ export const DiscussionCardContent = ({
             })}
           </dd>
           <dt className={fr.cx("fr-text--xs", "fr-mb-0")}>Objectif</dt>
-          <dd className={fr.cx("fr-text--sm", "fr-text--bold")}>
+          <dd className={fr.cx("fr-text--sm", "fr-text--bold", "fr-mb-0")}>
             {discussion.immersionObjective}
           </dd>
         </dl>
@@ -33,7 +33,7 @@ export const DiscussionCardContent = ({
       .with("potentialBeneficiary", () => (
         <dl className={fr.cx("fr-raw-list", "fr-mt-1w")}>
           <dt className={fr.cx("fr-text--xs", "fr-mb-0")}>Métier</dt>
-          <dd className={fr.cx("fr-text--sm", "fr-text--bold", "fr-mb-1w")}>
+          <dd className={fr.cx("fr-text--sm", "fr-text--bold", "fr-mb-0")}>
             {discussion.appellation.appellationLabel}
           </dd>
         </dl>

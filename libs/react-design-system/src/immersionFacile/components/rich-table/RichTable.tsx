@@ -88,12 +88,15 @@ export const RichTable = ({
   useScrollTo(pagination?.defaultPage ?? 1);
 
   useLayoutEffect(() => {
-    tableRef.current?.querySelectorAll("th").forEach((th) => {
-      if (th.textContent?.includes("Date")) {
-        th.classList.add("has-date-text");
-      }
+    if (selectedViewMode !== "table") return;
+    tableRef.current?.querySelectorAll("th").forEach((th, index) => {
+      const header = headers?.[index];
+      th.classList.toggle(
+        "has-date-text",
+        typeof header === "string" && header.includes("Date"),
+      );
     });
-  }, []);
+  }, [headers, selectedViewMode]);
 
   useEffect(() => {
     searchBarRefOnSubmitRef?.(debouncedSearchValue);
@@ -215,27 +218,33 @@ export const RichTable = ({
               key={gridItem.id}
               className={fr.cx("fr-col-12", "fr-col-lg-4")}
             >
-              <BorderedSection>
-                {gridItem.badge}
-                <h3 className={fr.cx("fr-h6", "fr-mb-0")}>{gridItem.title}</h3>
-                <span className={fr.cx("fr-text--xs")}>
-                  {gridItem.subTitle}
-                </span>
-                <div>{gridItem.content}</div>
-                <hr className={fr.cx("fr-hr", "fr-mt-2w", "fr-pb-2w")} />
-                <div className={fr.cx("fr-grid-row", "fr-grid-row--center")}>
-                  {gridItem.footerLeftNode && (
-                    <span className={fr.cx("fr-hint-text")}>
-                      {gridItem.footerLeftNode}
-                    </span>
-                  )}
-                  <Button
-                    className={fr.cx("fr-ml-auto")}
-                    size="small"
-                    priority="secondary"
-                    {...gridItem.cta}
-                  />
+              <BorderedSection className={cx(Styles.card)}>
+                <div>
+                  {gridItem.badge}
+                  <h3 className={fr.cx("fr-h6", "fr-mb-0")}>
+                    {gridItem.title}
+                  </h3>
+                  <span className={fr.cx("fr-text--xs")}>
+                    {gridItem.subTitle}
+                  </span>
+                  <div>{gridItem.content}</div>
                 </div>
+                <footer>
+                  <hr className={fr.cx("fr-hr", "fr-mt-2w", "fr-pb-2w")} />
+                  <div className={fr.cx("fr-grid-row")}>
+                    {gridItem.footerLeftNode && (
+                      <span className={fr.cx("fr-hint-text")}>
+                        {gridItem.footerLeftNode}
+                      </span>
+                    )}
+                    <Button
+                      className={fr.cx("fr-ml-auto")}
+                      size="small"
+                      priority="secondary"
+                      {...gridItem.cta}
+                    />
+                  </div>
+                </footer>
               </BorderedSection>
             </div>
           ))}
