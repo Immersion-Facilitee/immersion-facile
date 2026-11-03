@@ -317,14 +317,10 @@ export class PgConventionQueries implements ConventionQueries {
       filterOmitStatusesForAgencies(omitStatusesForAgencies),
       filterSearch(trimmedSearch),
       filterByIdentifierOrNameSearch(identifierOrNameSearch),
-      (builder) =>
-        pipeWithValue(
-          builder,
-          filterDate("date_start", dateStart),
-          filterDate("date_end", dateEnd),
-          filterDate("date_submission", dateSubmission),
-          filterDate("date_validation", dateValidation),
-        ),
+      filterDate("date_start", dateStart),
+      filterDate("date_end", dateEnd),
+      filterDate("date_submission", dateSubmission),
+      filterDate("date_validation", dateValidation),
       filterInList("status", statuses),
       filterByAssessmentCompletionStatus(assessmentCompletionStatus),
     );
