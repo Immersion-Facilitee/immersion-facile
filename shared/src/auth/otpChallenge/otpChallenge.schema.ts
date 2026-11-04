@@ -7,16 +7,17 @@ import { conventionActorRoleSchema } from "../../role/role.schema";
 import { dateTimeIsoStringSchema } from "../../utils/date";
 import { zStringMinLength1Max255 } from "../../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../../zodUtils";
-import type {
-  ManageConventionSubject,
-  MaskedOtpRecipients,
-  OtpChallenge,
-  OtpChallengePurpose,
-  RequestOtpChallengeDto,
+import {
+  type ManageConventionSubject,
+  type MaskedOtpRecipients,
+  type OtpChallenge,
+  type OtpChallengePurpose,
+  otpChallengePurposes,
+  type RequestOtpChallengeDto,
 } from "./otpChallenge.dto";
 
-const OtpChallengePurposeSchema: ZodSchemaWithInputMatchingOutput<OtpChallengePurpose> =
-  z.enum(["manageConvention"]);
+export const otpChallengePurposeSchema: ZodSchemaWithInputMatchingOutput<OtpChallengePurpose> =
+  z.enum(otpChallengePurposes);
 
 const manageConventionSubjectSchema: ZodSchemaWithInputMatchingOutput<ManageConventionSubject> =
   z.object({
@@ -25,15 +26,15 @@ const manageConventionSubjectSchema: ZodSchemaWithInputMatchingOutput<ManageConv
     emailHash: z.string(),
   });
 
-const OtpChallengeSubjectSchema: ZodSchemaWithInputMatchingOutput<
+export const otpChallengeSubjectSchema: ZodSchemaWithInputMatchingOutput<
   OtpChallenge["subject"]
 > = manageConventionSubjectSchema;
 
 export const otpChallengeSchema: ZodSchemaWithInputMatchingOutput<OtpChallenge> =
   z.object({
     id: zStringMinLength1Max255,
-    purpose: OtpChallengePurposeSchema,
-    subject: OtpChallengeSubjectSchema,
+    purpose: otpChallengePurposeSchema,
+    subject: otpChallengeSubjectSchema,
     channel: notificationKindSchema,
     recipient: emailSchema.or(phoneNumberSchema),
     codeHash: zStringMinLength1Max255,
