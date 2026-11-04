@@ -71,7 +71,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
 
   return (
     <>
-      <h1>Conventions</h1>
+      <h2 className={fr.cx("fr-h5")}>Conventions</h2>
       <WithFeedbackReplacer topic={feedbackTopic} level="error" />
       {showTable && (
         <RichTable

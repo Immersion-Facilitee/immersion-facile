@@ -5,4 +5,5 @@ export default {
   header: "im-rich-table__header",
   dropdowns: "im-rich-table__dropdowns",
   tools: "im-rich-table__tools",
+  card: "im-rich-table__card",
 };
