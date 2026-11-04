@@ -12,6 +12,7 @@ import type {
   MaskedOtpRecipients,
   OtpChallenge,
   OtpChallengePurpose,
+  RequestOtpChallengeDto,
 } from "./otpChallenge.dto";
 
 const OtpChallengePurposeSchema: ZodSchemaWithInputMatchingOutput<OtpChallengePurpose> =
@@ -47,4 +48,9 @@ export const maskedOtpRecipientsSchema: ZodSchemaWithInputMatchingOutput<MaskedO
   z.object({
     maskedEmail: zStringMinLength1Max255,
     maskedPhone: zStringMinLength1Max255.nullable(),
+  });
+
+export const requestOtpChallengeSchema: ZodSchemaWithInputMatchingOutput<RequestOtpChallengeDto> =
+  z.object({
+    channel: notificationKindSchema,
   });

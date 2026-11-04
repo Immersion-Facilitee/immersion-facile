@@ -8,11 +8,12 @@ import {
   immersionFacileNoReplyEmailSender,
   isValidMobilePhone,
   type NotificationKind,
-  notificationKindSchema,
   OTP_CHALLENGE_DURATION_IN_MINUTES,
   type OtpChallenge,
   type OtpCode,
   type PhoneNumber,
+  type RequestOtpChallengeDto,
+  requestOtpChallengeSchema,
   type VisitorOtpJwtPayload,
 } from "shared";
 import { match } from "ts-pattern";
@@ -39,7 +40,7 @@ const OTP_CHALLENGE_REQUESTS_PERIOD_IN_MINUTES = 60;
 export type RequestOtpChallenge = ReturnType<typeof makeRequestOtpChallenge>;
 
 export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
-  .withInput<NotificationKind>(notificationKindSchema)
+  .withInput<RequestOtpChallengeDto>(requestOtpChallengeSchema)
   .withCurrentUser<VisitorOtpJwtPayload>()
   .withOutput<void>()
   .withDeps<{
@@ -49,7 +50,7 @@ export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
     timeGateway: TimeGateway;
     uuidGenerator: UuidGenerator;
   }>()
-  .build(async ({ inputParams: channel, currentUser, uow, deps }) =>
+  .build(async ({ inputParams: { channel }, currentUser, uow, deps }) =>
     match(currentUser.purpose)
       .with("manageConvention", async (): Promise<void> => {
         const { conventionId, emailHash, role } = currentUser.subject;

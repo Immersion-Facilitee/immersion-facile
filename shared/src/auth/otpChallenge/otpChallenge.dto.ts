@@ -45,3 +45,5 @@ export type MaskedOtpRecipients = {
   maskedEmail: string;
   maskedPhone: string | null;
 };
+
+export type RequestOtpChallengeDto = Pick<OtpChallenge, "channel">;

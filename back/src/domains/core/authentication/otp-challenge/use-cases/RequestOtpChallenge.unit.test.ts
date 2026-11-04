@@ -90,7 +90,7 @@ describe("RequestOtpChallenge", () => {
 
         await expectPromiseToFailWithError(
           requestOtpChallenge.execute(
-            "email",
+            { channel: "email" },
             visitorOtpJwtPayloadWithNonExistingConvention,
           ),
           errors.convention.notFound({
@@ -125,7 +125,7 @@ describe("RequestOtpChallenge", () => {
 
           await expectPromiseToFailWithError(
             requestOtpChallenge.execute(
-              "email",
+              { channel: "email" },
               visitorOtpJwtPayloadWithMissingRole,
             ),
             errors.convention.missingActor({
@@ -155,7 +155,7 @@ describe("RequestOtpChallenge", () => {
 
         await expectPromiseToFailWithError(
           requestOtpChallenge.execute(
-            "email",
+            { channel: "email" },
             visitorOtpJwtPayloadWithOtherActorEmailHash,
           ),
           errors.convention.forbiddenMissingRightsEmailHash({
@@ -179,16 +179,19 @@ describe("RequestOtpChallenge", () => {
         otpCodeGeneratorGateway.setNextOtpCodes(["123456"]);
 
         await expectPromiseToFailWithError(
-          requestOtpChallenge.execute("sms", {
-            ...visitorOtpJwtPayload,
-            subject: {
-              conventionId: conventionWithLandlinePhone.id,
-              role: "beneficiary",
-              emailHash: makeEmailHash(
-                conventionWithLandlinePhone.signatories.beneficiary.email,
-              ),
+          requestOtpChallenge.execute(
+            { channel: "sms" },
+            {
+              ...visitorOtpJwtPayload,
+              subject: {
+                conventionId: conventionWithLandlinePhone.id,
+                role: "beneficiary",
+                emailHash: makeEmailHash(
+                  conventionWithLandlinePhone.signatories.beneficiary.email,
+                ),
+              },
             },
-          }),
+          ),
           errors.convention.invalidMobilePhoneNumber({
             conventionId: conventionWithLandlinePhone.id,
             role: "beneficiary",
@@ -225,10 +228,13 @@ describe("RequestOtpChallenge", () => {
         otpCodeGeneratorGateway.setNextOtpCodes(["123456"]);
 
         await expectPromiseToFailWithError(
-          requestOtpChallenge.execute("email", {
-            ...visitorOtpJwtPayload,
-            subject,
-          }),
+          requestOtpChallenge.execute(
+            { channel: "email" },
+            {
+              ...visitorOtpJwtPayload,
+              subject,
+            },
+          ),
           errors.otpChallenge.requestedTooRecently({
             minSecondsBetweenRequests: 60,
           }),
@@ -271,10 +277,13 @@ describe("RequestOtpChallenge", () => {
         otpCodeGeneratorGateway.setNextOtpCodes(["123456"]);
 
         await expectPromiseToFailWithError(
-          requestOtpChallenge.execute("email", {
-            ...visitorOtpJwtPayload,
-            subject,
-          }),
+          requestOtpChallenge.execute(
+            { channel: "email" },
+            {
+              ...visitorOtpJwtPayload,
+              subject,
+            },
+          ),
           errors.otpChallenge.tooManyRequests({
             maxRequests: 5,
             periodInMinutes: 60,
@@ -368,7 +377,7 @@ describe("RequestOtpChallenge", () => {
 
           expectToEqual(
             await requestOtpChallenge.execute(
-              "email",
+              { channel: "email" },
               validVisitorOtpJwtPayload,
             ),
             undefined,
@@ -436,7 +445,10 @@ describe("RequestOtpChallenge", () => {
           };
 
           expectToEqual(
-            await requestOtpChallenge.execute("sms", validVisitorOtpJwtPayload),
+            await requestOtpChallenge.execute(
+              { channel: "sms" },
+              validVisitorOtpJwtPayload,
+            ),
             undefined,
           );
 
@@ -512,10 +524,13 @@ describe("RequestOtpChallenge", () => {
         uuidGenerator.setNextUuids([otpChallengeId]);
         otpCodeGeneratorGateway.setNextOtpCodes([otpCode]);
 
-        await requestOtpChallenge.execute("email", {
-          ...visitorOtpJwtPayload,
-          subject,
-        });
+        await requestOtpChallenge.execute(
+          { channel: "email" },
+          {
+            ...visitorOtpJwtPayload,
+            subject,
+          },
+        );
 
         expectToEqual(uow.otpChallengeRepository.otpChallenges, [
           ...otpChallengesRequestedMoreThanOneHourAgo,
@@ -569,10 +584,13 @@ describe("RequestOtpChallenge", () => {
         uuidGenerator.setNextUuids([otpChallengeId]);
         otpCodeGeneratorGateway.setNextOtpCodes([otpCode]);
 
-        await requestOtpChallenge.execute("email", {
-          ...visitorOtpJwtPayload,
-          subject,
-        });
+        await requestOtpChallenge.execute(
+          { channel: "email" },
+          {
+            ...visitorOtpJwtPayload,
+            subject,
+          },
+        );
 
         expectToEqual(uow.otpChallengeRepository.otpChallenges, [
           { ...previousActiveOtpChallenge, revokedAt: now.toISOString() },
@@ -633,10 +651,13 @@ describe("RequestOtpChallenge", () => {
         uuidGenerator.setNextUuids([otpChallengeId]);
         otpCodeGeneratorGateway.setNextOtpCodes([otpCode]);
 
-        await requestOtpChallenge.execute("email", {
-          ...visitorOtpJwtPayload,
-          subject,
-        });
+        await requestOtpChallenge.execute(
+          { channel: "email" },
+          {
+            ...visitorOtpJwtPayload,
+            subject,
+          },
+        );
 
         expectToEqual(uow.otpChallengeRepository.otpChallenges, [
           usedOtpChallenge,
