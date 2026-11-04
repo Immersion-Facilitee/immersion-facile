@@ -2745,10 +2745,11 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         blocks: [
           {
             kind: "paragraph",
-            content: `
-        Nous vous informons que votre établissement ${businessName} (SIRET : ${siret}) n'a plus accès aux services d'Immersion Facilitée.
-        
-        <strong>Ce qu'il faut savoir :</strong>`,
+            content: `Nous vous informons que votre établissement ${businessName} (SIRET : ${siret}) n'a plus accès aux services d'Immersion Facilitée.`,
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>Ce qu'il faut savoir :</strong>",
             marginBottom: "sm",
           },
           {

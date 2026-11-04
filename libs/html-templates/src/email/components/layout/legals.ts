@@ -1,5 +1,6 @@
 import { convertLineBreaksToHtml } from "../../../helpers/formatters";
 import { renderDivider } from "../blocks/divider";
+import { emailFontFamilyStyle } from "../typography";
 
 export const renderLegals = (content: string | undefined): string | undefined =>
   content &&
@@ -19,7 +20,7 @@ export const renderLegals = (content: string | undefined): string | undefined =>
     </tr>
     <tr>
       <td>
-       <p style="color: #666; font-size: 10px; line-height: 1.6;">
+       <p style="color: #666; ${emailFontFamilyStyle} font-size: 10px; line-height: 1.6;">
         ${convertLineBreaksToHtml(content)}
        </p>
       </td>

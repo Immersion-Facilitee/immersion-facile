@@ -1,4 +1,5 @@
 import { convertLineBreaksToHtml } from "../../../helpers/formatters";
+import { emailBodyTextStyle } from "../typography";
 
 export type EmailListProps = {
   items: string[];
@@ -11,7 +12,7 @@ export const renderList = ({ items, numbered }: EmailListProps): string => {
   return `<${tag} style="margin: 0 0 0 ${marginLeft}; padding: 0;">${items
     .map(
       (item, index) =>
-        `<li style="margin: 0 0 ${index === items.length - 1 ? 0 : 4}px 0;">${convertLineBreaksToHtml(item)}</li>`,
+        `<li style="margin: 0 0 ${index === items.length - 1 ? 0 : 4}px 0; ${emailBodyTextStyle}">${convertLineBreaksToHtml(item)}</li>`,
     )
     .join("")}</${tag}>`;
 };
