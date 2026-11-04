@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import { Checkbox, type CheckboxProps } from "@codegouvfr/react-dsfr/Checkbox";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import RadioButtons, {
@@ -18,6 +19,7 @@ import {
   domElementIds,
   type FlatGetConventionsForAgencyUserParams,
   getFormattedFirstnameAndLastname,
+  isConventionArchived,
   isNotEmptyArray,
 } from "shared";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
@@ -396,10 +398,24 @@ export const ConventionList = () => {
                   <Tooltip kind="hover" title={convention.agencyName} />
                 </Fragment>,
                 <Fragment key={`${convention.id}-status`}>
-                  <ConventionStatusBadge
-                    conventionStatus={convention.status}
-                    userKind="agency"
-                  />
+                  <ul
+                    className={fr.cx("fr-badges-group", "fr-badges-group--sm")}
+                  >
+                    <li>
+                      <ConventionStatusBadge
+                        conventionStatus={convention.status}
+                        userKind="agency"
+                      />
+                    </li>
+                    {isConventionArchived({
+                      dateEnd: convention.dateEnd,
+                      now: new Date(),
+                    }) && (
+                      <li>
+                        <Badge small>Archivée</Badge>
+                      </li>
+                    )}
+                  </ul>
                 </Fragment>,
                 <Fragment key={`${convention.id}-assessment`}>
                   <ConventionAssessmentStatusBadge
