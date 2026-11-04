@@ -10,7 +10,6 @@ import {
   type Role,
   renewConventionParamsSchema,
 } from "shared";
-import { throwIfRoleHasNoMagicLink } from "../../../utils/convention";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
@@ -91,12 +90,11 @@ const rolesByPayload = async (
   from: ConventionId,
 ): Promise<(Role | AgencyRole)[]> => {
   if ("role" in jwtPayload) {
-    const role = throwIfRoleHasNoMagicLink(jwtPayload.role);
     if (from !== jwtPayload.applicationId)
       throw new ForbiddenError(
         "This token is not allowed to renew this convention",
       );
-    return [role];
+    return [jwtPayload.role];
   }
 
   const user = await uow.userRepository.getById(jwtPayload.userId);

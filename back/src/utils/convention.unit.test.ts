@@ -96,15 +96,6 @@ describe("conventionEmailsByRole", () => {
       }),
     );
   });
-
-  it.each(["counsellor", "validator"] as const)(
-    "throws roleHasNoMagicLink for %s",
-    (role) => {
-      expect(() => emailsByRole(role)).toThrow(
-        errors.convention.roleHasNoMagicLink({ role }),
-      );
-    },
-  );
 });
 
 describe("conventionDtosToConventionReadDtos", () => {

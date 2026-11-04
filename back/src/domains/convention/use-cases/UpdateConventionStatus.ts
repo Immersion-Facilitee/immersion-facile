@@ -16,7 +16,6 @@ import {
   type WithConventionIdLegacy,
 } from "shared";
 import { getAgencyValidationSteps } from "../../../utils/agency";
-import { throwIfRoleHasNoMagicLink } from "../../../utils/convention";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
 import type { DomainTopic, TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
@@ -241,8 +240,7 @@ const getRoleInPayloadOrUser = async (
   uow: UnitOfWork,
   payload: ConventionRelatedJwtPayload,
 ): Promise<{ userWithRights: UserWithRights } | { roleInPayload: Role }> => {
-  if ("role" in payload)
-    return { roleInPayload: throwIfRoleHasNoMagicLink(payload.role) };
+  if ("role" in payload) return { roleInPayload: payload.role };
 
   const userWithRights = await getUserWithRights(uow, payload.userId);
   if (!userWithRights)

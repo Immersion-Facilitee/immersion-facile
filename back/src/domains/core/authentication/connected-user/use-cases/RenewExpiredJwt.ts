@@ -22,7 +22,10 @@ import type {
   GenerateConventionMagicLinkUrl,
   GenerateEmailAuthCodeUrl,
 } from "../../../../../config/bootstrap/magicLinkUrl";
-import { conventionEmailsByRole } from "../../../../../utils/convention";
+import {
+  conventionEmailsByRole,
+  throwIfRoleHasNoMagicLink,
+} from "../../../../../utils/convention";
 import { makeEmailHash } from "../../../../../utils/jwt";
 import type { CreateNewEvent } from "../../../events/ports/EventBus";
 import type { SaveNotificationAndRelatedEvent } from "../../../notifications/helpers/Notification";
@@ -208,6 +211,8 @@ const onConventionDomainJwtPayload = async (
   originalUrl: string,
   deps: Deps,
 ): Promise<void> => {
+  const role = throwIfRoleHasNoMagicLink(conventionJwt.role);
+
   const convention = await uow.conventionRepository.getById(
     conventionJwt.applicationId,
   );
@@ -216,7 +221,7 @@ const onConventionDomainJwtPayload = async (
       conventionId: conventionJwt.applicationId,
     });
 
-  const emails = conventionEmailsByRole(convention)(conventionJwt.role);
+  const emails = conventionEmailsByRole(convention)(role);
 
   const emailMatchingEmailHash = emails.find(
     (email) => makeEmailHash(email) === conventionJwt.emailHash,
@@ -232,7 +237,7 @@ const onConventionDomainJwtPayload = async (
     shortLinkIdGeneratorGateway: deps.shortLinkIdGeneratorGateway,
     conventionMagicLinkPayload: {
       id: convention.id,
-      role: conventionJwt.role,
+      role,
       email: emailMatchingEmailHash,
       now: deps.timeGateway.now(),
     },
