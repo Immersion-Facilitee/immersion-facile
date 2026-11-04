@@ -22,6 +22,7 @@ const defaultOtpChallenge: OtpChallenge = {
   attempts: 0,
   expiresAt: new Date("2024-04-28T12:00:00.000Z").toISOString(),
   usedAt: null,
+  revokedAt: null,
   createdAt: new Date("2024-04-28T12:00:00.000Z").toISOString(),
 };
 
@@ -62,6 +63,10 @@ export class OtpChallengeDtoBuilder implements Builder<OtpChallenge> {
 
   withUsedAt(usedAt: DateTimeIsoString | null) {
     return new OtpChallengeDtoBuilder({ ...this.#dto, usedAt });
+  }
+
+  withRevokedAt(revokedAt: DateTimeIsoString | null) {
+    return new OtpChallengeDtoBuilder({ ...this.#dto, revokedAt });
   }
 
   withCreatedAt(createdAt: DateTimeIsoString) {

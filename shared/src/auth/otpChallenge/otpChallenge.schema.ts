@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { conventionIdSchema } from "../../convention/convention.schema";
 import { emailSchema } from "../../email/email.schema";
+import { notificationKindSchema } from "../../notifications/notifications.schema";
 import { phoneNumberSchema } from "../../phone/phone.schema";
 import { conventionActorRoleSchema } from "../../role/role.schema";
 import { dateTimeIsoStringSchema } from "../../utils/date";
@@ -32,12 +33,13 @@ export const otpChallengeSchema: ZodSchemaWithInputMatchingOutput<OtpChallenge> 
     id: zStringMinLength1Max255,
     purpose: OtpChallengePurposeSchema,
     subject: OtpChallengeSubjectSchema,
-    channel: z.enum(["email", "sms"]),
+    channel: notificationKindSchema,
     recipient: emailSchema.or(phoneNumberSchema),
     codeHash: zStringMinLength1Max255,
     attempts: z.number().min(0),
     expiresAt: dateTimeIsoStringSchema,
     usedAt: dateTimeIsoStringSchema.nullable(),
+    revokedAt: dateTimeIsoStringSchema.nullable(),
     createdAt: dateTimeIsoStringSchema,
   });
 

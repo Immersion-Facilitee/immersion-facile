@@ -1,0 +1,228 @@
+import { addMinutes, subMinutes, subSeconds } from "date-fns";
+import {
+  type ConventionActorRole,
+  type ConventionDto,
+  type Email,
+  errors,
+  executeInSequence,
+  immersionFacileNoReplyEmailSender,
+  isValidMobilePhone,
+  type NotificationKind,
+  notificationKindSchema,
+  OTP_CHALLENGE_DURATION_IN_MINUTES,
+  type OtpChallenge,
+  type OtpCode,
+  type PhoneNumber,
+  type VisitorOtpJwtPayload,
+} from "shared";
+import { match } from "ts-pattern";
+
+import { makeEmailHash } from "../../../../../utils/jwt";
+import type {
+  NotificationContentAndFollowedIds,
+  SaveNotificationAndRelatedEvent,
+} from "../../../notifications/helpers/Notification";
+import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
+import { useCaseBuilder } from "../../../useCaseBuilder";
+import type { UuidGenerator } from "../../../uuid-generator/ports/UuidGenerator";
+import type { HashOtpCode } from "../adapters/hashOtpCode";
+import type { OtpCodeGeneratorGateway } from "../port/OtpCodeGeneratorGateway";
+import {
+  getConventionActorOtpRecipients,
+  type OtpRecipients,
+} from "./GetMaskedOtpRecipients";
+
+const MIN_SECONDS_BETWEEN_OTP_CHALLENGE_REQUESTS = 60;
+const MAX_OTP_CHALLENGE_REQUESTS_PER_PERIOD = 5;
+const OTP_CHALLENGE_REQUESTS_PERIOD_IN_MINUTES = 60;
+
+export type RequestOtpChallenge = ReturnType<typeof makeRequestOtpChallenge>;
+
+export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
+  .withInput<NotificationKind>(notificationKindSchema)
+  .withCurrentUser<VisitorOtpJwtPayload>()
+  .withOutput<void>()
+  .withDeps<{
+    hashOtpCode: HashOtpCode;
+    otpCodeGeneratorGateway: OtpCodeGeneratorGateway;
+    saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
+    timeGateway: TimeGateway;
+    uuidGenerator: UuidGenerator;
+  }>()
+  .build(async ({ inputParams: channel, currentUser, uow, deps }) =>
+    match(currentUser.purpose)
+      .with("manageConvention", async (): Promise<void> => {
+        const { conventionId, emailHash, role } = currentUser.subject;
+
+        const convention = await uow.conventionRepository.getById(conventionId);
+
+        if (!convention) throw errors.convention.notFound({ conventionId });
+
+        const recipients = getConventionActorOtpRecipients({
+          convention,
+          role,
+        });
+
+        if (makeEmailHash(recipients.email) !== emailHash)
+          throw errors.convention.forbiddenMissingRightsEmailHash({
+            conventionId,
+            role,
+            emailHash,
+          });
+
+        const now = deps.timeGateway.now();
+
+        const otpChallenges =
+          await uow.otpChallengeRepository.getByPurposeAndSubject({
+            purpose: "manageConvention",
+            subject: currentUser.subject,
+          });
+
+        throwIfOtpChallengeRequestsLimitReached({ otpChallenges, now });
+
+        const otpChallengeId = deps.uuidGenerator.new();
+        const otpCode = deps.otpCodeGeneratorGateway.generate();
+
+        const { recipient, notification } = makeOtpNotification({
+          channel,
+          convention,
+          role,
+          recipients,
+          otpCode,
+        });
+
+        await executeInSequence(
+          otpChallenges.filter((otpChallenge) =>
+            isOtpChallengeActive(otpChallenge, now),
+          ),
+          ({ id }) => uow.otpChallengeRepository.revoke({ id, revokedAt: now }),
+        );
+
+        await uow.otpChallengeRepository.save({
+          id: otpChallengeId,
+          purpose: "manageConvention",
+          subject: currentUser.subject,
+          channel,
+          recipient,
+          codeHash: deps.hashOtpCode({ otpChallengeId, otpCode }),
+          attempts: 0,
+          expiresAt: addMinutes(
+            now,
+            OTP_CHALLENGE_DURATION_IN_MINUTES,
+          ).toISOString(),
+          usedAt: null,
+          revokedAt: null,
+          createdAt: now.toISOString(),
+        });
+
+        await deps.saveNotificationAndRelatedEvent(uow, notification, {
+          priority: 1,
+        });
+      })
+      .exhaustive(),
+  );
+
+const throwIfOtpChallengeRequestsLimitReached = ({
+  otpChallenges,
+  now,
+}: {
+  otpChallenges: OtpChallenge[];
+  now: Date;
+}): void => {
+  const periodStart = subMinutes(now, OTP_CHALLENGE_REQUESTS_PERIOD_IN_MINUTES);
+  const otpChallengesRequestedDuringPeriod = otpChallenges.filter(
+    ({ createdAt }) => new Date(createdAt) >= periodStart,
+  );
+  const minCreatedAtForNewRequest = subSeconds(
+    now,
+    MIN_SECONDS_BETWEEN_OTP_CHALLENGE_REQUESTS,
+  );
+
+  if (
+    otpChallengesRequestedDuringPeriod.some(
+      ({ createdAt }) => new Date(createdAt) > minCreatedAtForNewRequest,
+    )
+  )
+    throw errors.otpChallenge.requestedTooRecently({
+      minSecondsBetweenRequests: MIN_SECONDS_BETWEEN_OTP_CHALLENGE_REQUESTS,
+    });
+
+  if (
+    otpChallengesRequestedDuringPeriod.length >=
+    MAX_OTP_CHALLENGE_REQUESTS_PER_PERIOD
+  )
+    throw errors.otpChallenge.tooManyRequests({
+      maxRequests: MAX_OTP_CHALLENGE_REQUESTS_PER_PERIOD,
+      periodInMinutes: OTP_CHALLENGE_REQUESTS_PERIOD_IN_MINUTES,
+    });
+};
+
+const isOtpChallengeActive = (
+  { expiresAt, usedAt, revokedAt }: OtpChallenge,
+  now: Date,
+): boolean =>
+  usedAt === null && revokedAt === null && new Date(expiresAt) > now;
+
+type OtpNotification = {
+  recipient: Email | PhoneNumber;
+  notification: NotificationContentAndFollowedIds;
+};
+
+const makeOtpNotification = ({
+  channel,
+  convention,
+  role,
+  recipients,
+  otpCode,
+}: {
+  channel: NotificationKind;
+  convention: ConventionDto;
+  role: ConventionActorRole;
+  recipients: OtpRecipients;
+  otpCode: OtpCode;
+}): OtpNotification => {
+  const followedIds = {
+    conventionId: convention.id,
+    agencyId: convention.agencyId,
+    establishmentSiret: convention.siret,
+  };
+
+  return match(channel)
+    .with(
+      "email",
+      (): OtpNotification => ({
+        recipient: recipients.email,
+        notification: {
+          kind: "email",
+          templatedContent: {
+            kind: "REQUEST_OTP_CODE",
+            recipients: [recipients.email],
+            sender: immersionFacileNoReplyEmailSender,
+            params: { otpCode },
+          },
+          followedIds,
+        },
+      }),
+    )
+    .with("sms", (): OtpNotification => {
+      if (!isValidMobilePhone(recipients.phone))
+        throw errors.convention.invalidMobilePhoneNumber({
+          conventionId: convention.id,
+          role,
+        });
+
+      return {
+        recipient: recipients.phone,
+        notification: {
+          kind: "sms",
+          templatedContent: {
+            kind: "RequestOtpCode",
+            recipientPhone: recipients.phone,
+            params: { otpCode },
+          },
+          followedIds,
+        },
+      };
+    })
+    .exhaustive();
+};

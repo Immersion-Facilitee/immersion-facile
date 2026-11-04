@@ -167,40 +167,40 @@ describe("GetMaskedOtpRecipients", () => {
           role: "beneficiary" as const,
           email: "beneficiary@email.fr",
           expectedMaskedRecipients: {
-            email: "b**********@email.fr",
-            phone: "06******78",
+            maskedEmail: "b**********@email.fr",
+            maskedPhone: "06******78",
           },
         },
         {
           role: "establishment-representative" as const,
           email: "patron@email.com",
           expectedMaskedRecipients: {
-            email: "p*****@email.com",
-            phone: "06******89",
+            maskedEmail: "p*****@email.com",
+            maskedPhone: "06******89",
           },
         },
         {
           role: "establishment-tutor" as const,
           email: "tuteur@email.com",
           expectedMaskedRecipients: {
-            email: "t*****@email.com",
-            phone: "06******91",
+            maskedEmail: "t*****@email.com",
+            maskedPhone: "06******91",
           },
         },
         {
           role: "beneficiary-representative" as const,
           email: "parent@email.com",
           expectedMaskedRecipients: {
-            email: "p*****@email.com",
-            phone: "06******12",
+            maskedEmail: "p*****@email.com",
+            maskedPhone: "06******12",
           },
         },
         {
           role: "beneficiary-current-employer" as const,
           email: "employeur@email.com",
           expectedMaskedRecipients: {
-            email: "e********@email.com",
-            phone: "06******23",
+            maskedEmail: "e********@email.com",
+            maskedPhone: "06******23",
           },
         },
       ])(
@@ -246,8 +246,8 @@ describe("GetMaskedOtpRecipients", () => {
       });
 
       expect(maskedRecipients).toEqual({
-        email: "b**********@email.fr",
-        phone: null,
+        maskedEmail: "b**********@email.fr",
+        maskedPhone: null,
       });
     });
   });
