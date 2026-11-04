@@ -13,7 +13,7 @@ import { match } from "ts-pattern";
 import { makeEmailHash } from "../../../../../utils/jwt";
 import { useCaseBuilder } from "../../../useCaseBuilder";
 
-type OtpRecipients = {
+export type OtpRecipients = {
   email: Email;
   phone: PhoneNumber;
 };
@@ -36,7 +36,10 @@ export const makeGetMaskedOtpRecipients = useCaseBuilder(
 
         if (!convention) throw errors.convention.notFound({ conventionId });
 
-        const recipients = getConventionActorRecipients({ convention, role });
+        const recipients = getConventionActorOtpRecipients({
+          convention,
+          role,
+        });
 
         if (makeEmailHash(recipients.email) !== emailHash)
           throw errors.convention.forbiddenMissingRightsEmailHash({
@@ -55,7 +58,7 @@ export const makeGetMaskedOtpRecipients = useCaseBuilder(
       .exhaustive(),
   );
 
-const getConventionActorRecipients = ({
+export const getConventionActorOtpRecipients = ({
   convention,
   role,
 }: {

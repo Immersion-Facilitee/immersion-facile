@@ -79,6 +79,26 @@ export const errors = {
   otpChallenge: {
     alreadyExists: (id: OtpChallengeId) =>
       new ConflictError(`Le challenge OTP ${id} existe déjà.`),
+    notFound: (id: OtpChallengeId) =>
+      new NotFoundError(`Le challenge OTP ${id} n'existe pas.`),
+    requestedTooRecently: ({
+      minSecondsBetweenRequests,
+    }: {
+      minSecondsBetweenRequests: number;
+    }) =>
+      new TooManyRequestApiError(
+        `Un code a été demandé il y a moins de ${minSecondsBetweenRequests} secondes. Merci de patienter avant d'en demander un nouveau.`,
+      ),
+    tooManyRequests: ({
+      maxRequests,
+      periodInMinutes,
+    }: {
+      maxRequests: number;
+      periodInMinutes: number;
+    }) =>
+      new TooManyRequestApiError(
+        `Vous avez demandé ${maxRequests} codes au cours des ${periodInMinutes} dernières minutes. Merci de réessayer plus tard.`,
+      ),
   },
   fetch: {
     errorResponse: async (errorResponse: Response) => {
