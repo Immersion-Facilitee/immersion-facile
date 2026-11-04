@@ -79,8 +79,9 @@ describe.each(["Pg", "InMemory"])("%s OtpChallengeRepository", (adapter) => {
   });
 
   describe("revoke", () => {
-    it("revokes an existing otp challenge", async () => {
+    it("revokes only the targeted otp challenge", async () => {
       await otpChallengeRepository.save(emailOtpChallenge);
+      await otpChallengeRepository.save(smsOtpChallenge);
 
       await otpChallengeRepository.revoke({
         id: emailOtpChallenge.id,
@@ -89,9 +90,14 @@ describe.each(["Pg", "InMemory"])("%s OtpChallengeRepository", (adapter) => {
 
       expectToEqual(
         await otpChallengeRepository.getById(emailOtpChallenge.id),
-        new OtpChallengeDtoBuilder(emailOtpChallenge)
-          .withRevokedAt("2024-04-28T10:45:00.000Z")
-          .build(),
+        {
+          ...emailOtpChallenge,
+          revokedAt: "2024-04-28T10:45:00.000Z",
+        },
+      );
+      expectToEqual(
+        await otpChallengeRepository.getById(smsOtpChallenge.id),
+        smsOtpChallenge,
       );
     });
 
@@ -101,6 +107,66 @@ describe.each(["Pg", "InMemory"])("%s OtpChallengeRepository", (adapter) => {
           id: unknownOtpChallengeId,
           revokedAt: new Date("2024-04-28T10:45:00.000Z"),
         }),
+        errors.otpChallenge.notFound(unknownOtpChallengeId),
+      );
+    });
+  });
+
+  describe("markAsUsed", () => {
+    it("marks only the targeted otp challenge as used", async () => {
+      await otpChallengeRepository.save(emailOtpChallenge);
+      await otpChallengeRepository.save(smsOtpChallenge);
+
+      await otpChallengeRepository.markAsUsed({
+        id: emailOtpChallenge.id,
+        usedAt: new Date("2024-04-28T10:45:00.000Z"),
+      });
+
+      expectToEqual(
+        await otpChallengeRepository.getById(emailOtpChallenge.id),
+        {
+          ...emailOtpChallenge,
+          usedAt: "2024-04-28T10:45:00.000Z",
+        },
+      );
+      expectToEqual(
+        await otpChallengeRepository.getById(smsOtpChallenge.id),
+        smsOtpChallenge,
+      );
+    });
+
+    it("fails to mark as used an otp challenge that does not exist", async () => {
+      await expectPromiseToFailWithError(
+        otpChallengeRepository.markAsUsed({
+          id: unknownOtpChallengeId,
+          usedAt: new Date("2024-04-28T10:45:00.000Z"),
+        }),
+        errors.otpChallenge.notFound(unknownOtpChallengeId),
+      );
+    });
+  });
+
+  describe("incrementAttempts", () => {
+    it("increments attempts of only the targeted otp challenge on each call", async () => {
+      await otpChallengeRepository.save(emailOtpChallenge);
+      await otpChallengeRepository.save(smsOtpChallenge);
+
+      await otpChallengeRepository.incrementAttempts(smsOtpChallenge.id);
+      await otpChallengeRepository.incrementAttempts(smsOtpChallenge.id);
+
+      expectToEqual(await otpChallengeRepository.getById(smsOtpChallenge.id), {
+        ...smsOtpChallenge,
+        attempts: 4,
+      });
+      expectToEqual(
+        await otpChallengeRepository.getById(emailOtpChallenge.id),
+        emailOtpChallenge,
+      );
+    });
+
+    it("fails to increment attempts of an otp challenge that does not exist", async () => {
+      await expectPromiseToFailWithError(
+        otpChallengeRepository.incrementAttempts(unknownOtpChallengeId),
         errors.otpChallenge.notFound(unknownOtpChallengeId),
       );
     });

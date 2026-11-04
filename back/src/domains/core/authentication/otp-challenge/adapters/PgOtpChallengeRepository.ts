@@ -9,6 +9,7 @@ import type { KyselyDb } from "../../../../../config/pg/kysely/kyselyUtils";
 import type { Database } from "../../../../../config/pg/kysely/model/database";
 import type {
   GetOtpChallengesByPurposeAndSubjectParams,
+  MarkOtpChallengeAsUsedParams,
   OtpChallengeRepository,
   RevokeOtpChallengeParams,
 } from "../port/OtpChallengeRepository";
@@ -51,6 +52,31 @@ export class PgOtpChallengeRepository implements OtpChallengeRepository {
     const result = await this.transaction
       .updateTable("otp_challenges")
       .set({ revoked_at: revokedAt })
+      .where("id", "=", id)
+      .executeTakeFirst();
+
+    if (Number(result.numUpdatedRows) === 0)
+      throw errors.otpChallenge.notFound(id);
+  }
+
+  public async markAsUsed({
+    id,
+    usedAt,
+  }: MarkOtpChallengeAsUsedParams): Promise<void> {
+    const result = await this.transaction
+      .updateTable("otp_challenges")
+      .set({ used_at: usedAt })
+      .where("id", "=", id)
+      .executeTakeFirst();
+
+    if (Number(result.numUpdatedRows) === 0)
+      throw errors.otpChallenge.notFound(id);
+  }
+
+  public async incrementAttempts(id: OtpChallengeId): Promise<void> {
+    const result = await this.transaction
+      .updateTable("otp_challenges")
+      .set((eb) => ({ attempts: eb("attempts", "+", 1) }))
       .where("id", "=", id)
       .executeTakeFirst();
 
