@@ -2,6 +2,7 @@ import { equals, values } from "ramda";
 import { errors, type OtpChallenge, type OtpChallengeId } from "shared";
 import type {
   GetOtpChallengesByPurposeAndSubjectParams,
+  MarkOtpChallengeAsUsedParams,
   OtpChallengeRepository,
   RevokeOtpChallengeParams,
 } from "../port/OtpChallengeRepository";
@@ -38,6 +39,31 @@ export class InMemoryOtpChallengeRepository implements OtpChallengeRepository {
     this.#otpChallengesById[id] = {
       ...otpChallenge,
       revokedAt: revokedAt.toISOString(),
+    };
+  }
+
+  public async markAsUsed({
+    id,
+    usedAt,
+  }: MarkOtpChallengeAsUsedParams): Promise<void> {
+    const otpChallenge = this.#otpChallengesById[id];
+
+    if (!otpChallenge) throw errors.otpChallenge.notFound(id);
+
+    this.#otpChallengesById[id] = {
+      ...otpChallenge,
+      usedAt: usedAt.toISOString(),
+    };
+  }
+
+  public async incrementAttempts(id: OtpChallengeId): Promise<void> {
+    const otpChallenge = this.#otpChallengesById[id];
+
+    if (!otpChallenge) throw errors.otpChallenge.notFound(id);
+
+    this.#otpChallengesById[id] = {
+      ...otpChallenge,
+      attempts: otpChallenge.attempts + 1,
     };
   }
 
