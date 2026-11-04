@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import { Fragment, useEffect } from "react";
 import { RichTable, SectionHighlight } from "react-design-system";
 import { useDispatch } from "react-redux";
@@ -7,6 +8,7 @@ import {
   defaultPerPageInWebPagination,
   domElementIds,
   immersionFacileHelpdeskRootUrl,
+  isConventionArchived,
 } from "shared";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -173,10 +175,22 @@ const conventionListToTableData = (
   conventionList.map<React.ReactNode[]>((convention) => [
     convention.businessName,
     <Fragment key={convention.conventionId}>
-      <ConventionStatusBadge
-        conventionStatus={convention.status}
-        userKind="beneficiary"
-      />
+      <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
+        <li>
+          <ConventionStatusBadge
+            conventionStatus={convention.status}
+            userKind="beneficiary"
+          />
+        </li>
+        {isConventionArchived({
+          dateEnd: convention.dateEnd,
+          now: new Date(),
+        }) && (
+          <li>
+            <Badge small>Archivée</Badge>
+          </li>
+        )}
+      </ul>
     </Fragment>,
     <Fragment key={convention.conventionId}>
       <ConventionAssessmentStatusBadge
