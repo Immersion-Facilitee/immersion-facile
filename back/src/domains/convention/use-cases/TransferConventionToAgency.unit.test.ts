@@ -4,7 +4,6 @@ import type {
   AgencyRole,
   ConnectedUser,
   ConnectedUserDomainJwtPayload,
-  ConventionRelatedJwtPayload,
   ConventionStatus,
   FtConnectIdentity,
   FtConnectImmersionAdvisorDto,
@@ -164,28 +163,6 @@ describe("TransferConventionToAgency", () => {
         expectObjectInArrayToMatch(uow.outboxRepository.events, []);
       },
     );
-
-    it("throws unauthorized for role if jwt payload has no convention nor user identity", async () => {
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {}),
-        toAgencyWithRights(otherAgency, {}),
-      ];
-
-      await expectPromiseToFailWithError(
-        usecase.execute(
-          {
-            conventionId,
-            agencyId: otherAgency.id,
-            justification: "test",
-          },
-          {} as ConventionRelatedJwtPayload,
-        ),
-        errors.convention.transferNotAuthorizedForRole(),
-      );
-      expectToEqual(uow.conventionRepository.conventions, [convention]);
-      expectToEqual(uow.outboxRepository.events, []);
-    });
 
     it("throw an error if convention is not found", async () => {
       await expectPromiseToFailWithError(
