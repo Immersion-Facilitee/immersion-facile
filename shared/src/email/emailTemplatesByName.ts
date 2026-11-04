@@ -359,6 +359,7 @@ export const emailTemplatesByName =
             ],
           },
           { kind: "paragraph", content: "Cordialement," },
+          { kind: "divider" },
         ],
         signature: defaultSignature("immersion"),
       }),
@@ -491,7 +492,7 @@ export const emailTemplatesByName =
           {
             kind: "paragraph",
             content: `
-      L'immersion demandée par Bénéficiaire <strong>${beneficiaryFirstName} ${beneficiaryLastName}</strong> au sein de l'entreprise <strong>${businessName}</strong> doit démarrer demain.
+      L'immersion demandée par <strong>${beneficiaryFirstName} ${beneficiaryLastName}</strong> au sein de l'entreprise <strong>${businessName}</strong> doit démarrer demain.
       ${
         agencyReferentName
           ? `
@@ -1702,7 +1703,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
             kind: "paragraph",
             content: `<strong>Nous vous confirmons que votre candidature pour ${kind === "IF" ? "une immersion professionnelle" : "un stage"} a bien été transmise à ${businessName}</strong>. L'entreprise doit maintenant examiner votre demande.
 
-        L'entreprise va maintenant examiner votre demande. Si elle l'accepte, elle vous contactera pour discuter des détails de votre ${kind === "IF" ? "immersion" : "stage"}.
+        Si elle l'accepte, elle vous contactera pour discuter des détails de votre ${kind === "IF" ? "immersion" : "stage"}.
         De votre côté, vous avez la possibilité d'échanger avec elle directement depuis votre espace personnel. C'est l'endroit idéal pour appuyer votre candidature, montrer votre motivation ou répondre à ses éventuelles questions.
         `,
           },
@@ -2760,12 +2761,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           },
           {
             kind: "paragraph",
-            content: `<strong>Pourquoi cette décision ?</strong>
-
-        Cette mesure fait suite à des signalements concernant le non-respect des règles de l'immersion.
-
-        Si vous estimez qu'il s'agit d'une erreur, vous pouvez <a href="https://aide.immersion-facile.beta.gouv.fr/fr/" >contacter notre support</a>.
-        `,
+            content: "<strong>Pourquoi cette décision ?</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "paragraph",
+            content: `Cette mesure fait suite à des signalements concernant le non-respect des règles de l'immersion.
+            Si vous estimez qu'il s'agit d'une erreur, vous pouvez <a href="https://aide.immersion-facile.beta.gouv.fr/fr/" >contacter notre support</a>.`,
           },
         ],
         signature: defaultSignature("immersion"),
@@ -2848,9 +2850,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           },
           {
             kind: "paragraph",
-            content: `<strong>Comment rebondir ?</strong>
-
-        Ne vous découragez pas ! De nombreuses autres entreprises sont prêtes à vous accueillir. Si vous souhaitez toujours réaliser une immersion, vous pouvez :`,
+            content: "<strong>Comment rebondir ?</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "paragraph",
+            content:
+              "Ne vous découragez pas ! De nombreuses autres entreprises sont prêtes à vous accueillir. Si vous souhaitez toujours réaliser une immersion, vous pouvez :",
             marginBottom: "sm",
           },
           {
@@ -3364,8 +3370,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
             kind: "paragraph",
             content: `La demande de convention pour ${
               internshipKind === "immersion" ? "l'immersion" : "le mini stage"
-            }
-        de ${beneficiaryFirstName} ${beneficiaryLastName} au sein de ${businessName} vient d'être modifiée.
+            } de ${beneficiaryFirstName} ${beneficiaryLastName} au sein de ${businessName} vient d'être modifiée.
         
         <strong>Les modifications sont&nbsp;:</strong>
         ${justification}
@@ -3724,14 +3729,18 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
         Avant de débuter ${
           internshipKind === "immersion" ? "l'immersion" : "le mini stage"
         }, veuillez vous assurer que la convention a bien été validée par un conseiller de la structure d'accompagnement du bénéficiaire (${agencyName}).
-        Vous recevrez une notification lorsque ce sera fait.
-
-        Dans le cas contraire, il y a des risques :
-
-        Risque juridique pour l’entreprise : elle s’expose à des sanctions en cas de contrôle par l’inspection du travail. Sans convention, l'immersion pourrait être considérée comme du travail dissimulé.
-
-        Absence de protection pour le candidat : il ne bénéficiera pas de couverture sociale pour les accidents de travail ou les maladies professionnelles liées à l’activité de l’entreprise. En cas d’accident, il pourrait se retrouver sans indemnisation de la sécurité sociale.
-        `,
+        Vous recevrez une notification lorsque ce sera fait.`,
+          },
+          {
+            kind: "paragraph",
+            content: "Dans le cas contraire, il y a des risques :",
+          },
+          {
+            kind: "list",
+            items: [
+              "Risque juridique pour l’entreprise : elle s’expose à des sanctions en cas de contrôle par l’inspection du travail. Sans convention, l'immersion pourrait être considérée comme du travail dissimulé.",
+              "Absence de protection pour le candidat : il ne bénéficiera pas de couverture sociale pour les accidents de travail ou les maladies professionnelles liées à l’activité de l’entreprise. En cas d’accident, il pourrait se retrouver sans indemnisation de la sécurité sociale.",
+            ],
           },
         ],
         signature: defaultSignature(internshipKind),
@@ -3754,10 +3763,17 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
         blocks: [
           {
             kind: "paragraph",
-            content: `Votre entreprise <strong>${businessName}</strong> fait déjà partie des entreprises accueillantes sur Immersion Facilitée, merci pour votre engagement !
-        
-        🌟 <strong>Devenez une Super Entreprise</strong>
-        Les entreprises les plus actives peuvent désormais obtenir le <strong>label “Super Entreprise”</strong>. Ce label :`,
+            content: `Votre entreprise <strong>${businessName}</strong> fait déjà partie des entreprises accueillantes sur Immersion Facilitée, merci pour votre engagement !`,
+          },
+          {
+            kind: "paragraph",
+            content: "🌟 <strong>Devenez une Super Entreprise</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "paragraph",
+            content:
+              "Les entreprises les plus actives peuvent désormais obtenir le <strong>label “Super Entreprise”</strong>. Ce label :",
             marginBottom: "sm",
           },
           {
@@ -3775,8 +3791,13 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
           },
           {
             kind: "paragraph",
-            content: `🎥 <strong>Webinaire : “Comment devenir une Super Entreprise ?”</strong>
-        Découvrez comment :`,
+            content:
+              "🎥 <strong>Webinaire : “Comment devenir une Super Entreprise ?”</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "paragraph",
+            content: "Découvrez comment :",
             marginBottom: "sm",
           },
           {
@@ -3809,10 +3830,13 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
           },
           {
             kind: "paragraph",
-            content: `Ces outils vous simplifient la gestion et renforcent votre visibilité.
-
-      Votre engagement compte, et ensemble, nous facilitons la découverte des métiers partout en France.      
-      `,
+            content:
+              "Ces outils vous simplifient la gestion et renforcent votre visibilité.",
+          },
+          {
+            kind: "paragraph",
+            content:
+              "Votre engagement compte, et ensemble, nous facilitons la découverte des métiers partout en France.",
           },
         ],
         signature: defaultSignature("immersion"),
@@ -4051,22 +4075,27 @@ L'équipe d'Immersion Facilitée`,
       ],
       createEmailVariables: ({ recipientsInEmailInError, errorMessage }) => ({
         subject: "Échec d'envoi d'email",
-        rawContent: `
-        <p>Bonjour,</p>
-        <p>Votre email n'a pas pu être envoyé. Nous avons rencontré l'erreur suivante :</p>
-        
-        <p>${errorMessage}</p>
-        
-        <p>Les destinataires suivants n'ont pas reçu l'email :</p>
-        <ul>
-          ${recipientsInEmailInError.map((recipient) => `<li>${recipient}</li>`).join("")}
-        </ul>
-        
-        <p>Vous pouvez essayer de renvoyer l'email en évitant les pièces jointes (ou bien en utilisant uniquement des formats pdf ou des images).</p>
-
-        Bonne journée,
-        <br/>
-        L'équipe Immersion Facile`,
+        greetings: "Bonjour,",
+        blocks: [
+          {
+            kind: "paragraph",
+            content:
+              "Votre email n'a pas pu être envoyé. Nous avons rencontré l'erreur suivante :",
+          },
+          { kind: "paragraph", content: errorMessage },
+          {
+            kind: "paragraph",
+            content: "Les destinataires suivants n'ont pas reçu l'email :",
+            marginBottom: "sm",
+          },
+          { kind: "list", items: recipientsInEmailInError },
+          {
+            kind: "paragraph",
+            content:
+              "Vous pouvez essayer de renvoyer l'email en évitant les pièces jointes (ou bien en utilisant uniquement des formats pdf ou des images).",
+          },
+        ],
+        signature: defaultSignature("immersion"),
       }),
     },
     ESTABLISHMENT_USER_RIGHT_IS_PENDING: {
