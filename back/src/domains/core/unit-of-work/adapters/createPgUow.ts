@@ -25,6 +25,7 @@ import { PgEstablishmentMarketingRepository } from "../../../marketing/adapters/
 import { PgApiConsumerRepository } from "../../api-consumer/adapters/PgApiConsumerRepository";
 import { PgOngoingOAuthRepository } from "../../authentication/connected-user/adapters/PgOngoingOAuthRepository";
 import { PgUserRepository } from "../../authentication/connected-user/adapters/PgUserRepository";
+import { PgOtpChallengeRepository } from "../../authentication/otp-challenge/adapters/PgOtpChallengeRepository";
 import { PgOutboxQueries } from "../../events/adapters/PgOutboxQueries";
 import { PgOutboxRepository } from "../../events/adapters/PgOutboxRepository";
 import { PgFeatureFlagQueries } from "../../feature-flags/adapters/PgFeatureFlagQueries";
@@ -78,6 +79,7 @@ export const createPgUow = (transaction: KyselyDb): UnitOfWork => {
     npsRepository: new PgNpsRepository(transaction),
     notificationRepository: new PgNotificationRepository(transaction),
     ongoingOAuthRepository: new PgOngoingOAuthRepository(transaction),
+    otpChallengeRepository: new PgOtpChallengeRepository(transaction),
     outboxQueries: new PgOutboxQueries(transaction),
     outboxRepository: new PgOutboxRepository(transaction),
     phoneRepository: new PgPhoneRepository(transaction),

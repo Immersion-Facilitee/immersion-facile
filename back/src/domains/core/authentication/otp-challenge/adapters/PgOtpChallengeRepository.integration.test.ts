@@ -1,8 +1,10 @@
 import type { Pool } from "pg";
 import {
   errors,
+  expectArraysToEqualIgnoringOrder,
   expectPromiseToFailWithError,
   expectToEqual,
+  type ManageConventionSubject,
   OtpChallengeDtoBuilder,
 } from "shared";
 import {
@@ -72,6 +74,85 @@ describe.each(["Pg", "InMemory"])("%s OtpChallengeRepository", (adapter) => {
       await expectPromiseToFailWithError(
         otpChallengeRepository.save(emailOtpChallenge),
         errors.otpChallenge.alreadyExists(emailOtpChallenge.id),
+      );
+    });
+  });
+
+  describe("revoke", () => {
+    it("revokes an existing otp challenge", async () => {
+      await otpChallengeRepository.save(emailOtpChallenge);
+
+      await otpChallengeRepository.revoke({
+        id: emailOtpChallenge.id,
+        revokedAt: new Date("2024-04-28T10:45:00.000Z"),
+      });
+
+      expectToEqual(
+        await otpChallengeRepository.getById(emailOtpChallenge.id),
+        new OtpChallengeDtoBuilder(emailOtpChallenge)
+          .withRevokedAt("2024-04-28T10:45:00.000Z")
+          .build(),
+      );
+    });
+
+    it("fails to revoke an otp challenge that does not exist", async () => {
+      await expectPromiseToFailWithError(
+        otpChallengeRepository.revoke({
+          id: unknownOtpChallengeId,
+          revokedAt: new Date("2024-04-28T10:45:00.000Z"),
+        }),
+        errors.otpChallenge.notFound(unknownOtpChallengeId),
+      );
+    });
+  });
+
+  describe("getByPurposeAndSubject", () => {
+    it("returns otp challenges with the same purpose and subject", async () => {
+      const subject: ManageConventionSubject = {
+        conventionId: "33333333-3333-4333-a333-333333333333",
+        role: "beneficiary",
+        emailHash: "beneficiary-email-hash",
+      };
+      const emailOtpChallengeOfSubject = new OtpChallengeDtoBuilder()
+        .withId("44444444-4444-4444-a444-444444444444")
+        .withSubject(subject)
+        .withCreatedAt("2024-04-28T10:00:00.000Z")
+        .build();
+      const smsOtpChallengeOfSubject = new OtpChallengeDtoBuilder()
+        .withId("55555555-5555-4555-a555-555555555555")
+        .withSubject(subject)
+        .withChannel("sms")
+        .withRecipient("+33612345678")
+        .withCreatedAt("2024-04-28T11:30:00.000Z")
+        .build();
+      const otpChallengeOfOtherSubject = new OtpChallengeDtoBuilder()
+        .withId("66666666-6666-4666-a666-666666666666")
+        .withSubject({ ...subject, role: "establishment-tutor" })
+        .withCreatedAt("2024-04-28T11:30:00.000Z")
+        .build();
+
+      await otpChallengeRepository.save(emailOtpChallengeOfSubject);
+      await otpChallengeRepository.save(smsOtpChallengeOfSubject);
+      await otpChallengeRepository.save(otpChallengeOfOtherSubject);
+
+      expectArraysToEqualIgnoringOrder(
+        await otpChallengeRepository.getByPurposeAndSubject({
+          purpose: "manageConvention",
+          subject,
+        }),
+        [emailOtpChallengeOfSubject, smsOtpChallengeOfSubject],
+      );
+    });
+
+    it("returns an empty list when no otp challenge matches", async () => {
+      await otpChallengeRepository.save(emailOtpChallenge);
+
+      expectToEqual(
+        await otpChallengeRepository.getByPurposeAndSubject({
+          purpose: "manageConvention",
+          subject: { ...emailOtpChallenge.subject, role: "beneficiary" },
+        }),
+        [],
       );
     });
   });
