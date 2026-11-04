@@ -2751,7 +2751,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           {
             kind: "paragraph",
             content:
-              "Ne tardez pas : répondez lui directement en utilisant le bouton ci-dessous :",
+              "Ne tardez pas : répondez-lui directement en utilisant le bouton ci-dessous :",
             marginBottom: "lg",
           },
           {
@@ -3320,7 +3320,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
 
         greetings: conventionId
           ? greetingsWithConventionId(conventionId)
-          : "Bonjour ,",
+          : "Bonjour,",
         blocks: [
           {
             kind: "paragraph",
