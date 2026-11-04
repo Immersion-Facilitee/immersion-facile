@@ -2736,19 +2736,22 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         domain,
       }) => ({
         subject: `[Demande d'immersion de ${beneficiaryFirstName} ${beneficiaryLastName}] Ce candidat attend toujours votre réponse.`,
-        greetings: `Répondez vite à ${beneficiaryFirstName}`,
+        greetings: "Bonjour,",
         blocks: [
           {
             kind: "paragraph",
-            content: `Bonjour,
-        <strong>${beneficiaryFirstName} ${beneficiaryLastName}</strong> vous a contacté il y a ${
-          mode === "3days" ? "3" : "7"
-        } jours pour une demande d\`immersion pour le métier de <strong>${appellationLabel}</strong>.
-        
-        Votre réponse est importante : ${beneficiaryFirstName} ${beneficiaryLastName} a choisi votre entreprise et une immersion peut jouer un rôle clé dans son parcours professionnel.
-        
-        Ne tardez pas : répondez lui directement en utilisant le bouton ci-dessous : 
-        `,
+            content: `<strong>${beneficiaryFirstName} ${beneficiaryLastName}</strong> vous a contacté il y a ${
+              mode === "3days" ? "3" : "7"
+            } jours pour une demande d'immersion pour le métier de <strong>${appellationLabel}</strong>.`,
+          },
+          {
+            kind: "paragraph",
+            content: `Votre réponse est importante : ${beneficiaryFirstName} ${beneficiaryLastName} a choisi votre entreprise et une immersion peut jouer un rôle clé dans son parcours professionnel.`,
+          },
+          {
+            kind: "paragraph",
+            content:
+              "Ne tardez pas : répondez lui directement en utilisant le bouton ci-dessous :",
             marginBottom: "lg",
           },
           {
