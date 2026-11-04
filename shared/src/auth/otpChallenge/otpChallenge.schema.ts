@@ -5,15 +5,20 @@ import { notificationKindSchema } from "../../notifications/notifications.schema
 import { phoneNumberSchema } from "../../phone/phone.schema";
 import { conventionActorRoleSchema } from "../../role/role.schema";
 import { dateTimeIsoStringSchema } from "../../utils/date";
-import { zStringMinLength1Max255 } from "../../utils/string.schema";
+import {
+  makeHardenedStringSchema,
+  zStringMinLength1Max255,
+} from "../../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../../zodUtils";
 import {
   type ManageConventionSubject,
   type MaskedOtpRecipients,
   type OtpChallenge,
   type OtpChallengePurpose,
+  type OtpCode,
   otpChallengePurposes,
   type RequestOtpChallengeDto,
+  type VerifyOtpChallengeParams,
 } from "./otpChallenge.dto";
 
 export const otpChallengePurposeSchema: ZodSchemaWithInputMatchingOutput<OtpChallengePurpose> =
@@ -54,4 +59,26 @@ export const maskedOtpRecipientsSchema: ZodSchemaWithInputMatchingOutput<MaskedO
 export const requestOtpChallengeSchema: ZodSchemaWithInputMatchingOutput<RequestOtpChallengeDto> =
   z.object({
     channel: notificationKindSchema,
+  });
+
+export const otpCodeSchema: ZodSchemaWithInputMatchingOutput<OtpCode> =
+  makeHardenedStringSchema({
+    min: 6,
+    max: 6,
+    withRegExp: {
+      regex: /^\d{6}$/,
+      message: "Le code doit contenir 6 chiffres",
+    },
+  });
+
+export const verifyOtpChallengeSchema: ZodSchemaWithInputMatchingOutput<
+  Pick<VerifyOtpChallengeParams, "otpCode">
+> = z.object({
+  otpCode: otpCodeSchema,
+});
+
+export const verifyOtpChallengeParamsSchema: ZodSchemaWithInputMatchingOutput<VerifyOtpChallengeParams> =
+  z.object({
+    otpChallengeId: zStringMinLength1Max255,
+    otpCode: otpCodeSchema,
   });

@@ -111,6 +111,7 @@ import { makeNotifyFranceTravailUserAdvisorOnConventionFullySigned } from "../..
 import { makeHashOtpCode } from "../../domains/core/authentication/otp-challenge/adapters/hashOtpCode";
 import { makeGetMaskedOtpRecipients } from "../../domains/core/authentication/otp-challenge/use-cases/GetMaskedOtpRecipients";
 import { makeRequestOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/RequestOtpChallenge";
+import { makeVerifyOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/VerifyOtpChallenge";
 import type { DashboardGateway } from "../../domains/core/dashboard/port/DashboardGateway";
 import { makeGetDashboardUrl } from "../../domains/core/dashboard/useCases/GetDashboardUrl";
 import { makeValidateEmail } from "../../domains/core/email-validation/use-cases/ValidateEmail";
@@ -1369,6 +1370,14 @@ export const createUseCases = ({
         saveNotificationAndRelatedEvent,
         timeGateway,
         uuidGenerator,
+      },
+    }),
+    verifyOtpChallenge: makeVerifyOtpChallenge({
+      deps: {
+        hashOtpCode: makeHashOtpCode(config.otpCodeHmacSecret),
+        timeGateway,
+        uuidGenerator,
+        uowPerformer,
       },
     }),
   } satisfies Record<string, InstantiatedUseCase<any, any, any>>;
