@@ -25,6 +25,7 @@ import { InMemoryApiConsumerRepository } from "../../api-consumer/adapters/InMem
 import { InMemoryOngoingOAuthRepository } from "../../authentication/connected-user/adapters/InMemoryOngoingOAuthRepository";
 import { InMemoryUserRepository } from "../../authentication/connected-user/adapters/InMemoryUserRepository";
 import { InMemoryOtpChallengeRepository } from "../../authentication/otp-challenge/adapters/InMemoryOtpChallengeRepository";
+import { InMemoryVisitorSessionRepository } from "../../authentication/visitor-session/adapters/InMemoryVisitorSessionRepository";
 import { InMemoryOutboxQueries } from "../../events/adapters/InMemoryOutboxQueries";
 import { InMemoryOutboxRepository } from "../../events/adapters/InMemoryOutboxRepository";
 import { InMemoryFeatureFlagQueries } from "../../feature-flags/adapters/InMemoryFeatureFlagQueries";
@@ -92,6 +93,7 @@ export const createInMemoryUow = () => {
     notificationRepository,
     ongoingOAuthRepository: new InMemoryOngoingOAuthRepository(),
     otpChallengeRepository: new InMemoryOtpChallengeRepository(),
+    visitorSessionRepository: new InMemoryVisitorSessionRepository(),
     outboxRepository,
     outboxQueries,
     phoneRepository: new InMemoryPhoneRepository(),

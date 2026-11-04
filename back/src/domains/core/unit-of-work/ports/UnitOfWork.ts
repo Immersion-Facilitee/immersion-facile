@@ -25,6 +25,7 @@ import type { ApiConsumerRepository } from "../../api-consumer/ports/ApiConsumer
 import type { OngoingOAuthRepository } from "../../authentication/connected-user/port/OngoingOAuthRepositiory";
 import type { UserRepository } from "../../authentication/connected-user/port/UserRepository";
 import type { OtpChallengeRepository } from "../../authentication/otp-challenge/port/OtpChallengeRepository";
+import type { VisitorSessionRepository } from "../../authentication/visitor-session/port/VisitorSessionRepository";
 import type { OutboxQueries } from "../../events/ports/OutboxQueries";
 import type { OutboxRepository } from "../../events/ports/OutboxRepository";
 import type { FeatureFlagQueries } from "../../feature-flags/ports/FeatureFlagQueries";
@@ -67,6 +68,7 @@ export type UnitOfWork = {
   npsRepository: NpsRepository;
   ongoingOAuthRepository: OngoingOAuthRepository;
   otpChallengeRepository: OtpChallengeRepository;
+  visitorSessionRepository: VisitorSessionRepository;
   outboxQueries: OutboxQueries;
   outboxRepository: OutboxRepository;
   phoneRepository: PhoneRepository;
