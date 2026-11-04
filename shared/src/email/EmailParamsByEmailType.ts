@@ -9,6 +9,7 @@ import type {
   AssessmentDtoCompleted,
   AssessmentDtoPartiallyCompleted,
 } from "../assessment/assessment.dto";
+import type { OtpCode } from "../auth/otpChallenge/otpChallenge.dto";
 import type {
   ConventionDto,
   ConventionId,
@@ -512,6 +513,9 @@ export type EmailParamsByEmailType = {
     internshipKind: InternshipKind;
     rejectionReason: string;
     signature: string;
+  };
+  REQUEST_OTP_CODE: {
+    otpCode: OtpCode;
   };
   SHARE_CONVENTION_DRAFT_RECIPIENT: {
     internshipKind: InternshipKind;

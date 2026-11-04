@@ -1,6 +1,8 @@
 import type { AbsoluteUrl } from "../AbsoluteUrl";
+import type { OtpCode } from "../auth/otpChallenge/otpChallenge.dto";
 import type { PhoneNumber } from "../phone/phone.dto";
 import type { KeysOfUnion, ValueOf } from "../utils";
+import { OTP_CHALLENGE_DURATION_IN_MINUTES } from "../utils/durations";
 
 type GenericTemplatedSms<
   T extends string,
@@ -17,6 +19,9 @@ type SmsParamsBySmsType = {
   ReminderForSignatories: WithShortLink;
   ReminderForAssessment: WithShortLink;
   ReminderForAssessmentSignature: WithShortLink;
+  RequestOtpCode: {
+    otpCode: OtpCode;
+  };
   HelloWorld: {
     testMessage: string;
   };
@@ -50,6 +55,10 @@ export const smsTemplatesByName = createSmsTemplates({
   ReminderForAssessmentSignature: {
     createContent: ({ shortLink }) =>
       `Bonjour,\n\nSignez votre bilan avec ce lien :\n${shortLink}\n\nImmersion Facilitée`,
+  },
+  RequestOtpCode: {
+    createContent: ({ otpCode }) =>
+      `Immersion Facilitée : votre code de vérification est ${otpCode}. Valable ${OTP_CHALLENGE_DURATION_IN_MINUTES} min. Ne le communiquez à personne.`,
   },
   HelloWorld: {
     createContent: ({ testMessage }) =>

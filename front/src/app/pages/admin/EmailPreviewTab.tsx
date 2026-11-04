@@ -693,6 +693,9 @@ export const defaultEmailValueByEmailKind: {
     rejectionReason: "REJECTION_REASON",
     signature: "SIGNATURE",
   },
+  REQUEST_OTP_CODE: {
+    otpCode: "123456",
+  },
   SHARE_CONVENTION_DRAFT_RECIPIENT: {
     internshipKind: "immersion",
     additionalDetails: "ADDITIONAL_DETAILS",
