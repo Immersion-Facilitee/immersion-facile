@@ -9,7 +9,6 @@ import {
   type ConventionId,
   type ConventionLastReminders,
   type ConventionReadDto,
-  type ConventionRole,
   type ConventionStatus,
   conventionLastRemindersSchema,
   type Email,
@@ -36,9 +35,7 @@ export const throwIfRoleHasNoMagicLink = (role: Role): ConventionActorRole => {
 
 export const conventionEmailsByRole =
   (convention: ConventionDto) =>
-  (role: ConventionRole): Email[] => {
-    const actorRole = throwIfRoleHasNoMagicLink(role);
-
+  (role: ConventionActorRole): Email[] => {
     const emailsByRole: Record<ConventionActorRole, Email[] | Error> = {
       beneficiary: [convention.signatories.beneficiary.email],
       "beneficiary-current-employer": convention.signatories
@@ -60,7 +57,7 @@ export const conventionEmailsByRole =
       ],
       "establishment-tutor": [convention.establishmentTutor.email],
     };
-    const emails = emailsByRole[actorRole];
+    const emails = emailsByRole[role];
 
     if (emails instanceof Error) throw emails;
     return emails;

@@ -16,7 +16,6 @@ import { z } from "zod";
 import { getUserWithRights } from "../domains/connected-users/helpers/userRights.helper";
 import type { AssessmentEntity } from "../domains/convention/entities/AssessmentEntity";
 import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
-import { throwIfRoleHasNoMagicLink } from "./convention";
 import { isSomeEmailMatchingEmailHash } from "./emailHash";
 
 export const throwForbiddenIfNotAllowedForAssessments = async ({
@@ -35,8 +34,7 @@ export const throwForbiddenIfNotAllowedForAssessments = async ({
     if (convention.id !== applicationId)
       throw errors.assessment.conventionIdMismatch();
 
-    const actorRole = throwIfRoleHasNoMagicLink(role);
-    const emailsOrError = assessmentEmailsByRole(convention, mode)[actorRole];
+    const emailsOrError = assessmentEmailsByRole(convention, mode)[role];
 
     if (emailsOrError instanceof Error) throw emailsOrError;
     if (!isSomeEmailMatchingEmailHash(emailsOrError, emailHash))
