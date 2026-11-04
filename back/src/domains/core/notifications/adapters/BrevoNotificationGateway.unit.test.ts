@@ -199,14 +199,14 @@ describe("BrevoNotificationGateway unit", () => {
       </td>
       </tr>
       <tr>
-      <td style="padding-bottom: 16px;">
+      <td style="padding-bottom: 32px;">
       <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Votre organisme prescripteur AGENCY_NAME est activée sur Immersion facilitée !</strong> 
       <br/>
       <br/>Vous pouvez dès à présent valider les conventions dématérialisées sur Immersion Facilitée.</p>
       </td>
       </tr>
       <tr>
-      <td style="padding-bottom: 16px;">
+      <td style="padding-bottom: 32px;">
       <table 
       width="100%">
       <tr>

@@ -96,6 +96,7 @@ export const emailTemplatesByName =
             kind: "paragraph",
             content:
               "En validant ces demandes, vous permettez à vos collaborateurs d’accéder aux conventions et aux statistiques de vos organismes.",
+            marginBottom: "lg",
           },
           {
             kind: "button",
@@ -104,6 +105,7 @@ export const emailTemplatesByName =
               route: frontRoutes.agencyDashboardAgencies(),
               baseUrl: immersionBaseUrl,
             }),
+            marginBottom: "lg",
           },
           {
             kind: "highlight",
@@ -410,11 +412,13 @@ export const emailTemplatesByName =
             kind: "paragraph",
             content:
               "Cette demande d'immersion a bien été signée par le bénéficiaire et l'entreprise d'accueil.",
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Voir la convention",
             url: manageConventionLink,
+            marginBottom: "lg",
           },
         ],
         signature: defaultSignature("immersion"),
@@ -432,7 +436,8 @@ export const emailTemplatesByName =
         "role:lecteur",
       ],
       createEmailVariables: ({ agencyName }) => ({
-        subject: "",
+        subject:
+          "Votre agence est temporairement mise en attente sur Immersion Facilitée",
         greetings: "Bonjour,",
         blocks: [
           {
@@ -449,11 +454,13 @@ export const emailTemplatesByName =
         Pour réactiver votre structure, il est nécessaire qu’un utilisateur actif dispose du rôle de validateur ou administrateur.
         Contactez notre support en désignant le nom, prénom, fonction et numéro de téléphone de la personne qui prendra ce rôle.
         `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Contacter le support Immersion Facilitée",
             url: immersionFacileHelpdeskRootUrl,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -501,11 +508,13 @@ export const emailTemplatesByName =
           : ""
       }
       Nous vous remercions d'examiner rapidement la demande de convention qui vous a été envoyée afin que votre décision soit transmise au bénéficiaire et à l'entreprise.`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Voir la convention",
             url: manageConventionLink,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -590,6 +599,7 @@ export const emailTemplatesByName =
               content: `Vous recevrez un e-mail dès qu'une décision sera prise pour ${
                 isPlural ? "chacune de vos demandes" : "votre demande"
               }.`,
+              marginBottom: "lg",
             },
             {
               kind: "button",
@@ -598,6 +608,7 @@ export const emailTemplatesByName =
                 route: frontRoutes.agencyDashboardAgencies(),
                 baseUrl: immersionBaseUrl,
               }),
+              marginBottom: "lg",
             },
             {
               kind: "paragraph",
@@ -683,11 +694,13 @@ export const emailTemplatesByName =
             ? `Elles seront ensuite validée par ${agencyReferdToName}.`
             : ""
         }`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Accèder à mon espace",
             url: agencyDashboardUrl,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -798,11 +811,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
               "vous rencontrez des difficultés pour mobiliser le dispositif ou utiliser Immersion Facilitée ;",
               "vous avez besoin de mettre à jour les coordonnées de votre structure.",
             ],
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Contactez-nous",
             url: immersionFacileHelpdeskRootUrl,
+            marginBottom: "lg",
           },
         ],
         signature: defaultSignature("immersion"),
@@ -844,11 +859,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 
         Quelle que soit votre situation, <strong>notre équipe peut vous accompagner</strong>, répondre à vos questions ou vérifier avec vous si votre référencement est toujours adapté.
         `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Contactez-nous",
             url: immersionFacileHelpdeskRootUrl,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -943,11 +960,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
               `<a href="mailto:${tutorEmail}" target="_blank">Relancer directement l'entreprise</a> pour qu'elle remplisse le bilan en ligne.`,
               "Les contacter par téléphone pour les accompagner dans la saisie du bilan.",
             ],
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Piloter la convention",
             url: manageConventionLink,
+            marginBottom: "lg",
           },
           ...(agencyReferentName
             ? [
@@ -1079,11 +1098,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
             : `Vous pouvez dès maintenant consulter et signer le bilan de votre ${internshipKindLabel} en ligne.`
         }
         `,
+              marginBottom: "lg",
             },
             {
               kind: "button",
               label: "Consulter et signer le bilan",
               url: assessmentSignatureLink,
+              marginBottom: "lg",
             },
             {
               kind: "paragraph",
@@ -1146,11 +1167,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           
           Nous vous invitons à télécharger dès maintenant en cliquant sur le bouton ci-dessous.
           `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Consulter mon bilan",
             url: assessmentDocumentLink,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -1198,11 +1221,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 
         Ce lien a une validité de 1 mois.
         `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Consulter le bilan",
             url: linkToAssessment,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -1324,11 +1349,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
                   ? [`Commentaire : ${assessment.beneficiaryFeedback}`]
                   : []),
               ],
+              marginBottom: "lg",
             },
             {
               kind: "button",
               label: "Consulter le bilan",
               url: manageConventionLink,
+              marginBottom: "lg",
             },
             {
               kind: "paragraph",
@@ -1447,11 +1474,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
       Pouvez-vous indiquer si ${
         internshipKind ? "cette immersion" : "ce mini stage"
       } s'est bien déroulée jusqu'à sa date de fin prévue ?`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Compléter le bilan",
             url: assessmentCreationLink,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -1499,11 +1528,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         
         Pour finaliser cette démarche, il vous reste à compléter le bilan de fin d’immersion.
         `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Compléter le bilan",
             url: assessmentCreationLink,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -1560,11 +1591,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 
         Un nouveau bilan peut désormais être complété :
         `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Compléter à nouveau le bilan",
             url: assessmentCreationLink,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -1706,11 +1739,13 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         Si elle l'accepte, elle vous contactera pour discuter des détails de votre ${kind === "IF" ? "immersion" : "stage"}.
         De votre côté, vous avez la possibilité d'échanger avec elle directement depuis votre espace personnel. C'est l'endroit idéal pour appuyer votre candidature, montrer votre motivation ou répondre à ses éventuelles questions.
         `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Accéder à mon espace",
             url: beneficiaryDashboardUrl,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -1784,7 +1819,11 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 <strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>`,
               marginBottom: "sm",
             },
-            { kind: "list", items: details },
+            {
+              kind: "list",
+              items: details,
+              marginBottom: profile.length > 0 ? "md" : "lg",
+            },
             ...(profile.length > 0
               ? [
                   {
@@ -1792,13 +1831,18 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
                     content: "<strong>En savoir plus sur son profil :</strong>",
                     marginBottom: "sm",
                   } satisfies EmailBlock,
-                  { kind: "list", items: profile } satisfies EmailBlock,
+                  {
+                    kind: "list",
+                    items: profile,
+                    marginBottom: "lg",
+                  } satisfies EmailBlock,
                 ]
               : []),
             {
               kind: "button",
               label: `Répondre à ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} via mon espace`,
               url: discussionUrl,
+              marginBottom: "lg",
             },
             {
               kind: "paragraph",
@@ -1873,7 +1917,11 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 <strong>${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })}</strong>`,
               marginBottom: "sm",
             },
-            { kind: "list", items: details },
+            {
+              kind: "list",
+              items: details,
+              marginBottom: profile.length > 0 ? "md" : "lg",
+            },
             ...(profile.length > 0
               ? [
                   {
@@ -1881,13 +1929,18 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
                     content: "<strong>En savoir plus sur son profil :</strong>",
                     marginBottom: "sm",
                   } satisfies EmailBlock,
-                  { kind: "list", items: profile } satisfies EmailBlock,
+                  {
+                    kind: "list",
+                    items: profile,
+                    marginBottom: "lg",
+                  } satisfies EmailBlock,
                 ]
               : []),
             {
               kind: "button",
               label: `Répondre à ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName })} via mon espace`,
               url: discussionUrl,
+              marginBottom: "lg",
             },
             {
               kind: "paragraph",
@@ -2103,11 +2156,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           {
             kind: "list",
             items: [`Email : ${beneficiaryEmail}`, `Tél : ${beneficiaryPhone}`],
+            marginBottom: "lg",
           },
           {
             kind: "button",
             url: manageConventionLink,
             label: "Examiner la demande",
+            marginBottom: "lg",
           },
         ],
         signature: defaultSignature(internshipKind),
@@ -2147,11 +2202,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         ${justification}
         
         Vous pouvez vous rapprocher de votre conseiller chez ${newAgencyName} - ${agencyAddress} pour suivre votre demande.`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             url: manageConventionLink,
             label: "Voir l'état de ma demande",
+            marginBottom: "lg",
           },
         ],
         signature: defaultSignature(internshipKind),
@@ -2194,27 +2251,32 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           {
             kind: "paragraph",
             content: "<strong>button</strong>",
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "primary (par défaut)",
             url: demoUrl,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "secondary",
             url: demoUrl,
             priority: "secondary",
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "tertiary",
             url: demoUrl,
             priority: "tertiary",
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
             content: "<strong>buttonsGroup</strong>",
+            marginBottom: "lg",
           },
           {
             kind: "buttonsGroup",
@@ -2223,6 +2285,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               { label: "secondary", url: demoUrl, priority: "secondary" },
               { label: "tertiary", url: demoUrl, priority: "tertiary" },
             ],
+            marginBottom: "lg",
           },
           {
             kind: "buttonsGroup",
@@ -2232,6 +2295,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               { label: "secondary", url: demoUrl, priority: "secondary" },
               { label: "tertiary", url: demoUrl, priority: "tertiary" },
             ],
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -2546,11 +2610,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               "Relancer l'entreprise par téléphone",
               "Rechercher d'autres opportunités d'immersion",
             ],
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Rechercher des offres d'immersion",
             url: searchPageUrl,
+            marginBottom: "lg",
           },
           {
             kind: "highlight",
@@ -2600,11 +2666,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               "Mettre à jour votre fiche établissement et vos offres",
               "Répondre rapidement aux prochaines demandes d'immersion",
             ],
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Accéder à votre tableau de bord",
             url: establishmentDashboardUrl,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -2681,11 +2749,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         
         Ne tardez pas : répondez lui directement en utilisant le bouton ci-dessous : 
         `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: `Répondre à ${beneficiaryFirstName}`,
             url: `mailto:${beneficiaryReplyToEmail}`,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -2797,11 +2867,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
             content: `La candidature pour une immersion au sein de l'entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, a été clôturée car l'entreprise s'est désinscrite d'Immersion Facilitée.
 
         <strong>Si vous êtes toujours intéressé(e) par une immersion, nous vous invitons à rechercher d'autres opportunités :</strong>`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Rechercher des offres d'immersion",
             url: searchPageUrl,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -2866,6 +2938,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               "Rechercher d'autres immersions sur notre site.",
               "Contacter votre conseiller pour vous aider dans vos recherches.",
             ],
+            marginBottom: "lg",
           },
           {
             kind: "button",
@@ -2874,6 +2947,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               route: frontRoutes.search(),
               baseUrl: immersionBaseUrl,
             }),
+            marginBottom: "lg",
           },
         ],
         signature: defaultSignature("immersion"),
@@ -2917,6 +2991,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               "<strong>Si l'immersion n'a pas encore commencé :</strong> Nous vous recommandons fortement de procéder à l'annulation de cette convention afin de protéger le bénéficiaire.",
               "<strong>Si l'immersion est actuellement en cours :</strong> Nous vous conseillons de contacter le bénéficiaire dans les plus brefs délais pour faire un point sur sa situation au sein de l'établissement. S'il s'avère que les conditions d'accueil ne sont pas respectées, vous pouvez procéder à une rupture anticipée de l’immersion.",
             ],
+            marginBottom: "lg",
           },
           {
             kind: "button",
@@ -2927,6 +3002,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               }),
               baseUrl: immersionBaseUrl,
             }),
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -2967,11 +3043,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         Être entreprise accueillante vous permet de gérer votre visibilité sur la plateforme pour recevoir des demandes d'immersion, à votre rythme, et en fonction de vos disponibilités.
 
         Devenez entreprise accueillante dès aujourd'hui.`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "S'inscrire en 2 minutes !",
             url: registerEstablishmentShortLink,
+            marginBottom: "lg",
           },
           {
             kind: "highlight",
@@ -3017,6 +3095,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
 
           Créez votre compte dès maintenant pour accéder à votre espace :
         `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
@@ -3025,6 +3104,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               route: frontRoutes.establishmentDashboard(),
               baseUrl: immersionBaseUrl,
             }),
+            marginBottom: "lg",
           },
         ],
         signature: defaultSignature("immersion"),
@@ -3100,6 +3180,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
          
          ${updatedStatus === "ACCEPTED" ? "Félicitations ! Vous pouvez désormais accéder aux conventions et aux candidatures de l'espace de l'entreprise." : "Votre demande n'a pas été accepté. Si vous pensez qu'il s'agit d'une erreur, nous vous invitons à contacter directement l'administrateur de l'établissement au sein de votre structure."}
         `,
+              marginBottom: updatedStatus === "ACCEPTED" ? "lg" : "md",
             },
             ...(updatedStatus === "ACCEPTED"
               ? [
@@ -3110,6 +3191,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
                       route: frontRoutes.establishmentDashboard(),
                       baseUrl: immersionBaseUrl,
                     }),
+                    marginBottom: "lg",
                   } satisfies EmailBlock,
                 ]
               : []),
@@ -3203,8 +3285,14 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               kind: "paragraph",
               content: `Voici votre lien de connexion à Immersion Facilitée.
           Cliquez sur le bouton ci-dessous pour accéder à votre espace :`,
+              marginBottom: "lg",
             },
-            { kind: "button", label: "Se connecter", url: loginLink },
+            {
+              kind: "button",
+              label: "Se connecter",
+              url: loginLink,
+              marginBottom: "lg",
+            },
             {
               kind: "paragraph",
               content: `
@@ -3237,8 +3325,14 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
       Vous venez de demander le renouvellement d'un lien sur Immersion Facilitée. 
       Veuillez le trouver ci-dessous :
       `,
+            marginBottom: "lg",
           },
-          { kind: "button", url: magicLink, label: "Mon lien renouvelé" },
+          {
+            kind: "button",
+            url: magicLink,
+            label: "Mon lien renouvelé",
+            marginBottom: "lg",
+          },
           {
             kind: "highlight",
             content:
@@ -3301,11 +3395,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
                 "Une fois connecté, vérifiez les informations puis cliquez sur <strong>«Signer la convention»</strong>.",
                 "Si les informations ne sont pas correctes, cliquez sur le bouton <strong>«Modifier une autre information»</strong>.",
               ],
+              marginBottom: "lg",
             },
             {
               kind: "button",
               url: conventionSignatureLink,
               label: "Se connecter et signer la convention",
+              marginBottom: "lg",
             },
             {
               kind: "highlight",
@@ -3377,11 +3473,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         ${justification}
         
         Votre signature sur la première demande de convention a donc été annulée.`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             url: conventionSignatureLink,
             label: "Signer ou modifier la demande",
+            marginBottom: "lg",
           },
           {
             kind: "highlight",
@@ -3438,11 +3536,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           {
             kind: "paragraph",
             content: `Les contacts peuvent consulter les conventions et les candidatures de l'entreprise, et y répondre.`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Découvrir nos conseils pour démarrer",
             url: "https://pages.immersion-facile.beta.gouv.fr/ressources-entreprises/fiche-conseil-entreprise/",
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -3513,11 +3613,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
             content: `
       <strong>La demande d'immersion de ${beneficiaryFirstName} ${beneficiaryLastName} est signée. 
       À vous de l'étudier !</strong>`,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             url: manageConventionLink,
             label: "Voir la demande",
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -3632,11 +3734,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         }
         Vous pouvez désormais accéder à la demande pendant 30 jours grâce au lien ci-dessous :
       `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Compléter la demande",
             url: conventionFormUrl,
+            marginBottom: "lg",
           },
         ],
         signature: defaultSignature(internshipKind),
@@ -3662,11 +3766,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
             content: `
 Vous avez demandé à recevoir le lien vers votre brouillon de convention. Vous pouvez désormais y accéder pendant 30 jours grâce au lien ci-dessous :
       `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Mon brouillon de convention",
             url: conventionFormUrl,
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -3717,11 +3823,13 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
           : "DATE INVALIDE"
       }.
       `,
+            marginBottom: "lg",
           },
           {
             kind: "button",
             url: magicLink,
             label: "Voir l'état de ma demande",
+            marginBottom: "lg",
           },
           {
             kind: "highlight",
@@ -3808,11 +3916,13 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
               "booster la visibilité de vos offres d’immersion",
               "utiliser tout le potentiel de votre espace entreprise",
             ],
+            marginBottom: "lg",
           },
           {
             kind: "button",
             label: "Je m'inscris au webinaire",
             url: "https://app.livestorm.co/immersion-facilitee/session-express-boost",
+            marginBottom: "lg",
           },
           {
             kind: "paragraph",
@@ -3886,8 +3996,9 @@ Vous pouvez reprendre votre demande quand vous le souhaitez. Si vous avez la moi
           {
             kind: "list",
             items: [`Input1 : ${input1}`, `Input2 : ${input2}`],
+            marginBottom: "lg",
           },
-          { kind: "button", label: "Bouton de test", url },
+          { kind: "button", label: "Bouton de test", url, marginBottom: "lg" },
         ],
         signature: `A très vite sur Immersion Facilitée,
 L'équipe d'Immersion Facilitée`,
@@ -3978,6 +4089,7 @@ L'équipe d'Immersion Facilitée`,
             {
               kind: "paragraph",
               content: `${convention.internshipKind === "immersion" ? "L'immersion" : "Le mini stage"} peut donc démarrer aux dates convenues.`,
+              marginBottom: "lg",
             },
             {
               kind: "button",
@@ -3993,6 +4105,7 @@ L'équipe d'Immersion Facilitée`,
                 }),
                 baseUrl,
               }),
+              marginBottom: "lg",
             },
             {
               kind: "paragraph",
@@ -4054,8 +4167,14 @@ L'équipe d'Immersion Facilitée`,
         Conformément à nos règles de conservation des données, votre compte et vos données personnelles vont être supprimés le <strong>${deletionDate}</strong>.
 
         Pour conserver votre compte, il suffit de vous connecter avant la suppression.`,
+            marginBottom: "lg",
           },
-          { kind: "button", label: "Se connecter à mon espace", url: loginUrl },
+          {
+            kind: "button",
+            label: "Se connecter à mon espace",
+            url: loginUrl,
+            marginBottom: "lg",
+          },
           {
             kind: "paragraph",
             content:
@@ -4141,11 +4260,13 @@ L'équipe d'Immersion Facilitée`,
               items: [
                 `${pendingUserFullNameOrEmail} - ${titleByRole[pendingUserRole]}`,
               ],
+              marginBottom: "lg",
             },
             {
               kind: "button",
               label: "Gérer les utilisateurs de mon entreprise",
               url: establishmentDashboardUrl,
+              marginBottom: "lg",
             },
             {
               kind: "paragraph",
@@ -4248,6 +4369,12 @@ export const discussionExchangeForbiddenContents = (
           
           Pour pouvoir répondre au candidat via Immersion Facilitée, vous devez être inscrit(e) dans l’espace entreprise avec les bons droits. 
       `,
+          marginBottom:
+            isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl(
+              params,
+            )
+              ? "lg"
+              : "md",
         },
         ...(isDiscussionExchangeForbiddenParamsWithRequestEstablishmentRegistrationUrl(
           params,
@@ -4257,6 +4384,7 @@ export const discussionExchangeForbiddenContents = (
                 kind: "button",
                 label: "Demander le rattachement",
                 url: params.requestEstablishmentRegistrationUrl,
+                marginBottom: "lg",
               } satisfies EmailBlock,
             ]
           : []),
