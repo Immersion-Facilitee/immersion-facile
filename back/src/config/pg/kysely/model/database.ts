@@ -63,6 +63,7 @@ export interface Database {
   outbox_publications: OutboxPublications;
   outbox: Outbox;
   otp_challenges: OtpChallenges;
+  visitor_sessions: VisitorSessions;
   phone_numbers: PhoneNumbers;
   public_appellations_data: PublicAppellationsData;
   public_department_region: PublicDepartmentRegion;
@@ -507,6 +508,15 @@ interface OtpChallenges {
   attempts: number;
   expires_at: Timestamp;
   used_at: Timestamp | null;
+  revoked_at: Timestamp | null;
+  created_at: Timestamp;
+}
+
+interface VisitorSessions {
+  id: string;
+  purpose: string;
+  subject: Json;
+  expires_at: Timestamp;
   revoked_at: Timestamp | null;
   created_at: Timestamp;
 }
