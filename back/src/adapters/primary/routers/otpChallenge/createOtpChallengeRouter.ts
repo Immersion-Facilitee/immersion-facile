@@ -24,5 +24,16 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
       ),
   );
 
+  sharedOtpChallengeRouter.requestOtpChallenge(
+    deps.visitorOtpAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.requestOtpChallenge.execute(
+          req.body,
+          getGenericAuthOrThrow(req.payloads?.visitorOtp),
+        ),
+      ),
+  );
+
   return expressRouter;
 };
