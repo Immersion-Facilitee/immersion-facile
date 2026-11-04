@@ -1,3 +1,5 @@
+import { emailFontFamilyStyle } from "../typography";
+
 export const renderFooter = (customFooter: (() => string) | undefined) =>
   customFooter ? customFooter() : defaultEmailFooter("immersion");
 
@@ -13,7 +15,7 @@ export const defaultEmailFooter = (internshipKind: string) => {
   </tr>
   <tr>
     <td width="600" style="background-color: #F5F5FE; text-align: center; padding: 20px 50px; ">
-      <p style="font-size: 14px;">Vous recevez cet email, car cette adresse email a été renseignée sur le site Immersion Facilitée dans une demande de convention ou de connexion. Si vous rencontrez un problème, la plupart des solutions sont disponibles sur notre <a href="https://immersion-facile.beta.gouv.fr/aide/">centre d'aide</a>. Vous y trouverez également un formulaire de contact pour joindre notre équipe support, qui vous répondra sous les meilleurs délais.</p>
+      <p style="${emailFontFamilyStyle} font-size: 14px;">Vous recevez cet email, car cette adresse email a été renseignée sur le site Immersion Facilitée dans une demande de convention ou de connexion. Si vous rencontrez un problème, la plupart des solutions sont disponibles sur notre <a href="https://immersion-facile.beta.gouv.fr/aide/">centre d'aide</a>. Vous y trouverez également un formulaire de contact pour joindre notre équipe support, qui vous répondra sous les meilleurs délais.</p>
     </td>
   </tr>
   <tr>

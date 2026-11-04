@@ -342,13 +342,13 @@ describe("ContactEstablishment", () => {
                 {
                   subject: `Billy IDOL vous contacte pour une demande d'immersion sur le métier de ${immersionOffer.appellationLabel}`,
                   sentAt: timeGateway.now().toISOString(),
-                  message: `<p style="margin: 0;">Bonjour,</p>
-<p style="margin: 0;">Vous avez reçu une nouvelle demande d'immersion via Immersion Facilitée pour votre entreprise <strong>Company inside repository</strong> (24 rue des bouchers 67000 Strasbourg) :<br/><br/><strong>Billy IDOL</strong></p>
-<ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0;"><strong>Métier :</strong> ${immersionOffer.appellationLabel}</li><li style="margin: 0 0 4px 0;"><strong>Objectif :</strong> Je compte me former à ce métier</li><li style="margin: 0 0 4px 0;"><strong>Période :</strong> fake date preferences</li><li style="margin: 0 0 0px 0;"><strong>Durée :</strong> 1 semaine</li></ul>
-<p style="margin: 0;"><strong>En savoir plus sur son profil :</strong></p>
-<ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0;"><strong>Pourquoi cette immersion :</strong> Je sais faire des crêpes</li><li style="margin: 0 0 0px 0;"><strong>Compétences, expériences et savoirs-être :</strong> fake experience additional information</li></ul>
-<p style="margin: 0;">Cette personne attend votre réponse. Vous pouvez lui répondre directement depuis cet email (ou utiliser le bouton ci-dessus) : votre message lui sera transmis.<br/><br/>Seule la personne destinataire de cet email est autorisée à répondre via Immersion Facilitée. Merci de ne pas transférer ce message : toute réponse envoyée depuis un autre compte ne pourra pas être transmise.<br/><br/>En cas d'absence de réponse par email, vous pouvez aussi appeler Billy directement par téléphone : +33654783402.</p>
-<p style="margin: 0;">À bientôt,<br/>L'équipe Immersion Facilitée</p>`,
+                  message: `<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">Bonjour,</p>
+<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">Vous avez reçu une nouvelle demande d'immersion via Immersion Facilitée pour votre entreprise <strong>Company inside repository</strong> (24 rue des bouchers 67000 Strasbourg) :<br/><br/><strong>Billy IDOL</strong></p>
+<ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Métier :</strong> ${immersionOffer.appellationLabel}</li><li style="margin: 0 0 4px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Objectif :</strong> Je compte me former à ce métier</li><li style="margin: 0 0 4px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Période :</strong> fake date preferences</li><li style="margin: 0 0 0px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Durée :</strong> 1 semaine</li></ul>
+<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>En savoir plus sur son profil :</strong></p>
+<ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Pourquoi cette immersion :</strong> Je sais faire des crêpes</li><li style="margin: 0 0 0px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Compétences, expériences et savoirs-être :</strong> fake experience additional information</li></ul>
+<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">Cette personne attend votre réponse. Vous pouvez lui répondre directement depuis cet email (ou utiliser le bouton ci-dessus) : votre message lui sera transmis.<br/><br/>Seule la personne destinataire de cet email est autorisée à répondre via Immersion Facilitée. Merci de ne pas transférer ce message : toute réponse envoyée depuis un autre compte ne pourra pas être transmise.<br/><br/>En cas d'absence de réponse par email, vous pouvez aussi appeler Billy directement par téléphone : +33654783402.</p>
+<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">À bientôt,<br/>L'équipe Immersion Facilitée</p>`,
                   sender: "potentialBeneficiary",
                   attachments: [],
                 },
@@ -477,13 +477,13 @@ describe("ContactEstablishment", () => {
                 {
                   subject: `Billy IDOL vous contacte pour une demande de stage sur le métier de ${immersionOffer.appellationLabel}`,
                   sentAt: timeGateway.now().toISOString(),
-                  message: `<p style="margin: 0;">Bonjour,</p>
-<p style="margin: 0;">Vous avez reçu une nouvelle demande de stage via Immersion Facilitée pour votre entreprise <strong>Company inside repository</strong> (24 rue des bouchers 67000 Strasbourg) :<br/><br/><strong>Billy IDOL</strong></p>
-<ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0;"><strong>Métier :</strong> ${immersionOffer.appellationLabel}</li><li style="margin: 0 0 0px 0;"><strong>Période :</strong> fake date preferences</li></ul>
-<p style="margin: 0;"><strong>En savoir plus sur son profil :</strong></p>
-<ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 0px 0;"><strong>Classe :</strong> Seconde</li></ul>
-<p style="margin: 0;">Cette personne attend votre réponse. Vous pouvez lui répondre directement depuis cet email (ou utiliser le bouton ci-dessus) : votre message lui sera transmis.<br/><br/>Seule la personne destinataire de cet email est autorisée à répondre via Immersion Facilitée. Merci de ne pas transférer ce message : toute réponse envoyée depuis un autre compte ne pourra pas être transmise.<br/><br/>En cas d'absence de réponse par email, vous pouvez aussi appeler Billy directement par téléphone : +33654783402.</p>
-<p style="margin: 0;">À bientôt,<br/>L'équipe Immersion Facilitée</p>`,
+                  message: `<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">Bonjour,</p>
+<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">Vous avez reçu une nouvelle demande de stage via Immersion Facilitée pour votre entreprise <strong>Company inside repository</strong> (24 rue des bouchers 67000 Strasbourg) :<br/><br/><strong>Billy IDOL</strong></p>
+<ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Métier :</strong> ${immersionOffer.appellationLabel}</li><li style="margin: 0 0 0px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Période :</strong> fake date preferences</li></ul>
+<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>En savoir plus sur son profil :</strong></p>
+<ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 0px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Classe :</strong> Seconde</li></ul>
+<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">Cette personne attend votre réponse. Vous pouvez lui répondre directement depuis cet email (ou utiliser le bouton ci-dessus) : votre message lui sera transmis.<br/><br/>Seule la personne destinataire de cet email est autorisée à répondre via Immersion Facilitée. Merci de ne pas transférer ce message : toute réponse envoyée depuis un autre compte ne pourra pas être transmise.<br/><br/>En cas d'absence de réponse par email, vous pouvez aussi appeler Billy directement par téléphone : +33654783402.</p>
+<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">À bientôt,<br/>L'équipe Immersion Facilitée</p>`,
                   sender: "potentialBeneficiary",
                   attachments: [],
                 },

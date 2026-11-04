@@ -195,12 +195,12 @@ describe("BrevoNotificationGateway unit", () => {
       </tr>
       <tr>
       <td style="padding-bottom: 16px;">
-      <p style="margin: 0;">Bonjour,</p>
+      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">Bonjour,</p>
       </td>
       </tr>
       <tr>
       <td style="padding-bottom: 16px;">
-      <p style="margin: 0;"><strong>Votre organisme prescripteur AGENCY_NAME est activée sur Immersion facilitée !</strong> 
+      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Votre organisme prescripteur AGENCY_NAME est activée sur Immersion facilitée !</strong> 
       <br/>
       <br/>Vous pouvez dès à présent valider les conventions dématérialisées sur Immersion Facilitée.</p>
       </td>
@@ -212,7 +212,7 @@ describe("BrevoNotificationGateway unit", () => {
       <tr>
       <td align="center">
       <a
-      style="display: inline-block; padding: 7px 15px; font-size: 16px; line-height: 24px; font-weight: 500; text-align: center; text-decoration: none; background-image: none; background-color: #000091; color: #f5f5fe; border: 1px solid #000091;"
+      style="display: inline-block; padding: 7px 15px; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px; font-weight: 500; text-align: center; text-decoration: none; background-image: none; background-color: #000091; color: #f5f5fe; border: 1px solid #000091;"
       href="https://immersion-facile.beta.gouv.fr/tableau-de-bord-agence/dashboard"
       target="_blank"
       >
@@ -225,16 +225,16 @@ describe("BrevoNotificationGateway unit", () => {
       </tr>
       <tr>
       <td style="padding-bottom: 8px;">
-      <p style="margin: 0;"><strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong></p>
+      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Maîtrisez rapidement l’utilisation du site en 2 temps :</strong></p>
       </td>
       </tr>
       <tr>
       <td style="padding-bottom: 16px;">
-      <ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0;"><strong>Pour les responsables de votre structure</strong> :
+      <ul style="margin: 0 0 0 24px; padding: 0;"><li style="margin: 0 0 4px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Pour les responsables de votre structure</strong> :
       <br/><a 
       href="https://aide.immersion-facile.beta.gouv.fr/fr/article/administrateur-gerer-votre-organisme-sbjao/" 
       target="_blank">Un article d'aide pour paramétrer votre compte</a>
-      <br/>(une vidéo est disponible à la fin de l'article, mettez le son)</li><li style="margin: 0 0 0px 0;"><strong>Pour l'ensemble de vos collaborateurs</strong> :
+      <br/>(une vidéo est disponible à la fin de l'article, mettez le son)</li><li style="margin: 0 0 0px 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;"><strong>Pour l'ensemble de vos collaborateurs</strong> :
       <br/><a 
       href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" 
       target="_blank">Un temps de présentation de toutes les fonctionnalités du site</a>
@@ -243,7 +243,7 @@ describe("BrevoNotificationGateway unit", () => {
       </tr>
       <tr>
       <td style="padding-bottom: 16px;">
-      <p style="margin: 0;">N'hésitez pas à leur partager ce lien :
+      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">N'hésitez pas à leur partager ce lien :
       <br/><a 
       href="https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee" 
       target="_blank">https://app.livestorm.co/immersion-facilitee/prescripteurs-et-structures-daccompagnement-decouvrir-immersion-facilitee</a>
@@ -260,7 +260,7 @@ describe("BrevoNotificationGateway unit", () => {
       </tr>
       <tr>
       <td>
-      <p style="margin: 0;">Bonne journée,
+      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 24px;">Bonne journée,
       <br/>L'équipe Immersion Facilitée</p>
       </td>
       </tr>
@@ -273,7 +273,7 @@ describe("BrevoNotificationGateway unit", () => {
       <tr>
       <td 
       width="600" style="background-color: #F5F5FE; text-align: center; padding: 20px 50px; ">
-      <p style="font-size: 14px;">Vous recevez cet email, car cette adresse email a été renseignée sur le site Immersion Facilitée dans une demande de convention ou de connexion. Si vous rencontrez un problème, la plupart des solutions sont disponibles sur notre <a 
+      <p style="font-family: Arial, Helvetica, sans-serif; font-size: 14px;">Vous recevez cet email, car cette adresse email a été renseignée sur le site Immersion Facilitée dans une demande de convention ou de connexion. Si vous rencontrez un problème, la plupart des solutions sont disponibles sur notre <a 
       href="https://immersion-facile.beta.gouv.fr/aide/">centre d'aide</a>. Vous y trouverez également un formulaire de contact pour joindre notre équipe support, qui vous répondra sous les meilleurs délais.</p>
       </td>
       </tr>

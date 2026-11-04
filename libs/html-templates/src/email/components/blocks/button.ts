@@ -1,3 +1,5 @@
+import { emailBodyTextStyle } from "../typography";
+
 export type EmailButtonPriority = "primary" | "secondary" | "tertiary";
 
 export type EmailButtonProps = {
@@ -21,7 +23,7 @@ const getButtonStyle = (
   priority: EmailButtonPriority,
   display: EmailButtonDisplay,
 ) =>
-  `display: ${display}; padding: 7px 15px; font-size: 16px; line-height: 24px; font-weight: 500; text-align: center; text-decoration: none; background-image: none; ${buttonColorsByPriority[priority]}`;
+  `display: ${display}; padding: 7px 15px; ${emailBodyTextStyle} font-weight: 500; text-align: center; text-decoration: none; background-image: none; ${buttonColorsByPriority[priority]}`;
 
 export const renderButtonLink = (
   { url, label, priority = "primary" }: EmailButtonProps,

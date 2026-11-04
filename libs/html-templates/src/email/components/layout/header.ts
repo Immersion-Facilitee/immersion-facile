@@ -1,3 +1,5 @@
+import { emailFontFamilyStyle } from "../typography";
+
 export const renderHeader = (
   agencyLogoUrl: string | undefined,
   customHtmlHeader: ((agencyLogoUrl?: string) => string) | undefined,
@@ -24,8 +26,8 @@ const defaultHeader = (agencyLogoUrl?: string) => `
           : `
         <td width="40%">
           <div style="margin-left: 20px;">
-            <p style="color: #161616; font-weight: bold; font-size: 20px; margin: 0">Immersion Facilitée</p>
-            <p style="color: #3A3A3A; font-size: 14px; margin: 0">Faciliter la réalisation des immersions professionnelles</p>
+            <p style="color: #161616; ${emailFontFamilyStyle} font-weight: bold; font-size: 20px; margin: 0">Immersion Facilitée</p>
+            <p style="color: #3A3A3A; ${emailFontFamilyStyle} font-size: 14px; margin: 0">Faciliter la réalisation des immersions professionnelles</p>
           </div>
         </td>
         `
@@ -55,8 +57,8 @@ export const cciCustomHtmlHeader = (agencyLogoUrl?: string): string => `
         : `
       <td width="40%">
         <div style="margin-left: 20px;">
-          <p style="color: #161616; font-weight: bold; font-size: 20px; margin: 0">Chambre consulaire</p>
-          <p style="color: #3A3A3A; font-size: 14px; margin: 0">Mini stage</p>
+          <p style="color: #161616; ${emailFontFamilyStyle} font-weight: bold; font-size: 20px; margin: 0">Chambre consulaire</p>
+          <p style="color: #3A3A3A; ${emailFontFamilyStyle} font-size: 14px; margin: 0">Mini stage</p>
         </div>
       </td>
       `
