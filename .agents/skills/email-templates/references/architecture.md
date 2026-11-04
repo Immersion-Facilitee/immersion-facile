@@ -29,13 +29,14 @@ The email is done when `shared`, `front` and `back` typecheck and it renders in 
 
 `subject` and `attachmentUrls` complete the variables; reuse `emailAttachements` from `shared/src/email/email.content.ts` for attachments.
 
-`RawEmailVariables` (`subject` and `rawContent`) are reserved for `DISCUSSION_EXCHANGE` and `WARN_DISCUSSION_DELIVERY_FAILED`: they are sent without layout, under the reply separator header. Do not use them for a new email.
+`RawEmailVariables` (`subject` and `rawContent`) are reserved for `DISCUSSION_EXCHANGE`: it is sent without layout, under the reply separator header. Do not use them for a new email.
 
 ## Blocks
 
 The `EmailBlock` union in `libs/html-templates/src/email/emailBlock.ts` is the source of truth for the available kinds and their props. Write blocks as object literals with `kind` first: TypeScript then narrows completion to that kind's props.
 
 - Text props are HTML strings: use `<strong>`, `<em>` and `<a href>` inline. Leading indentation is stripped, so indented template literals are safe. Line breaks become `<br/>` in `greetings`, `signature`, `legals`, `paragraph`, `highlight` and `list` items.
+- Prefer several consecutive `paragraph` blocks over one paragraph containing line breaks or blank lines. Each `<br/>` adds a line height outside the `marginBottom` scale, so the spacing between text sections becomes inconsistent with the rest of the email. Keep line breaks inside a paragraph for lines that belong together, such as an address or a short label followed by its value.
 - Top-level blocks accept `marginBottom` (`sm` 8px, `md` 16px or `lg` 32px), defaulting to `md`. Override it only to group related blocks: `sm` between a title paragraph and its content, `lg` before the next section.
 - A `callout` holds `paragraph`, `list` and `buttonsGroup` blocks, rendered in array order with a fixed gap; they do not accept `marginBottom`.
 - Express emphasis through the existing blocks (`highlight`, `callout`, button priorities) and keep inline `style` attributes out of templates.
