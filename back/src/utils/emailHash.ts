@@ -1,8 +1,8 @@
 import {
   type AgencyId,
   type Beneficiary,
+  type ConventionActorRole,
   type ConventionDto,
-  type ConventionRole,
   type Email,
   type EmailHash,
   errors,
@@ -46,7 +46,7 @@ export const isHashMatchConventionEmails = ({
 }: {
   convention: ConventionDto;
   emailHash: EmailHash;
-  role: ConventionRole;
+  role: ConventionActorRole;
 }): boolean => {
   const emailsByRole = conventionEmailsByRole(convention)(role);
   return isSomeEmailMatchingEmailHash(emailsByRole, emailHash);
