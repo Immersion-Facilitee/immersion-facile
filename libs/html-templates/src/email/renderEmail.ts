@@ -7,6 +7,7 @@ import {
   renderLegals,
   renderParagraph,
 } from "./components";
+import { emailBodyTextStyle } from "./components/typography";
 import {
   type EmailBlock,
   emailMarginInPx,
@@ -42,16 +43,24 @@ const replyHeader = `
         <p style="${replyHeaderStyle}">Cet email vous a été envoyé via le service Immersion Facilitée, vous pouvez répondre directement à cet email, il sera transmis à votre interlocuteur.</p>
         <p style="${replyHeaderStyle}">-----------------------------</p>`;
 
-const renderHTMLRow = (html: string | undefined, paddingBottomInPx?: number) =>
+const renderHTMLRow = (html: string | undefined, cellStyle?: string) =>
   html && html !== ""
     ? `
     <tr>
-      <td${paddingBottomInPx ? ` style="padding-bottom: ${paddingBottomInPx}px;"` : ""}>
+      <td${cellStyle ? ` style="${cellStyle}"` : ""}>
         ${html}
       </td>
     </tr>
   `
     : "";
+
+const renderContentRow = (html: string, paddingBottomInPx?: number) =>
+  renderHTMLRow(
+    html,
+    paddingBottomInPx
+      ? `${emailBodyTextStyle} padding-bottom: ${paddingBottomInPx}px;`
+      : emailBodyTextStyle,
+  );
 
 const isButtonBlock = (block: EmailBlock): boolean =>
   block.kind === "button" || block.kind === "buttonsGroup";
@@ -111,14 +120,14 @@ export const renderEmail = ({
 
   const rows = [
     renderHTMLRow(renderHeader(agencyLogoUrl, customParts.header)),
-    renderHTMLRow(renderedGreetings, emailMarginInPx.md),
+    renderContentRow(renderedGreetings, emailMarginInPx.md),
     ...blocks.map((block) =>
-      renderHTMLRow(
+      renderContentRow(
         renderEmailBlock(block),
         emailMarginInPx[block.marginBottom ?? "md"],
       ),
     ),
-    renderHTMLRow(renderedSignature),
+    renderContentRow(renderedSignature),
     renderHTMLRow(renderLegals(legals)),
     renderHTMLRow(renderFooter(customParts.footer)),
   ];

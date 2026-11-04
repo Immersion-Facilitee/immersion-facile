@@ -1,4 +1,5 @@
 import { match } from "ts-pattern";
+import { emailBodyTextStyle } from "../typography";
 import {
   type EmailButtonsGroupProps,
   renderButtonsGroup,
@@ -46,7 +47,7 @@ export const renderCallout = ({
             .map(
               (row, index) =>
                 `<tr>
-                  <td style="padding-bottom: ${index === rows.length - 1 ? 0 : calloutRowsGapInPx}px;">
+                  <td style="padding-bottom: ${index === rows.length - 1 ? 0 : calloutRowsGapInPx}px; ${emailBodyTextStyle}">
                     ${row}
                   </td>
                 </tr>`,
