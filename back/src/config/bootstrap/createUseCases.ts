@@ -108,7 +108,9 @@ import { makeInitiateLoginByEmail } from "../../domains/core/authentication/conn
 import { makeInitiateLoginByOAuth } from "../../domains/core/authentication/connected-user/use-cases/InitiateLoginByOAuth";
 import { makeRenewExpiredJwt } from "../../domains/core/authentication/connected-user/use-cases/RenewExpiredJwt";
 import { makeNotifyFranceTravailUserAdvisorOnConventionFullySigned } from "../../domains/core/authentication/ft-connect/use-cases/NotifyFranceTravailUserAdvisorOnConventionFullySigned";
+import { makeHashOtpCode } from "../../domains/core/authentication/otp-challenge/adapters/hashOtpCode";
 import { makeGetMaskedOtpRecipients } from "../../domains/core/authentication/otp-challenge/use-cases/GetMaskedOtpRecipients";
+import { makeRequestOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/RequestOtpChallenge";
 import type { DashboardGateway } from "../../domains/core/dashboard/port/DashboardGateway";
 import { makeGetDashboardUrl } from "../../domains/core/dashboard/useCases/GetDashboardUrl";
 import { makeValidateEmail } from "../../domains/core/email-validation/use-cases/ValidateEmail";
@@ -1358,6 +1360,16 @@ export const createUseCases = ({
 
     getMaskedOtpRecipients: makeGetMaskedOtpRecipients({
       uowPerformer,
+    }),
+    requestOtpChallenge: makeRequestOtpChallenge({
+      uowPerformer,
+      deps: {
+        hashOtpCode: makeHashOtpCode(config.otpCodeHmacSecret),
+        otpCodeGeneratorGateway: gateways.otpCodeGeneratorGateway,
+        saveNotificationAndRelatedEvent,
+        timeGateway,
+        uuidGenerator,
+      },
     }),
   } satisfies Record<string, InstantiatedUseCase<any, any, any>>;
 };
