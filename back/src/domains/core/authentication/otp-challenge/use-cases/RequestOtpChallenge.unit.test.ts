@@ -380,7 +380,7 @@ describe("RequestOtpChallenge", () => {
               { channel: "email" },
               validVisitorOtpJwtPayload,
             ),
-            undefined,
+            { otpChallengeId },
           );
 
           expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -449,7 +449,7 @@ describe("RequestOtpChallenge", () => {
               { channel: "sms" },
               validVisitorOtpJwtPayload,
             ),
-            undefined,
+            { otpChallengeId },
           );
 
           expectToEqual(uow.otpChallengeRepository.otpChallenges, [

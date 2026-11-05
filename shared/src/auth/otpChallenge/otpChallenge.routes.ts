@@ -4,8 +4,12 @@ import {
   maskedOtpRecipientsSchema,
   withAuthorizationHeaders,
 } from "../..";
-import { expressEmptyResponseBody } from "../../zodUtils";
-import { requestOtpChallengeSchema } from "./otpChallenge.schema";
+import { expressEmptyResponseBodyOrEmptyObject } from "../../zodUtils";
+import {
+  requestOtpChallengeResponseSchema,
+  requestOtpChallengeSchema,
+  verifyOtpChallengeSchema,
+} from "./otpChallenge.schema";
 
 export type OtpChallengeRoutes = typeof otpChallengeRoutes;
 export const otpChallengeRoutes = defineRoutes({
@@ -27,12 +31,25 @@ export const otpChallengeRoutes = defineRoutes({
     requestBodySchema: requestOtpChallengeSchema,
     ...withAuthorizationHeaders,
     responses: {
-      200: expressEmptyResponseBody,
+      200: requestOtpChallengeResponseSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
       403: httpErrorSchema,
       404: httpErrorSchema,
       429: httpErrorSchema,
+    },
+  }),
+  verifyOtpChallenge: defineRoute({
+    method: "post",
+    url: "/otp-challenge/:otpChallengeId",
+    requestBodySchema: verifyOtpChallengeSchema,
+    ...withAuthorizationHeaders,
+    responses: {
+      204: expressEmptyResponseBodyOrEmptyObject,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
     },
   }),
 });
