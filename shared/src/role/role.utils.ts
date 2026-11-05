@@ -8,6 +8,8 @@ import {
   allModifierRoles,
   allowedRolesToAccessAssessment,
   allowedRolesToCreateAssessment,
+  type ConventionActorRole,
+  conventionActorRoles,
   type ModifierRole,
   type Role,
   type SignatoryRole,
@@ -66,6 +68,11 @@ export const hasAllowedRoleOnAssessment = (
 
 export const isModifierRole = (role: Role): role is ModifierRole =>
   allModifierRoles.includes(role as ModifierRole);
+
+export const isConventionActorRole = (
+  role: Role,
+): role is ConventionActorRole =>
+  conventionActorRoles.some((actorRole) => actorRole === role);
 
 export const hasAllowedRolesToEditConvention = (
   userRolesOnConvention: Role[],

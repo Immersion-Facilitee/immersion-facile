@@ -6,7 +6,6 @@ import {
   ConnectedUserBuilder,
   type ConnectedUserDomainJwtPayload,
   ConventionDtoBuilder,
-  type ConventionRole,
   defaultMonthsThresholdForConventionsListing,
   defaultPhoneNumber,
   type EstablishmentRole,
@@ -130,19 +129,13 @@ describe("SendAssessmentLink", () => {
     .withIsAdmin(true)
     .build();
 
-  const validatorJwtPayload = createConventionMagicLinkPayload({
-    id: convention.id,
-    role: "validator",
-    email: notConnectedUser.email,
-    now: new Date(),
-  });
-
-  const counsellorJwtPayload = createConventionMagicLinkPayload({
-    id: convention.id,
-    role: "counsellor",
-    email: notConnectedUser.email,
-    now: new Date(),
-  });
+  const establishmentRepresentativeJwtPayload =
+    createConventionMagicLinkPayload({
+      id: convention.id,
+      role: "establishment-representative",
+      email: convention.signatories.establishmentRepresentative.email,
+      now: new Date(),
+    });
 
   beforeEach(() => {
     timeGateway = new CustomTimeGateway(now);
@@ -187,11 +180,14 @@ describe("SendAssessmentLink", () => {
             conventionId: convention.id,
             notificationKind: "sms",
           },
-          { ...validatorJwtPayload, applicationId: wrongConventionId },
+          {
+            ...establishmentRepresentativeJwtPayload,
+            applicationId: wrongConventionId,
+          },
         ),
         errors.convention.forbiddenConventionIdMismatch({
           jwtConventionId: wrongConventionId,
-          jwtRole: validatorJwtPayload.role,
+          jwtRole: establishmentRepresentativeJwtPayload.role,
           requestedConventionId: convention.id,
         }),
       );
@@ -206,7 +202,7 @@ describe("SendAssessmentLink", () => {
             conventionId: convention.id,
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.notFound({
           conventionId: convention.id,
@@ -219,14 +215,7 @@ describe("SendAssessmentLink", () => {
         .withStatus("IN_REVIEW")
         .build();
 
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
       uow.conventionRepository.setConventions([conventionWithWrongStatus]);
 
       await expectPromiseToFailWithError(
@@ -235,7 +224,7 @@ describe("SendAssessmentLink", () => {
             conventionId: conventionWithWrongStatus.id,
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.assessment.sendAssessmentLinkNotAllowedForStatus({
           status: "IN_REVIEW",
@@ -252,14 +241,7 @@ describe("SendAssessmentLink", () => {
         .withSchedule(reasonableSchedule, ["samedi", "dimanche"])
         .build();
 
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
       uow.conventionRepository.setConventions([
         conventionWithDateEndInMoreThan1Days,
       ]);
@@ -270,21 +252,14 @@ describe("SendAssessmentLink", () => {
             conventionId: conventionWithDateEndInMoreThan1Days.id,
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.assessment.conventionEndingInMoreThanOneDay(),
       );
     });
 
     it("throws bad request if assessment is already filled", async () => {
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
 
       uow.assessmentRepository.save({
         conventionId: convention.id,
@@ -306,7 +281,7 @@ describe("SendAssessmentLink", () => {
             conventionId: convention.id,
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.assessment.assessmentAlreadyFullfilled(convention.id),
       );
@@ -412,38 +387,6 @@ describe("SendAssessmentLink", () => {
     });
 
     describe("from magiclink", () => {
-      it.each(["agency-admin", "agency-viewer", "to-review"] as AgencyRole[])(
-        "throws unauthorized if user has not enough rights on agency",
-        async (role) => {
-          uow.agencyRepository.agencies = [
-            toAgencyWithRights(agency, {
-              [notConnectedUser.id]: {
-                roles: [role],
-                isNotifiedByEmail: true,
-              },
-            }),
-          ];
-
-          const notConnectedUserJwtPayload = createConventionMagicLinkPayload({
-            id: convention.id,
-            role: role as ConventionRole,
-            email: notConnectedUser.email,
-            now: new Date(),
-          });
-
-          await expectPromiseToFailWithError(
-            usecase.execute(
-              {
-                conventionId: convention.id,
-                notificationKind: "sms",
-              },
-              notConnectedUserJwtPayload,
-            ),
-            errors.assessment.sendAssessmentLinkForbidden(),
-          );
-        },
-      );
-
       it.each([
         "beneficiary-representative",
         "beneficiary",
@@ -471,14 +414,7 @@ describe("SendAssessmentLink", () => {
       );
 
       it(`throws too many requests if there was already a assessment link sent less than ${CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS} hours before`, async () => {
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [notConnectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
-            },
-          }),
-        ];
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
         uow.notificationRepository.notifications = [
           {
             id: "past-notification-id",
@@ -506,7 +442,7 @@ describe("SendAssessmentLink", () => {
               conventionId: convention.id,
               notificationKind: "sms",
             },
-            validatorJwtPayload,
+            establishmentRepresentativeJwtPayload,
           ),
           errors.assessment.assessmentLinkAlreadySent({
             notificationKind: "sms",
@@ -518,14 +454,7 @@ describe("SendAssessmentLink", () => {
       });
 
       it(`throws too many requests if there was already an assessment email sent less than ${CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS} hours before`, async () => {
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [notConnectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
-            },
-          }),
-        ];
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
         uow.notificationRepository.notifications = [
           {
             id: "past-email-notification-id",
@@ -565,7 +494,7 @@ describe("SendAssessmentLink", () => {
               conventionId: convention.id,
               notificationKind: "email",
             },
-            validatorJwtPayload,
+            establishmentRepresentativeJwtPayload,
           ),
           errors.assessment.assessmentLinkAlreadySent({
             notificationKind: "email",
@@ -897,64 +826,6 @@ describe("SendAssessmentLink", () => {
     });
 
     describe("from magiclink", () => {
-      it.each(["validator", "counsellor"] as const)(
-        "When not connected agency user %s triggers it",
-        async (role) => {
-          const agencyWithEmails = toAgencyWithRights(
-            new AgencyDtoBuilder().withId(convention.agencyId).build(),
-            {
-              [notConnectedUser.id]: {
-                roles: [role],
-                isNotifiedByEmail: true,
-              },
-            },
-          );
-
-          uow.agencyRepository.agencies = [agencyWithEmails];
-
-          await usecase.execute(
-            {
-              conventionId: convention.id,
-              notificationKind: "sms",
-            },
-            role === "validator" ? validatorJwtPayload : counsellorJwtPayload,
-          );
-
-          expectObjectInArrayToMatch(uow.outboxRepository.events, [
-            { topic: "NotificationAdded" },
-            {
-              topic: "AssessmentReminderManuallySent",
-              payload: {
-                convention,
-                transport: "sms",
-                triggeredBy: {
-                  kind: "convention-magic-link",
-                  role,
-                },
-              },
-            },
-          ]);
-          expectObjectInArrayToMatch(uow.notificationRepository.notifications, [
-            {
-              kind: "sms",
-              followedIds: {
-                conventionId: convention.id,
-                agencyId: convention.agencyId,
-                establishmentSiret: convention.siret,
-                userId: undefined,
-              },
-              templatedContent: {
-                recipientPhone: convention.establishmentTutor.phone,
-                kind: "ReminderForAssessment",
-                params: {
-                  shortLink: makeShortLinkUrl(config, shortLinkId),
-                },
-              },
-            },
-          ]);
-        },
-      );
-
       it("throws unauthorized if not connected beneficiary-current-employer triggers it", async () => {
         const signatoryJwtPayload = createConventionMagicLinkPayload({
           id: convention.id,
@@ -1058,24 +929,17 @@ describe("SendAssessmentLink", () => {
           .withBeneficiaryPhone(phoneNumber)
           .build();
 
-        const agencyWithValidatorEmails = toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        });
-
         uow.conventionRepository.setConventions([
           conventionWithCustomPhoneNumer,
         ]);
-        uow.agencyRepository.agencies = [agencyWithValidatorEmails];
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
 
         await usecase.execute(
           {
             conventionId: conventionWithCustomPhoneNumer.id,
             notificationKind: "sms",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         );
 
         expectObjectInArrayToMatch(uow.outboxRepository.events, [
@@ -1116,14 +980,7 @@ describe("SendAssessmentLink", () => {
         uow.conventionRepository.setConventions([
           conventionWithDefaultTutorPhone,
         ]);
-        uow.agencyRepository.agencies = [
-          toAgencyWithRights(agency, {
-            [notConnectedUser.id]: {
-              roles: ["validator"],
-              isNotifiedByEmail: true,
-            },
-          }),
-        ];
+        uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
 
         await expectPromiseToFailWithError(
           usecase.execute(
@@ -1131,7 +988,7 @@ describe("SendAssessmentLink", () => {
               conventionId: conventionWithDefaultTutorPhone.id,
               notificationKind: "sms",
             },
-            validatorJwtPayload,
+            establishmentRepresentativeJwtPayload,
           ),
           errors.convention.invalidMobilePhoneNumber({
             conventionId: conventionWithDefaultTutorPhone.id,
@@ -1155,14 +1012,7 @@ describe("SendAssessmentLink", () => {
         .withSchedule(reasonableSchedule)
         .build();
 
-      uow.agencyRepository.agencies = [
-        toAgencyWithRights(agency, {
-          [notConnectedUser.id]: {
-            roles: ["validator"],
-            isNotifiedByEmail: true,
-          },
-        }),
-      ];
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
       uow.conventionRepository.setConventions([archivedConvention]);
       uow.featureFlagRepository.featureFlags = {
         enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
@@ -1174,7 +1024,7 @@ describe("SendAssessmentLink", () => {
             conventionId: archivedConvention.id,
             notificationKind: "email",
           },
-          validatorJwtPayload,
+          establishmentRepresentativeJwtPayload,
         ),
         errors.convention.archived({ conventionId: archivedConvention.id }),
       );

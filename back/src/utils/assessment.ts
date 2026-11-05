@@ -1,8 +1,8 @@
 import {
-  type AgencyDto,
   type AssessmentDto,
   type AssessmentMode,
   assessmentDtoSchema,
+  type ConventionActorRole,
   type ConventionDto,
   type ConventionRelatedJwtPayload,
   errors,
@@ -10,25 +10,22 @@ import {
   hasAllowedRoleOnAssessment,
   isEstablishmentTutorIsEstablishmentRepresentative,
   legacyAssessmentDtoSchema,
-  type Role,
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import { z } from "zod";
 import { getUserWithRights } from "../domains/connected-users/helpers/userRights.helper";
 import type { AssessmentEntity } from "../domains/convention/entities/AssessmentEntity";
 import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
-import { isSomeEmailMatchingEmailHash } from "./jwt";
+import { isSomeEmailMatchingEmailHash } from "./emailHash";
 
 export const throwForbiddenIfNotAllowedForAssessments = async ({
   mode,
   convention,
-  agency,
   jwtPayload,
   uow,
 }: {
   mode: AssessmentMode;
   convention: ConventionDto;
-  agency: AgencyDto;
   jwtPayload: ConventionRelatedJwtPayload;
   uow: UnitOfWork;
 }) => {
@@ -37,9 +34,7 @@ export const throwForbiddenIfNotAllowedForAssessments = async ({
     if (convention.id !== applicationId)
       throw errors.assessment.conventionIdMismatch();
 
-    const emailsOrError = assessmentEmailsByRole(convention, agency, mode)[
-      role
-    ];
+    const emailsOrError = assessmentEmailsByRole(convention, mode)[role];
 
     if (emailsOrError instanceof Error) throw emailsOrError;
     if (!isSomeEmailMatchingEmailHash(emailsOrError, emailHash))
@@ -70,12 +65,8 @@ export const assessmentEntitySchema: ZodSchemaWithInputMatchingOutput<Assessment
 
 const assessmentEmailsByRole = (
   convention: ConventionDto,
-  agency: AgencyDto,
   mode: AssessmentMode,
-): Record<Role, string[] | Error> => ({
-  "back-office": errors.assessment.forbidden(mode),
-  "to-review": errors.assessment.forbidden(mode),
-  "agency-viewer": errors.assessment.forbidden(mode),
+): Record<ConventionActorRole, string[] | Error> => ({
   beneficiary:
     mode === "GetAssessment"
       ? [convention.signatories.beneficiary.email]
@@ -85,7 +76,6 @@ const assessmentEmailsByRole = (
     mode === "GetAssessment" && convention.signatories.beneficiaryRepresentative
       ? [convention.signatories.beneficiaryRepresentative.email]
       : errors.assessment.forbidden(mode),
-  "agency-admin": errors.assessment.forbidden(mode),
   "establishment-representative":
     mode === "GetAssessment" ||
     (mode === "CreateAssessment" &&
@@ -93,8 +83,4 @@ const assessmentEmailsByRole = (
       ? [convention.signatories.establishmentRepresentative.email]
       : errors.assessment.forbidden(mode),
   "establishment-tutor": [convention.establishmentTutor.email],
-  counsellor: agency.counsellorEmails,
-  validator: agency.validatorEmails,
-  "establishment-admin": errors.assessment.forbidden(mode),
-  "establishment-contact": errors.assessment.forbidden(mode),
 });

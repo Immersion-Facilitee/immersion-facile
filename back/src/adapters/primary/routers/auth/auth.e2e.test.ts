@@ -5,8 +5,8 @@ import {
   allowedLoginSources,
   authExpiredMessage,
   authRoutes,
+  type ConventionActorRole,
   ConventionDtoBuilder,
-  type ConventionRole,
   currentJwtVersions,
   decodeJwtWithoutSignatureCheck,
   decodeURIWithParams,
@@ -997,7 +997,7 @@ describe("auth router", () => {
               expiredJwt: generateConventionJwt(
                 createConventionMagicLinkPayload({
                   id: convention.id,
-                  role: unsupportedRole as ConventionRole,
+                  role: unsupportedRole as ConventionActorRole,
                   email: convention.establishmentTutor.email,
                   now: gateways.timeGateway.now(),
                 }),
