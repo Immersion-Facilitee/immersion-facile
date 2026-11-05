@@ -1,3 +1,4 @@
+import { addMinutes } from "date-fns";
 import {
   ConventionDtoBuilder,
   type ConventionId,
@@ -7,16 +8,22 @@ import {
   expectToEqual,
   immersionFacileNoReplyEmailSender,
   OtpChallengeDtoBuilder,
+  type OtpChallengeId,
   type OtpChallengeRoutes,
   otpChallengeRoutes,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
+import {
+  type HashOtpCode,
+  makeHashOtpCode,
+} from "../../../../domains/core/authentication/otp-challenge/adapters/hashOtpCode";
 import type { DeterministicOtpCodeGeneratorGateway } from "../../../../domains/core/authentication/otp-challenge/adapters/otp-code-generator-gateway/DeterministicOtpCodeGeneratorGateway";
 import type { GenerateVisitorOtpJwt } from "../../../../domains/core/jwt";
 import type { CustomTimeGateway } from "../../../../domains/core/time-gateway/adapters/CustomTimeGateway";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
+import type { UuidGenerator } from "../../../../domains/core/uuid-generator/ports/UuidGenerator";
 import { buildTestApp } from "../../../../utils/buildTestApp";
 import {
   createVisitorOtpJwtPayload,
@@ -48,12 +55,16 @@ describe("otp challenge router", () => {
   let inMemoryUow: InMemoryUnitOfWork;
   let timeGateway: CustomTimeGateway;
   let otpCodeGeneratorGateway: DeterministicOtpCodeGeneratorGateway;
+  let uuidGenerator: UuidGenerator;
+  let hashOtpCode: HashOtpCode;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
 
   beforeEach(async () => {
     const testApp = await buildTestApp();
     generateVisitorOtpJwt = testApp.generateVisitorOtpJwt;
     inMemoryUow = testApp.inMemoryUow;
+    uuidGenerator = testApp.uuidGenerator;
+    hashOtpCode = makeHashOtpCode(testApp.appConfig.otpCodeHmacSecret);
     timeGateway = testApp.gateways.timeGateway;
     otpCodeGeneratorGateway = testApp.gateways.otpCodeGeneratorGateway;
     expectSavedNotificationsAndEvents = makeExpectSavedNotificationsAndEvents(
@@ -164,6 +175,8 @@ describe("otp challenge router", () => {
   describe(`${displayRouteName(otpChallengeRoutes.requestOtpChallenge)}`, () => {
     const now = new Date("2026-11-02T10:00:00.000Z");
     const otpCode = "123456";
+    const otpChallengeId: OtpChallengeId =
+      "11111111-1111-4111-a111-111111111111";
     const authorization = () => ({
       authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
     });
@@ -171,6 +184,8 @@ describe("otp challenge router", () => {
     beforeEach(() => {
       timeGateway.defaultDate = now;
       otpCodeGeneratorGateway.setNextOtpCodes([otpCode]);
+      const uuids = [otpChallengeId];
+      uuidGenerator.new = () => uuids.shift() ?? "no-uuid-provided";
     });
 
     it("200 - creates otp challenge and sends email with otp code", async () => {
@@ -181,9 +196,10 @@ describe("otp challenge router", () => {
 
       expectHttpResponseToEqual(response, {
         status: 200,
-        body: "",
+        body: { otpChallengeId },
       });
       expect(inMemoryUow.otpChallengeRepository.otpChallenges).toHaveLength(1);
+
       expectSavedNotificationsAndEvents({
         emails: [
           {
@@ -206,7 +222,7 @@ describe("otp challenge router", () => {
 
       expectHttpResponseToEqual(response, {
         status: 200,
-        body: "",
+        body: { otpChallengeId },
       });
       expect(inMemoryUow.otpChallengeRepository.otpChallenges).toHaveLength(1);
       expectSavedNotificationsAndEvents({
@@ -352,6 +368,101 @@ describe("otp challenge router", () => {
           message: errors.otpChallenge.requestedTooRecently({
             minSecondsBetweenRequests: 60,
           }).message,
+        },
+      });
+    });
+  });
+
+  describe(`${displayRouteName(otpChallengeRoutes.verifyOtpChallenge)}`, () => {
+    const now = new Date();
+    const otpCode = "123456";
+    const otpChallengeId: OtpChallengeId =
+      "11111111-1111-4111-a111-111111111111";
+
+    beforeEach(() => {
+      timeGateway.defaultDate = now;
+      inMemoryUow.otpChallengeRepository.otpChallenges = [
+        new OtpChallengeDtoBuilder()
+          .withId(otpChallengeId)
+          .withSubject(visitorOtpJwtPayload.subject)
+          .withCodeHash(hashOtpCode({ otpChallengeId, otpCode }))
+          .withCreatedAt(now.toISOString())
+          .withExpiresAt(addMinutes(now, 30).toISOString())
+          .build(),
+      ];
+    });
+
+    it("204 - verifies otp code, creates visitor session and sets cookie", async () => {
+      const response = await httpClient.verifyOtpChallenge({
+        urlParams: { otpChallengeId },
+        body: { otpCode },
+        headers: {
+          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 204,
+        body: {},
+      });
+      expect(response.headers["set-cookie"]).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(
+            `if_visitor_${convention.id}=${inMemoryUow.visitorSessionRepository.visitorSessions[0].id};.*HttpOnly.*SameSite=Lax`,
+          ),
+        ]),
+      );
+    });
+
+    it("401 - invalid JWT", async () => {
+      const response = await httpClient.verifyOtpChallenge({
+        urlParams: { otpChallengeId },
+        body: { otpCode },
+        headers: { authorization: "invalid-jwt" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
+      });
+    });
+
+    it("401 - invalid otp code does not set cookie", async () => {
+      const response = await httpClient.verifyOtpChallenge({
+        urlParams: { otpChallengeId },
+        body: { otpCode: "000000" },
+        headers: {
+          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: errors.otpChallenge.invalidCode().message,
+        },
+      });
+      expectToEqual(response.headers["set-cookie"], undefined);
+    });
+
+    it("404 - otp challenge not found", async () => {
+      const unknownOtpChallengeId: OtpChallengeId =
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+      const response = await httpClient.verifyOtpChallenge({
+        urlParams: { otpChallengeId: unknownOtpChallengeId },
+        body: { otpCode },
+        headers: {
+          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 404,
+        body: {
+          status: 404,
+          message: errors.otpChallenge.notFound(unknownOtpChallengeId).message,
         },
       });
     });

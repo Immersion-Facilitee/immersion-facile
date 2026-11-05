@@ -107,8 +107,7 @@ export const errors = {
         `Vous avez demandé ${maxRequests} codes au cours des ${periodInMinutes} dernières minutes. Merci de réessayer plus tard.`,
       ),
     invalidCode: () => new UnauthorizedError(),
-    expired: () =>
-      new ForbiddenError("Le code de vérification a expiré."),
+    expired: () => new ForbiddenError("Le code de vérification a expiré."),
     alreadyUsed: () =>
       new ForbiddenError("Le code de vérification a déjà été utilisé."),
     alreadyRevoked: () =>
