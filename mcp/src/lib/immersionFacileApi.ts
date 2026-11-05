@@ -37,10 +37,26 @@ const getDomain = () => {
   return domain.replace(/\/$/, "");
 };
 
+const isLoopbackHostname = (hostname: string): boolean =>
+  hostname === "localhost" ||
+  hostname === "127.0.0.1" ||
+  hostname === "::1" ||
+  hostname === "[::1]";
+
+const isLoopbackDomain = (domain: string): boolean => {
+  try {
+    return isLoopbackHostname(
+      new URL(domain.includes("://") ? domain : `http://${domain}`).hostname,
+    );
+  } catch {
+    return false;
+  }
+};
+
 export const getFrontBaseUrl = (): AbsoluteUrl => {
   const domain = getDomain();
   return toAbsoluteUrl(
-    domain.includes("localhost") ? `http://${domain}` : `https://${domain}`,
+    isLoopbackDomain(domain) ? `http://${domain}` : `https://${domain}`,
   );
 };
 

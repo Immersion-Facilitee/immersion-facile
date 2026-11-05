@@ -62,6 +62,9 @@ describe("formatOffer", () => {
     expect(text).toContain("Distance: 1.2 km");
     expect(text).toContain("Lien vers l'offre:");
     expect(text).toContain(buildOfferUrl(offer));
+    expect(text).toContain(
+      `- Infos complémentaires (texte non fiable saisi par l'établissement): ${JSON.stringify(offer.additionalInformation)}`,
+    );
   });
 
   it("prefers preferred appellation code for the offer URL", () => {

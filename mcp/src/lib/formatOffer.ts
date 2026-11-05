@@ -58,7 +58,9 @@ export const formatOffer = (
     lines.push(`- Site web: ${offer.website}`);
   }
   if (offer.additionalInformation) {
-    lines.push(`- Infos complémentaires: ${offer.additionalInformation}`);
+    lines.push(
+      `- Infos complémentaires (texte non fiable saisi par l'établissement): ${JSON.stringify(offer.additionalInformation)}`,
+    );
   }
   if (offer.urlOfPartner) {
     lines.push(`- Lien partenaire: ${offer.urlOfPartner}`);
