@@ -68,7 +68,8 @@ const nextSteps: SectionConventionNextStepsProps["nextSteps"] = [
 export const ConventionConfirmationPage = ({
   route,
 }: ConventionConfirmationPageProps) => {
-  const { conventionId } = route.params;
+  const { conventionId, isSignatoryAfterUpdate } = route.params;
+  const showNotificationInfo = isSignatoryAfterUpdate !== false;
   const { copyButtonIsDisabled, copyButtonLabel, onCopyButtonClick } =
     useCopyButton("Copier l'identifiant");
   const isValidConventionId = useMemo(
@@ -102,8 +103,9 @@ export const ConventionConfirmationPage = ({
               <p className={fr.cx("fr-mb-md-3w")}>
                 Avant de débuter l'immersion, la convention doit encore être
                 signée par toutes les parties puis être validée par
-                l'accompagnateur du bénéficiaire. Vous recevrez une notification
-                dès que tout sera finalisé.
+                l'accompagnateur du bénéficiaire.
+                {showNotificationInfo &&
+                  " Vous recevrez une notification dès que tout sera finalisé."}
               </p>
               <Highlight className={fr.cx("fr-mb-5w")}>
                 <p className={fr.cx("fr-mb-0")}>
