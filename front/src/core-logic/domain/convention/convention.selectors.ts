@@ -54,13 +54,20 @@ type SignatoryData = {
   signedAtFieldName: ConventionField | null;
 };
 
-const signatoryData = createSelector(
+const currentSignatoryRole = createSelector(
   conventionState,
-  ({
+  ({ currentSignatoryRole }) => currentSignatoryRole,
+);
+
+const signatoryData = createSelector(
+  convention,
+  initialFetchedConvention,
+  currentSignatoryRole,
+  (
     convention,
     initialFetchedConvention,
     currentSignatoryRole,
-  }): SignatoryData => {
+  ): SignatoryData => {
     if (
       !convention ||
       !currentSignatoryRole ||
@@ -71,7 +78,10 @@ const signatoryData = createSelector(
           updatedConvention: convention,
         }))
     )
-      return { signatory: null, signedAtFieldName: null };
+      return {
+        signatory: null,
+        signedAtFieldName: null,
+      };
     return signatoryDataFromConvention(convention, currentSignatoryRole);
   },
 );
