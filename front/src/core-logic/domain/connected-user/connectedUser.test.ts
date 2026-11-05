@@ -322,6 +322,38 @@ describe("InclusionConnected", () => {
         ["back-office", "agency-admin", "validator"],
       );
     });
+
+    it("computes roles on the fetched convention (not on the edited one)", () => {
+      const establishmentRepresentativeUser: ConnectedUser = {
+        ...connectedUser,
+        email: convention.signatories.establishmentRepresentative.email,
+        agencyRights: [],
+      };
+      store.dispatch(
+        connectedUserSlice.actions.currentUserFetchSucceeded(
+          establishmentRepresentativeUser,
+        ),
+      );
+
+      store.dispatch(
+        conventionSlice.actions.showSummaryChangeRequested({
+          showSummary: true,
+          convention: {
+            ...convention,
+            ...new ConventionDtoBuilder(convention)
+              .withEstablishmentRepresentativeEmail(
+                "new-establishment-representative@mail.com",
+              )
+              .build(),
+          },
+        }),
+      );
+
+      expectArraysToEqualIgnoringOrder(
+        connectedUserSelectors.userRolesForFetchedConvention(store.getState()),
+        ["establishment-representative", "establishment-tutor"],
+      );
+    });
   });
 
   describe("when current user has successfully requested an update of another user", () => {

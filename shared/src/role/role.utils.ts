@@ -40,6 +40,22 @@ export const conventionSignatoryRoleBySignatoryKey: Record<
   "establishment-representative": "establishmentRepresentative",
 };
 
+export const isStillSignatoryOnUpdatedConvention = ({
+  signatoryRole,
+  initialConvention,
+  updatedConvention,
+}: {
+  signatoryRole: SignatoryRole;
+  initialConvention: ConventionDto;
+  updatedConvention: ConventionDto;
+}): boolean => {
+  const signatoryKey = conventionSignatoryRoleBySignatoryKey[signatoryRole];
+  return (
+    initialConvention.signatories[signatoryKey]?.email ===
+    updatedConvention.signatories[signatoryKey]?.email
+  );
+};
+
 export const hasAllowedRoleOnAssessment = (
   userRolesOnConvention: Role[],
   mode: AssessmentMode,

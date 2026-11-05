@@ -276,6 +276,7 @@ export const {
   conventionConfirmation: defineRoute(
     {
       conventionId: param.path.string,
+      isSignatoryAfterUpdate: param.query.optional.boolean,
     },
     ({ conventionId }) => `/demande-immersion/confirmation/${conventionId}`,
   ),

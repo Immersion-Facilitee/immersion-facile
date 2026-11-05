@@ -109,24 +109,29 @@ export const BeneficiaryFormSection = ({
 
   const onBirthdateChange = useCallback(
     (beneficiaryBirthdate: DateString) => {
-      const newIsMinor = isBeneficiaryMinorAccordingToAge(
+      const newIsMinorAccordingToAge = isBeneficiaryMinorAccordingToAge(
         values.dateStart,
         beneficiaryBirthdate,
       );
-      if (newIsMinor) {
+
+      if (isMinorAccordingToAge === newIsMinorAccordingToAge) {
+        return;
+      }
+
+      setIsMinorAccordingToAge(newIsMinorAccordingToAge);
+      dispatch(
+        conventionSlice.actions.isMinorChanged(newIsMinorAccordingToAge),
+      );
+      if (newIsMinorAccordingToAge) {
         setValue(
           "signatories.beneficiaryRepresentative.role",
           "beneficiary-representative",
         );
+        return;
       }
-
-      if (!newIsMinor && !isMinorOrProtected) {
-        setValue("signatories.beneficiaryRepresentative", undefined);
-      }
-      setIsMinorAccordingToAge(newIsMinor);
-      dispatch(conventionSlice.actions.isMinorChanged(newIsMinor));
+      setValue("signatories.beneficiaryRepresentative", undefined);
     },
-    [dispatch, values.dateStart, setValue],
+    [dispatch, values.dateStart, setValue, isMinorAccordingToAge],
   );
 
   useEffect(() => {

@@ -7,6 +7,7 @@ import {
   errors,
   type InternshipKind,
   isSignatoryRole,
+  isStillSignatoryOnUpdatedConvention,
   type Signatories,
   statusTransitionConfigs,
   updateConventionRequestSchema,
@@ -96,6 +97,15 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
         );
 
       const signatoryRole = userRolesOnConvention.find(isSignatoryRole);
+      const signatoryRoleToSignWith =
+        signatoryRole &&
+        isStillSignatoryOnUpdatedConvention({
+          signatoryRole,
+          initialConvention: conventionFromRepo,
+          updatedConvention: convention,
+        })
+          ? signatoryRole
+          : undefined;
       const conventionWithSignatoriesSignedAtAndDateApprovalCleared: ConventionDto =
         convention.internshipKind === "immersion"
           ? {
@@ -126,12 +136,12 @@ export const makeUpdateConvention = useCaseBuilder("UpdateConvention")
               role: jwtPayload.role,
             };
 
-      if (signatoryRole) {
+      if (signatoryRoleToSignWith) {
         const signedConvention = await signConvention({
           uow,
           convention: conventionWithSignatoriesSignedAtAndDateApprovalCleared,
           now: now.toISOString(),
-          role: signatoryRole,
+          role: signatoryRoleToSignWith,
         });
 
         await uow.conventionRepository.update(signedConvention);
