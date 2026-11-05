@@ -116,6 +116,9 @@ Important:
 - sortBy "distance" requires full geo params.
 - Do not invent companies; only report API results.
       `.trim(),
+      annotations: {
+        readOnlyHint: true,
+      },
       inputSchema: searchImmersionOffersInputSchema,
     },
     async (args) => {

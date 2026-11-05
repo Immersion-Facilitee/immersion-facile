@@ -4,7 +4,11 @@ import { dirname, resolve } from "node:path";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { toNodeHandler } from "@modelcontextprotocol/node";
+import {
+  localhostHostValidation,
+  localhostOriginValidation,
+  toNodeHandler,
+} from "@modelcontextprotocol/node";
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 
 import { registerGetLegalInfoTool } from "./tools/getLegalInfo";
@@ -18,6 +22,14 @@ if (existsSync(envPath)) {
 
 const HOST = process.env.HOST ?? "127.0.0.1";
 const PORT = Number(process.env.PORT ?? 3100);
+
+const LOOPBACK_BIND_HOSTS = new Set(["127.0.0.1", "::1", "localhost"]);
+
+if (!LOOPBACK_BIND_HOSTS.has(HOST)) {
+  throw new Error(
+    `MCP server refuses to bind to non-loopback HOST=${HOST} without authentication. Use 127.0.0.1 (default), ::1 or localhost, or put auth / a reverse-proxy in front before exposing the server.`,
+  );
+}
 
 const createImmersionFacileMcpServer = () => {
   const server = new McpServer(
@@ -43,8 +55,15 @@ const createImmersionFacileMcpServer = () => {
 const mcpHandler = createMcpHandler(() => createImmersionFacileMcpServer());
 
 const httpHandler = toNodeHandler(mcpHandler);
+const validateHost = localhostHostValidation();
+const validateOrigin = localhostOriginValidation();
 
-createServer(httpHandler).listen(PORT, HOST, () => {
+createServer((req, res) => {
+  if (!validateHost(req, res) || !validateOrigin(req, res)) {
+    return;
+  }
+  return httpHandler(req, res);
+}).listen(PORT, HOST, () => {
   console.log(
     `Immersion Facilitée MCP server listening on http://${HOST}:${PORT}`,
   );

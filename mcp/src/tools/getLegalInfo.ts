@@ -23,7 +23,12 @@ const getLegalReferences = () => {
     cachedReferences = Promise.all([
       readFile(legalFrameworkPath, "utf8"),
       readFile(sourcesPath, "utf8"),
-    ]).then(([legalFramework, sources]) => ({ legalFramework, sources }));
+    ])
+      .then(([legalFramework, sources]) => ({ legalFramework, sources }))
+      .catch((error) => {
+        cachedReferences = null;
+        throw error;
+      });
   }
   return cachedReferences;
 };
@@ -42,6 +47,9 @@ duration, convention, remuneration, insurance, rights and obligations,
 host companies, prescribers, or the regulatory framework surrounding
 a professional immersion.
       `.trim(),
+      annotations: {
+        readOnlyHint: true,
+      },
       inputSchema: z.object({
         question: z
           .string()
