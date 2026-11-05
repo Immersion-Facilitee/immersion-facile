@@ -708,6 +708,7 @@ const getRouteToRedirectAfterSubmit = ({
       ({ fetchedConvention }) =>
         frontRoutes.conventionConfirmation({
           conventionId: fetchedConvention.id,
+          isSignatoryAfterUpdate: false,
         }),
     )
     .with({ fetchedConvention: null }, () => undefined)
