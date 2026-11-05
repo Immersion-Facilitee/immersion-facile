@@ -14,10 +14,12 @@ import {
   type ManageConventionSubject,
   type MaskedOtpRecipients,
   type OtpChallenge,
+  type OtpChallengeId,
   type OtpChallengePurpose,
   type OtpCode,
   otpChallengePurposes,
   type RequestOtpChallengeDto,
+  type RequestOtpChallengeResponseDto,
   type VerifyOtpChallengeParams,
 } from "./otpChallenge.dto";
 
@@ -35,9 +37,12 @@ export const otpChallengeSubjectSchema: ZodSchemaWithInputMatchingOutput<
   OtpChallenge["subject"]
 > = manageConventionSubjectSchema;
 
+export const otpChallengeIdSchema: ZodSchemaWithInputMatchingOutput<OtpChallengeId> =
+  zStringMinLength1Max255;
+
 export const otpChallengeSchema: ZodSchemaWithInputMatchingOutput<OtpChallenge> =
   z.object({
-    id: zStringMinLength1Max255,
+    id: otpChallengeIdSchema,
     purpose: otpChallengePurposeSchema,
     subject: otpChallengeSubjectSchema,
     channel: notificationKindSchema,
@@ -61,6 +66,11 @@ export const requestOtpChallengeSchema: ZodSchemaWithInputMatchingOutput<Request
     channel: notificationKindSchema,
   });
 
+export const requestOtpChallengeResponseSchema: ZodSchemaWithInputMatchingOutput<RequestOtpChallengeResponseDto> =
+  z.object({
+    otpChallengeId: otpChallengeIdSchema,
+  });
+
 export const otpCodeSchema: ZodSchemaWithInputMatchingOutput<OtpCode> =
   makeHardenedStringSchema({
     min: 6,
@@ -79,6 +89,6 @@ export const verifyOtpChallengeSchema: ZodSchemaWithInputMatchingOutput<
 
 export const verifyOtpChallengeParamsSchema: ZodSchemaWithInputMatchingOutput<VerifyOtpChallengeParams> =
   z.object({
-    otpChallengeId: zStringMinLength1Max255,
+    otpChallengeId: otpChallengeIdSchema,
     otpCode: otpCodeSchema,
   });

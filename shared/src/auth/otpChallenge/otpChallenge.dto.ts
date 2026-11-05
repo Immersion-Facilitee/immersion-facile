@@ -48,6 +48,10 @@ export type MaskedOtpRecipients = {
 
 export type RequestOtpChallengeDto = Pick<OtpChallenge, "channel">;
 
+export type RequestOtpChallengeResponseDto = {
+  otpChallengeId: OtpChallengeId;
+};
+
 export type VerifyOtpChallengeParams = {
   otpCode: OtpCode;
   otpChallengeId: OtpChallengeId;
