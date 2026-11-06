@@ -1,7 +1,10 @@
 import {
+  type ContactEstablishmentPublicV3Dto,
   errors,
   expectObjectsToMatch,
   expectToEqual,
+  type PublicApiV3SearchEstablishmentRoutes,
+  publicApiV3SearchEstablishmentRoutes,
   UserBuilder,
 } from "shared";
 import type { HttpClient } from "shared-routes";
@@ -21,11 +24,6 @@ import {
 } from "../../../../domains/establishment/helpers/EstablishmentBuilders";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { buildTestApp } from "../../../../utils/buildTestApp";
-import type { ContactEstablishmentPublicV3Dto } from "../DtoAndSchemas/v3/input/ContactEstablishmentPublicV3.dto";
-import {
-  type PublicApiV3SearchEstablishmentRoutes,
-  publicApiV3SearchEstablishmentRoutes,
-} from "./publicApiV3.routes";
 
 describe("POST /v3/apply-to-offers public V3 route", () => {
   const user = new UserBuilder().build();

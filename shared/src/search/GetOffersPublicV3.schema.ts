@@ -1,21 +1,19 @@
+import { z } from "zod";
+import { withAcquisitionSchema } from "../acquisition.dto";
+import { addressDepartmentCodeSchema } from "../address/address.schema";
+import { fitForDisabledWorkersSchema } from "../formEstablishment/FormEstablishment.schema";
+import { nafCodesSchema } from "../naf/naf.schema";
+import type { SortDirection } from "../pagination/pagination.dto";
 import {
-  addressDepartmentCodeSchema,
-  appellationCodeSchema,
-  fitForDisabledWorkersSchema,
-  localization,
-  nafCodesSchema,
   paginationQueryParamsSchema,
-  type SortDirection,
-  siretSchema,
   sortDirectionSchema,
-  withAcquisitionSchema,
-  withOptionalRemoteWorkModesSchema,
-  zStringCanBeEmpty,
-  zToBoolean,
-  zToNumber,
-  zUuidLike,
-} from "shared";
-import z from "zod";
+} from "../pagination/pagination.schema";
+import { withOptionalRemoteWorkModesSchema } from "../remoteWorkMode/remoteWorkMode.schema";
+import { appellationCodeSchema } from "../romeAndAppellationDtos/romeAndAppellation.schema";
+import { siretSchema } from "../siret/siret.schema";
+import { zStringCanBeEmpty } from "../utils/string.schema";
+import { zUuidLike } from "../utils/uuid";
+import { localization, zToBoolean, zToNumber } from "../zodUtils";
 import type { GetOffersFlatParamsPublicV3 } from "./GetOffersPublicV3.dto";
 
 const distanceKmSchema = zToNumber.pipe(

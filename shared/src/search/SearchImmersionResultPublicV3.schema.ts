@@ -1,29 +1,35 @@
+import { z } from "zod";
+import { absoluteUrlSchema } from "../AbsoluteUrl";
 import {
-  absoluteUrlSchema,
-  appellationCodeSchema,
-  appellationLabelSchema,
   businessCustomizedNameSchema,
   businessNameSchema,
+} from "../establishment/businessComponents.schema";
+import {
   contactModeSchema,
-  createPaginatedSchema,
-  dateTimeIsoStringSchema,
   fitForDisabledWorkersSchema,
-  geoPositionSchema,
-  nafCodeSchema,
-  nafSousClasseLabelSchema,
-  numberOfEmployeesRangeSchema,
-  remoteWorkModeShape,
-  romeCodeSchema,
+} from "../formEstablishment/FormEstablishment.schema";
+import { geoPositionSchema } from "../geoPosition/geoPosition.schema";
+import { nafCodeSchema, nafSousClasseLabelSchema } from "../naf/naf.schema";
+import { createPaginatedSchema } from "../pagination/pagination.schema";
+import { remoteWorkModeShape } from "../remoteWorkMode/remoteWorkMode.schema";
+import { romeCodeSchema } from "../rome";
+import {
+  appellationCodeSchema,
+  appellationLabelSchema,
   romeLabelSchema,
+} from "../romeAndAppellationDtos/romeAndAppellation.schema";
+import {
+  numberOfEmployeesRangeSchema,
   siretSchema,
-  type ZodSchemaWithInputMatchingOutput,
-  zBoolean,
+} from "../siret/siret.schema";
+import { dateTimeIsoStringSchema } from "../utils/date";
+import {
   zStringCanBeEmpty,
   zStringCanBeEmptyMax9200,
   zStringMinLength1Max1024,
-  zUuidLike,
-} from "shared";
-import { z } from "zod";
+} from "../utils/string.schema";
+import { zUuidLike } from "../utils/uuid";
+import { type ZodSchemaWithInputMatchingOutput, zBoolean } from "../zodUtils";
 import type { SearchImmersionResultPublicV3 } from "./SearchImmersionResultPublicV3.dto";
 
 const searchImmersionResultPublicV3SchemaCommon = z.object({

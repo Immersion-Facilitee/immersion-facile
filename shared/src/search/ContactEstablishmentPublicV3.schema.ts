@@ -1,20 +1,24 @@
-import type { ZodSchemaWithInputMatchingOutput } from "shared";
+import { z } from "zod";
+import { withAcquisitionSchema } from "../acquisition.dto";
+import { immersionObjectiveSchema } from "../convention/convention.schema";
+import { emailSchema } from "../email/email.schema";
+import { contactModeSchema } from "../formEstablishment/FormEstablishment.schema";
+import { phoneNumberSchema } from "../phone/phone.schema";
+import { appellationCodeSchema } from "../romeAndAppellationDtos/romeAndAppellation.schema";
+import { siretSchema } from "../siret/siret.schema";
 import {
-  appellationCodeSchema,
-  contactModeSchema,
-  emailSchema,
   firstnameMandatorySchema,
-  immersionObjectiveSchema,
   lastnameMandatorySchema,
-  localization,
-  phoneNumberSchema,
-  siretSchema,
-  withAcquisitionSchema,
+} from "../user/user.schema";
+import {
   zStringMinLength1Max1024,
   zStringMinLength1Max6000,
-  zUuidLike,
-} from "shared";
-import { z } from "zod";
+} from "../utils/string.schema";
+import { zUuidLike } from "../utils/uuid";
+import {
+  localization,
+  type ZodSchemaWithInputMatchingOutput,
+} from "../zodUtils";
 import type { ContactEstablishmentPublicV3Dto } from "./ContactEstablishmentPublicV3.dto";
 
 const contactInformationsCommonSchema = z.object({

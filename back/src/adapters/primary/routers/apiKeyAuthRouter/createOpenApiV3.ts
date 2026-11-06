@@ -1,7 +1,9 @@
+import {
+  type ContactEstablishmentPublicV3Dto,
+  publicApiV3SearchEstablishmentRoutes,
+  type SearchImmersionResultPublicV3,
+} from "shared";
 import { createOpenApiGenerator } from "shared-routes/openapi";
-import type { ContactEstablishmentPublicV3Dto } from "../DtoAndSchemas/v3/input/ContactEstablishmentPublicV3.dto";
-import type { SearchImmersionResultPublicV3 } from "../DtoAndSchemas/v3/output/SearchImmersionResultPublicV3.dto";
-import { publicApiV3SearchEstablishmentRoutes } from "./publicApiV3.routes";
 
 const contactByEmailIFExample: ContactEstablishmentPublicV3Dto = {
   kind: "IF",
