@@ -82,3 +82,7 @@ location ~ ^/mon-profil(.*)$ {
     return 301 $scheme://$http_host/mon-compte$1$is_args$args;
 }
 
+location ~ ^/groupe/groupe-ravate(.*)$ {
+    return 301 $scheme://$http_host/groupe/ravate$1$is_args$args;
+}
+
