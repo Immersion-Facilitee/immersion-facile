@@ -1,6 +1,6 @@
 import { Table, type TableProps } from "@codegouvfr/react-dsfr/Table";
 import { forwardRef } from "react";
-import { useLayout } from "../../../helpers/layout";
+import { useLayout } from "../../hooks";
 
 export type ResponsiveTableProps = Omit<TableProps, "fixed">;
 

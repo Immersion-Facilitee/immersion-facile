@@ -15,8 +15,7 @@ import {
   useState,
 } from "react";
 import { useStyles } from "tss-react/dsfr";
-import { useLayout } from "../../../helpers/layout";
-import { useDebounce, useScrollTo } from "../../hooks";
+import { useDebounce, useLayout, useScrollTo } from "../../hooks";
 import { BorderedSection } from "../bordered-section";
 import { Loader } from "../loader";
 import { ResponsiveTable } from "../responsive-table";
