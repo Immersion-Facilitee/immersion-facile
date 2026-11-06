@@ -7,7 +7,11 @@ import RadioButtons, {
 import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
 import { equals, pick } from "ramda";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { HeadingSection, RichTable } from "react-design-system";
+import {
+  HeadingSection,
+  RichTable,
+  type RichTableProps,
+} from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AssessmentCompletionStatusFilter,
@@ -336,24 +340,27 @@ export const ConventionList = () => {
     return;
   }
 
-  const getTableHeaders = () => {
+  const getTableHeaders = (): RichTableProps["headers"] => {
     if (hasConventions) {
       return [
-        "Conseiller",
-        "Statut",
-        "Bilan",
-        "Personne en immersion",
-        "Établissement",
-        "Dates",
-        "Actions",
+        { content: "Conseiller" },
+        { content: "Statut" },
+        { content: "Bilan" },
+        { content: "Personne en immersion" },
+        { content: "Établissement" },
+        { content: "Dates" },
+        { content: "Actions" },
       ];
     }
     if (!filtersAreEmpty) {
       return [
-        "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        {
+          content:
+            "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        },
       ];
     }
-    return ["Nous n'avons pas trouvé de convention."];
+    return [{ content: "Nous n'avons pas trouvé de convention." }];
   };
 
   return (

@@ -6,7 +6,11 @@ import RadioButtons, {
 } from "@codegouvfr/react-dsfr/RadioButtons";
 import { equals, pick } from "ramda";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { HeadingSection, RichTable } from "react-design-system";
+import {
+  HeadingSection,
+  RichTable,
+  type RichTableProps,
+} from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type ConnectedUserJwt,
@@ -89,6 +93,10 @@ export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
     [tempFilters],
   );
 
+  const filteredDiscussions = discussions.filter(
+    (discussion) => !discussion.isEstablishmentBanned,
+  );
+
   const dateOptions: RadioButtonsProps["options"] = useMemo(
     () =>
       Object.entries(displayedOrderDirections).map(
@@ -126,6 +134,21 @@ export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
     return;
   }
 
+  const onSortDateClick = () => {
+    dispatch(
+      discussionSlice.actions.fetchDiscussionListRequested({
+        jwt: connectedUserJwt,
+        filters: {
+          ...initialDiscussionsWithPagination.filters,
+          userRole: viewer,
+          orderBy: "createdAt",
+          orderDirection: filters.orderDirection === "asc" ? "desc" : "asc",
+        },
+        feedbackTopic: "establishment-dashboard-discussion-list",
+      }),
+    );
+  };
+
   return (
     <HeadingSection
       title="Candidatures"
@@ -143,9 +166,7 @@ export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
     >
       <WithFeedbackReplacer topic="establishment-dashboard-discussion-list">
         {match({
-          filteredDiscussions: discussions.filter(
-            (discussion) => !discussion.isEstablishmentBanned,
-          ),
+          filteredDiscussions,
           viewer,
         })
 
@@ -176,6 +197,7 @@ export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
                 statusOptions={statusOptions}
                 dateOptions={dateOptions}
                 pagination={pagination}
+                onSortDateClick={onSortDateClick}
               />
             ),
           )
@@ -191,6 +213,7 @@ export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
                 isLoading={isLoading}
                 connectedUserJwt={connectedUserJwt}
                 pagination={pagination}
+                onSortDateClick={onSortDateClick}
               />
             ),
           )
@@ -223,6 +246,7 @@ const EstablishmentDiscussionTable = ({
   tempFilters,
   statusOptions,
   dateOptions,
+  onSortDateClick,
 }: {
   discussions: DiscussionInList[];
   filters: FlatGetPaginatedDiscussionsParamsWithStatusesAsArray;
@@ -232,6 +256,7 @@ const EstablishmentDiscussionTable = ({
   tempFilters: FlatGetPaginatedDiscussionsParamsWithStatusesAsArray;
   statusOptions: CheckboxProps["options"];
   dateOptions: RadioButtonsProps["options"];
+  onSortDateClick: () => void;
 }) => {
   const dispatch = useDispatch();
   const hasDiscussions = discussions.length > 0;
@@ -239,24 +264,44 @@ const EstablishmentDiscussionTable = ({
     filters,
     initialDiscussionsWithPagination.filters,
   );
-  const getTableHeaders = () => {
+
+  const getTableHeaders = (): RichTableProps["headers"] => {
     if (hasDiscussions) {
       return [
-        "Offre d'immersion",
-        "Candidat",
-        "But de l'immersion",
-        "Date",
-        "Statut",
-        "Actions",
+        {
+          content: "Offre d'immersion",
+        },
+        {
+          content: "Candidat",
+        },
+        {
+          content: "But de l'immersion",
+        },
+        {
+          content: "Date",
+          onSortClick: onSortDateClick,
+        },
+        {
+          content: "Statut",
+        },
+        {
+          content: "Actions",
+        },
       ];
     }
     if (!filtersAreEmpty) {
       return [
-        "Aucune candidature trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        {
+          content:
+            "Aucune candidature trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        },
       ];
     }
     return [
-      "Nous n'avons pas trouvé de candidatures où vous êtes référencé en tant que contact d'entreprise.",
+      {
+        content:
+          "Nous n'avons pas trouvé de candidatures où vous êtes référencé en tant que contact d'entreprise.",
+      },
     ];
   };
   return (
@@ -436,12 +481,14 @@ const BeneficiaryDiscussionTable = ({
   isLoading,
   connectedUserJwt,
   pagination,
+  onSortDateClick,
 }: {
   discussions: DiscussionInList[];
   filters: FlatGetPaginatedDiscussionsParamsWithStatusesAsArray;
   isLoading: boolean;
   connectedUserJwt: ConnectedUserJwt;
   pagination: DataWithPagination<DiscussionInList>["pagination"];
+  onSortDateClick: () => void;
 }) => {
   const dispatch = useDispatch();
   const hasDiscussions = discussions.length > 0;
@@ -449,17 +496,40 @@ const BeneficiaryDiscussionTable = ({
     filters,
     initialDiscussionsWithPagination.filters,
   );
-  const getTableHeaders = () => {
+  const getTableHeaders = (): RichTableProps["headers"] => {
     if (hasDiscussions) {
-      return ["Métier", "Nom d'entreprise", "Date", "Statut", "Actions"];
+      return [
+        {
+          content: "Métier",
+        },
+        {
+          content: "Nom d'entreprise",
+        },
+        {
+          content: "Date",
+          onSortClick: onSortDateClick,
+        },
+        {
+          content: "Statut",
+        },
+        {
+          content: "Actions",
+        },
+      ];
     }
     if (!filtersAreEmpty) {
       return [
-        "Aucune candidature envoyée avec votre adresse email trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        {
+          content:
+            "Aucune candidature envoyée avec votre adresse email trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        },
       ];
     }
     return [
-      "Nous n'avons pas trouvé de candidatures envoyées avec votre adresse email.",
+      {
+        content:
+          "Nous n'avons pas trouvé de candidatures envoyées avec votre adresse email.",
+      },
     ];
   };
   return (

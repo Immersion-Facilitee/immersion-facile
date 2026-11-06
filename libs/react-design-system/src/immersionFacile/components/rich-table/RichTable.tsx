@@ -16,7 +16,7 @@ import {
 } from "react";
 import { useStyles } from "tss-react/dsfr";
 import { useLayout } from "../../../helpers/layout";
-import { useDebounce, useScrollTo } from "../../hooks";
+import { useDebounce } from "../../hooks";
 import { BorderedSection } from "../bordered-section";
 import { Loader } from "../loader";
 import { ResponsiveTable } from "../responsive-table";
@@ -35,8 +35,11 @@ type GridItemProps = {
   cta: ButtonProps;
 };
 
-type RichTableProps = {
-  headers: TableProps["headers"];
+export type RichTableProps = {
+  headers: {
+    content: ReactNode;
+    onSortClick?: () => void;
+  }[];
   tableData: TableProps["data"];
   dropdownFilters?: {
     items: RichDropdownProps[];
@@ -84,8 +87,16 @@ export const RichTable = ({
   const debouncedSearchValue = useDebounce(searchValue, 500);
   const searchBarRefOnSubmitRef = useRef(searchBar?.onSubmit).current;
   const tableRef = useRef<HTMLDivElement>(null);
-
-  useScrollTo(pagination?.defaultPage ?? 1);
+  const headersWithControls = headers.map((header) => (
+    <>
+      {header.content}
+      {header.onSortClick && (
+        <Button priority="tertiary" iconId="fr-icon-arrow-up-down-line">
+          hello
+        </Button>
+      )}
+    </>
+  ));
 
   useLayoutEffect(() => {
     tableRef.current?.querySelectorAll("th").forEach((th) => {
@@ -196,7 +207,7 @@ export const RichTable = ({
       {(!hasViewSwitch || selectedViewMode === "table") && (
         <ResponsiveTable
           ref={tableRef}
-          headers={headers}
+          headers={headersWithControls}
           data={tableData}
           bordered={false}
         />

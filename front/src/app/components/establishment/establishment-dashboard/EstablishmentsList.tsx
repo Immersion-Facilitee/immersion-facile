@@ -85,9 +85,16 @@ export const EstablishmentsList = ({
         }}
         headers={
           displayedEstablishments.length > 0
-            ? ["Entreprise", "Mon rôle", "Administrateurs", "Actions"]
+            ? [
+                { content: "Entreprise" },
+                { content: "Mon rôle" },
+                { content: "Administrateurs" },
+                { content: "Actions" },
+              ]
             : [
-                `Aucune entreprise trouvée pour la recherche « ${searchQuery} », vous pouvez modifier votre recherche pour l'élargir.`,
+                {
+                  content: `Aucune entreprise trouvée pour la recherche « ${searchQuery} », vous pouvez modifier votre recherche pour l'élargir.`,
+                },
               ]
         }
         tableData={displayedEstablishments.map((establishment) => [
