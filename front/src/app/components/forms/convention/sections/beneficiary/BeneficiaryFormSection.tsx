@@ -233,11 +233,16 @@ export const BeneficiaryFormSection = ({
           <AddressAutocomplete
             countryCode={defaultCountryCode}
             locator="convention-beneficiary-address"
-            {...formContents["signatories.beneficiary.address"]}
+            label={formContents["signatories.beneficiary.address"].label}
+            hintText={formContents["signatories.beneficiary.address"].hintText}
             initialInputValue={
               values.signatories.beneficiary.address &&
               addressDtoToString(values.signatories.beneficiary.address)
             }
+            selectProps={{
+              inputId:
+                domElementIds.conventionImmersion.beneficiarySection.address,
+            }}
             onAddressSelected={(addressAndPosition) => {
               setValue(
                 "signatories.beneficiary.address.city",
@@ -259,7 +264,6 @@ export const BeneficiaryFormSection = ({
             onAddressClear={() => {
               setValue("signatories.beneficiary.address", undefined);
             }}
-            id={domElementIds.conventionImmersion.beneficiarySection.address}
             {...getFieldError("signatories.beneficiary.address")}
           />
           <Select

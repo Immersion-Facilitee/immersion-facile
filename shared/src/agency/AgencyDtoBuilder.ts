@@ -23,6 +23,8 @@ export const DATE_CREATION = new Date("2025-02-02").toISOString();
 
 export const SEED_FT_AGENCY_ID = "40400c99-9c0b-bbbb-bb6d-6bb9bd300404";
 
+export const SEED_CCI_AGENCY_ID = "40400c99-9c0b-bbbb-bb6d-6bb9bd300707";
+
 export const SEED_AGENCY_WITH_REFERS_TO_ID: AgencyId =
   "40400c99-9c0b-bbbb-bb6d-6bb9bd300909";
 

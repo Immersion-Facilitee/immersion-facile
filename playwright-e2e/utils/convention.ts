@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect, type Page } from "@playwright/test";
-import { addBusinessDays, format } from "date-fns";
+import { addBusinessDays, format, subYears } from "date-fns";
 import {
   type AgencyId,
   addressRoutes,
@@ -9,6 +9,9 @@ import {
   domElementIds,
   executeInSequence,
   frontRoutes,
+  type ImmersionObjective,
+  isBeneficiaryMinorAccordingToAge,
+  SEED_CCI_AGENCY_ID,
   SEED_FT_AGENCY_ID,
   technicalRoutes,
 } from "shared";
@@ -24,6 +27,7 @@ import {
   expectElementToBeVisible,
   expectLocatorToBeVisibleAndEnabled,
   fillAutocomplete,
+  immersionObjectiveIndexMap,
   remoteModeIndexMap,
   validPhonesData,
 } from "./utils";
@@ -60,7 +64,123 @@ export const updatedEndDateDisplayed = format(
   "dd/MM/yyyy",
 );
 
-export const fillConventionForm = async (page: Page) => {
+const miniStageMinorBirthdateDate = subYears(new Date(), 17);
+export const miniStageMinorBirthdate = format(
+  miniStageMinorBirthdateDate,
+  "yyyy-MM-dd",
+);
+export const miniStageMinorBirthdateDisplayed = format(
+  miniStageMinorBirthdateDate,
+  "dd/MM/yyyy",
+);
+export const miniStageAdultBirthdate = format(
+  subYears(new Date(), 20),
+  "yyyy-MM-dd",
+);
+
+export const goToMiniStageFormPage = async (page: Page): Promise<void> => {
+  await page.goto(frontRoutes.conventionMiniStage().href);
+  await acceptCookiesIfBannerVisible(page);
+};
+
+const fillMiniStageBeneficiaryRepresentative = async (
+  page: Page,
+): Promise<void> => {
+  await expect(
+    page.locator(
+      `#${domElementIds.conventionImmersion.beneficiaryRepresentativeSection.firstName}`,
+    ),
+  ).toBeVisible();
+  await page
+    .locator(
+      `#${domElementIds.conventionImmersion.beneficiaryRepresentativeSection.firstName}`,
+    )
+    .fill(faker.person.firstName());
+  await page
+    .locator(
+      `#${domElementIds.conventionImmersion.beneficiaryRepresentativeSection.lastName}`,
+    )
+    .fill(faker.person.lastName());
+  await page
+    .locator(
+      `#${domElementIds.conventionImmersion.beneficiaryRepresentativeSection.email}`,
+    )
+    .fill("recette+beneficiary-rep@immersion-facile.beta.gouv.fr");
+  await page
+    .locator(
+      `#${domElementIds.conventionImmersion.beneficiaryRepresentativeSection.phone}`,
+    )
+    .fill(validPhonesData.beneficiaryRepresentative);
+};
+
+export const fillMiniStageConventionForm = async (
+  page: Page,
+  { birthdate }: { birthdate: string },
+): Promise<void> => {
+  await fillConventionForm(page, {
+    agencyId: SEED_CCI_AGENCY_ID,
+    birthdate,
+    immersionObjective: "Confirmer un projet professionnel",
+    afterBeneficiaryBasicFields: async () => {
+      await fillAutocomplete({
+        page,
+        locator: `#${domElementIds.conventionImmersion.beneficiarySection.address}`,
+        value: getRandomizedData("addressQueries"),
+        endpoint: addressRoutes.lookupStreetAddress.url,
+      });
+      await page.selectOption(
+        `#${domElementIds.conventionImmersion.beneficiarySection.levelOfEducation}`,
+        "3ème",
+      );
+      await page.fill(
+        `#${domElementIds.conventionImmersion.beneficiarySection.schoolName}`,
+        "Collège Victor Hugo",
+      );
+      await page.fill(
+        `#${domElementIds.conventionImmersion.beneficiarySection.schoolPostcode}`,
+        "75001",
+      );
+
+      if (isBeneficiaryMinorAccordingToAge(currentDate, birthdate))
+        await fillMiniStageBeneficiaryRepresentative(page);
+    },
+  });
+};
+
+export const submitBasicMiniStageConventionForm = async (
+  page: Page,
+): Promise<ConventionSubmitted> => {
+  await goToMiniStageFormPage(page);
+  await fillMiniStageConventionForm(page, {
+    birthdate: miniStageMinorBirthdate,
+  });
+  const conventionId = await confirmCreateConventionFormSubmit(
+    page,
+    tomorrowDateDisplayed,
+    miniStageMinorBirthdateDisplayed,
+  );
+  return {
+    agencyId: SEED_CCI_AGENCY_ID,
+    conventionId,
+  };
+};
+
+type FillConventionFormOptions = {
+  agencyId?: AgencyId;
+  birthdate?: string;
+  immersionObjective?: ImmersionObjective;
+  afterBeneficiaryBasicFields?: () => Promise<void>;
+};
+
+export const fillConventionForm = async (
+  page: Page,
+  {
+    agencyId = SEED_FT_AGENCY_ID,
+    birthdate = beneficiaryBirthdate,
+    immersionObjective = "Initier une démarche de recrutement",
+    afterBeneficiaryBasicFields,
+  }: FillConventionFormOptions = {},
+) => {
   await page.selectOption(
     `#${domElementIds.conventionImmersion.conventionSection.agencyDepartment}`,
     "75",
@@ -68,7 +188,7 @@ export const fillConventionForm = async (page: Page) => {
 
   await page.selectOption(
     `#${domElementIds.conventionImmersion.conventionSection.agencyId}`,
-    SEED_FT_AGENCY_ID,
+    agencyId,
   );
   await openConventionAccordionSection(page, 1); // Open Beneficiary section
   await page.fill(
@@ -87,10 +207,12 @@ export const fillConventionForm = async (page: Page) => {
     `#${domElementIds.conventionImmersion.beneficiarySection.phone}`,
     validPhonesData.beneficiary,
   );
-  await page.fill(
+  const birthdateInput = page.locator(
     `#${domElementIds.conventionImmersion.beneficiarySection.birthdate}`,
-    beneficiaryBirthdate,
   );
+  await birthdateInput.fill(birthdate);
+  await birthdateInput.blur();
+  if (afterBeneficiaryBasicFields) await afterBeneficiaryBasicFields();
   await openConventionAccordionSection(page, 2); // Open Establishment section
 
   const siretInput = page.locator(
@@ -166,7 +288,7 @@ export const fillConventionForm = async (page: Page) => {
     `[for="${domElementIds.conventionImmersion.conventionSection.sanitaryPrevention}-0"]`,
   );
   await page.click(
-    `[for="${domElementIds.conventionImmersion.conventionSection.immersionObjective}-1"]`,
+    `[for="${domElementIds.conventionImmersion.conventionSection.immersionObjective}-${immersionObjectiveIndexMap[immersionObjective]}"]`,
   );
   await fillAutocomplete({
     page,
@@ -482,7 +604,8 @@ export const openConventionAccordionSection = async (
 export const checkConventionSummary = async (
   page: Page,
   dateEndDisplayed: string,
-) => {
+  birthdateDisplayed: string = beneficiaryBirthdateDisplayed,
+): Promise<void> => {
   await expectElementToBeVisible(page, ".im-convention-summary__section");
   await expect(
     await page
@@ -502,7 +625,7 @@ export const checkConventionSummary = async (
     await page
       .locator("#im-convention-summary__subsection__value-beneficiaryBirthdate")
       .textContent(),
-  ).toContain(beneficiaryBirthdateDisplayed);
+  ).toContain(birthdateDisplayed);
   await expect(
     await page
       .locator("#im-convention-summary__subsection__value-dateStart")
@@ -518,9 +641,10 @@ export const checkConventionSummary = async (
 export const confirmCreateConventionFormSubmit = async (
   page: Page,
   dateEndDisplayed: string,
+  birthdateDisplayed: string = beneficiaryBirthdateDisplayed,
 ): Promise<ConventionId> => {
   await page.click(`#${domElementIds.conventionImmersion.submitFormButton}`);
-  await checkConventionSummary(page, dateEndDisplayed);
+  await checkConventionSummary(page, dateEndDisplayed, birthdateDisplayed);
 
   await page.click(
     `#${domElementIds.conventionImmersion.confirmSubmitFormButton}`,
