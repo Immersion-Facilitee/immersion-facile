@@ -24,7 +24,7 @@ jobs:
           node-version: "24.22.1"
           cache: "pnpm"
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
       - name: Build front
         run: NODE_OPTIONS=--max-old-space-size=4096 VITE_RELEASE_TAG=${{ inputs.tag }} SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} pnpm front build-scalingo
       - name: Archive build

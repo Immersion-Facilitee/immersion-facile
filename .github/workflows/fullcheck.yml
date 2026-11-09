@@ -131,7 +131,8 @@ jobs:
   playwright-tests:
     name: "Playwright tests"
     if: github.ref != 'refs/heads/main' && !inputs.code_already_tested # Skip this job on main branch
-    runs-on: ubuntu-latest
+    # ubuntu-latest is 26.04; Playwright 1.57 has no chromium for it (needs >= 1.61)
+    runs-on: ubuntu-24.04
     env:
       # Secrets passed to Playwright config via process.env
       PC_USERNAME: ${{ secrets.PC_USERNAME }}
