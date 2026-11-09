@@ -24,6 +24,11 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
     },
   });
   pgm.createIndex("otp_challenges", ["purpose", "subject"]);
+  pgm.createIndex("otp_challenges", ["purpose", "subject"], {
+    name: "otp_challenges_one_active_per_purpose_and_subject",
+    unique: true,
+    where: "used_at IS NULL AND revoked_at IS NULL",
+  });
 
   pgm.createTable("visitor_sessions", {
     id: {

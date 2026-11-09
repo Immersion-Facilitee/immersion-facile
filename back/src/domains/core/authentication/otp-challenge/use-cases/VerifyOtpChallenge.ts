@@ -1,6 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
 import { addMinutes } from "date-fns";
-import { equals } from "ramda";
 import {
   errors,
   executeInSequence,
@@ -8,7 +7,7 @@ import {
   VISITOR_SESSION_DURATION_IN_MINUTES,
   type VisitorOtpJwtPayload,
   type VisitorSession,
-  verifyOtpChallengeParamsSchema,
+  verifyOtpChallengeSchema,
 } from "shared";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../../unit-of-work/ports/UnitOfWorkPerformer";
@@ -27,7 +26,7 @@ type OtpCodeVerification =
 export type VerifyOtpChallenge = ReturnType<typeof makeVerifyOtpChallenge>;
 
 export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
-  .withInput(verifyOtpChallengeParamsSchema)
+  .withInput(verifyOtpChallengeSchema)
   .withCurrentUser<VisitorOtpJwtPayload>()
   .withOutput<VerifyOtpChallengeOutput>()
   .withDeps<{
@@ -39,21 +38,21 @@ export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
   .notTransactional()
   .build(
     async ({
-      inputParams: { otpChallengeId, otpCode },
+      inputParams: { otpCode },
       currentUser,
       deps,
     }): Promise<VerifyOtpChallengeOutput> => {
       const otpCodeVerification = await deps.uowPerformer.perform(
         async (uow): Promise<OtpCodeVerification> => {
           const otpChallenge =
-            await uow.otpChallengeRepository.getById(otpChallengeId);
+            await uow.otpChallengeRepository.getActiveByPurposeAndSubject(
+              {
+                purpose: currentUser.purpose,
+                subject: currentUser.subject,
+              },
+            );
 
-          if (
-            !otpChallenge ||
-            otpChallenge.purpose !== currentUser.purpose ||
-            !equals(otpChallenge.subject, currentUser.subject)
-          )
-            throw errors.otpChallenge.notFound(otpChallengeId);
+          if (!otpChallenge) throw errors.otpChallenge.noActiveChallenge();
 
           const now = deps.timeGateway.now();
 
@@ -62,15 +61,15 @@ export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
           if (
             !isSameHash(
               otpChallenge.codeHash,
-              deps.hashOtpCode({ otpChallengeId, otpCode }),
+              deps.hashOtpCode({ otpChallengeId: otpChallenge.id, otpCode }),
             )
           ) {
-            await uow.otpChallengeRepository.incrementAttempts(otpChallengeId);
+            await uow.otpChallengeRepository.incrementAttempts(otpChallenge.id);
             return { isOtpCodeValid: false };
           }
 
           await uow.otpChallengeRepository.markAsUsed({
-            id: otpChallengeId,
+            id: otpChallenge.id,
             usedAt: now,
           });
 
@@ -123,10 +122,6 @@ const throwIfOtpChallengeCannotBeVerified = ({
   otpChallenge: OtpChallenge;
   now: Date;
 }): void => {
-  if (otpChallenge.revokedAt) throw errors.otpChallenge.alreadyRevoked();
-
-  if (otpChallenge.usedAt) throw errors.otpChallenge.alreadyUsed();
-
   if (new Date(otpChallenge.expiresAt) <= now)
     throw errors.otpChallenge.expired();
 

@@ -38,6 +38,12 @@ export class PgOtpChallengeRepository implements OtpChallengeRepository {
       .execute()
       .catch((error) => {
         // https://www.postgresql.org/docs/current/errcodes-appendix.html
+        if (
+          error.code === "23505" &&
+          error.constraint === oneActiveOtpChallengePerPurposeAndSubjectIndex
+        )
+          throw errors.otpChallenge.activeChallengeAlreadyExists();
+
         if (error.code === "23505")
           throw errors.otpChallenge.alreadyExists(otpChallenge.id);
 
@@ -67,6 +73,7 @@ export class PgOtpChallengeRepository implements OtpChallengeRepository {
       .updateTable("otp_challenges")
       .set({ used_at: usedAt })
       .where("id", "=", id)
+      .where("used_at", "is", null)
       .executeTakeFirst();
 
     if (Number(result.numUpdatedRows) === 0)
@@ -84,16 +91,6 @@ export class PgOtpChallengeRepository implements OtpChallengeRepository {
       throw errors.otpChallenge.notFound(id);
   }
 
-  public async getById(id: OtpChallengeId): Promise<OtpChallenge | null> {
-    const result = await this.transaction
-      .selectFrom("otp_challenges")
-      .selectAll()
-      .where("id", "=", id)
-      .executeTakeFirst();
-
-    return result ? toOtpChallenge(result) : null;
-  }
-
   public async getByPurposeAndSubject({
     purpose,
     subject,
@@ -107,7 +104,27 @@ export class PgOtpChallengeRepository implements OtpChallengeRepository {
 
     return results.map(toOtpChallenge);
   }
+
+  public async getActiveByPurposeAndSubject({
+    purpose,
+    subject,
+  }: GetOtpChallengesByPurposeAndSubjectParams): Promise<OtpChallenge | null> {
+    const result = await this.transaction
+      .selectFrom("otp_challenges")
+      .selectAll()
+      .where("purpose", "=", purpose)
+      .where(sql<boolean>`subject = ${JSON.stringify(subject)}::jsonb`)
+      .where("used_at", "is", null)
+      .where("revoked_at", "is", null)
+      .forUpdate()
+      .executeTakeFirst();
+
+    return result ? toOtpChallenge(result) : null;
+  }
 }
+
+const oneActiveOtpChallengePerPurposeAndSubjectIndex =
+  "otp_challenges_one_active_per_purpose_and_subject";
 
 const toOtpChallenge = (
   result: Selectable<Database["otp_challenges"]>,
