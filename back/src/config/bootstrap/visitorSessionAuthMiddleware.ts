@@ -5,6 +5,7 @@ import {
   makeVisitorSessionCookieName,
 } from "shared";
 import { match } from "ts-pattern";
+import { getActiveVisitorSessionOrThrow } from "../../domains/core/authentication/visitor-session/entities/visitorSession.helper";
 import type { TimeGateway } from "../../domains/core/time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../domains/core/unit-of-work/ports/UnitOfWorkPerformer";
 import { handleHttpJsonResponseError } from "../helpers/handleHttpJsonResponseError";
@@ -24,38 +25,28 @@ export const makeVisitorSessionAuthMiddleware =
       if (!cookieScope || !sessionId)
         throw errors.visitorSession.unauthorized();
 
-      await deps.uowPerformer.perform(async (uow) => {
-        const visitorSession =
-          await uow.visitorSessionRepository.getById(sessionId);
-        const now = deps.timeGateway.now();
+      const visitorSession = await deps.uowPerformer.perform((uow) =>
+        getActiveVisitorSessionOrThrow({
+          uow,
+          sessionId,
+          scope: cookieScope,
+          now: deps.timeGateway.now(),
+        }),
+      );
 
-        if (
-          !visitorSession ||
-          visitorSession.revokedAt ||
-          new Date(visitorSession.expiresAt) <= now
-        )
-          throw errors.visitorSession.unauthorized();
-
-        match(cookieScope)
-          .with({ purpose: "manageConvention" }, ({ conventionId }) => {
-            if (
-              visitorSession.purpose !== "manageConvention" ||
-              visitorSession.subject.conventionId !== conventionId
-            )
-              throw errors.visitorSession.unauthorized();
-
-            const { role, emailHash } = visitorSession.subject;
-            req.payloads = {
-              convention: {
-                applicationId: conventionId,
-                role,
-                emailHash,
-              },
-              visitorSession: { sessionId },
-            };
-          })
-          .exhaustive();
-      });
+      match(visitorSession)
+        .with({ purpose: "manageConvention" }, ({ subject }) => {
+          const { conventionId, role, emailHash } = subject;
+          req.payloads = {
+            convention: {
+              applicationId: conventionId,
+              role,
+              emailHash,
+            },
+            visitorSession: { sessionId },
+          };
+        })
+        .exhaustive();
 
       next();
     } catch (error) {
