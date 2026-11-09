@@ -3,6 +3,15 @@ import jwt from "jsonwebtoken";
 import { errors } from "shared";
 import { handleHttpJsonResponseError } from "../helpers/handleHttpJsonResponseError";
 
+const isVisitorOtpJwt = (authorization: string): boolean => {
+  const unsafePayload = jwt.decode(authorization);
+  return (
+    unsafePayload !== null &&
+    typeof unsafePayload === "object" &&
+    "purpose" in unsafePayload
+  );
+};
+
 const hasVisitorSessionCookie = (req: Request): boolean =>
   Object.keys(req.cookies ?? {}).some((cookieName) =>
     cookieName.startsWith("if_visitor_"),
@@ -22,20 +31,8 @@ export const makeConventionMagicLinkOrVisitorSessionAuthMiddleware =
         errors.auth.missingAuthentication(),
       );
 
-    if (!authorization)
+    if (!authorization || isVisitorOtpJwt(authorization))
       return deps.visitorSessionAuthMiddleware(req, res, next);
-
-    const unsafePayload = jwt.decode(authorization);
-    if (
-      unsafePayload &&
-      typeof unsafePayload === "object" &&
-      "purpose" in unsafePayload
-    )
-      return handleHttpJsonResponseError(
-        req,
-        res,
-        errors.visitorSession.unauthorized(),
-      );
 
     return deps.magicLinkAuthMiddleware(req, res, next);
   };
