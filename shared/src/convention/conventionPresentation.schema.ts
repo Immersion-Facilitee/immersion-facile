@@ -5,7 +5,6 @@ import {
 } from "../agency/agency.schema";
 import { emailSchema } from "../email/email.schema";
 import { siretSchema } from "../siret/siret.schema";
-import { replaceEmptyValuesByUndefinedFromObject } from "../utils";
 import {
   zStringMinLength1Max1024,
   zStringMinLength1Max6000,
@@ -18,7 +17,10 @@ import type {
   WithStatusJustification,
 } from "./conventionPresentation.dto";
 import { conventionTemplateIdSchema } from "./conventionTemplate.schema";
-import { conventionDraftSchema } from "./saveConventionDraft.schema";
+import {
+  conventionDraftSchema,
+  withEmptyStringAsUndefined,
+} from "./saveConventionDraft.schema";
 
 const makeConventionPresentationSchema = (
   isTemplateForm: boolean,
@@ -44,7 +46,7 @@ const makeConventionPresentationSchema = (
         id: conventionIdSchema,
         name: zStringMinLength1Max1024,
         fromConventionTemplateId: conventionTemplateIdSchema.optional(),
-        agencyDepartment: z.string().optional(),
+        agencyDepartment: withEmptyStringAsUndefined(z.string().optional()),
         agencyRefersTo: z
           .object({
             id: refersToAgencyIdSchema,
@@ -65,11 +67,7 @@ export const makeConventionPresentationSchemaWithNormalizedInput = ({
 }: {
   isTemplateForm: boolean;
 }): ZodSchemaWithInputMatchingOutput<ConventionFormInitialValues> =>
-  z.preprocess(
-    (val) =>
-      isTemplateForm ? replaceEmptyValuesByUndefinedFromObject(val) : val,
-    makeConventionPresentationSchema(isTemplateForm),
-  );
+  makeConventionPresentationSchema(isTemplateForm);
 
 export const withStatusJustificationSchema: ZodSchemaWithInputMatchingOutput<WithStatusJustification> =
   z.object({
