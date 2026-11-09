@@ -418,6 +418,41 @@ describe("Magic link router", () => {
         );
       });
 
+      it("200 - ignores visitor otp JWT and signs with visitor session cookie", async () => {
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.signConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Authorization",
+            generateVisitorOtpJwt(
+              createVisitorOtpJwtPayload({
+                purpose: "manageConvention",
+                subject: {
+                  conventionId: convention.id,
+                  role: "beneficiary",
+                  emailHash: makeEmailHash(
+                    convention.signatories.beneficiary.email,
+                  ),
+                },
+                now,
+              }),
+            ),
+          )
+          .set("Cookie", `if_visitor_${convention.id}=${visitorSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: { id: convention.id },
+          },
+        );
+      });
+
       it("401 - no header, no cookie", async () => {
         const response = await httpClient.signConvention({
           urlParams: { conventionId: convention.id },
@@ -446,7 +481,7 @@ describe("Magic link router", () => {
       });
     });
 
-    it("401 - visitor otp JWT cannot be used to sign convention", async () => {
+    it("401 - visitor otp JWT without visitor session cookie cannot sign convention", async () => {
       const response = await httpClient.signConvention({
         urlParams: { conventionId: convention.id },
         headers: {

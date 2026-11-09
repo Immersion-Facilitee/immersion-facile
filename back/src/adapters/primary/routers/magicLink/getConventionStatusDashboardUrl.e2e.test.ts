@@ -5,6 +5,7 @@ import {
   type ConventionMagicLinkRoutes,
   conventionMagicLinkRoutes,
   type Email,
+  errors,
   expectHttpResponseToEqual,
 } from "shared";
 import type { HttpClient } from "shared-routes";
@@ -47,7 +48,7 @@ describe("getConventionStatusDashboardUrl", () => {
     );
   });
 
-  it("fails if no token is provided", async () => {
+  it("fails if neither magic link nor visitor session cookie is provided", async () => {
     const response = await httpClient.getConventionStatusDashboard({
       urlParams: { conventionId },
       headers: { authorization: "" },
@@ -57,7 +58,7 @@ describe("getConventionStatusDashboardUrl", () => {
       status: 401,
       body: {
         status: 401,
-        message: "forbidden: unauthenticated",
+        message: errors.visitorSession.unauthorized().message,
       },
     });
   });
