@@ -375,12 +375,9 @@ describe("RequestOtpChallenge", () => {
             },
           };
 
-          expectToEqual(
-            await requestOtpChallenge.execute(
-              { channel: "email" },
-              validVisitorOtpJwtPayload,
-            ),
-            { otpChallengeId },
+          await requestOtpChallenge.execute(
+            { channel: "email" },
+            validVisitorOtpJwtPayload,
           );
 
           expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -444,12 +441,9 @@ describe("RequestOtpChallenge", () => {
             },
           };
 
-          expectToEqual(
-            await requestOtpChallenge.execute(
-              { channel: "sms" },
-              validVisitorOtpJwtPayload,
-            ),
-            { otpChallengeId },
+          await requestOtpChallenge.execute(
+            { channel: "sms" },
+            validVisitorOtpJwtPayload,
           );
 
           expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -533,7 +527,10 @@ describe("RequestOtpChallenge", () => {
         );
 
         expectToEqual(uow.otpChallengeRepository.otpChallenges, [
-          ...otpChallengesRequestedMoreThanOneHourAgo,
+          ...otpChallengesRequestedMoreThanOneHourAgo.map((otpChallenge) => ({
+            ...otpChallenge,
+            revokedAt: now.toISOString(),
+          })),
           {
             id: otpChallengeId,
             purpose: "manageConvention",
@@ -611,7 +608,7 @@ describe("RequestOtpChallenge", () => {
         ]);
       });
 
-      it("should not revoke used, expired or already revoked otp challenges of the same subject", async () => {
+      it("should revoke expired otp challenges not yet revoked and keep used or already revoked ones of the same subject", async () => {
         const subject: VisitorOtpJwtPayload["subject"] = {
           conventionId: convention.id,
           role: "beneficiary",
@@ -661,7 +658,7 @@ describe("RequestOtpChallenge", () => {
 
         expectToEqual(uow.otpChallengeRepository.otpChallenges, [
           usedOtpChallenge,
-          expiredOtpChallenge,
+          { ...expiredOtpChallenge, revokedAt: now.toISOString() },
           alreadyRevokedOtpChallenge,
           {
             id: otpChallengeId,
