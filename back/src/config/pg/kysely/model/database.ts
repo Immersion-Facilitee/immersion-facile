@@ -59,11 +59,10 @@ export interface Database {
   notifications_email: NotificationsEmail;
   notifications_sms: NotificationsSms;
   nps: Nps;
+  otp_challenges: OtpChallenges;
   outbox_failures: OutboxFailures;
   outbox_publications: OutboxPublications;
   outbox: Outbox;
-  otp_challenges: OtpChallenges;
-  visitor_sessions: VisitorSessions;
   phone_numbers: PhoneNumbers;
   public_appellations_data: PublicAppellationsData;
   public_department_region: PublicDepartmentRegion;
@@ -82,6 +81,7 @@ export interface Database {
   users_ongoing_oauths: OngoingOauths;
   users: Users;
   view_appellations_dto: ViewAppellationsDto;
+  visitor_sessions: VisitorSessions;
 }
 
 type JsonArray = JsonValue[];
