@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Loader, MainWrapper } from "react-design-system";
+import { Loader, MainWrapper, SectionSteps } from "react-design-system";
 import { Helmet } from "react-helmet-async";
 import { useDispatch } from "react-redux";
 import {
@@ -19,6 +19,7 @@ import {
   type ContactMode,
   frontRoutes,
   getMapsLink,
+  type InternshipKind,
   isInternalOfferDto,
   isPhysicalWorkMode,
   makeAppellationInformationUrl,
@@ -37,6 +38,7 @@ import {
 import { SearchResultContactSection } from "src/app/components/search/SearchResultContactSection";
 import { SearchResultLabels } from "src/app/components/search/SearchResultLabels";
 import { defaultPageMetaContents } from "src/app/contents/meta/metaContents";
+import { immersionStepsContent } from "src/app/contents/search/content";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useSearchResultRoute } from "src/app/routes/routes.hooks";
 import { commonIllustrations } from "src/assets/img/illustrations";
@@ -100,6 +102,8 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
   const formContactRef = useRef<ElementRef<"div">>(null);
   const dispatch = useDispatch();
   const params = route.params;
+  const internshipKind: InternshipKind =
+    route.name === "searchResultForStudent" ? "mini-stage-cci" : "immersion";
 
   const isLocationMissing =
     !isExternal && !("location" in params && params.location);
@@ -432,6 +436,9 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
           />
         )}
       </MainWrapper>
+      {currentSearchResult && showConfirmationMessage === null && (
+        <SectionSteps {...immersionStepsContent[internshipKind]} />
+      )}
     </HeaderFooterLayout>
   );
 };
