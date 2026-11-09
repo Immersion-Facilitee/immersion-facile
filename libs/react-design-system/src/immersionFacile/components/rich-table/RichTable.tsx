@@ -21,9 +21,15 @@ import { BorderedSection } from "../bordered-section";
 import { Loader } from "../loader";
 import { ResponsiveTable } from "../responsive-table";
 import { RichDropdown, type RichDropdownProps } from "../rich-dropdown";
+import {
+  SortableTableHeader,
+  type TableSortDirection,
+} from "../sortable-table-header";
 import Styles from "./RichTable.styles";
 
 type ViewMode = "grid" | "table";
+
+export type RichTableSortDirection = TableSortDirection;
 
 export type GridItemProps = {
   badge?: ReactNode;
@@ -35,8 +41,16 @@ export type GridItemProps = {
   cta: ButtonProps;
 };
 
-type RichTableProps = {
-  headers: TableProps["headers"];
+export type RichTableHeader = {
+  content: ReactNode;
+  sort?: {
+    direction: RichTableSortDirection;
+    onClick: () => void;
+  };
+};
+
+export type RichTableProps = {
+  headers: RichTableHeader[];
   tableData: TableProps["data"];
   dropdownFilters?: {
     items: RichDropdownProps[];
@@ -84,6 +98,20 @@ export const RichTable = ({
   const debouncedSearchValue = useDebounce(searchValue, 500);
   const searchBarRefOnSubmitRef = useRef(searchBar?.onSubmit).current;
   const tableRef = useRef<HTMLDivElement>(null);
+  const headersWithControls = headers.map((header) => {
+    if (!header.sort) {
+      return header.content;
+    }
+
+    return (
+      <SortableTableHeader
+        key={header.content?.toString()}
+        content={header.content}
+        direction={header.sort.direction}
+        onClick={header.sort.onClick}
+      />
+    );
+  });
 
   useScrollTo(pagination?.defaultPage ?? 1);
 
@@ -93,7 +121,7 @@ export const RichTable = ({
       const header = headers?.[index];
       th.classList.toggle(
         "has-date-text",
-        typeof header === "string" && header.includes("Date"),
+        typeof header?.content === "string" && header.content.includes("Date"),
       );
     });
   }, [headers, selectedViewMode]);
@@ -199,7 +227,7 @@ export const RichTable = ({
       {(!hasViewSwitch || selectedViewMode === "table") && (
         <ResponsiveTable
           ref={tableRef}
-          headers={headers}
+          headers={headersWithControls}
           data={tableData}
           bordered={false}
         />

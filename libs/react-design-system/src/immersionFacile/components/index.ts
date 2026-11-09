@@ -46,6 +46,7 @@ export * from "./section-stats";
 export * from "./section-text-embed";
 export * from "./separated-section";
 export * from "./skip-links";
+export * from "./sortable-table-header";
 export * from "./tag";
 export * from "./task";
 export * from "./task-summary";

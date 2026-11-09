@@ -1,7 +1,11 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
-import type { ReactNode } from "react";
-import { ResponsiveTable } from "react-design-system";
+import { type ReactNode, useState } from "react";
+import {
+  ResponsiveTable,
+  SortableTableHeader,
+  type TableSortDirection,
+} from "react-design-system";
 import {
   type EstablishmentUserRightStatus,
   getDisplayedBusinessName,
@@ -15,44 +19,115 @@ import { EstablishmentLineAdminsInfos } from "./establishment-line/Establishment
 import { EstablishmentLineBusinessName } from "./establishment-line/EstablishmentLineBusinessName";
 import { EstablishmentLineDesiredRoleInfos } from "./establishment-line/EstablishmentLineDesiredRoleInfos";
 
+type SortColumn = "businessName" | "role";
+
+type SortState = {
+  column: SortColumn;
+  direction: Exclude<TableSortDirection, false>;
+};
+
 export const EstablishmentsRightsTable = ({
   withEstablishmentData,
   isBackofficeAdmin,
+  title,
 }: {
   withEstablishmentData: UserEstablishmentRightDetails[];
   isBackofficeAdmin?: boolean;
-}) => (
-  <>
-    <ResponsiveTable
-      headers={getEstablishmentRightLineHeaders(
-        withEstablishmentData[0].status,
-      )}
-      data={[...withEstablishmentData]
-        .sort((a, b) =>
-          getDisplayedBusinessName(a).localeCompare(
-            getDisplayedBusinessName(b),
-          ),
-        )
-        .map((data) =>
-          makeEstablishmentRightLine({
-            data,
-            isBackofficeAdmin,
-            isEstablishmentBanned: data.isEstablishmentBanned,
-          }),
-        )}
-    />
-  </>
-);
+  title?: ReactNode;
+}) => {
+  const [sort, setSort] = useState<SortState>({
+    column: "businessName",
+    direction: "asc",
+  });
 
-const getEstablishmentRightLineHeaders = (
-  status: EstablishmentUserRightStatus,
-) => {
-  const strategy: Record<EstablishmentUserRightStatus, string[]> = {
-    ACCEPTED: ["Entreprise", "Administrateurs", "Rôle"],
-    PENDING: ["Entreprise", "Rôle et préférences demandés"],
+  if (withEstablishmentData.length === 0) {
+    return null;
+  }
+
+  const onSortClick = (column: SortColumn) => {
+    setSort((current) => {
+      if (current.column !== column) {
+        return { column, direction: "asc" };
+      }
+
+      return {
+        column,
+        direction: current.direction === "asc" ? "desc" : "asc",
+      };
+    });
   };
-  return strategy[status];
+
+  const sortDirectionFor = (column: SortColumn): TableSortDirection =>
+    sort.column === column ? sort.direction : false;
+
+  return (
+    <>
+      {title}
+      <ResponsiveTable
+        headers={getEstablishmentRightLineHeaders({
+          status: withEstablishmentData[0].status,
+          sortDirectionFor,
+          onSortClick,
+        })}
+        data={[...withEstablishmentData]
+          .sort((a, b) => compareEstablishmentRights(a, b, sort))
+          .map((data) =>
+            makeEstablishmentRightLine({
+              data,
+              isBackofficeAdmin,
+              isEstablishmentBanned: data.isEstablishmentBanned,
+            }),
+          )}
+      />
+    </>
+  );
 };
+
+const compareEstablishmentRights = (
+  a: UserEstablishmentRightDetails,
+  b: UserEstablishmentRightDetails,
+  sort: SortState,
+) => {
+  const result =
+    sort.column === "businessName"
+      ? getDisplayedBusinessName(a).localeCompare(getDisplayedBusinessName(b))
+      : establishmentRolesToDisplay[a.role].label.localeCompare(
+          establishmentRolesToDisplay[b.role].label,
+        );
+
+  return sort.direction === "asc" ? result : -result;
+};
+
+const getEstablishmentRightLineHeaders = ({
+  status,
+  sortDirectionFor,
+  onSortClick,
+}: {
+  status: EstablishmentUserRightStatus;
+  sortDirectionFor: (column: SortColumn) => TableSortDirection;
+  onSortClick: (column: SortColumn) => void;
+}): ReactNode[] => {
+  const businessNameHeader = (
+    <SortableTableHeader
+      content="Entreprise"
+      direction={sortDirectionFor("businessName")}
+      onClick={() => onSortClick("businessName")}
+    />
+  );
+  const roleHeader = (
+    <SortableTableHeader
+      content={status === "ACCEPTED" ? "Rôle" : "Rôle et préférences demandés"}
+      direction={sortDirectionFor("role")}
+      onClick={() => onSortClick("role")}
+    />
+  );
+
+  return match(status)
+    .with("ACCEPTED", () => [businessNameHeader, "Administrateurs", roleHeader])
+    .with("PENDING", () => [businessNameHeader, roleHeader])
+    .exhaustive();
+};
+
 const makeEstablishmentRightLine = ({
   data,
   isEstablishmentBanned,

@@ -2,7 +2,11 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import type { ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { Fragment, type ReactNode, useEffect } from "react";
-import { type GridItemProps, RichTable } from "react-design-system";
+import {
+  type GridItemProps,
+  RichTable,
+  type RichTableProps,
+} from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AbsoluteUrl,
@@ -147,19 +151,21 @@ const getEstablishmentConventionTableHeaders = ({
 }: {
   hasConventions: boolean;
   search: string | undefined;
-}): string[] =>
+}): RichTableProps["headers"] =>
   match({ hasConventions, search })
     .with({ hasConventions: true }, () => [
-      "Personne en immersion",
-      "Statut",
-      "Bilan",
-      "Dates",
-      "Actions",
+      { content: "Personne en immersion" },
+      { content: "Statut" },
+      { content: "Bilan" },
+      { content: "Dates" },
+      { content: "Actions" },
     ])
     .with({ search: P.string.minLength(1) }, ({ search }) => [
-      `Aucune convention trouvée pour la recherche « ${search} », vous pouvez modifier votre recherche pour l'élargir.`,
+      {
+        content: `Aucune convention trouvée pour la recherche « ${search} », vous pouvez modifier votre recherche pour l'élargir.`,
+      },
     ])
-    .otherwise(() => ["Nous n'avons pas trouvé de convention."]);
+    .otherwise(() => [{ content: "Nous n'avons pas trouvé de convention." }]);
 
 const toEstablishmentConventionGridData = (
   conventions: EstablishmentUserConventionListDto[],

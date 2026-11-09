@@ -20,7 +20,7 @@ import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { match } from "ts-pattern";
 import type { Route } from "type-route";
 import { AgenciesTablesSection } from "../agency/agencies-table/AgenciesTablesSection";
-import { EstablishmentsTablesSection } from "../establishment/establishments-table/EstablishmentsTablesSection";
+import { EstablishmentsRightsTable } from "../establishment/establishments-table/EstablishmentsRightsTable";
 
 type UserProfileAllowedRouteNames = Route<
   | typeof frontRoutes.adminUserDetailAgencies
@@ -109,28 +109,24 @@ export const UserProfile = ({
           adminEmptyContent.establishments
         ) : (
           <>
-            {pendingUserEstablishmentsRights.length > 0 && (
-              <>
+            <EstablishmentsRightsTable
+              title={
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
                   Mes demandes d'accès envoyées
                 </h3>
-                <EstablishmentsTablesSection
-                  withEstablishmentData={pendingUserEstablishmentsRights}
-                  isBackofficeAdmin={currentUser?.isBackofficeAdmin}
-                />
-              </>
-            )}
-            {acceptedUserEstablishmentsRights.length > 0 && (
-              <>
+              }
+              withEstablishmentData={pendingUserEstablishmentsRights}
+              isBackofficeAdmin={currentUser?.isBackofficeAdmin}
+            />
+            <EstablishmentsRightsTable
+              title={
                 <h3 className={fr.cx("fr-h5", "fr-mt-2w")}>
                   Mes rattachements entreprises
                 </h3>
-                <EstablishmentsTablesSection
-                  withEstablishmentData={acceptedUserEstablishmentsRights}
-                  isBackofficeAdmin={currentUser?.isBackofficeAdmin}
-                />
-              </>
-            )}
+              }
+              withEstablishmentData={acceptedUserEstablishmentsRights}
+              isBackofficeAdmin={currentUser?.isBackofficeAdmin}
+            />
           </>
         ),
     },

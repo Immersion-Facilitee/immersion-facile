@@ -11,7 +11,7 @@ import {
   type PendingUserEstablishmentRightDetails,
 } from "shared";
 import { EstablishmentsList } from "src/app/components/establishment/establishment-dashboard/EstablishmentsList";
-import { EstablishmentsTablesSection } from "src/app/components/establishment/establishments-table/EstablishmentsTablesSection";
+import { EstablishmentsRightsTable } from "src/app/components/establishment/establishments-table/EstablishmentsRightsTable";
 import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
 import { makeUseTypedRoute } from "src/app/routes/routes.hooks";
 
@@ -73,12 +73,12 @@ export const ManageEstablishmentsTab = ({
           />
         }
       >
-        {pendingEstablishmentRights.length > 0 && (
-          <h4 className={fr.cx("fr-h6", "fr-mt-4w")}>
-            Mes demandes d'accès envoyées
-          </h4>
-        )}
-        <EstablishmentsTablesSection
+        <EstablishmentsRightsTable
+          title={
+            <h4 className={fr.cx("fr-h6", "fr-mt-4w")}>
+              Mes demandes d'accès envoyées
+            </h4>
+          }
           withEstablishmentData={pendingEstablishmentRights}
           isBackofficeAdmin={isBackofficeAdmin}
         />

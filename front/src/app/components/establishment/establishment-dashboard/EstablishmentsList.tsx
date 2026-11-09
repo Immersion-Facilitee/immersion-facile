@@ -3,7 +3,11 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { type ReactNode, useState } from "react";
-import { CopyButton, RichTable } from "react-design-system";
+import {
+  CopyButton,
+  RichTable,
+  type TableSortDirection,
+} from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -21,6 +25,13 @@ import { geocodingSlice } from "src/core-logic/domain/geocoding/geocoding.slice"
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 
 const maxAdminsDisplayedInTable = 3;
+
+type SortColumn = "businessName" | "role";
+
+type SortState = {
+  column: SortColumn;
+  direction: Exclude<TableSortDirection, false>;
+};
 
 const adminsListModal = createModal({
   isOpenedByDefault: false,
@@ -42,18 +53,36 @@ export const EstablishmentsList = ({
 }: EstablishmentsListProps): ReactNode => {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState<SortState>({
+    column: "businessName",
+    direction: "asc",
+  });
   const [
     establishmentWithAdminsDisplayed,
     setEstablishmentWithAdminsDisplayed,
   ] = useState<AcceptedUserEstablishmentRightDetails | null>(null);
 
+  const onSortClick = (column: SortColumn) => {
+    setSort((current) => {
+      if (current.column !== column) {
+        return { column, direction: "asc" };
+      }
+
+      return {
+        column,
+        direction: current.direction === "asc" ? "desc" : "asc",
+      };
+    });
+  };
+
+  const sortDirectionFor = (column: SortColumn): TableSortDirection =>
+    sort.column === column ? sort.direction : false;
+
   const displayedEstablishments = establishments
     .filter((establishment) =>
       isEstablishmentMatchingSearchQuery(establishment, searchQuery),
     )
-    .sort((a, b) =>
-      getDisplayedBusinessName(a).localeCompare(getDisplayedBusinessName(b)),
-    );
+    .sort((a, b) => compareEstablishments(a, b, sort));
 
   const onManageEstablishmentClicked = (): void => {
     dispatch(establishmentSlice.actions.clearEstablishmentRequested());
@@ -85,9 +114,28 @@ export const EstablishmentsList = ({
         }}
         headers={
           displayedEstablishments.length > 0
-            ? ["Entreprise", "Mon rôle", "Administrateurs", "Actions"]
+            ? [
+                {
+                  content: "Entreprise",
+                  sort: {
+                    direction: sortDirectionFor("businessName"),
+                    onClick: () => onSortClick("businessName"),
+                  },
+                },
+                {
+                  content: "Mon rôle",
+                  sort: {
+                    direction: sortDirectionFor("role"),
+                    onClick: () => onSortClick("role"),
+                  },
+                },
+                { content: "Administrateurs" },
+                { content: "Actions" },
+              ]
             : [
-                `Aucune entreprise trouvée pour la recherche « ${searchQuery} », vous pouvez modifier votre recherche pour l'élargir.`,
+                {
+                  content: `Aucune entreprise trouvée pour la recherche « ${searchQuery} », vous pouvez modifier votre recherche pour l'élargir.`,
+                },
               ]
         }
         tableData={displayedEstablishments.map((establishment) => [
@@ -136,6 +184,21 @@ export const EstablishmentsList = ({
       )}
     </>
   );
+};
+
+const compareEstablishments = (
+  a: AcceptedUserEstablishmentRightDetails,
+  b: AcceptedUserEstablishmentRightDetails,
+  sort: SortState,
+) => {
+  const result =
+    sort.column === "businessName"
+      ? getDisplayedBusinessName(a).localeCompare(getDisplayedBusinessName(b))
+      : establishmentRolesToDisplay[a.role].label.localeCompare(
+          establishmentRolesToDisplay[b.role].label,
+        );
+
+  return sort.direction === "asc" ? result : -result;
 };
 
 const isEstablishmentMatchingSearchQuery = (
