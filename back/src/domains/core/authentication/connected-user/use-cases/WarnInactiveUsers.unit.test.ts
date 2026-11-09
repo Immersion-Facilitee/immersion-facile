@@ -103,8 +103,8 @@ describe("WarnInactiveUsers", () => {
     const inactiveUser = makeUser({
       id: "inactive-id",
       email: "inactive@test.fr",
-      firstName: "mArIe",
-      lastName: "mArtIn",
+      firstName: "Marie",
+      lastName: "Martin",
       lastLoginAt: inactiveLastLoginAt,
     });
     const inactiveUserPreventedToBeDeleted = makeUser({
