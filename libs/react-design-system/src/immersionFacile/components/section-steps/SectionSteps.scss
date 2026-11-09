@@ -1,0 +1,108 @@
+@use "../../../config/responsive" as *;
+
+.im-section-steps {
+  $number-size: 3rem;
+  $mobile-gap: 1.5rem;
+  $desktop-gap: 3rem;
+
+  background-color: var(--background-default-grey);
+
+  &__title {
+    margin-bottom: 1.5rem;
+    @include for-screen-min($bp-lg) {
+      margin-bottom: 3rem;
+    }
+  }
+
+  &__steps {
+    display: flex;
+    flex-direction: column;
+    gap: $mobile-gap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    @include for-screen-min($bp-lg) {
+      flex-direction: row;
+      gap: $desktop-gap;
+    }
+  }
+
+  &__step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+    @include for-screen-min($bp-lg) {
+      flex: 1 1 0;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: -$mobile-gap;
+      left: calc($number-size / 2);
+      border-left: 1px solid var(--border-open-blue-france);
+      @include for-screen-min($bp-lg) {
+        top: calc($number-size / 2);
+        bottom: auto;
+        left: 0;
+        right: -$desktop-gap;
+        border-left: none;
+        border-top: 1px solid var(--border-open-blue-france);
+      }
+    }
+
+    &:first-child::after {
+      top: 50%;
+      @include for-screen-min($bp-lg) {
+        top: calc($number-size / 2);
+        left: 50%;
+      }
+    }
+
+    &:last-child::after {
+      bottom: 50%;
+      @include for-screen-min($bp-lg) {
+        bottom: auto;
+        right: 50%;
+      }
+    }
+  }
+
+  &__step-number {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: $number-size;
+    height: $number-size;
+    border-radius: 50%;
+    background-color: var(--background-active-blue-france);
+    color: var(--text-inverted-grey);
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+
+  &__step-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__step-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  &__step-description {
+    margin: 0;
+  }
+}

@@ -43,6 +43,7 @@ export * from "./section-convention-next-steps";
 export * from "./section-faq";
 export * from "./section-highlight";
 export * from "./section-stats";
+export * from "./section-steps";
 export * from "./section-text-embed";
 export * from "./separated-section";
 export * from "./skip-links";
