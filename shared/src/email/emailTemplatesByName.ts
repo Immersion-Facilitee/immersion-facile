@@ -3708,7 +3708,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
     REQUEST_OTP_CODE: {
       niceName: "Authentification - Tous - Code d'authentification OTP",
       tags: [
-        "template: authentificationOTPCode",
+        "template:authentificationOTPCode",
         "theme:authentification",
         "acteur:tous",
         "role:beneficiaire",
@@ -3719,28 +3719,49 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
       createEmailVariables: ({ otpCode }) => ({
         subject: `Immersion Facilitée - Votre code de vérification : ${otpCode}`,
         greetings: "Bonjour,",
-        content: `
-        Voici votre code de vérification temporaire pour Immersion Facilitée:
-
-        <strong>${otpCode}</strong>
-
-        <strong>Comment l’utiliser :</strong>
-
-        1. Copiez le code ci-dessus.
-        2. Revenez sur la page Immersion Facilitée ouverte dans votre navigateur, à l’étape « Saisissez votre code ».
-        3. Collez le code dans le champ. Il est vérifié automatiquement, sans avoir à cliquer sur un bouton.
-        `,
-        highlight: {
-          kind: "info",
-          content: `Ce code est valable ${OTP_CHALLENGE_DURATION_IN_MINUTES} minutes et ne peut être utilisé qu’une seule fois.`,
-        },
-        subContent: `
-        <strong>Vous avez fermé la page ?</strong> Cliquez de nouveau sur le bouton du mail que vous avez reçu, puis demandez un nouveau code.
-
-        Si vous n’êtes pas à l’origine de cette demande, ignorez ce message : personne ne pourra agir sans ce code. L’équipe Immersion Facilitée ne vous demandera jamais de le communiquer.
-
-        ${defaultSignature()}
-        `,
+        blocks: [
+          {
+            kind: "paragraph",
+            content:
+              "Voici votre code de vérification temporaire pour Immersion Facilitée :",
+          },
+          {
+            kind: "paragraph",
+            content: `<strong>${otpCode}</strong>`,
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content: "<strong>Comment l’utiliser :</strong>",
+            marginBottom: "sm",
+          },
+          {
+            kind: "list",
+            numbered: true,
+            items: [
+              "Copiez le code ci-dessus.",
+              "Revenez sur la page Immersion Facilitée ouverte dans votre navigateur, à l’étape « Saisissez votre code ».",
+              "Collez le code dans le champ. Il est vérifié automatiquement, sans avoir à cliquer sur un bouton.",
+            ],
+            marginBottom: "lg",
+          },
+          {
+            kind: "highlight",
+            content: `Ce code est valable ${OTP_CHALLENGE_DURATION_IN_MINUTES} minutes et ne peut être utilisé qu’une seule fois.`,
+            marginBottom: "lg",
+          },
+          {
+            kind: "paragraph",
+            content:
+              "<strong>Vous avez fermé la page ?</strong> Cliquez de nouveau sur le bouton du mail que vous avez reçu, puis demandez un nouveau code.",
+          },
+          {
+            kind: "paragraph",
+            content:
+              "Si vous n’êtes pas à l’origine de cette demande, ignorez ce message : personne ne pourra agir sans ce code. L’équipe Immersion Facilitée ne vous demandera jamais de le communiquer.",
+          },
+        ],
+        signature: defaultSignature(),
       }),
     },
     SHARE_CONVENTION_DRAFT_RECIPIENT: {
