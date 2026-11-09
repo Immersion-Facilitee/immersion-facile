@@ -5,10 +5,9 @@ import {
   type VisitorSessionPayload,
 } from "shared";
 import { match } from "ts-pattern";
-import { makeEmailHash } from "../../../../../utils/jwt";
+import { isHashMatchConventionEmails } from "../../../../../utils/emailHash";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../useCaseBuilder";
-import { getConventionActorOtpRecipients } from "../../otp-challenge/use-cases/GetMaskedOtpRecipients";
 
 export type GetVisitorSession = ReturnType<typeof makeGetVisitorSession>;
 
@@ -53,12 +52,13 @@ export const makeGetVisitorSession = useCaseBuilder("GetVisitorSession")
 
             if (!convention) throw errors.convention.notFound({ conventionId });
 
-            const recipients = getConventionActorOtpRecipients({
-              convention,
-              role,
-            });
-
-            if (makeEmailHash(recipients.email) !== emailHash)
+            if (
+              !isHashMatchConventionEmails({
+                convention,
+                emailHash,
+                role,
+              })
+            )
               throw errors.convention.forbiddenMissingRightsEmailHash({
                 conventionId,
                 role,

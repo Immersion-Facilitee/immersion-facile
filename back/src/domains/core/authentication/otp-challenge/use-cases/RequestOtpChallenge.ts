@@ -5,6 +5,7 @@ import {
   type Email,
   errors,
   executeInSequence,
+  type GenericActor,
   immersionFacileNoReplyEmailSender,
   isValidMobilePhone,
   type NotificationKind,
@@ -19,7 +20,8 @@ import {
 } from "shared";
 import { match } from "ts-pattern";
 
-import { makeEmailHash } from "../../../../../utils/jwt";
+import { conventionActorByRole } from "../../../../../utils/convention";
+import { isSomeEmailMatchingEmailHash } from "../../../../../utils/emailHash";
 import type {
   NotificationContentAndFollowedIds,
   SaveNotificationAndRelatedEvent,
@@ -29,10 +31,6 @@ import { useCaseBuilder } from "../../../useCaseBuilder";
 import type { UuidGenerator } from "../../../uuid-generator/ports/UuidGenerator";
 import type { HashOtpCode } from "../adapters/hashOtpCode";
 import type { OtpCodeGeneratorGateway } from "../port/OtpCodeGeneratorGateway";
-import {
-  getConventionActorOtpRecipients,
-  type OtpRecipients,
-} from "./GetMaskedOtpRecipients";
 
 const MIN_SECONDS_BETWEEN_OTP_CHALLENGE_REQUESTS = 60;
 const MAX_OTP_CHALLENGE_REQUESTS_PER_PERIOD = 5;
@@ -63,12 +61,9 @@ export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
 
           if (!convention) throw errors.convention.notFound({ conventionId });
 
-          const recipients = getConventionActorOtpRecipients({
-            convention,
-            role,
-          });
+          const actor = conventionActorByRole(convention)(role);
 
-          if (makeEmailHash(recipients.email) !== emailHash)
+          if (!isSomeEmailMatchingEmailHash([actor.email], emailHash))
             throw errors.convention.forbiddenMissingRightsEmailHash({
               conventionId,
               role,
@@ -92,7 +87,7 @@ export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
             channel,
             convention,
             role,
-            recipients,
+            actor,
             otpCode,
           });
 
@@ -181,13 +176,13 @@ const makeOtpNotification = ({
   channel,
   convention,
   role,
-  recipients,
+  actor,
   otpCode,
 }: {
   channel: NotificationKind;
   convention: ConventionDto;
   role: ConventionActorRole;
-  recipients: OtpRecipients;
+  actor: GenericActor<ConventionActorRole>;
   otpCode: OtpCode;
 }): OtpNotification => {
   const followedIds = {
@@ -200,12 +195,12 @@ const makeOtpNotification = ({
     .with(
       "email",
       (): OtpNotification => ({
-        recipient: recipients.email,
+        recipient: actor.email,
         notification: {
           kind: "email",
           templatedContent: {
             kind: "REQUEST_OTP_CODE",
-            recipients: [recipients.email],
+            recipients: [actor.email],
             sender: immersionFacileNoReplyEmailSender,
             params: { otpCode },
           },
@@ -214,19 +209,19 @@ const makeOtpNotification = ({
       }),
     )
     .with("sms", (): OtpNotification => {
-      if (!isValidMobilePhone(recipients.phone))
+      if (!isValidMobilePhone(actor.phone))
         throw errors.convention.invalidMobilePhoneNumber({
           conventionId: convention.id,
           role,
         });
 
       return {
-        recipient: recipients.phone,
+        recipient: actor.phone,
         notification: {
           kind: "sms",
           templatedContent: {
             kind: "RequestOtpCode",
-            recipientPhone: recipients.phone,
+            recipientPhone: actor.phone,
             params: { otpCode },
           },
           followedIds,
