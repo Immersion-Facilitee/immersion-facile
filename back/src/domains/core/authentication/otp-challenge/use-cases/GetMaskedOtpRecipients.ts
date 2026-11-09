@@ -8,8 +8,7 @@ import {
   type VisitorOtpJwtPayload,
 } from "shared";
 import { match } from "ts-pattern";
-import { conventionActorByRole } from "../../../../../utils/convention";
-import { isSomeEmailMatchingEmailHash } from "../../../../../utils/emailHash";
+import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
 import { useCaseBuilder } from "../../../useCaseBuilder";
 
 export type GetMaskedOtpRecipients = ReturnType<
@@ -30,14 +29,11 @@ export const makeGetMaskedOtpRecipients = useCaseBuilder(
 
         if (!convention) throw errors.convention.notFound({ conventionId });
 
-        const actor = conventionActorByRole(convention)(role);
-
-        if (!isSomeEmailMatchingEmailHash([actor.email], emailHash))
-          throw errors.convention.forbiddenMissingRightsEmailHash({
-            conventionId,
-            role,
-            emailHash,
-          });
+        const actor = getConventionActorMatchingEmailHashOrThrow({
+          convention,
+          emailHash,
+          role,
+        });
 
         return {
           maskedEmail: maskEmail(actor.email),
