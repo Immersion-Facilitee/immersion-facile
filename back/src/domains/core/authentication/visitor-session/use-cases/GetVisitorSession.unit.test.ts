@@ -28,11 +28,11 @@ describe("GetVisitorSession", () => {
     })
     .withExpiresAt("2024-04-28T12:00:00.000Z")
     .build();
-  const getVisitorSessionParams = {
+  const getVisitorSessionQuery = {
     purpose: "manageConvention" as const,
     conventionId: convention.id,
-    sessionId: visitorSession.id,
   };
+  const visitorSessionPayload = { sessionId: visitorSession.id };
 
   let uow: InMemoryUnitOfWork;
   let getVisitorSession: GetVisitorSession;
@@ -51,7 +51,10 @@ describe("GetVisitorSession", () => {
   it("returns the visitor session", async () => {
     uow.visitorSessionRepository.visitorSessions = [visitorSession];
 
-    const result = await getVisitorSession.execute(getVisitorSessionParams);
+    const result = await getVisitorSession.execute(
+      getVisitorSessionQuery,
+      visitorSessionPayload,
+    );
 
     expectToEqual(result, {
       conventionId: convention.id,
@@ -64,7 +67,10 @@ describe("GetVisitorSession", () => {
   describe("Wrong path", () => {
     it("throws unauthorized if the session does not exist", async () => {
       await expectPromiseToFailWithError(
-        getVisitorSession.execute(getVisitorSessionParams),
+        getVisitorSession.execute(
+          getVisitorSessionQuery,
+          visitorSessionPayload,
+        ),
         errors.visitorSession.unauthorized(),
       );
     });
@@ -77,7 +83,10 @@ describe("GetVisitorSession", () => {
       ];
 
       await expectPromiseToFailWithError(
-        getVisitorSession.execute(getVisitorSessionParams),
+        getVisitorSession.execute(
+          getVisitorSessionQuery,
+          visitorSessionPayload,
+        ),
         errors.visitorSession.unauthorized(),
       );
     });
@@ -90,7 +99,10 @@ describe("GetVisitorSession", () => {
       ];
 
       await expectPromiseToFailWithError(
-        getVisitorSession.execute(getVisitorSessionParams),
+        getVisitorSession.execute(
+          getVisitorSessionQuery,
+          visitorSessionPayload,
+        ),
         errors.visitorSession.unauthorized(),
       );
     });
@@ -99,10 +111,13 @@ describe("GetVisitorSession", () => {
       uow.visitorSessionRepository.visitorSessions = [visitorSession];
 
       await expectPromiseToFailWithError(
-        getVisitorSession.execute({
-          ...getVisitorSessionParams,
-          conventionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        }),
+        getVisitorSession.execute(
+          {
+            ...getVisitorSessionQuery,
+            conventionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          },
+          visitorSessionPayload,
+        ),
         errors.visitorSession.unauthorized(),
       );
     });
@@ -116,7 +131,10 @@ describe("GetVisitorSession", () => {
       ]);
 
       await expectPromiseToFailWithError(
-        getVisitorSession.execute(getVisitorSessionParams),
+        getVisitorSession.execute(
+          getVisitorSessionQuery,
+          visitorSessionPayload,
+        ),
         errors.convention.forbiddenMissingRightsEmailHash({
           conventionId: convention.id,
           role: "establishment-tutor",

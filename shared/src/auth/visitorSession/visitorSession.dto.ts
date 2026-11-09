@@ -12,6 +12,9 @@ export type VisitorSessionCookieName = Flavor<
   string,
   "VisitorSessionCookieName"
 >;
+export type VisitorSessionPayload = {
+  sessionId: VisitorSessionId;
+};
 
 export type VisitorSession = {
   [K in OtpChallengePurpose]: {
@@ -32,10 +35,6 @@ export type GetVisitorSessionQueryParams = {
     };
   }[K];
 }[OtpChallengePurpose];
-
-export type GetVisitorSessionParams = GetVisitorSessionQueryParams & {
-  sessionId: VisitorSessionId;
-};
 
 export type ActiveVisitorSession = {
   [K in OtpChallengePurpose]: {

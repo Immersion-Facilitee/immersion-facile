@@ -10,6 +10,7 @@ import {
   isTruthy,
   type UserId,
   type VisitorOtpJwtPayload,
+  type VisitorSessionPayload,
 } from "shared";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../../unit-of-work/ports/UnitOfWork";
@@ -60,7 +61,8 @@ export const getGenericAuthOrThrow = <
     | ConnectedUserJwtPayload
     | ConventionDomainJwtPayload
     | ApiConsumer
-    | VisitorOtpJwtPayload,
+    | VisitorOtpJwtPayload
+    | VisitorSessionPayload,
 >(
   genericAuth: T | undefined,
 ): T => {

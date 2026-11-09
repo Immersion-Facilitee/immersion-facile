@@ -15,7 +15,11 @@ import {
   expectArraysToMatch,
   expectHttpResponseToEqual,
   expectToEqual,
+  type GetVisitorSessionQueryParams,
+  makeVisitorSessionCookieName,
   type User,
+  VisitorSessionDtoBuilder,
+  type VisitorSessionId,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -32,7 +36,10 @@ import {
   type InMemoryGateways,
 } from "../../../../utils/buildTestApp";
 import { makeHashByRolesForTest } from "../../../../utils/emailHash";
-import { createConventionMagicLinkPayload } from "../../../../utils/jwt";
+import {
+  createConventionMagicLinkPayload,
+  makeEmailHash,
+} from "../../../../utils/jwt";
 
 describe("Magic link router", () => {
   const payloadMeta = {
@@ -354,6 +361,72 @@ describe("Magic link router", () => {
       expectHttpResponseToEqual(response, {
         status: 200,
         body: { id: convention.id },
+      });
+    });
+
+    describe("visitor session cookie", () => {
+      const visitorSessionCookie = ({
+        sessionId,
+        ...queryParams
+      }: GetVisitorSessionQueryParams & {
+        sessionId: VisitorSessionId;
+      }): string => `${makeVisitorSessionCookieName(queryParams)}=${sessionId}`;
+
+      const now = new Date("2026-11-05T10:00:00.000Z");
+      const visitorSession = new VisitorSessionDtoBuilder()
+        .withSubject({
+          conventionId: convention.id,
+          role: "beneficiary",
+          emailHash: makeEmailHash(convention.signatories.beneficiary.email),
+        })
+        .withExpiresAt(addDays(now, 1).toISOString())
+        .withCreatedAt(now.toISOString())
+        .build();
+
+      beforeEach(() => {
+        gateways.timeGateway.defaultDate = now;
+        inMemoryUow.visitorSessionRepository.visitorSessions = [visitorSession];
+      });
+
+      it("200 - succeeds with visitor session cookie", async () => {
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.signConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Cookie",
+            visitorSessionCookie({
+              purpose: "manageConvention",
+              conventionId: convention.id,
+              sessionId: visitorSession.id,
+            }),
+          );
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: { id: convention.id },
+          },
+        );
+      });
+
+      it("401 - no header, no cookie", async () => {
+        const response = await httpClient.signConvention({
+          urlParams: { conventionId: convention.id },
+          headers: {},
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 401,
+          body: {
+            status: 401,
+            message: errors.visitorSession.unauthorized().message,
+          },
+        });
       });
     });
 

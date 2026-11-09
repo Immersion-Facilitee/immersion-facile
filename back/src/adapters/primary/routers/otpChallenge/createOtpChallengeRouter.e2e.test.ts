@@ -6,7 +6,6 @@ import {
   errors,
   expectHttpResponseToEqual,
   expectToEqual,
-  type GetVisitorSessionParams,
   type GetVisitorSessionQueryParams,
   immersionFacileNoReplyEmailSender,
   makeVisitorSessionCookieName,
@@ -15,6 +14,7 @@ import {
   type OtpChallengeRoutes,
   otpChallengeRoutes,
   VisitorSessionDtoBuilder,
+  type VisitorSessionId,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -48,7 +48,7 @@ describe("otp challenge router", () => {
   const visitorSessionCookie = ({
     sessionId,
     ...queryParams
-  }: GetVisitorSessionParams): string =>
+  }: GetVisitorSessionQueryParams & { sessionId: VisitorSessionId }): string =>
     `${makeVisitorSessionCookieName(queryParams)}=${sessionId}`;
 
   const visitorOtpJwtPayload = createVisitorOtpJwtPayload({

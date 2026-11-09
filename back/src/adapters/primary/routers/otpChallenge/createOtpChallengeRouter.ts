@@ -68,13 +68,12 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
   sharedOtpChallengeRouter.getVisitorSession(
     deps.visitorSessionAuthMiddleware,
     (req, res) =>
-      sendHttpResponse(req, res, () => {
-        const sessionId = req.cookies[makeVisitorSessionCookieName(req.query)];
-        return deps.useCases.getVisitorSession.execute({
-          ...req.query,
-          sessionId,
-        });
-      }),
+      sendHttpResponse(req, res, () =>
+        deps.useCases.getVisitorSession.execute(
+          req.query,
+          getGenericAuthOrThrow(req.payloads?.visitorSession),
+        ),
+      ),
   );
 
   return expressRouter;

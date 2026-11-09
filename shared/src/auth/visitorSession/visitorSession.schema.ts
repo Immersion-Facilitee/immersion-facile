@@ -10,7 +10,6 @@ import {
 } from "../otpChallenge/otpChallenge.schema";
 import type {
   ActiveVisitorSession,
-  GetVisitorSessionParams,
   GetVisitorSessionQueryParams,
   VisitorSession,
   VisitorSessionId,
@@ -36,13 +35,6 @@ export const getVisitorSessionQueryParamsSchema: ZodSchemaWithInputMatchingOutpu
       conventionId: conventionIdSchema,
     }),
   ]);
-
-export const getVisitorSessionParamsSchema: ZodSchemaWithInputMatchingOutput<GetVisitorSessionParams> =
-  getVisitorSessionQueryParamsSchema.and(
-    z.object({
-      sessionId: visitorSessionIdSchema,
-    }),
-  );
 
 export const activeVisitorSessionSchema: ZodSchemaWithInputMatchingOutput<ActiveVisitorSession> =
   z.discriminatedUnion("purpose", [

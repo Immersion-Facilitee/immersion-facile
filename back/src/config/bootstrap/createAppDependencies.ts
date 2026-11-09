@@ -20,6 +20,7 @@ import {
   makeVisitorOtpMiddleware,
 } from "./authMiddleware";
 import { makeConnectedUserAuthMiddleware } from "./connectedUserAuthMiddleware";
+import { makeConventionMagicLinkOrVisitorSessionAuthMiddleware } from "./conventionMagicLinkOrVisitorSessionAuthMiddleware";
 import { createEventCrawler } from "./createEventCrawler";
 import { createGateways } from "./createGateways";
 import { createUseCases } from "./createUseCases";
@@ -71,6 +72,15 @@ export const createAppDependencies = async (config: AppConfig) => {
   const verifyEmailAuthCodeJwt: VerifyJwtFn<"emailAuthCode"> =
     makeVerifyJwtES256<"emailAuthCode">(config.jwtPrivateKey);
 
+  const conventionMagicLinkAuthMiddleware = makeMagicLinkAuthMiddleware(
+    config,
+    "convention",
+  );
+  const visitorSessionAuthMiddleware = makeVisitorSessionAuthMiddleware({
+    uowPerformer,
+    timeGateway: gateways.timeGateway,
+  });
+
   const useCases = createUseCases({
     config,
     gateways,
@@ -88,15 +98,14 @@ export const createAppDependencies = async (config: AppConfig) => {
     config,
     useCases,
     gateways,
-    conventionMagicLinkAuthMiddleware: makeMagicLinkAuthMiddleware(
-      config,
-      "convention",
-    ),
+    conventionMagicLinkAuthMiddleware,
+    conventionMagicLinkOrVisitorSessionAuthMiddleware:
+      makeConventionMagicLinkOrVisitorSessionAuthMiddleware({
+        magicLinkAuthMiddleware: conventionMagicLinkAuthMiddleware,
+        visitorSessionAuthMiddleware,
+      }),
     visitorOtpAuthMiddleware: makeVisitorOtpMiddleware(config, "visitorOtp"),
-    visitorSessionAuthMiddleware: makeVisitorSessionAuthMiddleware({
-      uowPerformer,
-      timeGateway: gateways.timeGateway,
-    }),
+    visitorSessionAuthMiddleware,
     apiConsumerMiddleware: makeConsumerMiddleware(
       useCases.getApiConsumerById.execute,
       gateways.timeGateway,
