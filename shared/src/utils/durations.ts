@@ -8,6 +8,7 @@ export const oneDayInSecond = oneHourInSeconds * 24;
 export const ONE_SECOND_MS = 1_000;
 export const OTP_CHALLENGE_DURATION_IN_MINUTES = 30;
 export const VISITOR_SESSION_DURATION_IN_MINUTES = 30;
+export const VISITOR_OTP_LINK_DURATION_IN_MONTHS = 2;
 
 export const loginByEmailLinkDurationInMinutes = 15;
 
