@@ -21,7 +21,7 @@ jobs:
           node-version: "24.22.1"
           cache: "pnpm"
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
       - name: Build backend
         run: pnpm back build ${{ inputs.tag }}
       - name: Archive build
