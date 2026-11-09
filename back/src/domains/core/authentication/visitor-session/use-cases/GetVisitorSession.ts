@@ -5,9 +5,10 @@ import {
   type VisitorSessionPayload,
 } from "shared";
 import { match } from "ts-pattern";
-import { isHashMatchConventionEmails } from "../../../../../utils/emailHash";
+import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../useCaseBuilder";
+import { getActiveVisitorSessionOrThrow } from "../entities/visitorSession.helper";
 
 export type GetVisitorSession = ReturnType<typeof makeGetVisitorSession>;
 
@@ -23,53 +24,35 @@ export const makeGetVisitorSession = useCaseBuilder("GetVisitorSession")
       uow,
       deps,
     }): Promise<ActiveVisitorSession> => {
-      const visitorSession = await uow.visitorSessionRepository.getById(
-        currentUser.sessionId,
-      );
-      const now = deps.timeGateway.now();
+      const visitorSession = await getActiveVisitorSessionOrThrow({
+        uow,
+        sessionId: currentUser.sessionId,
+        scope: inputParams,
+        now: deps.timeGateway.now(),
+      });
 
-      if (
-        !visitorSession ||
-        visitorSession.revokedAt ||
-        new Date(visitorSession.expiresAt) <= now
-      )
-        throw errors.visitorSession.unauthorized();
-
-      return match(inputParams)
+      return match(visitorSession)
         .with(
           { purpose: "manageConvention" },
-          async ({ conventionId }): Promise<ActiveVisitorSession> => {
-            if (
-              visitorSession.purpose !== "manageConvention" ||
-              visitorSession.subject.conventionId !== conventionId
-            )
-              throw errors.visitorSession.unauthorized();
-
-            const { role, emailHash } = visitorSession.subject;
+          async ({ subject, expiresAt }): Promise<ActiveVisitorSession> => {
+            const { conventionId, role, emailHash } = subject;
 
             const convention =
               await uow.conventionRepository.getById(conventionId);
 
             if (!convention) throw errors.convention.notFound({ conventionId });
 
-            if (
-              !isHashMatchConventionEmails({
-                convention,
-                emailHash,
-                role,
-              })
-            )
-              throw errors.convention.forbiddenMissingRightsEmailHash({
-                conventionId,
-                role,
-                emailHash,
-              });
+            getConventionActorMatchingEmailHashOrThrow({
+              convention,
+              emailHash,
+              role,
+            });
 
             return {
               purpose: "manageConvention",
               conventionId,
               role,
-              expiresAt: visitorSession.expiresAt,
+              expiresAt,
             };
           },
         )
