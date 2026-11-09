@@ -107,12 +107,17 @@ export const errors = {
       new TooManyRequestApiError(
         `Vous avez demandé ${maxRequests} codes au cours des ${periodInMinutes} dernières minutes. Merci de réessayer plus tard.`,
       ),
-    invalidCode: () => new UnauthorizedError(),
+    activeChallengeAlreadyExists: () =>
+      new TooManyRequestApiError(
+        "Un code vient d'être demandé. Merci de patienter avant d'en demander un nouveau.",
+      ),
+    noActiveChallenge: () =>
+      new NotFoundError(
+        "Aucun code de vérification en cours. Merci de demander un nouveau code.",
+      ),
+    invalidCode: () =>
+      new BadRequestError("Le code de vérification est incorrect."),
     expired: () => new ForbiddenError("Le code de vérification a expiré."),
-    alreadyUsed: () =>
-      new ForbiddenError("Le code de vérification a déjà été utilisé."),
-    alreadyRevoked: () =>
-      new ForbiddenError("Le code de vérification n'est plus valide."),
     tooManyAttempts: ({ maxAttempts }: { maxAttempts: number }) =>
       new TooManyRequestApiError(
         `Trop de tentatives (${maxAttempts}). Merci de demander un nouveau code.`,

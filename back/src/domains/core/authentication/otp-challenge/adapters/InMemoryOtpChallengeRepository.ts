@@ -25,6 +25,9 @@ export class InMemoryOtpChallengeRepository implements OtpChallengeRepository {
     if (this.#otpChallengesById[otpChallenge.id])
       throw errors.otpChallenge.alreadyExists(otpChallenge.id);
 
+    if (isOtpChallengeActive(otpChallenge) && this.#findActive(otpChallenge))
+      throw errors.otpChallenge.activeChallengeAlreadyExists();
+
     this.#otpChallengesById[otpChallenge.id] = otpChallenge;
   }
 
@@ -48,7 +51,8 @@ export class InMemoryOtpChallengeRepository implements OtpChallengeRepository {
   }: MarkOtpChallengeAsUsedParams): Promise<void> {
     const otpChallenge = this.#otpChallengesById[id];
 
-    if (!otpChallenge) throw errors.otpChallenge.notFound(id);
+    if (!otpChallenge || otpChallenge.usedAt !== null)
+      throw errors.otpChallenge.notFound(id);
 
     this.#otpChallengesById[id] = {
       ...otpChallenge,
@@ -67,10 +71,6 @@ export class InMemoryOtpChallengeRepository implements OtpChallengeRepository {
     };
   }
 
-  public async getById(id: OtpChallengeId): Promise<OtpChallenge | null> {
-    return this.#otpChallengesById[id] || null;
-  }
-
   public async getByPurposeAndSubject({
     purpose,
     subject,
@@ -81,4 +81,25 @@ export class InMemoryOtpChallengeRepository implements OtpChallengeRepository {
         equals(otpChallenge.subject, subject),
     );
   }
+
+  public async getActiveByPurposeAndSubject(
+    params: GetOtpChallengesByPurposeAndSubjectParams,
+  ): Promise<OtpChallenge | null> {
+    return this.#findActive(params) ?? null;
+  }
+
+  #findActive({
+    purpose,
+    subject,
+  }: GetOtpChallengesByPurposeAndSubjectParams): OtpChallenge | undefined {
+    return values(this.#otpChallengesById).find(
+      (otpChallenge) =>
+        isOtpChallengeActive(otpChallenge) &&
+        otpChallenge.purpose === purpose &&
+        equals(otpChallenge.subject, subject),
+    );
+  }
 }
+
+const isOtpChallengeActive = ({ usedAt, revokedAt }: OtpChallenge): boolean =>
+  usedAt === null && revokedAt === null;

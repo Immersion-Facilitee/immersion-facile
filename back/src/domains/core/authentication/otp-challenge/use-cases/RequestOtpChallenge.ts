@@ -14,14 +14,12 @@ import {
   type OtpCode,
   type PhoneNumber,
   type RequestOtpChallengeDto,
-  type RequestOtpChallengeResponseDto,
   requestOtpChallengeSchema,
   type VisitorOtpJwtPayload,
 } from "shared";
 import { match } from "ts-pattern";
 
-import { conventionActorByRole } from "../../../../../utils/convention";
-import { isSomeEmailMatchingEmailHash } from "../../../../../utils/emailHash";
+import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
 import type {
   NotificationContentAndFollowedIds,
   SaveNotificationAndRelatedEvent,
@@ -41,7 +39,6 @@ export type RequestOtpChallenge = ReturnType<typeof makeRequestOtpChallenge>;
 export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
   .withInput<RequestOtpChallengeDto>(requestOtpChallengeSchema)
   .withCurrentUser<VisitorOtpJwtPayload>()
-  .withOutput<RequestOtpChallengeResponseDto>()
   .withDeps<{
     hashOtpCode: HashOtpCode;
     otpCodeGeneratorGateway: OtpCodeGeneratorGateway;
@@ -51,78 +48,69 @@ export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
   }>()
   .build(async ({ inputParams: { channel }, currentUser, uow, deps }) =>
     match(currentUser.purpose)
-      .with(
-        "manageConvention",
-        async (): Promise<RequestOtpChallengeResponseDto> => {
-          const { conventionId, emailHash, role } = currentUser.subject;
+      .with("manageConvention", async (): Promise<void> => {
+        const { conventionId, emailHash, role } = currentUser.subject;
 
-          const convention =
-            await uow.conventionRepository.getById(conventionId);
+        const convention = await uow.conventionRepository.getById(conventionId);
 
-          if (!convention) throw errors.convention.notFound({ conventionId });
+        if (!convention) throw errors.convention.notFound({ conventionId });
 
-          const actor = conventionActorByRole(convention)(role);
+        const actor = getConventionActorMatchingEmailHashOrThrow({
+          convention,
+          emailHash,
+          role,
+        });
 
-          if (!isSomeEmailMatchingEmailHash([actor.email], emailHash))
-            throw errors.convention.forbiddenMissingRightsEmailHash({
-              conventionId,
-              role,
-              emailHash,
-            });
+        const now = deps.timeGateway.now();
 
-          const now = deps.timeGateway.now();
-
-          const otpChallenges =
-            await uow.otpChallengeRepository.getByPurposeAndSubject({
-              purpose: "manageConvention",
-              subject: currentUser.subject,
-            });
-
-          throwIfOtpChallengeRequestsLimitReached({ otpChallenges, now });
-
-          const otpChallengeId = deps.uuidGenerator.new();
-          const otpCode = deps.otpCodeGeneratorGateway.generate();
-
-          const { recipient, notification } = makeOtpNotification({
-            channel,
-            convention,
-            role,
-            actor,
-            otpCode,
-          });
-
-          await executeInSequence(
-            otpChallenges.filter((otpChallenge) =>
-              isOtpChallengeActive(otpChallenge, now),
-            ),
-            ({ id }) =>
-              uow.otpChallengeRepository.revoke({ id, revokedAt: now }),
-          );
-
-          await uow.otpChallengeRepository.save({
-            id: otpChallengeId,
+        const otpChallenges =
+          await uow.otpChallengeRepository.getByPurposeAndSubject({
             purpose: "manageConvention",
             subject: currentUser.subject,
-            channel,
-            recipient,
-            codeHash: deps.hashOtpCode({ otpChallengeId, otpCode }),
-            attempts: 0,
-            expiresAt: addMinutes(
-              now,
-              OTP_CHALLENGE_DURATION_IN_MINUTES,
-            ).toISOString(),
-            usedAt: null,
-            revokedAt: null,
-            createdAt: now.toISOString(),
           });
 
-          await deps.saveNotificationAndRelatedEvent(uow, notification, {
-            priority: 1,
-          });
+        throwIfOtpChallengeRequestsLimitReached({ otpChallenges, now });
 
-          return { otpChallengeId };
-        },
-      )
+        const otpChallengeId = deps.uuidGenerator.new();
+        const otpCode = deps.otpCodeGeneratorGateway.generate();
+
+        const { recipient, notification } = makeOtpNotification({
+          channel,
+          convention,
+          role,
+          actor,
+          otpCode,
+        });
+
+        await executeInSequence(
+          otpChallenges.filter(
+            (otpChallenge) =>
+              otpChallenge.usedAt === null && otpChallenge.revokedAt === null,
+          ),
+          ({ id }) => uow.otpChallengeRepository.revoke({ id, revokedAt: now }),
+        );
+
+        await uow.otpChallengeRepository.save({
+          id: otpChallengeId,
+          purpose: "manageConvention",
+          subject: currentUser.subject,
+          channel,
+          recipient,
+          codeHash: deps.hashOtpCode({ otpChallengeId, otpCode }),
+          attempts: 0,
+          expiresAt: addMinutes(
+            now,
+            OTP_CHALLENGE_DURATION_IN_MINUTES,
+          ).toISOString(),
+          usedAt: null,
+          revokedAt: null,
+          createdAt: now.toISOString(),
+        });
+
+        await deps.saveNotificationAndRelatedEvent(uow, notification, {
+          priority: 1,
+        });
+      })
       .exhaustive(),
   );
 
@@ -160,12 +148,6 @@ const throwIfOtpChallengeRequestsLimitReached = ({
       periodInMinutes: OTP_CHALLENGE_REQUESTS_PERIOD_IN_MINUTES,
     });
 };
-
-const isOtpChallengeActive = (
-  { expiresAt, usedAt, revokedAt }: OtpChallenge,
-  now: Date,
-): boolean =>
-  usedAt === null && revokedAt === null && new Date(expiresAt) > now;
 
 type OtpNotification = {
   recipient: Email | PhoneNumber;

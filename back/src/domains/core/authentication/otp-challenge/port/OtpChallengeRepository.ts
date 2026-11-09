@@ -20,8 +20,10 @@ export interface OtpChallengeRepository {
   revoke(params: RevokeOtpChallengeParams): Promise<void>;
   markAsUsed(params: MarkOtpChallengeAsUsedParams): Promise<void>;
   incrementAttempts(id: OtpChallengeId): Promise<void>;
-  getById(id: OtpChallengeId): Promise<OtpChallenge | null>;
   getByPurposeAndSubject(
     params: GetOtpChallengesByPurposeAndSubjectParams,
   ): Promise<OtpChallenge[]>;
+  getActiveByPurposeAndSubject(
+    params: GetOtpChallengesByPurposeAndSubjectParams,
+  ): Promise<OtpChallenge | null>;
 }

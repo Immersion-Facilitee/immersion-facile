@@ -10,7 +10,6 @@ import {
   getVisitorSessionQueryParamsSchema,
 } from "../visitorSession/visitorSession.schema";
 import {
-  requestOtpChallengeResponseSchema,
   requestOtpChallengeSchema,
   verifyOtpChallengeSchema,
 } from "./otpChallenge.schema";
@@ -46,7 +45,7 @@ export const otpChallengeRoutes = defineRoutes({
     requestBodySchema: requestOtpChallengeSchema,
     ...withAuthorizationHeaders,
     responses: {
-      200: requestOtpChallengeResponseSchema,
+      204: expressEmptyResponseBodyOrEmptyObject,
       400: httpErrorSchema,
       401: httpErrorSchema,
       403: httpErrorSchema,
@@ -56,7 +55,7 @@ export const otpChallengeRoutes = defineRoutes({
   }),
   verifyOtpChallenge: defineRoute({
     method: "post",
-    url: "/otp-challenge/:otpChallengeId",
+    url: "/otp-challenge/verify",
     requestBodySchema: verifyOtpChallengeSchema,
     ...withAuthorizationHeaders,
     responses: {
@@ -65,6 +64,7 @@ export const otpChallengeRoutes = defineRoutes({
       401: httpErrorSchema,
       403: httpErrorSchema,
       404: httpErrorSchema,
+      429: httpErrorSchema,
     },
   }),
 });
