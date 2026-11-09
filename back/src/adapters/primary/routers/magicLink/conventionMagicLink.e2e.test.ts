@@ -28,6 +28,7 @@ import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserA
 import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
+  GenerateVisitorOtpJwt,
 } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { toAgencyWithRights } from "../../../../utils/agency";
@@ -38,6 +39,7 @@ import {
 import { makeHashByRolesForTest } from "../../../../utils/emailHash";
 import {
   createConventionMagicLinkPayload,
+  createVisitorOtpJwtPayload,
   makeEmailHash,
 } from "../../../../utils/jwt";
 
@@ -68,6 +70,7 @@ describe("Magic link router", () => {
   let request: SuperTest<Test>;
   let generateConventionJwt: GenerateConventionJwt;
   let generateConnectedUserJwt: GenerateConnectedUserJwt;
+  let generateVisitorOtpJwt: GenerateVisitorOtpJwt;
   let inMemoryUow: InMemoryUnitOfWork;
   let httpClient: HttpClient<ConventionMagicLinkRoutes>;
   let gateways: InMemoryGateways;
@@ -77,6 +80,7 @@ describe("Magic link router", () => {
       request,
       generateConventionJwt,
       generateConnectedUserJwt,
+      generateVisitorOtpJwt,
       inMemoryUow,
       gateways,
     } = await buildTestApp());
@@ -440,6 +444,36 @@ describe("Magic link router", () => {
         status: 401,
         body: { status: 401, message: invalidTokenMessage },
       });
+    });
+
+    it("401 - visitor otp JWT cannot be used to sign convention", async () => {
+      const response = await httpClient.signConvention({
+        urlParams: { conventionId: convention.id },
+        headers: {
+          authorization: generateVisitorOtpJwt(
+            createVisitorOtpJwtPayload({
+              purpose: "manageConvention",
+              subject: {
+                conventionId: convention.id,
+                role: "beneficiary",
+                emailHash: makeEmailHash(
+                  convention.signatories.beneficiary.email,
+                ),
+              },
+              now: new Date(),
+            }),
+          ),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: errors.visitorSession.unauthorized().message,
+        },
+      });
+      expectToEqual(inMemoryUow.conventionRepository.conventions, [convention]);
     });
 
     it("404 - convention not found", async () => {
