@@ -5,6 +5,7 @@ import {
   type ConventionMagicLinkRoutes,
   conventionMagicLinkRoutes,
   type Email,
+  errors,
   expectHttpResponseToEqual,
 } from "shared";
 import type { HttpClient } from "shared-routes";
@@ -54,10 +55,10 @@ describe("getConventionStatusDashboardUrl", () => {
     });
 
     expectHttpResponseToEqual(response, {
-      status: 401,
+      status: 400,
       body: {
-        status: 401,
-        message: "forbidden: unauthenticated",
+        status: 400,
+        message: errors.auth.missingAuthentication().message,
       },
     });
   });

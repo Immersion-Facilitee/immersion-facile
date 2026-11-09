@@ -25,18 +25,22 @@ import {
   expectToEqual,
   expiredJwtErrorMessage,
   frontRoutes,
+  type GetVisitorSessionQueryParams,
   makeEmptyLastReminders,
   makeRouteAbsoluteUrl,
+  makeVisitorSessionCookieName,
   reasonableSchedule,
   type TechnicalRoutes,
   technicalRoutes,
   type UnauthenticatedConventionRoutes,
   type User,
   unauthenticatedConventionRoutes,
-  type WithAuthorizationHeader,
+  VisitorSessionDtoBuilder,
+  type VisitorSessionId,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
+import type { SuperTest, Test } from "supertest";
 import { match } from "ts-pattern";
 import { v4 as uuid } from "uuid";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
@@ -45,6 +49,7 @@ import type { BasicEventCrawler } from "../../../../domains/core/events/adapters
 import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
+  GenerateVisitorOtpJwt,
 } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
@@ -59,6 +64,7 @@ import {
 import { shortLinkRedirectToLinkWithValidation } from "../../../../utils/e2eTestHelpers";
 import {
   createConventionMagicLinkPayload,
+  createVisitorOtpJwtPayload,
   makeEmailHash,
 } from "../../../../utils/jwt";
 import { processEventsForEmailToBeSent } from "../../../../utils/processEventsForEmailToBeSent";
@@ -110,19 +116,22 @@ describe("convention e2e", () => {
   let technicalRoutesClient: HttpClient<TechnicalRoutes>;
   let generateConventionJwt: GenerateConventionJwt;
   let generateConnectedUserJwt: GenerateConnectedUserJwt;
+  let generateVisitorOtpJwt: GenerateVisitorOtpJwt;
   let inMemoryUow: InMemoryUnitOfWork;
   let eventCrawler: BasicEventCrawler;
   let gateways: InMemoryGateways;
+  let request: SuperTest<Test>;
 
   beforeEach(async () => {
     const testApp = await buildTestApp(new AppConfigBuilder().build());
-    const request = testApp.request;
+    request = testApp.request;
 
     ({
       eventCrawler,
       gateways,
       generateConventionJwt,
       generateConnectedUserJwt,
+      generateVisitorOtpJwt,
       inMemoryUow,
     } = testApp);
 
@@ -454,24 +463,49 @@ describe("convention e2e", () => {
       },
     );
 
-    it("400 - no JWT", async () => {
+    it("401 - visitor OTP JWT does not grant access to the convention", async () => {
+      const response = await magicLinkRequest.getConvention({
+        headers: {
+          authorization: generateVisitorOtpJwt(
+            createVisitorOtpJwtPayload({
+              purpose: "manageConvention",
+              subject: {
+                conventionId: convention.id,
+                role: "beneficiary",
+                emailHash: makeEmailHash(
+                  convention.signatories.beneficiary.email,
+                ),
+              },
+              now: gateways.timeGateway.now(),
+            }),
+          ),
+        },
+        urlParams: { conventionId: convention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: errors.visitorSession.unauthorized().message,
+        },
+      });
+    });
+
+    it("400 - without authorization nor otp session cookie", async () => {
       const response = await magicLinkRequest.getConvention({
         urlParams: {
           conventionId: convention.id,
         },
-        headers: undefined as unknown as WithAuthorizationHeader,
+        headers: {},
       });
 
       expectHttpResponseToEqual(response, {
-        body: {
-          issues: [
-            "authorization : Invalid input: expected string, received undefined",
-          ],
-          message:
-            "Shared-route schema 'headersSchema' was not respected in adapter 'express'.\nRoute: GET /auth/demandes-immersion/:conventionId",
-          status: 400,
-        },
         status: 400,
+        body: {
+          status: 400,
+          message: errors.auth.missingAuthentication().message,
+        },
       });
     });
 
@@ -616,6 +650,241 @@ describe("convention e2e", () => {
             userId: userWithNoRightOnConvention.id,
           }).message,
         },
+      });
+    });
+
+    describe("visitor session cookie", () => {
+      const visitorSessionCookie = ({
+        sessionId,
+        ...queryParams
+      }: GetVisitorSessionQueryParams & {
+        sessionId: VisitorSessionId;
+      }): string => `${makeVisitorSessionCookieName(queryParams)}=${sessionId}`;
+
+      const now = new Date("2026-11-05T10:00:00.000Z");
+      const visitorSession = new VisitorSessionDtoBuilder()
+        .withSubject({
+          conventionId: convention.id,
+          role: "beneficiary",
+          emailHash: makeEmailHash(convention.signatories.beneficiary.email),
+        })
+        .withExpiresAt(addDays(now, 1).toISOString())
+        .withCreatedAt(now.toISOString())
+        .build();
+
+      const expectedConventionRead: ConventionReadDto = {
+        ...convention,
+        agencyName: ftAgency.name,
+        agencyDepartment: ftAgency.address.departmentCode,
+        agencyContactEmail: ftAgency.contactEmail,
+        agencyKind: ftAgency.kind,
+        agencySiret: ftAgency.agencySiret,
+        agencyValidationSteps: "validator-only",
+        assessment: null,
+        lastReminders: makeEmptyLastReminders(),
+        isEstablishmentBanned: false,
+      };
+
+      beforeEach(() => {
+        gateways.timeGateway.defaultDate = now;
+        inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
+        inMemoryUow.visitorSessionRepository.visitorSessions = [visitorSession];
+      });
+
+      it("200 - succeeds with visitor session cookie", async () => {
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Cookie",
+            visitorSessionCookie({
+              purpose: "manageConvention",
+              conventionId: convention.id,
+              sessionId: visitorSession.id,
+            }),
+          );
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: expectedConventionRead,
+          },
+        );
+      });
+
+      it("401 - unknown session id", async () => {
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Cookie",
+            visitorSessionCookie({
+              purpose: "manageConvention",
+              conventionId: convention.id,
+              sessionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            }),
+          );
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.visitorSession.unauthorized().message,
+            },
+          },
+        );
+      });
+
+      it("401 - expired session", async () => {
+        inMemoryUow.visitorSessionRepository.visitorSessions = [
+          new VisitorSessionDtoBuilder(visitorSession)
+            .withExpiresAt(now.toISOString())
+            .build(),
+        ];
+
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Cookie",
+            visitorSessionCookie({
+              purpose: "manageConvention",
+              conventionId: convention.id,
+              sessionId: visitorSession.id,
+            }),
+          );
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.visitorSession.unauthorized().message,
+            },
+          },
+        );
+      });
+
+      it("401 - revoked session", async () => {
+        inMemoryUow.visitorSessionRepository.visitorSessions = [
+          new VisitorSessionDtoBuilder(visitorSession)
+            .withRevokedAt(now.toISOString())
+            .build(),
+        ];
+
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Cookie",
+            visitorSessionCookie({
+              purpose: "manageConvention",
+              conventionId: convention.id,
+              sessionId: visitorSession.id,
+            }),
+          );
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.visitorSession.unauthorized().message,
+            },
+          },
+        );
+      });
+
+      it("401 - conventionId does not match session", async () => {
+        const otherConventionId: ConventionId =
+          "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              otherConventionId,
+            ),
+          )
+          .set(
+            "Cookie",
+            visitorSessionCookie({
+              purpose: "manageConvention",
+              conventionId: otherConventionId,
+              sessionId: visitorSession.id,
+            }),
+          );
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.visitorSession.unauthorized().message,
+            },
+          },
+        );
+      });
+
+      it("403 - email hash no longer matches convention actor", async () => {
+        inMemoryUow.conventionRepository.setConventions([
+          new ConventionDtoBuilder(convention)
+            .withBeneficiaryEmail("changed-beneficiary@email.fr")
+            .build(),
+        ]);
+
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Cookie",
+            visitorSessionCookie({
+              purpose: "manageConvention",
+              conventionId: convention.id,
+              sessionId: visitorSession.id,
+            }),
+          );
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 403,
+            body: {
+              status: 403,
+              message: errors.convention.forbiddenMissingRightsEmailHash({
+                conventionId: convention.id,
+                role: "beneficiary",
+                emailHash: visitorSession.subject.emailHash,
+              }).message,
+            },
+          },
+        );
       });
     });
 
@@ -1135,7 +1404,7 @@ describe("convention e2e", () => {
       );
     });
 
-    it("400 - no JWT", async () => {
+    it("400 - without authorization nor otp session cookie", async () => {
       const response = await magicLinkRequest.updateConventionStatus({
         body: {
           status: "ACCEPTED_BY_VALIDATOR",
@@ -1144,19 +1413,15 @@ describe("convention e2e", () => {
           lastname: "Doe",
           isAlsoAgencyReferent: false,
         },
-        headers: undefined as unknown as WithAuthorizationHeader,
+        headers: {},
       });
 
       expectHttpResponseToEqual(response, {
-        body: {
-          issues: [
-            "authorization : Invalid input: expected string, received undefined",
-          ],
-          message:
-            "Shared-route schema 'headersSchema' was not respected in adapter 'express'.\nRoute: POST /auth/update-application-status",
-          status: 400,
-        },
         status: 400,
+        body: {
+          status: 400,
+          message: errors.auth.missingAuthentication().message,
+        },
       });
     });
 

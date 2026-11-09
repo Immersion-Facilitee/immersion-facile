@@ -56,7 +56,10 @@ import {
   saveConventionDraftSchema,
 } from "../convention/saveConventionDraft.schema";
 import { dashboardUrlAndNameSchema } from "../dashboard/dashboard.schema";
-import { withAuthorizationHeaders } from "../headers";
+import {
+  withAuthorizationHeaders,
+  withOptionalAuthorizationHeaders,
+} from "../headers";
 import { httpErrorSchema } from "../httpClient/httpErrors.schema";
 import {
   sendAssessmentLinkRequestSchema,
@@ -73,7 +76,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
   createAssessment: defineRoute({
     url: "/auth/assessment",
     method: "post",
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     requestBodySchema: assessmentDtoSchema,
     responses: {
       201: expressEmptyResponseBody,
@@ -86,7 +89,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
   getAssessmentByConventionId: defineRoute({
     url: "/auth/convention/:conventionId/assessment",
     method: "get",
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: assessmentDtoSchema.or(legacyAssessmentDtoSchema),
       400: httpErrorSchema,
@@ -99,7 +102,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
   signAssessment: defineRoute({
     url: "/auth/sign-assessment",
     method: "post",
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     requestBodySchema: signAssessmentRequestDtoSchema,
     responses: {
       200: expressEmptyResponseBody,
@@ -114,7 +117,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
   getConvention: defineRoute({
     url: "/auth/demandes-immersion/:conventionId",
     method: "get",
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: conventionReadSchema,
       400: httpErrorSchema,
@@ -126,9 +129,10 @@ export const conventionMagicLinkRoutes = defineRoutes({
   getConventionStatusDashboard: defineRoute({
     url: "/auth/status-convention/:conventionId",
     method: "get",
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: dashboardUrlAndNameSchema,
+      400: httpErrorSchema,
       401: httpErrorSchema,
       403: httpErrorSchema,
     },
@@ -136,9 +140,10 @@ export const conventionMagicLinkRoutes = defineRoutes({
   signConvention: defineRoute({
     url: "/auth/sign-application/:conventionId",
     method: "post",
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: withConventionIdLegacySchema,
+      400: httpErrorSchema,
       401: httpErrorSchema,
       403: httpErrorSchema,
       404: httpErrorSchema,
@@ -148,7 +153,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
     url: "/auth/demandes-immersion/:conventionId",
     method: "post",
     requestBodySchema: updateConventionRequestSchema,
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: withConventionIdLegacySchema,
       400: httpErrorSchema,
@@ -161,10 +166,11 @@ export const conventionMagicLinkRoutes = defineRoutes({
     url: "/auth/update-application-status",
     method: "post",
     requestBodySchema: updateConventionStatusRequestSchema,
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: withConventionIdLegacySchema,
       400: httpErrorSchema,
+      401: httpErrorSchema,
       403: httpErrorSchema,
       404: httpErrorSchema,
     },
@@ -174,7 +180,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
     url: "/auth/convention/signatories/send-signature-link",
     method: "post",
     requestBodySchema: sendSignatureLinkRequestSchema,
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: expressEmptyResponseBody,
       400: httpErrorSchema,
@@ -189,7 +195,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
     url: "/auth/assessment/send-assessment-link",
     method: "post",
     requestBodySchema: sendAssessmentLinkRequestSchema,
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: expressEmptyResponseBody,
       400: httpErrorSchema,
@@ -204,7 +210,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
     url: "/auth/assessment/send-assessment-signature-reminder",
     method: "post",
     requestBodySchema: sendAssessmentLinkRequestSchema,
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: expressEmptyResponseBody,
       400: httpErrorSchema,
@@ -219,7 +225,7 @@ export const conventionMagicLinkRoutes = defineRoutes({
     url: "/auth/convention/edit-convention-with-final-status",
     method: "post",
     requestBodySchema: editConventionWithFinalStatusRequestSchema,
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     responses: {
       200: expressEmptyResponseBody,
       400: httpErrorSchema,
