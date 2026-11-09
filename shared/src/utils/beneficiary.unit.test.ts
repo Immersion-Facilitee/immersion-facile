@@ -12,19 +12,19 @@ describe("Beneficiary utils", () => {
   };
   const beneficiaryRepresentativeWithoutPhone: Partial<BeneficiaryRepresentative> =
     {
-      firstName: "tHiErRy",
-      lastName: "aUlAiT",
+      firstName: "Thierry",
+      lastName: "Aulait",
       email: "thierry.aulait@mail.com",
     };
   const beneficiaryRepresentativeWithoutEmail: Partial<BeneficiaryRepresentative> =
     {
-      firstName: "tHiErRy",
-      lastName: "aUlAiT",
+      firstName: "Thierry",
+      lastName: "Aulait",
       phone: "0610502025",
     };
   const beneficiaryRepresentative: Partial<BeneficiaryRepresentative> = {
-    firstName: "tHiErRy",
-    lastName: "aUlAiT",
+    firstName: "Thierry",
+    lastName: "Aulait",
     email: "thierry.aulait@mail.com",
     phone: "0610502025",
   };
