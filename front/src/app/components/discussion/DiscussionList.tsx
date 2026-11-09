@@ -6,7 +6,11 @@ import RadioButtons, {
 } from "@codegouvfr/react-dsfr/RadioButtons";
 import { equals, pick } from "ramda";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { HeadingSection, RichTable } from "react-design-system";
+import {
+  HeadingSection,
+  RichTable,
+  type RichTableProps,
+} from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type ConnectedUserJwt,
@@ -89,6 +93,10 @@ export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
     [tempFilters],
   );
 
+  const filteredDiscussions = discussions.filter(
+    (discussion) => !discussion.isEstablishmentBanned,
+  );
+
   const dateOptions: RadioButtonsProps["options"] = useMemo(
     () =>
       Object.entries(displayedOrderDirections).map(
@@ -143,9 +151,7 @@ export const DiscussionList = ({ viewer }: { viewer: ExchangeRole }) => {
     >
       <WithFeedbackReplacer topic="establishment-dashboard-discussion-list">
         {match({
-          filteredDiscussions: discussions.filter(
-            (discussion) => !discussion.isEstablishmentBanned,
-          ),
+          filteredDiscussions,
           viewer,
         })
 
@@ -239,24 +245,43 @@ const EstablishmentDiscussionTable = ({
     filters,
     initialDiscussionsWithPagination.filters,
   );
-  const getTableHeaders = () => {
+
+  const getTableHeaders = (): RichTableProps["headers"] => {
     if (hasDiscussions) {
       return [
-        "Offre d'immersion",
-        "Candidat",
-        "But de l'immersion",
-        "Date",
-        "Statut",
-        "Actions",
+        {
+          content: "Offre d'immersion",
+        },
+        {
+          content: "Candidat",
+        },
+        {
+          content: "But de l'immersion",
+        },
+        {
+          content: "Date",
+        },
+        {
+          content: "Statut",
+        },
+        {
+          content: "Actions",
+        },
       ];
     }
     if (!filtersAreEmpty) {
       return [
-        "Aucune candidature trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        {
+          content:
+            "Aucune candidature trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        },
       ];
     }
     return [
-      "Nous n'avons pas trouvé de candidatures où vous êtes référencé en tant que contact d'entreprise.",
+      {
+        content:
+          "Nous n'avons pas trouvé de candidatures où vous êtes référencé en tant que contact d'entreprise.",
+      },
     ];
   };
   return (
@@ -449,17 +474,39 @@ const BeneficiaryDiscussionTable = ({
     filters,
     initialDiscussionsWithPagination.filters,
   );
-  const getTableHeaders = () => {
+  const getTableHeaders = (): RichTableProps["headers"] => {
     if (hasDiscussions) {
-      return ["Métier", "Nom d'entreprise", "Date", "Statut", "Actions"];
+      return [
+        {
+          content: "Métier",
+        },
+        {
+          content: "Nom d'entreprise",
+        },
+        {
+          content: "Date",
+        },
+        {
+          content: "Statut",
+        },
+        {
+          content: "Actions",
+        },
+      ];
     }
     if (!filtersAreEmpty) {
       return [
-        "Aucune candidature envoyée avec votre adresse email trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        {
+          content:
+            "Aucune candidature envoyée avec votre adresse email trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+        },
       ];
     }
     return [
-      "Nous n'avons pas trouvé de candidatures envoyées avec votre adresse email.",
+      {
+        content:
+          "Nous n'avons pas trouvé de candidatures envoyées avec votre adresse email.",
+      },
     ];
   };
   return (

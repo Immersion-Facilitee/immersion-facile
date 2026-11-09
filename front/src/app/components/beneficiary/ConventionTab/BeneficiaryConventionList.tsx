@@ -1,7 +1,11 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import { Fragment, useEffect } from "react";
-import { RichTable, SectionHighlight } from "react-design-system";
+import {
+  RichTable,
+  type RichTableProps,
+  SectionHighlight,
+} from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type BeneficiaryConventionInList,
@@ -161,11 +165,20 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
   );
 };
 
-const getTableHeaders = (hasConventions: boolean): React.ReactNode[] =>
+const getTableHeaders = (hasConventions: boolean): RichTableProps["headers"] =>
   hasConventions
-    ? ["Entreprise", "Statut", "Bilan", "Dates", "Actions"]
+    ? [
+        { content: "Entreprise" },
+        { content: "Statut" },
+        { content: "Bilan" },
+        { content: "Dates" },
+        { content: "Actions" },
+      ]
     : [
-        "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche",
+        {
+          content:
+            "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche",
+        },
       ];
 
 const conventionListToTableData = (
