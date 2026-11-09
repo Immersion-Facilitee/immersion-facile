@@ -23,6 +23,7 @@ import { makeConnectedUserAuthMiddleware } from "./connectedUserAuthMiddleware";
 import { createEventCrawler } from "./createEventCrawler";
 import { createGateways } from "./createGateways";
 import { createUseCases } from "./createUseCases";
+import { makeVisitorSessionAuthMiddleware } from "./visitorSessionAuthMiddleware";
 
 export type AppDependencies =
   ReturnType<typeof createAppDependencies> extends Promise<infer T> ? T : never;
@@ -92,6 +93,10 @@ export const createAppDependencies = async (config: AppConfig) => {
       "convention",
     ),
     visitorOtpAuthMiddleware: makeVisitorOtpMiddleware(config, "visitorOtp"),
+    visitorSessionAuthMiddleware: makeVisitorSessionAuthMiddleware({
+      uowPerformer,
+      timeGateway: gateways.timeGateway,
+    }),
     apiConsumerMiddleware: makeConsumerMiddleware(
       useCases.getApiConsumerById.execute,
       gateways.timeGateway,
