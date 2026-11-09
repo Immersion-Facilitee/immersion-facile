@@ -264,7 +264,7 @@ export const makeConsumerMiddleware = (
   };
 };
 
-export const makeVisitorOtpMiddleware = (
+export const makeVisitorOtpAuthMiddleware = (
   config: AppConfig,
   payloadKey: ExtractFromExisting<PayloadKind, "visitorOtp">,
 ): RequestHandler => {
