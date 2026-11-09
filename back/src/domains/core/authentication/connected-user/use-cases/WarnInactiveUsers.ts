@@ -1,5 +1,10 @@
 import { addDays, subDays, subYears } from "date-fns";
-import { type AbsoluteUrl, frontRoutes, makeRouteAbsoluteUrl } from "shared";
+import {
+  type AbsoluteUrl,
+  frontRoutes,
+  getFormattedFirstnameAndLastname,
+  makeRouteAbsoluteUrl,
+} from "shared";
 import { z } from "zod";
 import type {
   NotificationContentAndFollowedIds,
@@ -112,7 +117,10 @@ export const makeWarnInactiveUsers = useCaseBuilder("WarnInactiveUsers")
               kind: "ACCOUNT_DELETION_WARNING",
               recipients: [user.email],
               params: {
-                fullName: `${user.firstName} ${user.lastName}`,
+                fullName: getFormattedFirstnameAndLastname({
+                  firstname: user.firstName,
+                  lastname: user.lastName,
+                }),
                 deletionDate: deletionDateFormatted,
                 loginUrl,
               },

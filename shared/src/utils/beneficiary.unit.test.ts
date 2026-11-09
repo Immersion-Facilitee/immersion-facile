@@ -12,25 +12,25 @@ describe("Beneficiary utils", () => {
   };
   const beneficiaryRepresentativeWithoutPhone: Partial<BeneficiaryRepresentative> =
     {
-      firstName: "Thierry",
-      lastName: "Aulait",
+      firstName: "tHiErRy",
+      lastName: "aUlAiT",
       email: "thierry.aulait@mail.com",
     };
   const beneficiaryRepresentativeWithoutEmail: Partial<BeneficiaryRepresentative> =
     {
-      firstName: "Thierry",
-      lastName: "Aulait",
+      firstName: "tHiErRy",
+      lastName: "aUlAiT",
       phone: "0610502025",
     };
   const beneficiaryRepresentative: Partial<BeneficiaryRepresentative> = {
-    firstName: "Thierry",
-    lastName: "Aulait",
+    firstName: "tHiErRy",
+    lastName: "aUlAiT",
     email: "thierry.aulait@mail.com",
     phone: "0610502025",
   };
 
   it("should display correctly emergency contact infos with full infos provided", () => {
-    const expected = "Thierry Aulait (0610502025 - thierry.aulait@mail.com)";
+    const expected = "Thierry AULAIT (0610502025 - thierry.aulait@mail.com)";
     expect(
       displayEmergencyContactInfos({
         beneficiary,
@@ -40,7 +40,7 @@ describe("Beneficiary utils", () => {
   });
 
   it("should display correctly emergency contact infos without phone", () => {
-    const expected = "Thierry Aulait (thierry.aulait@mail.com)";
+    const expected = "Thierry AULAIT (thierry.aulait@mail.com)";
     expect(
       displayEmergencyContactInfos({
         beneficiary,
@@ -50,7 +50,7 @@ describe("Beneficiary utils", () => {
   });
 
   it("should display correctly emergency contact infos without email", () => {
-    const expected = "Thierry Aulait (0610502025)";
+    const expected = "Thierry AULAIT (0610502025)";
     expect(
       displayEmergencyContactInfos({
         beneficiary,

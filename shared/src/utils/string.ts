@@ -97,12 +97,16 @@ export const getFormattedFirstnameAndLastname = ({
   firstname?: string;
   lastname?: string;
 }): string => {
-  const splitFirstNames = firstname?.split(/[\s-]/g);
-  const formattedFirstName = splitFirstNames
-    ?.map((word) => capitalize(word))
-    .join(firstname?.includes("-") ? "-" : " ");
+  const formattedFirstName = firstname
+    ?.toLowerCase()
+    .split(/([\s-])/g)
+    .map((word) => capitalize(word))
+    .join("");
 
-  return [formattedFirstName, lastname?.toUpperCase()].join(" ").trim() || "";
+  return [formattedFirstName, lastname?.toUpperCase()]
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
 };
 
 export const escapeHtml = (unsafe: string) =>

@@ -76,7 +76,7 @@ export const emailTemplatesByName =
       }) => ({
         subject:
           "Immersion Facilitée - Des demandes de rattachement en attente pour vos organismes",
-        greetings: `Bonjour ${firstName} ${lastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: firstName, lastname: lastName })},`,
         blocks: [
           {
             kind: "paragraph",
@@ -399,7 +399,7 @@ export const emailTemplatesByName =
           {
             kind: "list",
             items: [
-              `<strong>Bénéficiaire :</strong> ${beneficiaryFirstName} ${beneficiaryLastName}`,
+              `<strong>Bénéficiaire :</strong> ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}`,
               ...(agencyReferentName
                 ? [`<strong>Conseiller :</strong> ${agencyReferentName}`]
                 : []),
@@ -499,7 +499,7 @@ export const emailTemplatesByName =
           {
             kind: "paragraph",
             content: `
-      L'immersion demandée par <strong>${beneficiaryFirstName} ${beneficiaryLastName}</strong> au sein de l'entreprise <strong>${businessName}</strong> doit démarrer demain.
+      L'immersion demandée par <strong>${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}</strong> au sein de l'entreprise <strong>${businessName}</strong> doit démarrer demain.
       ${
         agencyReferentName
           ? `
@@ -938,7 +938,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         conventionId,
         internshipKind,
       }) => ({
-        subject: `Immersion Facilitée - Le tuteur de ${beneficiaryFirstName} ${beneficiaryLastName} n'a pas encore rempli le bilan`,
+        subject: `Immersion Facilitée - Le tuteur de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} n'a pas encore rempli le bilan`,
         greetings: greetingsWithConventionId(conventionId),
         blocks: [
           {
@@ -948,7 +948,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           internshipKind === "immersion"
             ? " de l'immersion professionnelle"
             : " du mini stage"
-        } de ${beneficiaryFirstName} ${beneficiaryLastName} n'a pas encore été complété par l’entreprise ${businessName}.
+        } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} n'a pas encore été complété par l’entreprise ${businessName}.
       
       Afin de clôturer cette étape, vous pouvez :`,
             marginBottom: "sm",
@@ -1003,7 +1003,10 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         } avec votre tuteur`,
         greetings: greetingsWithConventionId(
           conventionId,
-          `${beneficiaryFirstName} ${beneficiaryLastName}`,
+          getFormattedFirstnameAndLastname({
+            firstname: beneficiaryFirstName,
+            lastname: beneficiaryLastName,
+          }),
         ),
         blocks: [
           {
@@ -1079,7 +1082,10 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
           subject: `Votre bilan d'immersion est prêt à être signé`,
           greetings: greetingsWithConventionId(
             conventionId,
-            `${beneficiaryFirstName} ${beneficiaryLastName}`,
+            getFormattedFirstnameAndLastname({
+              firstname: beneficiaryFirstName,
+              lastname: beneficiaryLastName,
+            }),
           ),
 
           blocks: [
@@ -1152,7 +1158,10 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         } est disponible !`,
         greetings: greetingsWithConventionId(
           conventionId,
-          `${beneficiaryFirstName} ${beneficiaryLastName}`,
+          getFormattedFirstnameAndLastname({
+            firstname: beneficiaryFirstName,
+            lastname: beneficiaryLastName,
+          }),
         ),
         blocks: [
           {
@@ -1272,7 +1281,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         return {
           subject: `Pour information : évaluation ${
             internshipKind === "immersion" ? "de l'immersion" : "du mini-stage"
-          } de ${beneficiaryFirstName} ${beneficiaryLastName}`,
+          } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}`,
           greetings: greetingsWithConventionId(conventionId),
           blocks: [
             {
@@ -1281,7 +1290,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
                 internshipKind === "immersion"
                   ? "de l'immersion"
                   : "du mini-stage"
-              } de ${beneficiaryFirstName} ${beneficiaryLastName} au sein de l'entreprise ${businessName} est désormais finalisé et signé par le candidat.`,
+              } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} au sein de l'entreprise ${businessName} est désormais finalisé et signé par le candidat.`,
             },
             {
               kind: "paragraph",
@@ -1398,14 +1407,14 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
       }) => ({
         subject: `Pour information : évaluation ${
           internshipKind === "immersion" ? "de l'immersion" : "du mini-stage"
-        } de ${beneficiaryFirstName} ${beneficiaryLastName}`,
+        } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}`,
         greetings: greetingsWithConventionId(conventionId),
         blocks: [
           {
             kind: "paragraph",
             content: `${
               internshipKind === "immersion" ? "L'immersion" : "Le mini-stage"
-            } prévue pour ${beneficiaryFirstName} ${beneficiaryLastName}, au sein de l'entreprise ${businessName} n'a pas eu lieu.`,
+            } prévue pour ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}, au sein de l'entreprise ${businessName} n'a pas eu lieu.`,
           },
           {
             kind: "list",
@@ -1454,7 +1463,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
       }) => ({
         subject: `Pour action : complétez le bilan ${
           internshipKind === "immersion" ? "de l'immersion" : "du mini stage"
-        } de ${beneficiaryFirstName} ${beneficiaryLastName}`,
+        } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}`,
         greetings: greetingsWithConventionId(
           conventionId,
           establishmentTutorName,
@@ -1467,7 +1476,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         internshipKind === "immersion"
           ? "L'immersion professionnelle"
           : "Le mini stage"
-      } de ${beneficiaryFirstName} ${beneficiaryLastName} au sein de votre entreprise est en passe de s'achever. 
+      } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} au sein de votre entreprise est en passe de s'achever.
 
       Nous vous remercions de votre accueil. 
 
@@ -1515,16 +1524,19 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         conventionId,
         internshipKind,
       }) => ({
-        subject: `Immersion Facilitée - Bilan non complété pour l'immersion de ${beneficiaryFirstName}`,
+        subject: `Immersion Facilitée - Bilan non complété pour l'immersion de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName })}`,
         greetings: greetingsWithConventionId(
           conventionId,
-          `${establishmentTutorFirstName} ${establishmentTutorLastName}`,
+          getFormattedFirstnameAndLastname({
+            firstname: establishmentTutorFirstName,
+            lastname: establishmentTutorLastName,
+          }),
         ),
         blocks: [
           {
             kind: "paragraph",
             content: `
-        L'immersion de ${beneficiaryFirstName} ${beneficiaryLastName} au sein de votre établissement s'est terminée il y a quelques jours.
+        L'immersion de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} au sein de votre établissement s'est terminée il y a quelques jours.
         
         Pour finaliser cette démarche, il vous reste à compléter le bilan de fin d’immersion.
         `,
@@ -1695,7 +1707,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         internshipKind === "immersion"
           ? "d'immersion professionnelle"
           : "de mini stage"
-      } de ${beneficiaryFirstName} ${beneficiaryLastName} dans l'entreprise ${businessName}, qui devait se dérouler du ${displayDate(dateStart)} au ${displayDate(dateEnd)} a été annulée par ${agencyName}.
+      } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} dans l'entreprise ${businessName}, qui devait se dérouler du ${displayDate(dateStart)} au ${displayDate(dateEnd)} a été annulée par ${agencyName}.
       
       La demande a été annulée pour la raison suivante :
       
@@ -1730,7 +1742,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         beneficiaryDashboardUrl,
       }) => ({
         subject: ` Immersion Facilitée - Confirmation de l’envoi de votre candidature auprès de ${businessName}`,
-        greetings: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })},`,
         blocks: [
           {
             kind: "paragraph",
@@ -1974,7 +1986,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         potentialBeneficiaryLastName,
       }) => ({
         subject: `Coordonnées téléphoniques pour faire votre demande ${kind === "IF" ? "d'immersion" : "de stage"}`,
-        greetings: `Bonjour ${potentialBeneficiaryFirstName} ${potentialBeneficiaryLastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })},`,
         blocks: [
           {
             kind: "paragraph",
@@ -1990,7 +2002,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
             items: [
               ...(contactFirstName && contactLastName
                 ? [
-                    `Personne à contacter : ${contactFirstName} ${contactLastName}`,
+                    `Personne à contacter : ${getFormattedFirstnameAndLastname({ firstname: contactFirstName, lastname: contactLastName })}`,
                   ]
                 : []),
               `Numéro de téléphone : ${contactPhone}`,
@@ -2024,7 +2036,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
         potentialBeneficiaryLastName,
       }) => ({
         subject: `Coordonnées de l'entreprise pour faire votre demande ${kind === "IF" ? "d'immersion" : "de stage"}`,
-        greetings: `Bonjour ${potentialBeneficiaryFirstName} ${potentialBeneficiaryLastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: potentialBeneficiaryFirstName, lastname: potentialBeneficiaryLastName })},`,
         blocks: [
           {
             kind: "paragraph",
@@ -2040,7 +2052,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
             items: [
               ...(contactFirstName && contactLastName
                 ? [
-                    `Personne à contacter : <strong>${contactFirstName} ${contactLastName}</strong>`,
+                    `Personne à contacter : <strong>${getFormattedFirstnameAndLastname({ firstname: contactFirstName, lastname: contactLastName })}</strong>`,
                   ]
                 : []),
               `Adresse de l'entreprise : <strong>${welcomeAddress}</strong>`,
@@ -2150,7 +2162,7 @@ Pour toute question concernant ce rejet, il est possible de nous contacter : con
 
 ${justification}
 
-Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLastName} :`,
+Vous pouvez vous rapprocher du candidat ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} :`,
             marginBottom: "sm",
           },
           {
@@ -2502,7 +2514,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         internshipKind === "immersion"
           ? "d'immersion professionnelle"
           : "de mini stage"
-      } de ${beneficiaryFirstName} ${beneficiaryLastName} pour réaliser ${
+      } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} pour réaliser ${
         internshipKind === "immersion"
           ? "une immersion professionnelle"
           : "un mini stage"
@@ -2533,7 +2545,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         contactPhone,
       }) => ({
         subject: `Toujours pas de réponse de l’entreprise ${businessName} ?`,
-        greetings: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })},`,
         blocks: [
           {
             kind: "paragraph",
@@ -2546,7 +2558,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           {
             kind: "list",
             items: [
-              `Nom de la personne à contacter : ${contactFirstName} ${contactLastName}`,
+              `Nom de la personne à contacter : ${getFormattedFirstnameAndLastname({ firstname: contactFirstName, lastname: contactLastName })}`,
               ...(contactJob ? [`Fonction : ${contactJob}`] : []),
               `Numéro de téléphone : ${contactPhone}`,
             ],
@@ -2567,7 +2579,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
             content: `📝 <strong>Besoin de conseils ?</strong>
 
         Voici un exemple de phrase pour démarrer la conversation :
-        « Bonjour, je m'appelle ${beneficiaryFirstName} ${beneficiaryLastName}, je vous contacte car j’ai envoyé une demande d’immersion via Immersion Facilitée il y a quelques jours. Je souhaite découvrir le métier de [nom du métier] dans votre entreprise et je voulais savoir si cela était possible. »`,
+        « Bonjour, je m'appelle ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}, je vous contacte car j’ai envoyé une demande d’immersion via Immersion Facilitée il y a quelques jours. Je souhaite découvrir le métier de [nom du métier] dans votre entreprise et je voulais savoir si cela était possible. »`,
             marginBottom: "lg",
           },
           {
@@ -2595,7 +2607,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         businessName,
       }) => ({
         subject: `Votre demande d’immersion chez ${businessName} a été clôturée`,
-        greetings: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })},`,
         blocks: [
           {
             kind: "paragraph",
@@ -2650,12 +2662,12 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         establishmentDashboardUrl,
         businessName,
       }) => ({
-        subject: `La candidature de ${beneficiaryFirstName} ${beneficiaryLastName} a été clôturée`,
+        subject: `La candidature de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} a été clôturée`,
         greetings: "Bonjour,",
         blocks: [
           {
             kind: "paragraph",
-            content: `La candidature de ${beneficiaryFirstName} ${beneficiaryLastName} pour une immersion au sein de votre entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, est restée sans réponse pendant plus de 3 mois. Nous l’avons donc automatiquement clôturée afin de garantir des échanges à jour sur Immersion Facilitée.
+            content: `La candidature de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} pour une immersion au sein de votre entreprise ${businessName}, envoyée le ${toDisplayedDate({ date: new Date(discussionCreatedAt) })}, est restée sans réponse pendant plus de 3 mois. Nous l’avons donc automatiquement clôturée afin de garantir des échanges à jour sur Immersion Facilitée.
 
         <strong>Nous vous recommandons de :</strong>`,
             marginBottom: "sm",
@@ -2735,18 +2747,18 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         mode,
         domain,
       }) => ({
-        subject: `[Demande d'immersion de ${beneficiaryFirstName} ${beneficiaryLastName}] Ce candidat attend toujours votre réponse.`,
+        subject: `[Demande d'immersion de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}] Ce candidat attend toujours votre réponse.`,
         greetings: "Bonjour,",
         blocks: [
           {
             kind: "paragraph",
-            content: `<strong>${beneficiaryFirstName} ${beneficiaryLastName}</strong> vous a contacté il y a ${
+            content: `<strong>${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}</strong> vous a contacté il y a ${
               mode === "3days" ? "3" : "7"
             } jours pour une demande d'immersion pour le métier de <strong>${appellationLabel}</strong>.`,
           },
           {
             kind: "paragraph",
-            content: `Votre réponse est importante : ${beneficiaryFirstName} ${beneficiaryLastName} a choisi votre entreprise et une immersion peut jouer un rôle clé dans son parcours professionnel.`,
+            content: `Votre réponse est importante : ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} a choisi votre entreprise et une immersion peut jouer un rôle clé dans son parcours professionnel.`,
           },
           {
             kind: "paragraph",
@@ -2756,7 +2768,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           },
           {
             kind: "button",
-            label: `Répondre à ${beneficiaryFirstName}`,
+            label: `Répondre à ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName })}`,
             url: `mailto:${beneficiaryReplyToEmail}`,
             marginBottom: "lg",
           },
@@ -2863,7 +2875,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         businessName,
       }) => ({
         subject: `Votre demande d’immersion chez ${businessName} a été clôturée`,
-        greetings: `Bonjour ${beneficiaryFirstName} ${beneficiaryLastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })},`,
         blocks: [
           {
             kind: "paragraph",
@@ -2905,7 +2917,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         immersionBaseUrl,
       }) => ({
         subject: `Information concernant votre demande auprès de ${businessName}`,
-        greetings: `Bonjour${beneficiaryFirstName ? ` ${beneficiaryFirstName}` : ""}${beneficiaryLastName ? ` ${beneficiaryLastName}` : ""},`,
+        greetings: `Bonjour${beneficiaryFirstName || beneficiaryLastName ? ` ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}` : ""},`,
         blocks: [
           {
             kind: "paragraph",
@@ -2975,13 +2987,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         beneficiaryLastName,
         immersionBaseUrl,
       }) => ({
-        subject: `Urgent : Entreprise bannie - Convention à revoir pour ${beneficiaryFirstName} ${beneficiaryLastName}`,
+        subject: `Urgent : Entreprise bannie - Convention à revoir pour ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}`,
         greetings: greetingsWithConventionId(conventionId),
         blocks: [
           {
             kind: "paragraph",
             content: `
-        Nous vous contactons car une convention d'immersion a été validée pour ${beneficiaryFirstName} ${beneficiaryLastName} au sein de l'entreprise ${businessName}.
+        Nous vous contactons car une convention d'immersion a été validée pour ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} au sein de l'entreprise ${businessName}.
 
         Nous vous informons que <strong>cette entreprise a été bannie de notre plateforme</strong> suite à des signalements, car elle ne respectait pas la législation ou le cadre bienveillant exigé en matière d'immersion.
 
@@ -3083,12 +3095,12 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         immersionBaseUrl,
       }) => ({
         subject: `Votre accès ${businessName} sur Immersion Facilitée`,
-        greetings: `Bonjour ${firstName && lastName ? `${firstName} ${lastName}` : ""},`,
+        greetings: `Bonjour ${firstName && lastName ? getFormattedFirstnameAndLastname({ firstname: firstName, lastname: lastName }) : ""},`,
         blocks: [
           {
             kind: "paragraph",
             content: `
-          Vous avez été ajouté(e) comme ${role === "establishment-admin" ? "administrateur" : "contact"} sur Immersion Facilitée pour l’établissement ${businessName} par ${triggeredByUserFirstName} ${triggeredByUserLastName}.
+          Vous avez été ajouté(e) comme ${role === "establishment-admin" ? "administrateur" : "contact"} sur Immersion Facilitée pour l’établissement ${businessName} par ${getFormattedFirstnameAndLastname({ firstname: triggeredByUserFirstName, lastname: triggeredByUserLastName })}.
 
           ${
             role === "establishment-admin"
@@ -3131,12 +3143,12 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         triggeredByUserLastName,
       }) => ({
         subject: "Votre rôle sur Immersion Facilitée a été mis à jour",
-        greetings: `Bonjour ${firstName} ${lastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: firstName, lastname: lastName })},`,
         blocks: [
           {
             kind: "paragraph",
             content: `
-          Votre rôle sur Immersion Facilitée pour l'établissement <strong>${businessName}</strong> a été modifié par ${triggeredByUserFirstName} ${triggeredByUserLastName}.
+          Votre rôle sur Immersion Facilitée pour l'établissement <strong>${businessName}</strong> a été modifié par ${getFormattedFirstnameAndLastname({ firstname: triggeredByUserFirstName, lastname: triggeredByUserLastName })}.
           
           <strong>Votre nouveau rôle :</strong> ${updatedRole === "establishment-admin" ? "Administrateur" : "Contact"}
           
@@ -3146,7 +3158,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
               : `Le contact accède aux conventions et aux candidatures (lecture et réponse) de l'établissement.`
           }
 
-          Si cette modification ne vous semble pas justifiée, contactez ${triggeredByUserFirstName} ${triggeredByUserLastName} ou notre support.
+          Si cette modification ne vous semble pas justifiée, contactez ${getFormattedFirstnameAndLastname({ firstname: triggeredByUserFirstName, lastname: triggeredByUserLastName })} ou notre support.
         `,
           },
         ],
@@ -3170,7 +3182,9 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         immersionBaseUrl,
       }) => {
         const userFullName =
-          firstName && lastName ? ` ${firstName} ${lastName}` : "";
+          firstName && lastName
+            ? ` ${getFormattedFirstnameAndLastname({ firstname: firstName, lastname: lastName })}`
+            : "";
         return {
           subject: `Mise à jour de votre accès à l'entreprise ${businessName}`,
           greetings: `Bonjour${userFullName},`,
@@ -3246,7 +3260,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
       }) => ({
         subject:
           "Immersion Facilitée - Activation de l’accès au back office de votre structure",
-        greetings: `Bonjour ${firstName} ${lastName},`,
+        greetings: `Bonjour ${getFormattedFirstnameAndLastname({ firstname: firstName, lastname: lastName })},`,
         blocks: [
           {
             kind: "paragraph",
@@ -3464,13 +3478,13 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         greetings: `
         <strong>Identifiant de la convention : ${conventionId}</strong>
         
-        Bonjour ${signatoryFirstName} ${signatoryLastName},`,
+        Bonjour ${getFormattedFirstnameAndLastname({ firstname: signatoryFirstName, lastname: signatoryLastName })},`,
         blocks: [
           {
             kind: "paragraph",
             content: `La demande de convention pour ${
               internshipKind === "immersion" ? "l'immersion" : "le mini stage"
-            } de ${beneficiaryFirstName} ${beneficiaryLastName} au sein de ${businessName} vient d'être modifiée.
+            } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} au sein de ${businessName} vient d'être modifiée.
         
         <strong>Les modifications sont&nbsp;:</strong>
         ${justification}
@@ -3605,16 +3619,19 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         manageConventionLink,
         immersionAddress,
       }) => ({
-        subject: `Pour action : la demande de convention d'immersion envoyée par ${beneficiaryFirstName} ${beneficiaryLastName} est totalement signée. À vous de la valider !`,
+        subject: `Pour action : la demande de convention d'immersion envoyée par ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} est totalement signée. À vous de la valider !`,
         greetings: greetingsWithConventionId(
           conventionId,
-          `${advisorFirstName} ${advisorLastName}`,
+          getFormattedFirstnameAndLastname({
+            firstname: advisorFirstName,
+            lastname: advisorLastName,
+          }),
         ),
         blocks: [
           {
             kind: "paragraph",
             content: `
-      <strong>La demande d'immersion de ${beneficiaryFirstName} ${beneficiaryLastName} est signée. 
+      <strong>La demande d'immersion de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} est signée.
       À vous de l'étudier !</strong>`,
             marginBottom: "lg",
           },
@@ -3627,7 +3644,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           {
             kind: "paragraph",
             content: `
-      Vous pouvez demander des modifications ou la refuser, si nécessaire  ou la valider si cette demande correspond au projet de ${beneficiaryFirstName} ${beneficiaryLastName}, ${beneficiaryEmail}.      
+      Vous pouvez demander des modifications ou la refuser, si nécessaire  ou la valider si cette demande correspond au projet de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })}, ${beneficiaryEmail}.
       
       N'hésitez pas à le joindre ou à appeler l'entreprise. Leurs coordonnées sont présentes dans la demande de convention.`,
           },
@@ -3686,7 +3703,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         internshipKind === "immersion"
           ? "d'immersion professionnelle"
           : "de mini stage"
-      } de ${beneficiaryFirstName} ${beneficiaryLastName} dans l'entreprise ${businessName} a été refusée par ${agencyName}.
+      } de ${getFormattedFirstnameAndLastname({ firstname: beneficiaryFirstName, lastname: beneficiaryLastName })} dans l'entreprise ${businessName} a été refusée par ${agencyName}.
       
       <strong>Les raisons sont&nbsp;:</strong>
       ${rejectionReason}       
@@ -4241,11 +4258,11 @@ L'équipe d'Immersion Facilitée`,
       }) => {
         const adminFullName =
           adminFirstName && adminLastName
-            ? ` ${adminFirstName} ${adminLastName}`
+            ? ` ${getFormattedFirstnameAndLastname({ firstname: adminFirstName, lastname: adminLastName })}`
             : "";
         const pendingUserFullNameOrEmail =
           pendingUserFirstName && pendingUserLastName
-            ? `<strong>${pendingUserFirstName} ${pendingUserLastName}</strong> (${pendingUserEmail})`
+            ? `<strong>${getFormattedFirstnameAndLastname({ firstname: pendingUserFirstName, lastname: pendingUserLastName })}</strong> (${pendingUserEmail})`
             : `<strong>${pendingUserEmail}</strong>`;
         return {
           subject:
@@ -4324,7 +4341,9 @@ const makeUserInfoCallout = (
   agencyName: string,
 ): EmailBlock => {
   const nameDisplay =
-    firstName && lastName ? `${firstName} ${lastName} - ${email}` : email;
+    firstName && lastName
+      ? `${getFormattedFirstnameAndLastname({ firstname: firstName, lastname: lastName })} - ${email}`
+      : email;
 
   return {
     kind: "callout",

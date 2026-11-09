@@ -6,6 +6,7 @@ import type {
 } from "../convention/convention.dto";
 import { pipeWithValue } from "../pipeWithValue";
 import { isTruthy } from "../typeGuard";
+import { getFormattedFirstnameAndLastname } from "./string";
 
 const getEmergencyContactInfos = ({
   fullName,
@@ -35,7 +36,10 @@ export const displayEmergencyContactInfos = <T extends InternshipKind>({
 }) =>
   beneficiaryRepresentative
     ? getEmergencyContactInfos({
-        fullName: `${beneficiaryRepresentative.firstName} ${beneficiaryRepresentative.lastName}`,
+        fullName: getFormattedFirstnameAndLastname({
+          firstname: beneficiaryRepresentative.firstName,
+          lastname: beneficiaryRepresentative.lastName,
+        }),
         email: beneficiaryRepresentative.email,
         phone: beneficiaryRepresentative.phone,
       })
