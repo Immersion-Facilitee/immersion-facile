@@ -1,14 +1,14 @@
 import {
   type AgencyRole,
   BadRequestError,
+  type ConnectedUserDomainJwtPayload,
   type ConventionDto,
-  type ConventionId,
-  type ConventionRelatedJwtPayload,
   clearSignaturesAndValidation,
   errors,
   ForbiddenError,
   type Role,
   renewConventionParamsSchema,
+  type UserId,
 } from "shared";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
@@ -20,7 +20,7 @@ export type RenewConvention = ReturnType<typeof makeRenewConvention>;
 
 export const makeRenewConvention = useCaseBuilder("RenewConvention")
   .withInput(renewConventionParamsSchema)
-  .withCurrentUser<ConventionRelatedJwtPayload>()
+  .withCurrentUser<ConnectedUserDomainJwtPayload>()
   .withDeps<{
     //TODO : must use event instead of sub usecase execution
     addConvention: AddConvention;
@@ -31,7 +31,7 @@ export const makeRenewConvention = useCaseBuilder("RenewConvention")
       inputParams: { dateEnd, dateStart, id, renewed, schedule },
       uow,
       deps,
-      currentUser: jwtPayload,
+      currentUser,
     }) => {
       const allowedRoles: Role[] = ["validator", "counsellor", "back-office"];
 
@@ -44,12 +44,11 @@ export const makeRenewConvention = useCaseBuilder("RenewConvention")
           conventionId: renewed.from,
         });
 
-      const roles = await rolesByPayload(
-        jwtPayload,
+      const roles = await getConnectedUserRoles({
+        userId: currentUser.userId,
         uow,
-        conventionInRepo,
-        renewed.from,
-      );
+        convention: conventionInRepo,
+      });
 
       if (!allowedRoles.some((allowedRole) => roles.includes(allowedRole)))
         throw new ForbiddenError(
@@ -59,7 +58,7 @@ export const makeRenewConvention = useCaseBuilder("RenewConvention")
       await throwIfConventionArchivedAndUserIsNotAdmin({
         convention: conventionInRepo,
         now: deps.timeGateway.now(),
-        jwtPayload,
+        jwtPayload: currentUser,
         uow,
       });
 
@@ -83,28 +82,23 @@ export const makeRenewConvention = useCaseBuilder("RenewConvention")
     },
   );
 
-const rolesByPayload = async (
-  jwtPayload: ConventionRelatedJwtPayload,
-  uow: UnitOfWork,
-  convention: ConventionDto,
-  from: ConventionId,
-): Promise<(Role | AgencyRole)[]> => {
-  if ("role" in jwtPayload) {
-    if (from !== jwtPayload.applicationId)
-      throw new ForbiddenError(
-        "This token is not allowed to renew this convention",
-      );
-    return [jwtPayload.role];
-  }
-
-  const user = await uow.userRepository.getById(jwtPayload.userId);
-  if (!user) throw errors.user.notFound({ userId: jwtPayload.userId });
+const getConnectedUserRoles = async ({
+  userId,
+  uow,
+  convention,
+}: {
+  userId: UserId;
+  uow: UnitOfWork;
+  convention: ConventionDto;
+}): Promise<(Role | AgencyRole)[]> => {
+  const user = await uow.userRepository.getById(userId);
+  if (!user) throw errors.user.notFound({ userId });
 
   if (user.isBackofficeAdmin) return ["back-office"];
   const agency = await uow.agencyRepository.getById(convention.agencyId);
   if (!agency) throw errors.agency.notFound({ agencyId: convention.agencyId });
 
-  const agencyRight = agency.usersRights[jwtPayload.userId];
+  const agencyRight = agency.usersRights[userId];
 
   if (!agencyRight)
     throw new ForbiddenError(

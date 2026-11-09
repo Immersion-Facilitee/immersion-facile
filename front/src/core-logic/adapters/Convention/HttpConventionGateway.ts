@@ -219,7 +219,7 @@ export class HttpConventionGateway implements ConventionGateway {
     jwt: ConventionSupportedJwt,
   ): Observable<void> {
     return from(
-      this.magicLinkHttpClient
+      this.authenticatedHttpClient
         .editConventionCounsellorName({
           body: params,
           headers: { authorization: jwt },
@@ -335,7 +335,7 @@ export class HttpConventionGateway implements ConventionGateway {
     jwt: ConventionSupportedJwt,
   ): Observable<void> {
     return from(
-      this.magicLinkHttpClient
+      this.authenticatedHttpClient
         .renewConvention({
           body: params,
           headers: { authorization: jwt },
@@ -344,6 +344,7 @@ export class HttpConventionGateway implements ConventionGateway {
           match(response)
             .with({ status: 200 }, () => undefined)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403, 404) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );
@@ -487,7 +488,7 @@ export class HttpConventionGateway implements ConventionGateway {
     jwt: ConventionSupportedJwt,
   ): Observable<void> {
     return from(
-      this.magicLinkHttpClient
+      this.authenticatedHttpClient
         .transferConventionToAgency({
           body: params,
           headers: { authorization: jwt },

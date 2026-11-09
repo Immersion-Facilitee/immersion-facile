@@ -221,5 +221,49 @@ export const createConventionRouter = (deps: AppDependencies) => {
       ),
   );
 
+  authenticatedConventionSharedRouter.deleteAssessment(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res.status(204), () =>
+        deps.useCases.deleteAssessment.execute(
+          req.body,
+          getGenericAuthOrThrow(req.payloads?.currentUser),
+        ),
+      ),
+  );
+
+  authenticatedConventionSharedRouter.renewConvention(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.renewConvention.execute(
+          req.body,
+          getGenericAuthOrThrow(req.payloads?.connectedUser),
+        ),
+      ),
+  );
+
+  authenticatedConventionSharedRouter.transferConventionToAgency(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.transferConventionToAgency.execute(
+          req.body,
+          getGenericAuthOrThrow(req.payloads?.connectedUser),
+        ),
+      ),
+  );
+
+  authenticatedConventionSharedRouter.editConventionCounsellorName(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.editConventionCounsellorName.execute(
+          req.body,
+          getGenericAuthOrThrow(req.payloads?.connectedUser),
+        ),
+      ),
+  );
+
   return expressRouter;
 };

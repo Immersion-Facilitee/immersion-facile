@@ -19,6 +19,8 @@ import {
   expectArraysToMatch,
   expectHttpResponseToEqual,
   expectToEqual,
+  type RenewConventionParams,
+  ScheduleDtoBuilder,
   type User,
 } from "shared";
 import type { HttpClient } from "shared-routes";
@@ -1789,6 +1791,325 @@ describe("authenticatedConventionRoutes", () => {
           .archivedConventionRequests[requestId].status,
         "TREATED",
       );
+    });
+  });
+
+  describe(`${displayRouteName(
+    authenticatedConventionRoutes.renewConvention,
+  )}`, () => {
+    const existingConvention = new ConventionDtoBuilder().build();
+    const backofficeAdmin = new ConnectedUserBuilder()
+      .withId("backoffice-admin-user")
+      .withIsAdmin(true)
+      .buildUser();
+    const backofficeAdminJwtPayload: ConnectedUserJwtPayload = {
+      version: currentJwtVersions.connectedUser,
+      iat: Date.now(),
+      exp: addDays(new Date(), 30).getTime(),
+      userId: backofficeAdmin.id,
+    };
+    const renewedConventionStartDate = addDays(
+      new Date(existingConvention.dateEnd),
+      1,
+    );
+    const renewedConventionEndDate = addDays(renewedConventionStartDate, 5);
+    const renewedConventionParams: RenewConventionParams = {
+      id: "11111111-1111-4111-9111-111111111111",
+      dateStart: renewedConventionStartDate.toISOString(),
+      dateEnd: renewedConventionEndDate.toISOString(),
+      schedule: new ScheduleDtoBuilder()
+        .withDateInterval({
+          start: renewedConventionStartDate,
+          end: renewedConventionEndDate,
+        })
+        .withRegularSchedule({
+          selectedDays: [0, 4],
+          timePeriods: [
+            { start: "09:00", end: "12:00" },
+            { start: "13:00", end: "17:00" },
+          ],
+        })
+        .build(),
+      renewed: {
+        from: existingConvention.id,
+        justification: "Il faut bien...",
+      },
+    };
+
+    beforeEach(() => {
+      inMemoryUow.conventionRepository.setConventions([existingConvention]);
+      inMemoryUow.userRepository.users = [backofficeAdmin];
+    });
+
+    it("200 - Creates a convention with provided data and backoffice jwt", async () => {
+      const existingConvention = new ConventionDtoBuilder()
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .build();
+      inMemoryUow.conventionRepository.setConventions([existingConvention]);
+      const renewedConventionStartDate = addDays(
+        new Date(existingConvention.dateEnd),
+        1,
+      );
+      const renewedConventionEndDate = addDays(renewedConventionStartDate, 5);
+      const renewedConventionParams: RenewConventionParams = {
+        id: "22222222-2222-4222-9222-222222222222",
+        dateStart: renewedConventionStartDate.toISOString(),
+        dateEnd: renewedConventionEndDate.toISOString(),
+        schedule: new ScheduleDtoBuilder()
+          .withReasonableScheduleInInterval({
+            start: renewedConventionStartDate,
+            end: renewedConventionEndDate,
+          })
+          .build(),
+        renewed: {
+          from: existingConvention.id,
+          justification: "Il faut bien...",
+        },
+      };
+      const response = await httpClient.renewConvention({
+        headers: {
+          authorization: generateConnectedUserJwt(backofficeAdminJwtPayload),
+        },
+        body: renewedConventionParams,
+      });
+
+      expectHttpResponseToEqual(response, { status: 200, body: "" });
+      expectToEqual(inMemoryUow.conventionRepository.conventions, [
+        existingConvention,
+        {
+          ...existingConvention,
+          ...renewedConventionParams,
+          dateSubmission: gateways.timeGateway.now().toISOString(),
+          signatories: {
+            beneficiary: {
+              ...existingConvention.signatories.beneficiary,
+              signedAt: undefined,
+            },
+            establishmentRepresentative: {
+              ...existingConvention.signatories.establishmentRepresentative,
+              signedAt: undefined,
+            },
+          },
+          status: "READY_TO_SIGN",
+        },
+      ]);
+    });
+
+    it("200 - Creates a convention with provided data and connected user JWT", async () => {
+      const agency = new AgencyDtoBuilder().build();
+      const existingConvention = new ConventionDtoBuilder()
+        .withStatus("ACCEPTED_BY_VALIDATOR")
+        .withAgencyId(agency.id)
+        .build();
+      const connectedValidator = new ConnectedUserBuilder()
+        .withId("my-user-id")
+        .withEmail("my-user@email.com")
+        .buildUser();
+      inMemoryUow.conventionRepository.setConventions([existingConvention]);
+      inMemoryUow.userRepository.users = [connectedValidator];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [connectedValidator.id]: {
+            isNotifiedByEmail: false,
+            roles: ["validator"],
+          },
+        }),
+      ];
+
+      const renewedConventionStartDate = addDays(
+        new Date(existingConvention.dateEnd),
+        1,
+      );
+      const renewedConventionEndDate = addDays(renewedConventionStartDate, 5);
+      const renewedConventionParams: RenewConventionParams = {
+        id: "22222222-2222-4222-9222-222222222222",
+        dateStart: renewedConventionStartDate.toISOString(),
+        dateEnd: renewedConventionEndDate.toISOString(),
+        schedule: new ScheduleDtoBuilder()
+          .withReasonableScheduleInInterval({
+            start: renewedConventionStartDate,
+            end: renewedConventionEndDate,
+          })
+          .build(),
+        renewed: {
+          from: existingConvention.id,
+          justification: "Il faut bien...",
+        },
+      };
+      const response = await httpClient.renewConvention({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: connectedValidator.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        body: renewedConventionParams,
+      });
+
+      expectHttpResponseToEqual(response, { status: 200, body: "" });
+      expectToEqual(inMemoryUow.conventionRepository.conventions, [
+        existingConvention,
+        {
+          ...existingConvention,
+          ...renewedConventionParams,
+          dateSubmission: gateways.timeGateway.now().toISOString(),
+          signatories: {
+            beneficiary: {
+              ...existingConvention.signatories.beneficiary,
+              signedAt: undefined,
+            },
+            establishmentRepresentative: {
+              ...existingConvention.signatories.establishmentRepresentative,
+              signedAt: undefined,
+            },
+          },
+          status: "READY_TO_SIGN",
+        },
+      ]);
+    });
+
+    it("400 - Fails if no token is provided", async () => {
+      const response = await httpClient.renewConvention({
+        headers: {} as any,
+        body: renewedConventionParams,
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 400,
+        body: {
+          issues: [
+            "authorization : Invalid input: expected string, received undefined",
+          ],
+          message:
+            "Shared-route schema 'headersSchema' was not respected in adapter 'express'.\nRoute: POST /auth/renew-convention",
+          status: 400,
+        },
+      });
+    });
+
+    it("400 - Fails if original convention is not ACCEPTED_BY_VALIDATOR", async () => {
+      const response = await httpClient.renewConvention({
+        headers: {
+          authorization: generateConnectedUserJwt(backofficeAdminJwtPayload),
+        },
+        body: renewedConventionParams,
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 400,
+        body: {
+          status: 400,
+          message:
+            "This convention cannot be renewed, as it has status : 'READY_TO_SIGN'",
+        },
+      });
+    });
+
+    it("403 - Fails if provided token does not have enough privileges", async () => {
+      const agency = new AgencyDtoBuilder().build();
+      const agencyAdmin = new ConnectedUserBuilder()
+        .withId("agency-admin")
+        .withEmail("agency-admin@mail.com")
+        .buildUser();
+      inMemoryUow.userRepository.users = [agencyAdmin];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [agencyAdmin.id]: {
+            isNotifiedByEmail: false,
+            roles: ["agency-admin"],
+          },
+        }),
+      ];
+
+      const response = await httpClient.renewConvention({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: agencyAdmin.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        body: renewedConventionParams,
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: {
+          status: 403,
+          message: "The role 'agency-admin' is not allowed to renew convention",
+        },
+      });
+    });
+  });
+
+  describe(`${displayRouteName(
+    authenticatedConventionRoutes.transferConventionToAgency,
+  )}`, () => {
+    const agency = new AgencyDtoBuilder().build();
+    const otherAgency = new AgencyDtoBuilder()
+      .withId("other-agency-id")
+      .build();
+    const convention = new ConventionDtoBuilder()
+      .withStatus("READY_TO_SIGN")
+      .withAgencyId(agency.id)
+      .build();
+    const validator = new ConnectedUserBuilder()
+      .withId("validator")
+      .withEmail("validator@mail.com")
+      .buildUser();
+    const justification = "change of agency";
+
+    it("200 - connected validator can transfer convention to another agency", async () => {
+      inMemoryUow.conventionRepository.setConventions([convention]);
+      inMemoryUow.userRepository.users = [validator];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+        }),
+        toAgencyWithRights(otherAgency, {}),
+      ];
+
+      const response = await httpClient.transferConventionToAgency({
+        headers: {
+          authorization: generateConnectedUserJwt({
+            userId: validator.id,
+            version: currentJwtVersions.connectedUser,
+          }),
+        },
+        body: {
+          conventionId: convention.id,
+          agencyId: otherAgency.id,
+          justification,
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: "",
+      });
+
+      const expectedConvention = {
+        ...convention,
+        agencyId: otherAgency.id,
+      };
+      expectToEqual(inMemoryUow.conventionRepository.conventions, [
+        expectedConvention,
+      ]);
+      expectArraysToMatch(inMemoryUow.outboxRepository.events, [
+        {
+          topic: "ConventionTransferredToAgency",
+          payload: {
+            convention: expectedConvention,
+            agencyId: otherAgency.id,
+            justification,
+            previousAgencyId: convention.agencyId,
+            shouldNotifyActors: true,
+            triggeredBy: {
+              kind: "connected-user",
+              userId: validator.id,
+            },
+          },
+        },
+      ]);
     });
   });
 });
