@@ -48,7 +48,7 @@ describe("getConventionStatusDashboardUrl", () => {
     );
   });
 
-  it("fails if no token is provided", async () => {
+  it("fails if neither magic link nor visitor session cookie is provided", async () => {
     const response = await httpClient.getConventionStatusDashboard({
       urlParams: { conventionId },
       headers: { authorization: "" },
