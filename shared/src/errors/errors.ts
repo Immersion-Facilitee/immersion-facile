@@ -82,6 +82,7 @@ export const errors = {
       new ConflictError(`La session visiteur ${id} existe déjà.`),
     notFound: (id: VisitorSessionId) =>
       new NotFoundError(`La session visiteur ${id} n'existe pas.`),
+    unauthorized: () => new UnauthorizedError(),
   },
   otpChallenge: {
     alreadyExists: (id: OtpChallengeId) =>

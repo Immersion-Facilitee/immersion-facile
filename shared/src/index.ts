@@ -34,6 +34,7 @@ export * from "./auth/proConnect/proConnect.dto";
 export * from "./auth/proConnect/proConnect.schema";
 export * from "./auth/visitorSession/VisitorSessionDtoBuilder";
 export * from "./auth/visitorSession/visitorSession.dto";
+export * from "./auth/visitorSession/visitorSession.helpers";
 export * from "./auth/visitorSession/visitorSession.schema";
 export * from "./Builder";
 export * from "./broadcast/broadcastFeedback.dto";
