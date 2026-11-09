@@ -1,4 +1,5 @@
 import { createHash, generateKeyPairSync } from "node:crypto";
+import { addMonths } from "date-fns";
 import {
   type ConnectedUserDomainJwtPayload,
   type ConnectedUserJwtPayload,
@@ -14,6 +15,7 @@ import {
   oneDayInSecond,
   oneHourInSeconds,
   oneMinuteInSeconds,
+  VISITOR_OTP_LINK_DURATION_IN_MONTHS,
   type VisitorOtpDomainJwtPayload,
   type VisitorOtpJwtPayload,
 } from "shared";
@@ -122,7 +124,6 @@ export const createConnectedUserJwtPayload = ({
 
 export type CreateVisitorOtpJwtPayloadProperties = {
   now: Date;
-  durationHours?: number;
   expOverride?: number;
 } & VisitorOtpDomainJwtPayload;
 
@@ -130,14 +131,17 @@ export const createVisitorOtpJwtPayload = ({
   purpose,
   subject,
   now,
-  durationHours = 1,
   expOverride,
 }: CreateVisitorOtpJwtPayloadProperties): VisitorOtpJwtPayload & {
   iat: number;
   exp: number;
 } => {
   const iat = Math.round(now.getTime() / 1000);
-  const exp = expOverride ?? iat + durationHours * oneHourInSeconds;
+  const exp =
+    expOverride ??
+    Math.floor(
+      addMonths(now, VISITOR_OTP_LINK_DURATION_IN_MONTHS).getTime() / 1000,
+    );
 
   return {
     purpose,
