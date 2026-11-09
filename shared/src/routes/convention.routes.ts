@@ -79,20 +79,6 @@ export const conventionMagicLinkRoutes = defineRoutes({
     },
   }),
 
-  deleteAssessment: defineRoute({
-    url: "/auth/assessment",
-    method: "delete",
-    ...withAuthorizationHeaders,
-    requestBodySchema: deleteAssessmentRequestDtoSchema,
-    responses: {
-      204: expressEmptyResponseBodyOrEmptyObject,
-      400: httpErrorSchema,
-      401: httpErrorSchema,
-      403: httpErrorSchema,
-      404: httpErrorSchema,
-    },
-  }),
-
   getAssessmentByConventionId: defineRoute({
     url: "/auth/convention/:conventionId/assessment",
     method: "get",
@@ -179,16 +165,6 @@ export const conventionMagicLinkRoutes = defineRoutes({
       404: httpErrorSchema,
     },
   }),
-  renewConvention: defineRoute({
-    url: "/auth/renew-convention",
-    method: "post",
-    requestBodySchema: renewConventionParamsSchema,
-    ...withAuthorizationHeaders,
-    responses: {
-      200: expressEmptyResponseBody,
-      400: httpErrorSchema,
-    },
-  }),
 
   sendSignatureLink: defineRoute({
     url: "/auth/convention/signatories/send-signature-link",
@@ -232,33 +208,6 @@ export const conventionMagicLinkRoutes = defineRoutes({
       403: httpErrorSchema,
       404: httpErrorSchema,
       429: httpErrorSchema,
-    },
-  }),
-
-  transferConventionToAgency: defineRoute({
-    url: "/auth/convention/transfer-to-agency",
-    method: "post",
-    requestBodySchema: transferConventionToAgencyRequestSchema,
-    ...withAuthorizationHeaders,
-    responses: {
-      200: expressEmptyResponseBody,
-      400: httpErrorSchema,
-      403: httpErrorSchema,
-      404: httpErrorSchema,
-    },
-  }),
-
-  editConventionCounsellorName: defineRoute({
-    url: "/auth/convention/edit-counsellor-name",
-    method: "post",
-    requestBodySchema: editConventionCounsellorNameRequestSchema,
-    ...withAuthorizationHeaders,
-    responses: {
-      200: expressEmptyResponseBody,
-      400: httpErrorSchema,
-      401: httpErrorSchema,
-      403: httpErrorSchema,
-      404: httpErrorSchema,
     },
   }),
 
@@ -509,6 +458,61 @@ export const authenticatedConventionRoutes = defineRoutes({
   deleteConventionTemplate: defineRoute({
     url: "/convention-templates/:conventionTemplateId",
     method: "delete",
+    ...withAuthorizationHeaders,
+    responses: {
+      200: expressEmptyResponseBody,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
+    },
+  }),
+
+  deleteAssessment: defineRoute({
+    url: "/auth/assessment",
+    method: "delete",
+    ...withAuthorizationHeaders,
+    requestBodySchema: deleteAssessmentRequestDtoSchema,
+    responses: {
+      204: expressEmptyResponseBodyOrEmptyObject,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
+    },
+  }),
+
+  renewConvention: defineRoute({
+    url: "/auth/renew-convention",
+    method: "post",
+    requestBodySchema: renewConventionParamsSchema,
+    ...withAuthorizationHeaders,
+    responses: {
+      200: expressEmptyResponseBody,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
+    },
+  }),
+
+  transferConventionToAgency: defineRoute({
+    url: "/auth/convention/transfer-to-agency",
+    method: "post",
+    requestBodySchema: transferConventionToAgencyRequestSchema,
+    ...withAuthorizationHeaders,
+    responses: {
+      200: expressEmptyResponseBody,
+      400: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
+    },
+  }),
+
+  editConventionCounsellorName: defineRoute({
+    url: "/auth/convention/edit-counsellor-name",
+    method: "post",
+    requestBodySchema: editConventionCounsellorNameRequestSchema,
     ...withAuthorizationHeaders,
     responses: {
       200: expressEmptyResponseBody,

@@ -1,6 +1,7 @@
 import { from, type Observable } from "rxjs";
 import {
   type AssessmentDto,
+  type AuthenticatedConventionRoutes,
   type ConventionId,
   type ConventionMagicLinkRoutes,
   type ConventionSupportedJwt,
@@ -23,6 +24,7 @@ import { match, P } from "ts-pattern";
 export class HttpAssessmentGateway implements AssessmentGateway {
   constructor(
     private readonly httpClient: HttpClient<ConventionMagicLinkRoutes>,
+    private readonly authenticatedHttpClient: HttpClient<AuthenticatedConventionRoutes>,
   ) {}
 
   public signAssessment$(
@@ -70,7 +72,7 @@ export class HttpAssessmentGateway implements AssessmentGateway {
     jwt: ConventionSupportedJwt,
   ): Observable<void> {
     return from(
-      this.httpClient
+      this.authenticatedHttpClient
         .deleteAssessment({
           headers: { authorization: jwt },
           body: params,

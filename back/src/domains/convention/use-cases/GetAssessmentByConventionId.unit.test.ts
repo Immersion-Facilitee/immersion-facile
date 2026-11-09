@@ -244,6 +244,18 @@ describe("GetAssessmentByConventionId", () => {
       );
     });
 
+    it("throws not found if convention does not exist", async () => {
+      uow.conventionRepository.setConventions([]);
+
+      await expectPromiseToFailWithError(
+        getAssessment.execute(
+          { conventionId: convention.id },
+          establishmentTutorPayload,
+        ),
+        errors.convention.notFound({ conventionId: convention.id }),
+      );
+    });
+
     it("throw not found error when no assessment exist", async () => {
       uow.assessmentRepository.assessments = [];
 

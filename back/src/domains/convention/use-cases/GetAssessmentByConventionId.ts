@@ -10,10 +10,7 @@ import { throwForbiddenIfNotAllowedForAssessments } from "../../../utils/assessm
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import { toAssessmentDto } from "../entities/AssessmentEntity";
-import {
-  retrieveConventionWithAgency,
-  throwIfConventionArchivedAndUserIsNotAdmin,
-} from "../entities/Convention";
+import { throwIfConventionArchivedAndUserIsNotAdmin } from "../entities/Convention";
 
 export type GetAssessmentByConventionId = ReturnType<
   typeof makeGetAssessmentByConventionId
@@ -27,10 +24,13 @@ export const makeGetAssessmentByConventionId = useCaseBuilder(
   .withDeps<{ timeGateway: TimeGateway }>()
   .build(async ({ uow, currentUser, inputParams, deps }) => {
     if (!currentUser) throw errors.user.noJwtProvided();
-    const { convention } = await retrieveConventionWithAgency(
-      uow,
+    const convention = await uow.conventionRepository.getById(
       inputParams.conventionId,
     );
+    if (!convention)
+      throw errors.convention.notFound({
+        conventionId: inputParams.conventionId,
+      });
     await throwForbiddenIfNotAllowedForAssessments({
       mode: "GetAssessment",
       convention,

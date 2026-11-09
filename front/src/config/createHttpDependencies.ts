@@ -61,6 +61,7 @@ export const createHttpDependencies = (): Dependencies => ({
   ),
   assessmentGateway: new HttpAssessmentGateway(
     createAxiosHttpClientOnSlashApi(conventionMagicLinkRoutes),
+    createAxiosHttpClientOnSlashApi(authenticatedConventionRoutes),
   ),
   conventionGateway: new HttpConventionGateway(
     createAxiosHttpClientOnSlashApi(conventionMagicLinkRoutes),

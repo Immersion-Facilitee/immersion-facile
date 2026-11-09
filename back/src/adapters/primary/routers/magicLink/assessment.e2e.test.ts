@@ -3,6 +3,8 @@ import {
   AgencyDtoBuilder,
   type AssessmentDto,
   AssessmentDtoBuilder,
+  type AuthenticatedConventionRoutes,
+  authenticatedConventionRoutes,
   ConnectedUserBuilder,
   type ConnectedUserJwtPayload,
   ConventionDtoBuilder,
@@ -56,6 +58,7 @@ describe("Assessment routes", () => {
     .build();
 
   let httpClient: HttpClient<ConventionMagicLinkRoutes>;
+  let authenticatedHttpClient: HttpClient<AuthenticatedConventionRoutes>;
   let inMemoryUow: InMemoryUnitOfWork;
   let eventCrawler: BasicEventCrawler;
   let gateways: InMemoryGateways;
@@ -83,6 +86,10 @@ describe("Assessment routes", () => {
     );
     httpClient = createSupertestSharedClient(
       conventionMagicLinkRoutes,
+      testAppAndDeps.request,
+    );
+    authenticatedHttpClient = createSupertestSharedClient(
+      authenticatedConventionRoutes,
       testAppAndDeps.request,
     );
 
@@ -441,7 +448,7 @@ describe("Assessment routes", () => {
   });
 
   describe(`${displayRouteName(
-    conventionMagicLinkRoutes.deleteAssessment,
+    authenticatedConventionRoutes.deleteAssessment,
   )} to delete assessment`, () => {
     it("returns 204 when admin deletes existing assessment", async () => {
       const assessment: AssessmentDto = {
@@ -460,7 +467,7 @@ describe("Assessment routes", () => {
         headers: { authorization: jwt },
       });
 
-      const response = await httpClient.deleteAssessment({
+      const response = await authenticatedHttpClient.deleteAssessment({
         body: {
           conventionId: convention.id,
           deleteAssessmentJustification: "Justification",
@@ -478,7 +485,7 @@ describe("Assessment routes", () => {
     });
 
     it("fails with 401 if jwt is not valid", async () => {
-      const response = await httpClient.deleteAssessment({
+      const response = await authenticatedHttpClient.deleteAssessment({
         body: {
           conventionId: convention.id,
           deleteAssessmentJustification: "Justification",
@@ -493,7 +500,7 @@ describe("Assessment routes", () => {
     });
 
     it("fails with 403 if user is not admin", async () => {
-      const response = await httpClient.deleteAssessment({
+      const response = await authenticatedHttpClient.deleteAssessment({
         body: {
           conventionId: convention.id,
           deleteAssessmentJustification: "Justification",
@@ -516,7 +523,7 @@ describe("Assessment routes", () => {
     });
 
     it("fails with 404 when assessment does not exist", async () => {
-      const response = await httpClient.deleteAssessment({
+      const response = await authenticatedHttpClient.deleteAssessment({
         body: {
           conventionId: convention.id,
           deleteAssessmentJustification: "Justification",
@@ -536,7 +543,7 @@ describe("Assessment routes", () => {
     });
 
     it("fails with 400 if request body is invalid", async () => {
-      const response = await httpClient.deleteAssessment({
+      const response = await authenticatedHttpClient.deleteAssessment({
         body: {
           conventionId: convention.id,
           deleteAssessmentJustification: "",
