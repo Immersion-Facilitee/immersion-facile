@@ -17,7 +17,7 @@ import type { AppConfig } from "./appConfig";
 import {
   makeConsumerMiddleware,
   makeMagicLinkAuthMiddleware,
-  makeVisitorOtpMiddleware,
+  makeVisitorOtpAuthMiddleware,
 } from "./authMiddleware";
 import { makeConnectedUserAuthMiddleware } from "./connectedUserAuthMiddleware";
 import { makeConventionMagicLinkOrVisitorSessionAuthMiddleware } from "./conventionMagicLinkOrVisitorSessionAuthMiddleware";
@@ -104,7 +104,10 @@ export const createAppDependencies = async (config: AppConfig) => {
         magicLinkAuthMiddleware: conventionMagicLinkAuthMiddleware,
         visitorSessionAuthMiddleware,
       }),
-    visitorOtpAuthMiddleware: makeVisitorOtpMiddleware(config, "visitorOtp"),
+    visitorOtpAuthMiddleware: makeVisitorOtpAuthMiddleware(
+      config,
+      "visitorOtp",
+    ),
     visitorSessionAuthMiddleware,
     apiConsumerMiddleware: makeConsumerMiddleware(
       useCases.getApiConsumerById.execute,
