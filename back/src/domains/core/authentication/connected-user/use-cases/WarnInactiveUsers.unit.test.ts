@@ -103,8 +103,8 @@ describe("WarnInactiveUsers", () => {
     const inactiveUser = makeUser({
       id: "inactive-id",
       email: "inactive@test.fr",
-      firstName: "Marie",
-      lastName: "Martin",
+      firstName: "mArIe",
+      lastName: "mArtIn",
       lastLoginAt: inactiveLastLoginAt,
     });
     const inactiveUserPreventedToBeDeleted = makeUser({
@@ -161,7 +161,7 @@ describe("WarnInactiveUsers", () => {
           kind: "ACCOUNT_DELETION_WARNING",
           recipients: [inactiveUser.email],
           params: {
-            fullName: `${inactiveUser.firstName} ${inactiveUser.lastName}`,
+            fullName: "Marie MARTIN",
             deletionDate: "22 janvier 2026",
             loginUrl: makeRouteAbsoluteUrl({
               route: frontRoutes.myAccount(),
@@ -173,7 +173,7 @@ describe("WarnInactiveUsers", () => {
           kind: "ACCOUNT_DELETION_WARNING",
           recipients: [neverLoggedInUserAndCreatedMoreThan2YearsAgo.email],
           params: {
-            fullName: `${neverLoggedInUserAndCreatedMoreThan2YearsAgo.firstName} ${neverLoggedInUserAndCreatedMoreThan2YearsAgo.lastName}`,
+            fullName: "Paul DURAND",
             deletionDate: "22 janvier 2026",
             loginUrl: makeRouteAbsoluteUrl({
               route: frontRoutes.myAccount(),
@@ -306,7 +306,7 @@ describe("WarnInactiveUsers", () => {
           kind: "ACCOUNT_DELETION_WARNING",
           recipients: [userWithOldActivity.email],
           params: {
-            fullName: `${userWithOldActivity.firstName} ${userWithOldActivity.lastName}`,
+            fullName: "Expired CONVENTION",
             deletionDate: "22 janvier 2026",
             loginUrl: makeRouteAbsoluteUrl({
               route: frontRoutes.myAccount(),
@@ -389,7 +389,7 @@ describe("WarnInactiveUsers", () => {
         kind: "ACCOUNT_DELETION_WARNING",
         recipients: [user.email],
         params: {
-          fullName: `${user.firstName} ${user.lastName}`,
+          fullName: "Jean DUPONT",
           deletionDate: "22 janvier 2026",
           loginUrl: makeRouteAbsoluteUrl({
             route: frontRoutes.myAccount(),

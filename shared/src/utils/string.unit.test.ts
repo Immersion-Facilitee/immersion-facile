@@ -160,6 +160,38 @@ describe("string utils", () => {
   describe("getFormattedFirstnameAndLastname", () => {
     it.each([
       {
+        inputs: { firstname: "jEaN", lastname: "DUPont" },
+        expectedOutput: "Jean DUPONT",
+      },
+      {
+        inputs: { firstname: "Jean-paul", lastname: "dupont" },
+        expectedOutput: "Jean-Paul DUPONT",
+      },
+      {
+        inputs: { firstname: "JEAN-PAUL LOUIS", lastname: "du pont" },
+        expectedOutput: "Jean-Paul Louis DU PONT",
+      },
+      {
+        inputs: { firstname: "ÉLODIE-ANAÏS", lastname: "hérvé" },
+        expectedOutput: "Élodie-Anaïs HÉRVÉ",
+      },
+      {
+        inputs: { firstname: "  jEaN  paul\t", lastname: " du  pont  " },
+        expectedOutput: "Jean Paul DU PONT",
+      },
+      {
+        inputs: { firstname: "\t ", lastname: " \n " },
+        expectedOutput: "",
+      },
+      {
+        inputs: { firstname: "JEAN-PAUL" },
+        expectedOutput: "Jean-Paul",
+      },
+      {
+        inputs: { lastname: " du  pont " },
+        expectedOutput: "DU PONT",
+      },
+      {
         inputs: {
           firstname: "John",
           lastname: "Doe",
@@ -204,7 +236,7 @@ describe("string utils", () => {
           firstname: "PrénOM-cheLOu composé",
           lastname: "Nom-cheLOU composé",
         },
-        expectedOutput: "PrénOM-CheLOu-Composé NOM-CHELOU COMPOSÉ",
+        expectedOutput: "Prénom-Chelou Composé NOM-CHELOU COMPOSÉ",
       },
       {
         inputs: {},
