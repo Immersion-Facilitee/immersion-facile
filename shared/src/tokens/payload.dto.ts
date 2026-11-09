@@ -19,7 +19,7 @@ export type PayloadKind =
   | "visitorOtp";
 
 export type JwtPayloads = {
-  convention?: ConventionJwtPayload;
+  convention?: ConventionDomainJwtPayload;
   visitorOtp?: VisitorOtpJwtPayload;
   connectedUser?: ConnectedUserJwtPayload;
   emailAuthCode?: EmailAuthCodeJwtPayload;

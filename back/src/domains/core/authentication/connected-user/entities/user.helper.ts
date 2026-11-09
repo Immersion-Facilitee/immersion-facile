@@ -2,7 +2,7 @@ import {
   type ApiConsumer,
   type ConnectedUser,
   type ConnectedUserJwtPayload,
-  type ConventionJwtPayload,
+  type ConventionDomainJwtPayload,
   conventionStatusesDemonstratingUserActivity,
   type Email,
   errors,
@@ -58,7 +58,7 @@ export const getGenericAuthOrThrow = <
   T extends
     | ConnectedUser
     | ConnectedUserJwtPayload
-    | ConventionJwtPayload
+    | ConventionDomainJwtPayload
     | ApiConsumer
     | VisitorOtpJwtPayload,
 >(

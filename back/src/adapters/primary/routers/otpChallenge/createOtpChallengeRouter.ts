@@ -1,9 +1,5 @@
 import { Router } from "express";
-import {
-  errors,
-  makeVisitorSessionCookieName,
-  otpChallengeRoutes,
-} from "shared";
+import { makeVisitorSessionCookieName, otpChallengeRoutes } from "shared";
 import { createExpressSharedRouter } from "shared-routes/express";
 import type { AppDependencies } from "../../../../config/bootstrap/createAppDependencies";
 import { sendHttpResponse } from "../../../../config/helpers/sendHttpResponse";
@@ -69,15 +65,16 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
       }),
   );
 
-  sharedOtpChallengeRouter.getVisitorSession((req, res) =>
-    sendHttpResponse(req, res, () => {
-      const sessionId = req.cookies[makeVisitorSessionCookieName(req.query)];
-      if (!sessionId) throw errors.visitorSession.unauthorized();
-      return deps.useCases.getVisitorSession.execute({
-        ...req.query,
-        sessionId,
-      });
-    }),
+  sharedOtpChallengeRouter.getVisitorSession(
+    deps.visitorSessionAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () => {
+        const sessionId = req.cookies[makeVisitorSessionCookieName(req.query)];
+        return deps.useCases.getVisitorSession.execute({
+          ...req.query,
+          sessionId,
+        });
+      }),
   );
 
   return expressRouter;
