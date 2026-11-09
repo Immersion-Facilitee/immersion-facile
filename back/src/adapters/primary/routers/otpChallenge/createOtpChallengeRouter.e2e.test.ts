@@ -6,14 +6,19 @@ import {
   errors,
   expectHttpResponseToEqual,
   expectToEqual,
+  type GetVisitorSessionParams,
+  type GetVisitorSessionQueryParams,
   immersionFacileNoReplyEmailSender,
+  makeVisitorSessionCookieName,
   OtpChallengeDtoBuilder,
   type OtpChallengeId,
   type OtpChallengeRoutes,
   otpChallengeRoutes,
+  VisitorSessionDtoBuilder,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
+import type { SuperTest, Test } from "supertest";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
 import {
   type HashOtpCode,
@@ -40,6 +45,12 @@ describe("otp challenge router", () => {
     .withBeneficiaryPhone("+33612345678")
     .build();
 
+  const visitorSessionCookie = ({
+    sessionId,
+    ...queryParams
+  }: GetVisitorSessionParams): string =>
+    `${makeVisitorSessionCookieName(queryParams)}=${sessionId}`;
+
   const visitorOtpJwtPayload = createVisitorOtpJwtPayload({
     purpose: "manageConvention",
     subject: {
@@ -51,6 +62,7 @@ describe("otp challenge router", () => {
   });
 
   let httpClient: HttpClient<OtpChallengeRoutes>;
+  let request: SuperTest<Test>;
   let generateVisitorOtpJwt: GenerateVisitorOtpJwt;
   let inMemoryUow: InMemoryUnitOfWork;
   let timeGateway: CustomTimeGateway;
@@ -71,6 +83,7 @@ describe("otp challenge router", () => {
       inMemoryUow.notificationRepository,
       inMemoryUow.outboxRepository,
     );
+    request = testApp.request;
     httpClient = createSupertestSharedClient(
       otpChallengeRoutes,
       testApp.request,
@@ -408,7 +421,12 @@ describe("otp challenge router", () => {
       expect(response.headers["set-cookie"]).toEqual(
         expect.arrayContaining([
           expect.stringMatching(
-            `if_visitor_${convention.id}=${inMemoryUow.visitorSessionRepository.visitorSessions[0].id};.*HttpOnly.*SameSite=Lax`,
+            `${visitorSessionCookie({
+              purpose: "manageConvention",
+              conventionId: convention.id,
+              sessionId:
+                inMemoryUow.visitorSessionRepository.visitorSessions[0].id,
+            })};.*HttpOnly.*SameSite=Lax`,
           ),
         ]),
       );
@@ -465,6 +483,215 @@ describe("otp challenge router", () => {
           message: errors.otpChallenge.notFound(unknownOtpChallengeId).message,
         },
       });
+    });
+  });
+
+  describe(`${displayRouteName(otpChallengeRoutes.getVisitorSession)}`, () => {
+    const now = new Date("2026-11-05T10:00:00.000Z");
+    const visitorSession = new VisitorSessionDtoBuilder()
+      .withSubject(visitorOtpJwtPayload.subject)
+      .withExpiresAt(addMinutes(now, 60).toISOString())
+      .withCreatedAt(now.toISOString())
+      .build();
+
+    const manageConventionQuery: GetVisitorSessionQueryParams = {
+      purpose: "manageConvention",
+      conventionId: convention.id,
+    };
+
+    beforeEach(() => {
+      timeGateway.defaultDate = now;
+      inMemoryUow.visitorSessionRepository.visitorSessions = [visitorSession];
+    });
+
+    it("200 - returns active visitor session", async () => {
+      const { status, body } = await request
+        .get(otpChallengeRoutes.getVisitorSession.url)
+        .query(manageConventionQuery)
+        .set(
+          "Cookie",
+          visitorSessionCookie({
+            ...manageConventionQuery,
+            sessionId: visitorSession.id,
+          }),
+        );
+
+      expectHttpResponseToEqual(
+        { status, body, headers: {} },
+        {
+          status: 200,
+          body: {
+            conventionId: convention.id,
+            role: "beneficiary",
+            purpose: "manageConvention",
+            expiresAt: visitorSession.expiresAt,
+          },
+        },
+      );
+    });
+
+    it("401 - no cookie", async () => {
+      const response = await httpClient.getVisitorSession({
+        queryParams: manageConventionQuery,
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: errors.visitorSession.unauthorized().message,
+        },
+      });
+    });
+
+    it("401 - unknown session id", async () => {
+      const { status, body } = await request
+        .get(otpChallengeRoutes.getVisitorSession.url)
+        .query(manageConventionQuery)
+        .set(
+          "Cookie",
+          visitorSessionCookie({
+            ...manageConventionQuery,
+            sessionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          }),
+        );
+
+      expectHttpResponseToEqual(
+        { status, body, headers: {} },
+        {
+          status: 401,
+          body: {
+            status: 401,
+            message: errors.visitorSession.unauthorized().message,
+          },
+        },
+      );
+    });
+
+    it("401 - conventionId does not match session", async () => {
+      const otherConventionId: ConventionId =
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+
+      const queryParams = {
+        purpose: "manageConvention",
+        conventionId: otherConventionId,
+      } as const;
+
+      const { status, body } = await request
+        .get(otpChallengeRoutes.getVisitorSession.url)
+        .query(queryParams)
+        .set(
+          "Cookie",
+          visitorSessionCookie({
+            ...queryParams,
+            sessionId: visitorSession.id,
+          }),
+        );
+
+      expectHttpResponseToEqual(
+        { status, body, headers: {} },
+        {
+          status: 401,
+          body: {
+            status: 401,
+            message: errors.visitorSession.unauthorized().message,
+          },
+        },
+      );
+    });
+
+    it("401 - expired session", async () => {
+      inMemoryUow.visitorSessionRepository.visitorSessions = [
+        new VisitorSessionDtoBuilder(visitorSession)
+          .withExpiresAt(now.toISOString())
+          .build(),
+      ];
+
+      const { status, body } = await request
+        .get(otpChallengeRoutes.getVisitorSession.url)
+        .query(manageConventionQuery)
+        .set(
+          "Cookie",
+          visitorSessionCookie({
+            ...manageConventionQuery,
+            sessionId: visitorSession.id,
+          }),
+        );
+
+      expectHttpResponseToEqual(
+        { status, body, headers: {} },
+        {
+          status: 401,
+          body: {
+            status: 401,
+            message: errors.visitorSession.unauthorized().message,
+          },
+        },
+      );
+    });
+
+    it("401 - revoked session", async () => {
+      inMemoryUow.visitorSessionRepository.visitorSessions = [
+        new VisitorSessionDtoBuilder(visitorSession)
+          .withRevokedAt(now.toISOString())
+          .build(),
+      ];
+
+      const { status, body } = await request
+        .get(otpChallengeRoutes.getVisitorSession.url)
+        .query(manageConventionQuery)
+        .set(
+          "Cookie",
+          visitorSessionCookie({
+            ...manageConventionQuery,
+            sessionId: visitorSession.id,
+          }),
+        );
+
+      expectHttpResponseToEqual(
+        { status, body, headers: {} },
+        {
+          status: 401,
+          body: {
+            status: 401,
+            message: errors.visitorSession.unauthorized().message,
+          },
+        },
+      );
+    });
+
+    it("403 - email hash no longer matches convention actor", async () => {
+      inMemoryUow.conventionRepository.setConventions([
+        new ConventionDtoBuilder(convention)
+          .withBeneficiaryEmail("changed-beneficiary@email.fr")
+          .build(),
+      ]);
+
+      const { status, body } = await request
+        .get(otpChallengeRoutes.getVisitorSession.url)
+        .query(manageConventionQuery)
+        .set(
+          "Cookie",
+          visitorSessionCookie({
+            ...manageConventionQuery,
+            sessionId: visitorSession.id,
+          }),
+        );
+
+      expectHttpResponseToEqual(
+        { status, body, headers: {} },
+        {
+          status: 403,
+          body: {
+            status: 403,
+            message: errors.convention.forbiddenMissingRightsEmailHash({
+              conventionId: convention.id,
+              role: "beneficiary",
+              emailHash: visitorSession.subject.emailHash,
+            }).message,
+          },
+        },
+      );
     });
   });
 });

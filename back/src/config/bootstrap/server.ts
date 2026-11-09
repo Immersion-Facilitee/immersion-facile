@@ -1,4 +1,5 @@
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import express, { type Express } from "express";
 import type { HttpError } from "http-errors";
 import PinoHttp from "pino-http";
@@ -90,6 +91,7 @@ export const createApp = async (
     });
   });
   app.use(detectHtmlInParamsMiddleware);
+  app.use(cookieParser());
   const deps = await createAppDependencies(config);
 
   app.use(createSearchRouter(deps));

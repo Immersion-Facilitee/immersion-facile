@@ -1,18 +1,13 @@
 import { Router } from "express";
-import { otpChallengeRoutes, type VisitorOtpJwtPayload } from "shared";
+import {
+  errors,
+  makeVisitorSessionCookieName,
+  otpChallengeRoutes,
+} from "shared";
 import { createExpressSharedRouter } from "shared-routes/express";
-import { match } from "ts-pattern";
 import type { AppDependencies } from "../../../../config/bootstrap/createAppDependencies";
 import { sendHttpResponse } from "../../../../config/helpers/sendHttpResponse";
 import { getGenericAuthOrThrow } from "../../../../domains/core/authentication/connected-user/entities/user.helper";
-
-const visitorSessionCookieName = ({
-  purpose,
-  subject,
-}: VisitorOtpJwtPayload): string =>
-  match(purpose)
-    .with("manageConvention", () => `if_visitor_${subject.conventionId}`)
-    .exhaustive();
 
 export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
   const expressRouter = Router();
@@ -57,14 +52,32 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
             },
             visitorOtp,
           );
-        res.cookie(visitorSessionCookieName(visitorOtp), id, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "lax",
-          path: "/",
-          maxAge: new Date(expiresAt).getTime() - Date.now(),
-        });
+        res.cookie(
+          makeVisitorSessionCookieName({
+            purpose: visitorOtp.purpose,
+            conventionId: visitorOtp.subject.conventionId,
+          }),
+          id,
+          {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            path: "/",
+            maxAge: new Date(expiresAt).getTime() - Date.now(),
+          },
+        );
       }),
+  );
+
+  sharedOtpChallengeRouter.getVisitorSession((req, res) =>
+    sendHttpResponse(req, res, () => {
+      const sessionId = req.cookies[makeVisitorSessionCookieName(req.query)];
+      if (!sessionId) throw errors.visitorSession.unauthorized();
+      return deps.useCases.getVisitorSession.execute({
+        ...req.query,
+        sessionId,
+      });
+    }),
   );
 
   return expressRouter;
