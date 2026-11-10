@@ -40,7 +40,6 @@ export const makeVisitorSessionAuthMiddleware =
               role,
               emailHash,
             },
-            visitorSession: { sessionId },
           };
         })
         .exhaustive();
