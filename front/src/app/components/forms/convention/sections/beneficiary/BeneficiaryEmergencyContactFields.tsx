@@ -2,6 +2,7 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 
 import { useFormContext } from "react-hook-form";
 import type { ConventionReadDto } from "shared";
+import { PhoneInput } from "src/app/components/forms/commons/PhoneInput";
 import { formConventionFieldsLabels } from "src/app/contents/forms/convention/formConvention";
 import {
   getFormContents,
@@ -13,7 +14,8 @@ export const BeneficiaryEmergencyContactFields = ({
 }: {
   isConventionTemplate: boolean;
 }): JSX.Element => {
-  const { watch, register, formState } = useFormContext<ConventionReadDto>();
+  const { watch, register, setValue, formState } =
+    useFormContext<ConventionReadDto>();
 
   const { getFormFields } = getFormContents(
     formConventionFieldsLabels({
@@ -36,16 +38,27 @@ export const BeneficiaryEmergencyContactFields = ({
         }}
         {...getFieldError("signatories.beneficiary.emergencyContact")}
       />
-      <Input
+      <PhoneInput
         label={
           formContents["signatories.beneficiary.emergencyContactPhone"].label
         }
         hintText={
           formContents["signatories.beneficiary.emergencyContactPhone"].hintText
         }
-        nativeInputProps={{
+        inputProps={{
           ...formContents["signatories.beneficiary.emergencyContactPhone"],
-          ...register("signatories.beneficiary.emergencyContactPhone"),
+          nativeInputProps: {
+            ...register("signatories.beneficiary.emergencyContactPhone"),
+            id: formContents["signatories.beneficiary.emergencyContactPhone"]
+              .id,
+            value: watch("signatories.beneficiary.emergencyContactPhone"),
+          },
+        }}
+        onPhoneNumberChange={(phoneNumber) => {
+          setValue(
+            "signatories.beneficiary.emergencyContactPhone",
+            phoneNumber,
+          );
         }}
         {...getFieldError("signatories.beneficiary.emergencyContactPhone")}
       />
