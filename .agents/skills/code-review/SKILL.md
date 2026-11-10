@@ -10,7 +10,7 @@ Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
 
 Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings. Start every sub-agent with a fresh context window.
 
-The issue tracker should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
+Issues live in GitHub Issues on `Immersion-Facilitee/immersion-facile`. Fetch them with `gh issue view <number> --comments`.
 
 ## Process
 
@@ -26,19 +26,22 @@ Before going further, confirm the fixed point resolves (`git rev-parse <fixed-po
 
 Look for the originating spec, in this order:
 
-1. Issue references in the commit messages (`#123`, `Closes #45`, GitLab `!67`, etc.), fetched via the workflow in the tracker doc.
+1. The issue linked by the branch's pull request (`gh pr view --json closingIssuesReferences`), then the numeric prefix of the branch name (`<issue-number>-<slug>`), then issue references in the commit messages (`#123`, `Fixes #45`), as resolved by the [`prepare-pull-request` skill](../prepare-pull-request/SKILL.md).
 2. A path the user passed as an argument.
-3. A spec file under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
-4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
+3. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
 
 ### 3. Identify the standards sources
 
-Search the repo for every file that documents how code should be written. When `CODING_STANDARDS.md` or `CONTRIBUTING.md` exists, it must be on the list.
+The standards sources are:
+
+- `AGENTS.md` and [`typescript-code-style.md`](../../references/typescript-code-style.md), always;
+- every skill in `.agents/skills/` matching the areas touched by the diff, with the references it routes to;
+- the accepted ADRs under `doc/adr/` relevant to the diff. Ignore records marked rejected, standby, POC, or still undecided.
 
 On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below: a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
 
 - **The repo overrides.** A documented repo standard always wins; where it endorses something the baseline would flag, suppress the smell.
-- **Always a judgement call.** Each smell is a labelled heuristic ("possible Feature Envy"), never a hard violation. Like any standard here, skip anything tooling already enforces.
+- **Always a judgement call.** Each smell is a labelled heuristic ("possible Feature Envy"), never a hard violation. Like any standard here, skip anything tooling already enforces (Biome, TypeScript, and the checks run by `pnpm fullcheck`).
 
 Each smell reads *what it is* → *how to fix*; match it against the diff:
 
@@ -63,21 +66,21 @@ Issue both sub-agent calls together, in the foreground, and aggregate the report
 
 - The full diff command and commit list.
 - The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the sub-agent has no other access to it).
-- The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
+- The path of the [report template](references/report-template.md), for the severity levels and the finding format.
+- The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Rate each finding 🔴 Bloquant, 🟠 Majeur or 🟡 Mineur and write it in the finding format of the report template. Under 400 words."
 
 **Spec sub-agent prompt** should include:
 
 - The diff command and commit list.
 - The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+- The path of the [report template](references/report-template.md), for the severity levels and the finding format.
+- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Rate each finding 🔴 Bloquant, 🟠 Majeur or 🟡 Mineur and write it in the finding format of the report template. Under 400 words."
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
 ### 5. Aggregate
 
-Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings, because the two axes are deliberately separate (see _Why two axes_).
-
-End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes: that's the reranking the separation exists to prevent.
+Fill the [report template](references/report-template.md) with the two reports, verbatim or lightly cleaned. Sort findings by severity _within each axis_. Do **not** merge findings or rerank them across axes, because the two axes are deliberately separate (see _Why two axes_). The verdict is the only conclusion spanning both axes, and it follows the template's rule.
 
 ## Why two axes
 
