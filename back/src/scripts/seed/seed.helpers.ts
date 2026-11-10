@@ -122,6 +122,39 @@ export const insertSpecificAgenciesWithUserRight = async ({
     })
     .build();
 
+  const agencyToReviewWithRefersTo = new AgencyDtoBuilder()
+    .withId("40400c99-9c0b-bbbb-bb6d-6bb9bd300701")
+    .withName("Structure d'accompagnement Paris (à activer)")
+    .withSignature("Structure d'accompagnement signature")
+    .withKind("autre")
+    .withStatus("needsReview")
+    .withAddress(seedAddresses[0])
+    .withRefersToAgencyInfo({
+      refersToAgencyId: SEED_FT_AGENCY_ID,
+      refersToAgencyName: "Agence France Travail Paris",
+      refersToAgencyContactEmail: "osef",
+    })
+    .build();
+
+  const agenciesToReview = [
+    new AgencyDtoBuilder()
+      .withId("40400c99-9c0b-bbbb-bb6d-6bb9bd300702")
+      .withName("Mission Locale Bourg-en-Bresse (à activer)")
+      .withSignature("Mission Locale Bourg-en-Bresse signature")
+      .withKind("mission-locale")
+      .withStatus("needsReview")
+      .withAddress(seedAddresses[3])
+      .build(),
+    new AgencyDtoBuilder()
+      .withId("40400c99-9c0b-bbbb-bb6d-6bb9bd300703")
+      .withName("Structure IAE Soissons (à activer)")
+      .withSignature("Structure IAE Soissons signature")
+      .withKind("structure-IAE")
+      .withStatus("needsReview")
+      .withAddress(seedAddresses[5])
+      .build(),
+  ];
+
   const connectedValidator: AgencyUsersRights = {
     [userId]: {
       isNotifiedByEmail: true,
@@ -151,6 +184,13 @@ export const insertSpecificAgenciesWithUserRight = async ({
   await uow.agencyRepository.insert(
     toAgencyWithRights(agencyWithRefersTo, connectedCounsellor),
   );
+  await uow.agencyRepository.insert(
+    toAgencyWithRights(agencyToReviewWithRefersTo, connectedCounsellor),
+  );
+  for (const agencyToReview of agenciesToReview)
+    await uow.agencyRepository.insert(
+      toAgencyWithRights(agencyToReview, connectedValidator),
+    );
 
   return {
     ...agencyIds,
