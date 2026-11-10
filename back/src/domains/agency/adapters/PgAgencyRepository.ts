@@ -41,6 +41,7 @@ import {
   type AgencyRightOfUser,
   type AgencyWithNumberOfUsersToReview,
   type GetAgenciesFilters,
+  type GetAgenciesSort,
   type GetAgencyIdsFilters,
   type PartialAgencyWithUsersRights,
   throwIfAgencyHasNoUsersWhileNotClosedOrRejected,
@@ -276,9 +277,11 @@ export class PgAgencyRepository implements AgencyRepository {
   public async getAgencies({
     filters = {},
     pagination,
+    sort,
   }: {
     filters?: GetAgenciesFilters;
     pagination?: PaginationQueryParams;
+    sort?: GetAgenciesSort;
   }): Promise<DataWithPagination<AgencyWithUsersRights>> {
     const {
       departmentCode,
@@ -400,9 +403,13 @@ export class PgAgencyRepository implements AgencyRepository {
     const { limit, offset } =
       calculateLimitAndOffsetFromPagination(resolvedPagination);
 
-    const results = await filteredBuilder
-      .select(sql<number>`CAST(COUNT(*) OVER() AS INT)`.as("total_count"))
-      .orderBy("agencies.id", "asc")
+    const results = await pipeWithValue(
+      filteredBuilder.select(
+        sql<number>`CAST(COUNT(*) OVER() AS INT)`.as("total_count"),
+      ),
+      (b) => (sort ? b.orderBy("agencies.created_at", sort.direction) : b),
+      (b) => b.orderBy("agencies.id", "asc"),
+    )
       .limit(limit)
       .offset(offset)
       .execute();

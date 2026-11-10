@@ -18,6 +18,7 @@ import {
   isTruthy,
   type PaginationQueryParams,
   type SiretDto,
+  type SortDirection,
   type UserId,
   type WithGeoPosition,
   type WithUserFilters,
@@ -30,6 +31,7 @@ import {
   type AgencyRightOfUser,
   type AgencyWithNumberOfUsersToReview,
   type GetAgenciesFilters,
+  type GetAgenciesSort,
   type GetAgencyIdsFilters,
   type PartialAgencyWithUsersRights,
   throwIfAgencyHasNoUsersWhileNotClosedOrRejected,
@@ -151,9 +153,11 @@ export class InMemoryAgencyRepository implements AgencyRepository {
   public async getAgencies({
     filters = {},
     pagination,
+    sort,
   }: {
     filters?: GetAgenciesFilters;
     pagination?: PaginationQueryParams;
+    sort?: GetAgenciesSort;
   }): Promise<DataWithPagination<AgencyWithUsersRights>> {
     const allFiltered = Object.values(this.#agencies)
       .filter(isTruthy)
@@ -180,9 +184,12 @@ export class InMemoryAgencyRepository implements AgencyRepository {
           ].includes(false),
       );
 
+    const sortedById = allFiltered.sort((a, b) => a.id.localeCompare(b.id));
     const sorted = filters?.position
-      ? allFiltered.sort(sortByNearestFrom(filters.position.position))
-      : allFiltered.sort((a, b) => a.id.localeCompare(b.id));
+      ? sortedById.sort(sortByNearestFrom(filters.position.position))
+      : sort
+        ? sortedById.sort(compareCreatedAt(sort.direction))
+        : sortedById;
 
     const totalRecords = sorted.length;
     const resolvedPagination = {
@@ -314,6 +321,14 @@ export class InMemoryAgencyRepository implements AgencyRepository {
       .map((agency) => agency.agencySiret);
   }
 }
+
+const compareCreatedAt =
+  (direction: SortDirection) =>
+  (a: AgencyWithUsersRights, b: AgencyWithUsersRights): number => {
+    const difference =
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    return direction === "asc" ? difference : -difference;
+  };
 
 const sortByNearestFrom =
   (position: GeoPositionDto) =>

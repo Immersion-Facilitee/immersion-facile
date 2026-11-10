@@ -79,7 +79,7 @@ export const partnerAgencyKindSchema: ZodSchemaWithInputMatchingOutput<PartnerAg
     "Ce type de structure n'est pas supporté",
   );
 
-const agencyStatusSchema = z.enum(allAgencyStatuses, {
+export const agencyStatusSchema = z.enum(allAgencyStatuses, {
   error: localization.invalidEnum,
 });
 

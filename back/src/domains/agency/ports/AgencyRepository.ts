@@ -17,6 +17,7 @@ import {
   type PaginationQueryParams,
   type SiretDto,
   type UserId,
+  type WithSort,
   type WithUserFilters,
 } from "shared";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
@@ -34,6 +35,8 @@ export type GetAgenciesFilters = {
   userIds?: UserId[];
   delegationConventionEndDate?: DateString;
 };
+
+export type GetAgenciesSort = WithSort<"createdAt">["sort"];
 
 export type GetAgencyIdsFilters = {
   kinds?: AgencyKind[];
@@ -84,6 +87,7 @@ export interface AgencyRepository {
   getAgencies(props: {
     filters?: GetAgenciesFilters;
     pagination?: PaginationQueryParams;
+    sort?: GetAgenciesSort;
   }): Promise<DataWithPagination<AgencyWithUsersRights>>;
   getAgencyIdsByFilters(filters: GetAgencyIdsFilters): Promise<AgencyId[]>;
 
