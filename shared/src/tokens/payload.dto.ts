@@ -1,6 +1,5 @@
 import type { ApiConsumerId } from "../apiConsumer/ApiConsumer";
 import type { OtpChallenge } from "../auth/otpChallenge/otpChallenge.dto";
-import type { VisitorSessionPayload } from "../auth/visitorSession/visitorSession.dto";
 import type { ConventionId } from "../convention/convention.dto";
 import type { ConventionActorRole } from "../role/role.dto";
 import type { Flavor } from "../typeFlavors";
@@ -22,7 +21,6 @@ export type PayloadKind =
 export type JwtPayloads = {
   convention?: ConventionDomainJwtPayload;
   visitorOtp?: VisitorOtpJwtPayload;
-  visitorSession?: VisitorSessionPayload;
   connectedUser?: ConnectedUserJwtPayload;
   emailAuthCode?: EmailAuthCodeJwtPayload;
   currentUser?: ConnectedUser;
