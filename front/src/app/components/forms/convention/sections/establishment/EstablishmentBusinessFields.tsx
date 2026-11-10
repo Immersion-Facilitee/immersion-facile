@@ -65,6 +65,11 @@ export const EstablishmentBusinessFields = ({
   );
   const formContents = getFormFields();
   const getFieldError = makeFieldError(formState);
+  const siretErrorMessage =
+    siretErrorToDisplay ??
+    (formState.submitCount > 0
+      ? getFieldError("siret")?.stateRelatedMessage
+      : undefined);
   return (
     <>
       <Input
@@ -73,14 +78,14 @@ export const EstablishmentBusinessFields = ({
         nativeInputProps={{
           ...formContents.siret,
           onChange: (event) => {
-            setValue("siret", event.target.value);
+            setValue("siret", event.target.value, { shouldValidate: true });
             updateSiret(event.target.value);
           },
           value: currentSiret || siretValueOnForm,
         }}
         disabled={isFetchingSiret}
-        state={siretErrorToDisplay ? "error" : undefined}
-        stateRelatedMessage={siretErrorToDisplay}
+        state={siretErrorMessage ? "error" : undefined}
+        stateRelatedMessage={siretErrorMessage}
         className={fr.cx("fr-mb-1w")}
       />
       <p className={fr.cx("fr-mb-1w")}>
@@ -128,6 +133,7 @@ export const EstablishmentBusinessFields = ({
             establishmentInfos?.businessName || convention?.businessName || "",
         }}
         disabled={true}
+        {...getFieldError("businessName")}
         className={fr.cx("fr-mt-3w")}
       />
       <Input

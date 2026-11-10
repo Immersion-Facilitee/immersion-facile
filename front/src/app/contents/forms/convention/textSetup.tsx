@@ -136,6 +136,9 @@ const immersionTexts = (internshipKind: InternshipKind) => ({
   immersionDetailsSection: {
     title: internshipKind === "immersion" ? "Détails" : "Détails du stage",
   },
+  errorSummary: {
+    title: "Votre demande doit être corrigée",
+  },
   yes: "Oui",
   no: "Non",
   linkCopied: "Lien copié !",

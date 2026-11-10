@@ -285,7 +285,7 @@ const conventionSection = ({
     label: `Dates et horaires ${
       internshipKind === "immersion" ? "de l'immersion" : "du stage"
     }`,
-    id: "",
+    id: conventionSectionIds.schedule,
   },
 });
 
@@ -542,6 +542,8 @@ const establishmentRepresentativeSection = ({
     required: !isConventionTemplate,
   },
 });
+
+export type FormFieldKeysWithoutUi = keyof typeof fieldsToExclude;
 
 const fieldsToExclude = {
   agencyContactEmail: {

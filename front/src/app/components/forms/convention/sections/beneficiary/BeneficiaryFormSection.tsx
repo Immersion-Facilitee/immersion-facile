@@ -130,8 +130,17 @@ export const BeneficiaryFormSection = ({
         return;
       }
       setValue("signatories.beneficiaryRepresentative", undefined);
+      setEmailValidationErrors(
+        ({ "Représentant légal du bénéficiaire": _, ...rest }) => rest,
+      );
     },
-    [dispatch, values.dateStart, setValue, isMinorAccordingToAge],
+    [
+      dispatch,
+      values.dateStart,
+      setValue,
+      isMinorAccordingToAge,
+      setEmailValidationErrors,
+    ],
   );
 
   useEffect(() => {
@@ -352,6 +361,11 @@ export const BeneficiaryFormSection = ({
                       }
                     : undefined,
                 );
+                if (!value)
+                  setEmailValidationErrors(
+                    ({ "Représentant légal du bénéficiaire": _, ...rest }) =>
+                      rest,
+                  );
               },
             },
           }))}
@@ -426,6 +440,11 @@ export const BeneficiaryFormSection = ({
                         }
                       : undefined,
                   );
+                  if (!value)
+                    setEmailValidationErrors(
+                      ({ "Employeur actuel du bénéficiaire": _, ...rest }) =>
+                        rest,
+                    );
                 },
               },
             }))}

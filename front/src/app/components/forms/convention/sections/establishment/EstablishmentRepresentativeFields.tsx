@@ -130,6 +130,7 @@ export const EstablishmentRepresentativeFields = ({
           },
         }}
         disabled={isFetchingSiret}
+        {...getFieldError("signatories.establishmentRepresentative.email")}
         onEmailValidationFeedback={({ state, stateRelatedMessage }) => {
           const { "Responsable d'entreprise": _, ...rest } =
             emailValidationErrors;

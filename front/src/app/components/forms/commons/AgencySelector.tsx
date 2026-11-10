@@ -19,7 +19,9 @@ import {
   orderedAgencyKindList,
 } from "shared";
 import type { FormFieldAttributes } from "src/app/contents/forms/types";
-import { AgencyErrorText } from "../convention/sections/agency/AgencyErrorText";
+
+const agencyOptionsFetchErrorMessage =
+  "Erreur de chargement de la liste. Veuillez réessayer plus tard.";
 
 type AgencySelectorProps = {
   shouldShowAgencyKindField: boolean;
@@ -84,7 +86,7 @@ export const AgencySelector = ({
   const {
     register,
     setValue,
-    formState: { errors, touchedFields },
+    formState: { errors, touchedFields, submitCount },
     control,
   } = useFormContext<SupportedFormsDto>();
 
@@ -150,13 +152,15 @@ export const AgencySelector = ({
 
   const error = errors[agencyIdFieldName];
   const touched = touchedFields[agencyIdFieldName];
-  const userError = !!(touched && error);
+  const userError = !!(error && (touched || submitCount > 0));
   const showError: boolean = userError || isFetchAgencyOptionsError;
 
   const agencyKindOptions = makeAgencyKindOptions(
     agencyOptions,
     shouldFilterDelegationPrescriptionAgencyKind,
   );
+  const isAgencyKindSelectionDisabled =
+    !agencyDepartment || agencyKindOptions.length === 0;
 
   const agencyIdValue = useWatch({
     name: agencyIdFieldName,
@@ -209,7 +213,7 @@ export const AgencySelector = ({
               ? agencyPlaceholder
               : agencyKindField.placeholder
           }
-          disabled={agencyKindOptions.length === 0}
+          disabled={isAgencyKindSelectionDisabled}
           nativeSelectProps={{
             ...agencyKindField,
             ...register(agencyKindFieldName),
@@ -236,14 +240,13 @@ export const AgencySelector = ({
           ...register(agencyIdFieldName),
           value: agencyIdValue,
         }}
+        state={showError ? "error" : "default"}
+        stateRelatedMessage={
+          isFetchAgencyOptionsError
+            ? agencyOptionsFetchErrorMessage
+            : error?.message
+        }
       />
-      {showError && (
-        <AgencyErrorText
-          isFetchAgencyOptionsError={isFetchAgencyOptionsError}
-          userError={userError ? "Veuillez sélectionner une structure" : ""} // @TODO userError.message
-          error={error?.message}
-        />
-      )}
       {isLoading && <Loader />}
     </div>
   );
