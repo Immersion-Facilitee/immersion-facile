@@ -143,18 +143,6 @@ export const AdminConventionListSection = (): React.ReactNode => {
           .join(" ")
       : undefined;
 
-  const fetchConventions = (
-    filtersToFetch: FlatGetConventionsForAdminParams,
-  ): void => {
-    dispatch(
-      conventionListSlice.actions.fetchAdminConventionListRequested({
-        jwt: connectedUserJwt,
-        filters: filtersToFetch,
-        feedbackTopic,
-      }),
-    );
-  };
-
   const applyFilters = (
     filtersToApply: AdminConventionListFilters,
     search: string | undefined,
@@ -163,7 +151,14 @@ export const AdminConventionListSection = (): React.ReactNode => {
       toFlatGetConventionsForAdminParams(filtersToApply, search),
     );
     setHasSubmittedInvalidFilters(!validation.success);
-    if (validation.success) fetchConventions(validation.data);
+    if (validation.success)
+      dispatch(
+        conventionListSlice.actions.fetchAdminConventionListRequested({
+          jwt: connectedUserJwt,
+          filters: validation.data,
+          feedbackTopic,
+        }),
+      );
   };
 
   const resetFilters = (resetValues: AdminConventionListFilters): void => {
@@ -393,7 +388,15 @@ export const AdminConventionListSection = (): React.ReactNode => {
               title: `Résultats de recherche, page : ${pageNumber}`,
               onClick: (event) => {
                 event.preventDefault();
-                fetchConventions({ ...filters, page: pageNumber });
+                dispatch(
+                  conventionListSlice.actions.fetchAdminConventionListRequested(
+                    {
+                      jwt: connectedUserJwt,
+                      filters: { ...filters, page: pageNumber },
+                      feedbackTopic,
+                    },
+                  ),
+                );
               },
               href: "#",
               key: `pagination-link-${pageNumber}`,
