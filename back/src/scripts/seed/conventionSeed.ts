@@ -46,6 +46,18 @@ export const conventionSeed = async (
     .withStatus("READY_TO_SIGN")
     .withAgencyId(getRandomAgencyId({ kind: "france-travail", agencyIds }))
     .withSchedule(reasonableSchedule)
+    .withFederatedIdentity({
+      provider: "ftConnect",
+      token: uuidGenerator.new(),
+      payload: {
+        advisor: {
+          email: "conseiller.ft@france-travail.fr",
+          firstName: "Paul",
+          lastName: "Conseiller",
+          type: "PLACEMENT",
+        },
+      },
+    })
     .build();
 
   const cciConvention = new ConventionDtoBuilder()
@@ -58,6 +70,7 @@ export const conventionSeed = async (
     .withStatus("READY_TO_SIGN")
     .withAgencyId(getRandomAgencyId({ kind: "cci", agencyIds }))
     .withSchedule(reasonableSchedule)
+    .withAgencyReferent({ firstname: "Camille", lastname: "Conseillère" })
     .build();
 
   const conventionWithAssessmentReadyToFill = new ConventionDtoBuilder()
