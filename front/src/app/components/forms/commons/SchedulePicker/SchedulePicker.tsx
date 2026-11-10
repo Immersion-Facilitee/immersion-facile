@@ -6,6 +6,7 @@ import {
   type ConventionDto,
   type ConventionReadDto,
   type DateIntervalDto,
+  domElementIds,
   reasonableSchedule,
   scheduleWithFirstDayActivity,
   type Weekday,
@@ -43,7 +44,7 @@ export const SchedulePicker = ({
     ? toArrayOfScheduleErrors(error.message)
     : [];
   return (
-    <>
+    <div id={domElementIds.conventionImmersion.conventionSection.schedule}>
       <RadioButtons
         legend="Les horaires quotidiens sont-ils réguliers ? *"
         hintText="Ex : (Non) chaque jour a des horaires bien spécifiques, (Oui) “Du lundi au vendredi de 8h00 à 17h00”"
@@ -91,7 +92,7 @@ export const SchedulePicker = ({
           <ComplexSchedulePicker disabled={disabled} />
         )}
       </div>
-    </>
+    </div>
   );
 };
 
