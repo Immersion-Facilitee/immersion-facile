@@ -7,19 +7,10 @@
 
   background-color: var(--background-default-grey);
 
-  &__title {
-    margin-bottom: 1.5rem;
-    @include for-screen-min($bp-lg) {
-      margin-bottom: 3rem;
-    }
-  }
-
   &__steps {
     display: flex;
     flex-direction: column;
     gap: $mobile-gap;
-    margin: 0;
-    padding: 0;
     list-style: none;
     @include for-screen-min($bp-lg) {
       flex-direction: row;
@@ -32,7 +23,6 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0;
     @include for-screen-min($bp-lg) {
       flex: 1 1 0;
       flex-direction: column;
@@ -95,14 +85,5 @@
     flex: 1;
     flex-direction: column;
     gap: 0.25rem;
-  }
-
-  &__step-title {
-    margin: 0;
-    font-weight: 700;
-  }
-
-  &__step-description {
-    margin: 0;
   }
 }
