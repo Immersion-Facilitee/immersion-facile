@@ -16,7 +16,7 @@ import {
 import { labelAndSeverityByStatus } from "src/app/contents/convention/labelAndSeverityByStatus";
 import { getAssessmentLabelsAndSeverityByStatus } from "src/app/utils/assessment.utils";
 
-type CheckboxFilterParams<T> = {
+export type CheckboxFilterParams<T> = {
   selectedValues: T[] | undefined;
   onChange: (selectedValues: NotEmptyArray<T> | undefined) => void;
 };
@@ -26,12 +26,12 @@ type DropdownFilterParams = {
   onReset: () => void;
 };
 
-type CheckboxDropdownFilterParams<T> = DropdownFilterParams &
+export type CheckboxDropdownFilterParams<T> = DropdownFilterParams &
   CheckboxFilterParams<T> & {
     appliedValues: T[] | undefined;
   };
 
-const toggleSelectedValue = <T,>(
+export const toggleSelectedValue = <T,>(
   selectedValues: T[] | undefined,
   value: T,
   isChecked: boolean,
