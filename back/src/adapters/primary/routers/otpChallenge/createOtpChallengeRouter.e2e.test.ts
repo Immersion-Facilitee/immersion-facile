@@ -449,10 +449,74 @@ describe("otp challenge router", () => {
       expect(response.headers["set-cookie"]).toEqual(
         expect.arrayContaining([
           expect.stringMatching(
-            `if_visitor_${convention.id}=${visitorSession.id};.*Expires=${new Date(visitorSession.expiresAt).toUTCString()};.*HttpOnly.*SameSite=Lax`,
+            `if_visitor=${visitorSession.id};.*Expires=${new Date(visitorSession.expiresAt).toUTCString()};.*HttpOnly.*SameSite=Lax`,
           ),
         ]),
       );
+    });
+
+    it("204 - uses the same cookie for successive connections to different conventions", async () => {
+      const firstResponse = await httpClient.verifyOtpChallenge({
+        body: { otpCode },
+        headers: {
+          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+        },
+      });
+      expect(firstResponse.status).toBe(204);
+      const firstSession =
+        inMemoryUow.visitorSessionRepository.visitorSessions[0];
+
+      const otherConvention = new ConventionDtoBuilder(convention)
+        .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
+        .build();
+      const otherSubject = {
+        ...visitorOtpJwtPayload.subject,
+        conventionId: otherConvention.id,
+      };
+      inMemoryUow.conventionRepository.setConventions([
+        convention,
+        otherConvention,
+      ]);
+      inMemoryUow.otpChallengeRepository.otpChallenges = [
+        new OtpChallengeDtoBuilder(otpChallenge)
+          .withSubject(otherSubject)
+          .build(),
+      ];
+
+      const secondResponse = await request
+        .post(otpChallengeRoutes.verifyOtpChallenge.url)
+        .set(
+          "Authorization",
+          generateVisitorOtpJwt({
+            ...visitorOtpJwtPayload,
+            subject: otherSubject,
+          }),
+        )
+        .set("Cookie", `if_visitor=${firstSession.id}`)
+        .send({ otpCode });
+      expect(secondResponse.status).toBe(204);
+      const secondSession =
+        inMemoryUow.visitorSessionRepository.visitorSessions.find(
+          ({ subject }) => subject.conventionId === otherConvention.id,
+        );
+      if (!secondSession) throw new Error("Missing second visitor session");
+      expect(secondResponse.headers["set-cookie"]).toEqual([
+        `if_visitor=${secondSession.id}; Path=/; Expires=${new Date(secondSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
+      ]);
+      expect(firstResponse.headers["set-cookie"]).toEqual([
+        `if_visitor=${firstSession.id}; Path=/; Expires=${new Date(firstSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
+      ]);
+
+      for (const { conventionId, expectedStatus } of [
+        { conventionId: otherConvention.id, expectedStatus: 200 },
+        { conventionId: convention.id, expectedStatus: 401 },
+      ]) {
+        const response = await request
+          .get(otpChallengeRoutes.getVisitorSession.url)
+          .query({ purpose: "manageConvention", conventionId })
+          .set("Cookie", `if_visitor=${secondSession.id}`);
+        expect(response.status).toBe(expectedStatus);
+      }
     });
 
     it("400 - invalid otp code does not set cookie", async () => {
@@ -580,7 +644,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getVisitorSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor_${convention.id}=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${visitorSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -610,14 +674,20 @@ describe("otp challenge router", () => {
       });
     });
 
+    it("401 - ignores legacy convention-specific cookies", async () => {
+      const response = await request
+        .get(otpChallengeRoutes.getVisitorSession.url)
+        .query(manageConventionQuery)
+        .set("Cookie", `if_visitor_${convention.id}=${visitorSession.id}`);
+
+      expect(response.status).toBe(401);
+    });
+
     it("401 - unknown session id", async () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getVisitorSession.url)
         .query(manageConventionQuery)
-        .set(
-          "Cookie",
-          `if_visitor_${convention.id}=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
-        );
+        .set("Cookie", "if_visitor=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -643,7 +713,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getVisitorSession.url)
         .query(queryParams)
-        .set("Cookie", `if_visitor_${otherConventionId}=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${visitorSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -667,7 +737,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getVisitorSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor_${convention.id}=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${visitorSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -691,7 +761,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getVisitorSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor_${convention.id}=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${visitorSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -715,7 +785,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getVisitorSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor_${convention.id}=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${visitorSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
