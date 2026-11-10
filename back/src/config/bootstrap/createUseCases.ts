@@ -10,6 +10,7 @@ import z from "zod";
 import { makeAddAgenciesAndUsers } from "../../domains/agency/use-cases/AddAgenciesAndUsers";
 import { makeAddAgency } from "../../domains/agency/use-cases/AddAgency";
 import { makeCloseAgencyAndTransferConventions } from "../../domains/agency/use-cases/CloseAgencyAndTransferConventions";
+import { makeGetAgenciesForAdmin } from "../../domains/agency/use-cases/GetAgenciesForAdmin";
 import { makeGetAgencyById } from "../../domains/agency/use-cases/GetAgencyById";
 import { makeListAgencyOptionsByFilter } from "../../domains/agency/use-cases/ListAgenciesByFilter";
 import { makeNotifyAgencyHasBeenPutOnHold } from "../../domains/agency/use-cases/NotifyAgencyHasBeenPutOnHold";
@@ -809,6 +810,9 @@ export const createUseCases = ({
     getAgencyPublicInfoById: makeGetAgencyPublicInfoById({ uowPerformer }),
 
     listAgencyOptionsByFilter: makeListAgencyOptionsByFilter({
+      uowPerformer,
+    }),
+    getAgenciesForAdmin: makeGetAgenciesForAdmin({
       uowPerformer,
     }),
 

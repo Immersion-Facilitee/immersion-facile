@@ -2,6 +2,10 @@ import { defineRoute, defineRoutes } from "shared-routes";
 import { z } from "zod";
 import { userParamsForAgencySchema } from "../admin/admin.schema";
 import {
+  getAgenciesForAdminParamsSchema,
+  paginatedAdminAgencyListSchema,
+} from "../agency/adminAgencyList.schema";
+import {
   agencyIdResponseSchema,
   agencyIdsSchema,
   agencyOptionsSchema,
@@ -66,6 +70,18 @@ export const agencyRoutes = defineRoutes({
     url: "/agencies/:agencyId",
     ...withAuthorizationHeaders,
     responses: { 200: agencySchema },
+  }),
+  getAgenciesForAdmin: defineRoute({
+    method: "get",
+    url: "/agencies-for-admin",
+    ...withAuthorizationHeaders,
+    queryParamsSchema: getAgenciesForAdminParamsSchema,
+    responses: {
+      200: paginatedAdminAgencyListSchema,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+    },
   }),
   getAgencyOptionsByFilter: defineRoute({
     method: "get",

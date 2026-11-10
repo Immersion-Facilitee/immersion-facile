@@ -1295,7 +1295,11 @@ export const domElementIds = {
         "im-manage-convention-template__share-as-convention-draft-submit-button",
     },
   },
-  adminAgencies: {},
+  adminAgencies: {
+    agencyListFilterDropdown: "im-admin-agencies__agency-list-filter-dropdown",
+    agencyListEditAgencyButton:
+      "im-admin-agencies__agency-list-edit-agency-button",
+  },
   adminConventions: {
     conventionListFilterInput:
       "im-admin-conventions__convention-list-filter-input",

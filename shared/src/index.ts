@@ -8,6 +8,8 @@ export * from "./admin/admin.routes";
 export * from "./admin/admin.schema";
 export * from "./admin/adminTabs";
 export * from "./agency/AgencyDtoBuilder";
+export * from "./agency/adminAgencyList.dto";
+export * from "./agency/adminAgencyList.schema";
 export * from "./agency/agency.dto";
 export * from "./agency/agency.schema";
 export * from "./agency/agency.utils";

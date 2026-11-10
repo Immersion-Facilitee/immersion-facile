@@ -501,6 +501,81 @@ describe("Agency routes", () => {
 
   describe("Private routes (for backoffice admin)", () => {
     describe(`${displayRouteName(
+      agencyRoutes.getAgenciesForAdmin,
+    )} to list agencies for backoffice admin`, () => {
+      beforeEach(() => {
+        inMemoryUow.agencyRepository.agencies = [
+          toAgencyWithRights(agency3ActiveFarAway),
+          toAgencyWithRights(agency4NeedsReview),
+        ];
+      });
+
+      it("401 - Unauthorized when not correctly authenticated", async () => {
+        const response = await httpClient.getAgenciesForAdmin({
+          headers: { authorization: "invalid-token" },
+          queryParams: {},
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 401,
+          body: { status: 401, message: invalidTokenMessage },
+        });
+      });
+
+      it("400 - Bad request when the search is too short", async () => {
+        const response = await httpClient.getAgenciesForAdmin({
+          headers: { authorization: backofficeAdminToken },
+          queryParams: { search: "te" },
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 400,
+          body: {
+            issues: ["search : Le minimum est de 3 caractères"],
+            message:
+              "Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: GET /agencies-for-admin",
+            status: 400,
+          },
+        });
+      });
+
+      it("200 - returns agencies matching the filters", async () => {
+        const response = await httpClient.getAgenciesForAdmin({
+          headers: { authorization: backofficeAdminToken },
+          queryParams: {
+            page: 1,
+            perPage: 10,
+            search: "test agency",
+            statuses: ["needsReview"],
+            kinds: [agency4NeedsReview.kind],
+          },
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 200,
+          body: {
+            data: [
+              {
+                id: agency4NeedsReview.id,
+                name: agency4NeedsReview.name,
+                kind: agency4NeedsReview.kind,
+                status: "needsReview",
+                siret: agency4NeedsReview.agencySiret,
+                refersToAgencyName: null,
+              },
+            ],
+            pagination: {
+              currentPage: 1,
+              totalPages: 1,
+              numberPerPage: 10,
+              totalRecords: 1,
+            },
+          },
+        });
+      });
+    });
+
+    describe(`${displayRouteName(
       agencyRoutes.closeAgencyAndTransfertConventions,
     )} to close an agency and transfer its conventions`, () => {
       const agencyToClose = AgencyDtoBuilder.create("agency-to-close-id")
