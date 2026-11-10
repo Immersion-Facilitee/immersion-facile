@@ -1,9 +1,9 @@
 import { Router } from "express";
 import {
   errors,
-  makeVisitorSessionCookieName,
   otpChallengeRoutes,
   type VisitorSessionId,
+  visitorSessionCookieName,
 } from "shared";
 import { createExpressSharedRouter } from "shared-routes/express";
 import type { AppDependencies } from "../../../../config/bootstrap/createAppDependencies";
@@ -47,27 +47,20 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
         const visitorOtp = getGenericAuthOrThrow(req.payloads?.visitorOtp);
         const { id, expiresAt } =
           await deps.useCases.verifyOtpChallenge.execute(req.body, visitorOtp);
-        res.cookie(
-          makeVisitorSessionCookieName({
-            purpose: visitorOtp.purpose,
-            conventionId: visitorOtp.subject.conventionId,
-          }),
-          id,
-          {
-            httpOnly: true,
-            secure: true,
-            sameSite: "lax",
-            path: "/",
-            expires: new Date(expiresAt),
-          },
-        );
+        res.cookie(visitorSessionCookieName, id, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "lax",
+          path: "/",
+          expires: new Date(expiresAt),
+        });
       }),
   );
 
   sharedOtpChallengeRouter.getVisitorSession((req, res) =>
     sendHttpResponse(req, res, () => {
       const sessionId: VisitorSessionId | undefined =
-        req.cookies?.[makeVisitorSessionCookieName(req.query)];
+        req.cookies?.[visitorSessionCookieName];
       if (!sessionId) throw errors.visitorSession.unauthorized();
 
       return deps.useCases.getVisitorSession.execute(req.query, { sessionId });

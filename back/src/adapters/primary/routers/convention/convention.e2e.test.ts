@@ -26,11 +26,9 @@ import {
   expectToEqual,
   expiredJwtErrorMessage,
   frontRoutes,
-  type GetVisitorSessionQueryParams,
   makeBooleanFeatureFlag,
   makeEmptyLastReminders,
   makeRouteAbsoluteUrl,
-  makeVisitorSessionCookieName,
   reasonableSchedule,
   type TechnicalRoutes,
   technicalRoutes,
@@ -38,7 +36,7 @@ import {
   type User,
   unauthenticatedConventionRoutes,
   VisitorSessionDtoBuilder,
-  type VisitorSessionId,
+  visitorSessionCookieName,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -645,13 +643,6 @@ describe("convention e2e", () => {
     });
 
     describe("visitor session cookie", () => {
-      const visitorSessionCookie = ({
-        sessionId,
-        ...queryParams
-      }: GetVisitorSessionQueryParams & {
-        sessionId: VisitorSessionId;
-      }): string => `${makeVisitorSessionCookieName(queryParams)}=${sessionId}`;
-
       const now = new Date("2026-11-05T10:00:00.000Z");
       const visitorSession = new VisitorSessionDtoBuilder()
         .withSubject({
@@ -690,14 +681,7 @@ describe("convention e2e", () => {
               convention.id,
             ),
           )
-          .set(
-            "Cookie",
-            visitorSessionCookie({
-              purpose: "manageConvention",
-              conventionId: convention.id,
-              sessionId: visitorSession.id,
-            }),
-          );
+          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -718,11 +702,7 @@ describe("convention e2e", () => {
           )
           .set(
             "Cookie",
-            visitorSessionCookie({
-              purpose: "manageConvention",
-              conventionId: convention.id,
-              sessionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-            }),
+            `${visitorSessionCookieName}=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
           );
 
         expectHttpResponseToEqual(
@@ -751,14 +731,7 @@ describe("convention e2e", () => {
               convention.id,
             ),
           )
-          .set(
-            "Cookie",
-            visitorSessionCookie({
-              purpose: "manageConvention",
-              conventionId: convention.id,
-              sessionId: visitorSession.id,
-            }),
-          );
+          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -786,14 +759,7 @@ describe("convention e2e", () => {
               convention.id,
             ),
           )
-          .set(
-            "Cookie",
-            visitorSessionCookie({
-              purpose: "manageConvention",
-              conventionId: convention.id,
-              sessionId: visitorSession.id,
-            }),
-          );
+          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -818,14 +784,7 @@ describe("convention e2e", () => {
               otherConventionId,
             ),
           )
-          .set(
-            "Cookie",
-            visitorSessionCookie({
-              purpose: "manageConvention",
-              conventionId: otherConventionId,
-              sessionId: visitorSession.id,
-            }),
-          );
+          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -853,14 +812,7 @@ describe("convention e2e", () => {
               convention.id,
             ),
           )
-          .set(
-            "Cookie",
-            visitorSessionCookie({
-              purpose: "manageConvention",
-              conventionId: convention.id,
-              sessionId: visitorSession.id,
-            }),
-          );
+          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },

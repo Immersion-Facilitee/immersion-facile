@@ -45,12 +45,10 @@ export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
       const otpCodeVerification = await deps.uowPerformer.perform(
         async (uow): Promise<OtpCodeVerification> => {
           const otpChallenge =
-            await uow.otpChallengeRepository.getActiveByPurposeAndSubject(
-              {
-                purpose: currentUser.purpose,
-                subject: currentUser.subject,
-              },
-            );
+            await uow.otpChallengeRepository.getActiveByPurposeAndSubject({
+              purpose: currentUser.purpose,
+              subject: currentUser.subject,
+            });
 
           if (!otpChallenge) throw errors.otpChallenge.noActiveChallenge();
 

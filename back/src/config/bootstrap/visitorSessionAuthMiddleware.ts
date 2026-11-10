@@ -2,7 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import {
   errors,
   type GetVisitorSessionQueryParams,
-  makeVisitorSessionCookieName,
+  visitorSessionCookieName,
 } from "shared";
 import { match } from "ts-pattern";
 import { getActiveVisitorSessionOrThrow } from "../../domains/core/authentication/visitor-session/entities/visitorSession.helper";
@@ -17,19 +17,16 @@ export const makeVisitorSessionAuthMiddleware =
   }): RequestHandler =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const cookieScope = getVisitorSessionCookieScope(req);
-      const sessionId = cookieScope
-        ? req.cookies?.[makeVisitorSessionCookieName(cookieScope)]
-        : undefined;
+      const scope = getVisitorSessionScope(req);
+      const sessionId = req.cookies?.[visitorSessionCookieName];
 
-      if (!cookieScope || !sessionId)
-        throw errors.visitorSession.unauthorized();
+      if (!scope || !sessionId) throw errors.visitorSession.unauthorized();
 
       const visitorSession = await deps.uowPerformer.perform((uow) =>
         getActiveVisitorSessionOrThrow({
           uow,
           sessionId,
-          scope: cookieScope,
+          scope,
           now: deps.timeGateway.now(),
         }),
       );
@@ -54,7 +51,7 @@ export const makeVisitorSessionAuthMiddleware =
     }
   };
 
-const getVisitorSessionCookieScope = (
+const getVisitorSessionScope = (
   req: Request,
 ): GetVisitorSessionQueryParams | undefined => {
   const conventionId =
