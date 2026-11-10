@@ -283,9 +283,6 @@ const createConventionSelection = (
     ).as("dto"),
   );
 
-// Point of attention: beneficiary, establishment representative and establishment tutor foreign keys are NOT NULL,
-// so left joins return the same rows as inner joins while letting PostgreSQL skip the actor lookups
-// when no filter or selection uses them.
 const withActorJoins = (
   builder: SelectQueryBuilder<ConventionQueryBuilderDb, "conventions", any>,
 ): ConventionBaseQueryBuilder =>
