@@ -46,6 +46,7 @@ import labonneboiteLogoUrl from "src/assets/img/logo-lbb-on-left.png";
 import { featureFlagSelectors } from "src/core-logic/domain/featureFlags/featureFlags.selector";
 import { searchSelectors } from "src/core-logic/domain/search/search.selectors";
 import type { SearchPageParams } from "src/core-logic/domain/search/search.slice";
+import { match, P } from "ts-pattern";
 import type { Link } from "type-route";
 import { SearchResult } from "./SearchResult";
 
@@ -478,9 +479,16 @@ const makeOfferLink = (
     ...(locationId ? { location: locationId } : {}),
   };
 
-  return route.name === "search" || route.name === "externalSearch"
-    ? frontRoutes.searchResult(searchParams).link
-    : frontRoutes.searchResultForStudent(searchParams).link;
+  return match(route.name)
+    .with(
+      P.union("search", "externalSearch", "group"),
+      () => frontRoutes.searchResult(searchParams).link,
+    )
+    .with(
+      "searchForStudent",
+      () => frontRoutes.searchResultForStudent(searchParams).link,
+    )
+    .exhaustive();
 };
 
 const getFilteredSearchParamsForLBB = (
