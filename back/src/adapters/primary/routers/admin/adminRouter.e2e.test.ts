@@ -156,22 +156,6 @@ describe("Admin router", () => {
       });
     });
 
-    it("200 - Gets the absolute Url of the agency dashboard", async () => {
-      const agencyId = "my-agency-id";
-      const response = await sharedRequest.getDashboardUrl({
-        urlParams: { dashboardName: "adminAgencyDetails" },
-        headers: { authorization: backOfficeAdminToken },
-        queryParams: { agencyId: agencyId },
-      });
-      expectHttpResponseToEqual(response, {
-        status: 200,
-        body: {
-          name: "adminAgencyDetails",
-          url: `http://stubAgencyForAdminDashboard/${agencyId}/${gateways.timeGateway.now()}`,
-        },
-      });
-    });
-
     it("400 - unknown dashboard", async () => {
       const response = await sharedRequest.getDashboardUrl({
         urlParams: { dashboardName: "unknown-dashboard" },
@@ -187,26 +171,8 @@ describe("Admin router", () => {
             "Schema validation failed in usecase GetDashboardUrl. See issues for details.",
           issues: [
             "name : Vous devez sélectionner une option parmi celles proposées",
-            "agencyId : Invalid input: expected string, received undefined",
             "conventionId : Invalid input: expected string, received undefined",
           ],
-        },
-      });
-    });
-
-    it("400 - no agencyId is provided for agency dashboard", async () => {
-      const response = await sharedRequest.getDashboardUrl({
-        urlParams: { dashboardName: "agency" },
-        headers: { authorization: backOfficeAdminToken },
-        queryParams: {},
-      });
-
-      expectHttpResponseToEqual(response, {
-        status: 400,
-        body: {
-          status: 400,
-          message:
-            "You need to provide agency Id in query params : http://.../agency?agencyId=your-id",
         },
       });
     });

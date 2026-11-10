@@ -4,11 +4,17 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import { Input } from "@codegouvfr/react-dsfr/Input";
-import { Fragment, useEffect, useState } from "react";
-import { type RichDropdownProps, RichTable } from "react-design-system";
+import { useEffect, useState } from "react";
+import {
+  type HeadingSectionProps,
+  type RichDropdownProps,
+  RichTable,
+} from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AdminConventionListDto,
+  type AgencyDto,
+  type AgencyId,
   adminConventionListMaxResults,
   adminConventionListTextFilterMinLength,
   defaultPerPageInWebPagination,
@@ -53,17 +59,84 @@ const feedbackTopic: FeedbackTopic = "admin-convention-list";
 
 const agencyNameFilterLabel = "Agence";
 
-const toResultCountLabel = (totalRecords: number): string => {
-  if (totalRecords >= adminConventionListMaxResults)
-    return `${adminConventionListMaxResults} conventions ou plus : seules les ${adminConventionListMaxResults} plus récentes sont consultables, affinez les filtres pour trouver les plus anciennes.`;
+type AdminConventionListScope = Pick<
+  FlatGetConventionsForAdminParams,
+  "agencyIds" | "sortBy"
+>;
+
+type AdminConventionListContent = {
+  title: string;
+  titleAs: HeadingSectionProps["titleAs"];
+  description: string;
+  tableLabel: string;
+  searchHint: string;
+  emptyResultMessage: string;
+  maxResultsMessage: string;
+  manageConventionButtonId: string;
+};
+
+const searchHintTail = `L'email et le SIRET doivent être complets, les noms peuvent être partiels (${adminConventionListTextFilterMinLength} caractères minimum).`;
+
+const allConventionsContent: AdminConventionListContent = {
+  title: "Consulter les conventions",
+  titleAs: "h1",
+  description:
+    "Conventions correspondant aux filtres, de la plus récente à la plus ancienne date de la demande.",
+  tableLabel: "Liste des conventions",
+  searchHint: `Astuce : saisir un nom de conseiller dans la recherche permet d’afficher uniquement ses conventions. Pour une agence, utilisez le filtre Agence. ${searchHintTail}`,
+  emptyResultMessage:
+    "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+  maxResultsMessage: `${adminConventionListMaxResults} conventions ou plus : seules les ${adminConventionListMaxResults} plus récentes sont consultables, affinez les filtres pour trouver les plus anciennes.`,
+  manageConventionButtonId:
+    domElementIds.adminConventions.conventionListManageConventionButton,
+};
+
+const makeAgencyConventionsContent = (
+  agency: AgencyDto,
+): AdminConventionListContent => ({
+  title: "Conventions de l'agence",
+  titleAs: "h2",
+  description:
+    "Conventions de l'agence, de la plus récente à la plus ancienne date de début.",
+  tableLabel: `Liste des conventions de ${agency.name}`,
+  searchHint: `Astuce : saisir un nom de conseiller dans la recherche permet d’afficher uniquement ses conventions. ${searchHintTail}`,
+  emptyResultMessage: "Aucune convention trouvée pour cette agence.",
+  maxResultsMessage: `${adminConventionListMaxResults} conventions ou plus : seules les ${adminConventionListMaxResults} plus récentes par date de début sont consultables, affinez la recherche pour trouver les autres.`,
+  manageConventionButtonId:
+    domElementIds.adminConventions.agencyConventionListManageConventionButton,
+});
+
+const toAdminConventionListScope = (
+  agencyId: AgencyId | undefined,
+): AdminConventionListScope =>
+  agencyId ? { agencyIds: [agencyId], sortBy: "dateStart" } : {};
+
+const AdminConventionsMetabaseBackupLink = (): React.ReactNode => {
+  const { url } = useAdminDashboard({ name: "adminConventions" });
+  return url ? (
+    <MetabaseFullScreenButton
+      id={domElementIds.adminConventions.conventionListMetabaseBackupLink}
+      url={url}
+      label="Ouvrir l'ancien tableau Metabase"
+    />
+  ) : null;
+};
+
+const toResultCountLabel = (
+  totalRecords: number,
+  maxResultsMessage: string,
+): string => {
+  if (totalRecords >= adminConventionListMaxResults) return maxResultsMessage;
   if (totalRecords <= 1) return `${totalRecords} convention`;
   return `${totalRecords} conventions`;
 };
 
 const toFlatGetConventionsForAdminParams = (
+  scope: AdminConventionListScope,
   filtersToApply: AdminConventionListFilters,
   search: string | undefined,
 ): FlatGetConventionsForAdminParams => ({
+  ...scope,
   ...filtersToApply,
   agencyNameContains: filtersToApply.agencyNameContains?.trim() || undefined,
   search,
@@ -71,12 +144,19 @@ const toFlatGetConventionsForAdminParams = (
   perPage: defaultPerPageInWebPagination,
 });
 
-export const AdminConventionListSection = (): React.ReactNode => {
+export const AdminConventionListSection = ({
+  agency,
+}: {
+  agency?: AgencyDto;
+}): React.ReactNode => {
   const dispatch = useDispatch();
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
-  const { url: metabaseDashboardUrl } = useAdminDashboard({
-    name: "adminConventions",
-  });
+  const agencyId = agency?.id;
+  const isAgencyScoped = agency !== undefined;
+  const scope = toAdminConventionListScope(agencyId);
+  const content = agency
+    ? makeAgencyConventionsContent(agency)
+    : allConventionsContent;
   const isLoading = useAppSelector(conventionListSelectors.isLoading);
   const {
     data: conventions,
@@ -94,7 +174,10 @@ export const AdminConventionListSection = (): React.ReactNode => {
       dispatch(
         conventionListSlice.actions.fetchAdminConventionListRequested({
           jwt: connectedUserJwt,
-          filters: initialAdminConventionList.filters,
+          filters: {
+            ...initialAdminConventionList.filters,
+            ...toAdminConventionListScope(agencyId),
+          },
           feedbackTopic,
         }),
       );
@@ -102,12 +185,12 @@ export const AdminConventionListSection = (): React.ReactNode => {
     return () => {
       dispatch(conventionListSlice.actions.clearAdminConventionListRequested());
     };
-  }, [dispatch, connectedUserJwt]);
+  }, [dispatch, connectedUserJwt, agencyId]);
 
   if (!connectedUserJwt) return null;
 
   const filtersValidation = flatGetConventionsForAdminParamsSchema.safeParse(
-    toFlatGetConventionsForAdminParams(tempFilters, filters.search),
+    toFlatGetConventionsForAdminParams(scope, tempFilters, filters.search),
   );
   const filtersErrorMessage =
     hasSubmittedInvalidFilters && !filtersValidation.success
@@ -125,7 +208,7 @@ export const AdminConventionListSection = (): React.ReactNode => {
     search: string | undefined,
   ): void => {
     const validation = flatGetConventionsForAdminParamsSchema.safeParse(
-      toFlatGetConventionsForAdminParams(filtersToApply, search),
+      toFlatGetConventionsForAdminParams(scope, filtersToApply, search),
     );
     setHasSubmittedInvalidFilters(!validation.success);
     if (validation.success)
@@ -231,16 +314,11 @@ export const AdminConventionListSection = (): React.ReactNode => {
 
   return (
     <BackofficeDashboardTabContent
-      title="Consulter les conventions"
-      description="Conventions correspondant aux filtres, de la plus récente à la plus ancienne date de la demande."
+      title={content.title}
+      titleAs={content.titleAs}
+      description={content.description}
       titleAction={
-        metabaseDashboardUrl ? (
-          <MetabaseFullScreenButton
-            id={domElementIds.adminConventions.conventionListMetabaseBackupLink}
-            url={metabaseDashboardUrl}
-            label="Ouvrir l'ancien tableau Metabase"
-          />
-        ) : null
+        isAgencyScoped ? null : <AdminConventionsMetabaseBackupLink />
       }
     >
       <WithFeedbackReplacer topic={feedbackTopic}>
@@ -253,28 +331,35 @@ export const AdminConventionListSection = (): React.ReactNode => {
           />
         )}
         <p className={fr.cx("fr-text--sm", "fr-mb-2w")}>
-          {toResultCountLabel(pagination.totalRecords)}
+          {toResultCountLabel(
+            pagination.totalRecords,
+            content.maxResultsMessage,
+          )}
         </p>
         <RichTable
-          label="Liste des conventions"
+          label={content.tableLabel}
           hasViewSwitch={false}
           isLoading={isLoading}
           searchBar={{
             label: "Rechercher",
             placeholder:
               "Rechercher une convention (ID, nom, prénom, conseiller, entreprise, email, SIRET)",
-            hintText: `Astuce : saisir un nom de conseiller dans la recherche permet d’afficher uniquement ses conventions. Pour une agence, utilisez le filtre Agence. L'email et le SIRET doivent être complets, les noms peuvent être partiels (${adminConventionListTextFilterMinLength} caractères minimum).`,
+            hintText: content.searchHint,
             onSubmit: searchConventions,
           }}
-          dropdownFilters={{
-            items: dropdownFilters,
-            onSubmit: () => applyFilters(tempFilters, filters.search),
-          }}
+          dropdownFilters={
+            isAgencyScoped
+              ? undefined
+              : {
+                  items: dropdownFilters,
+                  onSubmit: () => applyFilters(tempFilters, filters.search),
+                }
+          }
           headers={
             conventions.length > 0
               ? [
                   { content: "Conseiller" },
-                  { content: "Structure" },
+                  ...(isAgencyScoped ? [] : [{ content: "Structure" }]),
                   { content: "Statut" },
                   { content: "Bilan" },
                   { content: "Personne en immersion" },
@@ -282,14 +367,15 @@ export const AdminConventionListSection = (): React.ReactNode => {
                   { content: "Dates" },
                   { content: "Actions" },
                 ]
-              : [
-                  {
-                    content:
-                      "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
-                  },
-                ]
+              : [{ content: content.emptyResultMessage }]
           }
-          tableData={conventions.map(makeAdminConventionListLine)}
+          tableData={conventions.map((convention) =>
+            makeAdminConventionListLine({
+              convention,
+              isAgencyScoped,
+              manageConventionButtonId: content.manageConventionButtonId,
+            }),
+          )}
           pagination={{
             count: pagination.totalPages,
             defaultPage: pagination.currentPage,
@@ -318,26 +404,12 @@ export const AdminConventionListSection = (): React.ReactNode => {
   );
 };
 
-const makeAdminConventionListLine = (
-  convention: AdminConventionListDto,
-): React.ReactNode[] => [
-  <AgencyReferentCell
-    key={`${convention.id}-counsellor`}
-    agencyReferent={convention.agencyReferent}
-    agencyName={convention.agencyName}
-  />,
-  <Fragment key={`${convention.id}-agency`}>
-    <strong>{convention.agencyName}</strong>
-    {convention.agencyRefersToAgencyName && (
-      <span className={fr.cx("fr-hint-text")}>
-        Liée à {convention.agencyRefersToAgencyName}
-      </span>
-    )}
-  </Fragment>,
-  <ul
-    key={`${convention.id}-status`}
-    className={fr.cx("fr-badges-group", "fr-badges-group--sm")}
-  >
+const AdminConventionStatusCell = ({
+  convention,
+}: {
+  convention: Pick<AdminConventionListDto, "status" | "dateEnd">;
+}): React.ReactNode => (
+  <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
     <li>
       <ConventionStatusBadge
         conventionStatus={convention.status}
@@ -349,7 +421,50 @@ const makeAdminConventionListLine = (
         <Badge small>Archivée</Badge>
       </li>
     )}
-  </ul>,
+  </ul>
+);
+
+const ConventionStructureCell = ({
+  convention,
+}: {
+  convention: AdminConventionListDto;
+}): React.ReactNode => (
+  <>
+    <strong>{convention.agencyName}</strong>
+    {convention.agencyRefersToAgencyName && (
+      <span className={fr.cx("fr-hint-text")}>
+        Liée à {convention.agencyRefersToAgencyName}
+      </span>
+    )}
+  </>
+);
+
+const makeAdminConventionListLine = ({
+  convention,
+  isAgencyScoped,
+  manageConventionButtonId,
+}: {
+  convention: AdminConventionListDto;
+  isAgencyScoped: boolean;
+  manageConventionButtonId: string;
+}): React.ReactNode[] => [
+  <AgencyReferentCell
+    key={`${convention.id}-counsellor`}
+    agencyReferent={convention.agencyReferent}
+    agencyName={convention.agencyName}
+  />,
+  ...(isAgencyScoped
+    ? []
+    : [
+        <ConventionStructureCell
+          key={`${convention.id}-agency`}
+          convention={convention}
+        />,
+      ]),
+  <AdminConventionStatusCell
+    key={`${convention.id}-status`}
+    convention={convention}
+  />,
   <ConventionAssessmentStatusBadge
     key={`${convention.id}-assessment`}
     conventionParams={convention}
@@ -369,7 +484,7 @@ const makeAdminConventionListLine = (
   />,
   <Button
     key={`${convention.id}-actions`}
-    id={`${domElementIds.adminConventions.conventionListManageConventionButton}--${convention.id}`}
+    id={`${manageConventionButtonId}--${convention.id}`}
     size="small"
     priority="secondary"
     linkProps={{

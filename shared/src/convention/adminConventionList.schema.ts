@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { agencyKindSchema } from "../agency/agency.schema";
+import { agencyIdSchema, agencyKindSchema } from "../agency/agency.schema";
 import type { DataWithPagination } from "../pagination/pagination.dto";
 import {
   createPaginatedSchema,
@@ -46,7 +46,13 @@ const textFilterSchema = z
 export const flatGetConventionsForAdminParamsSchema: ZodSchemaWithInputMatchingOutput<FlatGetConventionsForAdminParams> =
   paginationQueryParamsSchema.and(
     z.object({
+      sortBy: z
+        .enum(["dateSubmission", "dateStart"], {
+          error: localization.invalidEnum,
+        })
+        .optional(),
       search: textFilterSchema,
+      agencyIds: z.tuple([agencyIdSchema], agencyIdSchema).optional(),
       statuses: z.tuple([statusSchema], statusSchema).optional(),
       assessmentCompletionStatus: z
         .tuple(

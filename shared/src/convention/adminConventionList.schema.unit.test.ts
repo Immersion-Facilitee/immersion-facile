@@ -1,6 +1,9 @@
 import { expectToEqual } from "../test.helpers";
 import { localization } from "../zodUtils";
-import type { FlatGetConventionsForAdminParams } from "./adminConventionList.dto";
+import type {
+  AdminConventionListSortBy,
+  FlatGetConventionsForAdminParams,
+} from "./adminConventionList.dto";
 import { flatGetConventionsForAdminParamsSchema } from "./adminConventionList.schema";
 
 const textFilterNames: (keyof Pick<
@@ -35,4 +38,45 @@ describe("flatGetConventionsForAdminParamsSchema", () => {
       );
     },
   );
+});
+
+const adminSortByValues: AdminConventionListSortBy[] = [
+  "dateSubmission",
+  "dateStart",
+];
+
+describe("flatGetConventionsForAdminParamsSchema sort and agency filter", () => {
+  it.each(adminSortByValues)("accepts sortBy %s", (sortBy) => {
+    const result = flatGetConventionsForAdminParamsSchema.safeParse({
+      sortBy,
+    });
+
+    expectToEqual(result.data?.sortBy, sortBy);
+  });
+
+  it("rejects sortBy not available for admin", () => {
+    const result = flatGetConventionsForAdminParamsSchema.safeParse({
+      sortBy: "dateEnd",
+    });
+
+    expectToEqual(result.success, false);
+  });
+
+  it("accepts agencyIds", () => {
+    const agencyId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+    const result = flatGetConventionsForAdminParamsSchema.safeParse({
+      agencyIds: [agencyId],
+    });
+
+    expectToEqual(result.data?.agencyIds, [agencyId]);
+  });
+
+  it("rejects empty agencyIds", () => {
+    const result = flatGetConventionsForAdminParamsSchema.safeParse({
+      agencyIds: [],
+    });
+
+    expectToEqual(result.success, false);
+  });
 });

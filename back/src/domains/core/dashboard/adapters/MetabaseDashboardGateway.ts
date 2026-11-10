@@ -3,7 +3,6 @@ import type {
   AbsoluteUrl,
   AdminDashboardName,
   AgencyDashboards,
-  AgencyId,
   ConventionId,
   DashboardName,
   OmitFromExistingKeys,
@@ -29,7 +28,6 @@ type MetabaseDashboard = {
 };
 
 const dashboardByName: Record<DashboardName, MetabaseDashboard> = {
-  adminAgencyDetails: { kind: "dashboard", id: 4, endpoint: "v1" },
   adminAgencies: { kind: "dashboard", id: 130, endpoint: "v1" },
   adminConventions: { kind: "dashboard", id: 5, endpoint: "v1" },
   adminEvents: { kind: "question", id: 330, endpoint: "v1" },
@@ -64,16 +62,6 @@ type MetabasePayload = {
 
 export class MetabaseDashboardGateway implements DashboardGateway {
   constructor(private metabaseConfig: MetabaseConfig) {}
-
-  public getAgencyForAdminUrl(agencyId: AgencyId, now: Date): AbsoluteUrl {
-    return this.#makeDashboardUrlByDashboardName({
-      dashboardName: "adminAgencyDetails",
-      now,
-      lockedParams: {
-        filtrer_par_structure: [agencyId],
-      },
-    });
-  }
 
   public getAgencyUserUrls(
     userId: UserId,

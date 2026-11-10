@@ -988,10 +988,6 @@ export const errors = {
       new BadRequestError(
         `L'ajout, la suppression ou l'édition d'un valideur n'est pas autorisée pour l'agence "${agencyId}" car il s'agit d'une structure d'accompagnement. Cette action est autorisée seulement par l'agence prescriptrice à laquelle elle est rattachée.`,
       ),
-    missingParamAgencyId: () =>
-      new BadRequestError(
-        "You need to provide agency Id in query params : http://.../agency?agencyId=your-id",
-      ),
     notEnoughCounsellors: ({ agencyId }: { agencyId: AgencyId }) =>
       new BadRequestError(
         `L'agence ${agencyId} doit avoir au moins un pré-valideur recevant les emails.`,

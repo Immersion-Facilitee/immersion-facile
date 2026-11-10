@@ -121,11 +121,6 @@ export class HttpAdminGateway implements AdminGateway {
       this.httpClient
         .getDashboardUrl({
           urlParams: { dashboardName: params.name },
-          queryParams: {
-            ...(params.name === "adminAgencyDetails"
-              ? { agencyId: params.agencyId }
-              : {}),
-          },
           headers: {
             authorization: token,
           },

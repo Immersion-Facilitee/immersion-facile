@@ -64,12 +64,6 @@ const getAdminDashboardAbsoluteUrl = ({
   timeGateway: TimeGateway;
   dashboardGateway: DashboardGateway;
 }): AbsoluteUrl => {
-  if (inputParams.name === "adminAgencyDetails")
-    return dashboardGateway.getAgencyForAdminUrl(
-      inputParams.agencyId,
-      timeGateway.now(),
-    );
-
   if (inputParams.name === "conventionStatus")
     return dashboardGateway.getConventionStatusUrl(
       inputParams.conventionId,

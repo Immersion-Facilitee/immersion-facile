@@ -64,14 +64,6 @@ export const withAgencyIdSchema: ZodSchemaWithInputMatchingOutput<WithAgencyId> 
     agencyId: agencyIdSchema,
   });
 
-export const withAgencyIdSchemaPartial: ZodSchemaWithInputMatchingOutput<
-  Partial<WithAgencyId>
-> = z
-  .object({
-    agencyId: agencyIdSchema,
-  })
-  .partial();
-
 export const agencyIdResponseSchema: ZodSchemaWithInputMatchingOutput<AgencyIdResponse> =
   agencyIdSchema.optional();
 
