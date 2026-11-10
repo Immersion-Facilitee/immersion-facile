@@ -368,17 +368,20 @@ export const AdminConventionListSection = (): React.ReactNode => {
           headers={
             conventions.length > 0
               ? [
-                  "Conseiller",
-                  "Structure",
-                  "Statut",
-                  "Bilan",
-                  "Personne en immersion",
-                  "Établissement",
-                  "Dates",
-                  "Actions",
+                  { content: "Conseiller" },
+                  { content: "Structure" },
+                  { content: "Statut" },
+                  { content: "Bilan" },
+                  { content: "Personne en immersion" },
+                  { content: "Établissement" },
+                  { content: "Dates" },
+                  { content: "Actions" },
                 ]
               : [
-                  "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+                  {
+                    content:
+                      "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
+                  },
                 ]
           }
           tableData={conventions.map(makeAdminConventionListLine)}
