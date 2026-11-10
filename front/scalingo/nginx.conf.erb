@@ -10,11 +10,8 @@ if ($http_user_agent ~* "%0d|%0a|\r|\n") {
   return 400 "Bad Request - Invalid header";
 }
 
-set $csp_script_src_hosts "'unsafe-eval' https://client.crisp.chat https://cdn.tagcommander.com https://tag.aticdn.net https://tally.so";
-set $csp_other_directives "connect-src 'self' data: https://sentry.gip-inclusion.cloud-ed.fr https://*.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat https://hd.pe.fr; style-src 'self' 'unsafe-inline' https://client.crisp.chat; frame-src 'self' https://metabase.immersion-facile.beta.gouv.fr https://metabase-v2.immersion-facile.beta.gouv.fr https://tally.so; font-src 'self' https://client.crisp.chat; img-src 'self' data: blob: https://user-images.githubusercontent.com https://*.openstreetmap.org https://immersion.cellar-c2.services.clever-cloud.com https://immersion-dev.cellar-c2.services.clever-cloud.com https://immersion-staging.cellar-c2.services.clever-cloud.com; media-src 'self' https://immersion.cellar-c2.services.clever-cloud.com https://immersion-dev.cellar-c2.services.clever-cloud.com https://immersion-staging.cellar-c2.services.clever-cloud.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';";
-set $csp_list "default-src 'self'; script-src 'self' $csp_script_src_hosts; $csp_other_directives";
+set $csp_list "default-src 'self'; script-src 'self' 'unsafe-eval' https://client.crisp.chat https://cdn.tagcommander.com https://tag.aticdn.net https://tally.so; connect-src 'self' data: https://sentry.gip-inclusion.cloud-ed.fr https://*.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat https://hd.pe.fr; style-src 'self' 'unsafe-inline' https://client.crisp.chat; frame-src 'self' https://metabase.immersion-facile.beta.gouv.fr https://metabase-v2.immersion-facile.beta.gouv.fr https://tally.so; font-src 'self' https://client.crisp.chat; img-src 'self' data: blob: https://user-images.githubusercontent.com https://*.openstreetmap.org https://immersion.cellar-c2.services.clever-cloud.com https://immersion-dev.cellar-c2.services.clever-cloud.com https://immersion-staging.cellar-c2.services.clever-cloud.com; media-src 'self' https://immersion.cellar-c2.services.clever-cloud.com https://immersion-dev.cellar-c2.services.clever-cloud.com https://immersion-staging.cellar-c2.services.clever-cloud.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; report-uri https://o4510900710146048.ingest.de.sentry.io/api/4511375917908048/security/?sentry_key=5800b3725ecb4a0cb8461afdb7f2374f;";
 set $csp_convention_form_frame_ancestors "'self' https://*.cci.fr https://campuscci.fr https://www.campuscci.fr https://cci10.fr https://www.cci-paris-idf.fr https://www.ccicharente-formation.fr https://www.cciformation49.fr https://www.cciformation53.fr https://www.ccinordisere.fr https://cma-nouvelleaquitaine.fr https://*.cma-nouvelleaquitaine.fr https://cma-formation-paysdelaloire.fr https://*.cma-occitanie.fr https://www.cma-alsace-moselle-grandest.fr https://www.cma-hautsdefrance.fr https://*.pole-emploi.intra https://*.francetravail.intra https://*.francetravail.net";
-set $csp_report_only_list "default-src 'self'; script-src 'self' $csp_script_src_hosts; $csp_other_directives report-uri https://o4510900710146048.ingest.de.sentry.io/api/4511375917908048/security/?sentry_key=5800b3725ecb4a0cb8461afdb7f2374f&sentry_environment=<%= ENV['VITE_ENV_TYPE'] %>;";
 
 location ~* ^/($|index\.html) {
   root /app/dist;
@@ -24,7 +21,6 @@ location ~* ^/($|index\.html) {
   add_header Expires "0" always;
 
   add_header Content-Security-Policy "$csp_list frame-ancestors 'self';" always;
-  add_header Content-Security-Policy-Report-Only "$csp_report_only_list frame-ancestors 'self';" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header X-XSS-Protection "1; mode=block" always;
 
@@ -35,7 +31,6 @@ location / {
   root /app/dist;
 
   add_header Content-Security-Policy "$csp_list frame-ancestors 'self';" always;
-  add_header Content-Security-Policy-Report-Only "$csp_report_only_list frame-ancestors 'self';" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header X-XSS-Protection "1; mode=block" always;
 
@@ -50,7 +45,6 @@ location ~ ^/demande-(immersion|mini-stage)(/|$) {
   add_header Expires "0" always;
 
   add_header Content-Security-Policy "$csp_list frame-ancestors $csp_convention_form_frame_ancestors;" always;
-  add_header Content-Security-Policy-Report-Only "$csp_report_only_list frame-ancestors $csp_convention_form_frame_ancestors;" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header X-XSS-Protection "1; mode=block" always;
 
