@@ -6,6 +6,7 @@ import { omit, pick, values } from "ramda";
 import { ErrorNotifications, HeadingSection } from "react-design-system";
 import { useFormContext } from "react-hook-form";
 import { domElementIds, type FormEstablishmentDto } from "shared";
+import { PhoneInput } from "src/app/components/forms/commons/PhoneInput";
 import { CreationSiretRelatedInputs } from "src/app/components/forms/establishment/CreationSiretRelatedInputs";
 import { EditionSiretRelatedInputs } from "src/app/components/forms/establishment/EditionSiretRelatedInputs";
 import { formEstablishmentFieldsLabels } from "src/app/contents/forms/establishment/formEstablishment";
@@ -177,7 +178,7 @@ export const BusinessAndAdminSection = ({
 
 const EstablishmentAdminInfos = () => {
   const methods = useFormContext<FormEstablishmentDto>();
-  const { register } = methods;
+  const { register, setValue, getValues } = methods;
   const federatedIdentity = useAppSelector(authSelectors.federatedIdentity);
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const formContents = getFormContents(
@@ -244,12 +245,19 @@ const EstablishmentAdminInfos = () => {
         }}
         {...getFieldError("userRights.0.job")}
       />
-      <Input
+      <PhoneInput
         label={formContents["userRights.0.phone"].label}
         hintText={formContents["userRights.0.phone"].hintText}
-        nativeInputProps={{
-          ...omit(["hintText"], formContents["userRights.0.phone"]),
-          ...register("userRights.0.phone"),
+        inputProps={{
+          label: formContents["userRights.0.phone"].label,
+          nativeInputProps: {
+            ...omit(["hintText"], formContents["userRights.0.phone"]),
+            ...register("userRights.0.phone"),
+            value: getValues("userRights.0.phone"),
+          },
+        }}
+        onPhoneNumberChange={(phoneNumber) => {
+          setValue("userRights.0.phone", phoneNumber);
         }}
         {...getFieldError("userRights.0.phone")}
       />
