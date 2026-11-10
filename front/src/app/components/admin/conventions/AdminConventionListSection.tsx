@@ -1,5 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import { Input } from "@codegouvfr/react-dsfr/Input";
@@ -17,6 +18,7 @@ import {
   type FlatGetConventionsForAdminParams,
   flatGetConventionsForAdminParamsSchema,
   frontRoutes,
+  isConventionArchived,
 } from "shared";
 import { ConventionAssessmentStatusBadge } from "src/app/components/convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "src/app/components/convention/ConventionDatesDisplay";
@@ -429,11 +431,22 @@ const makeAdminConventionListLine = (
       </span>
     )}
   </Fragment>,
-  <ConventionStatusBadge
+  <ul
     key={`${convention.id}-status`}
-    conventionStatus={convention.status}
-    userKind="agency"
-  />,
+    className={fr.cx("fr-badges-group", "fr-badges-group--sm")}
+  >
+    <li>
+      <ConventionStatusBadge
+        conventionStatus={convention.status}
+        userKind="agency"
+      />
+    </li>
+    {isConventionArchived({ dateEnd: convention.dateEnd, now: new Date() }) && (
+      <li>
+        <Badge small>Archivée</Badge>
+      </li>
+    )}
+  </ul>,
   <ConventionAssessmentStatusBadge
     key={`${convention.id}-assessment`}
     conventionParams={convention}
