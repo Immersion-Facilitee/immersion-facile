@@ -1,5 +1,6 @@
 import type { Observable } from "rxjs";
 import type {
+  AdminAgencyListItemDto,
   AgencyDto,
   AgencyId,
   AgencyOption,
@@ -9,6 +10,8 @@ import type {
   ConnectedUser,
   ConnectedUserJwt,
   CreateAgencyDto,
+  DataWithPagination,
+  GetAgenciesForAdminParams,
   GetAgencyUsersFilters,
   ListAgencyOptionsRequestDto,
   UserParamsForAgency,
@@ -22,6 +25,10 @@ export interface AgencyGateway {
     params: UserParamsForAgency,
     token: ConnectedUserJwt,
   ): Observable<ConnectedUser>;
+  getAgenciesForAdmin$(
+    params: GetAgenciesForAdminParams,
+    token: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminAgencyListItemDto>>;
   getAgencyById$(
     agencyId: AgencyId,
     token: ConnectedUserJwt,

@@ -88,8 +88,8 @@ describe("dashboardUrls slice", () => {
       expectDashboardError(errorMessage);
     });
 
-    it("should be able to load 2 different dashboards at the same time (conventions and agencies for exemple)", () => {
-      expectUrlsToMatch({ adminConventions: null, adminAgencies: null });
+    it("should be able to load 2 different dashboards at the same time (conventions and establishments for exemple)", () => {
+      expectUrlsToMatch({ adminConventions: null, adminEstablishments: null });
 
       store.dispatch(
         dashboardUrlsSlice.actions.dashboardUrlRequested({
@@ -99,7 +99,7 @@ describe("dashboardUrls slice", () => {
 
       store.dispatch(
         dashboardUrlsSlice.actions.dashboardUrlRequested({
-          name: "adminAgencies",
+          name: "adminEstablishments",
         }),
       );
 
@@ -109,15 +109,15 @@ describe("dashboardUrls slice", () => {
       };
       dependencies.adminGateway.dashboardUrl$.next(conventionsValueFromApi);
 
-      const agenciesValueFromApi: DashboardUrlAndName = {
-        name: "adminAgencies",
-        url: "https://agencies.url",
+      const establishmentsValueFromApi: DashboardUrlAndName = {
+        name: "adminEstablishments",
+        url: "https://establishments.url",
       };
-      dependencies.adminGateway.dashboardUrl$.next(agenciesValueFromApi);
+      dependencies.adminGateway.dashboardUrl$.next(establishmentsValueFromApi);
 
       expectUrlsToMatch({
         adminConventions: conventionsValueFromApi.url,
-        adminAgencies: agenciesValueFromApi.url,
+        adminEstablishments: establishmentsValueFromApi.url,
       });
     });
   });
