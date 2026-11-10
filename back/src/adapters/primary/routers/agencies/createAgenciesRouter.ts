@@ -50,6 +50,17 @@ export const createAgenciesRouter = (deps: AppDependencies) => {
       ),
   );
 
+  sharedAgencyRouter.getAgenciesForAdmin(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.getAgenciesForAdmin.execute(
+          req.query,
+          getGenericAuthOrThrow(req.payloads?.currentUser),
+        ),
+      ),
+  );
+
   sharedAgencyRouter.getAgencyOptionsByFilter((req, res) =>
     sendHttpResponse(req, res, () =>
       deps.useCases.listAgencyOptionsByFilter.execute(req.query),
