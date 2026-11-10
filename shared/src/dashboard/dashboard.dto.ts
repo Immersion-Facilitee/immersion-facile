@@ -1,5 +1,5 @@
 import type { AbsoluteUrl } from "../AbsoluteUrl";
-import type { AgencyDashboards, AgencyId } from "../agency/agency.dto";
+import type { AgencyDashboards } from "../agency/agency.dto";
 import type { ConventionId } from "../convention/convention.dto";
 import type { EstablishmentDashboards } from "../establishment/establishment.dto";
 import type { UserId } from "../user/user.dto";
@@ -27,17 +27,13 @@ export const agencyDashboardNames = [
   "establishmentManagement",
 ] as const;
 
-export const simpleDashboardNames = [
+export const adminDashboardNames = [
   "adminConventions",
   "adminEvents",
   "adminEstablishments",
   "adminAgencies",
 ] as const;
 
-export const adminDashboardNames = [
-  ...simpleDashboardNames,
-  "adminAgencyDetails",
-] as const;
 export type AdminDashboardName = (typeof adminDashboardNames)[number];
 
 export type ConventionMagicLinkDashboardName =
@@ -70,15 +66,7 @@ export type GetEstablishmentDashboardParams =
   };
 
 export type GetAdminDashboardParams =
-  | GenericGetDashboardParams<
-      | "adminEvents"
-      | "adminConventions"
-      | "adminEstablishments"
-      | "adminAgencies"
-    >
-  | (GenericGetDashboardParams<"adminAgencyDetails"> & {
-      agencyId: AgencyId;
-    });
+  GenericGetDashboardParams<AdminDashboardName>;
 
 export type GetConventionMagicLinkDashboardParams =
   GenericGetDashboardParams<"conventionStatus"> & {

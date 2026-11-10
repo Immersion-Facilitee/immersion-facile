@@ -15,7 +15,6 @@ export const dashboardInitialState: DashboardsState = {
   urls: {
     adminConventions: null,
     adminAgencies: null,
-    adminAgencyDetails: null,
     adminEvents: null,
     adminEstablishments: null,
   },

@@ -195,6 +195,41 @@ describe("GetConventionsForAdmin", () => {
     );
   });
 
+  it("filters conventions by agency ids", async () => {
+    const result = await getConventionsForAdmin.execute(
+      { agencyIds: [otherAgency.id] },
+      admin,
+    );
+
+    expectToEqual(
+      result.data.map(({ id }) => id),
+      [oldConvention.id],
+    );
+  });
+
+  it("sorts conventions by most recent start date when requested", async () => {
+    const oldSubmittedConventionStartingLater: ConventionDto =
+      new ConventionDtoBuilder(oldConvention)
+        .withDateStart(subDays(now, 1).toISOString())
+        .build();
+    uow.conventionRepository.setConventions([
+      new ConventionDtoBuilder(recentConvention)
+        .withDateStart(subDays(now, 3).toISOString())
+        .build(),
+      oldSubmittedConventionStartingLater,
+    ]);
+
+    const result = await getConventionsForAdmin.execute(
+      { sortBy: "dateStart" },
+      admin,
+    );
+
+    expectToEqual(
+      result.data.map(({ id }) => id),
+      [oldSubmittedConventionStartingLater.id, recentConvention.id],
+    );
+  });
+
   it("filters conventions by assessment completion status", async () => {
     const result = await getConventionsForAdmin.execute(
       { assessmentCompletionStatus: ["to-complete"] },

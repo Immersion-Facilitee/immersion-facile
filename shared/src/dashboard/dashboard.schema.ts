@@ -5,27 +5,19 @@ import {
   type ZodSchemaWithInputMatchingOutput,
 } from "../zodUtils";
 import {
+  adminDashboardNames,
   allDashboardNames,
   type DashboardUrlAndName,
   type GetAdminDashboardParams,
   type GetConventionMagicLinkDashboardParams,
-  simpleDashboardNames,
 } from "./dashboard.dto";
 
 export const getAdminDashboardParamsSchema: ZodSchemaWithInputMatchingOutput<GetAdminDashboardParams> =
-  z.union([
-    z.object({
-      name: z.enum(simpleDashboardNames, {
-        error: localization.invalidEnum,
-      }),
+  z.object({
+    name: z.enum(adminDashboardNames, {
+      error: localization.invalidEnum,
     }),
-    z.object({
-      name: z.enum(["adminAgencyDetails"], {
-        error: localization.invalidEnum,
-      }),
-      agencyId: z.string(),
-    }),
-  ]);
+  });
 
 export const getConventionMagicLinkDashboardParamsSchema: ZodSchemaWithInputMatchingOutput<GetConventionMagicLinkDashboardParams> =
   z.object({

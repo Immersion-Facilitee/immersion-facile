@@ -38,6 +38,7 @@ export const makeGetConventionsForAdmin = useCaseBuilder(
     const {
       page,
       perPage,
+      sortBy,
       search,
       dateStartFrom,
       dateStartTo,
@@ -54,7 +55,7 @@ export const makeGetConventionsForAdmin = useCaseBuilder(
           dateStart: toDateFilter(dateStartFrom, dateStartTo),
           dateValidation: toDateFilter(dateValidationFrom, dateValidationTo),
         },
-        sort: { by: "dateSubmission", direction: "desc" },
+        sort: { by: sortBy ?? "dateSubmission", direction: "desc" },
         pagination: getPaginationParamsForWeb({ page, perPage }),
         maxTotalRecords: adminConventionListMaxResults,
       });

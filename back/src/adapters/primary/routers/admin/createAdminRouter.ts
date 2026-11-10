@@ -21,18 +21,14 @@ export const createAdminRouter = (deps: AppDependencies): Router => {
   sharedAdminRouter.getDashboardUrl(
     deps.connectedUserAuthMiddleware,
     (req, res) =>
-      sendHttpResponse(req, res, () => {
-        if (req.params.dashboardName === "agency" && !req.query.agencyId)
-          throw errors.agency.missingParamAgencyId();
-
-        return deps.useCases.getDashboard.execute(
+      sendHttpResponse(req, res, () =>
+        deps.useCases.getDashboard.execute(
           {
             name: req.params.dashboardName as any,
-            ...(req.query.agencyId ? req.query : {}),
           },
           getGenericAuthOrThrow(req.payloads?.currentUser),
-        );
-      }),
+        ),
+      ),
   );
 
   sharedAdminRouter.getLastNotifications(

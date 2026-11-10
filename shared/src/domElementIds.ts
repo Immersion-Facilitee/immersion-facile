@@ -1305,6 +1305,8 @@ export const domElementIds = {
       "im-admin-conventions__convention-list-filter-dropdown",
     conventionListMetabaseBackupLink:
       "im-admin-conventions__convention-list-metabase-backup-link",
+    agencyConventionListManageConventionButton:
+      "im-admin-conventions__agency-convention-list-manage-convention-button",
     handleArchivedConventionRequestButton:
       "im-admin-conventions__handle-archived-convention-request-button",
     handleArchivedConventionRequestModal:

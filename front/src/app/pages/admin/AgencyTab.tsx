@@ -1,6 +1,7 @@
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 
 import type { AgencyDto } from "shared";
+import { AdminConventionListSection } from "src/app/components/admin/conventions/AdminConventionListSection";
 import { EditAgency } from "src/app/components/agency/EditAgency";
 import { RegisterUsersToAgencies } from "src/app/components/agency/RegisterUsersToAgencies";
 import { Feedback } from "src/app/components/feedback/Feedback";
@@ -34,17 +35,6 @@ export const AgencyTab = () => {
   );
 };
 
-export const AgencyDashboard = ({ agency }: { agency: AgencyDto }) => {
-  const { url, error } = useAdminDashboard({
-    name: "adminAgencyDetails",
-    agencyId: agency.id,
-  });
-
-  if (!agency) return null;
-
-  return error ? (
-    <Alert severity="error" title="Erreur" description={error} />
-  ) : (
-    <MetabaseView title={agency.name} url={url} />
-  );
-};
+export const AgencyDashboard = ({ agency }: { agency: AgencyDto }) => (
+  <AdminConventionListSection key={agency.id} agency={agency} />
+);
