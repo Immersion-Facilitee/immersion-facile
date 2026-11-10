@@ -1,6 +1,6 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
-import { errors } from "shared";
+import { errors, visitorSessionCookieName } from "shared";
 import { handleHttpJsonResponseError } from "../helpers/handleHttpJsonResponseError";
 
 const isVisitorOtpJwt = (authorization: string): boolean => {
@@ -12,11 +12,6 @@ const isVisitorOtpJwt = (authorization: string): boolean => {
   );
 };
 
-const hasVisitorSessionCookie = (req: Request): boolean =>
-  Object.keys(req.cookies ?? {}).some((cookieName) =>
-    cookieName.startsWith("if_visitor_"),
-  );
-
 export const makeConventionMagicLinkOrVisitorSessionAuthMiddleware =
   (deps: {
     magicLinkAuthMiddleware: RequestHandler;
@@ -24,7 +19,7 @@ export const makeConventionMagicLinkOrVisitorSessionAuthMiddleware =
   }): RequestHandler =>
   (req: Request, res: Response, next: NextFunction) => {
     const authorization = req.headers.authorization;
-    if (!authorization && !hasVisitorSessionCookie(req))
+    if (!authorization && !req.cookies?.[visitorSessionCookieName])
       return handleHttpJsonResponseError(
         req,
         res,

@@ -15,11 +15,9 @@ import {
   expectArraysToMatch,
   expectHttpResponseToEqual,
   expectToEqual,
-  type GetVisitorSessionQueryParams,
-  makeVisitorSessionCookieName,
   type User,
   VisitorSessionDtoBuilder,
-  type VisitorSessionId,
+  visitorSessionCookieName,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -369,13 +367,6 @@ describe("Magic link router", () => {
     });
 
     describe("visitor session cookie", () => {
-      const visitorSessionCookie = ({
-        sessionId,
-        ...queryParams
-      }: GetVisitorSessionQueryParams & {
-        sessionId: VisitorSessionId;
-      }): string => `${makeVisitorSessionCookieName(queryParams)}=${sessionId}`;
-
       const now = new Date("2026-11-05T10:00:00.000Z");
       const visitorSession = new VisitorSessionDtoBuilder()
         .withSubject({
@@ -400,14 +391,7 @@ describe("Magic link router", () => {
               convention.id,
             ),
           )
-          .set(
-            "Cookie",
-            visitorSessionCookie({
-              purpose: "manageConvention",
-              conventionId: convention.id,
-              sessionId: visitorSession.id,
-            }),
-          );
+          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -442,7 +426,7 @@ describe("Magic link router", () => {
               }),
             ),
           )
-          .set("Cookie", `if_visitor_${convention.id}=${visitorSession.id}`);
+          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },

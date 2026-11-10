@@ -12,6 +12,8 @@ export type VisitorSessionCookieName = Flavor<
   string,
   "VisitorSessionCookieName"
 >;
+export const visitorSessionCookieName: VisitorSessionCookieName = "if_visitor";
+
 export type VisitorSessionPayload = {
   sessionId: VisitorSessionId;
 };
