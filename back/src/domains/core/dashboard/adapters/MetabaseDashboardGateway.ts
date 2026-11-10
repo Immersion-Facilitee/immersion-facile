@@ -28,7 +28,6 @@ type MetabaseDashboard = {
 };
 
 const dashboardByName: Record<DashboardName, MetabaseDashboard> = {
-  adminAgencies: { kind: "dashboard", id: 130, endpoint: "v1" },
   adminConventions: { kind: "dashboard", id: 5, endpoint: "v1" },
   adminEvents: { kind: "question", id: 330, endpoint: "v1" },
   adminEstablishments: { kind: "dashboard", id: 115, endpoint: "v1" },

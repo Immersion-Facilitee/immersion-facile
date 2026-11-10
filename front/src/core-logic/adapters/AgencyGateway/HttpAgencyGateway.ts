@@ -1,5 +1,6 @@
 import { from, type Observable } from "rxjs";
 import type {
+  AdminAgencyListItemDto,
   AgencyDto,
   AgencyId,
   AgencyOption,
@@ -10,6 +11,8 @@ import type {
   ConnectedUser,
   ConnectedUserJwt,
   CreateAgencyDto,
+  DataWithPagination,
+  GetAgenciesForAdminParams,
   GetAgencyUsersFilters,
   ListAgencyOptionsRequestDto,
   UserParamsForAgency,
@@ -55,6 +58,26 @@ export class HttpAgencyGateway implements AgencyGateway {
             .with({ status: 200 }, ({ body }) => body)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: P.union(401, 404) }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public getAgenciesForAdmin$(
+    params: GetAgenciesForAdminParams,
+    token: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminAgencyListItemDto>> {
+    return from(
+      this.httpClient
+        .getAgenciesForAdmin({
+          queryParams: params,
+          headers: { authorization: token },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

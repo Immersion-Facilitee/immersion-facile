@@ -31,7 +31,6 @@ export const adminDashboardNames = [
   "adminConventions",
   "adminEvents",
   "adminEstablishments",
-  "adminAgencies",
 ] as const;
 
 export type AdminDashboardName = (typeof adminDashboardNames)[number];
