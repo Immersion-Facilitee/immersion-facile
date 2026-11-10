@@ -22,6 +22,7 @@ import {
 } from "shared";
 import { AddressAutocomplete } from "src/app/components/forms/autocomplete/AddressAutocomplete";
 import { MultipleEmailsInput } from "src/app/components/forms/commons/MultipleEmailsInput";
+import { PhoneInput } from "src/app/components/forms/commons/PhoneInput";
 import { RadioGroup } from "src/app/components/forms/commons/RadioGroup";
 import { formAgencyFieldsLabels } from "src/app/contents/forms/agency/formAgency";
 import {
@@ -228,12 +229,19 @@ export const AgencyFormCommonFields = ({
         disabled={isFetchingSiret}
         {...getFieldError("address")}
       />
-      <Input
+      <PhoneInput
         label={formContents.phoneNumber.label}
         hintText={formContents.phoneNumber.hintText}
-        nativeInputProps={{
-          ...register("phoneNumber"),
+        inputProps={{
           ...formContents.phoneNumber,
+          nativeInputProps: {
+            ...register("phoneNumber"),
+            id: formContents.phoneNumber.id,
+            value: formValues.phoneNumber,
+          },
+        }}
+        onPhoneNumberChange={(phoneNumber) => {
+          setValue("phoneNumber", phoneNumber);
         }}
         {...getFieldError("phoneNumber")}
       />
