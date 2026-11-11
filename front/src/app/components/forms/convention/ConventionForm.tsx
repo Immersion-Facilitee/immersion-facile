@@ -420,6 +420,22 @@ const ConventionFormContent = ({
     register,
   } = methods;
 
+  const [
+    shouldShowUnavailableAgencyAlert,
+    setShouldShowUnavailableAgencyAlert,
+  ] = useState(false);
+
+  useEffect(() => {
+    if (mode === "edit-convention") return;
+    if (agenciesFeedback.kind !== "agencyOptionsFetched") return;
+    const agencyId = getValues("agencyId");
+    if (!agencyId || agencyOptions.some(({ id }) => id === agencyId)) return;
+
+    setValue("agencyId", "", { shouldTouch: true, shouldValidate: true });
+    setValue("agencyKind", undefined);
+    setShouldShowUnavailableAgencyAlert(true);
+  }, [agencyOptions, agenciesFeedback.kind, getValues, mode, setValue]);
+
   const { errors, submitCount } = formState;
 
   const conventionValues = getValues();
@@ -790,6 +806,22 @@ const ConventionFormContent = ({
                   }
                   {...makeAccordionProps(1)}
                 >
+                  {shouldShowUnavailableAgencyAlert && (
+                    <Alert
+                      id={
+                        domElementIds.conventionImmersion.conventionSection
+                          .unavailableInitialAgencyAlert
+                      }
+                      severity="warning"
+                      small
+                      closable
+                      onClose={() => setShouldShowUnavailableAgencyAlert(false)}
+                      className={fr.cx("fr-mb-3w")}
+                      description={
+                        "La structure d'accompagnement initialement choisie n'est plus disponible. Veuillez sélectionner une autre structure pour poursuivre. Votre département reste inchangé."
+                      }
+                    />
+                  )}
                   <AgencySelector
                     fields={{
                       agencyDepartmentField,
