@@ -1,7 +1,9 @@
 import { createHmac } from "node:crypto";
+import { addMinutes } from "date-fns";
 import {
   type AbsoluteUrl,
   type BrevoInboundBody,
+  type ConventionId,
   DiscussionBuilder,
   type DiscussionId,
   displayRouteName,
@@ -18,6 +20,8 @@ import {
   type TechnicalRoutes,
   technicalRoutes,
   type ValidateEmailFeedback,
+  VisitorSessionDtoBuilder,
+  visitorSessionCookieName,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -156,6 +160,63 @@ describe("technical router", () => {
       );
 
       expectToEqual(response.status, 200);
+    });
+
+    describe("with visitor session cookie", () => {
+      const now = new Date("2026-11-05T10:00:00.000Z");
+      const conventionId: ConventionId = "convention-id";
+      const htmlToPdfBody = {
+        htmlContent: "<p>some html content</p>",
+        conventionId,
+      };
+      const visitorSession = new VisitorSessionDtoBuilder()
+        .withSubject({
+          conventionId,
+          role: "beneficiary",
+          emailHash: "beneficiary-email-hash",
+        })
+        .withExpiresAt(addMinutes(now, 60).toISOString())
+        .withCreatedAt(now.toISOString())
+        .build();
+
+      beforeEach(() => {
+        gateways.timeGateway.defaultDate = now;
+        inMemoryUow.visitorSessionRepository.visitorSessions = [visitorSession];
+      });
+
+      it(`${displayRouteName(
+        technicalRoutes.htmlToPdf,
+      )} 200 - with visitor session cookie only`, async () => {
+        const { status, body } = await request
+          .post(technicalRoutes.htmlToPdf.url)
+          .send(htmlToPdfBody)
+          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: `PDF_OF convention ${conventionId} >> "<p>some html content</p>"`,
+          },
+        );
+      });
+
+      it(`${displayRouteName(
+        technicalRoutes.htmlToPdf,
+      )} 401 - without authorization nor visitor session cookie`, async () => {
+        const response = await httpClient.htmlToPdf({
+          body: htmlToPdfBody,
+          headers: {},
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 401,
+          body: {
+            status: 401,
+            message: errors.visitorSession.unauthorized().message,
+          },
+        });
+      });
     });
   });
 

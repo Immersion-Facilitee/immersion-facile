@@ -148,7 +148,7 @@ export const createTechnicalRouter = (
   );
 
   technicalSharedRouter.htmlToPdf(
-    deps.conventionMagicLinkAuthMiddleware,
+    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
     async (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.htmlToPdf.execute(
