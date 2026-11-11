@@ -62,12 +62,16 @@ import { featureFlagsSlice } from "src/core-logic/domain/featureFlags/featureFla
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { nafEpics } from "src/core-logic/domain/naf/naf.epics";
 import { nafSlice } from "src/core-logic/domain/naf/naf.slice";
+import { otpChallengeEpics } from "src/core-logic/domain/otpChallenge/otpChallenge.epics";
+import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
 import { rootAppEpics } from "src/core-logic/domain/rootApp/rootApp.epics";
 import { rootAppSlice } from "src/core-logic/domain/rootApp/rootApp.slice";
 import { searchEpics } from "src/core-logic/domain/search/search.epics";
 import { searchSlice } from "src/core-logic/domain/search/search.slice";
 import { siretEpics } from "src/core-logic/domain/siret/siret.epics";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
+import { visitorSessionEpics } from "src/core-logic/domain/visitorSession/visitorSession.epics";
+import { visitorSessionSlice } from "src/core-logic/domain/visitorSession/visitorSession.slice";
 import { connectedUsersAdminEpics } from "../domain/admin/connectedUsersAdmin/connectedUsersAdmin.epics";
 import { connectedUsersAdminSlice } from "../domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { agenciesEpics } from "../domain/agencies/agencies.epics";
@@ -122,6 +126,7 @@ const allEpics: AppEpic<any>[] = [
   ...listUsersEpics,
   ...nafEpics,
   ...notificationsEpics,
+  ...otpChallengeEpics,
   ...partnersErroredConventionEpics,
   ...removeUserFromAgencyEpics,
   ...rootAppEpics,
@@ -133,6 +138,7 @@ const allEpics: AppEpic<any>[] = [
   ...updateAgencyEpics,
   ...updateUserOnAgencyEpics,
   ...usersInReviewEpics,
+  ...visitorSessionEpics,
 ];
 
 const appReducer = combineReducers({
@@ -187,6 +193,8 @@ const appReducer = combineReducers({
   [nafSlice.name]: nafSlice.reducer,
   [conventionActionSlice.name]: conventionActionSlice.reducer,
   [usersToReviewSlice.name]: usersToReviewSlice.reducer,
+  [otpChallengeSlice.name]: otpChallengeSlice.reducer,
+  [visitorSessionSlice.name]: visitorSessionSlice.reducer,
 });
 
 const rootReducer: typeof appReducer = (state, action) =>
