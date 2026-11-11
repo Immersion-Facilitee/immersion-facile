@@ -139,6 +139,21 @@ describe("otpChallenge slice", () => {
     });
   });
 
+  it("clears the sent code when the channel changes", () => {
+    ({ store } = createTestStore({
+      otpChallenge: {
+        maskedRecipients,
+        isCodeSent: true,
+        isVerified: false,
+        isLoading: false,
+      },
+    }));
+
+    store.dispatch(otpChallengeSlice.actions.otpChannelChangeRequested());
+
+    expectOtpChallengeState({ maskedRecipients, isCodeSent: false });
+  });
+
   it("resets the otp challenge state", () => {
     ({ store } = createTestStore({
       otpChallenge: {
