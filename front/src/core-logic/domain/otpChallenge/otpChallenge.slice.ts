@@ -92,6 +92,10 @@ export const otpChallengeSlice = createSlice({
       state.isVerified = false;
     },
 
+    otpChannelChangeRequested: (state) => {
+      state.isCodeSent = false;
+    },
+
     resetOtpChallengeRequested: () => otpChallengeInitialState,
   },
 });

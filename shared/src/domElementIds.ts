@@ -1081,7 +1081,13 @@ export const domElementIds = {
     confirmLoginButton: "im-magic-link-interstitial__confirm-login-button",
     renewalButton: "im-magic-link-interstitial__renewal-button",
   },
-  enterOtpCode: {},
+  otpChallenge: {
+    channelRadioButtons: "im-otp-challenge__channel-radio-buttons",
+    sendCodeButton: "im-otp-challenge__send-code-button",
+    otpCodeInput: "im-otp-challenge__otp-code-input",
+    resendCodeButton: "im-otp-challenge__resend-code-button",
+    changeChannelButton: "im-otp-challenge__change-channel-button",
+  },
   adminEstablishments: {},
   establishmentDashboard: {
     tabContainer: "im-establishment-dashboard__tab-container",
