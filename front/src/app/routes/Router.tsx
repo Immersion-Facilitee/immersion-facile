@@ -344,6 +344,7 @@ const getPageByRouteName: {
     return <OpenApiDocV2Page />;
   },
   magicLinkInterstitial: () => <MagicLinkInterstitialPage />,
+  enterOtpCode: () => <ErrorPage error={frontErrors.generic.pageNotFound()} />,
   search: () => <SearchPage key="internal-search" />,
   externalSearch: () => <SearchPage key="external-search" />,
   searchForStudent: () => <SearchPage />,

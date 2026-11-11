@@ -19,6 +19,7 @@ import type { FormCompletionGateway } from "src/core-logic/ports/FormCompletionG
 import type { JwtValidator } from "src/core-logic/ports/JwtDecoder";
 import type { NafGateway } from "src/core-logic/ports/NafGateway";
 import type { NavigationGateway } from "src/core-logic/ports/NavigationGateway";
+import type { OtpChallengeGateway } from "src/core-logic/ports/OtpChallengeGateway";
 import type { SearchGateway } from "src/core-logic/ports/SearchGateway";
 import type { TechnicalGateway } from "src/core-logic/ports/TechnicalGateway";
 import { createStore } from "src/core-logic/storeConfig/store";
@@ -37,6 +38,7 @@ export type Dependencies = {
   jwtValidator: JwtValidator;
   searchGateway: SearchGateway;
   navigationGateway: NavigationGateway;
+  otpChallengeGateway: OtpChallengeGateway;
   localDeviceRepository: DeviceRepository<LocalStoragePair>;
   sessionDeviceRepository: DeviceRepository<SessionStoragePair>;
   minSearchResultsToPreventRefetch: number;

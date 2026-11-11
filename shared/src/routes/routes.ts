@@ -478,6 +478,7 @@ export const {
     { version: param.query.optional.string },
     () => "/doc-api",
   ),
+  enterOtpCode: defineRoute({ jwt: param.query.string }, () => "/saisir-code"),
   search: defineRoute(searchParams, () => "/recherche"),
   externalSearch: defineRoute(searchParams, () => "/recherche-partenaires"),
   searchForStudent: defineRoute(searchParams, () => "/recherche-scolaire"),
