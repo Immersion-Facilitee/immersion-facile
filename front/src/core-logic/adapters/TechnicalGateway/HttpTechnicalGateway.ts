@@ -13,11 +13,12 @@ import {
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import {
+  logBodyAndThrow,
   otherwiseThrow,
   throwBadRequestWithExplicitMessage,
 } from "src/core-logic/adapters/otherwiseThrow";
 import type { TechnicalGateway } from "src/core-logic/ports/TechnicalGateway";
-import { match } from "ts-pattern";
+import { match, P } from "ts-pattern";
 
 export class HttpTechnicalGateway implements TechnicalGateway {
   public getAllFeatureFlags$ = (): Observable<FeatureFlags> =>
@@ -62,6 +63,7 @@ export class HttpTechnicalGateway implements TechnicalGateway {
       .then((response) =>
         match(response)
           .with({ status: 200 }, ({ body }) => body)
+          .with({ status: P.union(401, 403) }, logBodyAndThrow)
           .otherwise(otherwiseThrow),
       );
   }
