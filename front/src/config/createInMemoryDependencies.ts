@@ -13,6 +13,7 @@ import { SimulatedFormCompletionGateway } from "src/core-logic/adapters/FormComp
 import { seedRomeDtos } from "src/core-logic/adapters/FormCompletionGateway/TestFormCompletionGateway";
 import { TestJwtValidator } from "src/core-logic/adapters/JwtValidator/TestJwtValidator";
 import { SimulatedNafGateway } from "src/core-logic/adapters/NafGateway/SimulatedNafGateway";
+import { SimulatedOtpChallengeGateway } from "src/core-logic/adapters/OtpChallengeGateway/SimulatedOtpChallengeGateway";
 import { SimulatedSearchGateway } from "src/core-logic/adapters/SearchGateway/SimulatedSearchGateway";
 import { seedInternalResults } from "src/core-logic/adapters/SearchGateway/simulatedSearchData";
 import { SimulatedTechnicalGateway } from "src/core-logic/adapters/TechnicalGateway/SimulatedTechnicalGateway";
@@ -64,6 +65,7 @@ export const createInMemoryDependencies = (): Dependencies => ({
   ),
   technicalGateway: new SimulatedTechnicalGateway(),
   nafGateway: new SimulatedNafGateway(SIMULATED_LATENCY_MS),
+  otpChallengeGateway: new SimulatedOtpChallengeGateway(),
   jwtValidator: new TestJwtValidator(),
   ...createCommonDependencies(),
 });
