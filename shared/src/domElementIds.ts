@@ -1145,6 +1145,7 @@ export const domElementIds = {
     confirmLoginButton: "im-magic-link-interstitial__confirm-login-button",
     renewalButton: "im-magic-link-interstitial__renewal-button",
   },
+  enterOtpCode: {},
   adminEstablishments: {},
   establishmentDashboard: {
     tabContainer: "im-establishment-dashboard__tab-container",

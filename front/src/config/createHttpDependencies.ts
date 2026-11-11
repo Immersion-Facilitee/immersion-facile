@@ -10,6 +10,7 @@ import {
   establishmentRoutes,
   formCompletionRoutes,
   nafRoutes,
+  otpChallengeRoutes,
   searchImmersionRoutes,
   technicalRoutes,
   unauthenticatedConventionRoutes,
@@ -29,6 +30,7 @@ import { HttpEstablishmentLeadGateway } from "src/core-logic/adapters/Establishm
 import { HttpFormCompletionGateway } from "src/core-logic/adapters/FormCompletionGateway/HttpFormCompletionGateway";
 import { DecodeJwtValidator } from "src/core-logic/adapters/JwtValidator/DecodeJwtValidator";
 import { HttpNafGateway } from "src/core-logic/adapters/NafGateway/HttpNafGateway";
+import { HttpOtpChallengeGateway } from "src/core-logic/adapters/OtpChallengeGateway/HttpOtpChallengeGateway";
 import { HttpSearchGateway } from "src/core-logic/adapters/SearchGateway/HttpSearchGateway";
 import { HttpTechnicalGateway } from "src/core-logic/adapters/TechnicalGateway/HttpTechnicalGateway";
 
@@ -85,5 +87,8 @@ export const createHttpDependencies = (): Dependencies => ({
     axiosOnSlashApi,
   ),
   nafGateway: new HttpNafGateway(createAxiosHttpClientOnSlashApi(nafRoutes)),
+  otpChallengeGateway: new HttpOtpChallengeGateway(
+    createAxiosHttpClientOnSlashApi(otpChallengeRoutes),
+  ),
   jwtValidator: new DecodeJwtValidator(),
 });
