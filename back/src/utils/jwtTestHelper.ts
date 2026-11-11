@@ -17,6 +17,7 @@ import type {
   GenerateConventionMagicLinkRouteName,
   GenerateConventionMagicLinkUrl,
   GenerateEmailAuthCodeUrl,
+  GenerateVisitorOtpUrl,
 } from "../config/bootstrap/magicLinkUrl";
 import type { GenerateApiConsumerJwt } from "../domains/core/jwt";
 import type { CreateConventionMagicLinkPayloadProperties } from "./jwt";
@@ -26,6 +27,27 @@ export const generateApiConsumerJwtTestFn: GenerateApiConsumerJwt = ({
   iat,
   version,
 }) => `FAKE-API-CONSUMER-JWT-${id}-version-${version}-iat-${iat}`;
+
+export const fakeGenerateVisitorOtpUrl: GenerateVisitorOtpUrl = ({
+  conventionId,
+  role,
+  email,
+  now,
+  targetRoute,
+  extraQueryParams = {},
+}) => {
+  const fakeJwt = [conventionId, role, now.toISOString(), email]
+    .filter(filterNotFalsy)
+    .join("/");
+
+  return makeRouteAbsoluteUrl({
+    route: frontRoutes[targetRoute]({
+      ...extraQueryParams,
+      jwt: fakeJwt,
+    }),
+    baseUrl: "http://fake-visitor-otp",
+  });
+};
 
 export const fakeGenerateMagicLinkUrlFn: GenerateConventionMagicLinkUrl = ({
   email,

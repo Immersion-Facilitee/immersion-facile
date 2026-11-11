@@ -90,6 +90,7 @@ export const createAppDependencies = async (config: AppConfig) => {
       generateConnectedUserJwt,
       generateApiConsumerJwt,
       generateEmailAuthCodeJwt,
+      generateVisitorOtpJwt,
       verifyEmailAuthCodeJwt,
     },
   });

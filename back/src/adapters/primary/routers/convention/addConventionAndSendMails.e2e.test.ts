@@ -2,19 +2,23 @@ import { addDays } from "date-fns";
 import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
+  type ConventionActorRole,
   type ConventionDto,
   ConventionDtoBuilder,
   conventionMagicLinkRoutes,
   currentJwtVersions,
+  decodeMagicLinkJwtWithoutSignatureCheck,
   expectArraysToEqualIgnoringOrder,
   expectEmailOfType,
   expectToEqual,
   frontRoutes,
   makeRouteAbsoluteUrl,
+  removeAllParamsFromUrl,
   type Signatories,
   type UpdateConventionStatusRequestDto,
   unauthenticatedConventionRoutes,
   VALID_EMAILS,
+  type VisitorOtpJwtPayload,
 } from "shared";
 import type supertest from "supertest";
 import type { InMemoryOutboxRepository } from "../../../../domains/core/events/adapters/InMemoryOutboxRepository";
@@ -24,7 +28,10 @@ import {
   buildTestApp,
   type TestAppAndDeps,
 } from "../../../../utils/buildTestApp";
-import { createConventionMagicLinkPayload } from "../../../../utils/jwt";
+import {
+  createConventionMagicLinkPayload,
+  makeEmailHash,
+} from "../../../../utils/jwt";
 import { processEventsForEmailToBeSent } from "../../../../utils/processEventsForEmailToBeSent";
 
 describe("Add Convention Notifications, then checks the mails are sent (trigerred by events)", () => {
@@ -477,39 +484,51 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       ],
     );
 
-    const manageConventionUrl = (
-      loginPersona: "beneficiary" | "professional",
+    const makeExpectedVisitorOtpPayload = (
+      role: ConventionActorRole,
       email: string,
-    ) =>
+    ): VisitorOtpJwtPayload => ({
+      purpose: "manageConvention",
+      subject: {
+        conventionId: initialConvention.id,
+        role,
+        emailHash: makeEmailHash(email),
+      },
+      version: currentJwtVersions.visitorOtp,
+    });
+
+    const manageConventionPath = removeAllParamsFromUrl(
       makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: initialConvention.id,
-          loginPersona,
-          email,
-        }),
+        route: frontRoutes.manageConvention({ jwt: "jwt" }),
         baseUrl: appConfig.immersionFacileBaseUrl,
-      });
+      }),
+    );
 
     expectArraysToEqualIgnoringOrder(
       sentEmails
         .filter(
           (email) => email.kind === "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
         )
-        .map((email) => ({
-          recipients: email.recipients,
-          magicLink: makeRouteAbsoluteUrl({
-            baseUrl: email.params.baseUrl,
-            route: frontRoutes.manageConventionConnectedUser({
-              conventionId: email.params.convention.id,
-              loginPersona: email.params.loginPersona,
-              email: email.params.email,
-            }),
-          }),
-        })),
+        .map((email) => {
+          const jwt = new URL(
+            email.params.manageConventionLink,
+          ).searchParams.get("jwt");
+          if (!jwt) throw new Error("Missing visitor otp jwt");
+          const { purpose, subject, version } =
+            decodeMagicLinkJwtWithoutSignatureCheck<VisitorOtpJwtPayload>(jwt);
+          return {
+            recipients: email.recipients,
+            manageConventionPath: removeAllParamsFromUrl(
+              email.params.manageConventionLink,
+            ),
+            visitorOtpPayload: { purpose, subject, version },
+          };
+        }),
       [
         {
           recipients: [initialConvention.signatories.beneficiary.email],
-          magicLink: manageConventionUrl(
+          manageConventionPath,
+          visitorOtpPayload: makeExpectedVisitorOtpPayload(
             "beneficiary",
             initialConvention.signatories.beneficiary.email,
           ),
@@ -518,8 +537,9 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
           recipients: [
             initialConvention.signatories.establishmentRepresentative.email,
           ],
-          magicLink: manageConventionUrl(
-            "professional",
+          manageConventionPath,
+          visitorOtpPayload: makeExpectedVisitorOtpPayload(
+            "establishment-representative",
             initialConvention.signatories.establishmentRepresentative.email,
           ),
         },

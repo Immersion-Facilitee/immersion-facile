@@ -1,6 +1,8 @@
 import {
   type AbsoluteUrl,
   type ConnectedUserQueryParams,
+  type ConventionActorRole,
+  type ConventionId,
   type DateTimeIsoString,
   decodeURIWithParams,
   type Email,
@@ -18,12 +20,15 @@ import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
   GenerateEmailAuthCodeJwt,
+  GenerateVisitorOtpJwt,
 } from "../../domains/core/jwt";
 import {
   type CreateConventionMagicLinkPayloadProperties,
   createConnectedUserJwtPayload,
   createConventionMagicLinkPayload,
   createEmailAuthCodeJwtPayload,
+  createVisitorOtpJwtPayload,
+  makeEmailHash,
 } from "../../utils/jwt";
 import type { AppConfig } from "./appConfig";
 
@@ -163,4 +168,59 @@ export const makeGenerateEmailAuthCodeUrl =
       }),
       expiresAt: new Date(expiresInMs).toISOString(),
     };
+  };
+
+export type GenerateVisitorOtpUrl = ReturnType<
+  typeof makeGenerateVisitorOtpUrl
+>;
+
+export type GenerateVisitorOtpRouteName = Extract<
+  FrontRouteKeys,
+  | "conventionImmersion"
+  | "conventionToSign"
+  | "unregisterEstablishmentLead"
+  | "assessment"
+  | "assessmentDocument"
+  | "conventionDocument"
+  | "manageConvention"
+>;
+
+export type GenerateVisitorOtpUrlParams = {
+  conventionId: ConventionId;
+  role: ConventionActorRole;
+  email: Email;
+  now: Date;
+  targetRoute: GenerateVisitorOtpRouteName;
+  extraQueryParams?: WithAcquisitionQueryParams;
+};
+
+export const makeGenerateVisitorOtpUrl =
+  (config: AppConfig, generateVisitorOtpJwt: GenerateVisitorOtpJwt) =>
+  ({
+    conventionId,
+    role,
+    email,
+    now,
+    targetRoute,
+    extraQueryParams = {},
+  }: GenerateVisitorOtpUrlParams): AbsoluteUrl => {
+    const jwt = generateVisitorOtpJwt(
+      createVisitorOtpJwtPayload({
+        purpose: "manageConvention",
+        subject: {
+          conventionId,
+          role,
+          emailHash: makeEmailHash(email),
+        },
+        now,
+      }),
+    );
+
+    return makeRouteAbsoluteUrl({
+      route: frontRoutes[targetRoute]({
+        ...extraQueryParams,
+        jwt,
+      }),
+      baseUrl: config.immersionFacileBaseUrl,
+    });
   };

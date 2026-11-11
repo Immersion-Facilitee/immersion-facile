@@ -124,6 +124,7 @@ import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
   GenerateEmailAuthCodeJwt,
+  GenerateVisitorOtpJwt,
   VerifyJwtFn,
 } from "../../domains/core/jwt";
 import { makeGetAllNafSections } from "../../domains/core/naf/use-cases/GetAllNafSections";
@@ -193,6 +194,7 @@ import {
   makeGenerateConnectedUserLoginUrl,
   makeGenerateConventionMagicLinkUrl,
   makeGenerateEmailAuthCodeUrl,
+  makeGenerateVisitorOtpUrl,
 } from "./magicLinkUrl";
 
 type CreateUsecasesParams = {
@@ -208,6 +210,7 @@ type CreateUsecasesParams = {
     generateConnectedUserJwt: GenerateConnectedUserJwt;
     generateApiConsumerJwt: GenerateApiConsumerJwt;
     generateEmailAuthCodeJwt: GenerateEmailAuthCodeJwt;
+    generateVisitorOtpJwt: GenerateVisitorOtpJwt;
     verifyEmailAuthCodeJwt: VerifyJwtFn<"emailAuthCode">;
   };
 };
@@ -221,6 +224,7 @@ export const createUseCases = ({
     generateConnectedUserJwt,
     generateConventionJwt,
     generateEmailAuthCodeJwt,
+    generateVisitorOtpJwt,
     verifyEmailAuthCodeJwt,
   },
 }: CreateUsecasesParams) => {
@@ -267,6 +271,10 @@ export const createUseCases = ({
   const generateEmailAuthCodeUrl = makeGenerateEmailAuthCodeUrl(
     config,
     generateEmailAuthCodeJwt,
+  );
+  const generateVisitorOtpUrl = makeGenerateVisitorOtpUrl(
+    config,
+    generateVisitorOtpJwt,
   );
 
   const addConvention = makeAddConvention({
@@ -1252,6 +1260,8 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           config,
+          generateVisitorOtpUrl,
+          timeGateway,
         },
       }),
 

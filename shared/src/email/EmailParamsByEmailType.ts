@@ -15,7 +15,6 @@ import type {
   ConventionId,
   ImmersionObjective,
   InternshipKind,
-  LoginPersona,
   Renewed,
 } from "../convention/convention.dto";
 import type { ConventionDraftId } from "../convention/conventionDraftId";
@@ -546,9 +545,7 @@ export type EmailParamsByEmailType = {
     convention: ConventionDto;
     agencyName: string;
     agencyLogoUrl: AbsoluteUrl | undefined;
-    loginPersona: LoginPersona;
-    email: Email;
-    baseUrl: AbsoluteUrl;
+    manageConventionLink: AbsoluteUrl;
   };
   ACCOUNT_DELETION_WARNING: {
     fullName: string;
