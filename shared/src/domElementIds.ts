@@ -315,6 +315,8 @@ export const domElementIds = {
     summaryEditButton: "im-convention-form__summary-edit-button",
     statusJustificationInput: "im-convention-form__status-justification-input",
     conventionSection: {
+      unavailableInitialAgencyAlert:
+        "im-convention-form__unavailable-initial-agency-alert",
       agencyDepartment: "im-convention-form__agencyDepartement",
       agencyId: "im-convention-form__agencyId",
       agencyKind: "im-convention-form__agencyKind",
