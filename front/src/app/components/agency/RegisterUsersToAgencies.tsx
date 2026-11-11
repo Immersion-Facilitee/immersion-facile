@@ -138,7 +138,10 @@ export const RegisterUsersToAgencies = () => {
                   agenciesNeedingReviewForUser.length === 0,
               ),
               feedback: P.when(
-                (feedback) => feedback.kind === "usersToReviewFetchSuccess",
+                (feedback) =>
+                  feedback.kind === "idle" ||
+                  feedback.kind === "usersToReviewFetchSuccess" ||
+                  feedback.kind === "agencyUsersFetchSuccess",
               ),
             },
             () => <></>,
