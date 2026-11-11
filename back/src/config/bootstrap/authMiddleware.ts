@@ -279,7 +279,7 @@ export const makeVisitorOtpAuthMiddleware = (
     try {
       const payload = verifyJwt(maybeJwt);
 
-      if (!payload.purpose || !payload.subject || !Number.isFinite(payload.exp))
+      if (!payload.purpose || !payload.subject)
         return sendAuthenticationError(res, errors.user.invalidJwt());
 
       if (!payload.version || payload.version < currentJwtVersions[payloadKey])
