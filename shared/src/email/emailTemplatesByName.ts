@@ -4087,9 +4087,7 @@ L'équipe d'Immersion Facilitée`,
         agencyLogoUrl,
         agencyName,
         convention,
-        loginPersona,
-        email,
-        baseUrl,
+        manageConventionLink,
       }) => {
         const emergencyContactInfos = displayEmergencyContactInfos({
           beneficiaryRepresentative:
@@ -4161,14 +4159,7 @@ L'équipe d'Immersion Facilitée`,
                 convention.internshipKind === "immersion"
                   ? "Voir la convention d'immersion"
                   : "Voir la convention du mini-stage",
-              url: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona,
-                  email,
-                }),
-                baseUrl,
-              }),
+              url: manageConventionLink,
               marginBottom: "lg",
             },
             {

@@ -729,11 +729,9 @@ export const defaultEmailValueByEmailKind: {
   },
   VALIDATED_CONVENTION_FINAL_CONFIRMATION: {
     agencyLogoUrl: defaultEmailPreviewUrl,
-    baseUrl: "http://IMMERSION_FACILE_BASE_URL",
-    loginPersona: "beneficiary",
-    email: "beneficiary@mail.com",
     agencyName: "AGENCY_NAME",
     convention: new ConventionDtoBuilder().build(),
+    manageConventionLink: "http://MANAGE_CONVENTION_LINK",
   },
   ESTABLISHMENT_USER_RIGHTS_UPDATED: {
     businessName: "BUSINESS_NAME",

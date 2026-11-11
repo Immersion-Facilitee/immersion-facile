@@ -1258,6 +1258,8 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           config,
+          generateOtpLinkUrl,
+          timeGateway,
         },
       }),
 

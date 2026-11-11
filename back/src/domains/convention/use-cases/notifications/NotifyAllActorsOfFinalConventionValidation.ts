@@ -1,16 +1,23 @@
 import { uniqBy } from "ramda";
 import {
+  type AbsoluteUrl,
   type ConventionRole,
   type Email,
   errors,
   executeInSequence,
+  frontRoutes,
+  isConventionActorRole,
   loginPersonaByConventionRole,
+  makeRouteAbsoluteUrl,
   type TemplatedEmail,
   withConventionSchema,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
+import type { GenerateOtpLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
+import { makeEmailHash } from "../../../../utils/jwt";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
+import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
 export type NotifyAllActorsOfFinalConventionValidation = ReturnType<
@@ -20,6 +27,8 @@ export type NotifyAllActorsOfFinalConventionValidation = ReturnType<
 type Deps = {
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
   config: AppConfig;
+  generateOtpLinkUrl: GenerateOtpLinkUrl;
+  timeGateway: TimeGateway;
 };
 
 type EmailAndRole = {
@@ -76,17 +85,40 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
       ],
     );
 
+    const now = deps.timeGateway.now();
+
+    const makeManageConventionLink = ({
+      role,
+      email,
+    }: EmailAndRole): AbsoluteUrl =>
+      isConventionActorRole(role)
+        ? deps.generateOtpLinkUrl({
+            purpose: "manageConvention",
+            subject: {
+              conventionId: convention.id,
+              role,
+              emailHash: makeEmailHash(email),
+            },
+            now,
+          })
+        : makeRouteAbsoluteUrl({
+            route: frontRoutes.manageConventionConnectedUser({
+              conventionId: convention.id,
+              loginPersona: loginPersonaByConventionRole(role),
+              email,
+            }),
+            baseUrl: deps.config.immersionFacileBaseUrl,
+          });
+
     await executeInSequence(
-      recipientsRoleAndEmail.map<TemplatedEmail>(({ email, role }) => ({
+      recipientsRoleAndEmail.map<TemplatedEmail>((recipient) => ({
         kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
-        recipients: [email],
+        recipients: [recipient.email],
         params: {
           convention,
           agencyLogoUrl: agency.logoUrl ?? undefined,
-          loginPersona: loginPersonaByConventionRole(role),
-          email,
-          baseUrl: deps.config.immersionFacileBaseUrl,
           agencyName: agency.name,
+          manageConventionLink: makeManageConventionLink(recipient),
         },
       })),
       (templatedContent) =>
