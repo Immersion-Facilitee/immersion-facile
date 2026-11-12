@@ -41,6 +41,7 @@ const openEmailInAdmin = async (
   emailType: EmailType,
   elementIndex = 0,
   conventionId?: ConventionId,
+  recipientEmail?: string,
 ) => {
   await goToAdminTab(page, "adminNotifications");
   const emailSection = page
@@ -50,6 +51,7 @@ const openEmailInAdmin = async (
         : ".fr-accordion",
     )
     .filter({ hasText: emailType })
+    .filter({ hasText: recipientEmail })
     .nth(elementIndex);
   const locator = emailSection.locator(".fr-accordion__btn");
   await expect(locator).toBeVisible();
@@ -144,13 +146,36 @@ export const getMagicLinkFromEmail = async ({
   return locator.getAttribute("href");
 };
 
-export const openConnectedConventionAsRecipient = async (
+export const getOtpCodeFromEmail = async ({
+  page,
+  recipientEmail,
+}: {
+  page: Page;
+  recipientEmail: string;
+}): Promise<string | null> => {
+  const emailWrapper = await openEmailInAdmin(
+    page,
+    "REQUEST_OTP_CODE",
+    0,
+    undefined,
+    recipientEmail,
+  );
+  const otpCodeParamText = await emailWrapper
+    .locator("li")
+    .filter({ hasText: "otpCode" })
+    .textContent();
+  return otpCodeParamText?.match(/\d{6}/)?.[0] ?? null;
+};
+
+export const openConventionWithOtpAsRecipient = async (
   adminPage: Page,
   href: string,
   recipientEmail: string,
 ): Promise<{ page: Page; context: BrowserContext }> => {
   const browser = adminPage.context().browser();
   if (!browser) throw new Error("Browser instance is not available");
+  const jwt = new URL(href).searchParams.get("jwt");
+  if (!jwt) throw new Error("Visitor OTP jwt not found in link");
 
   const context = await browser.newContext({
     storageState: { cookies: [], origins: [] },
@@ -158,40 +183,24 @@ export const openConnectedConventionAsRecipient = async (
   const page = await context.newPage();
   await page.goto(href);
   await acceptCookiesIfBannerVisible(page);
+  await page.waitForURL(`**${frontRoutes.otpChallenge({ jwt }).href}`);
 
-  const byEmailButton = page.locator(
-    `#${domElementIds.login.beneficiary.byEmailButton},
-    #${domElementIds.login.professional.byEmailButton}
-    `,
+  await page.locator(`#${domElementIds.otpChallenge.sendCodeButton}`).click();
+  const otpCodeInput = page.locator(
+    `#${domElementIds.otpChallenge.otpCodeInput}`,
   );
-  await expect(byEmailButton).toBeVisible();
-  await page.getByLabel("Email").fill(recipientEmail);
-  await byEmailButton.click();
-  await expect(
-    page.getByRole("heading", {
-      name: "Votre lien de connexion a bien été envoyé",
-    }),
-  ).toBeVisible();
+  await expect(otpCodeInput).toBeVisible();
   await page.waitForTimeout(testConfig.timeForEventCrawler);
 
   await adminPage.goto("/");
-  const loginLink = await getMagicLinkFromEmail({
+  const otpCode = await getOtpCodeFromEmail({
     page: adminPage,
-    emailType: "LOGIN_BY_EMAIL_REQUESTED",
-    elementIndex: 0,
-    label: "loginLink",
+    recipientEmail,
   });
-  if (!loginLink) throw new Error("Login by email link not found");
+  if (!otpCode) throw new Error("OTP code not found in email");
 
-  await page.goto(loginLink);
-  await page
-    .getByRole("button", {
-      name: "Oui, me connecter à Immersion Facilitée",
-    })
-    .click();
-  await page.waitForURL(
-    `**${frontRoutes.manageConventionConnectedUser({}).href}**`,
-  );
+  await otpCodeInput.fill(otpCode);
+  await page.waitForURL(`**${frontRoutes.manageConvention({ jwt }).href}`);
 
   return { page, context };
 };
