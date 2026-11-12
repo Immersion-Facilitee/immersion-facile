@@ -6,7 +6,7 @@ import {
   getMagicLinkAndRecipientFromEmail,
   getMagicLinkFromEmail,
   goToAdminTab,
-  openConnectedConventionAsRecipient,
+  openConventionWithOtpAsRecipient,
 } from "../../utils/admin";
 import {
   allOtherSignatoriesSignConvention,
@@ -154,11 +154,10 @@ test.describe("Convention creation and modification workflow", () => {
         expect(recipientEmail).toBeTruthy();
 
         const { page: recipientPage, context } =
-          await openConnectedConventionAsRecipient(
-            page,
-            href!,
-            recipientEmail!,
-          );
+          // biome-ignore lint/style/noNonNullAssertion: <href and recipientEmail are tested above>
+          await openConventionWithOtpAsRecipient(page, href!, recipientEmail!);
+        // biome-ignore lint/style/noNonNullAssertion: <href is tested above>
+        const jwt = new URL(href!).searchParams.get("jwt")!;
 
         await recipientPage
           .locator(`#${domElementIds.manageConvention.editLink}`)
@@ -190,7 +189,7 @@ test.describe("Convention creation and modification workflow", () => {
           .click();
 
         await recipientPage.waitForURL(
-          `**${frontRoutes.manageConventionConnectedUser({}).href}**`,
+          `**${frontRoutes.manageConvention({ jwt }).href}`,
         );
         await checkConventionSummary(recipientPage, updatedEndDateDisplayed);
         await expect(

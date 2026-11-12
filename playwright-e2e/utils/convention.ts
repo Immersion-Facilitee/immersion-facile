@@ -18,7 +18,7 @@ import {
 import {
   getMagicLinkAndRecipientFromEmail,
   goToAdminTab,
-  openConnectedConventionAsRecipient,
+  openConventionWithOtpAsRecipient,
 } from "./admin";
 import { getRandomizedData } from "./data";
 import { defaultE2eSiret } from "./siret";
@@ -381,7 +381,7 @@ export const signConvention = async (
   dateEndDisplayed: string,
 ): Promise<void> => {
   const { page: recipientPage, context } =
-    await openConnectedConventionAsRecipient(page, href, recipientEmail);
+    await openConventionWithOtpAsRecipient(page, href, recipientEmail);
 
   await expect(recipientPage.locator(".fr-alert--success")).toBeHidden();
 
