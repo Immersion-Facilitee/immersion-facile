@@ -57,7 +57,7 @@ export class PgOutboxRepository implements OutboxRepository {
             .selectFrom("outbox")
             .select("id")
             .where("occurred_at", "<=", occuredAt.to)
-            .orderBy("occurred_at asc")
+            .orderBy("occurred_at", "asc")
             .limit(limit),
           (qb) =>
             occuredAt.from ? qb.where("occurred_at", ">=", occuredAt.from) : qb,
@@ -261,7 +261,7 @@ export class PgOutboxRepository implements OutboxRepository {
         "priority",
       ])
       .where("outbox.id", "=", id)
-      .orderBy("published_at asc")
+      .orderBy("published_at", "asc")
       .execute();
 
     return !results.length

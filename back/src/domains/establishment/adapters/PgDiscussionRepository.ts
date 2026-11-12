@@ -329,7 +329,9 @@ export class PgDiscussionRepository implements DiscussionRepository {
           ? builder.where("updated_at", "<=", updatedBetween.to)
           : builder,
       (builder) =>
-        orderBy === "updatedAt" ? builder.orderBy("updated_at asc") : builder,
+        orderBy === "updatedAt"
+          ? builder.orderBy("updated_at", "asc")
+          : builder,
     ).execute();
     return results.map(({ id }) => id as DiscussionId);
   }
