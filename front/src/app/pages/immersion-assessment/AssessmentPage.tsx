@@ -6,8 +6,9 @@ import { Loader, MainWrapper, PageHeader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AssessmentStatus,
-  type ConventionJwtPayload,
-  decodeMagicLinkJwtWithoutSignatureCheck,
+  type ConventionActorRole,
+  type ConventionId,
+  type ConventionSupportedJwt,
   domElementIds,
   frontRoutes,
   getFormattedFirstnameAndLastname,
@@ -20,9 +21,11 @@ import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout
 import { throwIfArchivedConventionError } from "src/app/contents/convention-archive/conventionArchive.helpers";
 import { useConvention } from "src/app/hooks/convention.hooks";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
+import { getConventionAccessFromJwt } from "src/app/hooks/jwt.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useSiretFetcher } from "src/app/hooks/siret.hooks";
 import { ShowConventionErrorOrRenewExpiredJwt } from "src/app/pages/convention/ShowConventionErrorOrRenewExpiredJwt";
+import { frontErrors } from "src/app/pages/error/front-errors";
 import { commonIllustrations } from "src/assets/img/illustrations";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
@@ -36,6 +39,33 @@ interface AssessmentPageProps {
 }
 
 export const AssessmentPage = ({ route }: AssessmentPageProps) => {
+  const jwt = route.params.jwt;
+  const conventionAccess = getConventionAccessFromJwt(jwt);
+  const conventionId: ConventionId | undefined =
+    conventionAccess?.conventionId ?? route.params.conventionId;
+
+  if (!conventionId) throw frontErrors.generic.pageNotFound();
+
+  return (
+    <AssessmentContent
+      jwt={jwt}
+      conventionId={conventionId}
+      conventionRole={conventionAccess?.role}
+    />
+  );
+};
+
+type AssessmentContentProps = {
+  jwt: ConventionSupportedJwt;
+  conventionId: ConventionId;
+  conventionRole: ConventionActorRole | undefined;
+};
+
+const AssessmentContent = ({
+  jwt,
+  conventionId,
+  conventionRole,
+}: AssessmentContentProps) => {
   const dispatch = useDispatch();
   const [submittedAssessmentStatus, setSubmittedAssessmentStatus] =
     useState<AssessmentStatus | null>(null);
@@ -58,21 +88,11 @@ export const AssessmentPage = ({ route }: AssessmentPageProps) => {
   const fetchConventionError =
     conventionFormFeedback?.level === "error" &&
     conventionFormFeedback.on === "fetch";
-  const { applicationId } =
-    decodeMagicLinkJwtWithoutSignatureCheck<ConventionJwtPayload>(
-      route.params.jwt,
-    );
-  const conventionId = applicationId ?? route.params.conventionId;
-
-  const { role: roleFromJwt } =
-    decodeMagicLinkJwtWithoutSignatureCheck<ConventionJwtPayload>(
-      route.params.jwt,
-    );
-  const roles: Role[] = roleFromJwt
-    ? [roleFromJwt]
+  const roles: Role[] = conventionRole
+    ? [conventionRole]
     : userRolesForFetchedConvention;
   const { convention, isLoading: isConventionLoading } = useConvention({
-    jwt: route.params.jwt,
+    jwt,
     conventionId,
   });
 
@@ -103,10 +123,7 @@ export const AssessmentPage = ({ route }: AssessmentPageProps) => {
     });
 
     return (
-      <ShowConventionErrorOrRenewExpiredJwt
-        errorMessage={message}
-        jwt={route.params.jwt}
-      />
+      <ShowConventionErrorOrRenewExpiredJwt errorMessage={message} jwt={jwt} />
     );
   }
 
@@ -242,7 +259,7 @@ export const AssessmentPage = ({ route }: AssessmentPageProps) => {
             {convention && isConventionValidated && !convention.assessment && (
               <AssessmentForm
                 convention={convention}
-                jwt={route.params.jwt}
+                jwt={jwt}
                 currentUserRoles={roles}
                 onAssessmentSubmitted={(assessment) =>
                   setSubmittedAssessmentStatus(assessment.status)

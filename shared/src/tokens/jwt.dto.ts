@@ -14,7 +14,10 @@ export type AppSupportedJwt =
   | EmailAuthCodeJwt
   | VisitorOtpJwt;
 
-export type ConventionSupportedJwt = ConventionJwt | ConnectedUserJwt;
+export type ConventionSupportedJwt =
+  | ConventionJwt
+  | ConnectedUserJwt
+  | VisitorOtpJwt;
 
 export const currentJwtVersions: Record<PayloadKind, number> = {
   convention: 1,

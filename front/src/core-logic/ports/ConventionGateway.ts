@@ -10,7 +10,6 @@ import type {
   ConventionDraftId,
   ConventionDto,
   ConventionId,
-  ConventionJwt,
   ConventionLastBroadcastFeedbackResponse,
   ConventionReadDto,
   ConventionSupportedJwt,
@@ -73,7 +72,7 @@ export interface ConventionGateway {
   ): Observable<void>;
   signConvention$(
     conventionId: ConventionId,
-    jwt: ConventionJwt | ConnectedUserJwt,
+    jwt: ConventionSupportedJwt,
   ): Observable<void>;
   saveConventionDraft(
     saveConventionDraftDto: SaveConventionDraftDto,

@@ -12,8 +12,10 @@ import { useDispatch } from "react-redux";
 import {
   type AgencyModifierRole,
   addressDtoToString,
+  type ConventionActorRole,
   type ConventionId,
   type ConventionReadDto,
+  type ConventionSupportedJwt,
   convertLocaleDateToUtcTimezoneDate,
   domElementIds,
   errors,
@@ -25,6 +27,7 @@ import {
   makeSiretDescriptionLink,
   npsFormIds,
   prettyPrintSchedule,
+  type Role,
   type SignatoryRole,
   toDisplayedDate,
 } from "shared";
@@ -38,6 +41,7 @@ import { ShowConventionErrorOrRenewExpiredJwt } from "src/app/pages/convention/S
 import { frontErrors } from "src/app/pages/error/front-errors";
 import { agenciesSelectors } from "src/core-logic/domain/agencies/agencies.selectors";
 import { agenciesSlice } from "src/core-logic/domain/agencies/agencies.slice";
+import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import type { Route } from "type-route";
 import logoIf from "/assets/img/logo-if.svg";
 import logoRf from "/assets/img/logo-rf.svg";
@@ -111,11 +115,40 @@ const formatSchedule = (convention: ConventionReadDto) => {
 export const ConventionDocumentPage = ({
   route,
 }: ConventionDocumentPageProps) => {
-  const routeConventionId: ConventionId | undefined = route.params.conventionId;
-  const { jwt, jwtPayload } = useJwt(route);
+  const { jwt, conventionAccess } = useJwt(route);
+  const conventionId: ConventionId | undefined =
+    route.params.conventionId ?? conventionAccess?.conventionId;
+
+  if (!jwt || !conventionId) throw frontErrors.generic.pageNotFound();
+
+  return (
+    <ConventionDocumentContent
+      jwt={jwt}
+      conventionId={conventionId}
+      conventionRole={conventionAccess?.role}
+    />
+  );
+};
+
+type ConventionDocumentContentProps = {
+  jwt: ConventionSupportedJwt;
+  conventionId: ConventionId;
+  conventionRole: ConventionActorRole | undefined;
+};
+
+const ConventionDocumentContent = ({
+  jwt,
+  conventionId,
+  conventionRole,
+}: ConventionDocumentContentProps) => {
+  const userRolesForFetchedConvention = useAppSelector(
+    connectedUserSelectors.userRolesForFetchedConvention,
+  );
+  const viewerRole: Role | undefined =
+    conventionRole ?? userRolesForFetchedConvention.at(0);
   const { convention, isLoading } = useConvention({
     jwt,
-    conventionId: routeConventionId ?? jwtPayload.applicationId,
+    conventionId,
   });
   const agencyInfo = useAppSelector(agenciesSelectors.details);
   const agencyFeedback = useAppSelector(agenciesSelectors.feedback);
@@ -136,7 +169,6 @@ export const ConventionDocumentPage = ({
   }, [convention?.agencyId, dispatch]);
 
   if (fetchConventionError) {
-    const conventionId = routeConventionId ?? jwtPayload.applicationId;
     const message = conventionFormFeedback?.message ?? "";
     throwIfArchivedConventionError({
       errorMessage: message,
@@ -1054,15 +1086,17 @@ export const ConventionDocumentPage = ({
             </>
           )}
         </footer>
-        <NPSForm
-          mode="popup"
-          formId={npsFormIds.conventionValidated}
-          conventionInfos={{
-            id: convention.id,
-            role: jwtPayload.role,
-            status: convention.status,
-          }}
-        />
+        {viewerRole && (
+          <NPSForm
+            mode="popup"
+            formId={npsFormIds.conventionValidated}
+            conventionInfos={{
+              id: convention.id,
+              role: viewerRole,
+              status: convention.status,
+            }}
+          />
+        )}
       </Document>
     </MainWrapper>
   );

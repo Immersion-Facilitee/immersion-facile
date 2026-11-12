@@ -466,7 +466,7 @@ export class HttpConventionGateway implements ConventionGateway {
 
   public signConvention$(
     conventionId: ConventionId,
-    jwt: ConventionJwt | ConnectedUserJwt,
+    jwt: ConventionSupportedJwt,
   ): Observable<void> {
     return from(
       this.magicLinkHttpClient

@@ -1,8 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type {
-  ConnectedUserJwt,
   ConventionId,
-  ConventionJwt,
   ConventionSupportedJwt,
   EditConventionCounsellorNameRequestDto,
   RenewConventionParams,
@@ -38,7 +36,7 @@ export type EditCounsellorNamePayload = {
 
 type SignPayload = {
   conventionId: ConventionId;
-  jwt: ConventionJwt | ConnectedUserJwt;
+  jwt: ConventionSupportedJwt;
 };
 
 export interface ConventionActionState {

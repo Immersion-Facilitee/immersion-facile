@@ -1,12 +1,9 @@
 import { MainWrapper } from "react-design-system";
-import {
-  type ConventionJwtPayload,
-  decodeMagicLinkJwtWithoutSignatureCheck,
-  type frontRoutes,
-} from "shared";
+import type { ConventionId, frontRoutes } from "shared";
 import type { JwtKindProps } from "src/app/components/admin/conventions/ConventionManageActions";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
+import { getConventionAccessFromJwt } from "src/app/hooks/jwt.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { match } from "ts-pattern";
@@ -19,34 +16,51 @@ type ConventionManagePageProps = {
     | Route<typeof frontRoutes.adminConventionDetail>;
 };
 
+type ConventionManageParams = {
+  jwtParams: JwtKindProps;
+  conventionId: ConventionId;
+};
+
 export const ConventionManagePage = ({ route }: ConventionManagePageProps) => {
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
 
-  const jwtParams: JwtKindProps | undefined = match(route)
+  const manageParams: ConventionManageParams | undefined = match(route)
     .with(
       {
         name: "adminConventionDetail",
       },
-      () =>
-        (connectedUserJwt
-          ? { jwt: connectedUserJwt, kind: "connected user backoffice" }
-          : undefined) satisfies JwtKindProps | undefined,
+      (route): ConventionManageParams | undefined =>
+        connectedUserJwt
+          ? {
+              jwtParams: {
+                jwt: connectedUserJwt,
+                kind: "connected user backoffice",
+              },
+              conventionId: route.params.conventionId,
+            }
+          : undefined,
     )
     .with(
       {
         name: "manageConvention",
       },
-      (route) =>
-        ({ jwt: route.params.jwt, kind: "convention" }) satisfies JwtKindProps,
+      (route): ConventionManageParams | undefined => {
+        const jwt = route.params.jwt;
+        const conventionAccess = getConventionAccessFromJwt(jwt);
+        if (!conventionAccess) return undefined;
+        return {
+          jwtParams: conventionAccess.isVisitorOtp
+            ? { jwt, kind: "visitor session" }
+            : { jwt, kind: "convention" },
+          conventionId: conventionAccess.conventionId,
+        };
+      },
     )
     .exhaustive();
 
-  if (!jwtParams) return null;
+  if (!manageParams) return null;
 
-  const { applicationId: conventionId } =
-    decodeMagicLinkJwtWithoutSignatureCheck<ConventionJwtPayload>(
-      jwtParams.jwt,
-    );
+  const { jwtParams, conventionId } = manageParams;
 
   return (
     <HeaderFooterLayout>
