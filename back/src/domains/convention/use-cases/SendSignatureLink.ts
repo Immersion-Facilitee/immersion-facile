@@ -1,4 +1,5 @@
 import {
+  type AbsoluteUrl,
   agencyModifierRoles,
   allSignatoryRoles,
   CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS,
@@ -8,11 +9,8 @@ import {
   conventionSignatoryRoleBySignatoryKey,
   errors,
   formatHoursCooldownTimeRemaining,
-  frontRoutes,
   getFormattedFirstnameAndLastname,
   isWithinHoursCooldown,
-  loginPersonaByConventionRole,
-  makeRouteAbsoluteUrl,
   type NotificationKind,
   type SendSignatureLinkRequestDto,
   type SignatoryRole,
@@ -20,15 +18,14 @@ import {
   type UserId,
 } from "shared";
 import type { AppConfig } from "../../../config/bootstrap/appConfig";
-import type { GenerateConventionMagicLinkUrl } from "../../../config/bootstrap/magicLinkUrl";
+import type { GenerateVisitorOtpUrl } from "../../../config/bootstrap/magicLinkUrl";
 import { throwErrorIfConventionStatusNotAllowed } from "../../../utils/convention";
-import type { CreateConventionMagicLinkPayloadProperties } from "../../../utils/jwt";
 import { throwIfNotAuthorizedForRole } from "../../connected-users/helpers/authorization.helper";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { SaveNotificationAndRelatedEvent } from "../../core/notifications/helpers/Notification";
 import type { NotificationRepository } from "../../core/notifications/ports/NotificationRepository";
 import type { ShortLinkIdGeneratorGateway } from "../../core/short-link/ports/ShortLinkIdGeneratorGateway";
-import { prepareConventionMagicShortLinkMaker } from "../../core/short-link/ShortLink";
+import { makeShortLink } from "../../core/short-link/ShortLink";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
@@ -48,7 +45,7 @@ export const makeSendSignatureLink = useCaseBuilder("RemindSignatories")
   .withCurrentUser<ConventionRelatedJwtPayload>()
   .withDeps<{
     saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-    generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
+    generateVisitorOtpUrl: GenerateVisitorOtpUrl;
     timeGateway: TimeGateway;
     shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
     config: AppConfig;
@@ -121,14 +118,14 @@ export const makeSendSignatureLink = useCaseBuilder("RemindSignatories")
       conventionId: convention.id,
     });
 
-    const commonParams = {
-      userId: "userId" in jwtPayload ? jwtPayload.userId : undefined,
-      signatoryPhone: signatory.phone,
-      signatory,
-      uow,
-      convention,
-      ...deps,
-    };
+    const conventionSignatureLink = deps.generateVisitorOtpUrl({
+      conventionId: convention.id,
+      role: signatory.role,
+      email: signatory.email,
+      now: deps.timeGateway.now(),
+      targetRoute: "manageConvention",
+    });
+
     if (notificationKind === "sms") {
       throwErrorIfSignatoryPhoneNumberNotValid({
         convention,
@@ -136,17 +133,22 @@ export const makeSendSignatureLink = useCaseBuilder("RemindSignatories")
         signatoryRole,
       });
       await sendSms({
-        conventionMagicLinkPayload: {
-          id: convention.id,
-          role: signatory.role,
-          email: signatory.email,
-          now: deps.timeGateway.now(),
-        },
-        ...commonParams,
+        ...deps,
+        uow,
+        convention,
+        conventionSignatureLink,
+        signatoryPhone: signatory.phone,
+        userId: "userId" in jwtPayload ? jwtPayload.userId : undefined,
       });
     }
     if (notificationKind === "email") {
-      await sendEmail(commonParams);
+      await sendEmail({
+        saveNotificationAndRelatedEvent: deps.saveNotificationAndRelatedEvent,
+        uow,
+        convention,
+        signatory,
+        conventionSignatureLink,
+      });
     }
 
     const event = deps.createNewEvent({
@@ -172,38 +174,29 @@ export const makeSendSignatureLink = useCaseBuilder("RemindSignatories")
   });
 
 const sendSms = async ({
-  conventionMagicLinkPayload,
   saveNotificationAndRelatedEvent,
-  generateConventionMagicLinkUrl,
   shortLinkIdGeneratorGateway,
   config,
   convention,
   uow,
+  conventionSignatureLink,
   signatoryPhone,
   userId,
 }: {
-  conventionMagicLinkPayload: CreateConventionMagicLinkPayloadProperties;
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-  generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
   shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
   config: AppConfig;
   convention: ConventionDto;
   uow: UnitOfWork;
+  conventionSignatureLink: AbsoluteUrl;
   signatoryPhone: string;
   userId: UserId | undefined;
 }) => {
-  const makeShortMagicLink = prepareConventionMagicShortLinkMaker({
-    config,
-    conventionMagicLinkPayload,
-    generateConventionMagicLinkUrl,
-    shortLinkIdGeneratorGateway,
+  const shortLink = await makeShortLink({
     uow,
-  });
-
-  const shortLink = await makeShortMagicLink({
-    targetRoute: "conventionToSign",
-    lifetime: "2Days",
-    extraQueryParams: { at_campaign: "sms-signature-link" },
+    shortLinkIdGeneratorGateway,
+    config,
+    longLink: conventionSignatureLink,
   });
 
   await saveNotificationAndRelatedEvent(uow, {
@@ -224,21 +217,20 @@ const sendSms = async ({
 
 const sendEmail = async ({
   saveNotificationAndRelatedEvent,
-  config,
   convention,
   uow,
   signatory,
+  conventionSignatureLink,
 }: {
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-  config: AppConfig;
   convention: ConventionDto;
   uow: UnitOfWork;
   signatory: {
     email: string;
     firstName: string;
     lastName: string;
-    role: SignatoryRole;
   };
+  conventionSignatureLink: AbsoluteUrl;
 }) => {
   await saveNotificationAndRelatedEvent(uow, {
     kind: "email",
@@ -262,15 +254,7 @@ const sendEmail = async ({
           firstname: convention.signatories.beneficiary.firstName,
           lastname: convention.signatories.beneficiary.lastName,
         }),
-        conventionSignatureLink: makeRouteAbsoluteUrl({
-          route: frontRoutes.manageConventionConnectedUser({
-            conventionId: convention.id,
-            loginPersona: loginPersonaByConventionRole(signatory.role),
-            email: signatory.email,
-            at_campaign: "email-signature-link",
-          }),
-          baseUrl: config.immersionFacileBaseUrl,
-        }),
+        conventionSignatureLink,
         agencyLogoUrl: undefined,
         renewed: convention.renewed,
       },
