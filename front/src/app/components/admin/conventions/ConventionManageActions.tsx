@@ -21,6 +21,7 @@ import {
   type Role,
   type TransferConventionToAgencyRequestDto,
   type UpdateConventionStatusRequestDto,
+  type VisitorOtpJwt,
   type WithConventionId,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
@@ -70,6 +71,10 @@ export type JwtKindProps =
   | {
       jwt: ConnectedUserJwt;
       kind: "connected user";
+    }
+  | {
+      jwt: VisitorOtpJwt;
+      kind: "visitor session";
     };
 
 type ConventionManageActionsProps = {
@@ -186,7 +191,12 @@ export const ConventionManageActions = ({
     dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
 
     if (verificationAction === "EDIT_CONVENTION_WITH_FINAL_STATUS") {
-      if ("beneficiary" in params && jwtParams.kind === "convention") return;
+      if (
+        "beneficiary" in params &&
+        (jwtParams.kind === "convention" ||
+          jwtParams.kind === "visitor session")
+      )
+        return;
       dispatch(
         editConventionWithFinalStatusSlice.actions.editConventionWithFinalStatusRequested(
           {

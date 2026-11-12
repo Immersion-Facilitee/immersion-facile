@@ -7,6 +7,9 @@ import { Document, Loader, MainWrapper } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import {
+  type ConventionActorRole,
+  type ConventionId,
+  type ConventionSupportedJwt,
   computeTotalHours,
   convertLocaleDateToUtcTimezoneDate,
   domElementIds,
@@ -30,6 +33,7 @@ import { useJwt } from "src/app/hooks/jwt.hooks";
 import { usePdfGenerator } from "src/app/hooks/pdf.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { ShowConventionErrorOrRenewExpiredJwt } from "src/app/pages/convention/ShowConventionErrorOrRenewExpiredJwt";
+import { frontErrors } from "src/app/pages/error/front-errors";
 import { createFormModal } from "src/app/utils/createFormModal";
 import { commonIllustrations } from "src/assets/img/illustrations";
 import { agenciesSelectors } from "src/core-logic/domain/agencies/agencies.selectors";
@@ -73,11 +77,36 @@ type AssessmentDocumentPageProps = {
 export const AssessmentDocumentPage = ({
   route,
 }: AssessmentDocumentPageProps) => {
-  const dispatch = useDispatch();
-  const { jwt, jwtPayload } = useJwt(route);
-  const hasOwnLayout = !!route.params.jwt;
+  const { jwt, conventionAccess } = useJwt(route);
+  const conventionId: ConventionId | undefined =
+    conventionAccess?.conventionId ?? route.params.conventionId;
 
-  const conventionId = jwtPayload.applicationId ?? route.params.conventionId;
+  if (!jwt || !conventionId) throw frontErrors.generic.pageNotFound();
+
+  return (
+    <AssessmentDocumentContent
+      jwt={jwt}
+      conventionId={conventionId}
+      conventionRole={conventionAccess?.role}
+      isAccessedWithJwtInUrl={!!route.params.jwt}
+    />
+  );
+};
+
+type AssessmentDocumentContentProps = {
+  jwt: ConventionSupportedJwt;
+  conventionId: ConventionId;
+  conventionRole: ConventionActorRole | undefined;
+  isAccessedWithJwtInUrl: boolean;
+};
+
+const AssessmentDocumentContent = ({
+  jwt,
+  conventionId,
+  conventionRole,
+  isAccessedWithJwtInUrl,
+}: AssessmentDocumentContentProps) => {
+  const dispatch = useDispatch();
   const assessment = useAppSelector(assessmentSelectors.currentAssessment);
   const isAssessmentLoading = useAppSelector(assessmentSelectors.isLoading);
 
@@ -96,8 +125,8 @@ export const AssessmentDocumentPage = ({
   const fetchConventionError =
     conventionFormFeedback?.level === "error" &&
     conventionFormFeedback.on === "fetch";
-  const isBeneficiary = jwtPayload.role
-    ? jwtPayload.role === "beneficiary"
+  const isBeneficiary = conventionRole
+    ? conventionRole === "beneficiary"
     : userRolesForFetchedConvention.includes("beneficiary");
 
   const isSignAssessmentSuccess =
@@ -152,7 +181,7 @@ export const AssessmentDocumentPage = ({
       conventionId,
     });
 
-    if (route.params.jwt)
+    if (isAccessedWithJwtInUrl)
       return (
         <ShowConventionErrorOrRenewExpiredJwt
           errorMessage={conventionFormFeedback.message}
@@ -173,7 +202,7 @@ export const AssessmentDocumentPage = ({
   if (!assessment)
     return (
       <FullPageFeedback
-        includeWrapper={hasOwnLayout}
+        includeWrapper={isAccessedWithJwtInUrl}
         title="Ce bilan n’est plus disponible"
         illustration={commonIllustrations.success}
         content={
@@ -211,7 +240,7 @@ export const AssessmentDocumentPage = ({
   if (isSignAssessmentSuccess)
     return (
       <FullPageFeedback
-        includeWrapper={hasOwnLayout}
+        includeWrapper={isAccessedWithJwtInUrl}
         title="Votre bilan d'immersion a bien été signé"
         illustration={commonIllustrations.documentsAdministratifs}
         content={
@@ -649,7 +678,7 @@ export const AssessmentDocumentPage = ({
     </>
   );
 
-  if (hasOwnLayout)
+  if (isAccessedWithJwtInUrl)
     return (
       <MainWrapper layout="default" vSpacing={8}>
         {documentContent}
