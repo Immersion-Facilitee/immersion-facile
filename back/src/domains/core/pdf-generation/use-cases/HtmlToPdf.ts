@@ -1,6 +1,6 @@
 import {
   type ConnectedUserDomainJwtPayload,
-  type ConventionJwtPayload,
+  type ConventionDomainJwtPayload,
   errors,
   type HtmlToPdfRequest,
   htmlToPdfRequestSchema,
@@ -15,7 +15,7 @@ export const makeHtmlToPdf = useCaseBuilder("HtmlToPdf")
   .notTransactional()
   .withInput<HtmlToPdfRequest>(htmlToPdfRequestSchema)
   .withOutput<string>()
-  .withCurrentUser<ConventionJwtPayload | ConnectedUserDomainJwtPayload>()
+  .withCurrentUser<ConventionDomainJwtPayload | ConnectedUserDomainJwtPayload>()
   .withDeps<{
     pdfGeneratorGateway: PdfGeneratorGateway;
     immersionFacileDomain: string;

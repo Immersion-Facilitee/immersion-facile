@@ -13,6 +13,8 @@ import type {
 } from "../apiConsumer/ApiConsumer";
 import type { AssessmentMode } from "../assessment/assessment.dto";
 import { authExpiredMessage, type OAuthState } from "../auth/auth.dto";
+import type { OtpChallengeId } from "../auth/otpChallenge/otpChallenge.dto";
+import type { VisitorSessionId } from "../auth/visitorSession/visitorSession.dto";
 import type {
   ConventionDto,
   ConventionId,
@@ -75,6 +77,52 @@ export const badSchemaErrorMessagePrefix = "Schema validation failed";
 export const archivedConventionErrorMessage =
   "Cette convention est archivée et n'est plus accessible";
 export const errors = {
+  visitorSession: {
+    alreadyExists: (id: VisitorSessionId) =>
+      new ConflictError(`La session visiteur ${id} existe déjà.`),
+    notFound: (id: VisitorSessionId) =>
+      new NotFoundError(`La session visiteur ${id} n'existe pas.`),
+    unauthorized: () => new UnauthorizedError(),
+  },
+  otpChallenge: {
+    alreadyExists: (id: OtpChallengeId) =>
+      new ConflictError(`Le challenge OTP ${id} existe déjà.`),
+    notFound: (id: OtpChallengeId) =>
+      new NotFoundError(`Le challenge OTP ${id} n'existe pas.`),
+    requestedTooRecently: ({
+      minSecondsBetweenRequests,
+    }: {
+      minSecondsBetweenRequests: number;
+    }) =>
+      new TooManyRequestApiError(
+        `Un code a été demandé il y a moins de ${minSecondsBetweenRequests} secondes. Merci de patienter avant d'en demander un nouveau.`,
+      ),
+    tooManyRequests: ({
+      maxRequests,
+      periodInMinutes,
+    }: {
+      maxRequests: number;
+      periodInMinutes: number;
+    }) =>
+      new TooManyRequestApiError(
+        `Vous avez demandé ${maxRequests} codes au cours des ${periodInMinutes} dernières minutes. Merci de réessayer plus tard.`,
+      ),
+    activeChallengeAlreadyExists: () =>
+      new TooManyRequestApiError(
+        "Un code vient d'être demandé. Merci de patienter avant d'en demander un nouveau.",
+      ),
+    noActiveChallenge: () =>
+      new NotFoundError(
+        "Aucun code de vérification en cours. Merci de demander un nouveau code.",
+      ),
+    invalidCode: () =>
+      new BadRequestError("Le code de vérification est incorrect."),
+    expired: () => new ForbiddenError("Le code de vérification a expiré."),
+    tooManyAttempts: ({ maxAttempts }: { maxAttempts: number }) =>
+      new TooManyRequestApiError(
+        `Trop de tentatives (${maxAttempts}). Merci de demander un nouveau code.`,
+      ),
+  },
   fetch: {
     errorResponse: async (errorResponse: Response) => {
       const textbody = await errorResponse

@@ -59,6 +59,7 @@ export interface Database {
   notifications_email: NotificationsEmail;
   notifications_sms: NotificationsSms;
   nps: Nps;
+  otp_challenges: OtpChallenges;
   outbox_failures: OutboxFailures;
   outbox_publications: OutboxPublications;
   outbox: Outbox;
@@ -80,6 +81,7 @@ export interface Database {
   users_ongoing_oauths: OngoingOauths;
   users: Users;
   view_appellations_dto: ViewAppellationsDto;
+  visitor_sessions: VisitorSessions;
 }
 
 type JsonArray = JsonValue[];
@@ -494,6 +496,29 @@ interface OngoingOauths {
   updated_at: Generated<Timestamp>;
   used_at: Timestamp | null;
   from_uri: string;
+}
+
+interface OtpChallenges {
+  id: string;
+  purpose: string;
+  subject: Json;
+  channel: "email" | "sms";
+  recipient: string;
+  code_hash: string;
+  attempts: number;
+  expires_at: Timestamp;
+  used_at: Timestamp | null;
+  revoked_at: Timestamp | null;
+  created_at: Timestamp;
+}
+
+interface VisitorSessions {
+  id: string;
+  purpose: string;
+  subject: Json;
+  expires_at: Timestamp;
+  revoked_at: Timestamp | null;
+  created_at: Timestamp;
 }
 
 type EstablishmentStatus = "DEACTIVATED_FOR_LACK_OF_RESPONSES";

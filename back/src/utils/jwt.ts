@@ -14,6 +14,8 @@ import {
   oneDayInSecond,
   oneHourInSeconds,
   oneMinuteInSeconds,
+  type VisitorOtpDomainJwtPayload,
+  type VisitorOtpJwtPayload,
 } from "shared";
 import type { JwtKind, VerifyJwtFn } from "../domains/core/jwt";
 import type { TimeGateway } from "../domains/core/time-gateway/ports/TimeGateway";
@@ -117,6 +119,23 @@ export const createConnectedUserJwtPayload = ({
     exp,
   };
 };
+
+export type CreateVisitorOtpJwtPayloadProperties = {
+  now: Date;
+} & VisitorOtpDomainJwtPayload;
+
+export const createVisitorOtpJwtPayload = ({
+  purpose,
+  subject,
+  now,
+}: CreateVisitorOtpJwtPayloadProperties): VisitorOtpJwtPayload & {
+  iat: number;
+} => ({
+  purpose,
+  subject,
+  version: currentJwtVersions.visitorOtp,
+  iat: Math.round(now.getTime() / 1000),
+});
 
 export type EmailAuthCodeJwtPayloadProperties = {
   now: Date;

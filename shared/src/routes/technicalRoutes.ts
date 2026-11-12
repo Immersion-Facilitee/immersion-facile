@@ -7,7 +7,7 @@ import {
 } from "../email/validateEmail.schema";
 import { featureFlagsSchema } from "../featureFlag/featureFlags.schema";
 import { htmlToPdfRequestSchema } from "../file/htmlToPdf";
-import { withAuthorizationHeaders } from "../headers";
+import { withOptionalAuthorizationHeaders } from "../headers";
 import { httpErrorSchema } from "../httpClient/httpErrors.schema";
 import { brevoInboundBodySchema } from "../inboundEmailParsing/brevoInbound.schema";
 import { makeHardenedStringSchema } from "../utils/string.schema";
@@ -30,9 +30,13 @@ export const technicalRoutes = defineRoutes({
   htmlToPdf: defineRoute({
     method: "post",
     url: "/auth/html-to-pdf",
-    ...withAuthorizationHeaders,
+    ...withOptionalAuthorizationHeaders,
     requestBodySchema: htmlToPdfRequestSchema,
-    responses: { 200: z.string() },
+    responses: {
+      200: z.string(),
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+    },
   }),
   openApiSpec: defineRoute({
     method: "get",

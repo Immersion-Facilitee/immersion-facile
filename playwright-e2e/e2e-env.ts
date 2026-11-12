@@ -1,4 +1,4 @@
-import { generateKeyPairSync } from "node:crypto";
+import { generateKeyPairSync, randomBytes } from "node:crypto";
 import { resolve } from "node:path";
 import dotEnv from "dotenv";
 
@@ -41,11 +41,12 @@ export const e2eBackendEnv = {
   CACHE: "NONE",
 };
 
-type JwtEnv = {
+type SecretsEnv = {
   API_JWT_PRIVATE_KEY: string;
   API_JWT_PUBLIC_KEY: string;
   JWT_PRIVATE_KEY: string;
   JWT_PUBLIC_KEY: string;
+  OTP_CODE_HMAC_SECRET: string;
 };
 
 const generateJwtKeyPair = () => {
@@ -64,29 +65,31 @@ const generateJwtKeyPair = () => {
   return { privateKey, publicKey };
 };
 
-export const ensureJwtEnv = (): JwtEnv => {
+export const ensureSecretsEnv = (): SecretsEnv => {
   const jwtKeyPair = generateJwtKeyPair();
   const apiJwtKeyPair = generateJwtKeyPair();
 
-  const jwtEnv = {
+  const secretsEnv = {
     JWT_PRIVATE_KEY: process.env.JWT_PRIVATE_KEY ?? jwtKeyPair.privateKey,
     JWT_PUBLIC_KEY: process.env.JWT_PUBLIC_KEY ?? jwtKeyPair.publicKey,
     API_JWT_PRIVATE_KEY:
       process.env.API_JWT_PRIVATE_KEY ?? apiJwtKeyPair.privateKey,
     API_JWT_PUBLIC_KEY:
       process.env.API_JWT_PUBLIC_KEY ?? apiJwtKeyPair.publicKey,
+    OTP_CODE_HMAC_SECRET:
+      process.env.OTP_CODE_HMAC_SECRET ?? randomBytes(32).toString("hex"),
   };
 
-  Object.assign(process.env, jwtEnv);
+  Object.assign(process.env, secretsEnv);
 
-  return jwtEnv;
+  return secretsEnv;
 };
 
 export const makeBackWebServerEnv = (
   baseURL: string,
   siretGateway: "IN_MEMORY" | "ANNUAIRE_DES_ENTREPRISES" = "IN_MEMORY",
 ): Record<string, string> => {
-  const jwtEnv = ensureJwtEnv();
+  const secretsEnv = ensureSecretsEnv();
   const playwrightEnv = loadEnvFileWithProcessEnv(resolve(__dirname, ".env"));
   const backendEnv = loadEnvFileWithProcessEnv(
     resolve(__dirname, "../back/.env"),
@@ -94,7 +97,7 @@ export const makeBackWebServerEnv = (
 
   return {
     ...e2eBackendEnv,
-    ...jwtEnv,
+    ...secretsEnv,
     SIRENE_REPOSITORY: siretGateway,
     ...(siretGateway === "ANNUAIRE_DES_ENTREPRISES"
       ? {

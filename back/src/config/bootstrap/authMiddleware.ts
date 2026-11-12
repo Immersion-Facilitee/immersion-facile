@@ -263,3 +263,36 @@ export const makeConsumerMiddleware = (
     }
   };
 };
+
+export const makeVisitorOtpAuthMiddleware = (
+  config: AppConfig,
+  payloadKey: ExtractFromExisting<PayloadKind, "visitorOtp">,
+): RequestHandler => {
+  const verifyJwt = makeVerifyJwtES256<"visitorOtp">(config.jwtPublicKey);
+
+  return (req, res, next) => {
+    const maybeJwt = req.headers.authorization;
+    if (!maybeJwt) {
+      return responseError(res, "unauthenticated", 401);
+    }
+
+    try {
+      const payload = verifyJwt(maybeJwt);
+
+      if (!payload.purpose || !payload.subject)
+        return sendAuthenticationError(res, errors.user.invalidJwt());
+
+      if (!payload.version || payload.version < currentJwtVersions[payloadKey])
+        return sendAuthenticationError(
+          res,
+          new Error("Token corresponds to an old version"),
+        );
+
+      req.payloads = { [payloadKey]: payload };
+
+      next();
+    } catch (error) {
+      return sendAuthenticationError(res, castError(error));
+    }
+  };
+};

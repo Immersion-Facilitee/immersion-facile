@@ -1,7 +1,16 @@
-import { currentJwtVersions, errors } from "shared";
+import {
+  currentJwtVersions,
+  errors,
+  expectToEqual,
+  type ManageConventionSubject,
+} from "shared";
 import { makeGenerateJwtES256, makeVerifyJwtES256 } from "../domains/core/jwt";
 import { CustomTimeGateway } from "../domains/core/time-gateway/adapters/CustomTimeGateway";
-import { generateES256KeyPair, makeThrowIfIncorrectJwt } from "./jwt";
+import {
+  createVisitorOtpJwtPayload,
+  generateES256KeyPair,
+  makeThrowIfIncorrectJwt,
+} from "./jwt";
 
 describe("makeThrowIfIncorrectJwt", () => {
   const { publicKey, privateKey } = generateES256KeyPair();
@@ -73,5 +82,30 @@ describe("makeThrowIfIncorrectJwt", () => {
         expect(error.message).toMatch(/depuis 120 minutes/);
       }
     });
+  });
+});
+
+describe("createVisitorOtpJwtPayload", () => {
+  it("issues a payload without expiration", () => {
+    const now = new Date("2026-01-01T00:00:00Z");
+    const subject = {
+      conventionId: "convention-id",
+      role: "beneficiary",
+      emailHash: "hash",
+    } satisfies ManageConventionSubject;
+
+    expectToEqual(
+      createVisitorOtpJwtPayload({
+        purpose: "manageConvention",
+        subject,
+        now,
+      }),
+      {
+        purpose: "manageConvention",
+        subject,
+        version: currentJwtVersions.visitorOtp,
+        iat: now.getTime() / 1000,
+      },
+    );
   });
 });

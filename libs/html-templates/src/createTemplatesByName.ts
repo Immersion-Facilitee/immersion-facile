@@ -13,7 +13,7 @@ type Theme =
   | "entrepriseBannie";
 type ThemeTag = `theme:${Theme}`;
 
-type Actor = "candidat" | "prescripteur" | "entreprise";
+type Actor = "candidat" | "prescripteur" | "entreprise" | "tous";
 type ActorTag = `acteur:${Actor}`;
 
 type Role =

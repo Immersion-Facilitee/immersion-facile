@@ -8,6 +8,8 @@ import {
   castError,
   type LegacySearchQueryParamsDto,
   type UserId,
+  type VisitorOtpJwtPayload,
+  type VisitorSessionPayload,
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import { validateAndParseZodSchema } from "../../config/helpers/validateAndParseZodSchema";
@@ -45,6 +47,8 @@ export type UseCaseIdentityPayload =
   | ConnectedUserDomainJwtPayload
   | ConnectedUser
   | ApiConsumer
+  | VisitorOtpJwtPayload
+  | VisitorSessionPayload
   | void;
 
 export const useCaseLoggerWrapper = <
