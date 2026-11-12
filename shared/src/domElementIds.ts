@@ -447,7 +447,6 @@ export const domElementIds = {
     deleteAssessmentButton: "im-manage-convention__delete-assessment-button",
     assessmentFullFillButton:
       "im-manage-convention__assessment-full-fill-button",
-
     conventionValidationRejectButton: "im-convention-validation__reject-button",
     conventionValidationValidateButton:
       "im-convention-validation__validate-button",

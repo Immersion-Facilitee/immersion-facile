@@ -266,7 +266,7 @@ export class InMemoryConventionGateway implements ConventionGateway {
 
   public signConvention$(
     _conventionId: ConventionId,
-    _jwt: ConventionJwt | ConnectedUserJwt,
+    _jwt: ConventionSupportedJwt,
   ): Observable<void> {
     return this.conventionSignedResult$;
   }

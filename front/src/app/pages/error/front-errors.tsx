@@ -231,7 +231,7 @@ export const frontErrors = {
       userEmail,
       conventionId,
     }: {
-      userEmail: Email;
+      userEmail?: Email;
       conventionId: ConventionId;
     }) =>
       new FrontSpecificError({
@@ -239,8 +239,9 @@ export const frontErrors = {
         description: (
           <>
             <p>
-              L’accès à cette convention n’est pas possible avec le compte
-              actuel ({userEmail}). Ce compte n’a aucun droit sur la convention.
+              {userEmail
+                ? `L’accès à cette convention n’est pas possible avec le compte actuel (${userEmail}). Ce compte n’a aucun droit sur la convention.`
+                : "Vous n’avez pas de droit sur cette convention."}
             </p>
             <ul>
               <li>ID de la convention : {conventionId}</li>
