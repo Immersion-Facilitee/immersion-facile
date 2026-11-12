@@ -42,14 +42,12 @@ type EstablishmentsListProps = {
   establishments: AcceptedUserEstablishmentRightDetails[];
   currentUserEmail: Email;
   isBackofficeAdmin: boolean | undefined;
-  shouldUpdateAvailability: string | undefined;
 };
 
 export const EstablishmentsList = ({
   establishments,
   currentUserEmail,
   isBackofficeAdmin,
-  shouldUpdateAvailability,
 }: EstablishmentsListProps): ReactNode => {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,15 +82,15 @@ export const EstablishmentsList = ({
     )
     .sort((a, b) => compareEstablishments(a, b, sort));
 
-  const onManageEstablishmentClicked = (): void => {
-    dispatch(establishmentSlice.actions.clearEstablishmentRequested());
-    dispatch(siretSlice.actions.siretInfoClearRequested());
-    dispatch(
-      geocodingSlice.actions.clearLocatorDataRequested({
-        locator: "create-establishment-in-person-address",
-      }),
-    );
-  };
+  // const onManageEstablishmentClicked = (): void => {
+  //   dispatch(establishmentSlice.actions.clearEstablishmentRequested());
+  //   dispatch(siretSlice.actions.siretInfoClearRequested());
+  //   dispatch(
+  //     geocodingSlice.actions.clearLocatorDataRequested({
+  //       locator: "create-establishment-in-person-address",
+  //     }),
+  //   );
+  // };
 
   const onShowAllAdminsClicked = (
     establishment: AcceptedUserEstablishmentRightDetails,
@@ -157,8 +155,6 @@ export const EstablishmentsList = ({
             key={`${establishment.siret}-actions`}
             establishment={establishment}
             isBackofficeAdmin={isBackofficeAdmin}
-            shouldUpdateAvailability={shouldUpdateAvailability}
-            onManageEstablishmentClicked={onManageEstablishmentClicked}
           />,
         ])}
       />
@@ -371,19 +367,10 @@ const AdminsListModalContent = ({
 const EstablishmentActions = ({
   establishment,
   isBackofficeAdmin,
-  shouldUpdateAvailability,
-  onManageEstablishmentClicked,
 }: {
   establishment: AcceptedUserEstablishmentRightDetails;
   isBackofficeAdmin: boolean | undefined;
-  shouldUpdateAvailability: string | undefined;
-  onManageEstablishmentClicked: () => void;
 }): ReactNode => {
-  const establishmentFormLink =
-    frontRoutes.establishmentDashboardFormEstablishment({
-      siret: establishment.siret,
-      shouldUpdateAvailability,
-    }).link;
 
   return (
     <>
@@ -392,13 +379,11 @@ const EstablishmentActions = ({
           id={`${domElementIds.establishmentDashboard.manageEstablishments.manageEstablishmentButton}-${establishment.siret}`}
           priority="secondary"
           size="small"
-          linkProps={{
-            ...establishmentFormLink,
-            onClick: (event) => {
-              onManageEstablishmentClicked();
-              establishmentFormLink.onClick(event);
-            },
-          }}
+          linkProps={
+            frontRoutes.establishmentDashboardFormEstablishmentDetails({
+              siret: establishment.siret,
+            }).link
+          }
         >
           Gérer l'entreprise
         </Button>

@@ -80,9 +80,13 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
             label: "Candidatures",
             route: frontRoutes.establishmentDashboardDiscussions(),
           },
-          establishmentDashboardFormEstablishment: {
+          establishmentDashboardFiche: {
             label: "Mes entreprises",
-            route: frontRoutes.establishmentDashboardFormEstablishment(),
+            route: frontRoutes.establishmentDashboardFiche(),
+          },
+          establishmentDashboardFormEstablishmentDetails: {
+            label: "Détail de l'entreprise",
+            route: frontRoutes.establishmentDashboardFormEstablishmentDetails(),
           },
         },
       },

@@ -1,5 +1,4 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
 import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 
 import { HeadingSection } from "react-design-system";
@@ -12,7 +11,6 @@ import {
 } from "shared";
 import { EstablishmentsList } from "src/app/components/establishment/establishment-dashboard/EstablishmentsList";
 import { EstablishmentsRightsTable } from "src/app/components/establishment/establishments-table/EstablishmentsRightsTable";
-import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
 import { makeUseTypedRoute } from "src/app/routes/routes.hooks";
 
 type ManageEstablishmentTabProps = {
@@ -24,7 +22,7 @@ type ManageEstablishmentTabProps = {
 
 const useEstablishmentDashboardFormEstablishmentRoute =
   makeUseTypedRoute<
-    (typeof frontRoutes.establishmentDashboardFormEstablishment)["name"]
+    (typeof frontRoutes.establishmentDashboardFiche)["name"]
   >();
 
 export const ManageEstablishmentsTab = ({
@@ -34,9 +32,8 @@ export const ManageEstablishmentsTab = ({
   isBackofficeAdmin,
 }: ManageEstablishmentTabProps) => {
   const route = useEstablishmentDashboardFormEstablishmentRoute([
-    "establishmentDashboardFormEstablishment",
+    "establishmentDashboardFiche",
   ]);
-  const { siret, shouldUpdateAvailability } = route.params;
   return (
     <>
       <HeadingSection
@@ -84,31 +81,12 @@ export const ManageEstablishmentsTab = ({
         />
       </HeadingSection>
       <div className={fr.cx("fr-mb-4w")}>
-        {siret ? (
-          <>
-            <Button
-              id={
-                domElementIds.establishmentDashboard.manageEstablishments
-                  .backToEstablishmentsButton
-              }
-              priority="tertiary"
-              iconId="fr-icon-arrow-left-line"
-              className={fr.cx("fr-mb-3w")}
-              linkProps={
-                frontRoutes.establishmentDashboardFormEstablishment().link
-              }
-            >
-              Retour à mes entreprises
-            </Button>
-            <EstablishmentForm mode="edit" key={siret} />
-          </>
-        ) : (
+        {(
           establishments.length > 0 && (
             <EstablishmentsList
               establishments={establishments}
               currentUserEmail={currentUserEmail}
               isBackofficeAdmin={isBackofficeAdmin}
-              shouldUpdateAvailability={shouldUpdateAvailability}
             />
           )
         )}

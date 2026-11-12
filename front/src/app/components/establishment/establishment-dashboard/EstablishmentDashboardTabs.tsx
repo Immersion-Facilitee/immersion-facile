@@ -68,7 +68,7 @@ export const EstablishmentDashboardTabs = ({
   );
   const { enableEstablishmentDashboardHighlight } = useFeatureFlags();
   const shouldRedirectToMainTab =
-    route.name === "establishmentDashboardFormEstablishment" &&
+    route.name === "establishmentDashboardFormEstablishmentDetails" &&
     route.params.siret &&
     !currentUser.establishments?.some(
       (establishment) =>
@@ -211,7 +211,7 @@ const establishmentDashboardTabFromRouteName: Record<
 > = {
   establishmentDashboard: "conventions",
   establishmentDashboardConventions: "conventions",
-  establishmentDashboardFormEstablishment: "fiche-entreprise",
+  establishmentDashboardFiche: "fiche-entreprise",
   establishmentDashboardDiscussions: "discussions",
 };
 
@@ -221,7 +221,7 @@ const establishmentDashboardRouteNameFromTabId: Record<
 > = {
   conventions: "establishmentDashboard",
   discussions: "establishmentDashboardDiscussions",
-  "fiche-entreprise": "establishmentDashboardFormEstablishment",
+  "fiche-entreprise": "establishmentDashboardFiche",
 };
 
 const isEstablishmentDashboardTab = (

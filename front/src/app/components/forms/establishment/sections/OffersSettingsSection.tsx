@@ -82,14 +82,12 @@ export const OffersSettingsSection = ({
   mode,
   availableForImmersion: availableForImmersionInProps,
   setAvailableForImmersion,
-  shouldUpdateAvailability,
 }: {
   onStepChange: OnStepChange;
   currentStep: Step;
   mode: Mode;
   availableForImmersion: boolean | undefined;
   setAvailableForImmersion: (value: boolean) => void;
-  shouldUpdateAvailability: boolean | undefined;
 }) => {
   const { setValue, watch, clearErrors, getValues, register, formState } =
     useFormContext<FormEstablishmentDto>();
@@ -134,7 +132,7 @@ export const OffersSettingsSection = ({
   const isAvailableForImmersion = () => {
     if (availableForImmersionInProps !== undefined)
       return availableForImmersionInProps;
-    if (mode === "create" || shouldUpdateAvailability) return undefined;
+    if (mode === "create") return undefined;
     if (currentNextAvailabilityDate === undefined) return true;
     return currentNextAvailabilityDate <= new Date().toISOString();
   };

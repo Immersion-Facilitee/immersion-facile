@@ -1343,7 +1343,8 @@ export const domElementIds = {
     unarchiveConventionButton:
       "im-establishment-dashboard-conventions__unarchive-convention-button",
   },
-  establishmentDashboardFormEstablishment: {},
+  establishmentDashboardFiche: {},
+  establishmentDashboardFormEstablishmentDetails: {},
   openApiDoc: {},
   stats: {},
   temporaryError: {

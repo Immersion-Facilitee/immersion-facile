@@ -61,7 +61,7 @@ export const useConventionRoute = () =>
 
 export type RouteByMode = {
   create: Route<typeof frontRoutes.formEstablishment>;
-  edit: Route<typeof frontRoutes.establishmentDashboardFormEstablishment>;
+  edit: Route<typeof frontRoutes.establishmentDashboardFormEstablishmentDetails>;
   admin: Route<typeof frontRoutes.adminEstablishments>;
 };
 
@@ -71,7 +71,7 @@ type EstablishmentRouteName = RouteByMode[Mode]["name"];
 
 const establishmentRouteNames = [
   frontRoutes.formEstablishment.name,
-  frontRoutes.establishmentDashboardFormEstablishment.name,
+  frontRoutes.establishmentDashboardFormEstablishmentDetails.name,
   frontRoutes.adminEstablishments.name,
 ] as const;
 

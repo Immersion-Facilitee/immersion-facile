@@ -109,7 +109,7 @@ const getPageSideEffectByRouteName: Partial<Record<keyof Routes, () => void>> =
         }),
       );
     },
-    establishmentDashboardFormEstablishment: () => {
+    establishmentDashboardFiche: () => {
       store.dispatch(
         connectedUserSlice.actions.currentUserFetchRequested({
           feedbackTopic: "unused",
@@ -124,6 +124,13 @@ const getPageSideEffectByRouteName: Partial<Record<keyof Routes, () => void>> =
       );
     },
     establishmentDashboardConventions: () => {
+      store.dispatch(
+        connectedUserSlice.actions.currentUserFetchRequested({
+          feedbackTopic: "unused",
+        }),
+      );
+    },
+    establishmentDashboardFormEstablishmentDetails: () => {
       store.dispatch(
         connectedUserSlice.actions.currentUserFetchRequested({
           feedbackTopic: "unused",
@@ -277,7 +284,12 @@ const getPageByRouteName: {
       <EstablishmentDashboardMainTab route={route} />
     </DashboardPrivateRoutePage>
   ),
-  establishmentDashboardFormEstablishment: (route) => (
+  establishmentDashboardFiche: (route) => (
+    <DashboardPrivateRoutePage route={route}>
+      <EstablishmentDashboardMainTab route={route} />
+    </DashboardPrivateRoutePage>
+  ),
+  establishmentDashboardFormEstablishmentDetails: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <EstablishmentDashboardMainTab route={route} />
     </DashboardPrivateRoutePage>
