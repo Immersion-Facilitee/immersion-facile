@@ -55,8 +55,8 @@ export class PgOutboxQueries implements OutboxQueries {
       .selectFrom("outbox")
       .select("id")
       .where("was_quarantined", "=", false)
-      .orderBy("priority asc")
-      .orderBy("occurred_at asc")
+      .orderBy("priority", "asc")
+      .orderBy("occurred_at", "asc")
       .limit(params.limit);
 
     const results = await query
@@ -92,8 +92,8 @@ export class PgOutboxQueries implements OutboxQueries {
         "priority",
       ])
       .where("was_quarantined", "=", false)
-      .orderBy("priority asc")
-      .orderBy("occurred_at asc");
+      .orderBy("priority", "asc")
+      .orderBy("occurred_at", "asc");
   }
 }
 

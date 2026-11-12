@@ -930,7 +930,7 @@ const establishmentByFiltersQueryBuilder = (db: KyselyDb) =>
                       )}::timestamp, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`,
                 }).as("offer"),
               )
-              .orderBy("io.appellation_code asc"),
+              .orderBy("io.appellation_code", "asc"),
           ),
           userRights: jsonArrayFrom(
             eb
@@ -957,4 +957,4 @@ const establishmentByFiltersQueryBuilder = (db: KyselyDb) =>
       ).as("aggregate"),
     )
     .groupBy(["e.siret", "be.siret", "be.bannishment_justification"])
-    .orderBy("e.siret asc");
+    .orderBy("e.siret", "asc");

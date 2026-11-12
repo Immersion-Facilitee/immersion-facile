@@ -24,7 +24,7 @@ export class PgEstablishmentLeadRepository
       .selectFrom("establishment_lead_events")
       .selectAll()
       .where("siret", "=", siret)
-      .orderBy("occurred_at asc")
+      .orderBy("occurred_at", "asc")
       .execute();
 
     if (leadEvents.length === 0) return;
