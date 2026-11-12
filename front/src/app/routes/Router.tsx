@@ -270,8 +270,16 @@ const getPageByRouteName: {
     </ConnectedPrivateRoutePage>
   ),
   initiateConvention: () => <InitiateConventionPage />,
-  conventionImmersion: (route) => <ConventionImmersionPage route={route} />,
-  conventionMiniStage: (route) => <ConventionMiniStagePage route={route} />,
+  conventionImmersion: (route) =>
+    withVisitorPrivateRoute(
+      route.params.jwt,
+      <ConventionImmersionPage route={route} />,
+    ),
+  conventionMiniStage: (route) =>
+    withVisitorPrivateRoute(
+      route.params.jwt,
+      <ConventionMiniStagePage route={route} />,
+    ),
   conventionConfirmation: (route) => (
     <ConventionConfirmationPage route={route} />
   ),

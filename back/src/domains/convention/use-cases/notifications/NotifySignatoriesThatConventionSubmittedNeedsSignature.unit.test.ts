@@ -1,14 +1,16 @@
 import {
+  type AbsoluteUrl,
   type AgencyDto,
   AgencyDtoBuilder,
+  type BeneficiaryRepresentative,
   ConnectedUserBuilder,
   type ConventionDto,
   ConventionDtoBuilder,
   type EmailNotification,
+  type Signatory,
 } from "shared";
-import type { AppConfig } from "../../../../config/bootstrap/appConfig";
-import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../../utils/agency";
+import { fakeGenerateVisitorOtpUrl } from "../../../../utils/jwtTestHelper";
 import { expectEmailSignatoryConfirmationSignatureRequestMatchingConvention } from "../../../core/notifications/adapters/InMemoryNotificationRepository";
 import {
   makeSaveNotificationAndRelatedEvent,
@@ -27,7 +29,7 @@ import {
 } from "./NotifySignatoriesThatConventionSubmittedNeedsSignature";
 
 describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
-  const config: AppConfig = new AppConfigBuilder({}).build();
+  const now = new Date("2024-10-04T10:00:00.000Z");
   const agency: AgencyDto = new AgencyDtoBuilder().build();
   const counsellor = new ConnectedUserBuilder()
     .withId("counsellor")
@@ -37,14 +39,15 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
     .withId("validator")
     .withEmail("validator@mail.com")
     .buildUser();
+  const beneficiaryRepresentative: BeneficiaryRepresentative = {
+    firstName: "Tom",
+    lastName: "Cruise",
+    phone: "0665454271",
+    role: "beneficiary-representative",
+    email: "beneficiary@representative.fr",
+  };
   const validConvention: ConventionDto = new ConventionDtoBuilder()
-    .withBeneficiaryRepresentative({
-      firstName: "Tom",
-      lastName: "Cruise",
-      phone: "0665454271",
-      role: "beneficiary-representative",
-      email: "beneficiary@representative.fr",
-    })
+    .withBeneficiaryRepresentative(beneficiaryRepresentative)
     .withAgencyId(agency.id)
     .build();
 
@@ -53,15 +56,16 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    const timeGateway = new CustomTimeGateway();
+    const timeGateway = new CustomTimeGateway(now);
     useCase = makeNotifySignatoriesThatConventionSubmittedNeedsSignature({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
-        config,
         saveNotificationAndRelatedEvent: makeSaveNotificationAndRelatedEvent(
           new UuidV4Generator(),
           timeGateway,
         ),
+        generateVisitorOtpUrl: fakeGenerateVisitorOtpUrl,
+        timeGateway,
       },
     });
     uow.userRepository.users = [counsellor, validator];
@@ -94,7 +98,10 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
       signatory: validConvention.signatories.beneficiary,
       recipient: validConvention.signatories.beneficiary.email,
       agency,
-      config,
+      conventionSignatureLink: makeExpectedSignatureLink(
+        validConvention,
+        validConvention.signatories.beneficiary,
+      ),
     });
     expectEmailSignatoryConfirmationSignatureRequestMatchingConvention({
       templatedEmail: emailNotifications[1].templatedContent,
@@ -102,17 +109,21 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
       signatory: validConvention.signatories.establishmentRepresentative,
       recipient: validConvention.signatories.establishmentRepresentative.email,
       agency,
-      config,
+      conventionSignatureLink: makeExpectedSignatureLink(
+        validConvention,
+        validConvention.signatories.establishmentRepresentative,
+      ),
     });
     expectEmailSignatoryConfirmationSignatureRequestMatchingConvention({
       templatedEmail: emailNotifications[2].templatedContent,
       convention: validConvention,
-      // biome-ignore lint/style/noNonNullAssertion: <explanation>
-      signatory: validConvention.signatories.beneficiaryRepresentative!,
-      // biome-ignore lint/style/noNonNullAssertion: <explanation>
-      recipient: validConvention.signatories.beneficiaryRepresentative!.email,
+      signatory: beneficiaryRepresentative,
+      recipient: beneficiaryRepresentative.email,
       agency,
-      config,
+      conventionSignatureLink: makeExpectedSignatureLink(
+        validConvention,
+        beneficiaryRepresentative,
+      ),
     });
   });
 
@@ -140,7 +151,10 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
       signatory: renewedConvention.signatories.beneficiary,
       recipient: renewedConvention.signatories.beneficiary.email,
       agency,
-      config,
+      conventionSignatureLink: makeExpectedSignatureLink(
+        renewedConvention,
+        renewedConvention.signatories.beneficiary,
+      ),
     });
     expectEmailSignatoryConfirmationSignatureRequestMatchingConvention({
       templatedEmail: emailNotifications[1].templatedContent,
@@ -149,17 +163,33 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
       recipient:
         renewedConvention.signatories.establishmentRepresentative.email,
       agency,
-      config,
+      conventionSignatureLink: makeExpectedSignatureLink(
+        renewedConvention,
+        renewedConvention.signatories.establishmentRepresentative,
+      ),
     });
     expectEmailSignatoryConfirmationSignatureRequestMatchingConvention({
       templatedEmail: emailNotifications[2].templatedContent,
       convention: renewedConvention,
-      // biome-ignore lint/style/noNonNullAssertion: <explanation>
-      signatory: renewedConvention.signatories.beneficiaryRepresentative!,
-      // biome-ignore lint/style/noNonNullAssertion: <explanation>
-      recipient: renewedConvention.signatories.beneficiaryRepresentative!.email,
+      signatory: beneficiaryRepresentative,
+      recipient: beneficiaryRepresentative.email,
       agency,
-      config,
+      conventionSignatureLink: makeExpectedSignatureLink(
+        renewedConvention,
+        beneficiaryRepresentative,
+      ),
     });
   });
+
+  const makeExpectedSignatureLink = (
+    convention: ConventionDto,
+    signatory: Signatory,
+  ): AbsoluteUrl =>
+    fakeGenerateVisitorOtpUrl({
+      conventionId: convention.id,
+      role: signatory.role,
+      email: signatory.email,
+      now,
+      targetRoute: "manageConvention",
+    });
 });

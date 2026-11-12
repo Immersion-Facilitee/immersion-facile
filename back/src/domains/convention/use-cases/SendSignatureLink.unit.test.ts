@@ -14,10 +14,8 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
-  frontRoutes,
   getFormattedFirstnameAndLastname,
   makeBooleanFeatureFlag,
-  makeRouteAbsoluteUrl,
   type Notification,
   reasonableSchedule,
   type SignatoryRole,
@@ -27,7 +25,7 @@ import {
 import { AppConfigBuilder } from "../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../utils/agency";
 import { createConventionMagicLinkPayload } from "../../../utils/jwt";
-import { fakeGenerateMagicLinkUrlFn } from "../../../utils/jwtTestHelper";
+import { fakeGenerateVisitorOtpUrl } from "../../../utils/jwtTestHelper";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import {
   makeSaveNotificationAndRelatedEvent,
@@ -169,7 +167,7 @@ describe("Send signature link", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         saveNotificationAndRelatedEvent,
-        generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
+        generateVisitorOtpUrl: fakeGenerateVisitorOtpUrl,
         timeGateway,
         shortLinkIdGeneratorGateway,
         config,
@@ -609,14 +607,12 @@ describe("Send signature link", () => {
           expectToEqual(uow.shortLinkQuery.getShortLinks(), [
             {
               id: shortLinkId,
-              url: fakeGenerateMagicLinkUrlFn({
-                id: convention.id,
+              url: fakeGenerateVisitorOtpUrl({
+                conventionId: convention.id,
                 role: convention.signatories.establishmentRepresentative.role,
                 email: convention.signatories.establishmentRepresentative.email,
                 now: timeGateway.now(),
-                targetRoute: "conventionToSign",
-                lifetime: "2Days",
-                extraQueryParams: { at_campaign: "sms-signature-link" },
+                targetRoute: "manageConvention",
               }),
               lastUsedAt: null,
             },
@@ -714,14 +710,12 @@ describe("Send signature link", () => {
           expectToEqual(uow.shortLinkQuery.getShortLinks(), [
             {
               id: shortLinkId,
-              url: fakeGenerateMagicLinkUrlFn({
-                id: conventionWithAllSignatories.id,
+              url: fakeGenerateVisitorOtpUrl({
+                conventionId: conventionWithAllSignatories.id,
                 role: recipient.role,
                 email: recipient.email,
                 now: timeGateway.now(),
-                targetRoute: "conventionToSign",
-                lifetime: "2Days",
-                extraQueryParams: { at_campaign: "sms-signature-link" },
+                targetRoute: "manageConvention",
               }),
               lastUsedAt: null,
             },
@@ -1041,21 +1035,9 @@ describe("Send signature link", () => {
 
   describe("Right paths: send signature link email", () => {
     describe("from connected user", () => {
-      it.each([
-        {
-          signatoryRole: "beneficiary",
-          loginPersona: "beneficiary",
-        },
-        {
-          signatoryRole: "establishment-representative",
-          loginPersona: "professional",
-        },
-      ] satisfies {
-        signatoryRole: SignatoryRole;
-        loginPersona: "beneficiary" | "professional";
-      }[])(
-        "sends signature link by email to $signatoryRole",
-        async ({ signatoryRole, loginPersona }) => {
+      it.each(["beneficiary", "establishment-representative"] as const)(
+        "sends visitor OTP signature link by email to %s",
+        async (signatoryRole) => {
           uow.conventionRepository.setConventions([convention]);
           uow.agencyRepository.agencies = [
             toAgencyWithRights(agency, {
@@ -1120,14 +1102,12 @@ describe("Send signature link", () => {
                     firstname: convention.signatories.beneficiary.firstName,
                     lastname: convention.signatories.beneficiary.lastName,
                   }),
-                  conventionSignatureLink: makeRouteAbsoluteUrl({
-                    route: frontRoutes.manageConventionConnectedUser({
-                      conventionId: convention.id,
-                      loginPersona,
-                      email: recipient.email,
-                      at_campaign: "email-signature-link",
-                    }),
-                    baseUrl: config.immersionFacileBaseUrl,
+                  conventionSignatureLink: fakeGenerateVisitorOtpUrl({
+                    conventionId: convention.id,
+                    role: recipient.role,
+                    email: recipient.email,
+                    now: timeGateway.now(),
+                    targetRoute: "manageConvention",
                   }),
                   agencyLogoUrl: undefined,
                   renewed: convention.renewed,

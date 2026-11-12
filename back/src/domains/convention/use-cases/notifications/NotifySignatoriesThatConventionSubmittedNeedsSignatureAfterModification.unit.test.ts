@@ -1,15 +1,16 @@
 import {
+  type AbsoluteUrl,
   AgencyDtoBuilder,
   ConventionDtoBuilder,
+  type ConventionId,
+  type Email,
   errors,
   expectPromiseToFailWithError,
-  frontRoutes,
   getFormattedFirstnameAndLastname,
-  makeRouteAbsoluteUrl,
+  type SignatoryRole,
 } from "shared";
-import type { AppConfig } from "../../../../config/bootstrap/appConfig";
-import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../../utils/agency";
+import { fakeGenerateVisitorOtpUrl } from "../../../../utils/jwtTestHelper";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
@@ -29,25 +30,37 @@ import {
 } from "./NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification";
 
 describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification", () => {
+  const now = new Date("2024-10-04T10:00:00.000Z");
   let useCase: NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification;
-  let config: AppConfig;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
   let uow: InMemoryUnitOfWork;
 
-  beforeEach(() => {
-    config = new AppConfigBuilder({}).build();
+  const makeExpectedSignatureLink = (
+    conventionId: ConventionId,
+    role: SignatoryRole,
+    email: Email,
+  ): AbsoluteUrl =>
+    fakeGenerateVisitorOtpUrl({
+      conventionId,
+      role,
+      email,
+      now,
+      targetRoute: "manageConvention",
+    });
 
+  beforeEach(() => {
     uow = createInMemoryUow();
     const uuidGenerator = new UuidV4Generator();
-    const timeGateway = new CustomTimeGateway(new Date());
+    const timeGateway = new CustomTimeGateway(now);
     useCase =
       makeNotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModification(
         {
           uowPerformer: new InMemoryUowPerformer(uow),
           deps: {
-            config,
             saveNotificationAndRelatedEvent:
               makeSaveNotificationAndRelatedEvent(uuidGenerator, timeGateway),
+            generateVisitorOtpUrl: fakeGenerateVisitorOtpUrl,
+            timeGateway,
           },
         },
       );
@@ -92,15 +105,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "beneficiary",
-                  email: convention.signatories.beneficiary.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "beneficiary",
+                convention.signatories.beneficiary.email,
+              ),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -126,16 +135,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "professional",
-                  email:
-                    convention.signatories.establishmentRepresentative.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "establishment-representative",
+                convention.signatories.establishmentRepresentative.email,
+              ),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -177,15 +181,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "beneficiary",
-                  email: convention.signatories.beneficiary.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "beneficiary",
+                convention.signatories.beneficiary.email,
+              ),
               internshipKind: convention.internshipKind,
               justification: NO_JUSTIFICATION,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -211,16 +211,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "professional",
-                  email:
-                    convention.signatories.establishmentRepresentative.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "establishment-representative",
+                convention.signatories.establishmentRepresentative.email,
+              ),
               internshipKind: convention.internshipKind,
               justification: NO_JUSTIFICATION,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -284,15 +279,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "beneficiary",
-                  email: convention.signatories.beneficiary.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "beneficiary",
+                convention.signatories.beneficiary.email,
+              ),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -318,16 +309,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "professional",
-                  email:
-                    convention.signatories.establishmentRepresentative.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "establishment-representative",
+                convention.signatories.establishmentRepresentative.email,
+              ),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: getFormattedFirstnameAndLastname({
@@ -356,17 +342,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "beneficiary",
-                  // biome-ignore lint/style/noNonNullAssertion: testing purpose
-                  email:
-                    convention.signatories.beneficiaryRepresentative!.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "beneficiary-representative",
+                "benefrep@email.com",
+              ),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: convention.signatories
@@ -402,17 +382,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
               }),
               businessName: convention.businessName,
               conventionId: convention.id,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "beneficiary",
-                  // biome-ignore lint/style/noNonNullAssertion: testing purpose
-                  email:
-                    convention.signatories.beneficiaryCurrentEmployer!.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "beneficiary-current-employer",
+                "benefcuremp@email.com",
+              ),
               internshipKind: convention.internshipKind,
               justification,
               signatoryFirstName: convention.signatories
@@ -491,16 +465,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
             ],
             params: {
               ...commonEmailParams,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "professional",
-                  email:
-                    convention.signatories.establishmentRepresentative.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "establishment-representative",
+                convention.signatories.establishmentRepresentative.email,
+              ),
               signatoryFirstName: getFormattedFirstnameAndLastname({
                 firstname:
                   convention.signatories.establishmentRepresentative.firstName,
@@ -519,17 +488,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
             ],
             params: {
               ...commonEmailParams,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "beneficiary",
-                  // biome-ignore lint/style/noNonNullAssertion: testing purpose
-                  email:
-                    convention.signatories.beneficiaryRepresentative!.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "beneficiary-representative",
+                "benefrep@email.com",
+              ),
               signatoryFirstName: convention.signatories
                 .beneficiaryRepresentative
                 ? getFormattedFirstnameAndLastname({
@@ -555,17 +518,11 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
             ],
             params: {
               ...commonEmailParams,
-              conventionSignatureLink: makeRouteAbsoluteUrl({
-                route: frontRoutes.manageConventionConnectedUser({
-                  conventionId: convention.id,
-                  loginPersona: "beneficiary",
-                  // biome-ignore lint/style/noNonNullAssertion: testing purpose
-                  email:
-                    convention.signatories.beneficiaryCurrentEmployer!.email,
-                  at_campaign: "email-signature-link-after-modification",
-                }),
-                baseUrl: config.immersionFacileBaseUrl,
-              }),
+              conventionSignatureLink: makeExpectedSignatureLink(
+                convention.id,
+                "beneficiary-current-employer",
+                "benefcuremp@email.com",
+              ),
               signatoryFirstName: convention.signatories
                 .beneficiaryCurrentEmployer
                 ? getFormattedFirstnameAndLastname({

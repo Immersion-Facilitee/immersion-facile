@@ -186,6 +186,49 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
 
   const numberOfEmailInitialySent = 3;
 
+  const expectVisitorOtpManageConventionLink = ({
+    link,
+    convention,
+    role,
+    email,
+    appConfig,
+  }: {
+    link: string;
+    convention: ConventionDto;
+    role: ConventionActorRole;
+    email: string;
+    appConfig: TestAppAndDeps["appConfig"];
+  }) => {
+    const jwt = new URL(link).searchParams.get("jwt");
+    if (!jwt) throw new Error("Missing visitor otp jwt");
+    const { purpose, subject, version } =
+      decodeMagicLinkJwtWithoutSignatureCheck<VisitorOtpJwtPayload>(jwt);
+
+    expectToEqual(
+      {
+        path: removeAllParamsFromUrl(link),
+        visitorOtpPayload: { purpose, subject, version },
+      },
+      {
+        path: removeAllParamsFromUrl(
+          makeRouteAbsoluteUrl({
+            route: frontRoutes.manageConvention({ jwt: "jwt" }),
+            baseUrl: appConfig.immersionFacileBaseUrl,
+          }),
+        ),
+        visitorOtpPayload: {
+          purpose: "manageConvention",
+          subject: {
+            conventionId: convention.id,
+            role,
+            emailHash: makeEmailHash(email),
+          },
+          version: currentJwtVersions.visitorOtp,
+        },
+      },
+    );
+  };
+
   const beneficiarySubmitsApplicationForTheFirstTime = async (
     {
       request,
@@ -243,18 +286,13 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       )!,
       "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
     );
-    expectToEqual(
-      beneficiarySignEmail.params.conventionSignatureLink,
-      makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: convention.id,
-          loginPersona: "beneficiary",
-          email: convention.signatories.beneficiary.email,
-          at_campaign: "email-signature-link",
-        }),
-        baseUrl: appConfig.immersionFacileBaseUrl,
-      }),
-    );
+    expectVisitorOtpManageConventionLink({
+      link: beneficiarySignEmail.params.conventionSignatureLink,
+      convention,
+      role: convention.signatories.beneficiary.role,
+      email: convention.signatories.beneficiary.email,
+      appConfig,
+    });
 
     const establishmentSignEmail = expectEmailOfType(
       // biome-ignore lint/style/noNonNullAssertion: email is found by recipient
@@ -265,18 +303,13 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       )!,
       "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
     );
-    expectToEqual(
-      establishmentSignEmail.params.conventionSignatureLink,
-      makeRouteAbsoluteUrl({
-        route: frontRoutes.manageConventionConnectedUser({
-          conventionId: convention.id,
-          loginPersona: "professional",
-          email: convention.signatories.establishmentRepresentative.email,
-          at_campaign: "email-signature-link",
-        }),
-        baseUrl: appConfig.immersionFacileBaseUrl,
-      }),
-    );
+    expectVisitorOtpManageConventionLink({
+      link: establishmentSignEmail.params.conventionSignatureLink,
+      convention,
+      role: convention.signatories.establishmentRepresentative.role,
+      email: convention.signatories.establishmentRepresentative.email,
+      appConfig,
+    });
 
     const now = gateways.timeGateway.now();
     const beneficiarySignJwt = generateConventionJwt(

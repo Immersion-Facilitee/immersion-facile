@@ -1,21 +1,20 @@
 import { values } from "ramda";
 import {
+  type AbsoluteUrl,
   type AgencyDto,
   type ConventionDto,
   errors,
   filterNotFalsy,
-  frontRoutes,
   getFormattedFirstnameAndLastname,
-  loginPersonaByConventionRole,
-  makeRouteAbsoluteUrl,
   type Signatory,
   type TemplatedEmail,
   withConventionSchema,
 } from "shared";
-import type { AppConfig } from "../../../../config/bootstrap/appConfig";
+import type { GenerateVisitorOtpUrl } from "../../../../config/bootstrap/magicLinkUrl";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
 import { createLogger } from "../../../../utils/logger";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
+import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 
 const logger = createLogger(__filename);
@@ -25,8 +24,9 @@ export type NotifySignatoriesThatConventionSubmittedNeedsSignature = ReturnType<
 >;
 
 type Deps = {
-  config: AppConfig;
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
+  generateVisitorOtpUrl: GenerateVisitorOtpUrl;
+  timeGateway: TimeGateway;
 };
 
 export const makeNotifySignatoriesThatConventionSubmittedNeedsSignature =
@@ -48,17 +48,25 @@ export const makeNotifySignatoriesThatConventionSubmittedNeedsSignature =
       if (!agencyWithRights)
         throw errors.agency.notFound({ agencyId: convention.agencyId });
 
+      const now = deps.timeGateway.now();
+
       for (const signatory of values(convention.signatories).filter(
         filterNotFalsy,
       )) {
         await deps.saveNotificationAndRelatedEvent(uow, {
           kind: "email",
-          templatedContent: makeEmail(
+          templatedContent: makeEmail({
             signatory,
             convention,
-            await agencyWithRightToAgencyDto(uow, agencyWithRights),
-            deps.config,
-          ),
+            agency: await agencyWithRightToAgencyDto(uow, agencyWithRights),
+            conventionSignatureLink: deps.generateVisitorOtpUrl({
+              conventionId: convention.id,
+              role: signatory.role,
+              email: signatory.email,
+              now,
+              targetRoute: "manageConvention",
+            }),
+          }),
           followedIds: {
             conventionId: convention.id,
             agencyId: convention.agencyId,
@@ -68,12 +76,17 @@ export const makeNotifySignatoriesThatConventionSubmittedNeedsSignature =
       }
     });
 
-const makeEmail = (
-  signatory: Signatory,
-  convention: ConventionDto,
-  agency: AgencyDto,
-  config: AppConfig,
-): TemplatedEmail => ({
+const makeEmail = ({
+  signatory,
+  convention,
+  agency,
+  conventionSignatureLink,
+}: {
+  signatory: Signatory;
+  convention: ConventionDto;
+  agency: AgencyDto;
+  conventionSignatureLink: AbsoluteUrl;
+}): TemplatedEmail => ({
   kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
   recipients: [signatory.email],
   params: {
@@ -88,15 +101,7 @@ const makeEmail = (
       firstname: convention.signatories.beneficiary.firstName,
       lastname: convention.signatories.beneficiary.lastName,
     }),
-    conventionSignatureLink: makeRouteAbsoluteUrl({
-      route: frontRoutes.manageConventionConnectedUser({
-        conventionId: convention.id,
-        loginPersona: loginPersonaByConventionRole(signatory.role),
-        email: signatory.email,
-        at_campaign: "email-signature-link",
-      }),
-      baseUrl: config.immersionFacileBaseUrl,
-    }),
+    conventionSignatureLink,
     agencyLogoUrl: agency.logoUrl ?? undefined,
     renewed: convention.renewed,
   },

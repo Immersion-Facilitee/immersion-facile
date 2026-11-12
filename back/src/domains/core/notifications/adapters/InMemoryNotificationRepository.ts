@@ -1,16 +1,14 @@
 import { addDays } from "date-fns";
 import {
+  type AbsoluteUrl,
   type AgencyDto,
   type AgencyWithUsersRights,
   type ConventionDto,
   type EmailNotification,
   errors,
   expectToEqual,
-  frontRoutes,
   getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
-  loginPersonaByConventionRole,
-  makeRouteAbsoluteUrl,
   type Notification,
   type NotificationId,
   type NotificationKind,
@@ -22,7 +20,6 @@ import {
   type TemplatedEmail,
   type UserId,
 } from "shared";
-import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import type {
   DeleteNotificationsParams,
   EmailNotificationFilters,
@@ -296,14 +293,14 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
     signatory,
     recipient,
     agency,
-    config,
+    conventionSignatureLink,
   }: {
-    config: AppConfig;
     templatedEmail: TemplatedEmail;
     convention: ConventionDto;
     signatory: Signatory;
     recipient: string;
     agency: AgencyDto;
+    conventionSignatureLink: AbsoluteUrl;
   }) => {
     const { beneficiary } = convention.signatories;
 
@@ -322,15 +319,7 @@ export const expectEmailSignatoryConfirmationSignatureRequestMatchingConvention 
           firstname: beneficiary.firstName,
           lastname: beneficiary.lastName,
         }),
-        conventionSignatureLink: makeRouteAbsoluteUrl({
-          route: frontRoutes.manageConventionConnectedUser({
-            conventionId: convention.id,
-            loginPersona: loginPersonaByConventionRole(signatory.role),
-            email: signatory.email,
-            at_campaign: "email-signature-link",
-          }),
-          baseUrl: config.immersionFacileBaseUrl,
-        }),
+        conventionSignatureLink,
         agencyLogoUrl: agency.logoUrl ?? undefined,
         renewed: convention.renewed,
       },
