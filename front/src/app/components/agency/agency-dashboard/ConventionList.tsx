@@ -1,5 +1,4 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import Badge from "@codegouvfr/react-dsfr/Badge";
 import { Checkbox, type CheckboxProps } from "@codegouvfr/react-dsfr/Checkbox";
 import { equals, pick } from "ramda";
 import { Fragment, useEffect, useMemo, useState } from "react";
@@ -13,7 +12,6 @@ import {
   defaultPerPageInWebPagination,
   domElementIds,
   type FlatGetConventionsForAgencyUserParams,
-  isConventionArchived,
   isNotEmptyArray,
 } from "shared";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
@@ -29,29 +27,28 @@ import {
 import { match, P } from "ts-pattern";
 import { ConventionAssessmentStatusBadge } from "../../convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "../../convention/ConventionDatesDisplay";
-import { ConventionStatusBadge } from "../../convention/ConventionStatusBadge";
 import {
   AgencyReferentCell,
   BeneficiaryCell,
+  ConventionStatusBadges,
 } from "../../convention/convention-list/ConventionListCells";
 import {
-  BeforeOrAfterDateFilter,
   type BeforeOrAfterDateFilterLabels,
-  makeAssessmentCompletionStatusOptions,
-  makeConventionStatusOptions,
-  toAppliedAssessmentCompletionStatusLabel,
-  toAppliedBeforeOrAfterDateLabel,
-  toAppliedConventionStatusesLabel,
+  makeAssessmentCompletionStatusDropdownFilter,
+  makeBeforeOrAfterDateDropdownFilter,
+  makeConventionStatusDropdownFilter,
 } from "../../convention/convention-list/conventionListFilters";
 import { UnarchivedOrManageConventionButton } from "../../convention/UnarchivedOrManageConventionButton";
 
 const dateStartFilterLabels: BeforeOrAfterDateFilterLabels = {
+  filterTitle: "Filtrer par date de début",
   defaultLabel: "Date de début",
   before: "Démarrant avant le",
   after: "Démarrant après le",
 };
 
 const dateEndFilterLabels: BeforeOrAfterDateFilterLabels = {
+  filterTitle: "Filtrer par date de fin",
   defaultLabel: "Date de fin",
   before: "Se terminant avant le",
   after: "Se terminant après le",
@@ -244,26 +241,11 @@ export const ConventionList = () => {
                   agencyReferent={convention.agencyReferent}
                   agencyName={convention.agencyName}
                 />,
-                <Fragment key={`${convention.id}-status`}>
-                  <ul
-                    className={fr.cx("fr-badges-group", "fr-badges-group--sm")}
-                  >
-                    <li>
-                      <ConventionStatusBadge
-                        conventionStatus={convention.status}
-                        userKind="agency"
-                      />
-                    </li>
-                    {isConventionArchived({
-                      dateEnd: convention.dateEnd,
-                      now: new Date(),
-                    }) && (
-                      <li>
-                        <Badge small>Archivée</Badge>
-                      </li>
-                    )}
-                  </ul>
-                </Fragment>,
+                <ConventionStatusBadges
+                  key={`${convention.id}-status`}
+                  status={convention.status}
+                  dateEnd={convention.dateEnd}
+                />,
                 <Fragment key={`${convention.id}-assessment`}>
                   <ConventionAssessmentStatusBadge
                     conventionParams={convention}
@@ -296,25 +278,12 @@ export const ConventionList = () => {
               ])}
               dropdownFilters={{
                 items: [
-                  {
+                  makeConventionStatusDropdownFilter({
                     id: "status",
-                    iconId: "fr-icon-equalizer-line",
-                    defaultValue: "Tous les statuts",
-                    values: [
-                      toAppliedConventionStatusesLabel(filters.statuses),
-                    ],
-                    submenu: {
-                      title: "Filtrer par statut",
-                      content: (
-                        <Checkbox
-                          options={makeConventionStatusOptions({
-                            selectedValues: tempFilters.statuses,
-                            onChange: (statuses) =>
-                              setTempFilters({ ...tempFilters, statuses }),
-                          })}
-                        />
-                      ),
-                    },
+                    appliedValues: filters.statuses,
+                    selectedValues: tempFilters.statuses,
+                    onChange: (statuses) =>
+                      setTempFilters({ ...tempFilters, statuses }),
                     onReset: () => {
                       const newFilters = {
                         ...tempFilters,
@@ -323,32 +292,16 @@ export const ConventionList = () => {
                       setTempFilters(newFilters);
                       onSubmit(newFilters);
                     },
-                  },
-                  {
+                  }),
+                  makeAssessmentCompletionStatusDropdownFilter({
                     id: "assessment",
-                    iconId: "fr-icon-checkbox-line",
-                    defaultValue: "Tous les bilans",
-                    values: [
-                      toAppliedAssessmentCompletionStatusLabel(
-                        filters.assessmentCompletionStatus,
-                      ),
-                    ],
-                    submenu: {
-                      title: "Filtrer par statut du bilan",
-                      content: (
-                        <Checkbox
-                          options={makeAssessmentCompletionStatusOptions({
-                            selectedValues:
-                              tempFilters.assessmentCompletionStatus,
-                            onChange: (assessmentCompletionStatus) =>
-                              setTempFilters({
-                                ...tempFilters,
-                                assessmentCompletionStatus,
-                              }),
-                          })}
-                        />
-                      ),
-                    },
+                    appliedValues: filters.assessmentCompletionStatus,
+                    selectedValues: tempFilters.assessmentCompletionStatus,
+                    onChange: (assessmentCompletionStatus) =>
+                      setTempFilters({
+                        ...tempFilters,
+                        assessmentCompletionStatus,
+                      }),
                     onReset: () => {
                       const newFilters = {
                         ...tempFilters,
@@ -357,36 +310,24 @@ export const ConventionList = () => {
                       setTempFilters(newFilters);
                       onSubmit(newFilters);
                     },
-                  },
-                  {
+                  }),
+                  makeBeforeOrAfterDateDropdownFilter({
                     id: "dateStart",
-                    iconId: "fr-icon-calendar-line",
-                    defaultValue: dateStartFilterLabels.defaultLabel,
-                    values: [
-                      toAppliedBeforeOrAfterDateLabel(dateStartFilterLabels, {
-                        from: filters.dateStartFrom,
-                        to: filters.dateStartTo,
-                      }),
-                    ],
-                    submenu: {
-                      title: "Filtrer par date de début",
-                      content: (
-                        <BeforeOrAfterDateFilter
-                          labels={dateStartFilterLabels}
-                          value={{
-                            from: tempFilters.dateStartFrom,
-                            to: tempFilters.dateStartTo,
-                          }}
-                          onChange={({ from, to }) =>
-                            setTempFilters({
-                              ...tempFilters,
-                              dateStartFrom: from,
-                              dateStartTo: to,
-                            })
-                          }
-                        />
-                      ),
+                    labels: dateStartFilterLabels,
+                    appliedValue: {
+                      from: filters.dateStartFrom,
+                      to: filters.dateStartTo,
                     },
+                    selectedValue: {
+                      from: tempFilters.dateStartFrom,
+                      to: tempFilters.dateStartTo,
+                    },
+                    onChange: ({ from, to }) =>
+                      setTempFilters({
+                        ...tempFilters,
+                        dateStartFrom: from,
+                        dateStartTo: to,
+                      }),
                     onReset: () => {
                       const newFilters = {
                         ...tempFilters,
@@ -396,36 +337,24 @@ export const ConventionList = () => {
                       setTempFilters(newFilters);
                       onSubmit(newFilters);
                     },
-                  },
-                  {
+                  }),
+                  makeBeforeOrAfterDateDropdownFilter({
                     id: "dateEnd",
-                    iconId: "fr-icon-calendar-line",
-                    defaultValue: dateEndFilterLabels.defaultLabel,
-                    values: [
-                      toAppliedBeforeOrAfterDateLabel(dateEndFilterLabels, {
-                        from: filters.dateEndFrom,
-                        to: filters.dateEndTo,
-                      }),
-                    ],
-                    submenu: {
-                      title: "Filtrer par date de fin",
-                      content: (
-                        <BeforeOrAfterDateFilter
-                          labels={dateEndFilterLabels}
-                          value={{
-                            from: tempFilters.dateEndFrom,
-                            to: tempFilters.dateEndTo,
-                          }}
-                          onChange={({ from, to }) =>
-                            setTempFilters({
-                              ...tempFilters,
-                              dateEndFrom: from,
-                              dateEndTo: to,
-                            })
-                          }
-                        />
-                      ),
+                    labels: dateEndFilterLabels,
+                    appliedValue: {
+                      from: filters.dateEndFrom,
+                      to: filters.dateEndTo,
                     },
+                    selectedValue: {
+                      from: tempFilters.dateEndFrom,
+                      to: tempFilters.dateEndTo,
+                    },
+                    onChange: ({ from, to }) =>
+                      setTempFilters({
+                        ...tempFilters,
+                        dateEndFrom: from,
+                        dateEndTo: to,
+                      }),
                     onReset: () => {
                       const newFilters = {
                         ...tempFilters,
@@ -435,7 +364,7 @@ export const ConventionList = () => {
                       setTempFilters(newFilters);
                       onSubmit(newFilters);
                     },
-                  },
+                  }),
                   ...(hasManyAgencies
                     ? [
                         {

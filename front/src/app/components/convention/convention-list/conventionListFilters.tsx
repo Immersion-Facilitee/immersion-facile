@@ -1,8 +1,9 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import type { CheckboxProps } from "@codegouvfr/react-dsfr/Checkbox";
+import { Checkbox, type CheckboxProps } from "@codegouvfr/react-dsfr/Checkbox";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons";
 import { useState } from "react";
+import type { RichDropdownProps } from "react-design-system";
 import {
   type AssessmentCompletionStatusFilter,
   assessmentCompletionStatusFilters,
@@ -20,6 +21,16 @@ type CheckboxFilterParams<T> = {
   onChange: (selectedValues: NotEmptyArray<T> | undefined) => void;
 };
 
+type DropdownFilterParams = {
+  id: string;
+  onReset: () => void;
+};
+
+type CheckboxDropdownFilterParams<T> = DropdownFilterParams &
+  CheckboxFilterParams<T> & {
+    appliedValues: T[] | undefined;
+  };
+
 const toggleSelectedValue = <T,>(
   selectedValues: T[] | undefined,
   value: T,
@@ -31,7 +42,7 @@ const toggleSelectedValue = <T,>(
   return isNotEmptyArray(values) ? values : undefined;
 };
 
-export const makeConventionStatusOptions = ({
+const makeConventionStatusOptions = ({
   selectedValues,
   onChange,
 }: CheckboxFilterParams<ConventionStatus>): CheckboxProps["options"] =>
@@ -51,7 +62,7 @@ export const makeConventionStatusOptions = ({
     },
   }));
 
-export const toAppliedConventionStatusesLabel = (
+const toAppliedConventionStatusesLabel = (
   statuses: ConventionStatus[] | undefined,
 ): string => {
   if (!statuses?.length || statuses.length === conventionStatuses.length)
@@ -63,7 +74,7 @@ export const toAppliedConventionStatusesLabel = (
 const assessmentCompletionStatusFiltersInDisplayOrder: AssessmentCompletionStatusFilter[] =
   ["to-complete", "to-sign", "finalized"];
 
-export const makeAssessmentCompletionStatusOptions = ({
+const makeAssessmentCompletionStatusOptions = ({
   selectedValues,
   onChange,
 }: CheckboxFilterParams<AssessmentCompletionStatusFilter>): CheckboxProps["options"] => {
@@ -92,7 +103,7 @@ export const makeAssessmentCompletionStatusOptions = ({
   );
 };
 
-export const toAppliedAssessmentCompletionStatusLabel = (
+const toAppliedAssessmentCompletionStatusLabel = (
   assessmentCompletionStatus: AssessmentCompletionStatusFilter[] | undefined,
 ): string => {
   if (
@@ -115,6 +126,7 @@ type DateDirection = "before" | "after";
 const dateDirections: DateDirection[] = ["before", "after"];
 
 export type BeforeOrAfterDateFilterLabels = {
+  filterTitle: string;
   defaultLabel: string;
   before: string;
   after: string;
@@ -133,7 +145,7 @@ const toBeforeOrAfterDateFilterValue = (
     ? { from: undefined, to: date || undefined }
     : { from: date || undefined, to: undefined };
 
-export const toAppliedBeforeOrAfterDateLabel = (
+const toAppliedBeforeOrAfterDateLabel = (
   labels: BeforeOrAfterDateFilterLabels,
   { from, to }: BeforeOrAfterDateFilterValue,
 ): string => {
@@ -142,7 +154,7 @@ export const toAppliedBeforeOrAfterDateLabel = (
   return labels.defaultLabel;
 };
 
-export const BeforeOrAfterDateFilter = ({
+const BeforeOrAfterDateFilter = ({
   labels,
   value,
   onChange,
@@ -190,3 +202,80 @@ export const BeforeOrAfterDateFilter = ({
     </>
   );
 };
+
+export const makeConventionStatusDropdownFilter = ({
+  id,
+  appliedValues,
+  selectedValues,
+  onChange,
+  onReset,
+}: CheckboxDropdownFilterParams<ConventionStatus>): RichDropdownProps => ({
+  id,
+  iconId: "fr-icon-equalizer-line",
+  defaultValue: "Tous les statuts",
+  values: [toAppliedConventionStatusesLabel(appliedValues)],
+  submenu: {
+    title: "Filtrer par statut",
+    content: (
+      <Checkbox
+        options={makeConventionStatusOptions({ selectedValues, onChange })}
+      />
+    ),
+  },
+  onReset,
+});
+
+export const makeAssessmentCompletionStatusDropdownFilter = ({
+  id,
+  appliedValues,
+  selectedValues,
+  onChange,
+  onReset,
+}: CheckboxDropdownFilterParams<AssessmentCompletionStatusFilter>): RichDropdownProps => ({
+  id,
+  iconId: "fr-icon-checkbox-line",
+  defaultValue: "Tous les bilans",
+  values: [toAppliedAssessmentCompletionStatusLabel(appliedValues)],
+  submenu: {
+    title: "Filtrer par statut du bilan",
+    content: (
+      <Checkbox
+        options={makeAssessmentCompletionStatusOptions({
+          selectedValues,
+          onChange,
+        })}
+      />
+    ),
+  },
+  onReset,
+});
+
+export const makeBeforeOrAfterDateDropdownFilter = ({
+  id,
+  labels,
+  appliedValue,
+  selectedValue,
+  onChange,
+  onReset,
+}: DropdownFilterParams & {
+  labels: BeforeOrAfterDateFilterLabels;
+  appliedValue: BeforeOrAfterDateFilterValue;
+  selectedValue: BeforeOrAfterDateFilterValue;
+  onChange: (value: BeforeOrAfterDateFilterValue) => void;
+}): RichDropdownProps => ({
+  id,
+  iconId: "fr-icon-calendar-line",
+  defaultValue: labels.defaultLabel,
+  values: [toAppliedBeforeOrAfterDateLabel(labels, appliedValue)],
+  submenu: {
+    title: labels.filterTitle,
+    content: (
+      <BeforeOrAfterDateFilter
+        labels={labels}
+        value={selectedValue}
+        onChange={onChange}
+      />
+    ),
+  },
+  onReset,
+});
