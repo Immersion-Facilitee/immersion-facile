@@ -14,8 +14,8 @@ import {
   type AgencyDto,
   type AgencyId,
   adminConventionListMaxResults,
+  adminConventionListPerPage,
   adminConventionListTextFilterMinLength,
-  defaultPerPageInWebPagination,
   domElementIds,
   type FlatGetConventionsForAdminParams,
   flatGetConventionsForAdminParamsSchema,
@@ -136,7 +136,7 @@ const toFlatGetConventionsForAdminParams = (
   agencyNameContains: filtersToApply.agencyNameContains?.trim() || undefined,
   search,
   page: 1,
-  perPage: defaultPerPageInWebPagination,
+  perPage: adminConventionListPerPage,
 });
 
 export const AdminConventionListSection = ({
