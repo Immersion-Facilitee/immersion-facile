@@ -19,6 +19,13 @@
     }
   }
 
+  &--opened-bottom-right &__submenu {
+    @include for-screen-min($bp-lg) {
+      left: auto;
+      right: 0;
+    }
+  }
+
   .fr-tag {
     text-align: left;
   }

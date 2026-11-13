@@ -27,6 +27,7 @@ export type RichDropdownProps = {
   id?: string;
   as?: "Tag" | "Button";
   noButtons?: boolean;
+  submenuPosition?: "bottom-left" | "bottom-right";
 };
 
 const getElementParentsClasses = (
@@ -52,6 +53,7 @@ export const RichDropdown = ({
   onReset,
   as = "Tag",
   noButtons = false,
+  submenuPosition = "bottom-left",
 }: RichDropdownProps) => {
   const { cx } = useStyles();
   const [isOpened, setIsOpened] = useState<boolean>(false);
@@ -125,7 +127,13 @@ export const RichDropdown = ({
   }
 
   return (
-    <div className={cx(Styles.root)} ref={wrapperElement}>
+    <div
+      className={cx(
+        Styles.root,
+        submenuPosition === "bottom-right" && Styles.openedBottomRight,
+      )}
+      ref={wrapperElement}
+    >
       <ButtonComponent
         iconId={iconId}
         className={className}
