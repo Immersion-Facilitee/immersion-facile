@@ -442,6 +442,7 @@ export const ConventionList = () => {
                           id: "agencies",
                           iconId: "fr-icon-checkbox-line" as const,
                           defaultValue: "Toutes les agences",
+                          submenuPosition: "bottom-right" as const,
                           values: [
                             (() => {
                               if (filters.agencyIds?.length) {
