@@ -76,10 +76,10 @@ sources:
           - name: delegation_info
             description: "JSON object describing delegation: delegationAgencyKind, delegationAgencyName, delegationEndDate"
           - name: group_name
-            description: "Optional group label entered by IF admin"
+            description: "The agency group: optional label entered by IF admin (\"Groupe d'appartenance\", e.g. ESAT, CD 62). Unrelated to the agency_groups table."
 
       - name: agency_groups
-        description: "Groups of agencies"
+        description: "France Travail directions only (direction-régionale, direction-territoriale), used to grant agency rights to France Travail users. Not the agency group, which is the agencies.group_name column."
         columns:
           - name: id
             description: "Primary key - ID of the agency group"
@@ -101,7 +101,7 @@ sources:
             description: "SAFIR code of the group"
 
       - name: agency_groups__agencies
-        description: "Relationship between agency groups and agencies"
+        description: "Agencies attached to each France Travail direction of agency_groups. Unrelated to the agencies.group_name column."
         columns:
           - name: agency_group_id
             description: "Foreign key to agency_groups table"
