@@ -9,10 +9,8 @@ import { type RichDropdownProps, RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AdminConventionListDto,
-  type AgencyKind,
   adminConventionListMaxResults,
   adminConventionListTextFilterMinLength,
-  agencyKindToLabelIncludingIFAndPrepa,
   defaultPerPageInWebPagination,
   domElementIds,
   type FlatGetConventionsForAdminParams,
@@ -408,11 +406,6 @@ export const AdminConventionListSection = (): React.ReactNode => {
   );
 };
 
-const agencyKindToShortLabel: Record<AgencyKind, string> = {
-  ...agencyKindToLabelIncludingIFAndPrepa,
-  "france-travail": "France Travail",
-};
-
 const makeAdminConventionListLine = (
   convention: AdminConventionListDto,
 ): React.ReactNode[] => [
@@ -423,17 +416,9 @@ const makeAdminConventionListLine = (
   />,
   <Fragment key={`${convention.id}-agency`}>
     <strong>{convention.agencyName}</strong>
-    <span className={fr.cx("fr-hint-text")}>
-      {[
-        agencyKindToShortLabel[convention.agencyKind],
-        convention.agencyDepartmentName,
-      ]
-        .filter(Boolean)
-        .join(" · ")}
-    </span>
     {convention.agencyRefersToAgencyName && (
       <span className={fr.cx("fr-hint-text")}>
-        Structure d'accompagnement liée à {convention.agencyRefersToAgencyName}
+        Liée à {convention.agencyRefersToAgencyName}
       </span>
     )}
   </Fragment>,
