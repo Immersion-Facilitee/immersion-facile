@@ -26,12 +26,9 @@ import {
   BeneficiaryCell,
 } from "src/app/components/convention/convention-list/ConventionListCells";
 import {
-  BeforeOrAfterDateFilter,
-  type BeforeOrAfterDateFilterLabels,
   makeAssessmentCompletionStatusOptions,
   makeConventionStatusOptions,
   toAppliedAssessmentCompletionStatusLabel,
-  toAppliedBeforeOrAfterDateLabel,
   toAppliedConventionStatusesLabel,
 } from "src/app/components/convention/convention-list/conventionListFilters";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
@@ -49,30 +46,12 @@ import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.cont
 
 type AdminConventionListFilters = Pick<
   FlatGetConventionsForAdminParams,
-  | "statuses"
-  | "assessmentCompletionStatus"
-  | "agencyNameContains"
-  | "dateStartFrom"
-  | "dateStartTo"
-  | "dateValidationFrom"
-  | "dateValidationTo"
+  "statuses" | "assessmentCompletionStatus" | "agencyNameContains"
 >;
 
 const feedbackTopic: FeedbackTopic = "admin-convention-list";
 
 const agencyNameFilterLabel = "Agence";
-
-const dateStartFilterLabels: BeforeOrAfterDateFilterLabels = {
-  defaultLabel: "Date de début",
-  before: "Démarrant avant le",
-  after: "Démarrant après le",
-};
-
-const dateValidationFilterLabels: BeforeOrAfterDateFilterLabels = {
-  defaultLabel: "Date de validation",
-  before: "Validée avant le",
-  after: "Validée après le",
-};
 
 const toResultCountLabel = (totalRecords: number): string => {
   if (totalRecords >= adminConventionListMaxResults)
@@ -215,73 +194,6 @@ export const AdminConventionListSection = (): React.ReactNode => {
         ),
       },
       onReset: () => resetFilters({ assessmentCompletionStatus: undefined }),
-    },
-    {
-      id: `${domElementIds.adminConventions.conventionListFilterDropdown}--dateStart`,
-      iconId: "fr-icon-calendar-line",
-      defaultValue: dateStartFilterLabels.defaultLabel,
-      values: [
-        toAppliedBeforeOrAfterDateLabel(dateStartFilterLabels, {
-          from: filters.dateStartFrom,
-          to: filters.dateStartTo,
-        }),
-      ],
-      submenu: {
-        title: "Filtrer par date de début",
-        content: (
-          <BeforeOrAfterDateFilter
-            labels={dateStartFilterLabels}
-            value={{
-              from: tempFilters.dateStartFrom,
-              to: tempFilters.dateStartTo,
-            }}
-            onChange={({ from, to }) =>
-              setTempFilters({
-                ...tempFilters,
-                dateStartFrom: from,
-                dateStartTo: to,
-              })
-            }
-          />
-        ),
-      },
-      onReset: () =>
-        resetFilters({ dateStartFrom: undefined, dateStartTo: undefined }),
-    },
-    {
-      id: `${domElementIds.adminConventions.conventionListFilterDropdown}--dateValidation`,
-      iconId: "fr-icon-calendar-line",
-      defaultValue: dateValidationFilterLabels.defaultLabel,
-      values: [
-        toAppliedBeforeOrAfterDateLabel(dateValidationFilterLabels, {
-          from: filters.dateValidationFrom,
-          to: filters.dateValidationTo,
-        }),
-      ],
-      submenu: {
-        title: "Filtrer par date de validation",
-        content: (
-          <BeforeOrAfterDateFilter
-            labels={dateValidationFilterLabels}
-            value={{
-              from: tempFilters.dateValidationFrom,
-              to: tempFilters.dateValidationTo,
-            }}
-            onChange={({ from, to }) =>
-              setTempFilters({
-                ...tempFilters,
-                dateValidationFrom: from,
-                dateValidationTo: to,
-              })
-            }
-          />
-        ),
-      },
-      onReset: () =>
-        resetFilters({
-          dateValidationFrom: undefined,
-          dateValidationTo: undefined,
-        }),
     },
     {
       id: `${domElementIds.adminConventions.conventionListFilterDropdown}--agency`,
