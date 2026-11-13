@@ -427,6 +427,7 @@ const ConventionFormContent = ({
 
   useEffect(() => {
     if (mode === "edit-convention") return;
+    if (areAgenciesLoading) return;
     if (agenciesFeedback.kind !== "agencyOptionsFetched") return;
     const agencyId = getValues("agencyId");
     if (!agencyId || agencyOptions.some(({ id }) => id === agencyId)) return;
@@ -434,7 +435,14 @@ const ConventionFormContent = ({
     setValue("agencyId", "", { shouldTouch: true, shouldValidate: true });
     setValue("agencyKind", undefined);
     setShouldShowUnavailableAgencyAlert(true);
-  }, [agencyOptions, agenciesFeedback.kind, getValues, mode, setValue]);
+  }, [
+    agencyOptions,
+    agenciesFeedback.kind,
+    areAgenciesLoading,
+    getValues,
+    mode,
+    setValue,
+  ]);
 
   const { errors, submitCount } = formState;
 
