@@ -113,7 +113,10 @@ import { siretSelectors } from "src/core-logic/domain/siret/siret.selectors";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import { useStyles } from "tss-react/dsfr";
 import { ConventionErrorSummary } from "./error-summary/ConventionErrorSummary";
-import type { ConventionEmailValidationRole } from "./error-summary/errorSummarySections";
+import {
+  type ConventionEmailValidationRole,
+  conventionFormStepId,
+} from "./error-summary/errorSummarySections";
 import { useConventionErrorSummary } from "./error-summary/useConventionErrorSummary";
 import { ShareConventionDraft } from "./ShareConventionDraft";
 
@@ -529,21 +532,23 @@ const ConventionFormContent = ({
     dispatch(conventionSlice.actions.setCurrentStep(step));
   };
 
+  const formUiSections = makeFormUiSections({
+    internshipKind: conventionValues.internshipKind,
+    isConventionTemplate: isTemplateForm,
+  });
+
   const {
-    errorSummarySections,
+    stepsInError,
     errorSummaryRef,
     focusErrorSummary,
-    onErrorSummarySectionClick,
+    onErrorSummaryStepClick,
   } = useConventionErrorSummary({
     submitCount,
     errorPaths: keys(displayReadableError(errors)),
     rejectedEmailRoles: keys(emailValidationErrors),
-    canSelectAgency:
-      Boolean(conventionValues.agencyDepartment) &&
-      !areAgenciesLoading &&
-      agencyOptions.length > 0,
-    fieldsLabels: conventionFieldsLabels,
+    formUiSections,
     openStep,
+    getStepElement: (step) => accordionsRef.current[step - 1],
   });
 
   const onSubmit: SubmitHandler<ConventionFormInitialValues> = (convention) => {
@@ -610,14 +615,10 @@ const ConventionFormContent = ({
       });
     },
     expanded: currentStep === step,
-    id: `im-convention-form__step-${step - 1}`,
+    id: conventionFormStepId(step),
   });
 
   const conventionIsLoading = isLoading || !reduxFormUiReady;
-  const formUiSections = makeFormUiSections({
-    internshipKind: conventionValues.internshipKind,
-    isConventionTemplate: isTemplateForm,
-  });
 
   const stepsStatus = useMemo(() => {
     const parseResult = presentationSchema.safeParse(conventionValues);
@@ -915,7 +916,9 @@ const ConventionFormContent = ({
                         checked:
                           conventionValues.remoteWorkMode === remoteWorkMode,
                         onChange: () => {
-                          setValue("remoteWorkMode", remoteWorkMode);
+                          setValue("remoteWorkMode", remoteWorkMode, {
+                            shouldValidate: true,
+                          });
                         },
                       },
                     }))}
@@ -984,9 +987,9 @@ const ConventionFormContent = ({
               </div>
 
               <ConventionErrorSummary
-                sections={errorSummarySections}
+                steps={stepsInError}
                 title={t.errorSummary.title}
-                sectionTitles={{
+                stepTitles={{
                   1: t.agencySection.title,
                   2: t.beneficiarySection.title,
                   3: t.establishmentSection.title,
@@ -994,7 +997,7 @@ const ConventionFormContent = ({
                   5: t.immersionDetailsSection.title,
                 }}
                 errorSummaryRef={errorSummaryRef}
-                onSectionLinkClick={onErrorSummarySectionClick}
+                onStepLinkClick={onErrorSummaryStepClick}
               />
 
               <div className={fr.cx("fr-mt-4w", "fr-hidden", "fr-unhidden-lg")}>

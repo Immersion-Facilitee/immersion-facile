@@ -950,19 +950,29 @@ export const makeFormUiSections = ({
 }: {
   internshipKind: InternshipKind;
   isConventionTemplate: boolean;
-}): Partial<FormFieldKeys>[][] => [
-  ["agencyId"],
-  keys({
-    ...beneficiarySection({
-      internshipKind,
-      isConventionTemplate,
+}): FormFieldKeys[][] => [
+  [
+    "agencyDepartment",
+    "agencyKind",
+    "agencyId",
+    "agencyReferent.firstname",
+    "agencyReferent.lastname",
+  ],
+  [
+    ...keys({
+      ...beneficiarySection({
+        internshipKind,
+        isConventionTemplate,
+      }),
+      ...beneficiaryRepresentativeSection({
+        internshipKind,
+        isConventionTemplate,
+      }),
+      ...beneficiaryCurrentEmployerSection({ isConventionTemplate }),
     }),
-    ...beneficiaryRepresentativeSection({
-      internshipKind,
-      isConventionTemplate,
-    }),
-    ...beneficiaryCurrentEmployerSection({ isConventionTemplate }),
-  }),
+    "isMinor",
+    "isCurrentEmployer",
+  ],
   [
     ...keys(
       mergeRight(
@@ -976,13 +986,19 @@ export const makeFormUiSections = ({
     "siret",
     "businessName",
     "businessNameCustomized",
+    "isEstablishmentTutorIsEstablishmentRepresentative",
   ],
   ["dateStart", "dateEnd", "schedule", "immersionAddress", "remoteWorkMode"],
   [
     "individualProtection",
+    "individualProtectionDescription",
     "sanitaryPrevention",
+    "sanitaryPreventionDescription",
     "immersionObjective",
     "immersionAppellation",
+    "workConditions",
+    "businessAdvantages",
     "immersionActivities",
+    "immersionSkills",
   ],
 ];
