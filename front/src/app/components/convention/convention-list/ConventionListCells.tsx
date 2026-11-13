@@ -1,9 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
 import {
   type AgencyUserConventionListDto,
   getFormattedFirstnameAndLastname,
+  isConventionArchived,
 } from "shared";
+import { ConventionStatusBadge } from "src/app/components/convention/ConventionStatusBadge";
 import logoFtSvg from "src/assets/img/logo-ft.svg";
 
 export const AgencyReferentCell = ({
@@ -48,4 +51,23 @@ export const BeneficiaryCell = ({
       </div>
     )}
   </>
+);
+
+export const ConventionStatusBadges = ({
+  status,
+  dateEnd,
+}: Pick<
+  AgencyUserConventionListDto,
+  "status" | "dateEnd"
+>): React.ReactNode => (
+  <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
+    <li>
+      <ConventionStatusBadge conventionStatus={status} userKind="agency" />
+    </li>
+    {isConventionArchived({ dateEnd, now: new Date() }) && (
+      <li>
+        <Badge small>Archivée</Badge>
+      </li>
+    )}
+  </ul>
 );

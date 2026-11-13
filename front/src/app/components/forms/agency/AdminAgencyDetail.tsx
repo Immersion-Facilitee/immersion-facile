@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { Loader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import type { frontRoutes } from "shared";
+import { AdminConventionListSection } from "src/app/components/admin/conventions/AdminConventionListSection";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { AgencyOverview } from "src/app/components/forms/agency/AgencyOverview";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { AgencyDashboard } from "src/app/pages/admin/AgencyTab";
 import { connectedUsersAdminSelectors } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.selectors";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
@@ -53,7 +53,7 @@ export const AdminAgencyDetail = ({ route }: AdminAgencyDetailProps) => {
               agencyUsers={agencyUsersById}
               routeName={route.name}
             />
-            <AgencyDashboard agency={agency} />
+            <AdminConventionListSection key={agency.id} agency={agency} />
           </>
         )}
       </WithFeedbackReplacer>

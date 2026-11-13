@@ -1,6 +1,5 @@
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 
-import type { AgencyDto } from "shared";
 import { AdminConventionListSection } from "src/app/components/admin/conventions/AdminConventionListSection";
 import { EditAgency } from "src/app/components/agency/EditAgency";
 import { RegisterUsersToAgencies } from "src/app/components/agency/RegisterUsersToAgencies";
@@ -22,7 +21,7 @@ export const AgencyTab = () => {
       />
       <EditAgency />
 
-      {agency && <AgencyDashboard agency={agency} />}
+      {agency && <AdminConventionListSection key={agency.id} agency={agency} />}
 
       <RegisterUsersToAgencies />
 
@@ -34,7 +33,3 @@ export const AgencyTab = () => {
     </>
   );
 };
-
-export const AgencyDashboard = ({ agency }: { agency: AgencyDto }) => (
-  <AdminConventionListSection key={agency.id} agency={agency} />
-);

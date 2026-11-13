@@ -1,8 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
-import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { useEffect, useState } from "react";
 import {
@@ -22,20 +20,17 @@ import {
   type FlatGetConventionsForAdminParams,
   flatGetConventionsForAdminParamsSchema,
   frontRoutes,
-  isConventionArchived,
 } from "shared";
 import { ConventionAssessmentStatusBadge } from "src/app/components/convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "src/app/components/convention/ConventionDatesDisplay";
-import { ConventionStatusBadge } from "src/app/components/convention/ConventionStatusBadge";
 import {
   AgencyReferentCell,
   BeneficiaryCell,
+  ConventionStatusBadges,
 } from "src/app/components/convention/convention-list/ConventionListCells";
 import {
-  makeAssessmentCompletionStatusOptions,
-  makeConventionStatusOptions,
-  toAppliedAssessmentCompletionStatusLabel,
-  toAppliedConventionStatusesLabel,
+  makeAssessmentCompletionStatusDropdownFilter,
+  makeConventionStatusDropdownFilter,
 } from "src/app/components/convention/convention-list/conventionListFilters";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { BackofficeDashboardTabContent } from "src/app/components/layout/BackofficeDashboardTabContent";
@@ -236,48 +231,21 @@ export const AdminConventionListSection = ({
   };
 
   const dropdownFilters: RichDropdownProps[] = [
-    {
+    makeConventionStatusDropdownFilter({
       id: `${domElementIds.adminConventions.conventionListFilterDropdown}--status`,
-      iconId: "fr-icon-equalizer-line",
-      defaultValue: "Tous les statuts",
-      values: [toAppliedConventionStatusesLabel(filters.statuses)],
-      submenu: {
-        title: "Filtrer par statut",
-        content: (
-          <Checkbox
-            options={makeConventionStatusOptions({
-              selectedValues: tempFilters.statuses,
-              onChange: (statuses) =>
-                setTempFilters({ ...tempFilters, statuses }),
-            })}
-          />
-        ),
-      },
+      appliedValues: filters.statuses,
+      selectedValues: tempFilters.statuses,
+      onChange: (statuses) => setTempFilters({ ...tempFilters, statuses }),
       onReset: () => resetFilters({ statuses: undefined }),
-    },
-    {
+    }),
+    makeAssessmentCompletionStatusDropdownFilter({
       id: `${domElementIds.adminConventions.conventionListFilterDropdown}--assessment`,
-      iconId: "fr-icon-checkbox-line",
-      defaultValue: "Tous les bilans",
-      values: [
-        toAppliedAssessmentCompletionStatusLabel(
-          filters.assessmentCompletionStatus,
-        ),
-      ],
-      submenu: {
-        title: "Filtrer par statut du bilan",
-        content: (
-          <Checkbox
-            options={makeAssessmentCompletionStatusOptions({
-              selectedValues: tempFilters.assessmentCompletionStatus,
-              onChange: (assessmentCompletionStatus) =>
-                setTempFilters({ ...tempFilters, assessmentCompletionStatus }),
-            })}
-          />
-        ),
-      },
+      appliedValues: filters.assessmentCompletionStatus,
+      selectedValues: tempFilters.assessmentCompletionStatus,
+      onChange: (assessmentCompletionStatus) =>
+        setTempFilters({ ...tempFilters, assessmentCompletionStatus }),
       onReset: () => resetFilters({ assessmentCompletionStatus: undefined }),
-    },
+    }),
     {
       id: `${domElementIds.adminConventions.conventionListFilterDropdown}--agency`,
       iconId: "fr-icon-building-line",
@@ -404,26 +372,6 @@ export const AdminConventionListSection = ({
   );
 };
 
-const AdminConventionStatusCell = ({
-  convention,
-}: {
-  convention: Pick<AdminConventionListDto, "status" | "dateEnd">;
-}): React.ReactNode => (
-  <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
-    <li>
-      <ConventionStatusBadge
-        conventionStatus={convention.status}
-        userKind="agency"
-      />
-    </li>
-    {isConventionArchived({ dateEnd: convention.dateEnd, now: new Date() }) && (
-      <li>
-        <Badge small>Archivée</Badge>
-      </li>
-    )}
-  </ul>
-);
-
 const ConventionStructureCell = ({
   convention,
 }: {
@@ -461,9 +409,10 @@ const makeAdminConventionListLine = ({
           convention={convention}
         />,
       ]),
-  <AdminConventionStatusCell
+  <ConventionStatusBadges
     key={`${convention.id}-status`}
-    convention={convention}
+    status={convention.status}
+    dateEnd={convention.dateEnd}
   />,
   <ConventionAssessmentStatusBadge
     key={`${convention.id}-assessment`}
