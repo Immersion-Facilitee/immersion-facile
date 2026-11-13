@@ -10,6 +10,7 @@ import type { TableProps } from "@codegouvfr/react-dsfr/Table";
 import {
   type ReactNode,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -113,7 +114,9 @@ export const RichTable = ({
     );
   });
 
-  useScrollTo(pagination?.defaultPage ?? 1);
+  const rootId = useId();
+
+  useScrollTo(pagination?.defaultPage ?? 1, rootId);
 
   useLayoutEffect(() => {
     if (selectedViewMode !== "table") return;
@@ -136,6 +139,7 @@ export const RichTable = ({
 
   return (
     <section
+      id={rootId}
       role="tabpanel"
       aria-label={label}
       className={cx(Styles.root, className)}
