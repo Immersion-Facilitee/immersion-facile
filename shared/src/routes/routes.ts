@@ -478,10 +478,6 @@ export const {
     { version: param.query.optional.string },
     () => "/doc-api",
   ),
-  otpChallenge: defineRoute(
-    { jwt: param.query.string },
-    () => "/code-de-verification",
-  ),
   search: defineRoute(searchParams, () => "/recherche"),
   externalSearch: defineRoute(searchParams, () => "/recherche-partenaires"),
   searchForStudent: defineRoute(searchParams, () => "/recherche-scolaire"),

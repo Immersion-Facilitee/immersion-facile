@@ -1,9 +1,13 @@
 import { type ReactNode, useEffect } from "react";
 import { Loader } from "react-design-system";
 import { useDispatch } from "react-redux";
-import { type ConventionSupportedJwt, frontRoutes } from "shared";
+import {
+  decodeMagicLinkJwtWithoutSignatureCheck,
+  type VisitorOtpJwt,
+  type VisitorOtpJwtPayload,
+} from "shared";
+import { OtpChallenge } from "src/app/components/auth/OtpChallenge";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
-import { getConventionAccessFromJwt } from "src/app/hooks/jwt.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { frontErrors } from "src/app/pages/error/front-errors";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
@@ -14,7 +18,7 @@ import { visitorSessionSlice } from "src/core-logic/domain/visitorSession/visito
 const visitorSessionFeedbackTopic: FeedbackTopic = "visitor-session";
 
 type VisitorPrivateRoutePageProps = {
-  jwt: ConventionSupportedJwt;
+  jwt: VisitorOtpJwt;
   children: ReactNode;
 };
 
@@ -23,40 +27,40 @@ export const VisitorPrivateRoutePage = ({
   children,
 }: VisitorPrivateRoutePageProps): JSX.Element => {
   const dispatch = useDispatch();
-  const conventionAccess = getConventionAccessFromJwt(jwt);
-  const isVisitorOtp = conventionAccess?.isVisitorOtp ?? false;
-  const conventionId = conventionAccess?.conventionId;
+  const { purpose, subject } =
+    decodeMagicLinkJwtWithoutSignatureCheck<VisitorOtpJwtPayload>(jwt);
+  const { conventionId } = subject;
   const activeSession = useAppSelector(visitorSessionSelectors.activeSession);
   const isOtpRequired = useAppSelector(visitorSessionSelectors.isOtpRequired);
   const visitorSessionFeedback = useFeedbackTopic(visitorSessionFeedbackTopic);
 
   useEffect(() => {
-    if (!isVisitorOtp || !conventionId) return;
-    dispatch(
-      feedbackSlice.actions.clearFeedbackTopics([visitorSessionFeedbackTopic]),
-    );
     dispatch(
       visitorSessionSlice.actions.visitorSessionRequested({
-        purpose: "manageConvention",
+        purpose,
         conventionId,
         feedbackTopic: visitorSessionFeedbackTopic,
       }),
     );
-  }, [dispatch, isVisitorOtp, conventionId]);
+    return () => {
+      dispatch(visitorSessionSlice.actions.resetVisitorSessionRequested());
+      dispatch(
+        feedbackSlice.actions.clearFeedbackTopics([
+          visitorSessionFeedbackTopic,
+        ]),
+      );
+    };
+  }, [dispatch, purpose, conventionId]);
 
-  useEffect(() => {
-    if (isVisitorOtp && isOtpRequired)
-      frontRoutes.otpChallenge({ jwt }).replace();
-  }, [isVisitorOtp, isOtpRequired, jwt]);
-
-  if (!conventionAccess?.isVisitorOtp) return <>{children}</>;
-  if (isOtpRequired) return <Loader />;
-  if (activeSession?.conventionId === conventionAccess.conventionId)
-    return <>{children}</>;
   if (visitorSessionFeedback?.level === "error")
-    throw frontErrors.convention.noRightsOnConvention({
-      conventionId: conventionAccess.conventionId,
+    throw frontErrors.convention.visitorSessionRefused({
+      conventionId,
+      errorMessage: visitorSessionFeedback.message,
     });
+
+  if (activeSession?.conventionId === conventionId) return <>{children}</>;
+
+  if (isOtpRequired) return <OtpChallenge jwt={jwt} />;
 
   return <Loader />;
 };

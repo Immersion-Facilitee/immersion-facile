@@ -11,18 +11,14 @@ import { Loader, MainWrapper } from "react-design-system";
 import { type UseFormReturn, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
-  decodeMagicLinkJwtWithoutSignatureCheck,
   domElementIds,
-  frontRoutes,
   type MaskedOtpRecipients,
   type NotificationKind,
   OTP_CHALLENGE_DURATION_IN_MINUTES,
-  type OtpChallengePurpose,
   type RequestOtpChallengeDto,
   requestOtpChallengeSchema,
   type VerifyOtpChallengeDto,
   type VisitorOtpJwt,
-  type VisitorOtpJwtPayload,
   verifyOtpChallengeSchema,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
@@ -33,28 +29,21 @@ import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { otpChallengeSelectors } from "src/core-logic/domain/otpChallenge/otpChallenge.selectors";
 import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
 import { match } from "ts-pattern";
-import type { Route } from "type-route";
 
 const otpCodeLength = 6;
 const otpStepCount = 2;
 const otpChallengeFeedbackTopic: FeedbackTopic = "otp-challenge";
 
-type OtpChallengePageProps = {
-  route: Route<typeof frontRoutes.otpChallenge>;
+type OtpChallengeProps = {
+  jwt: VisitorOtpJwt;
 };
 
-export const OtpChallengePage = ({
-  route,
-}: OtpChallengePageProps): JSX.Element => {
-  const jwt: VisitorOtpJwt = route.params.jwt;
-  const { purpose } =
-    decodeMagicLinkJwtWithoutSignatureCheck<VisitorOtpJwtPayload>(jwt);
+export const OtpChallenge = ({ jwt }: OtpChallengeProps): JSX.Element => {
   const dispatch = useDispatch();
   const maskedRecipients = useAppSelector(
     otpChallengeSelectors.maskedRecipients,
   );
   const isCodeSent = useAppSelector(otpChallengeSelectors.isCodeSent);
-  const isVerified = useAppSelector(otpChallengeSelectors.isVerified);
   const isLoading = useAppSelector(otpChallengeSelectors.isLoading);
   const channelFormMethods = useForm<RequestOtpChallengeDto>({
     resolver: zodResolver(requestOtpChallengeSchema),
@@ -62,21 +51,19 @@ export const OtpChallengePage = ({
   });
 
   useEffect(() => {
-    dispatch(otpChallengeSlice.actions.resetOtpChallengeRequested());
-    dispatch(
-      feedbackSlice.actions.clearFeedbackTopics([otpChallengeFeedbackTopic]),
-    );
     dispatch(
       otpChallengeSlice.actions.maskedOtpRecipientsRequested({
         jwt,
         feedbackTopic: otpChallengeFeedbackTopic,
       }),
     );
+    return () => {
+      dispatch(otpChallengeSlice.actions.resetOtpChallengeRequested());
+      dispatch(
+        feedbackSlice.actions.clearFeedbackTopics([otpChallengeFeedbackTopic]),
+      );
+    };
   }, [dispatch, jwt]);
-
-  useEffect(() => {
-    if (isVerified) routeAfterOtp({ purpose, jwt }).replace();
-  }, [isVerified, purpose, jwt]);
 
   const requestOtpCode = ({ channel }: RequestOtpChallengeDto): void => {
     dispatch(
@@ -330,14 +317,3 @@ const OtpCodeStep = ({
     </>
   );
 };
-
-const routeAfterOtp = ({
-  purpose,
-  jwt,
-}: {
-  purpose: OtpChallengePurpose;
-  jwt: VisitorOtpJwt;
-}): Route<typeof frontRoutes.manageConvention> =>
-  match(purpose)
-    .with("manageConvention", () => frontRoutes.manageConvention({ jwt }))
-    .exhaustive();

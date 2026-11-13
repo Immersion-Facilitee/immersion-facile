@@ -94,4 +94,17 @@ describe("visitorSession slice", () => {
       },
     );
   });
+
+  it("resets the visitor session", () => {
+    ({ store } = createTestStore({
+      visitorSession: {
+        status: "active",
+        activeSession,
+      },
+    }));
+
+    store.dispatch(visitorSessionSlice.actions.resetVisitorSessionRequested());
+
+    expectToEqual(store.getState().visitorSession, visitorSessionInitialState);
+  });
 });
