@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
   type AdminConventionListDto,
   type AgencyUserConventionListDto,
+  adminConventionListPerPage,
   type BeneficiaryConventionListDto,
   type ConnectedUserJwt,
   type DataWithPagination,
@@ -114,11 +115,11 @@ export const initialAdminConventionList: AdminConventionListState = {
     totalRecords: 0,
     currentPage: 1,
     totalPages: 1,
-    numberPerPage: defaultPerPageInWebPagination,
+    numberPerPage: adminConventionListPerPage,
   },
   filters: {
     page: 1,
-    perPage: defaultPerPageInWebPagination,
+    perPage: adminConventionListPerPage,
   },
 };
 

@@ -11,6 +11,8 @@ import type {
 
 export const adminConventionListMaxResults = 100;
 
+export const adminConventionListPerPage = 10;
+
 export const adminConventionListTextFilterMinLength = 3;
 
 export type AdminConventionListSortBy = Extract<
