@@ -1,4 +1,4 @@
-import type { Expression, SelectQueryBuilder } from "kysely";
+import type { Expression, RawBuilder, SelectQueryBuilder } from "kysely";
 import { sql } from "kysely";
 import {
   type AgencyId,
@@ -385,6 +385,17 @@ export const wrapInMaterializedCteWithEnrichment = ({
     createConventionSelection,
   );
 
+const isRelevantConsumerForConventionAgency = ({
+  consumerNameColumn,
+  relevantConsumerAgencyIds,
+  relevantConsumerNames,
+}: {
+  consumerNameColumn: string;
+  relevantConsumerAgencyIds: AgencyId[];
+  relevantConsumerNames: ApiConsumerName[];
+}): RawBuilder<boolean> =>
+  sql<boolean>`(c.agency_id, ${sql.ref(consumerNameColumn)}) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`;
+
 const createBroadcastFeedbackBaseBuilder = ({
   transaction,
   userAgencyIds,
@@ -399,10 +410,23 @@ const createBroadcastFeedbackBaseBuilder = ({
   relevantConsumerNames: ApiConsumerName[];
 }) => {
   const cteBuilder = transaction.with(
-    "conventions_with_latest_feedback",
+    "conventions_with_unhandled_errored_latest_feedback",
     (qb) => {
       const query = qb
         .selectFrom("conventions as c")
+        .innerJoin("broadcast_feedbacks as bf", (join) =>
+          join
+            .onRef("bf.convention_id", "=", "c.id")
+            .on("bf.subscriber_error_feedback", "is not", null)
+            .on("bf.handled_by_agency", "=", false)
+            .on(
+              isRelevantConsumerForConventionAgency({
+                consumerNameColumn: "bf.consumer_name",
+                relevantConsumerAgencyIds,
+                relevantConsumerNames,
+              }),
+            ),
+        )
         .innerJoin(
           "actors as beneficiary",
           "beneficiary.id",
@@ -415,20 +439,6 @@ const createBroadcastFeedbackBaseBuilder = ({
           "actors as bce",
           "bce.id",
           "c.beneficiary_current_employer_id",
-        )
-        .innerJoinLateral(
-          (eb) =>
-            eb
-              .selectFrom("broadcast_feedbacks")
-              .selectAll()
-              .whereRef("broadcast_feedbacks.convention_id", "=", "c.id")
-              .where(
-                sql<boolean>`(c.agency_id, broadcast_feedbacks.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
-              )
-              .orderBy("broadcast_feedbacks.occurred_at", "desc")
-              .limit(1)
-              .as("bf"),
-          (join) => join.onTrue(),
         )
         .select((eb) => [
           eb.ref("c.id").as("conventionId"),
@@ -457,7 +467,24 @@ const createBroadcastFeedbackBaseBuilder = ({
           eb.ref("bf.response").as("response"),
           eb.ref("c.date_submission").as("dateSubmission"),
         ])
-        .where((eb) => isInArray(eb, "c.agency_id", userAgencyIds));
+        .where((eb) => isInArray(eb, "c.agency_id", userAgencyIds))
+        .where(({ not, exists, selectFrom }) =>
+          not(
+            exists(
+              selectFrom("broadcast_feedbacks as newer_bf")
+                .select(sql`1`.as("__"))
+                .whereRef("newer_bf.convention_id", "=", "bf.convention_id")
+                .whereRef("newer_bf.occurred_at", ">", "bf.occurred_at")
+                .where(
+                  isRelevantConsumerForConventionAgency({
+                    consumerNameColumn: "newer_bf.consumer_name",
+                    relevantConsumerAgencyIds,
+                    relevantConsumerNames,
+                  }),
+                ),
+            ),
+          ),
+        );
 
       if (conventionSubmittedAfter)
         return query.where("c.date_submission", ">=", conventionSubmittedAfter);
@@ -466,7 +493,9 @@ const createBroadcastFeedbackBaseBuilder = ({
     },
   );
 
-  return cteBuilder.selectFrom("conventions_with_latest_feedback as cf");
+  return cteBuilder.selectFrom(
+    "conventions_with_unhandled_errored_latest_feedback as cf",
+  );
 };
 
 export const createConventionsWithErroredBroadcastFeedbackBuilder = ({
