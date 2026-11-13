@@ -8,10 +8,6 @@ import type {
   VisitorOtpJwt,
 } from "shared";
 
-export type VisitorSessionResult =
-  | { activeSession: ActiveVisitorSession; needsOtp: false }
-  | { activeSession: null; needsOtp: true };
-
 export interface OtpChallengeGateway {
   getMaskedOtpRecipient$(jwt: VisitorOtpJwt): Observable<MaskedOtpRecipients>;
   requestOtpChallenge$(
@@ -21,8 +17,8 @@ export interface OtpChallengeGateway {
   verifyOtpChallenge$(
     params: VerifyOtpChallengeDto,
     jwt: VisitorOtpJwt,
-  ): Observable<void>;
+  ): Observable<ActiveVisitorSession>;
   getVisitorSession$(
     params: GetVisitorSessionQueryParams,
-  ): Observable<VisitorSessionResult>;
+  ): Observable<ActiveVisitorSession | null>;
 }

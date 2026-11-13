@@ -59,7 +59,7 @@ export const otpChallengeRoutes = defineRoutes({
     requestBodySchema: verifyOtpChallengeSchema,
     ...withAuthorizationHeaders,
     responses: {
-      204: expressEmptyResponseBodyOrEmptyObject,
+      200: activeVisitorSessionSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
       403: httpErrorSchema,

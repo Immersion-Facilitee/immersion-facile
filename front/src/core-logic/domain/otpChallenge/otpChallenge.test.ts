@@ -6,6 +6,7 @@ import {
   otpChallengeInitialState,
   otpChallengeSlice,
 } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
+import { visitorSessionInitialState } from "src/core-logic/domain/visitorSession/visitorSession.slice";
 import {
   createTestStore,
   type TestDependencies,
@@ -14,6 +15,7 @@ import type { ReduxStore } from "src/core-logic/storeConfig/store";
 
 describe("otpChallenge slice", () => {
   const jwt = "visitor-otp-jwt";
+  const conventionId = "add5c20e-6dd2-45af-affe-927358005251";
   const maskedRecipients: MaskedOtpRecipients = {
     maskedEmail: "j***@mail.com",
     maskedPhone: "+33******78",
@@ -102,7 +104,7 @@ describe("otpChallenge slice", () => {
     });
   });
 
-  it("verifies an otp challenge", () => {
+  it("verifies an otp challenge and activates the returned visitor session", () => {
     store.dispatch(
       otpChallengeSlice.actions.otpChallengeVerificationRequested({
         jwt,
@@ -112,12 +114,26 @@ describe("otpChallenge slice", () => {
     );
     expectOtpChallengeState({ isLoading: true });
 
-    dependencies.otpChallengeGateway.verifyOtpChallengeResponse$.next();
+    dependencies.otpChallengeGateway.verifyOtpChallengeResponse$.next({
+      purpose: "manageConvention",
+      conventionId,
+      role: "beneficiary",
+      expiresAt: "2026-11-11T12:30:00.000Z",
+    });
 
     expectOtpChallengeState({ isVerified: true });
+    expectToEqual(store.getState().visitorSession, {
+      status: "active",
+      activeSession: {
+        purpose: "manageConvention",
+        conventionId,
+        role: "beneficiary",
+        expiresAt: "2026-11-11T12:30:00.000Z",
+      },
+    });
   });
 
-  it("keeps the challenge unverified and shows the back message when the code is wrong", () => {
+  it("keeps the visitor session unchanged and shows the back message when the code is wrong", () => {
     store.dispatch(
       otpChallengeSlice.actions.otpChallengeVerificationRequested({
         jwt,
@@ -131,6 +147,7 @@ describe("otpChallenge slice", () => {
     );
 
     expectOtpChallengeState(otpChallengeInitialState);
+    expectToEqual(store.getState().visitorSession, visitorSessionInitialState);
     expectOtpChallengeFeedback({
       on: "update",
       level: "error",

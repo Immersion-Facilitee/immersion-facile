@@ -1,7 +1,6 @@
 import { type ActiveVisitorSession, expectToEqual } from "shared";
 import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
 import {
-  type VisitorSessionState,
   visitorSessionInitialState,
   visitorSessionSlice,
 } from "src/core-logic/domain/visitorSession/visitorSession.slice";
@@ -35,7 +34,7 @@ describe("visitorSession slice", () => {
         feedbackTopic: "visitor-session",
       }),
     );
-    expectVisitorSessionState({ isLoading: true });
+    expectToEqual(store.getState().visitorSession, { status: "loading" });
   });
 
   it("stores the active session", () => {
@@ -46,15 +45,17 @@ describe("visitorSession slice", () => {
         feedbackTopic: "visitor-session",
       }),
     );
-    dependencies.otpChallengeGateway.visitorSessionResponse$.next({
+    dependencies.otpChallengeGateway.visitorSessionResponse$.next(
       activeSession,
-      needsOtp: false,
-    });
+    );
 
-    expectVisitorSessionState({ activeSession });
+    expectToEqual(store.getState().visitorSession, {
+      status: "active",
+      activeSession,
+    });
   });
 
-  it("needs an otp when there is no session", () => {
+  it("requires an otp when there is no session", () => {
     store.dispatch(
       visitorSessionSlice.actions.visitorSessionRequested({
         purpose: "manageConvention",
@@ -62,12 +63,9 @@ describe("visitorSession slice", () => {
         feedbackTopic: "visitor-session",
       }),
     );
-    dependencies.otpChallengeGateway.visitorSessionResponse$.next({
-      activeSession: null,
-      needsOtp: true,
-    });
+    dependencies.otpChallengeGateway.visitorSessionResponse$.next(null);
 
-    expectVisitorSessionState({ needsOtp: true });
+    expectToEqual(store.getState().visitorSession, { status: "otpRequired" });
   });
 
   it("stores the back message when the request fails", () => {
@@ -85,7 +83,7 @@ describe("visitorSession slice", () => {
       new Error(errorMessage),
     );
 
-    expectVisitorSessionState(visitorSessionInitialState);
+    expectToEqual(store.getState().visitorSession, visitorSessionInitialState);
     expectToEqual(
       feedbacksSelectors.feedbacks(store.getState())["visitor-session"],
       {
@@ -96,13 +94,4 @@ describe("visitorSession slice", () => {
       },
     );
   });
-
-  const expectVisitorSessionState = (
-    visitorSessionState: Partial<VisitorSessionState>,
-  ) => {
-    expectToEqual(store.getState().visitorSession, {
-      ...visitorSessionInitialState,
-      ...visitorSessionState,
-    });
-  };
 });

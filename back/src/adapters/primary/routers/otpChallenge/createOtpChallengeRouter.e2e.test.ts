@@ -432,7 +432,7 @@ describe("otp challenge router", () => {
       inMemoryUow.otpChallengeRepository.otpChallenges = [otpChallenge];
     });
 
-    it("204 - verifies otp code, creates visitor session and sets cookie", async () => {
+    it("200 - verifies otp code, creates visitor session, sets cookie and returns the active session", async () => {
       const response = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
@@ -440,12 +440,17 @@ describe("otp challenge router", () => {
         },
       });
 
-      expectHttpResponseToEqual(response, {
-        status: 204,
-        body: {},
-      });
       const visitorSession =
         inMemoryUow.visitorSessionRepository.visitorSessions[0];
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          purpose: "manageConvention",
+          conventionId: visitorOtpJwtPayload.subject.conventionId,
+          role: visitorOtpJwtPayload.subject.role,
+          expiresAt: visitorSession.expiresAt,
+        },
+      });
       expect(response.headers["set-cookie"]).toEqual(
         expect.arrayContaining([
           expect.stringMatching(
@@ -455,14 +460,14 @@ describe("otp challenge router", () => {
       );
     });
 
-    it("204 - uses the same cookie for successive connections to different conventions", async () => {
+    it("200 - uses the same cookie for successive connections to different conventions", async () => {
       const firstResponse = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
           authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
         },
       });
-      expect(firstResponse.status).toBe(204);
+      expect(firstResponse.status).toBe(200);
       const firstSession =
         inMemoryUow.visitorSessionRepository.visitorSessions[0];
 
@@ -494,7 +499,7 @@ describe("otp challenge router", () => {
         )
         .set("Cookie", `if_visitor=${firstSession.id}`)
         .send({ otpCode });
-      expect(secondResponse.status).toBe(204);
+      expect(secondResponse.status).toBe(200);
       const secondSession =
         inMemoryUow.visitorSessionRepository.visitorSessions.find(
           ({ subject }) => subject.conventionId === otherConvention.id,

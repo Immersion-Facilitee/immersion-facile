@@ -8,7 +8,10 @@ import { match } from "ts-pattern";
 import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../useCaseBuilder";
-import { getActiveVisitorSessionOrThrow } from "../entities/visitorSession.helper";
+import {
+  getActiveVisitorSessionOrThrow,
+  toActiveVisitorSession,
+} from "../entities/visitorSession.helper";
 
 export type GetVisitorSession = ReturnType<typeof makeGetVisitorSession>;
 
@@ -34,7 +37,7 @@ export const makeGetVisitorSession = useCaseBuilder("GetVisitorSession")
       return match(visitorSession)
         .with(
           { purpose: "manageConvention" },
-          async ({ subject, expiresAt }): Promise<ActiveVisitorSession> => {
+          async ({ subject }): Promise<ActiveVisitorSession> => {
             const { conventionId, role, emailHash } = subject;
 
             const convention =
@@ -48,12 +51,7 @@ export const makeGetVisitorSession = useCaseBuilder("GetVisitorSession")
               role,
             });
 
-            return {
-              purpose: "manageConvention",
-              conventionId,
-              role,
-              expiresAt,
-            };
+            return toActiveVisitorSession(visitorSession);
           },
         )
         .exhaustive();

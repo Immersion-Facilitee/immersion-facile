@@ -8,7 +8,9 @@ import type {
 
 export type VisitorSessionAction = ActionOfSlice<typeof visitorSessionSlice>;
 
-const getVisitorSessionEpic: AppEpic<VisitorSessionAction> = (
+type VisitorSessionEpic = AppEpic<VisitorSessionAction>;
+
+const getVisitorSessionEpic: VisitorSessionEpic = (
   action$,
   _,
   { otpChallengeGateway },
@@ -17,8 +19,8 @@ const getVisitorSessionEpic: AppEpic<VisitorSessionAction> = (
     filter(visitorSessionSlice.actions.visitorSessionRequested.match),
     switchMap((action) =>
       otpChallengeGateway.getVisitorSession$(action.payload).pipe(
-        map((result) =>
-          visitorSessionSlice.actions.visitorSessionSucceeded(result),
+        map((activeSession) =>
+          visitorSessionSlice.actions.visitorSessionSucceeded(activeSession),
         ),
         catchEpicError((error) =>
           visitorSessionSlice.actions.visitorSessionFailed({

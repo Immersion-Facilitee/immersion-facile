@@ -1,23 +1,29 @@
 import { timingSafeEqual } from "node:crypto";
 import { addMinutes } from "date-fns";
 import {
+  type ActiveVisitorSession,
   errors,
   executeInSequence,
   type OtpChallenge,
   VISITOR_SESSION_DURATION_IN_MINUTES,
   type VisitorOtpJwtPayload,
   type VisitorSession,
+  type VisitorSessionId,
   verifyOtpChallengeSchema,
 } from "shared";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../../unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../../useCaseBuilder";
 import type { UuidGenerator } from "../../../uuid-generator/ports/UuidGenerator";
+import { toActiveVisitorSession } from "../../visitor-session/entities/visitorSession.helper";
 import type { HashOtpCode } from "../adapters/hashOtpCode";
 
 const MAX_OTP_CHALLENGE_ATTEMPTS = 5;
 
-export type VerifyOtpChallengeOutput = Pick<VisitorSession, "id" | "expiresAt">;
+export type VerifyOtpChallengeOutput = {
+  visitorSessionId: VisitorSessionId;
+  activeVisitorSession: ActiveVisitorSession;
+};
 
 type OtpCodeVerification =
   | { isOtpCodeValid: true; visitorSession: VisitorSession }
@@ -107,8 +113,10 @@ export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
         throw errors.otpChallenge.invalidCode();
 
       return {
-        id: otpCodeVerification.visitorSession.id,
-        expiresAt: otpCodeVerification.visitorSession.expiresAt,
+        visitorSessionId: otpCodeVerification.visitorSession.id,
+        activeVisitorSession: toActiveVisitorSession(
+          otpCodeVerification.visitorSession,
+        ),
       };
     },
   );

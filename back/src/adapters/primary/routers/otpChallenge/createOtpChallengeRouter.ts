@@ -43,17 +43,18 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
   sharedOtpChallengeRouter.verifyOtpChallenge(
     deps.visitorOtpAuthMiddleware,
     (req, res) =>
-      sendHttpResponse(req, res.status(204), async () => {
+      sendHttpResponse(req, res, async () => {
         const visitorOtp = getGenericAuthOrThrow(req.payloads?.visitorOtp);
-        const { id, expiresAt } =
+        const { visitorSessionId, activeVisitorSession } =
           await deps.useCases.verifyOtpChallenge.execute(req.body, visitorOtp);
-        res.cookie(visitorSessionCookieName, id, {
+        res.cookie(visitorSessionCookieName, visitorSessionId, {
           httpOnly: true,
           secure: true,
           sameSite: "lax",
           path: "/",
-          expires: new Date(expiresAt),
+          expires: new Date(activeVisitorSession.expiresAt),
         });
+        return activeVisitorSession;
       }),
   );
 

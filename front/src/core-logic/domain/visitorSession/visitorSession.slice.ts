@@ -7,44 +7,46 @@ import type {
   PayloadActionWithFeedbackTopic,
   PayloadActionWithFeedbackTopicError,
 } from "src/core-logic/domain/feedback/feedback.slice";
-import type { VisitorSessionResult } from "src/core-logic/ports/OtpChallengeGateway";
+import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
 
-export type VisitorSessionState = {
-  isLoading: boolean;
-  activeSession: ActiveVisitorSession | null;
-  needsOtp: boolean;
-};
+export type VisitorSessionState =
+  | { status: "idle" | "loading" | "otpRequired" }
+  | { status: "active"; activeSession: ActiveVisitorSession };
 
 export const visitorSessionInitialState: VisitorSessionState = {
-  isLoading: false,
-  activeSession: null,
-  needsOtp: false,
+  status: "idle",
 };
+
+const getVisitorSessionInitialState = (): VisitorSessionState =>
+  visitorSessionInitialState;
 
 export const visitorSessionSlice = createSlice({
   name: "visitorSession",
-  initialState: visitorSessionInitialState,
+  initialState: getVisitorSessionInitialState,
   reducers: {
     visitorSessionRequested: (
       _state,
       _action: PayloadActionWithFeedbackTopic<GetVisitorSessionQueryParams>,
-    ) => ({
-      ...visitorSessionInitialState,
-      isLoading: true,
-    }),
+    ): VisitorSessionState => ({ status: "loading" }),
     visitorSessionSucceeded: (
-      state,
-      action: PayloadAction<VisitorSessionResult>,
-    ) => {
-      state.isLoading = false;
-      state.activeSession = action.payload.activeSession;
-      state.needsOtp = action.payload.needsOtp;
-    },
+      _state,
+      action: PayloadAction<ActiveVisitorSession | null>,
+    ): VisitorSessionState =>
+      action.payload
+        ? { status: "active", activeSession: action.payload }
+        : { status: "otpRequired" },
     visitorSessionFailed: (
-      state,
+      _state,
       _action: PayloadActionWithFeedbackTopicError,
-    ) => {
-      state.isLoading = false;
-    },
+    ): VisitorSessionState => visitorSessionInitialState,
+  },
+  extraReducers: (builder) => {
+    builder.addCase(
+      otpChallengeSlice.actions.otpChallengeVerificationSucceeded,
+      (_state, action): VisitorSessionState => ({
+        status: "active",
+        activeSession: action.payload.activeVisitorSession,
+      }),
+    );
   },
 });

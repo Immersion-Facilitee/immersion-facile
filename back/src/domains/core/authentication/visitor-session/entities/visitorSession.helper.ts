@@ -1,4 +1,5 @@
 import {
+  type ActiveVisitorSession,
   errors,
   type GetVisitorSessionQueryParams,
   type VisitorSession,
@@ -42,3 +43,18 @@ export const getActiveVisitorSessionOrThrow = async ({
     )
     .exhaustive();
 };
+
+export const toActiveVisitorSession = (
+  visitorSession: VisitorSession,
+): ActiveVisitorSession =>
+  match(visitorSession)
+    .with(
+      { purpose: "manageConvention" },
+      ({ subject, expiresAt }): ActiveVisitorSession => ({
+        purpose: "manageConvention",
+        conventionId: subject.conventionId,
+        role: subject.role,
+        expiresAt,
+      }),
+    )
+    .exhaustive();
