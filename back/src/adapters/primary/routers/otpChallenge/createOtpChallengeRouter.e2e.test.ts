@@ -542,7 +542,7 @@ describe("otp challenge router", () => {
       inMemoryUow.otpChallengeRepository.otpChallenges = [otpChallenge];
     });
 
-    it("204 - verifies otp code, creates otp session and sets cookie", async () => {
+    it("200 - verifies otp code, creates otp session, sets cookie and returns the active session", async () => {
       const response = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
@@ -550,18 +550,23 @@ describe("otp challenge router", () => {
         },
       });
 
-      expectHttpResponseToEqual(response, {
-        status: 204,
-        body: {},
-      });
       const otpSession = inMemoryUow.otpSessionRepository.otpSessions[0];
+      expectHttpResponseToEqual(response, {
+        status: 200,
+        body: {
+          purpose: "manageConvention",
+          conventionId: otpJwtPayload.subject.conventionId,
+          role: otpJwtPayload.subject.role,
+          expiresAt: otpSession.expiresAt,
+        },
+      });
       expectToEqual(response.headers["set-cookie"], [
         `if_otp_session=${otpSession.id}; Path=/; Expires=${new Date(otpSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
     });
 
     it.each(["production", "staging"] as const)(
-      "204 - sets a secure cookie in %s",
+      "200 - sets a secure cookie in %s",
       async (envType) => {
         const testApp = await buildTestApp(
           new AppConfigBuilder({ ENV_TYPE: envType }).build(),
@@ -582,26 +587,31 @@ describe("otp challenge router", () => {
           },
         });
 
-        expectHttpResponseToEqual(response, {
-          status: 204,
-          body: {},
-        });
         const otpSession =
           testApp.inMemoryUow.otpSessionRepository.otpSessions[0];
+        expectHttpResponseToEqual(response, {
+          status: 200,
+          body: {
+            purpose: "manageConvention",
+            conventionId: otpJwtPayload.subject.conventionId,
+            role: otpJwtPayload.subject.role,
+            expiresAt: otpSession.expiresAt,
+          },
+        });
         expectToEqual(response.headers["set-cookie"], [
           `if_otp_session=${otpSession.id}; Path=/; Expires=${new Date(otpSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
         ]);
       },
     );
 
-    it("204 - uses the same cookie for successive connections to different conventions", async () => {
+    it("200 - uses the same cookie for successive connections to different conventions", async () => {
       const firstResponse = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
           authorization: generateOtpJwt(otpJwtPayload),
         },
       });
-      expect(firstResponse.status).toBe(204);
+      expect(firstResponse.status).toBe(200);
       const firstSession = inMemoryUow.otpSessionRepository.otpSessions[0];
 
       const otherConvention = new ConventionDtoBuilder(convention)
@@ -632,7 +642,7 @@ describe("otp challenge router", () => {
         )
         .set("Cookie", `if_otp_session=${firstSession.id}`)
         .send({ otpCode });
-      expect(secondResponse.status).toBe(204);
+      expect(secondResponse.status).toBe(200);
       const secondSession = inMemoryUow.otpSessionRepository.otpSessions.find(
         ({ subject }) => subject.conventionId === otherConvention.id,
       );

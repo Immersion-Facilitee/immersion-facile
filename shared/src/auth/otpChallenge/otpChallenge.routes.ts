@@ -60,7 +60,7 @@ export const otpChallengeRoutes = defineRoutes({
     requestBodySchema: verifyOtpChallengeSchema,
     ...withAuthorizationHeaders,
     responses: {
-      204: expressEmptyResponseBodyOrEmptyObject,
+      200: activeOtpSessionSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
       403: renewExpiredJwtResponseSchema.or(httpErrorSchema),

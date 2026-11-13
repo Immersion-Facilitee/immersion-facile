@@ -1,4 +1,5 @@
 import {
+  type ActiveOtpSession,
   errors,
   type GetOtpSessionQueryParams,
   type OtpSession,
@@ -39,3 +40,16 @@ export const getActiveOtpSessionOrThrow = async ({
     })
     .exhaustive();
 };
+
+export const toActiveOtpSession = (otpSession: OtpSession): ActiveOtpSession =>
+  match(otpSession)
+    .with(
+      { purpose: "manageConvention" },
+      ({ subject, expiresAt }): ActiveOtpSession => ({
+        purpose: "manageConvention",
+        conventionId: subject.conventionId,
+        role: subject.role,
+        expiresAt,
+      }),
+    )
+    .exhaustive();

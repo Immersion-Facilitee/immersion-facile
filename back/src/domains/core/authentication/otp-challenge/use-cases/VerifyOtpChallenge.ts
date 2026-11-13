@@ -1,23 +1,29 @@
 import { timingSafeEqual } from "node:crypto";
 import { addMinutes } from "date-fns";
 import {
+  type ActiveOtpSession,
   errors,
   executeInSequence,
   OTP_SESSION_DURATION_IN_MINUTES,
   type OtpChallenge,
   type OtpJwtPayload,
   type OtpSession,
+  type OtpSessionId,
   verifyOtpChallengeSchema,
 } from "shared";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../../unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../../useCaseBuilder";
 import type { UuidGenerator } from "../../../uuid-generator/ports/UuidGenerator";
+import { toActiveOtpSession } from "../../otp-session/entities/otpSession.helper";
 import type { HashOtpCode } from "../entities/otpChallenge.helper";
 
 const MAX_OTP_CHALLENGE_ATTEMPTS = 5;
 
-export type VerifyOtpChallengeOutput = Pick<OtpSession, "id" | "expiresAt">;
+export type VerifyOtpChallengeOutput = {
+  otpSessionId: OtpSessionId;
+  activeOtpSession: ActiveOtpSession;
+};
 
 export type VerifyOtpChallenge = ReturnType<typeof makeVerifyOtpChallenge>;
 
@@ -115,7 +121,10 @@ export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
 
           await uow.otpSessionRepository.save(otpSession);
 
-          return { id: otpSession.id, expiresAt: otpSession.expiresAt };
+          return {
+            otpSessionId: otpSession.id,
+            activeOtpSession: toActiveOtpSession(otpSession),
+          };
         },
       );
     },

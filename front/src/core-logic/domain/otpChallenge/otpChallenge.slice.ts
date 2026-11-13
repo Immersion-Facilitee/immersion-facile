@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type {
+  ActiveVisitorSession,
   MaskedOtpRecipients,
   RequestOtpChallengeDto,
   VerifyOtpChallengeDto,
@@ -79,7 +80,9 @@ export const otpChallengeSlice = createSlice({
     },
     otpChallengeVerificationSucceeded: (
       state,
-      _action: PayloadActionWithFeedbackTopic,
+      _action: PayloadActionWithFeedbackTopic<{
+        activeVisitorSession: ActiveVisitorSession;
+      }>,
     ) => {
       state.isLoading = false;
       state.isVerified = true;
