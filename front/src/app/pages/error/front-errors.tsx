@@ -254,6 +254,25 @@ export const frontErrors = {
         ),
         buttons: [HomeButton, ContactUsButton()],
       }),
+    visitorSessionRefused: ({
+      conventionId,
+      errorMessage,
+    }: {
+      conventionId: ConventionId;
+      errorMessage: string;
+    }) =>
+      new FrontSpecificError({
+        title: "Accès à la convention impossible",
+        description: (
+          <>
+            <p>{errorMessage}</p>
+            <ul>
+              <li>ID de la convention : {conventionId}</li>
+            </ul>
+          </>
+        ),
+        buttons: [HomeButton, ContactUsButton()],
+      }),
     archived: ({ conventionId }: { conventionId: ConventionId }) =>
       new FrontSpecificError({
         title: "Cette convention est archivée",

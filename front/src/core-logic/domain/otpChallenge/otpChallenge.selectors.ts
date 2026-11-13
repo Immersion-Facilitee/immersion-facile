@@ -13,11 +13,6 @@ const isCodeSent = createSelector(
   ({ isCodeSent }) => isCodeSent,
 );
 
-const isVerified = createSelector(
-  otpChallengeState,
-  ({ isVerified }) => isVerified,
-);
-
 const isLoading = createSelector(
   otpChallengeState,
   ({ isLoading }) => isLoading,
@@ -26,6 +21,5 @@ const isLoading = createSelector(
 export const otpChallengeSelectors = {
   maskedRecipients,
   isCodeSent,
-  isVerified,
   isLoading,
 };

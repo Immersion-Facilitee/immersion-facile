@@ -39,6 +39,8 @@ export const visitorSessionSlice = createSlice({
       _state,
       _action: PayloadActionWithFeedbackTopicError,
     ): VisitorSessionState => visitorSessionInitialState,
+    resetVisitorSessionRequested: (): VisitorSessionState =>
+      visitorSessionInitialState,
   },
   extraReducers: (builder) => {
     builder.addCase(
