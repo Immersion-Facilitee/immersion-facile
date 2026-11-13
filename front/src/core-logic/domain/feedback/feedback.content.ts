@@ -1,6 +1,6 @@
 import type { ActionCreatorWithPayload } from "@reduxjs/toolkit";
-
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import { adminAgencyListSlice } from "src/core-logic/domain/agencies/admin-agency-list/adminAgencyList.slice";
 import { closeAgencyAndTransferConventionsSlice } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.slice";
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
@@ -41,6 +41,7 @@ type FeedbackWithActionName = {
 };
 
 const topics = [
+  "admin-agency-list",
   "admin-convention-list",
   "agency-admin",
   "agency-for-dashboard",
@@ -1132,6 +1133,13 @@ export const feedbacks: Record<
       title: "Problème lors de la récupération des conventions",
       message:
         "Une erreur est survenue lors de la récupération des conventions",
+    },
+  },
+  "admin-agency-list": {
+    "fetch.error": {
+      action: adminAgencyListSlice.actions.fetchAdminAgencyListFailed,
+      title: "Problème lors de la récupération des agences",
+      message: "Une erreur est survenue lors de la récupération des agences",
     },
   },
   "admin-convention-list": {

@@ -1594,6 +1594,62 @@ describe.each(adapterKind)(
         });
       });
 
+      describe("sort by createdAt", () => {
+        const makeAgencyCreatedAt = (
+          id: string,
+          siret: string,
+          createdAt: string,
+        ): AgencyWithUsersRights =>
+          toAgencyWithRights(
+            agency1builder
+              .withId(id)
+              .withAgencySiret(siret)
+              .withCreatedAt(createdAt)
+              .build(),
+            {
+              [validator1.id]: {
+                isNotifiedByEmail: false,
+                roles: ["validator"],
+              },
+            },
+          );
+
+        const agencyCreatedInBetween = makeAgencyCreatedAt(
+          "00000000-0000-0000-0000-000000000020",
+          "00000000000020",
+          "2024-06-15T10:00:00.000Z",
+        );
+        const agencyCreatedLast = makeAgencyCreatedAt(
+          "00000000-0000-0000-0000-000000000021",
+          "00000000000021",
+          "2025-06-15T10:00:00.000Z",
+        );
+        const agencyCreatedFirst = makeAgencyCreatedAt(
+          "00000000-0000-0000-0000-000000000022",
+          "00000000000022",
+          "2023-06-15T10:00:00.000Z",
+        );
+
+        beforeEach(async () => {
+          await Promise.all([
+            agencyRepository.insert(agencyCreatedInBetween),
+            agencyRepository.insert(agencyCreatedLast),
+            agencyRepository.insert(agencyCreatedFirst),
+          ]);
+        });
+
+        it("returns most recently created agencies first, paginated", async () => {
+          const { data: agencies, pagination } =
+            await agencyRepository.getAgencies({
+              sort: { by: "createdAt", direction: "desc" },
+              pagination: { page: 1, perPage: 2 },
+            });
+
+          expectToEqual(agencies, [agencyCreatedLast, agencyCreatedInBetween]);
+          expectToEqual(pagination.totalRecords, 3);
+        });
+      });
+
       describe("filter updatedAtBefore", () => {
         const baseDate = new Date("2024-01-15T10:00:00Z");
         const dateBefore = subDays(baseDate, 5);

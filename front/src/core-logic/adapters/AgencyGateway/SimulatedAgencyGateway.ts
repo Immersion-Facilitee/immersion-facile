@@ -1,6 +1,7 @@
 import { values } from "ramda";
 import { delay, type Observable, of, Subject, throwError } from "rxjs";
 import {
+  type AdminAgencyListItemDto,
   type AgencyDto,
   AgencyDtoBuilder,
   type AgencyId,
@@ -10,7 +11,12 @@ import {
   type ConnectedUser,
   type ConnectedUserJwt,
   type CreateAgencyDto,
+  calculatePaginationResult,
+  type DataWithPagination,
+  defaultPageInPagination,
+  defaultPerPageInWebPagination,
   errors,
+  type GetAgenciesForAdminParams,
   type ListAgencyOptionsRequestDto,
   noAgencyDashboards,
   noEstablishmentDashboard,
@@ -151,6 +157,33 @@ export class SimulatedAgencyGateway implements AgencyGateway {
       );
     }
     throw errors.agency.notFound({ agencyId });
+  }
+
+  public getAgenciesForAdmin$(
+    {
+      page = defaultPageInPagination,
+      perPage = defaultPerPageInWebPagination,
+    }: GetAgenciesForAdminParams,
+    _token: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminAgencyListItemDto>> {
+    const agencies = values(this.#agencies);
+    return of({
+      data: agencies
+        .slice((page - 1) * perPage, page * perPage)
+        .map((agency) => ({
+          id: agency.id,
+          name: agency.name,
+          kind: agency.kind,
+          status: agency.status,
+          siret: agency.agencySiret,
+          refersToAgencyName: agency.refersToAgencyName,
+        })),
+      pagination: calculatePaginationResult({
+        page,
+        perPage,
+        totalRecords: agencies.length,
+      }),
+    });
   }
 
   public getAgencyUsers$(): Observable<AgencyUserForListing[]> {

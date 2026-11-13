@@ -1,5 +1,6 @@
 import { type Observable, Subject } from "rxjs";
 import type {
+  AdminAgencyListItemDto,
   AgencyDto,
   AgencyId,
   AgencyOption,
@@ -9,6 +10,8 @@ import type {
   ConnectedUser,
   ConnectedUserJwt,
   CreateAgencyDto,
+  DataWithPagination,
+  GetAgenciesForAdminParams,
   ListAgencyOptionsRequestDto,
   UserParamsForAgency,
   WithAgencyId,
@@ -28,6 +31,10 @@ export class TestAgencyGateway implements AgencyGateway {
   public customAgencyId$ = new Subject<AgencyId | undefined>();
 
   public fetchedAgency$ = new Subject<AgencyDto>();
+
+  public getAgenciesForAdminResponse$ = new Subject<
+    DataWithPagination<AdminAgencyListItemDto>
+  >();
 
   public getAgencyUsersResponse$ = new Subject<AgencyUserForListing[]>();
 
@@ -50,6 +57,13 @@ export class TestAgencyGateway implements AgencyGateway {
     _token: string,
   ): Observable<ConnectedUser> {
     return this.createUserForAgencyResponse$;
+  }
+
+  public getAgenciesForAdmin$(
+    _params: GetAgenciesForAdminParams,
+    _token: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminAgencyListItemDto>> {
+    return this.getAgenciesForAdminResponse$;
   }
 
   public getAgencyById$(
