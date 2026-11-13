@@ -34,6 +34,17 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
           );
         },
         children: {
+          searchResult: {
+            label: "Détail de l'offre",
+            route: frontRoutes.searchResult({ appellationCode: [], siret: "" }),
+          },
+          searchResultExternal: {
+            label: "Détail de l'offre",
+            route: frontRoutes.searchResultExternal({
+              appellationCode: [],
+              siret: "",
+            }),
+          },
           externalSearch: {
             label: "Résultats LaBonneBoite",
             route: frontRoutes.externalSearch(),
@@ -43,6 +54,15 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
       searchForStudent: {
         label: "Recherche scolaire",
         route: frontRoutes.searchForStudent(),
+        children: {
+          searchResultForStudent: {
+            label: "Détail de l'offre",
+            route: frontRoutes.searchResultForStudent({
+              appellationCode: [],
+              siret: "",
+            }),
+          },
+        },
       },
     },
   },

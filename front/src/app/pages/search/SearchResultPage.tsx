@@ -14,28 +14,22 @@ import { Loader, MainWrapper } from "react-design-system";
 import { Helmet } from "react-helmet-async";
 import { useDispatch } from "react-redux";
 import {
-  type AppellationDto,
   type ConnectedUser,
   type ContactMode,
   frontRoutes,
-  getMapsLink,
   isInternalOfferDto,
   isPhysicalWorkMode,
-  makeAppellationInformationUrl,
-  makeNafClassInformationUrl,
-  makeSiretDescriptionLink,
   type OfferDto,
-  remoteWorkModeLabels,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { FullPageFeedback } from "src/app/components/feedback/FullpageFeedback";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
-import {
-  getIconMarker,
-  SearchMiniMap,
-} from "src/app/components/search/SearchMiniMap";
+import { SearchResultAbout } from "src/app/components/search/SearchResultAbout";
+import { SearchResultCompany } from "src/app/components/search/SearchResultCompany";
 import { SearchResultContactSection } from "src/app/components/search/SearchResultContactSection";
-import { SearchResultLabels } from "src/app/components/search/SearchResultLabels";
+import { SearchResultHeader } from "src/app/components/search/SearchResultHeader";
+import { SearchResultJob } from "src/app/components/search/SearchResultJob";
+import { SearchResultLocation } from "src/app/components/search/SearchResultLocation";
 import { defaultPageMetaContents } from "src/app/contents/meta/metaContents";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useSearchResultRoute } from "src/app/routes/routes.hooks";
@@ -43,19 +37,7 @@ import { commonIllustrations } from "src/assets/img/illustrations";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { searchSelectors } from "src/core-logic/domain/search/search.selectors";
 import { searchSlice } from "src/core-logic/domain/search/search.slice";
-
-const SearchResultSection = ({
-  title,
-  children,
-}: {
-  title?: string;
-  children: ReactNode;
-}) => (
-  <div className={fr.cx("fr-mb-4w")}>
-    <h2 className={fr.cx("fr-text--md", "fr-mb-1v")}>{title}</h2>
-    {children}
-  </div>
-);
+import "./SearchResultPage.scss";
 
 const getMetaForSearchResult = (
   currentSearchResult: OfferDto | null,
@@ -139,9 +121,6 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
     }
   }, [dispatch, isExternal, params]);
 
-  const pluralFromAppellations = (
-    appellations: AppellationDto[] | undefined,
-  ) => (appellations && appellations.length > 1 ? "s" : "");
   const onFormSubmitSuccess = () => {
     document.body.scrollIntoView({
       behavior: "smooth",
@@ -165,8 +144,6 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
       : frontRoutes.search({}).push();
   };
 
-  const miniMapMarkerKey = "single-result-mini-map-marker";
-
   const shouldShowPhysicalWorkModeInfos =
     currentSearchResult &&
     isInternalOfferDto(currentSearchResult) &&
@@ -184,132 +161,57 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
           content={getMetaForSearchResult(currentSearchResult).description}
         />
       </Helmet>
-      <MainWrapper layout="default">
-        {isLoading && <Loader />}
-        {shouldShowError && (
-          <>
-            {isLocationMissing && (
-              <Alert
-                title="Oups !"
-                description={
-                  "L'offre ne peut plus être affichée (paramètre de localisation invalide), veuillez relancer une recherche d'offre d'immersion pour retrouver une offre."
-                }
-                severity="error"
-                className={fr.cx("fr-my-4w")}
-              />
-            )}
-            <Feedback topics={["search-result"]} />
-            <Button
-              type="button"
-              onClick={onGoBackClick}
-              priority="tertiary"
-              iconId="fr-icon-arrow-left-line"
-              iconPosition="left"
-              className={fr.cx("fr-mt-4w")}
-            >
-              Retour à la recherche
-            </Button>
-          </>
-        )}
-        {currentSearchResult && showConfirmationMessage === null && (
-          <>
-            <div className={fr.cx("fr-mb-4w")}>
+      <MainWrapper layout="fullscreen" vSpacing={0}>
+        <div className={fr.cx("fr-container")}>
+          {isLoading && <Loader />}
+          {shouldShowError && (
+            <>
+              {isLocationMissing && (
+                <Alert
+                  title="Oups !"
+                  description={
+                    "L'offre ne peut plus être affichée (paramètre de localisation invalide), veuillez relancer une recherche d'offre d'immersion pour retrouver une offre."
+                  }
+                  severity="error"
+                  className={fr.cx("fr-my-4w")}
+                />
+              )}
+              <Feedback topics={["search-result"]} />
               <Button
                 type="button"
                 onClick={onGoBackClick}
-                priority="tertiary no outline"
+                priority="tertiary"
                 iconId="fr-icon-arrow-left-line"
                 iconPosition="left"
+                className={fr.cx("fr-mt-4w")}
               >
-                Retour
+                Retour à la recherche
               </Button>
-            </div>
-            <SearchResultLabels
-              fitForDisabledWorkers={currentSearchResult.fitForDisabledWorkers}
+            </>
+          )}
+          {currentSearchResult && showConfirmationMessage === null && (
+            <SearchResultHeader searchResult={currentSearchResult} />
+          )}
+          {currentSearchResult?.contactMode && showConfirmationMessage && (
+            <FullPageFeedback
+              {...feedbackMessageByContactMode({ currentUser, onGoBackClick })[
+                currentSearchResult.contactMode
+              ]}
+              includeWrapper={false}
             />
-            <h1 className={fr.cx("fr-mb-4w", "fr-mt-2w")}>
-              {currentSearchResult.customizedName ?? currentSearchResult.name}
-            </h1>
-            <div className={fr.cx("fr-grid-row")}>
-              <div
-                className={fr.cx(
-                  "fr-col-12",
-                  shouldShowPhysicalWorkModeInfos
-                    ? "fr-col-lg-6"
-                    : "fr-col-lg-12",
-                )}
-              >
-                <SearchResultSection title="Adresse">
-                  {isInternalOfferDto(currentSearchResult) &&
-                  !isPhysicalWorkMode(currentSearchResult.remoteWorkMode) ? (
-                    <p>
-                      France entière -{" "}
-                      {
-                        remoteWorkModeLabels[currentSearchResult.remoteWorkMode]
-                          .label
-                      }
-                    </p>
-                  ) : (
-                    <>
-                      {currentSearchResult.address.streetNumberAndAddress}
-                      {", "}
-                      <span>
-                        {currentSearchResult.address.postcode}{" "}
-                        {currentSearchResult.address.city}
-                      </span>
-                      {isInternalOfferDto(currentSearchResult) && (
-                        <>
-                          {" "}
-                          (
-                          {
-                            remoteWorkModeLabels[
-                              currentSearchResult.remoteWorkMode
-                            ].label
-                          }
-                          )
-                        </>
-                      )}
-                    </>
-                  )}
-                  <p>
-                    SIRET&nbsp;:{" "}
-                    <a
-                      href={makeSiretDescriptionLink(currentSearchResult.siret)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {currentSearchResult.siret}
-                    </a>
-                  </p>
-                </SearchResultSection>
-                <SearchResultSection title="Secteur d'activité :">
-                  <p>{currentSearchResult.nafLabel}</p>
-                </SearchResultSection>
-
-                {currentSearchResult.appellations.length > 0 && (
-                  <SearchResultSection
-                    title={`Métier${pluralFromAppellations(
-                      currentSearchResult.appellations,
-                    )} observable${pluralFromAppellations(
-                      currentSearchResult.appellations,
-                    )} :`}
-                  >
-                    <p>
-                      {currentSearchResult.appellations
-                        .map((appellation) => `${appellation.appellationLabel}`)
-                        .join(", ")}
-                    </p>
-                  </SearchResultSection>
-                )}
-                <SearchResultSection>
-                  {currentSearchResult.voluntaryToImmersion && (
-                    <Button type="button" onClick={scrollToContactForm}>
-                      Contacter l'entreprise
-                    </Button>
-                  )}
-
+          )}
+        </div>
+        {currentSearchResult && showConfirmationMessage === null && (
+          <div
+            className={`im-search-result-page__content ${fr.cx("fr-py-5w")}`}
+          >
+            <div className={fr.cx("fr-container")}>
+              <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+                <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
+                  <SearchResultAbout searchResult={currentSearchResult} />
+                  <SearchResultJob searchResult={currentSearchResult} />
                   {!currentSearchResult.voluntaryToImmersion && (
-                    <>
+                    <div className={fr.cx("fr-mb-3w")}>
                       <p>
                         Cette entreprise n'est pas inscrite comme entreprise
                         accueillante mais peut recruter sur le métier que vous
@@ -332,104 +234,27 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                           },
                         ]}
                       />
-                    </>
+                    </div>
                   )}
-                </SearchResultSection>
-                <SearchResultSection title="Nombre de salariés">
-                  <p>{currentSearchResult.numberOfEmployeeRange}</p>
-                </SearchResultSection>
-
-                {currentSearchResult.additionalInformation && (
-                  <SearchResultSection title="Informations complémentaires">
-                    <p>{currentSearchResult.additionalInformation}</p>
-                  </SearchResultSection>
-                )}
-
-                {currentSearchResult.website && (
-                  <SearchResultSection title="Site web">
-                    <a
-                      href={currentSearchResult.website}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {currentSearchResult.website}
-                    </a>
-                  </SearchResultSection>
-                )}
-                <SearchResultSection title="Avoir plus d'informations avant de contacter l'entreprise">
-                  <ul>
-                    {currentSearchResult.appellations.length > 0 && (
-                      <li>
-                        <a
-                          href={makeAppellationInformationUrl(
-                            currentSearchResult.rome,
-                          )}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          S'informer sur le métier
-                        </a>
-                      </li>
-                    )}
-                    <li>
-                      <a
-                        href={makeNafClassInformationUrl(
-                          currentSearchResult.naf,
-                        )}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        S'informer sur le domaine
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href={getMapsLink(currentSearchResult)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Localiser l'entreprise
-                      </a>
-                    </li>
-                  </ul>
-                </SearchResultSection>
-              </div>
-              {shouldShowPhysicalWorkModeInfos && (
-                <div className={fr.cx("fr-col-12", "fr-col-lg-6")}>
-                  <SearchMiniMap
-                    kind="single"
-                    isExternal={isExternal}
-                    markerProps={{
-                      position: [
-                        currentSearchResult.position.lat,
-                        currentSearchResult.position.lon,
-                      ],
-                      icon: getIconMarker({
-                        activeMarkerKey: miniMapMarkerKey,
-                        isAvailable: true,
-                        isExternal,
-                        key: miniMapMarkerKey,
-                      }),
-                    }}
+                  <SearchResultContactSection
+                    onFormSubmitSuccess={onFormSubmitSuccess}
+                    formContactRef={formContactRef}
+                    currentSearchResult={currentSearchResult}
+                    onButtonClick={onGoBackClick}
                   />
                 </div>
-              )}
+                <div className={fr.cx("fr-col-12", "fr-col-lg-4")}>
+                  {shouldShowPhysicalWorkModeInfos && (
+                    <SearchResultLocation
+                      searchResult={currentSearchResult}
+                      isExternal={isExternal}
+                    />
+                  )}
+                  <SearchResultCompany searchResult={currentSearchResult} />
+                </div>
+              </div>
             </div>
-            <SearchResultContactSection
-              onFormSubmitSuccess={onFormSubmitSuccess}
-              formContactRef={formContactRef}
-              currentSearchResult={currentSearchResult}
-              onButtonClick={onGoBackClick}
-            />
-          </>
-        )}
-        {currentSearchResult?.contactMode && showConfirmationMessage && (
-          <FullPageFeedback
-            {...feedbackMessageByContactMode({ currentUser, onGoBackClick })[
-              currentSearchResult.contactMode
-            ]}
-            includeWrapper={false}
-          />
+          </div>
         )}
       </MainWrapper>
     </HeaderFooterLayout>
