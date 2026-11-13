@@ -246,7 +246,15 @@ describe("VerifyOtpChallenge", () => {
 
       expectToEqual(
         await verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
-        { id: otpSessionId, expiresAt },
+        {
+          otpSessionId,
+          activeOtpSession: {
+            purpose: "manageConvention",
+            conventionId: otpChallenge.subject.conventionId,
+            role: otpChallenge.subject.role,
+            expiresAt,
+          },
+        },
       );
 
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -303,7 +311,15 @@ describe("VerifyOtpChallenge", () => {
           { otpCode: activeOtpCode },
           otpJwtPayload,
         ),
-        { id: otpSessionId, expiresAt },
+        {
+          otpSessionId,
+          activeOtpSession: {
+            purpose: "manageConvention",
+            conventionId: otpChallenge.subject.conventionId,
+            role: otpChallenge.subject.role,
+            expiresAt,
+          },
+        },
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
         revokedOtpChallenge,
@@ -333,7 +349,15 @@ describe("VerifyOtpChallenge", () => {
 
       expectToEqual(
         await verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
-        { id: otpSessionId, expiresAt },
+        {
+          otpSessionId,
+          activeOtpSession: {
+            purpose: "manageConvention",
+            conventionId: otpChallenge.subject.conventionId,
+            role: otpChallenge.subject.role,
+            expiresAt,
+          },
+        },
       );
 
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [

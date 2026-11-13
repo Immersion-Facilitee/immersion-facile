@@ -1,21 +1,19 @@
 import { type Observable, Subject } from "rxjs";
 import type {
+  ActiveVisitorSession,
   GetVisitorSessionQueryParams,
   MaskedOtpRecipients,
   RequestOtpChallengeDto,
   VerifyOtpChallengeDto,
   VisitorOtpJwt,
 } from "shared";
-import type {
-  OtpChallengeGateway,
-  VisitorSessionResult,
-} from "src/core-logic/ports/OtpChallengeGateway";
+import type { OtpChallengeGateway } from "src/core-logic/ports/OtpChallengeGateway";
 
 export class TestOtpChallengeGateway implements OtpChallengeGateway {
   public maskedOtpRecipientResponse$ = new Subject<MaskedOtpRecipients>();
   public requestOtpChallengeResponse$ = new Subject<void>();
-  public verifyOtpChallengeResponse$ = new Subject<void>();
-  public visitorSessionResponse$ = new Subject<VisitorSessionResult>();
+  public verifyOtpChallengeResponse$ = new Subject<ActiveVisitorSession>();
+  public visitorSessionResponse$ = new Subject<ActiveVisitorSession | null>();
 
   public getMaskedOtpRecipient$(
     _jwt: VisitorOtpJwt,
@@ -33,13 +31,13 @@ export class TestOtpChallengeGateway implements OtpChallengeGateway {
   public verifyOtpChallenge$(
     _params: VerifyOtpChallengeDto,
     _jwt: VisitorOtpJwt,
-  ): Observable<void> {
+  ): Observable<ActiveVisitorSession> {
     return this.verifyOtpChallengeResponse$;
   }
 
   public getVisitorSession$(
     _params: GetVisitorSessionQueryParams,
-  ): Observable<VisitorSessionResult> {
+  ): Observable<ActiveVisitorSession | null> {
     return this.visitorSessionResponse$;
   }
 }

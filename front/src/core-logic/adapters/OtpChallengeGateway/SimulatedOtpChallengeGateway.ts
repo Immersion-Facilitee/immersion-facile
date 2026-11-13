@@ -1,16 +1,14 @@
 import { addMinutes } from "date-fns";
 import { type Observable, of } from "rxjs";
 import type {
+  ActiveVisitorSession,
   GetVisitorSessionQueryParams,
   MaskedOtpRecipients,
   RequestOtpChallengeDto,
   VerifyOtpChallengeDto,
   VisitorOtpJwt,
 } from "shared";
-import type {
-  OtpChallengeGateway,
-  VisitorSessionResult,
-} from "src/core-logic/ports/OtpChallengeGateway";
+import type { OtpChallengeGateway } from "src/core-logic/ports/OtpChallengeGateway";
 
 export class SimulatedOtpChallengeGateway implements OtpChallengeGateway {
   public getMaskedOtpRecipient$(
@@ -32,20 +30,22 @@ export class SimulatedOtpChallengeGateway implements OtpChallengeGateway {
   public verifyOtpChallenge$(
     _params: VerifyOtpChallengeDto,
     _jwt: VisitorOtpJwt,
-  ): Observable<void> {
-    return of(undefined);
+  ): Observable<ActiveVisitorSession> {
+    return of({
+      purpose: "manageConvention",
+      conventionId: "add5c20e-6dd2-45af-affe-927358005251",
+      role: "beneficiary",
+      expiresAt: addMinutes(new Date(), 30).toISOString(),
+    });
   }
 
   public getVisitorSession$(
     params: GetVisitorSessionQueryParams,
-  ): Observable<VisitorSessionResult> {
-    return of<VisitorSessionResult>({
-      activeSession: {
-        ...params,
-        role: "beneficiary",
-        expiresAt: addMinutes(new Date(), 30).toISOString(),
-      },
-      needsOtp: false,
+  ): Observable<ActiveVisitorSession | null> {
+    return of({
+      ...params,
+      role: "beneficiary",
+      expiresAt: addMinutes(new Date(), 30).toISOString(),
     });
   }
 }

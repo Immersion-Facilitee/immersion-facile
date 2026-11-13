@@ -3,23 +3,16 @@ import type { RootState } from "src/core-logic/storeConfig/store";
 
 const visitorSessionState = (state: RootState) => state.visitorSession;
 
-const isLoading = createSelector(
-  visitorSessionState,
-  ({ isLoading }) => isLoading,
+const activeSession = createSelector(visitorSessionState, (visitorSession) =>
+  visitorSession.status === "active" ? visitorSession.activeSession : null,
 );
 
-const activeSession = createSelector(
+const isOtpRequired = createSelector(
   visitorSessionState,
-  ({ activeSession }) => activeSession,
-);
-
-const needsOtp = createSelector(
-  visitorSessionState,
-  ({ needsOtp }) => needsOtp,
+  ({ status }) => status === "otpRequired",
 );
 
 export const visitorSessionSelectors = {
-  isLoading,
   activeSession,
-  needsOtp,
+  isOtpRequired,
 };

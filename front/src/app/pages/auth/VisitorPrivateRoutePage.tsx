@@ -26,9 +26,8 @@ export const VisitorPrivateRoutePage = ({
   const conventionAccess = getConventionAccessFromJwt(jwt);
   const isVisitorOtp = conventionAccess?.isVisitorOtp ?? false;
   const conventionId = conventionAccess?.conventionId;
-  const isLoading = useAppSelector(visitorSessionSelectors.isLoading);
   const activeSession = useAppSelector(visitorSessionSelectors.activeSession);
-  const needsOtp = useAppSelector(visitorSessionSelectors.needsOtp);
+  const isOtpRequired = useAppSelector(visitorSessionSelectors.isOtpRequired);
   const visitorSessionFeedback = useFeedbackTopic(visitorSessionFeedbackTopic);
 
   useEffect(() => {
@@ -46,11 +45,12 @@ export const VisitorPrivateRoutePage = ({
   }, [dispatch, isVisitorOtp, conventionId]);
 
   useEffect(() => {
-    if (isVisitorOtp && needsOtp) frontRoutes.otpChallenge({ jwt }).replace();
-  }, [isVisitorOtp, needsOtp, jwt]);
+    if (isVisitorOtp && isOtpRequired)
+      frontRoutes.otpChallenge({ jwt }).replace();
+  }, [isVisitorOtp, isOtpRequired, jwt]);
 
   if (!conventionAccess?.isVisitorOtp) return <>{children}</>;
-  if (isLoading || needsOtp) return <Loader />;
+  if (isOtpRequired) return <Loader />;
   if (activeSession?.conventionId === conventionAccess.conventionId)
     return <>{children}</>;
   if (visitorSessionFeedback?.level === "error")

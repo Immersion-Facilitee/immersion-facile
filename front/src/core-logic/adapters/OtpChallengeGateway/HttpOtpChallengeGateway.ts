@@ -1,5 +1,6 @@
 import { from, type Observable } from "rxjs";
 import type {
+  ActiveVisitorSession,
   GetVisitorSessionQueryParams,
   HttpErrorBody,
   MaskedOtpRecipients,
@@ -14,10 +15,7 @@ import {
   throwBadRequestWithExplicitMessage,
   throwTooManyRequestWithExplicitMessage,
 } from "src/core-logic/adapters/otherwiseThrow";
-import type {
-  OtpChallengeGateway,
-  VisitorSessionResult,
-} from "src/core-logic/ports/OtpChallengeGateway";
+import type { OtpChallengeGateway } from "src/core-logic/ports/OtpChallengeGateway";
 import { match, P } from "ts-pattern";
 
 const throwWithBackMessage = ({
@@ -69,7 +67,7 @@ export class HttpOtpChallengeGateway implements OtpChallengeGateway {
   public verifyOtpChallenge$(
     params: VerifyOtpChallengeDto,
     jwt: VisitorOtpJwt,
-  ): Observable<void> {
+  ): Observable<ActiveVisitorSession> {
     return from(
       this.httpClient
         .verifyOtpChallenge({
@@ -78,7 +76,7 @@ export class HttpOtpChallengeGateway implements OtpChallengeGateway {
         })
         .then((response) =>
           match(response)
-            .with({ status: 204 }, () => undefined)
+            .with({ status: 200 }, ({ body }) => body)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: 429 }, throwTooManyRequestWithExplicitMessage)
             .with({ status: P.union(401, 403, 404) }, throwWithBackMessage)
@@ -89,26 +87,14 @@ export class HttpOtpChallengeGateway implements OtpChallengeGateway {
 
   public getVisitorSession$(
     params: GetVisitorSessionQueryParams,
-  ): Observable<VisitorSessionResult> {
+  ): Observable<ActiveVisitorSession | null> {
     return from(
       this.httpClient
         .getVisitorSession({ queryParams: params })
         .then((response) =>
           match(response)
-            .with(
-              { status: 200 },
-              ({ body }): VisitorSessionResult => ({
-                activeSession: body,
-                needsOtp: false,
-              }),
-            )
-            .with(
-              { status: 401 },
-              (): VisitorSessionResult => ({
-                activeSession: null,
-                needsOtp: true,
-              }),
-            )
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 401 }, () => null)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: 403 }, throwWithBackMessage)
             .otherwise(otherwiseThrow),

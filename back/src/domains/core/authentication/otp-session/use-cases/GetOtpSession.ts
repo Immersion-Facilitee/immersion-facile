@@ -8,7 +8,10 @@ import { match } from "ts-pattern";
 import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../useCaseBuilder";
-import { getActiveOtpSessionOrThrow } from "../entities/otpSession.helper";
+import {
+  getActiveOtpSessionOrThrow,
+  toActiveOtpSession,
+} from "../entities/otpSession.helper";
 
 export type GetOtpSession = ReturnType<typeof makeGetOtpSession>;
 
@@ -34,7 +37,7 @@ export const makeGetOtpSession = useCaseBuilder("GetOtpSession")
       return match(otpSession)
         .with(
           { purpose: "manageConvention" },
-          async ({ subject, expiresAt }): Promise<ActiveOtpSession> => {
+          async ({ subject }): Promise<ActiveOtpSession> => {
             const { conventionId, role, emailHash } = subject;
 
             const convention =
@@ -48,12 +51,7 @@ export const makeGetOtpSession = useCaseBuilder("GetOtpSession")
               role,
             });
 
-            return {
-              purpose: "manageConvention",
-              conventionId,
-              role,
-              expiresAt,
-            };
+            return toActiveOtpSession(otpSession);
           },
         )
         .exhaustive();
