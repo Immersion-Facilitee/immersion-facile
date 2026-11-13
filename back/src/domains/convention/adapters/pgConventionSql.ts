@@ -35,7 +35,7 @@ export const hasEmptyArrayFilter = (filters: object): boolean =>
   );
 
 // Common type for the query builder with proper return type
-type ConventionQueryBuilderDb = Database & {
+export type ConventionQueryBuilderDb = Database & {
   b: Database["actors"];
   er: Database["actors"];
   et: Database["actors"];
@@ -49,7 +49,22 @@ type ConventionQueryBuilderDb = Database & {
   phone_numbers_bce: Database["phone_numbers"];
 };
 
-type ConventionFromTables = keyof ConventionQueryBuilderDb;
+export type ConventionFromTables =
+  | "conventions"
+  | "b"
+  | "er"
+  | "et"
+  | "br"
+  | "bce"
+  | "vad"
+  | "phone_numbers"
+  | "phone_numbers_b_emergency_phone"
+  | "phone_numbers_er"
+  | "phone_numbers_et"
+  | "phone_numbers_br"
+  | "phone_numbers_bce"
+  | "banned_establishments"
+  | "agencies";
 
 export type ConventionBaseQueryBuilder = SelectQueryBuilder<
   ConventionQueryBuilderDb,

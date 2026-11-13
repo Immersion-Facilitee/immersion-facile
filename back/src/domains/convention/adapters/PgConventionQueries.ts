@@ -61,7 +61,9 @@ import type {
 import {
   type BroadcastFeedbackBaseQueryBuilder,
   type ConventionBaseQueryBuilder,
+  type ConventionFromTables,
   type ConventionQueryBuilder,
+  type ConventionQueryBuilderDb,
   type ConventionsWithErroredBroadcastFeedbackBuilder,
   createBroadcastFeedbackCountBuilder,
   createConventionQueryBuilder,
@@ -1306,16 +1308,11 @@ export const validateConventionResults = (
     }),
   );
 
-type UnfinalizedAssessmentQueryDb = Database & {
-  b: Database["actors"];
-  er: Database["actors"];
-  et: Database["actors"];
-  br: Database["actors"];
-  bce: Database["actors"];
+type UnfinalizedAssessmentQueryDb = ConventionQueryBuilderDb & {
   ia: Database["immersion_assessments"];
 };
 
-type UnfinalizedAssessmentFromTables = keyof UnfinalizedAssessmentQueryDb;
+type UnfinalizedAssessmentFromTables = ConventionFromTables | "ia";
 
 const selectUnfinalizedAssessmentFields = <
   DB extends UnfinalizedAssessmentQueryDb,

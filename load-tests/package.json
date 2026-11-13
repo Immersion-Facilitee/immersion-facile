@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "bundle": "tsc",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "k6:ramping-arrival": "pnpm bundle && k6 run --summary-mode=full --summary-trend-stats='avg,min,med,p(90),p(95),p(99),max' dist/k6-ramping-arrival.js",
     "k6:ramping-arrival:dashboard": "pnpm bundle && K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_OPEN=true K6_WEB_DASHBOARD_EXPORT=dist/load-tests-report.html k6 run dist/k6-ramping-arrival.js"
   },

@@ -5,7 +5,7 @@
   "scripts": {
     "includecheck": "./check_includes.sh",
     "check": "pnpm -w check:glob ./libs/html-templates/src",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "fullcheck": "pnpm -w fullcheck --filter=html-templates"
   },
   "dependencies": {

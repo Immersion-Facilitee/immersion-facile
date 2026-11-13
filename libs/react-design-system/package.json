@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "check": "pnpm -w check:glob ./libs/react-design-system/src",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "make-styles": "scss-to-ts update",

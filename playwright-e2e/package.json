@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "test:e2e": "tsx start-e2e.ts",
     "test:e2e:dev": "tsx start-e2e.ts --dev",
     "test:e2e:dev:reset": "tsx start-e2e.ts --dev --reset",
