@@ -44,7 +44,6 @@ import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { type Mode, useEstablishmentRoute } from "src/app/routes/routes.hooks";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
-import { establishmentSelectors } from "src/core-logic/domain/establishment/establishment.selectors";
 import { establishmentSlice } from "src/core-logic/domain/establishment/establishment.slice";
 import { makeGeocodingLocatorSelector } from "src/core-logic/domain/geocoding/geocoding.selectors";
 import { geocodingSlice } from "src/core-logic/domain/geocoding/geocoding.slice";
@@ -693,27 +692,26 @@ const ContactModeSection = ({ mode }: { mode: Mode }) => {
 };
 
 const UserToContact = ({ mode }: { mode: Mode }): React.ReactNode => {
-  const { getValues, setValue, formState } =
+  const { getValues, watch, setValue, formState } =
     useFormContext<FormEstablishmentDto>();
   const federatedIdentity = useAppSelector(authSelectors.federatedIdentity);
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const defaultUserToContact = getValues("userRights.0");
   const contactMode = getValues("contactMode");
-  const establishment = useAppSelector(
-    establishmentSelectors.formEstablishment,
-  );
+  const formUserRights = watch("userRights");
   const getFieldError = makeFieldError(formState);
   const currentUserToContact =
-    establishment.userRights.length === 1
-      ? establishment.userRights[0]
-      : (establishment.userRights.find((userRight) => {
+    formUserRights.length === 1
+      ? formUserRights[0]
+      : (formUserRights.find((userRight) => {
           if (contactMode === "IN_PERSON") {
             return userRight.isMainContactInPerson === true;
           }
 
           return userRight.isMainContactByPhone === true;
-        }) ?? establishment.userRights[0]);
-  const usersToContactOptions: SelectProps.Option[] = establishment.userRights
+        }) ?? formUserRights[0]);
+
+  const usersToContactOptions: SelectProps.Option[] = formUserRights
     .filter(onlyUserRightWithStatusAccepted)
     .filter((userRight) =>
       contactMode === "IN_PERSON" ? true : userRight.phone,
@@ -761,17 +759,16 @@ const UserToContact = ({ mode }: { mode: Mode }): React.ReactNode => {
         placeholder="Sélectionnez un utilisateur"
         options={usersToContactOptions}
         nativeSelectProps={{
-          defaultValue: currentUserToContact?.email,
           value: currentUserToContact?.email,
           onChange: (event) => {
-            const newUserToContact = establishment.userRights.find(
+            const newUserToContact = formUserRights.find(
               (userRight) => userRight.email === event.target.value,
             );
             const contactPropToUpdate: keyof FormEstablishmentUserRight =
               contactMode === "IN_PERSON"
                 ? "isMainContactInPerson"
                 : "isMainContactByPhone";
-            const newUserRights = establishment.userRights.map((userRight) => ({
+            const newUserRights = formUserRights.map((userRight) => ({
               ...userRight,
               [contactPropToUpdate]:
                 userRight.email === newUserToContact?.email,
