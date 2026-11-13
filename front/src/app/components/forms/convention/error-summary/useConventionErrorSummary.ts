@@ -1,21 +1,29 @@
 import { type RefObject, useEffect, useRef, useState } from "react";
-import type { FormConventionFieldsLabels } from "src/app/contents/forms/convention/formConvention";
+import type { FormFieldKeys } from "src/app/contents/forms/convention/formConvention";
 import type { NumberOfSteps } from "src/core-logic/domain/convention/convention.slice";
 import {
   type ConventionEmailValidationRole,
-  type ConventionErrorSummarySection,
-  makeConventionErrorSummary,
+  makeConventionStepsInError,
 } from "./errorSummarySections";
 
 const formControlSelector =
   "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled])";
 
-const focusConventionFormField = (fieldId: string): void => {
-  const field = document.getElementById(fieldId);
-  if (!field) return;
-  const focusTarget = field.matches(formControlSelector)
-    ? field
-    : (field.querySelector<HTMLElement>(formControlSelector) ?? field);
+const fieldInErrorSelector =
+  ".fr-input-group--error, .fr-select-group--error, .fr-fieldset--error";
+
+const focusFirstFieldInError = (stepElement: HTMLElement): void => {
+  const firstControlInError = Array.from(
+    stepElement.querySelectorAll(fieldInErrorSelector),
+  )
+    .map((fieldInError) =>
+      fieldInError.querySelector<HTMLElement>(formControlSelector),
+    )
+    .find((control) => control !== null);
+  const focusTarget =
+    firstControlInError ??
+    stepElement.querySelector<HTMLElement>(formControlSelector);
+  if (!focusTarget) return;
   focusTarget.scrollIntoView({ block: "center" });
   focusTarget.focus({ preventScroll: true, focusVisible: true });
 };
@@ -24,48 +32,48 @@ export const useConventionErrorSummary = ({
   submitCount,
   errorPaths,
   rejectedEmailRoles,
-  canSelectAgency,
-  fieldsLabels,
+  formUiSections,
   openStep,
+  getStepElement,
 }: {
   submitCount: number;
   errorPaths: string[];
   rejectedEmailRoles: ConventionEmailValidationRole[];
-  canSelectAgency: boolean;
-  fieldsLabels: FormConventionFieldsLabels;
+  formUiSections: FormFieldKeys[][];
   openStep: (step: NumberOfSteps, onStepOpened: () => void) => void;
+  getStepElement: (step: NumberOfSteps) => HTMLElement | undefined;
 }): {
-  errorSummarySections: ConventionErrorSummarySection[];
+  stepsInError: NumberOfSteps[];
   errorSummaryRef: RefObject<HTMLDivElement>;
   focusErrorSummary: () => void;
-  onErrorSummarySectionClick: (section: ConventionErrorSummarySection) => void;
+  onErrorSummaryStepClick: (step: NumberOfSteps) => void;
 } => {
   const [shouldFocusErrorSummary, setShouldFocusErrorSummary] = useState(false);
   const errorSummaryRef = useRef<HTMLDivElement>(null);
 
-  const errorSummarySections =
+  const stepsInError =
     submitCount > 0
-      ? makeConventionErrorSummary({
+      ? makeConventionStepsInError({
           errorPaths,
           rejectedEmailRoles,
-          canSelectAgency,
-          fieldsLabels,
+          formUiSections,
         })
       : [];
 
   useEffect(() => {
-    if (!shouldFocusErrorSummary || errorSummarySections.length === 0) return;
+    if (!shouldFocusErrorSummary || stepsInError.length === 0) return;
     errorSummaryRef.current?.focus();
     setShouldFocusErrorSummary(false);
-  }, [shouldFocusErrorSummary, errorSummarySections.length]);
+  }, [shouldFocusErrorSummary, stepsInError.length]);
 
   return {
-    errorSummarySections,
+    stepsInError,
     errorSummaryRef,
     focusErrorSummary: () => setShouldFocusErrorSummary(true),
-    onErrorSummarySectionClick: (section) =>
-      openStep(section.step, () => {
-        focusConventionFormField(section.firstFieldId);
+    onErrorSummaryStepClick: (step) =>
+      openStep(step, () => {
+        const stepElement = getStepElement(step);
+        if (stepElement) focusFirstFieldInError(stepElement);
       }),
   };
 };

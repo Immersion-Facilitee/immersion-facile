@@ -3,22 +3,22 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import type { Ref } from "react";
 import { domElementIds } from "shared";
 import type { NumberOfSteps } from "src/core-logic/domain/convention/convention.slice";
-import type { ConventionErrorSummarySection } from "./errorSummarySections";
+import { conventionFormStepId } from "./errorSummarySections";
 
 export const ConventionErrorSummary = ({
-  sections,
+  steps,
   title,
-  sectionTitles,
+  stepTitles,
   errorSummaryRef,
-  onSectionLinkClick,
+  onStepLinkClick,
 }: {
-  sections: ConventionErrorSummarySection[];
+  steps: NumberOfSteps[];
   title: string;
-  sectionTitles: Record<NumberOfSteps, string>;
+  stepTitles: Record<NumberOfSteps, string>;
   errorSummaryRef: Ref<HTMLDivElement>;
-  onSectionLinkClick: (section: ConventionErrorSummarySection) => void;
+  onStepLinkClick: (step: NumberOfSteps) => void;
 }): JSX.Element | null => {
-  if (sections.length === 0) return null;
+  if (steps.length === 0) return null;
 
   return (
     <div
@@ -32,22 +32,22 @@ export const ConventionErrorSummary = ({
         title={title}
         description={
           <ul className={fr.cx("fr-mb-0")}>
-            {sections.map((section) => (
-              <li key={section.step}>
+            {steps.map((step) => (
+              <li key={step}>
                 <strong>
                   <a
                     id={
                       domElementIds.conventionImmersion.errorSummaryStepLink[
-                        `step${section.step}`
+                        `step${step}`
                       ]
                     }
-                    href={`#${section.firstFieldId}`}
+                    href={`#${conventionFormStepId(step)}-collapse`}
                     onClick={(event) => {
                       event.preventDefault();
-                      onSectionLinkClick(section);
+                      onStepLinkClick(step);
                     }}
                   >
-                    {`${sectionTitles[section.step]}`}
+                    {stepTitles[step]}
                   </a>
                 </strong>
               </li>

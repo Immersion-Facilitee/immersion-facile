@@ -1,35 +1,31 @@
 import {
-  domElementIds,
   type InternshipKind,
   makeConventionPresentationSchemaWithNormalizedInput,
   makeEmptyConventionInitialValues,
 } from "shared";
-import { formConventionFieldsLabels } from "src/app/contents/forms/convention/formConvention";
+import { makeFormUiSections } from "src/app/contents/forms/convention/formConvention";
 import type { NumberOfSteps } from "src/core-logic/domain/convention/convention.slice";
 import {
   type ConventionEmailValidationRole,
-  makeConventionErrorSummary,
+  makeConventionStepsInError,
 } from "./errorSummarySections";
 
-const conventionImmersionIds = domElementIds.conventionImmersion;
+const formUiSections = makeFormUiSections({
+  internshipKind: "immersion",
+  isConventionTemplate: false,
+});
 
-const summarize = ({
+const stepsInError = ({
   errorPaths = [],
   rejectedEmailRoles = [],
-  canSelectAgency = false,
 }: {
   errorPaths?: string[];
   rejectedEmailRoles?: ConventionEmailValidationRole[];
-  canSelectAgency?: boolean;
 }) =>
-  makeConventionErrorSummary({
+  makeConventionStepsInError({
     errorPaths,
     rejectedEmailRoles,
-    canSelectAgency,
-    fieldsLabels: formConventionFieldsLabels({
-      internshipKind: "immersion",
-      isConventionTemplate: false,
-    }),
+    formUiSections,
   });
 
 const errorPathsFromEmptyConvention = (
@@ -43,124 +39,52 @@ const errorPathsFromEmptyConvention = (
   return parsed.error.issues.map((issue) => issue.path.join("."));
 };
 
-describe("makeConventionErrorSummary", () => {
-  it("groups an empty form into the five sections", () => {
+describe("makeConventionStepsInError", () => {
+  it.each<InternshipKind>(["immersion", "mini-stage-cci"])(
+    "returns the five steps for an empty %s form",
+    (internshipKind) => {
+      expect(
+        stepsInError({
+          errorPaths: errorPathsFromEmptyConvention(internshipKind),
+        }),
+      ).toEqual([1, 2, 3, 4, 5]);
+    },
+  );
+
+  it("returns only the step that has an error", () => {
     expect(
-      summarize({ errorPaths: errorPathsFromEmptyConvention("immersion") }),
-    ).toEqual([
-      {
-        step: 1,
-        firstFieldId: conventionImmersionIds.conventionSection.agencyDepartment,
-      },
-      {
-        step: 2,
-        firstFieldId: conventionImmersionIds.beneficiarySection.firstName,
-      },
-      { step: 3, firstFieldId: conventionImmersionIds.conventionSection.siret },
-      {
-        step: 4,
-        firstFieldId: conventionImmersionIds.conventionSection.remoteWorkMode,
-      },
-      {
-        step: 5,
-        firstFieldId:
-          conventionImmersionIds.conventionSection.individualProtection,
-      },
-    ]);
+      stepsInError({ errorPaths: ["immersionActivities", "immersionSkills"] }),
+    ).toEqual([5]);
   });
 
-  it("returns only the section that has an error", () => {
-    expect(
-      summarize({ errorPaths: ["immersionActivities", "immersionSkills"] }),
-    ).toEqual([
-      {
-        step: 5,
-        firstFieldId:
-          conventionImmersionIds.conventionSection.immersionActivities,
-      },
-    ]);
+  it("returns no step when nothing is in error", () => {
+    expect(stepsInError({})).toEqual([]);
   });
 
   it.each<{
     role: ConventionEmailValidationRole;
     step: NumberOfSteps;
-    firstFieldId: string;
   }>([
-    {
-      role: "Bénéficiaire",
-      step: 2,
-      firstFieldId: conventionImmersionIds.beneficiarySection.email,
-    },
-    {
-      role: "Responsable d'entreprise",
-      step: 3,
-      firstFieldId:
-        conventionImmersionIds.establishmentRepresentativeSection.email,
-    },
-    {
-      role: "Tuteur de l'entreprise",
-      step: 3,
-      firstFieldId: conventionImmersionIds.establishmentTutorSection.email,
-    },
-    {
-      role: "Représentant légal du bénéficiaire",
-      step: 2,
-      firstFieldId:
-        conventionImmersionIds.beneficiaryRepresentativeSection.email,
-    },
-    {
-      role: "Employeur actuel du bénéficiaire",
-      step: 2,
-      firstFieldId:
-        conventionImmersionIds.beneficiaryCurrentEmployerSection.email,
-    },
-  ])(
-    "keeps a rejected $role email in that role's section",
-    ({ role, step, firstFieldId }) => {
-      expect(summarize({ rejectedEmailRoles: [role] })).toEqual([
-        { step, firstFieldId },
-      ]);
-    },
-  );
-
-  it("targets the department when no agency can be selected", () => {
-    expect(summarize({ errorPaths: ["agencyId"] })).toEqual([
-      {
-        step: 1,
-        firstFieldId: conventionImmersionIds.conventionSection.agencyDepartment,
-      },
-    ]);
+    { role: "Bénéficiaire", step: 2 },
+    { role: "Responsable d'entreprise", step: 3 },
+    { role: "Tuteur de l'entreprise", step: 3 },
+    { role: "Représentant légal du bénéficiaire", step: 2 },
+    { role: "Employeur actuel du bénéficiaire", step: 2 },
+  ])("keeps a rejected $role email in step $step", ({ role, step }) => {
+    expect(stepsInError({ rejectedEmailRoles: [role] })).toEqual([step]);
   });
 
-  it("targets the agency selector when an agency can be selected", () => {
+  it("returns the step of a field nested in an error on a whole object", () => {
     expect(
-      summarize({
-        errorPaths: ["agencyId"],
-        canSelectAgency: true,
+      stepsInError({ errorPaths: ["signatories.beneficiaryRepresentative"] }),
+    ).toEqual([2]);
+  });
+
+  it("returns the step of a field whose nested value is in error", () => {
+    expect(
+      stepsInError({
+        errorPaths: ["signatories.beneficiary.address.postcode"],
       }),
-    ).toEqual([
-      {
-        step: 1,
-        firstFieldId: conventionImmersionIds.conventionSection.agencyId,
-      },
-    ]);
-  });
-
-  it("targets the first representative field when the error is on the whole beneficiary representative", () => {
-    expect(
-      summarize({ errorPaths: ["signatories.beneficiaryRepresentative"] }),
-    ).toEqual([
-      {
-        step: 2,
-        firstFieldId:
-          conventionImmersionIds.beneficiaryRepresentativeSection.firstName,
-      },
-    ]);
-  });
-
-  it("targets the siret when the disabled business name is in error", () => {
-    expect(summarize({ errorPaths: ["businessName"] })).toEqual([
-      { step: 3, firstFieldId: conventionImmersionIds.conventionSection.siret },
-    ]);
+    ).toEqual([2]);
   });
 });

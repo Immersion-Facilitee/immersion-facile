@@ -48,26 +48,29 @@ export const ConventionFormProfession = ({
             .immersionAppellation,
       }}
       onAppellationSelected={(appellation) => {
-        setValue("immersionAppellation.romeCode", appellation.romeCode);
-        setValue("immersionAppellation.romeLabel", appellation.romeLabel);
         setValue(
-          "immersionAppellation.appellationCode",
-          appellation.appellationCode,
-        );
-        setValue(
-          "immersionAppellation.appellationLabel",
-          appellation.appellationLabel,
+          "immersionAppellation",
+          {
+            romeCode: appellation.romeCode,
+            romeLabel: appellation.romeLabel,
+            appellationCode: appellation.appellationCode,
+            appellationLabel: appellation.appellationLabel,
+          },
           { shouldValidate: true },
         );
       }}
       hintText={hintText}
       onAppellationClear={() => {
-        setValue("immersionAppellation.romeCode", "");
-        setValue("immersionAppellation.romeLabel", "");
-        setValue("immersionAppellation.appellationCode", "");
-        setValue("immersionAppellation.appellationLabel", "", {
-          shouldValidate: true,
-        });
+        setValue(
+          "immersionAppellation",
+          {
+            romeCode: "",
+            romeLabel: "",
+            appellationCode: "",
+            appellationLabel: "",
+          },
+          { shouldValidate: true },
+        );
       }}
       state={showAppellationError ? "error" : undefined}
       stateRelatedMessage={

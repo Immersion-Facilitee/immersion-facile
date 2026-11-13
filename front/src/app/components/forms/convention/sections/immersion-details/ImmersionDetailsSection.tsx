@@ -58,6 +58,7 @@ export const ImmersionDetailsSection = ({
               setValue(
                 "individualProtection",
                 option.nativeInputProps.value === 1,
+                { shouldValidate: true },
               );
             },
           },
@@ -157,7 +158,10 @@ export const ImmersionDetailsSection = ({
             value: option,
             label: option,
             nativeInputProps: {
-              onChange: () => setValue("immersionObjective", option),
+              onChange: () =>
+                setValue("immersionObjective", option, {
+                  shouldValidate: true,
+                }),
               checked: option === values.immersionObjective,
               value: option,
             },
