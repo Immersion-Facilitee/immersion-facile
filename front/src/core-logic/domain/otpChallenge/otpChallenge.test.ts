@@ -121,7 +121,7 @@ describe("otpChallenge slice", () => {
       expiresAt: "2026-11-11T12:30:00.000Z",
     });
 
-    expectOtpChallengeState({ isVerified: true });
+    expectOtpChallengeState(otpChallengeInitialState);
     expectToEqual(store.getState().visitorSession, {
       status: "active",
       activeSession: {
@@ -161,7 +161,6 @@ describe("otpChallenge slice", () => {
       otpChallenge: {
         maskedRecipients,
         isCodeSent: true,
-        isVerified: false,
         isLoading: false,
       },
     }));
@@ -176,7 +175,6 @@ describe("otpChallenge slice", () => {
       otpChallenge: {
         maskedRecipients,
         isCodeSent: true,
-        isVerified: true,
         isLoading: false,
       },
     }));

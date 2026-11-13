@@ -174,8 +174,6 @@ export const openConventionWithOtpAsRecipient = async (
 ): Promise<{ page: Page; context: BrowserContext }> => {
   const browser = adminPage.context().browser();
   if (!browser) throw new Error("Browser instance is not available");
-  const jwt = new URL(href).searchParams.get("jwt");
-  if (!jwt) throw new Error("Visitor OTP jwt not found in link");
 
   const context = await browser.newContext({
     storageState: { cookies: [], origins: [] },
@@ -183,7 +181,6 @@ export const openConventionWithOtpAsRecipient = async (
   const page = await context.newPage();
   await page.goto(href);
   await acceptCookiesIfBannerVisible(page);
-  await page.waitForURL(`**${frontRoutes.otpChallenge({ jwt }).href}`);
 
   await page.locator(`#${domElementIds.otpChallenge.sendCodeButton}`).click();
   const otpCodeInput = page.locator(
@@ -200,7 +197,7 @@ export const openConventionWithOtpAsRecipient = async (
   if (!otpCode) throw new Error("OTP code not found in email");
 
   await otpCodeInput.fill(otpCode);
-  await page.waitForURL(`**${frontRoutes.manageConvention({ jwt }).href}`);
+  await expect(otpCodeInput).toBeHidden();
 
   return { page, context };
 };

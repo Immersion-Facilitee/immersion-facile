@@ -27,7 +27,6 @@ import { AdminPrivateRoutePage } from "src/app/pages/auth/AdminPrivateRoutePage"
 import { ConnectedPrivateRoutePage } from "src/app/pages/auth/ConnectedPrivateRoutePage";
 import { DashboardPrivateRoutePage } from "src/app/pages/auth/DashboardPrivateRoutePage";
 import { MagicLinkInterstitialPage } from "src/app/pages/auth/MagicLinkInterstitialPage";
-import { OtpChallengePage } from "src/app/pages/auth/OtpChallengePage";
 import { VisitorPrivateRoutePage } from "src/app/pages/auth/VisitorPrivateRoutePage";
 import { BeneficiaryDashboardPage } from "src/app/pages/beneficiary-dashboard/BeneficiaryDashboardPage";
 import { ArchivedConventionRequestPage } from "src/app/pages/convention/ArchivedConventionRequestPage";
@@ -378,7 +377,6 @@ const getPageByRouteName: {
     return <OpenApiDocV2Page />;
   },
   magicLinkInterstitial: () => <MagicLinkInterstitialPage />,
-  otpChallenge: (route) => <OtpChallengePage route={route} />,
   search: () => <SearchPage key="internal-search" />,
   externalSearch: () => <SearchPage key="external-search" />,
   searchForStudent: () => <SearchPage />,

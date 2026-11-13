@@ -5,7 +5,8 @@ type FrontRoutesKeys =
   | "home"
   | "header"
   | "footer"
-  | "login";
+  | "login"
+  | "otpChallenge";
 
 type FrontRouteParametrizedKeys =
   | "mode"

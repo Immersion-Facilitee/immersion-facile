@@ -14,14 +14,12 @@ import type {
 export type OtpChallengeState = {
   maskedRecipients: MaskedOtpRecipients | null;
   isCodeSent: boolean;
-  isVerified: boolean;
   isLoading: boolean;
 };
 
 export const otpChallengeInitialState: OtpChallengeState = {
   maskedRecipients: null,
   isCodeSent: false,
-  isVerified: false,
   isLoading: false,
 };
 
@@ -85,14 +83,12 @@ export const otpChallengeSlice = createSlice({
       }>,
     ) => {
       state.isLoading = false;
-      state.isVerified = true;
     },
     otpChallengeVerificationFailed: (
       state,
       _action: PayloadActionWithFeedbackTopicError,
     ) => {
       state.isLoading = false;
-      state.isVerified = false;
     },
 
     otpChannelChangeRequested: (state) => {
