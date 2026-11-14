@@ -1,21 +1,12 @@
 import type {
   AbsoluteUrl,
-  AgencyRefersToInConvention,
-  ConventionReadDto,
-  PartnerAgencyKind,
   SubscriberErrorFeedback,
   SubscriptionParams,
 } from "shared";
+import type { BroadcastPayload } from "../../../convention/use-cases/broadcast/broadcastConvention.dto";
 
 export type ConventionUpdatedSubscriptionCallbackBody = {
-  payload: {
-    convention: Omit<ConventionReadDto, "agencyKind" | "agencyRefersTo"> & {
-      agencyKind: PartnerAgencyKind;
-      agencyRefersTo?: Omit<AgencyRefersToInConvention, "kind"> & {
-        kind: PartnerAgencyKind;
-      };
-    };
-  };
+  payload: BroadcastPayload;
   subscribedEvent: "convention.updated";
 };
 

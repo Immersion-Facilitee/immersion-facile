@@ -1,5 +1,4 @@
 import {
-  type AgencyDto,
   type AgencyId,
   type AssessmentDto,
   agencyIdSchema,
@@ -10,7 +9,6 @@ import {
   sliceTextUpToBytesLimit,
 } from "shared";
 import z from "zod";
-import { toPartnerAgencyKind } from "../../../../utils/agency";
 import { isAxiosError } from "../../../../utils/axiosUtils";
 import {
   broadcastToFtConsumerName,
@@ -22,39 +20,29 @@ import { getLinkedAgenciesFromAgencyId } from "../../entities/Convention";
 import { shouldBroadcastToFranceTravail } from "../../helpers/broadcast.helpers";
 import {
   type FranceTravailBroadcastResponse,
-  type FranceTravailConventionReadDto,
   type FranceTravailGateway,
   isBroadcastSuccessResponse,
-  notifyFranceTravailOnConventionUpdatedParamsSchema,
 } from "../../ports/FranceTravailGateway";
+import type { BroadcastConventionDto } from "./broadcastConvention.dto";
+import { broadcastPayloadSchema } from "./broadcastConvention.schema";
 import type { BroadcastConventionParams } from "./broadcastConventionParams";
+import {
+  toBroadcastAssessment,
+  toBroadcastConvention,
+} from "./toBroadcastConvention";
 
 export const broadcastToFranceTravailOnConventionUpdatesInputSchema: z.ZodType<
   BroadcastConventionParams,
-  | {
-      eventType: "CONVENTION_UPDATED";
-      convention: ConventionReadDto;
-      previousAgencyId?: AgencyId;
-      assessment?: AssessmentDto;
-    }
-  | {
-      eventType: "ASSESSMENT_CREATED";
-      convention: ConventionReadDto;
-      assessment: AssessmentDto;
-    }
-> = z.union([
-  z.object({
-    eventType: z.literal("CONVENTION_UPDATED"),
-    convention: conventionReadSchema,
-    previousAgencyId: agencyIdSchema.optional(),
-    assessment: assessmentDtoSchema.optional(),
-  }),
-  z.object({
-    eventType: z.literal("ASSESSMENT_CREATED"),
-    convention: conventionReadSchema,
-    assessment: assessmentDtoSchema,
-  }),
-]);
+  {
+    convention: ConventionReadDto;
+    previousAgencyId?: AgencyId;
+    assessment?: AssessmentDto;
+  }
+> = z.object({
+  convention: conventionReadSchema,
+  previousAgencyId: agencyIdSchema.optional(),
+  assessment: assessmentDtoSchema.optional(),
+});
 
 export type BroadcastToFranceTravailOnConventionUpdates = ReturnType<
   typeof makeBroadcastToFranceTravailOnConventionUpdates
@@ -83,9 +71,7 @@ export const makeBroadcastToFranceTravailOnConventionUpdates = useCaseBuilder(
     });
 
     const previousLinkedAgencies =
-      inputParams.eventType === "CONVENTION_UPDATED" &&
-      inputParams.previousAgencyId &&
-      !shouldBroadcastForCurrentAgency
+      inputParams.previousAgencyId && !shouldBroadcastForCurrentAgency
         ? await getLinkedAgenciesFromAgencyId(uow, inputParams.previousAgencyId)
         : undefined;
 
@@ -118,13 +104,14 @@ export const makeBroadcastToFranceTravailOnConventionUpdates = useCaseBuilder(
       return;
     }
 
+    const assessment = toBroadcastAssessment(inputParams.assessment);
+
     const response = await deps.franceTravailGateway.notifyOnConventionUpdated(
-      notifyFranceTravailOnConventionUpdatedParamsSchema.parse({
-        ...inputParams,
-        convention: makeFranceTravailSupportedConvention(
-          inputParams.convention,
-          agency,
+      broadcastPayloadSchema.parse({
+        convention: applyFranceTravailFieldLimits(
+          toBroadcastConvention(inputParams.convention, agency, refersToAgency),
         ),
+        ...(assessment ? { assessment } : {}),
       }),
     );
 
@@ -159,37 +146,23 @@ export const makeBroadcastToFranceTravailOnConventionUpdates = useCaseBuilder(
     });
   });
 
-const makeFranceTravailSupportedConvention = (
-  convention: ConventionReadDto,
-  agency: AgencyDto,
-): FranceTravailConventionReadDto => {
-  const { agencyKind, agencyRefersTo, ...rest } = convention;
-  return {
-    ...rest,
-    agencyKind: toPartnerAgencyKind(agencyKind),
-    ...(agencyRefersTo
-      ? {
-          agencyRefersTo: {
-            ...agencyRefersTo,
-            kind: toPartnerAgencyKind(agencyRefersTo.kind),
-          },
-        }
-      : {}),
-    establishmentTutor: {
-      ...convention.establishmentTutor,
-      job: sliceTextUpToBytesLimit(convention.establishmentTutor.job, 255),
-    },
-    sanitaryPreventionDescription: sliceTextUpToBytesLimit(
-      cleanSpecialChars(convention.sanitaryPreventionDescription),
-      255,
-    ),
-    individualProtectionDescription: sliceTextUpToBytesLimit(
-      cleanSpecialChars(convention.individualProtectionDescription),
-      255,
-    ),
-    agencyValidatorEmails: agency.validatorEmails,
-  };
-};
+const applyFranceTravailFieldLimits = (
+  convention: BroadcastConventionDto,
+): BroadcastConventionDto => ({
+  ...convention,
+  establishmentTutor: {
+    ...convention.establishmentTutor,
+    job: sliceTextUpToBytesLimit(convention.establishmentTutor.job, 255),
+  },
+  sanitaryPreventionDescription: sliceTextUpToBytesLimit(
+    cleanSpecialChars(convention.sanitaryPreventionDescription),
+    255,
+  ),
+  individualProtectionDescription: sliceTextUpToBytesLimit(
+    cleanSpecialChars(convention.individualProtectionDescription),
+    255,
+  ),
+});
 
 const isBroadcastTimeoutError = (
   response: FranceTravailBroadcastResponse,

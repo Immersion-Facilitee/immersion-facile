@@ -834,14 +834,6 @@ export const createUseCases = ({
       makeBroadcastToFranceTravailOrchestrator({
         uowPerformer,
         broadcastToFranceTravailOnConventionUpdates,
-        eventType: "CONVENTION_UPDATED",
-      }),
-
-    broadcastToFranceTravailOnAssessmentCreated:
-      makeBroadcastToFranceTravailOrchestrator({
-        uowPerformer,
-        broadcastToFranceTravailOnConventionUpdates,
-        eventType: "ASSESSMENT_CREATED",
       }),
 
     broadcastToPartnersOnConventionUpdates:
