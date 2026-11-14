@@ -7,7 +7,7 @@
   "scripts": {
     "start": "tsx src/server.ts",
     "dev": "tsx watch src/server.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "test": "jest --testRegex=.unit.test.ts",
     "check": "pnpm -w check:glob ./mcp/src",
     "fullcheck": "pnpm -w fullcheck --filter=mcp",

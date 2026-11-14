@@ -73,7 +73,7 @@
     "trigger-deactivate-unresponsive-establishments": "tsx src/scripts/triggerDeactivateUnresponsiveEstablishments.ts",
     "trigger-verify-and-fix-phones": "tsx src/scripts/triggerVerifyAndFixPhones.ts",
     "trigger-update-establishment-marketing-naf-code": "tsx src/scripts/triggerUpdateEstablishmentMarketingNafCode.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "verify-migrations-order": "./src/scripts/verifyDatabaseMigrationsOrder.sh"
   },
   "keywords": [],

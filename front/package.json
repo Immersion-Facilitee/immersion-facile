@@ -13,7 +13,7 @@
     "build-scalingo": "rm -rf scalingo/dist && vite build && mv dist scalingo/dist && cp env.sh scalingo/dist && tar -czf front-build.tar.gz scalingo",
     "build": "vite build && export $(cat .env | grep 'VITE_' | xargs) && pnpm setup-env-vars-build",
     "serve": "vite preview --port 5001",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "includecheck": "./check_includes.sh",
     "check": "pnpm -w check:glob ./front/src",
     "fullcheck": "pnpm -w fullcheck --filter=front",
