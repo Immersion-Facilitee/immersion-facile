@@ -122,11 +122,17 @@ export const EstablishmentFormSection = ({
                 Boolean(option.nativeInputProps.value) ===
                 isTutorEstablishmentRepresentative,
               onChange: () => {
+                const isTutorRepresentative =
+                  option.nativeInputProps.value === 1;
                 dispatch(
                   conventionSlice.actions.isTutorEstablishmentRepresentativeChanged(
-                    option.nativeInputProps.value === 1,
+                    isTutorRepresentative,
                   ),
                 );
+                if (isTutorRepresentative)
+                  setEmailValidationErrors(
+                    ({ "Tuteur de l'entreprise": _, ...rest }) => rest,
+                  );
                 if (shouldResetTutorFields()) {
                   resetTutorFields();
                 }

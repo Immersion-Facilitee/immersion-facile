@@ -146,6 +146,7 @@ export const RSAutocomplete = <T, L>({
 }: RSAutocompleteProps<T, L>) => {
   const { cx } = useStyles();
   const CustomizedOption = selectProps?.components?.Option;
+  const errorMessageId = `${selectProps?.inputId}-error-desc-error`;
   return (
     <div
       className={cx(
@@ -163,6 +164,8 @@ export const RSAutocomplete = <T, L>({
       </label>
       <Select
         {...selectProps}
+        aria-invalid={state === "error"}
+        aria-errormessage={state === "error" ? errorMessageId : undefined}
         classNamePrefix={prefix}
         className={cx(
           `${prefix}`,
@@ -229,7 +232,9 @@ export const RSAutocomplete = <T, L>({
         <p className="fr-info-text">{stateRelatedMessage}</p>
       )}
       {state === "error" && (
-        <p className="fr-error-text">{stateRelatedMessage}</p>
+        <p id={errorMessageId} className="fr-error-text">
+          {stateRelatedMessage}
+        </p>
       )}
     </div>
   );

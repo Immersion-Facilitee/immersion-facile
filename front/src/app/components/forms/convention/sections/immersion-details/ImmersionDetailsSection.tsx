@@ -12,16 +12,20 @@ import {
 import { ConventionFormProfession } from "src/app/components/forms/convention/ConventionFormProfession";
 import { booleanSelectOptions } from "src/app/contents/forms/common/values";
 import { formConventionFieldsLabels } from "src/app/contents/forms/convention/formConvention";
-import { getFormContents } from "src/app/hooks/formContents.hooks";
+import {
+  getFormContents,
+  makeFieldError,
+} from "src/app/hooks/formContents.hooks";
 
 export const ImmersionDetailsSection = ({
   isConventionTemplate,
 }: {
   isConventionTemplate: boolean;
 }): JSX.Element => {
-  const { setValue, getValues, register, watch } =
+  const { setValue, getValues, register, watch, formState } =
     useFormContext<ConventionReadDto>();
   const values = getValues();
+  const getFieldError = makeFieldError(formState);
 
   const hasIndividualProtection = watch("individualProtection");
   const hasSanitaryPrevention = watch("sanitaryPrevention");
@@ -54,10 +58,12 @@ export const ImmersionDetailsSection = ({
               setValue(
                 "individualProtection",
                 option.nativeInputProps.value === 1,
+                { shouldValidate: true },
               );
             },
           },
         }))}
+        {...getFieldError("individualProtection")}
       />
 
       {hasIndividualProtection && (
@@ -68,6 +74,7 @@ export const ImmersionDetailsSection = ({
             ...formContents.individualProtectionDescription,
             ...register("individualProtectionDescription"),
           }}
+          {...getFieldError("individualProtectionDescription")}
         />
       )}
 
@@ -111,6 +118,7 @@ export const ImmersionDetailsSection = ({
             },
           },
         }))}
+        {...getFieldError("sanitaryPrevention")}
       />
 
       {hasSanitaryPrevention && (
@@ -121,6 +129,7 @@ export const ImmersionDetailsSection = ({
             ...formContents.sanitaryPreventionDescription,
             ...register("sanitaryPreventionDescription"),
           }}
+          {...getFieldError("sanitaryPreventionDescription")}
         />
       )}
       {values.internshipKind === "mini-stage-cci" && (
@@ -149,11 +158,15 @@ export const ImmersionDetailsSection = ({
             value: option,
             label: option,
             nativeInputProps: {
-              onChange: () => setValue("immersionObjective", option),
+              onChange: () =>
+                setValue("immersionObjective", option, {
+                  shouldValidate: true,
+                }),
               checked: option === values.immersionObjective,
               value: option,
             },
           }))}
+        {...getFieldError("immersionObjective")}
       />
 
       <ConventionFormProfession {...formContents.immersionAppellation} />
@@ -165,12 +178,13 @@ export const ImmersionDetailsSection = ({
           ...formContents.workConditions,
           ...register("workConditions"),
         }}
-        {...(isRemotableWorkMode(values.remoteWorkMode)
-          ? {
-              state: "info",
-              stateRelatedMessage: `Vous avez indiqué du télétravail pour cette immersion, indiquez ici le lieu de télétravail (ex. domicile, espace de coworking...). Cela fait partie des conditions réelles du poste et doit être précisé pour sécuriser le cadre de l'immersion.`,
-            }
-          : undefined)}
+        {...(getFieldError("workConditions") ??
+          (isRemotableWorkMode(values.remoteWorkMode)
+            ? {
+                state: "info",
+                stateRelatedMessage: `Vous avez indiqué du télétravail pour cette immersion, indiquez ici le lieu de télétravail (ex. domicile, espace de coworking...). Cela fait partie des conditions réelles du poste et doit être précisé pour sécuriser le cadre de l'immersion.`,
+              }
+            : undefined))}
       />
 
       {values.internshipKind === "mini-stage-cci" && (
@@ -190,6 +204,7 @@ export const ImmersionDetailsSection = ({
           ...formContents.businessAdvantages,
           ...register("businessAdvantages"),
         }}
+        {...getFieldError("businessAdvantages")}
       />
       <Input
         label={formContents.immersionActivities.label}
@@ -199,6 +214,7 @@ export const ImmersionDetailsSection = ({
           ...formContents.immersionActivities,
           ...register("immersionActivities"),
         }}
+        {...getFieldError("immersionActivities")}
       />
       {values.internshipKind === "mini-stage-cci" && (
         <Alert
@@ -220,6 +236,7 @@ export const ImmersionDetailsSection = ({
           ...formContents.immersionSkills,
           ...register("immersionSkills"),
         }}
+        {...getFieldError("immersionSkills")}
       />
     </>
   );

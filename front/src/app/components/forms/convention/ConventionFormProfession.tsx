@@ -1,13 +1,7 @@
-import { fr } from "@codegouvfr/react-dsfr";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import type { ReactNode } from "react";
-import { TextInputError } from "react-design-system";
 import { useFormContext } from "react-hook-form";
-import {
-  type AppellationAndRomeDto,
-  type ConventionReadDto,
-  domElementIds,
-} from "shared";
+import { type ConventionReadDto, domElementIds } from "shared";
 import { AppellationAutocomplete } from "src/app/components/forms/autocomplete/AppellationAutocomplete";
 
 type ConventionFormProfessionProps = {
@@ -23,14 +17,15 @@ export const ConventionFormProfession = ({
 }: ConventionFormProfessionProps) => {
   const {
     setValue,
-    formState: { errors, touchedFields },
+    formState: { errors, submitCount },
     getValues,
   } = useFormContext<ConventionReadDto>();
 
-  const error =
-    touchedFields.immersionAppellation &&
-    (errors.immersionAppellation as Partial<AppellationAndRomeDto>)
-      ?.appellationLabel;
+  const appellationErrorMessage =
+    errors.immersionAppellation?.message ??
+    errors.immersionAppellation?.appellationLabel?.message;
+  const showAppellationError =
+    appellationErrorMessage !== undefined && submitCount > 0;
 
   if (disabled)
     return (
@@ -44,36 +39,43 @@ export const ConventionFormProfession = ({
       />
     );
   return (
-    <div className={fr.cx("fr-input-group")}>
-      <AppellationAutocomplete
-        locator="convention-profession"
-        label={label}
-        selectProps={{
-          inputId:
-            domElementIds.conventionImmersion.conventionSection
-              .immersionAppellation,
-        }}
-        onAppellationSelected={(appellation) => {
-          setValue("immersionAppellation.romeCode", appellation.romeCode);
-          setValue("immersionAppellation.romeLabel", appellation.romeLabel);
-          setValue(
-            "immersionAppellation.appellationCode",
-            appellation.appellationCode,
-          );
-          setValue(
-            "immersionAppellation.appellationLabel",
-            appellation.appellationLabel,
-          );
-        }}
-        hintText={hintText}
-        onAppellationClear={() => {
-          setValue("immersionAppellation.romeCode", "");
-          setValue("immersionAppellation.romeLabel", "");
-          setValue("immersionAppellation.appellationCode", "");
-          setValue("immersionAppellation.appellationLabel", "");
-        }}
-      />
-      {error && <TextInputError errorMessage={error} />}
-    </div>
+    <AppellationAutocomplete
+      locator="convention-profession"
+      label={label}
+      selectProps={{
+        inputId:
+          domElementIds.conventionImmersion.conventionSection
+            .immersionAppellation,
+      }}
+      onAppellationSelected={(appellation) => {
+        setValue(
+          "immersionAppellation",
+          {
+            romeCode: appellation.romeCode,
+            romeLabel: appellation.romeLabel,
+            appellationCode: appellation.appellationCode,
+            appellationLabel: appellation.appellationLabel,
+          },
+          { shouldValidate: true },
+        );
+      }}
+      hintText={hintText}
+      onAppellationClear={() => {
+        setValue(
+          "immersionAppellation",
+          {
+            romeCode: "",
+            romeLabel: "",
+            appellationCode: "",
+            appellationLabel: "",
+          },
+          { shouldValidate: true },
+        );
+      }}
+      state={showAppellationError ? "error" : undefined}
+      stateRelatedMessage={
+        showAppellationError ? appellationErrorMessage : undefined
+      }
+    />
   );
 };

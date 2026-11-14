@@ -20,7 +20,6 @@ import {
 import {
   ConventionFormLayout,
   ConventionFormSidebar,
-  ErrorNotifications,
   Loader,
   useScrollTo,
 } from "react-design-system";
@@ -92,7 +91,6 @@ import {
   displayReadableError,
   getFormContents,
   makeFieldError,
-  toErrorsWithLabels,
 } from "src/app/hooks/formContents.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useConventionRoute } from "src/app/routes/routes.hooks";
@@ -114,18 +112,17 @@ import { geocodingSlice } from "src/core-logic/domain/geocoding/geocoding.slice"
 import { siretSelectors } from "src/core-logic/domain/siret/siret.selectors";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import { useStyles } from "tss-react/dsfr";
+import { ConventionErrorSummary } from "./error-summary/ConventionErrorSummary";
+import {
+  type ConventionEmailValidationRole,
+  conventionFormStepId,
+} from "./error-summary/errorSummarySections";
+import { useConventionErrorSummary } from "./error-summary/useConventionErrorSummary";
 import { ShareConventionDraft } from "./ShareConventionDraft";
 
 type StepSeverity = "error" | "success" | "info";
 export type EmailValidationErrorsState = Partial<
-  Record<
-    | "Bénéficiaire"
-    | "Responsable d'entreprise"
-    | "Tuteur de l'entreprise"
-    | "Représentant légal du bénéficiaire"
-    | "Employeur actuel du bénéficiaire",
-    ReactNode
-  >
+  Record<ConventionEmailValidationRole, ReactNode>
 >;
 export type SetEmailValidationErrorsState = Dispatch<
   SetStateAction<EmailValidationErrorsState>
@@ -448,12 +445,11 @@ const ConventionFormContent = ({
 
   const conventionValues = getValues();
 
-  const { getFormFields, getFormErrors } = getFormContents(
-    formConventionFieldsLabels({
-      internshipKind: conventionValues.internshipKind,
-      isConventionTemplate: isTemplateForm,
-    }),
-  );
+  const conventionFieldsLabels = formConventionFieldsLabels({
+    internshipKind: conventionValues.internshipKind,
+    isConventionTemplate: isTemplateForm,
+  });
+  const { getFormFields } = getFormContents(conventionFieldsLabels);
   const getFieldError = makeFieldError(formState);
   const formContents = getFormFields();
 
@@ -549,7 +545,41 @@ const ConventionFormContent = ({
     }
   };
 
+  const accordionsRef = useRef<Array<ElementRef<"div">>>([]);
+
+  const [emailValidationErrors, setEmailValidationErrors] =
+    useState<EmailValidationErrorsState>({});
+
+  const openStep = (step: NumberOfSteps, onStepOpened: () => void): void => {
+    // we need to wait for the accordion to shrink / expand before scrolling or focusing (otherwise the position is not accurate)
+    setTimeout(onStepOpened, 400);
+    dispatch(conventionSlice.actions.setCurrentStep(step));
+  };
+
+  const formUiSections = makeFormUiSections({
+    internshipKind: conventionValues.internshipKind,
+    isConventionTemplate: isTemplateForm,
+  });
+
+  const {
+    stepsInError,
+    errorSummaryRef,
+    focusErrorSummary,
+    onErrorSummaryStepClick,
+  } = useConventionErrorSummary({
+    submitCount,
+    errorPaths: keys(displayReadableError(errors)),
+    rejectedEmailRoles: keys(emailValidationErrors),
+    formUiSections,
+    openStep,
+    getStepElement: (step) => accordionsRef.current[step - 1],
+  });
+
   const onSubmit: SubmitHandler<ConventionFormInitialValues> = (convention) => {
+    if (keys(emailValidationErrors).length > 0) {
+      focusErrorSummary();
+      return;
+    }
     const selectedAgency = agencyOptions.find(
       (agencyOption) => agencyOption.id === convention.agencyId,
     );
@@ -561,13 +591,11 @@ const ConventionFormContent = ({
     saveConventionTemplate(convention, selectedAgency);
   };
 
-  const accordionsRef = useRef<Array<ElementRef<"div">>>([]);
-
-  const [emailValidationErrors, setEmailValidationErrors] =
-    useState<EmailValidationErrorsState>({});
-
-  const shouldSubmitButtonBeDisabled =
-    isLoading || keys(emailValidationErrors).length > 0;
+  const onVerifyConvention = handleSubmit(onSubmit, (invalidErrors) => {
+    focusErrorSummary();
+    // biome-ignore lint/suspicious/noConsole: debug purpose
+    console.error(conventionValues, invalidErrors);
+  });
 
   const {
     agencyId: agencyIdField,
@@ -590,30 +618,31 @@ const ConventionFormContent = ({
     [dispatch, conventionValues.internshipKind, federatedIdentity],
   );
 
+  const clearErrorsBeforeFirstSubmit = (): void => {
+    if (submitCount > 0) return;
+    // biome-ignore lint/suspicious/noConsole: debug purpose
+    console.info("CLEAR ALL ERRORS");
+    clearErrors();
+  };
+
   const makeAccordionProps = (step: NumberOfSteps) => ({
     ref: (element: HTMLDivElement) => {
       accordionsRef.current[step - 1] = element;
       return element;
     },
-    onExpandedChange: async () => {
-      await validateSteps("clearAllErrors");
-      setTimeout(() => {
-        // we need to wait for the accordion to shrink / expand before scrolling (otherwise the scroll is not accurate)
+    onExpandedChange: () => {
+      clearErrorsBeforeFirstSubmit();
+      openStep(step, () => {
         accordionsRef.current[step - 1]?.scrollIntoView({
           behavior: "smooth",
         });
-      }, 400);
-      dispatch(conventionSlice.actions.setCurrentStep(step));
+      });
     },
     expanded: currentStep === step,
-    id: `im-convention-form__step-${step - 1}`,
+    id: conventionFormStepId(step),
   });
 
   const conventionIsLoading = isLoading || !reduxFormUiReady;
-  const formUiSections = makeFormUiSections({
-    internshipKind: conventionValues.internshipKind,
-    isConventionTemplate: isTemplateForm,
-  });
 
   const stepsStatus = useMemo(() => {
     const parseResult = presentationSchema.safeParse(conventionValues);
@@ -649,14 +678,6 @@ const ConventionFormContent = ({
     );
   }, [conventionValues, presentationSchema, formUiSections, getFieldState]);
 
-  const validateSteps = async (type: "clearAllErrors" | "doNotClear") => {
-    if (type === "clearAllErrors") {
-      // biome-ignore lint/suspicious/noConsole: debug purpose
-      console.info("CLEAR ALL ERRORS");
-      clearErrors();
-    }
-  };
-
   const submitButtonLabel = useMemo(() => {
     if (isTemplateForm) {
       return mode === "create-convention-template"
@@ -675,7 +696,7 @@ const ConventionFormContent = ({
 
   useEffect(() => {
     if (mode === "edit-convention") {
-      validateSteps("clearAllErrors");
+      clearErrorsBeforeFirstSubmit();
     }
   }, [conventionValues.id]);
 
@@ -798,6 +819,7 @@ const ConventionFormContent = ({
                     ...register("name"),
                     id: domElementIds.conventionTemplate.form.nameInput,
                   }}
+                  {...getFieldError("name")}
                 />
               )}
               <div className={fr.cx("fr-accordions-group")}>
@@ -934,7 +956,9 @@ const ConventionFormContent = ({
                         checked:
                           conventionValues.remoteWorkMode === remoteWorkMode,
                         onChange: () => {
-                          setValue("remoteWorkMode", remoteWorkMode);
+                          setValue("remoteWorkMode", remoteWorkMode, {
+                            shouldValidate: true,
+                          });
                         },
                       },
                     }))}
@@ -1002,39 +1026,23 @@ const ConventionFormContent = ({
                 </Accordion>
               </div>
 
-              <ErrorNotifications
-                errorsWithLabels={toErrorsWithLabels({
-                  errors: displayReadableError(errors),
-                  labels: getFormErrors(),
-                })}
-                visible={submitCount !== 0 && Object.values(errors).length > 0}
+              <ConventionErrorSummary
+                steps={stepsInError}
+                title={t.errorSummary.title}
+                stepTitles={{
+                  1: t.agencySection.title,
+                  2: t.beneficiarySection.title,
+                  3: t.establishmentSection.title,
+                  4: t.immersionHourLocationSection.title,
+                  5: t.immersionDetailsSection.title,
+                }}
+                errorSummaryRef={errorSummaryRef}
+                onStepLinkClick={onErrorSummaryStepClick}
               />
-              {keys(emailValidationErrors).length > 0 && (
-                <Alert
-                  severity="error"
-                  className={fr.cx("fr-my-2w")}
-                  title="Certains emails ne sont pas valides"
-                  description={
-                    <>
-                      <p>
-                        Notre vérificateur d'email a détecté des emails non
-                        valides dans votre convention.
-                      </p>
-                      <ul>
-                        {keys(emailValidationErrors).map((key) => (
-                          <li key={key}>
-                            {key} : {emailValidationErrors[key]}
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  }
-                />
-              )}
 
               <div className={fr.cx("fr-mt-4w", "fr-hidden", "fr-unhidden-lg")}>
                 <Button
-                  disabled={shouldSubmitButtonBeDisabled}
+                  disabled={isLoading}
                   iconId="fr-icon-checkbox-circle-line"
                   iconPosition="left"
                   type="button"
@@ -1043,11 +1051,7 @@ const ConventionFormContent = ({
                       ? domElementIds.conventionTemplate.form.submitFormButton
                       : domElementIds.conventionImmersion.submitFormButton,
                   }}
-                  onClick={handleSubmit(onSubmit, (errors) => {
-                    validateSteps("doNotClear");
-                    // biome-ignore lint/suspicious/noConsole: debug purpose
-                    console.error(conventionValues, errors);
-                  })}
+                  onClick={onVerifyConvention}
                 >
                   {submitButtonLabel}
                 </Button>
@@ -1077,6 +1081,7 @@ const ConventionFormContent = ({
                     />
                   )}
                 <Button
+                  disabled={isLoading}
                   type="button"
                   id={
                     isTemplateForm
@@ -1084,11 +1089,7 @@ const ConventionFormContent = ({
                           .submitFormButtonMobile
                       : domElementIds.conventionImmersion.submitFormButtonMobile
                   }
-                  onClick={handleSubmit(onSubmit, (errors) => {
-                    validateSteps("doNotClear");
-                    // biome-ignore lint/suspicious/noConsole: debug purpose
-                    console.error(conventionValues, errors);
-                  })}
+                  onClick={onVerifyConvention}
                 >
                   {submitButtonLabel}
                 </Button>
