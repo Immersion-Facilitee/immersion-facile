@@ -71,6 +71,27 @@ describe("makeConventionPresentationSchemaWithNormalizedInput", () => {
       },
     );
 
+    it("keeps a complete beneficiary address with an empty street", () => {
+      const conventionTemplate: CreateConventionTemplatePresentationInitialValues =
+        {
+          id: validConventionId,
+          name: "Modèle mini-stage",
+          internshipKind: "mini-stage-cci",
+          signatories: {
+            beneficiary: {
+              address: {
+                streetNumberAndAddress: "",
+                postcode: "75001",
+                departmentCode: "75",
+                city: "Paris",
+              },
+            },
+          },
+        };
+
+      expectToEqual(schema.parse(conventionTemplate), conventionTemplate);
+    });
+
     it("ignores the agency kind filter when all agency kinds are selected", () => {
       expectToEqual(
         schema.parse({

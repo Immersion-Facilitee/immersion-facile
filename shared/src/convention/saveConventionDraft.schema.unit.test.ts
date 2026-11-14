@@ -179,6 +179,72 @@ describe("conventionDraftSchema schema validation", () => {
     expect(() => conventionDraftSchema.parse(convention)).not.toThrow();
   });
 
+  it("treats empty strings as missing values outside whole objects", () => {
+    const address = {
+      streetNumberAndAddress: "",
+      postcode: "75001",
+      departmentCode: "75",
+      city: "Paris",
+    };
+
+    expectToEqual(
+      conventionDraftSchema.parse({
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "mini-stage-cci",
+        businessName: "",
+        agencyDepartment: "",
+        agencyKind: "",
+        signatories: { beneficiary: { email: "", address } },
+      }),
+      {
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "mini-stage-cci",
+        signatories: { beneficiary: { address } },
+      },
+    );
+  });
+
+  it("accepts empty mini-stage fields on an immersion draft", () => {
+    expectToEqual(
+      conventionDraftSchema.parse({
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "immersion",
+        signatories: {
+          beneficiary: {
+            email: "beneficiary@test.com",
+            schoolName: "",
+            schoolPostcode: "",
+            levelOfEducation: "",
+          },
+        },
+      }),
+      {
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "immersion",
+        signatories: { beneficiary: { email: "beneficiary@test.com" } },
+      },
+    );
+  });
+
+  it("treats a cleared appellation as missing", () => {
+    expectToEqual(
+      conventionDraftSchema.parse({
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "immersion",
+        immersionAppellation: {
+          appellationCode: "",
+          appellationLabel: "",
+          romeCode: "",
+          romeLabel: "",
+        },
+      }),
+      {
+        id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+        internshipKind: "immersion",
+      },
+    );
+  });
+
   it("ignores the agency kind filter when all agency kinds are selected", () => {
     expectToEqual(
       conventionDraftSchema.parse({
@@ -218,7 +284,26 @@ describe("conventionDraftSchema schema validation", () => {
         },
       },
     } satisfies ConventionDraftDto,
-  ])("throws on invalid data", (convention: ConventionDraftDto) => {
+    {
+      id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+      internshipKind: "mini-stage-cci",
+      signatories: {
+        beneficiary: {
+          address: { postcode: "75000" },
+        },
+      },
+    },
+    {
+      id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+      internshipKind: "immersion",
+      schedule: { totalHours: 35 },
+    },
+    {
+      id: "aaaaac99-9c0b-1aaa-aa6d-6bb9bd38aaaa",
+      internshipKind: "immersion",
+      immersionAppellation: { appellationCode: "11111" },
+    },
+  ])("throws on invalid data", (convention: unknown) => {
     expect(() => conventionDraftSchema.parse(convention)).toThrow();
   });
 });
