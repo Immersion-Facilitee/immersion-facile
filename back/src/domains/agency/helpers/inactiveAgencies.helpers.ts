@@ -4,6 +4,7 @@ import {
   type AgencyKind,
   type AgencyStatus,
   type AgencyWithUsersRights,
+  activeAgencyStatuses,
   type ConventionStatus,
   conventionStatuses,
   executeInSequence,
@@ -127,4 +128,35 @@ export const isAgencyActiveAfterWarning = async (params: {
     since: warningCreatedAt,
     uow,
   });
+};
+
+export const referringAgencyClosureJustification =
+  "Agence fermée car l'agence prescriptrice a été fermée";
+
+export const closeReferringAgencies = async ({
+  uow,
+  agencyId,
+  now,
+}: {
+  uow: UnitOfWork;
+  agencyId: AgencyId;
+  now: Date;
+}): Promise<AgencyId[]> => {
+  const referringAgencies =
+    await uow.agencyRepository.getAgenciesRelatedToAgency(agencyId);
+
+  const referringAgenciesToClose = referringAgencies.filter((referringAgency) =>
+    activeAgencyStatuses.includes(referringAgency.status),
+  );
+
+  await executeInSequence(referringAgenciesToClose, (referringAgency) =>
+    uow.agencyRepository.update({
+      id: referringAgency.id,
+      status: "closed",
+      statusJustification: referringAgencyClosureJustification,
+      updatedAt: now.toISOString(),
+    }),
+  );
+
+  return referringAgenciesToClose.map((referringAgency) => referringAgency.id);
 };

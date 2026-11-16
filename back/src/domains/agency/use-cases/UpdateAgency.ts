@@ -16,6 +16,7 @@ import {
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
+import { closeReferringAgencies } from "../helpers/inactiveAgencies.helpers";
 import type { PartialAgencyWithUsersRights } from "../ports/AgencyRepository";
 
 const hasAgencyAdmin = (usersRights: AgencyUsersRights): boolean =>
@@ -104,6 +105,13 @@ export const makeUpdateAgency = useCaseBuilder("UpdateAgency")
     await uow.agencyRepository.update(
       toAgencyForRepositoryUpdate(agency, deps.timeGateway.now()),
     );
+
+    if (existingAgency.status !== "closed" && agency.status === "closed")
+      await closeReferringAgencies({
+        uow,
+        agencyId: agency.id,
+        now: deps.timeGateway.now(),
+      });
 
     const triggeredBy = {
       kind: "connected-user" as const,

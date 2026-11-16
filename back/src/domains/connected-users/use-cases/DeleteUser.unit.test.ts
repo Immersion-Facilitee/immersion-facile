@@ -8,6 +8,7 @@ import {
   UserBuilder,
 } from "shared";
 import { toAgencyWithRights } from "../../../utils/agency";
+import { referringAgencyClosureJustification } from "../../agency/helpers/inactiveAgencies.helpers";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
@@ -1217,6 +1218,62 @@ describe("DeleteUser", () => {
             payload: {
               triggeredBy: { kind: "crawler" },
               userId: validator1.id,
+            },
+          },
+        ]);
+      });
+
+      it("closes an active referring agency when user deletion closes the agency it refers to", async () => {
+        const referringAgency = toAgencyWithRights(
+          new AgencyDtoBuilder()
+            .withId("referring-id")
+            .withRefersToAgencyInfo({
+              refersToAgencyId: agency.id,
+              refersToAgencyName: agency.name,
+              refersToAgencyContactEmail: agency.contactEmail,
+            })
+            .build(),
+          {
+            [admin2.id]: { isNotifiedByEmail: true, roles: ["agency-admin"] },
+          },
+        );
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency, {
+            [admin1.id]: {
+              isNotifiedByEmail: true,
+              roles: ["agency-admin", "validator"],
+            },
+          }),
+          referringAgency,
+        ];
+
+        await deleteUser.execute({
+          userId: admin1.id,
+          triggeredBy: { kind: "crawler" },
+        });
+
+        expectToEqual(uow.agencyRepository.agencies, [
+          toAgencyWithRights(
+            new AgencyDtoBuilder(agency)
+              .withStatus("closed")
+              .withStatusJustification("Aucun utilisateur actif")
+              .withUpdatedAt(timeGateway.now())
+              .build(),
+            {},
+          ),
+          {
+            ...referringAgency,
+            status: "closed",
+            statusJustification: referringAgencyClosureJustification,
+            updatedAt: timeGateway.now().toISOString(),
+          },
+        ]);
+        expectArraysToMatch(uow.outboxRepository.events, [
+          {
+            topic: "UserDeleted",
+            payload: {
+              triggeredBy: { kind: "crawler" },
+              userId: admin1.id,
             },
           },
         ]);

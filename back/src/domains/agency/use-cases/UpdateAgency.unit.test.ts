@@ -23,6 +23,7 @@ import {
 } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { TestUuidGenerator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
+import { referringAgencyClosureJustification } from "../helpers/inactiveAgencies.helpers";
 import { makeUpdateAgency, type UpdateAgency } from "./UpdateAgency";
 
 describe("Update agency", () => {
@@ -439,6 +440,68 @@ describe("Update agency", () => {
           topic: "AgencyUpdated",
           payload: {
             agencyId: closedAgency.id,
+            triggeredBy: triggeredByAdmin,
+          },
+        },
+      ]);
+    });
+
+    it("closes an active referring agency when a backoffice admin closes the agency it refers to", async () => {
+      const referringAgency = toAgencyWithRights(
+        new AgencyDtoBuilder()
+          .withId("referring-id")
+          .withRefersToAgencyInfo({
+            refersToAgencyId: initialAgencyInRepo.id,
+            refersToAgencyName: initialAgencyInRepo.name,
+            refersToAgencyContactEmail: initialAgencyInRepo.contactEmail,
+          })
+          .build(),
+        {
+          "referring-admin": {
+            roles: ["agency-admin"],
+            isNotifiedByEmail: true,
+          },
+        },
+      );
+      const refersToAgencyWithRights = toAgencyWithRights(
+        initialAgencyInRepo,
+        usersRightsWithAdmin,
+      );
+      uow.agencyRepository.agencies = [
+        refersToAgencyWithRights,
+        referringAgency,
+      ];
+
+      const closedRefersToAgency = new AgencyDtoBuilder(initialAgencyInRepo)
+        .withStatus("closed")
+        .withStatusJustification("Agence fermée manuellement")
+        .build();
+
+      await updateAgency.execute(
+        { ...closedRefersToAgency, validatorEmails: ["validator@mail.com"] },
+        connectedAdmin,
+      );
+
+      expectToEqual(uow.agencyRepository.agencies, [
+        toAgencyWithRights(
+          {
+            ...closedRefersToAgency,
+            updatedAt: timeGateway.now().toISOString(),
+          },
+          usersRightsWithAdmin,
+        ),
+        {
+          ...referringAgency,
+          status: "closed",
+          statusJustification: referringAgencyClosureJustification,
+          updatedAt: timeGateway.now().toISOString(),
+        },
+      ]);
+      expectArraysToMatch(uow.outboxRepository.events, [
+        {
+          topic: "AgencyUpdated",
+          payload: {
+            agencyId: closedRefersToAgency.id,
             triggeredBy: triggeredByAdmin,
           },
         },
