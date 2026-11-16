@@ -1,6 +1,8 @@
 import type { MigrationBuilder } from "node-pg-migrate";
+import { otpChallengePurposes } from "shared";
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
+  pgm.createType("otp_challenge_purpose", [...otpChallengePurposes]);
   pgm.createType("otp_challenge_channel", ["email", "sms"]);
   pgm.createTable("otp_challenges", {
     id: {
@@ -8,7 +10,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
       primaryKey: true,
       default: pgm.func("uuid_generate_v4()"),
     },
-    purpose: { type: "varchar(255)", notNull: true },
+    purpose: { type: "otp_challenge_purpose", notNull: true },
     subject: { type: "jsonb", notNull: true },
     channel: { type: "otp_challenge_channel", notNull: true },
     recipient: { type: "varchar(255)", notNull: true },
@@ -36,7 +38,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
       primaryKey: true,
       default: pgm.func("uuid_generate_v4()"),
     },
-    purpose: { type: "varchar(255)", notNull: true },
+    purpose: { type: "otp_challenge_purpose", notNull: true },
     subject: { type: "jsonb", notNull: true },
     expires_at: { type: "timestamptz", notNull: true },
     revoked_at: { type: "timestamptz", notNull: false, default: null },
@@ -53,4 +55,5 @@ export async function down(pgm: MigrationBuilder): Promise<void> {
   pgm.dropTable("visitor_sessions");
   pgm.dropTable("otp_challenges");
   pgm.dropType("otp_challenge_channel");
+  pgm.dropType("otp_challenge_purpose");
 }

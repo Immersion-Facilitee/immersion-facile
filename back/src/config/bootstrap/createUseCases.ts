@@ -108,7 +108,7 @@ import { makeInitiateLoginByEmail } from "../../domains/core/authentication/conn
 import { makeInitiateLoginByOAuth } from "../../domains/core/authentication/connected-user/use-cases/InitiateLoginByOAuth";
 import { makeRenewExpiredJwt } from "../../domains/core/authentication/connected-user/use-cases/RenewExpiredJwt";
 import { makeNotifyFranceTravailUserAdvisorOnConventionFullySigned } from "../../domains/core/authentication/ft-connect/use-cases/NotifyFranceTravailUserAdvisorOnConventionFullySigned";
-import { makeHashOtpCode } from "../../domains/core/authentication/otp-challenge/adapters/hashOtpCode";
+import { makeHashOtpCode } from "../../domains/core/authentication/otp-challenge/entities/otpChallenge.helper";
 import { makeGetMaskedOtpRecipients } from "../../domains/core/authentication/otp-challenge/use-cases/GetMaskedOtpRecipients";
 import { makeRequestOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/RequestOtpChallenge";
 import { makeVerifyOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/VerifyOtpChallenge";

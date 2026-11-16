@@ -22,8 +22,8 @@ import {
 } from "../../../unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../../unit-of-work/adapters/InMemoryUowPerformer";
 import { TestUuidGenerator } from "../../../uuid-generator/adapters/UuidGeneratorImplementations";
-import { makeHashOtpCode } from "../adapters/hashOtpCode";
 import { DeterministicOtpCodeGeneratorGateway } from "../adapters/otp-code-generator-gateway/DeterministicOtpCodeGeneratorGateway";
+import { makeHashOtpCode } from "../entities/otpChallenge.helper";
 import {
   makeRequestOtpChallenge,
   type RequestOtpChallenge,
@@ -389,7 +389,7 @@ describe("RequestOtpChallenge", () => {
               recipient: email,
               codeHash: hashOtpCode({ otpChallengeId, otpCode }),
               attempts: 0,
-              expiresAt: "2026-11-02T10:30:00.000Z",
+              expiresAt: "2026-11-02T10:15:00.000Z",
               usedAt: null,
               revokedAt: null,
               createdAt: now.toISOString(),
@@ -455,7 +455,7 @@ describe("RequestOtpChallenge", () => {
               recipient: phone,
               codeHash: hashOtpCode({ otpChallengeId, otpCode }),
               attempts: 0,
-              expiresAt: "2026-11-02T10:30:00.000Z",
+              expiresAt: "2026-11-02T10:15:00.000Z",
               usedAt: null,
               revokedAt: null,
               createdAt: now.toISOString(),
@@ -539,7 +539,7 @@ describe("RequestOtpChallenge", () => {
             recipient: "beneficiary@email.fr",
             codeHash: hashOtpCode({ otpChallengeId, otpCode }),
             attempts: 0,
-            expiresAt: "2026-11-02T10:30:00.000Z",
+            expiresAt: "2026-11-02T10:15:00.000Z",
             usedAt: null,
             revokedAt: null,
             createdAt: now.toISOString(),
@@ -600,7 +600,7 @@ describe("RequestOtpChallenge", () => {
             recipient: "beneficiary@email.fr",
             codeHash: hashOtpCode({ otpChallengeId, otpCode }),
             attempts: 0,
-            expiresAt: "2026-11-02T10:30:00.000Z",
+            expiresAt: "2026-11-02T10:15:00.000Z",
             usedAt: null,
             revokedAt: null,
             createdAt: now.toISOString(),
@@ -668,7 +668,7 @@ describe("RequestOtpChallenge", () => {
             recipient: "beneficiary@email.fr",
             codeHash: hashOtpCode({ otpChallengeId, otpCode }),
             attempts: 0,
-            expiresAt: "2026-11-02T10:30:00.000Z",
+            expiresAt: "2026-11-02T10:15:00.000Z",
             usedAt: null,
             revokedAt: null,
             createdAt: now.toISOString(),

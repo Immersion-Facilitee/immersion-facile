@@ -3710,7 +3710,8 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
       tags: [
         "template:authentificationOTPCode",
         "theme:authentification",
-        "acteur:tous",
+        "acteur:candidat",
+        "acteur:entreprise",
         "role:beneficiaire",
         "role:employeurActuel",
         "role:representantLégal",

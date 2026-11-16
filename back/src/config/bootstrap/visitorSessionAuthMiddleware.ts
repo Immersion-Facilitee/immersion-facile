@@ -2,6 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import {
   errors,
   type GetVisitorSessionQueryParams,
+  type VisitorSession,
   visitorSessionCookieName,
 } from "shared";
 import { match } from "ts-pattern";
@@ -10,45 +11,51 @@ import type { TimeGateway } from "../../domains/core/time-gateway/ports/TimeGate
 import type { UnitOfWorkPerformer } from "../../domains/core/unit-of-work/ports/UnitOfWorkPerformer";
 import { handleHttpJsonResponseError } from "../helpers/handleHttpJsonResponseError";
 
+type VisitorSessionAuthMiddlewareDeps = {
+  uowPerformer: UnitOfWorkPerformer;
+  timeGateway: TimeGateway;
+};
+
 export const makeVisitorSessionAuthMiddleware =
-  (deps: {
-    uowPerformer: UnitOfWorkPerformer;
-    timeGateway: TimeGateway;
-  }): RequestHandler =>
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const scope = getVisitorSessionScope(req);
-      const sessionId = req.cookies?.[visitorSessionCookieName];
+  (deps: VisitorSessionAuthMiddlewareDeps): RequestHandler =>
+  (req: Request, res: Response, next: NextFunction) =>
+    getActiveVisitorSessionOfRequest(req, deps)
+      .then((visitorSession) => {
+        match(visitorSession)
+          .with({ purpose: "manageConvention" }, ({ subject }) => {
+            const { conventionId, role, emailHash } = subject;
+            req.payloads = {
+              convention: {
+                applicationId: conventionId,
+                role,
+                emailHash,
+              },
+            };
+          })
+          .exhaustive();
 
-      if (!scope || !sessionId) throw errors.visitorSession.unauthorized();
+        next();
+      })
+      .catch((error) => handleHttpJsonResponseError(req, res, error));
 
-      const visitorSession = await deps.uowPerformer.perform((uow) =>
-        getActiveVisitorSessionOrThrow({
-          uow,
-          sessionId,
-          scope,
-          now: deps.timeGateway.now(),
-        }),
-      );
+const getActiveVisitorSessionOfRequest = async (
+  req: Request,
+  deps: VisitorSessionAuthMiddlewareDeps,
+): Promise<VisitorSession> => {
+  const scope = getVisitorSessionScope(req);
+  const sessionId = req.cookies?.[visitorSessionCookieName];
 
-      match(visitorSession)
-        .with({ purpose: "manageConvention" }, ({ subject }) => {
-          const { conventionId, role, emailHash } = subject;
-          req.payloads = {
-            convention: {
-              applicationId: conventionId,
-              role,
-              emailHash,
-            },
-          };
-        })
-        .exhaustive();
+  if (!scope || !sessionId) throw errors.visitorSession.unauthorized();
 
-      next();
-    } catch (error) {
-      handleHttpJsonResponseError(req, res, error);
-    }
-  };
+  return deps.uowPerformer.perform((uow) =>
+    getActiveVisitorSessionOrThrow({
+      uow,
+      sessionId,
+      scope,
+      now: deps.timeGateway.now(),
+    }),
+  );
+};
 
 const getVisitorSessionScope = (
   req: Request,

@@ -19,11 +19,11 @@ import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
 import type { SuperTest, Test } from "supertest";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
+import type { DeterministicOtpCodeGeneratorGateway } from "../../../../domains/core/authentication/otp-challenge/adapters/otp-code-generator-gateway/DeterministicOtpCodeGeneratorGateway";
 import {
   type HashOtpCode,
   makeHashOtpCode,
-} from "../../../../domains/core/authentication/otp-challenge/adapters/hashOtpCode";
-import type { DeterministicOtpCodeGeneratorGateway } from "../../../../domains/core/authentication/otp-challenge/adapters/otp-code-generator-gateway/DeterministicOtpCodeGeneratorGateway";
+} from "../../../../domains/core/authentication/otp-challenge/entities/otpChallenge.helper";
 import type {
   GenerateConventionJwt,
   GenerateVisitorOtpJwt,
@@ -31,6 +31,7 @@ import type {
 import type { CustomTimeGateway } from "../../../../domains/core/time-gateway/adapters/CustomTimeGateway";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import type { UuidGenerator } from "../../../../domains/core/uuid-generator/ports/UuidGenerator";
+import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { buildTestApp } from "../../../../utils/buildTestApp";
 import {
   createConventionMagicLinkPayload,
@@ -446,14 +447,44 @@ describe("otp challenge router", () => {
       });
       const visitorSession =
         inMemoryUow.visitorSessionRepository.visitorSessions[0];
-      expect(response.headers["set-cookie"]).toEqual(
-        expect.arrayContaining([
-          expect.stringMatching(
-            `if_visitor=${visitorSession.id};.*Expires=${new Date(visitorSession.expiresAt).toUTCString()};.*HttpOnly.*SameSite=Lax`,
-          ),
-        ]),
-      );
+      expectToEqual(response.headers["set-cookie"], [
+        `if_visitor=${visitorSession.id}; Path=/; Expires=${new Date(visitorSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
+      ]);
     });
+
+    it.each(["production", "staging"] as const)(
+      "204 - sets a secure cookie in %s",
+      async (envType) => {
+        const testApp = await buildTestApp(
+          new AppConfigBuilder({ ENV_TYPE: envType }).build(),
+        );
+        testApp.gateways.timeGateway.defaultDate = now;
+        testApp.inMemoryUow.conventionRepository.setConventions([convention]);
+        testApp.inMemoryUow.otpChallengeRepository.otpChallenges = [
+          otpChallenge,
+        ];
+
+        const response = await createSupertestSharedClient(
+          otpChallengeRoutes,
+          testApp.request,
+        ).verifyOtpChallenge({
+          body: { otpCode },
+          headers: {
+            authorization: testApp.generateVisitorOtpJwt(visitorOtpJwtPayload),
+          },
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 204,
+          body: {},
+        });
+        const visitorSession =
+          testApp.inMemoryUow.visitorSessionRepository.visitorSessions[0];
+        expectToEqual(response.headers["set-cookie"], [
+          `if_visitor=${visitorSession.id}; Path=/; Expires=${new Date(visitorSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
+        ]);
+      },
+    );
 
     it("204 - uses the same cookie for successive connections to different conventions", async () => {
       const firstResponse = await httpClient.verifyOtpChallenge({
@@ -501,10 +532,10 @@ describe("otp challenge router", () => {
         );
       if (!secondSession) throw new Error("Missing second visitor session");
       expect(secondResponse.headers["set-cookie"]).toEqual([
-        `if_visitor=${secondSession.id}; Path=/; Expires=${new Date(secondSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
+        `if_visitor=${secondSession.id}; Path=/; Expires=${new Date(secondSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
       expect(firstResponse.headers["set-cookie"]).toEqual([
-        `if_visitor=${firstSession.id}; Path=/; Expires=${new Date(firstSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
+        `if_visitor=${firstSession.id}; Path=/; Expires=${new Date(firstSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
 
       for (const { conventionId, expectedStatus } of [

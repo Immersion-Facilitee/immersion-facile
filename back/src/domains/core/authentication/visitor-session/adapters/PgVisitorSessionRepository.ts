@@ -47,6 +47,7 @@ export class PgVisitorSessionRepository implements VisitorSessionRepository {
       .updateTable("visitor_sessions")
       .set({ revoked_at: revokedAt })
       .where("id", "=", id)
+      .where("revoked_at", "is", null)
       .executeTakeFirst();
 
     if (Number(result.numUpdatedRows) === 0)

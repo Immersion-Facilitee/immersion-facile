@@ -49,7 +49,9 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
           await deps.useCases.verifyOtpChallenge.execute(req.body, visitorOtp);
         res.cookie(visitorSessionCookieName, id, {
           httpOnly: true,
-          secure: true,
+          secure:
+            deps.config.envType === "production" ||
+            deps.config.envType === "staging",
           sameSite: "lax",
           path: "/",
           expires: new Date(expiresAt),
