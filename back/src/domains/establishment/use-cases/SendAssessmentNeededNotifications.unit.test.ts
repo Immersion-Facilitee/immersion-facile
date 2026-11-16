@@ -637,9 +637,15 @@ describe("SendAssessmentNeededNotifications", () => {
           conventionsQtyWithAssessmentSentSuccessfully: 1,
           conventionsQtyWithImmersionEnding: 2,
           conventionsAssessmentSentErrored: {
-            [conventionWithSignatoriesWithSamePhoneNumber.id]: new Error(
-              `Schema validation failed for schema conventionSchema for element with id ${conventionWithSignatoriesWithSamePhoneNumber.id}. See issues for details.`,
-            ),
+            [conventionWithSignatoriesWithSamePhoneNumber.id]:
+              errors.inputs.badSchema({
+                id: conventionWithSignatoriesWithSamePhoneNumber.id,
+                schemaName: "conventionSchema",
+                flattenErrors: [
+                  "signatories.beneficiary.phone : Les numéros de téléphone des signataires doivent être différents.",
+                  "signatories.establishmentRepresentative.phone : Les numéros de téléphone des signataires doivent être différents.",
+                ],
+              }),
           },
         },
       );
