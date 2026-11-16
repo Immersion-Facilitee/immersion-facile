@@ -61,6 +61,7 @@ export interface Database {
   notifications_sms: NotificationsSms;
   nps: Nps;
   otp_challenges: OtpChallenges;
+  otp_sessions: OtpSessions;
   outbox_failures: OutboxFailures;
   outbox_publications: OutboxPublications;
   outbox: Outbox;
@@ -82,7 +83,6 @@ export interface Database {
   users_ongoing_oauths: OngoingOauths;
   users: Users;
   view_appellations_dto: ViewAppellationsDto;
-  visitor_sessions: VisitorSessions;
 }
 
 type JsonArray = JsonValue[];
@@ -513,7 +513,7 @@ interface OtpChallenges {
   created_at: Timestamp;
 }
 
-interface VisitorSessions {
+interface OtpSessions {
   id: string;
   purpose: OtpChallengePurpose;
   subject: Json;

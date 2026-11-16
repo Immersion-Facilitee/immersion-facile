@@ -1,6 +1,6 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
-import { errors, visitorSessionCookieName } from "shared";
+import { errors, otpSessionCookieName } from "shared";
 import { handleHttpJsonResponseError } from "../helpers/handleHttpJsonResponseError";
 
 const isVisitorOtpJwt = (authorization: string): boolean => {
@@ -12,14 +12,14 @@ const isVisitorOtpJwt = (authorization: string): boolean => {
   );
 };
 
-export const makeConventionMagicLinkOrVisitorSessionAuthMiddleware =
+export const makeConventionMagicLinkOrOtpSessionAuthMiddleware =
   (deps: {
     magicLinkAuthMiddleware: RequestHandler;
-    visitorSessionAuthMiddleware: RequestHandler;
+    otpSessionAuthMiddleware: RequestHandler;
   }): RequestHandler =>
   (req: Request, res: Response, next: NextFunction) => {
     const authorization = req.headers.authorization;
-    if (!authorization && !req.cookies?.[visitorSessionCookieName])
+    if (!authorization && !req.cookies?.[otpSessionCookieName])
       return handleHttpJsonResponseError(
         req,
         res,
@@ -27,7 +27,7 @@ export const makeConventionMagicLinkOrVisitorSessionAuthMiddleware =
       );
 
     if (!authorization || isVisitorOtpJwt(authorization))
-      return deps.visitorSessionAuthMiddleware(req, res, next);
+      return deps.otpSessionAuthMiddleware(req, res, next);
 
     return deps.magicLinkAuthMiddleware(req, res, next);
   };

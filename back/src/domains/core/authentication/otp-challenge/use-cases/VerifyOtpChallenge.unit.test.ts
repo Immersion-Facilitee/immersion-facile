@@ -4,10 +4,10 @@ import {
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
+  OTP_SESSION_DURATION_IN_MINUTES,
   OtpChallengeDtoBuilder,
-  VISITOR_SESSION_DURATION_IN_MINUTES,
+  OtpSessionDtoBuilder,
   type VisitorOtpJwtPayload,
-  VisitorSessionDtoBuilder,
 } from "shared";
 import { CustomTimeGateway } from "../../../time-gateway/adapters/CustomTimeGateway";
 import {
@@ -26,8 +26,8 @@ describe("VerifyOtpChallenge", () => {
   const hashOtpCode = makeHashOtpCode("test-otp-code-hmac-secret");
   const now = new Date("2024-04-28T11:00:00.000Z");
   const otpChallengeId = "11111111-1111-4111-a111-111111111111";
-  const otpCode = "123456";
-  const visitorSessionId = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa";
+  const otpCode = "1234";
+  const otpSessionId = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa";
   const otpChallenge = new OtpChallengeDtoBuilder()
     .withId(otpChallengeId)
     .withCodeHash(hashOtpCode({ otpChallengeId, otpCode }))
@@ -69,7 +69,7 @@ describe("VerifyOtpChallenge", () => {
         errors.otpChallenge.noActiveChallenge(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, []);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(uow.otpSessionRepository.otpSessions, []);
     });
 
     it("throws if the only active otp challenge belongs to another subject", async () => {
@@ -85,7 +85,7 @@ describe("VerifyOtpChallenge", () => {
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
         otherSubjectOtpChallenge,
       ]);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(uow.otpSessionRepository.otpSessions, []);
     });
 
     it("throws if the otp challenge expires", async () => {
@@ -101,7 +101,7 @@ describe("VerifyOtpChallenge", () => {
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
         expiredOtpChallenge,
       ]);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(uow.otpSessionRepository.otpSessions, []);
     });
 
     it("throws if the otp challenge of the subject is already used", async () => {
@@ -117,7 +117,7 @@ describe("VerifyOtpChallenge", () => {
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
         usedOtpChallenge,
       ]);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(uow.otpSessionRepository.otpSessions, []);
     });
 
     it("throws if the otp challenge of the subject is revoked", async () => {
@@ -133,7 +133,7 @@ describe("VerifyOtpChallenge", () => {
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
         revokedOtpChallenge,
       ]);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(uow.otpSessionRepository.otpSessions, []);
     });
 
     it("throws if the max number of attempts is already reached, even with the correct code", async () => {
@@ -149,7 +149,7 @@ describe("VerifyOtpChallenge", () => {
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
         lockedOtpChallenge,
       ]);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(uow.otpSessionRepository.otpSessions, []);
     });
 
     it("increments attempts up to the max and throws if the code is invalid", async () => {
@@ -159,34 +159,70 @@ describe("VerifyOtpChallenge", () => {
       uow.otpChallengeRepository.otpChallenges = [lastAttemptOtpChallenge];
 
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode: "000000" }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode: "0000" }, visitorOtpJwtPayload),
         errors.otpChallenge.invalidCode(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
         { ...lastAttemptOtpChallenge, attempts: 5 },
       ]);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(uow.otpSessionRepository.otpSessions, []);
+    });
+
+    it("throws and consumes an attempt of the active otp challenge if the code only matches a revoked otp challenge of the subject", async () => {
+      const revokedOtpChallengeId = "22222222-2222-4222-a222-222222222222";
+      const revokedOtpChallenge = new OtpChallengeDtoBuilder(otpChallenge)
+        .withId(revokedOtpChallengeId)
+        .withCodeHash(
+          hashOtpCode({ otpChallengeId: revokedOtpChallengeId, otpCode }),
+        )
+        .withRevokedAt("2024-04-28T10:30:00.000Z")
+        .build();
+      const activeOtpChallengeId = "33333333-3333-4333-a333-333333333333";
+      const activeOtpChallenge = new OtpChallengeDtoBuilder(otpChallenge)
+        .withId(activeOtpChallengeId)
+        .withCodeHash(
+          hashOtpCode({
+            otpChallengeId: activeOtpChallengeId,
+            otpCode: "4321",
+          }),
+        )
+        .withCreatedAt("2024-04-28T10:30:00.000Z")
+        .build();
+      uow.otpChallengeRepository.otpChallenges = [
+        revokedOtpChallenge,
+        activeOtpChallenge,
+      ];
+
+      await expectPromiseToFailWithError(
+        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        errors.otpChallenge.invalidCode(),
+      );
+      expectToEqual(uow.otpChallengeRepository.otpChallenges, [
+        revokedOtpChallenge,
+        { ...activeOtpChallenge, attempts: 1 },
+      ]);
+      expectToEqual(uow.otpSessionRepository.otpSessions, []);
     });
   });
 
   describe("Right path", () => {
-    it("marks the otp challenge as used, revokes active previous sessions and creates a visitor session", async () => {
-      const previousVisitorSession = new VisitorSessionDtoBuilder()
+    it("marks the otp challenge as used, revokes active previous sessions and creates a otp session", async () => {
+      const previousOtpSession = new OtpSessionDtoBuilder()
         .withId("bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb")
         .withSubject(otpChallenge.subject)
         .withCreatedAt("2024-04-28T10:00:00.000Z")
         .build();
-      const alreadyRevokedVisitorSession = new VisitorSessionDtoBuilder()
+      const alreadyRevokedOtpSession = new OtpSessionDtoBuilder()
         .withId("cccccccc-cccc-4ccc-cccc-cccccccccccc")
         .withSubject(otpChallenge.subject)
         .withRevokedAt("2024-04-28T10:30:00.000Z")
         .build();
-      const expiredVisitorSession = new VisitorSessionDtoBuilder()
+      const expiredOtpSession = new OtpSessionDtoBuilder()
         .withId("eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee")
         .withSubject(otpChallenge.subject)
         .withExpiresAt("2024-04-28T10:30:00.000Z")
         .build();
-      const otherSubjectVisitorSession = new VisitorSessionDtoBuilder()
+      const otherSubjectOtpSession = new OtpSessionDtoBuilder()
         .withId("dddddddd-dddd-4ddd-dddd-dddddddddddd")
         .withSubject({
           ...otpChallenge.subject,
@@ -195,34 +231,34 @@ describe("VerifyOtpChallenge", () => {
         .build();
 
       uow.otpChallengeRepository.otpChallenges = [otpChallenge];
-      uow.visitorSessionRepository.visitorSessions = [
-        previousVisitorSession,
-        alreadyRevokedVisitorSession,
-        expiredVisitorSession,
-        otherSubjectVisitorSession,
+      uow.otpSessionRepository.otpSessions = [
+        previousOtpSession,
+        alreadyRevokedOtpSession,
+        expiredOtpSession,
+        otherSubjectOtpSession,
       ];
-      uuidGenerator.setNextUuids([visitorSessionId]);
+      uuidGenerator.setNextUuids([otpSessionId]);
 
       const expiresAt = addMinutes(
         now,
-        VISITOR_SESSION_DURATION_IN_MINUTES,
+        OTP_SESSION_DURATION_IN_MINUTES,
       ).toISOString();
 
       expectToEqual(
         await verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
-        { id: visitorSessionId, expiresAt },
+        { id: otpSessionId, expiresAt },
       );
 
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
-        { ...otpChallenge, usedAt: now.toISOString() },
+        { ...otpChallenge, attempts: 1, usedAt: now.toISOString() },
       ]);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, [
-        { ...previousVisitorSession, revokedAt: now.toISOString() },
-        alreadyRevokedVisitorSession,
-        expiredVisitorSession,
-        otherSubjectVisitorSession,
-        new VisitorSessionDtoBuilder()
-          .withId(visitorSessionId)
+      expectToEqual(uow.otpSessionRepository.otpSessions, [
+        { ...previousOtpSession, revokedAt: now.toISOString() },
+        alreadyRevokedOtpSession,
+        expiredOtpSession,
+        otherSubjectOtpSession,
+        new OtpSessionDtoBuilder()
+          .withId(otpSessionId)
           .withSubject(otpChallenge.subject)
           .withExpiresAt(expiresAt)
           .withCreatedAt(now.toISOString())
@@ -240,7 +276,7 @@ describe("VerifyOtpChallenge", () => {
         .withRevokedAt("2024-04-28T10:30:00.000Z")
         .build();
       const activeOtpChallengeId = "33333333-3333-4333-a333-333333333333";
-      const activeOtpCode = "654321";
+      const activeOtpCode = "4321";
       const activeOtpChallenge = new OtpChallengeDtoBuilder(otpChallenge)
         .withId(activeOtpChallengeId)
         .withCodeHash(
@@ -255,16 +291,11 @@ describe("VerifyOtpChallenge", () => {
         revokedOtpChallenge,
         activeOtpChallenge,
       ];
-      uuidGenerator.setNextUuids([visitorSessionId]);
-
-      await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
-        errors.otpChallenge.invalidCode(),
-      );
+      uuidGenerator.setNextUuids([otpSessionId]);
 
       const expiresAt = addMinutes(
         now,
-        VISITOR_SESSION_DURATION_IN_MINUTES,
+        OTP_SESSION_DURATION_IN_MINUTES,
       ).toISOString();
 
       expectToEqual(
@@ -272,11 +303,19 @@ describe("VerifyOtpChallenge", () => {
           { otpCode: activeOtpCode },
           visitorOtpJwtPayload,
         ),
-        { id: visitorSessionId, expiresAt },
+        { id: otpSessionId, expiresAt },
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
         revokedOtpChallenge,
         { ...activeOtpChallenge, attempts: 1, usedAt: now.toISOString() },
+      ]);
+      expectToEqual(uow.otpSessionRepository.otpSessions, [
+        new OtpSessionDtoBuilder()
+          .withId(otpSessionId)
+          .withSubject(otpChallenge.subject)
+          .withExpiresAt(expiresAt)
+          .withCreatedAt(now.toISOString())
+          .build(),
       ]);
     });
 
@@ -285,24 +324,24 @@ describe("VerifyOtpChallenge", () => {
         .withAttempts(4)
         .build();
       uow.otpChallengeRepository.otpChallenges = [lastAttemptOtpChallenge];
-      uuidGenerator.setNextUuids([visitorSessionId]);
+      uuidGenerator.setNextUuids([otpSessionId]);
 
       const expiresAt = addMinutes(
         now,
-        VISITOR_SESSION_DURATION_IN_MINUTES,
+        OTP_SESSION_DURATION_IN_MINUTES,
       ).toISOString();
 
       expectToEqual(
         await verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
-        { id: visitorSessionId, expiresAt },
+        { id: otpSessionId, expiresAt },
       );
 
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
-        { ...lastAttemptOtpChallenge, usedAt: now.toISOString() },
+        { ...lastAttemptOtpChallenge, attempts: 5, usedAt: now.toISOString() },
       ]);
-      expectToEqual(uow.visitorSessionRepository.visitorSessions, [
-        new VisitorSessionDtoBuilder()
-          .withId(visitorSessionId)
+      expectToEqual(uow.otpSessionRepository.otpSessions, [
+        new OtpSessionDtoBuilder()
+          .withId(otpSessionId)
           .withSubject(otpChallenge.subject)
           .withExpiresAt(expiresAt)
           .withCreatedAt(now.toISOString())

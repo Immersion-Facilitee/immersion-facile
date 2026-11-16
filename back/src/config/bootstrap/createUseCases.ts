@@ -112,7 +112,7 @@ import { makeHashOtpCode } from "../../domains/core/authentication/otp-challenge
 import { makeGetMaskedOtpRecipients } from "../../domains/core/authentication/otp-challenge/use-cases/GetMaskedOtpRecipients";
 import { makeRequestOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/RequestOtpChallenge";
 import { makeVerifyOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/VerifyOtpChallenge";
-import { makeGetVisitorSession } from "../../domains/core/authentication/visitor-session/use-cases/GetVisitorSession";
+import { makeGetOtpSession } from "../../domains/core/authentication/otp-session/use-cases/GetOtpSession";
 import type { DashboardGateway } from "../../domains/core/dashboard/port/DashboardGateway";
 import { makeGetDashboardUrl } from "../../domains/core/dashboard/useCases/GetDashboardUrl";
 import { makeValidateEmail } from "../../domains/core/email-validation/use-cases/ValidateEmail";
@@ -1381,7 +1381,7 @@ export const createUseCases = ({
         uowPerformer,
       },
     }),
-    getVisitorSession: makeGetVisitorSession({
+    getOtpSession: makeGetOtpSession({
       uowPerformer,
       deps: {
         timeGateway,

@@ -20,11 +20,11 @@ import {
   makeVisitorOtpAuthMiddleware,
 } from "./authMiddleware";
 import { makeConnectedUserAuthMiddleware } from "./connectedUserAuthMiddleware";
-import { makeConventionMagicLinkOrVisitorSessionAuthMiddleware } from "./conventionMagicLinkOrVisitorSessionAuthMiddleware";
+import { makeConventionMagicLinkOrOtpSessionAuthMiddleware } from "./conventionMagicLinkOrOtpSessionAuthMiddleware";
 import { createEventCrawler } from "./createEventCrawler";
 import { createGateways } from "./createGateways";
 import { createUseCases } from "./createUseCases";
-import { makeVisitorSessionAuthMiddleware } from "./visitorSessionAuthMiddleware";
+import { makeOtpSessionAuthMiddleware } from "./otpSessionAuthMiddleware";
 
 export type AppDependencies =
   ReturnType<typeof createAppDependencies> extends Promise<infer T> ? T : never;
@@ -76,7 +76,7 @@ export const createAppDependencies = async (config: AppConfig) => {
     config,
     "convention",
   );
-  const visitorSessionAuthMiddleware = makeVisitorSessionAuthMiddleware({
+  const otpSessionAuthMiddleware = makeOtpSessionAuthMiddleware({
     uowPerformer,
     timeGateway: gateways.timeGateway,
   });
@@ -99,16 +99,16 @@ export const createAppDependencies = async (config: AppConfig) => {
     useCases,
     gateways,
     conventionMagicLinkAuthMiddleware,
-    conventionMagicLinkOrVisitorSessionAuthMiddleware:
-      makeConventionMagicLinkOrVisitorSessionAuthMiddleware({
+    conventionMagicLinkOrOtpSessionAuthMiddleware:
+      makeConventionMagicLinkOrOtpSessionAuthMiddleware({
         magicLinkAuthMiddleware: conventionMagicLinkAuthMiddleware,
-        visitorSessionAuthMiddleware,
+        otpSessionAuthMiddleware,
       }),
     visitorOtpAuthMiddleware: makeVisitorOtpAuthMiddleware(
       config,
       "visitorOtp",
     ),
-    visitorSessionAuthMiddleware,
+    otpSessionAuthMiddleware,
     apiConsumerMiddleware: makeConsumerMiddleware(
       useCases.getApiConsumerById.execute,
       gateways.timeGateway,

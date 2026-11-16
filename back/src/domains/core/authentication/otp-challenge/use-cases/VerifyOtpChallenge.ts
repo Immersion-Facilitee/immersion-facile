@@ -3,10 +3,10 @@ import { addMinutes } from "date-fns";
 import {
   errors,
   executeInSequence,
+  OTP_SESSION_DURATION_IN_MINUTES,
   type OtpChallenge,
-  VISITOR_SESSION_DURATION_IN_MINUTES,
+  type OtpSession,
   type VisitorOtpJwtPayload,
-  type VisitorSession,
   verifyOtpChallengeSchema,
 } from "shared";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
@@ -17,11 +17,7 @@ import type { HashOtpCode } from "../entities/otpChallenge.helper";
 
 const MAX_OTP_CHALLENGE_ATTEMPTS = 5;
 
-export type VerifyOtpChallengeOutput = Pick<VisitorSession, "id" | "expiresAt">;
-
-type OtpCodeVerification =
-  | { isOtpCodeValid: true; visitorSession: VisitorSession }
-  | { isOtpCodeValid: false };
+export type VerifyOtpChallengeOutput = Pick<OtpSession, "id" | "expiresAt">;
 
 export type VerifyOtpChallenge = ReturnType<typeof makeVerifyOtpChallenge>;
 
@@ -42,74 +38,86 @@ export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
       currentUser,
       deps,
     }): Promise<VerifyOtpChallengeOutput> => {
-      const otpCodeVerification = await deps.uowPerformer.perform(
-        async (uow): Promise<OtpCodeVerification> => {
-          const otpChallenge =
+      const now = deps.timeGateway.now();
+
+      const otpChallenge = await deps.uowPerformer.perform(
+        async (uow): Promise<OtpChallenge> => {
+          const activeOtpChallenge =
             await uow.otpChallengeRepository.getActiveByPurposeAndSubject({
               purpose: currentUser.purpose,
               subject: currentUser.subject,
             });
 
-          if (!otpChallenge) throw errors.otpChallenge.noActiveChallenge();
+          if (!activeOtpChallenge)
+            throw errors.otpChallenge.noActiveChallenge();
 
-          const now = deps.timeGateway.now();
+          throwIfOtpChallengeCannotBeVerified({
+            otpChallenge: activeOtpChallenge,
+            now,
+          });
 
-          throwIfOtpChallengeCannotBeVerified({ otpChallenge, now });
+          await uow.otpChallengeRepository.incrementAttempts(
+            activeOtpChallenge.id,
+          );
 
-          if (
-            !isSameHash(
-              otpChallenge.codeHash,
-              deps.hashOtpCode({ otpChallengeId: otpChallenge.id, otpCode }),
-            )
-          ) {
-            await uow.otpChallengeRepository.incrementAttempts(otpChallenge.id);
-            return { isOtpCodeValid: false };
-          }
+          return activeOtpChallenge;
+        },
+      );
+
+      if (
+        !isSameHash(
+          otpChallenge.codeHash,
+          deps.hashOtpCode({ otpChallengeId: otpChallenge.id, otpCode }),
+        )
+      )
+        throw errors.otpChallenge.invalidCode();
+
+      return deps.uowPerformer.perform(
+        async (uow): Promise<VerifyOtpChallengeOutput> => {
+          const activeOtpChallenge =
+            await uow.otpChallengeRepository.getActiveByPurposeAndSubject({
+              purpose: otpChallenge.purpose,
+              subject: otpChallenge.subject,
+            });
+
+          if (activeOtpChallenge?.id !== otpChallenge.id)
+            throw errors.otpChallenge.noActiveChallenge();
 
           await uow.otpChallengeRepository.markAsUsed({
             id: otpChallenge.id,
             usedAt: now,
           });
 
-          const previousVisitorSessionsWithSamePurposeAndSubject =
-            await uow.visitorSessionRepository.getByPurposeAndSubject({
+          const previousOtpSessionsWithSamePurposeAndSubject =
+            await uow.otpSessionRepository.getByPurposeAndSubject({
               purpose: otpChallenge.purpose,
               subject: otpChallenge.subject,
             });
 
           await executeInSequence(
-            previousVisitorSessionsWithSamePurposeAndSubject.filter(
-              (visitorSession) => isVisitorSessionActive(visitorSession, now),
+            previousOtpSessionsWithSamePurposeAndSubject.filter((otpSession) =>
+              isOtpSessionActive(otpSession, now),
             ),
-            ({ id }) =>
-              uow.visitorSessionRepository.revoke({ id, revokedAt: now }),
+            ({ id }) => uow.otpSessionRepository.revoke({ id, revokedAt: now }),
           );
 
-          const visitorSession: VisitorSession = {
+          const otpSession: OtpSession = {
             id: deps.uuidGenerator.new(),
             purpose: otpChallenge.purpose,
             subject: otpChallenge.subject,
             expiresAt: addMinutes(
               now,
-              VISITOR_SESSION_DURATION_IN_MINUTES,
+              OTP_SESSION_DURATION_IN_MINUTES,
             ).toISOString(),
             revokedAt: null,
             createdAt: now.toISOString(),
           };
 
-          await uow.visitorSessionRepository.save(visitorSession);
+          await uow.otpSessionRepository.save(otpSession);
 
-          return { isOtpCodeValid: true, visitorSession };
+          return { id: otpSession.id, expiresAt: otpSession.expiresAt };
         },
       );
-
-      if (!otpCodeVerification.isOtpCodeValid)
-        throw errors.otpChallenge.invalidCode();
-
-      return {
-        id: otpCodeVerification.visitorSession.id,
-        expiresAt: otpCodeVerification.visitorSession.expiresAt,
-      };
     },
   );
 
@@ -133,7 +141,7 @@ const isSameHash = (expectedHash: string, actualHash: string): boolean =>
   expectedHash.length === actualHash.length &&
   timingSafeEqual(Buffer.from(expectedHash), Buffer.from(actualHash));
 
-const isVisitorSessionActive = (
-  { expiresAt, revokedAt }: VisitorSession,
+const isOtpSessionActive = (
+  { expiresAt, revokedAt }: OtpSession,
   now: Date,
 ): boolean => revokedAt === null && new Date(expiresAt) > now;

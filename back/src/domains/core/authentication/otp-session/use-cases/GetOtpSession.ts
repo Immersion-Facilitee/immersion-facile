@@ -1,21 +1,21 @@
 import {
-  type ActiveVisitorSession,
+  type ActiveOtpSession,
   errors,
-  getVisitorSessionQueryParamsSchema,
-  type VisitorSessionPayload,
+  getOtpSessionQueryParamsSchema,
+  type OtpSessionPayload,
 } from "shared";
 import { match } from "ts-pattern";
 import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../useCaseBuilder";
-import { getActiveVisitorSessionOrThrow } from "../entities/visitorSession.helper";
+import { getActiveOtpSessionOrThrow } from "../entities/otpSession.helper";
 
-export type GetVisitorSession = ReturnType<typeof makeGetVisitorSession>;
+export type GetOtpSession = ReturnType<typeof makeGetOtpSession>;
 
-export const makeGetVisitorSession = useCaseBuilder("GetVisitorSession")
-  .withInput(getVisitorSessionQueryParamsSchema)
-  .withOutput<ActiveVisitorSession>()
-  .withCurrentUser<VisitorSessionPayload>()
+export const makeGetOtpSession = useCaseBuilder("GetOtpSession")
+  .withInput(getOtpSessionQueryParamsSchema)
+  .withOutput<ActiveOtpSession>()
+  .withCurrentUser<OtpSessionPayload>()
   .withDeps<{ timeGateway: TimeGateway }>()
   .build(
     async ({
@@ -23,18 +23,18 @@ export const makeGetVisitorSession = useCaseBuilder("GetVisitorSession")
       currentUser,
       uow,
       deps,
-    }): Promise<ActiveVisitorSession> => {
-      const visitorSession = await getActiveVisitorSessionOrThrow({
+    }): Promise<ActiveOtpSession> => {
+      const otpSession = await getActiveOtpSessionOrThrow({
         uow,
         sessionId: currentUser.sessionId,
         scope: inputParams,
         now: deps.timeGateway.now(),
       });
 
-      return match(visitorSession)
+      return match(otpSession)
         .with(
           { purpose: "manageConvention" },
-          async ({ subject, expiresAt }): Promise<ActiveVisitorSession> => {
+          async ({ subject, expiresAt }): Promise<ActiveOtpSession> => {
             const { conventionId, role, emailHash } = subject;
 
             const convention =

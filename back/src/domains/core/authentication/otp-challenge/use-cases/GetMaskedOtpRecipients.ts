@@ -47,7 +47,13 @@ export const makeGetMaskedOtpRecipients = useCaseBuilder(
 
 const maskEmail = (email: Email): string => {
   const [localPart, domain] = email.split("@");
-  return `${localPart.charAt(0)}${"*".repeat(localPart.length - 1)}@${domain}`;
+  return `${maskEmailLocalPart(localPart)}@${domain}`;
+};
+
+const maskEmailLocalPart = (localPart: string): string => {
+  if (localPart.length === 1) return "*";
+  if (localPart.length === 2) return `${localPart.charAt(0)}*`;
+  return `${localPart.charAt(0)}${"*".repeat(localPart.length - 2)}${localPart.charAt(localPart.length - 1)}`;
 };
 
 const maskPhone = (phone: PhoneNumber): string => {

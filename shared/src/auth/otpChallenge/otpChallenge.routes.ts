@@ -6,9 +6,9 @@ import {
 } from "../..";
 import { expressEmptyResponseBodyOrEmptyObject } from "../../zodUtils";
 import {
-  activeVisitorSessionSchema,
-  getVisitorSessionQueryParamsSchema,
-} from "../visitorSession/visitorSession.schema";
+  activeOtpSessionSchema,
+  getOtpSessionQueryParamsSchema,
+} from "../otpSession/otpSession.schema";
 import {
   requestOtpChallengeSchema,
   verifyOtpChallengeSchema,
@@ -16,12 +16,12 @@ import {
 
 export type OtpChallengeRoutes = typeof otpChallengeRoutes;
 export const otpChallengeRoutes = defineRoutes({
-  getVisitorSession: defineRoute({
+  getOtpSession: defineRoute({
     method: "get",
     url: "/otp/session",
-    queryParamsSchema: getVisitorSessionQueryParamsSchema,
+    queryParamsSchema: getOtpSessionQueryParamsSchema,
     responses: {
-      200: activeVisitorSessionSchema,
+      200: activeOtpSessionSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
       403: httpErrorSchema,

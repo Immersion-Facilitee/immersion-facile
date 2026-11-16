@@ -703,7 +703,7 @@ export const defaultEmailValueByEmailKind: {
     signature: "SIGNATURE",
   },
   REQUEST_OTP_CODE: {
-    otpCode: "123456",
+    otpCode: "1234",
   },
   SHARE_CONVENTION_DRAFT_RECIPIENT: {
     internshipKind: "immersion",

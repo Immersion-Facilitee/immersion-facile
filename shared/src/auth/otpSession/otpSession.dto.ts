@@ -7,22 +7,17 @@ import type {
   OtpChallengeSubjectByPurpose,
 } from "../otpChallenge/otpChallenge.dto";
 
-export type VisitorSessionId = Flavor<string, "VisitorSessionId">;
-export type VisitorSessionCookieName = Flavor<
-  string,
-  "VisitorSessionCookieName"
->;
-export const visitorSessionCookieName: VisitorSessionCookieName = "if_visitor";
+export type OtpSessionId = Flavor<string, "OtpSessionId">;
+export type OtpSessionCookieName = Flavor<string, "OtpSessionCookieName">;
+export const otpSessionCookieName: OtpSessionCookieName = "if_visitor";
 
-export type VisitorSessionPayload = {
-  sessionId: VisitorSessionId;
+export type OtpSessionPayload = {
+  sessionId: OtpSessionId;
 };
 
-export type VisitorSession<
-  K extends OtpChallengePurpose = OtpChallengePurpose,
-> = {
+export type OtpSession<K extends OtpChallengePurpose = OtpChallengePurpose> = {
   [P in K]: {
-    id: VisitorSessionId;
+    id: OtpSessionId;
     purpose: P;
     subject: OtpChallengeSubjectByPurpose[P];
     expiresAt: DateTimeIsoString;
@@ -31,7 +26,7 @@ export type VisitorSession<
   };
 }[K];
 
-export type GetVisitorSessionQueryParams<
+export type GetOtpSessionQueryParams<
   K extends OtpChallengePurpose = OtpChallengePurpose,
 > = {
   [P in K]: {
@@ -42,7 +37,7 @@ export type GetVisitorSessionQueryParams<
   }[P];
 }[K];
 
-export type ActiveVisitorSession<
+export type ActiveOtpSession<
   K extends OtpChallengePurpose = OtpChallengePurpose,
 > = {
   [P in K]: {

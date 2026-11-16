@@ -15,9 +15,9 @@ import {
   expectArraysToMatch,
   expectHttpResponseToEqual,
   expectToEqual,
+  OtpSessionDtoBuilder,
+  otpSessionCookieName,
   type User,
-  VisitorSessionDtoBuilder,
-  visitorSessionCookieName,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -366,9 +366,9 @@ describe("Magic link router", () => {
       });
     });
 
-    describe("visitor session cookie", () => {
+    describe("otp session cookie", () => {
       const now = new Date("2026-11-05T10:00:00.000Z");
-      const visitorSession = new VisitorSessionDtoBuilder()
+      const otpSession = new OtpSessionDtoBuilder()
         .withSubject({
           conventionId: convention.id,
           role: "beneficiary",
@@ -380,10 +380,10 @@ describe("Magic link router", () => {
 
       beforeEach(() => {
         gateways.timeGateway.defaultDate = now;
-        inMemoryUow.visitorSessionRepository.visitorSessions = [visitorSession];
+        inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
       });
 
-      it("200 - succeeds with visitor session cookie", async () => {
+      it("200 - succeeds with otp session cookie", async () => {
         const { status, body } = await request
           .post(
             conventionMagicLinkRoutes.signConvention.url.replace(
@@ -391,7 +391,7 @@ describe("Magic link router", () => {
               convention.id,
             ),
           )
-          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -402,7 +402,7 @@ describe("Magic link router", () => {
         );
       });
 
-      it("200 - ignores visitor otp JWT and signs with visitor session cookie", async () => {
+      it("200 - ignores visitor otp JWT and signs with otp session cookie", async () => {
         const { status, body } = await request
           .post(
             conventionMagicLinkRoutes.signConvention.url.replace(
@@ -426,7 +426,7 @@ describe("Magic link router", () => {
               }),
             ),
           )
-          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -465,7 +465,7 @@ describe("Magic link router", () => {
       });
     });
 
-    it("401 - visitor otp JWT without visitor session cookie cannot sign convention", async () => {
+    it("401 - visitor otp JWT without otp session cookie cannot sign convention", async () => {
       const response = await httpClient.signConvention({
         urlParams: { conventionId: convention.id },
         headers: {
@@ -489,7 +489,7 @@ describe("Magic link router", () => {
         status: 401,
         body: {
           status: 401,
-          message: errors.visitorSession.unauthorized().message,
+          message: errors.otpSession.unauthorized().message,
         },
       });
       expectToEqual(inMemoryUow.conventionRepository.conventions, [convention]);

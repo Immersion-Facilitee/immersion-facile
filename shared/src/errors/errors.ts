@@ -14,7 +14,7 @@ import type {
 import type { AssessmentMode } from "../assessment/assessment.dto";
 import { authExpiredMessage, type OAuthState } from "../auth/auth.dto";
 import type { OtpChallengeId } from "../auth/otpChallenge/otpChallenge.dto";
-import type { VisitorSessionId } from "../auth/visitorSession/visitorSession.dto";
+import type { OtpSessionId } from "../auth/otpSession/otpSession.dto";
 import type {
   ConventionDto,
   ConventionId,
@@ -77,11 +77,11 @@ export const badSchemaErrorMessagePrefix = "Schema validation failed";
 export const archivedConventionErrorMessage =
   "Cette convention est archivée et n'est plus accessible";
 export const errors = {
-  visitorSession: {
-    alreadyExists: (id: VisitorSessionId) =>
-      new ConflictError(`La session visiteur ${id} existe déjà.`),
-    notFound: (id: VisitorSessionId) =>
-      new NotFoundError(`La session visiteur ${id} n'existe pas.`),
+  otpSession: {
+    alreadyExists: (id: OtpSessionId) =>
+      new ConflictError(`La session OTP ${id} existe déjà.`),
+    notFound: (id: OtpSessionId) =>
+      new NotFoundError(`La session OTP ${id} n'existe pas.`),
     unauthorized: () => new UnauthorizedError(),
   },
   otpChallenge: {

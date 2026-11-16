@@ -29,14 +29,14 @@ import {
   makeBooleanFeatureFlag,
   makeEmptyLastReminders,
   makeRouteAbsoluteUrl,
+  OtpSessionDtoBuilder,
+  otpSessionCookieName,
   reasonableSchedule,
   type TechnicalRoutes,
   technicalRoutes,
   type UnauthenticatedConventionRoutes,
   type User,
   unauthenticatedConventionRoutes,
-  VisitorSessionDtoBuilder,
-  visitorSessionCookieName,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -476,7 +476,7 @@ describe("convention e2e", () => {
         status: 401,
         body: {
           status: 401,
-          message: errors.visitorSession.unauthorized().message,
+          message: errors.otpSession.unauthorized().message,
         },
       });
     });
@@ -642,9 +642,9 @@ describe("convention e2e", () => {
       });
     });
 
-    describe("visitor session cookie", () => {
+    describe("otp session cookie", () => {
       const now = new Date("2026-11-05T10:00:00.000Z");
-      const visitorSession = new VisitorSessionDtoBuilder()
+      const otpSession = new OtpSessionDtoBuilder()
         .withSubject({
           conventionId: convention.id,
           role: "beneficiary",
@@ -670,10 +670,10 @@ describe("convention e2e", () => {
       beforeEach(() => {
         gateways.timeGateway.defaultDate = now;
         inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
-        inMemoryUow.visitorSessionRepository.visitorSessions = [visitorSession];
+        inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
       });
 
-      it("200 - succeeds with visitor session cookie", async () => {
+      it("200 - succeeds with otp session cookie", async () => {
         const { status, body } = await request
           .get(
             conventionMagicLinkRoutes.getConvention.url.replace(
@@ -681,7 +681,7 @@ describe("convention e2e", () => {
               convention.id,
             ),
           )
-          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -702,7 +702,7 @@ describe("convention e2e", () => {
           )
           .set(
             "Cookie",
-            `${visitorSessionCookieName}=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
+            `${otpSessionCookieName}=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
           );
 
         expectHttpResponseToEqual(
@@ -711,15 +711,15 @@ describe("convention e2e", () => {
             status: 401,
             body: {
               status: 401,
-              message: errors.visitorSession.unauthorized().message,
+              message: errors.otpSession.unauthorized().message,
             },
           },
         );
       });
 
       it("401 - expired session", async () => {
-        inMemoryUow.visitorSessionRepository.visitorSessions = [
-          new VisitorSessionDtoBuilder(visitorSession)
+        inMemoryUow.otpSessionRepository.otpSessions = [
+          new OtpSessionDtoBuilder(otpSession)
             .withExpiresAt(now.toISOString())
             .build(),
         ];
@@ -731,7 +731,7 @@ describe("convention e2e", () => {
               convention.id,
             ),
           )
-          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -739,15 +739,15 @@ describe("convention e2e", () => {
             status: 401,
             body: {
               status: 401,
-              message: errors.visitorSession.unauthorized().message,
+              message: errors.otpSession.unauthorized().message,
             },
           },
         );
       });
 
       it("401 - revoked session", async () => {
-        inMemoryUow.visitorSessionRepository.visitorSessions = [
-          new VisitorSessionDtoBuilder(visitorSession)
+        inMemoryUow.otpSessionRepository.otpSessions = [
+          new OtpSessionDtoBuilder(otpSession)
             .withRevokedAt(now.toISOString())
             .build(),
         ];
@@ -759,7 +759,7 @@ describe("convention e2e", () => {
               convention.id,
             ),
           )
-          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -767,7 +767,7 @@ describe("convention e2e", () => {
             status: 401,
             body: {
               status: 401,
-              message: errors.visitorSession.unauthorized().message,
+              message: errors.otpSession.unauthorized().message,
             },
           },
         );
@@ -784,7 +784,7 @@ describe("convention e2e", () => {
               otherConventionId,
             ),
           )
-          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -792,7 +792,7 @@ describe("convention e2e", () => {
             status: 401,
             body: {
               status: 401,
-              message: errors.visitorSession.unauthorized().message,
+              message: errors.otpSession.unauthorized().message,
             },
           },
         );
@@ -812,7 +812,7 @@ describe("convention e2e", () => {
               convention.id,
             ),
           )
-          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -823,7 +823,7 @@ describe("convention e2e", () => {
               message: errors.convention.forbiddenMissingRightsEmailHash({
                 conventionId: convention.id,
                 role: "beneficiary",
-                emailHash: visitorSession.subject.emailHash,
+                emailHash: otpSession.subject.emailHash,
               }).message,
             },
           },
@@ -1096,6 +1096,150 @@ describe("convention e2e", () => {
           },
         },
       ]);
+    });
+
+    describe("otp session cookie", () => {
+      const now = new Date("2026-11-05T10:00:00.000Z");
+      const otpSession = new OtpSessionDtoBuilder()
+        .withSubject({
+          conventionId: convention.id,
+          role: "beneficiary",
+          emailHash: makeEmailHash(convention.signatories.beneficiary.email),
+        })
+        .withExpiresAt(addDays(now, 1).toISOString())
+        .withCreatedAt(now.toISOString())
+        .build();
+
+      const updatedConvention = new ConventionDtoBuilder(convention)
+        .withBeneficiaryFirstName("Updated first name")
+        .withStatus("READY_TO_SIGN")
+        .withStatusJustification("justif")
+        .build();
+
+      beforeEach(() => {
+        gateways.timeGateway.defaultDate = now;
+        inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
+      });
+
+      it("200 - succeeds with otp session cookie", async () => {
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.updateConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`)
+          .send({ convention: updatedConvention });
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: { id: convention.id },
+          },
+        );
+        const expectedConvention = new ConventionDtoBuilder(updatedConvention)
+          .notSigned()
+          .withStatus("PARTIALLY_SIGNED")
+          .signedByBeneficiary(now.toISOString())
+          .build();
+        expectToEqual(inMemoryUow.conventionRepository.conventions, [
+          expectedConvention,
+        ]);
+        expectArraysToMatch(inMemoryUow.outboxRepository.events, [
+          {
+            topic: "ConventionModifiedAndSigned",
+            payload: {
+              convention: expectedConvention,
+              triggeredBy: {
+                kind: "convention-magic-link",
+                role: "beneficiary",
+              },
+            },
+          },
+        ]);
+      });
+
+      it("401 - otp session of another convention", async () => {
+        const otherConventionId: ConventionId =
+          "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+        inMemoryUow.otpSessionRepository.otpSessions = [
+          new OtpSessionDtoBuilder(otpSession)
+            .withSubject({
+              ...otpSession.subject,
+              conventionId: otherConventionId,
+            })
+            .build(),
+        ];
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.updateConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`)
+          .send({ convention: updatedConvention });
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.otpSession.unauthorized().message,
+            },
+          },
+        );
+        expectToEqual(inMemoryUow.conventionRepository.conventions, [
+          convention,
+        ]);
+        expectToEqual(inMemoryUow.outboxRepository.events, []);
+      });
+      it("403 - cookie matching the URL cannot update another convention in the body", async () => {
+        const otherConvention = new ConventionDtoBuilder(convention)
+          .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
+          .build();
+        inMemoryUow.conventionRepository.setConventions([
+          convention,
+          otherConvention,
+        ]);
+
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.updateConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`)
+          .send({
+            convention: new ConventionDtoBuilder(updatedConvention)
+              .withId(otherConvention.id)
+              .build(),
+          });
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 403,
+            body: {
+              status: 403,
+              message: errors.convention.forbiddenConventionIdMismatch({
+                requestedConventionId: otherConvention.id,
+                jwtConventionId: convention.id,
+                jwtRole: "beneficiary",
+              }).message,
+            },
+          },
+        );
+        expectToEqual(inMemoryUow.conventionRepository.conventions, [
+          convention,
+          otherConvention,
+        ]);
+        expectToEqual(inMemoryUow.outboxRepository.events, []);
+      });
     });
 
     it("403 - connected user whose email is not linked to the convention cannot update convention", async () => {

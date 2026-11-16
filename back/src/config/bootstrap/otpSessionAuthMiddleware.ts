@@ -1,27 +1,27 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import {
   errors,
-  type GetVisitorSessionQueryParams,
-  type VisitorSession,
-  visitorSessionCookieName,
+  type GetOtpSessionQueryParams,
+  type OtpSession,
+  otpSessionCookieName,
 } from "shared";
 import { match } from "ts-pattern";
-import { getActiveVisitorSessionOrThrow } from "../../domains/core/authentication/visitor-session/entities/visitorSession.helper";
+import { getActiveOtpSessionOrThrow } from "../../domains/core/authentication/otp-session/entities/otpSession.helper";
 import type { TimeGateway } from "../../domains/core/time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../domains/core/unit-of-work/ports/UnitOfWorkPerformer";
 import { handleHttpJsonResponseError } from "../helpers/handleHttpJsonResponseError";
 
-type VisitorSessionAuthMiddlewareDeps = {
+type OtpSessionAuthMiddlewareDeps = {
   uowPerformer: UnitOfWorkPerformer;
   timeGateway: TimeGateway;
 };
 
-export const makeVisitorSessionAuthMiddleware =
-  (deps: VisitorSessionAuthMiddlewareDeps): RequestHandler =>
+export const makeOtpSessionAuthMiddleware =
+  (deps: OtpSessionAuthMiddlewareDeps): RequestHandler =>
   (req: Request, res: Response, next: NextFunction) =>
-    getActiveVisitorSessionOfRequest(req, deps)
-      .then((visitorSession) => {
-        match(visitorSession)
+    getActiveOtpSessionOfRequest(req, deps)
+      .then((otpSession) => {
+        match(otpSession)
           .with({ purpose: "manageConvention" }, ({ subject }) => {
             const { conventionId, role, emailHash } = subject;
             req.payloads = {
@@ -38,17 +38,17 @@ export const makeVisitorSessionAuthMiddleware =
       })
       .catch((error) => handleHttpJsonResponseError(req, res, error));
 
-const getActiveVisitorSessionOfRequest = async (
+const getActiveOtpSessionOfRequest = async (
   req: Request,
-  deps: VisitorSessionAuthMiddlewareDeps,
-): Promise<VisitorSession> => {
-  const scope = getVisitorSessionScope(req);
-  const sessionId = req.cookies?.[visitorSessionCookieName];
+  deps: OtpSessionAuthMiddlewareDeps,
+): Promise<OtpSession> => {
+  const scope = getOtpSessionScope(req);
+  const sessionId = req.cookies?.[otpSessionCookieName];
 
-  if (!scope || !sessionId) throw errors.visitorSession.unauthorized();
+  if (!scope || !sessionId) throw errors.otpSession.unauthorized();
 
   return deps.uowPerformer.perform((uow) =>
-    getActiveVisitorSessionOrThrow({
+    getActiveOtpSessionOrThrow({
       uow,
       sessionId,
       scope,
@@ -57,9 +57,9 @@ const getActiveVisitorSessionOfRequest = async (
   );
 };
 
-const getVisitorSessionScope = (
+const getOtpSessionScope = (
   req: Request,
-): GetVisitorSessionQueryParams | undefined => {
+): GetOtpSessionQueryParams | undefined => {
   const conventionId =
     req.params.conventionId ?? req.body?.conventionId ?? req.query.conventionId;
   if (typeof conventionId !== "string") return undefined;

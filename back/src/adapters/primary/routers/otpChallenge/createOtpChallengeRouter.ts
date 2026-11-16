@@ -1,9 +1,9 @@
 import { Router } from "express";
 import {
   errors,
+  type OtpSessionId,
   otpChallengeRoutes,
-  type VisitorSessionId,
-  visitorSessionCookieName,
+  otpSessionCookieName,
 } from "shared";
 import { createExpressSharedRouter } from "shared-routes/express";
 import type { AppDependencies } from "../../../../config/bootstrap/createAppDependencies";
@@ -47,7 +47,7 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
         const visitorOtp = getGenericAuthOrThrow(req.payloads?.visitorOtp);
         const { id, expiresAt } =
           await deps.useCases.verifyOtpChallenge.execute(req.body, visitorOtp);
-        res.cookie(visitorSessionCookieName, id, {
+        res.cookie(otpSessionCookieName, id, {
           httpOnly: true,
           secure:
             deps.config.envType === "production" ||
@@ -59,13 +59,13 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
       }),
   );
 
-  sharedOtpChallengeRouter.getVisitorSession((req, res) =>
+  sharedOtpChallengeRouter.getOtpSession((req, res) =>
     sendHttpResponse(req, res, () => {
-      const sessionId: VisitorSessionId | undefined =
-        req.cookies?.[visitorSessionCookieName];
-      if (!sessionId) throw errors.visitorSession.unauthorized();
+      const sessionId: OtpSessionId | undefined =
+        req.cookies?.[otpSessionCookieName];
+      if (!sessionId) throw errors.otpSession.unauthorized();
 
-      return deps.useCases.getVisitorSession.execute(req.query, { sessionId });
+      return deps.useCases.getOtpSession.execute(req.query, { sessionId });
     }),
   );
 
