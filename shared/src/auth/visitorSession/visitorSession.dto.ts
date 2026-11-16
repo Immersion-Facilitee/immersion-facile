@@ -18,33 +18,39 @@ export type VisitorSessionPayload = {
   sessionId: VisitorSessionId;
 };
 
-export type VisitorSession = {
-  [K in OtpChallengePurpose]: {
+export type VisitorSession<
+  K extends OtpChallengePurpose = OtpChallengePurpose,
+> = {
+  [P in K]: {
     id: VisitorSessionId;
-    purpose: K;
-    subject: OtpChallengeSubjectByPurpose[K];
+    purpose: P;
+    subject: OtpChallengeSubjectByPurpose[P];
     expiresAt: DateTimeIsoString;
     revokedAt: DateTimeIsoString | null;
     createdAt: DateTimeIsoString;
   };
-}[OtpChallengePurpose];
+}[K];
 
-export type GetVisitorSessionQueryParams = {
-  [K in OtpChallengePurpose]: {
+export type GetVisitorSessionQueryParams<
+  K extends OtpChallengePurpose = OtpChallengePurpose,
+> = {
+  [P in K]: {
     manageConvention: {
       purpose: "manageConvention";
       conventionId: ConventionId;
     };
-  }[K];
-}[OtpChallengePurpose];
+  }[P];
+}[K];
 
-export type ActiveVisitorSession = {
-  [K in OtpChallengePurpose]: {
+export type ActiveVisitorSession<
+  K extends OtpChallengePurpose = OtpChallengePurpose,
+> = {
+  [P in K]: {
     manageConvention: {
       purpose: "manageConvention";
       conventionId: ConventionId;
       role: ConventionActorRole;
       expiresAt: DateTimeIsoString;
     };
-  }[K];
-}[OtpChallengePurpose];
+  }[P];
+}[K];

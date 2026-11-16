@@ -18,7 +18,7 @@ export type OtpChallengeRoutes = typeof otpChallengeRoutes;
 export const otpChallengeRoutes = defineRoutes({
   getVisitorSession: defineRoute({
     method: "get",
-    url: "/otp-challenge/session",
+    url: "/otp/session",
     queryParamsSchema: getVisitorSessionQueryParamsSchema,
     responses: {
       200: activeVisitorSessionSchema,
@@ -29,7 +29,7 @@ export const otpChallengeRoutes = defineRoutes({
   }),
   getMaskedOtpRecipient: defineRoute({
     method: "get",
-    url: "/otp-challenge/masked-otp-recipient",
+    url: "/otp/masked-otp-recipient",
     ...withAuthorizationHeaders,
     responses: {
       200: maskedOtpRecipientsSchema,
@@ -41,7 +41,7 @@ export const otpChallengeRoutes = defineRoutes({
   }),
   requestOtpChallenge: defineRoute({
     method: "post",
-    url: "/otp-challenge",
+    url: "/otp",
     requestBodySchema: requestOtpChallengeSchema,
     ...withAuthorizationHeaders,
     responses: {
@@ -55,7 +55,7 @@ export const otpChallengeRoutes = defineRoutes({
   }),
   verifyOtpChallenge: defineRoute({
     method: "post",
-    url: "/otp-challenge/verify",
+    url: "/otp/verify",
     requestBodySchema: verifyOtpChallengeSchema,
     ...withAuthorizationHeaders,
     responses: {

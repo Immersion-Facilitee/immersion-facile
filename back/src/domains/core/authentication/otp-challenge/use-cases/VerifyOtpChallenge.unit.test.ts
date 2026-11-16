@@ -16,7 +16,7 @@ import {
 } from "../../../unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../../unit-of-work/adapters/InMemoryUowPerformer";
 import { TestUuidGenerator } from "../../../uuid-generator/adapters/UuidGeneratorImplementations";
-import { makeHashOtpCode } from "../adapters/hashOtpCode";
+import { makeHashOtpCode } from "../entities/otpChallenge.helper";
 import {
   makeVerifyOtpChallenge,
   type VerifyOtpChallenge,

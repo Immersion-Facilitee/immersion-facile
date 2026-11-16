@@ -76,8 +76,12 @@ describe.each(["Pg", "InMemory"])("%s VisitorSessionRepository", (adapter) => {
   });
 
   describe("revoke", () => {
-    it("revokes an existing visitor session", async () => {
+    it("revokes only the targeted visitor session", async () => {
+      const otherVisitorSession = new VisitorSessionDtoBuilder()
+        .withId("33333333-3333-4333-a333-333333333333")
+        .build();
       await visitorSessionRepository.save(visitorSession);
+      await visitorSessionRepository.save(otherVisitorSession);
 
       await visitorSessionRepository.revoke({
         id: visitorSession.id,
@@ -90,6 +94,10 @@ describe.each(["Pg", "InMemory"])("%s VisitorSessionRepository", (adapter) => {
           .withRevokedAt("2024-04-28T10:45:00.000Z")
           .build(),
       );
+      expectToEqual(
+        await visitorSessionRepository.getById(otherVisitorSession.id),
+        otherVisitorSession,
+      );
     });
 
     it("fails to revoke a visitor session that does not exist", async () => {
@@ -99,6 +107,22 @@ describe.each(["Pg", "InMemory"])("%s VisitorSessionRepository", (adapter) => {
           revokedAt: new Date("2024-04-28T10:45:00.000Z"),
         }),
         errors.visitorSession.notFound(unknownVisitorSessionId),
+      );
+    });
+
+    it("fails to revoke a visitor session already revoked and keeps its first revocation date", async () => {
+      await visitorSessionRepository.save(visitorSessionWithRevokedAt);
+
+      await expectPromiseToFailWithError(
+        visitorSessionRepository.revoke({
+          id: visitorSessionWithRevokedAt.id,
+          revokedAt: new Date("2024-04-28T12:10:00.000Z"),
+        }),
+        errors.visitorSession.notFound(visitorSessionWithRevokedAt.id),
+      );
+      expectToEqual(
+        await visitorSessionRepository.getById(visitorSessionWithRevokedAt.id),
+        visitorSessionWithRevokedAt,
       );
     });
   });

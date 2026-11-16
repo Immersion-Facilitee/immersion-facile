@@ -27,7 +27,7 @@ import type {
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../useCaseBuilder";
 import type { UuidGenerator } from "../../../uuid-generator/ports/UuidGenerator";
-import type { HashOtpCode } from "../adapters/hashOtpCode";
+import type { HashOtpCode } from "../entities/otpChallenge.helper";
 import type { OtpCodeGeneratorGateway } from "../port/OtpCodeGeneratorGateway";
 
 const MIN_SECONDS_BETWEEN_OTP_CHALLENGE_REQUESTS = 60;

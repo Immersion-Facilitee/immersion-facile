@@ -3663,7 +3663,8 @@ Vous pouvez vous rapprocher du candidat ${getFormattedFirstnameAndLastname({ fir
       tags: [
         "template:authentificationOTPCode",
         "theme:authentification",
-        "acteur:tous",
+        "acteur:candidat",
+        "acteur:entreprise",
         "role:beneficiaire",
         "role:employeurActuel",
         "role:representantLégal",

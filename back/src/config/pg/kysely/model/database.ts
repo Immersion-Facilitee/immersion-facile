@@ -15,6 +15,7 @@ import type {
   Email,
   EstablishmentUserRightStatus,
   ImmersionDuration,
+  OtpChallengePurpose,
   PhoneStatus,
   SiretDto,
   SubscriberErrorFeedback,
@@ -501,7 +502,7 @@ interface OngoingOauths {
 
 interface OtpChallenges {
   id: string;
-  purpose: string;
+  purpose: OtpChallengePurpose;
   subject: Json;
   channel: "email" | "sms";
   recipient: string;
@@ -515,7 +516,7 @@ interface OtpChallenges {
 
 interface VisitorSessions {
   id: string;
-  purpose: string;
+  purpose: OtpChallengePurpose;
   subject: Json;
   expires_at: Timestamp;
   revoked_at: Timestamp | null;

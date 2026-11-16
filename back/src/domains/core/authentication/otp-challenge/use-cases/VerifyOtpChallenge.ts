@@ -13,7 +13,7 @@ import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../../unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../../useCaseBuilder";
 import type { UuidGenerator } from "../../../uuid-generator/ports/UuidGenerator";
-import type { HashOtpCode } from "../adapters/hashOtpCode";
+import type { HashOtpCode } from "../entities/otpChallenge.helper";
 
 const MAX_OTP_CHALLENGE_ATTEMPTS = 5;
 

@@ -25,21 +25,22 @@ export type OtpChallengeSubjectByPurpose = {
   }[K];
 };
 
-export type OtpChallenge = {
-  [K in OtpChallengePurpose]: {
-    id: OtpChallengeId;
-    purpose: K;
-    subject: OtpChallengeSubjectByPurpose[K];
-    channel: NotificationKind;
-    recipient: Email | PhoneNumber;
-    codeHash: string;
-    attempts: number;
-    expiresAt: DateTimeIsoString;
-    usedAt: DateTimeIsoString | null;
-    revokedAt: DateTimeIsoString | null;
-    createdAt: DateTimeIsoString;
-  };
-}[OtpChallengePurpose];
+export type OtpChallenge<K extends OtpChallengePurpose = OtpChallengePurpose> =
+  {
+    [P in K]: {
+      id: OtpChallengeId;
+      purpose: P;
+      subject: OtpChallengeSubjectByPurpose[P];
+      channel: NotificationKind;
+      recipient: Email | PhoneNumber;
+      codeHash: string;
+      attempts: number;
+      expiresAt: DateTimeIsoString;
+      usedAt: DateTimeIsoString | null;
+      revokedAt: DateTimeIsoString | null;
+      createdAt: DateTimeIsoString;
+    };
+  }[K];
 
 export type MaskedOtpRecipients = {
   maskedEmail: string;

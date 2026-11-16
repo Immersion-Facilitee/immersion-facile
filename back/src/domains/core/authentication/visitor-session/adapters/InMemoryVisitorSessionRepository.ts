@@ -41,7 +41,8 @@ export class InMemoryVisitorSessionRepository
   }: RevokeVisitorSessionParams): Promise<void> {
     const visitorSession = this.#visitorSessionsById[id];
 
-    if (!visitorSession) throw errors.visitorSession.notFound(id);
+    if (!visitorSession || visitorSession.revokedAt !== null)
+      throw errors.visitorSession.notFound(id);
 
     this.#visitorSessionsById[id] = {
       ...visitorSession,

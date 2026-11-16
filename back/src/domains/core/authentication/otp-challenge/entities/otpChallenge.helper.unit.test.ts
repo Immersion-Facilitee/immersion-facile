@@ -1,6 +1,6 @@
-import { makeHashOtpCode } from "./hashOtpCode";
+import { makeHashOtpCode } from "./otpChallenge.helper";
 
-describe("hashOtpCode", () => {
+describe("makeHashOtpCode", () => {
   const hashOtpCode = makeHashOtpCode("test-otp-code-hmac-secret");
 
   it("is deterministic for the same challenge and code", () => {
