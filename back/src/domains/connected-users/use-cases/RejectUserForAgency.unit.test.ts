@@ -254,7 +254,7 @@ describe("RejectUserForAgency", () => {
         }),
       ];
 
-      uow.userRepository.users = usersInRepo;
+      uow.userRepository.users = [...usersInRepo];
 
       await rejectUserForAgencyUsecase.execute(
         {

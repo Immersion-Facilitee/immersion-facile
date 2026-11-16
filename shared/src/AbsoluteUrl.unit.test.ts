@@ -6,7 +6,7 @@ import {
 } from "./AbsoluteUrl";
 
 describe("toAbsoluteUrl conversion", () => {
-  const urlsToCheck = [
+  const urlsToCheck: [string, AbsoluteUrl][] = [
     ["beta.gouv.fr", "https://beta.gouv.fr"],
     ["mon-site.fr.st", "https://mon-site.fr.st"],
     ["super-site.com", "https://super-site.com"],

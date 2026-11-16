@@ -248,8 +248,9 @@ describe("PgBroadcastFeedbacksRepository", () => {
           ? {
               subscriber_error_feedback: {
                 message: broadcastFeedback.subscriberErrorFeedback.message,
-                error: JSON.parse(
-                  JSON.stringify(
+                error: JSON.stringify(
+                  broadcastFeedback.subscriberErrorFeedback.error,
+                  Object.getOwnPropertyNames(
                     broadcastFeedback.subscriberErrorFeedback.error,
                   ),
                 ),
