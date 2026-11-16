@@ -2,9 +2,6 @@
   "$schema": "https://turborepo.org/schema.json",
   "globalPassThroughEnv": ["SSH_AUTH_SOCK"],
   "tasks": {
-    "transit": {
-      "dependsOn": ["^transit"]
-    },
     "includecheck": {
       "outputs": []
     },
@@ -12,7 +9,11 @@
       "outputs": []
     },
     "check": {
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/biome.json"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/biome.json",
+        "$TURBO_ROOT$/.biome.grit.rules/**"
+      ],
       "outputs": []
     },
     "lint": {
@@ -27,14 +28,14 @@
       "persistent": true
     },
     "typecheck": {
-      "dependsOn": ["transit"],
+      "dependsOn": ["^typecheck"],
       "outputs": []
     },
     "verify-migrations-order": {
       "cache": false
     },
     "test": {
-      "dependsOn": ["transit"],
+      "dependsOn": ["typecheck"],
       "outputs": []
     }
   }
