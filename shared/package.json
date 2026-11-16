@@ -6,7 +6,7 @@
     "includecheck": "./check_includes.sh",
     "check": "pnpm -w check:glob ./shared/src",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
-    "test": "jest --testRegex=.unit.test.ts",
+    "test": "TZ=Europe/Paris bun test --only-failures .unit.test.ts",
     "fullcheck": "pnpm -w fullcheck --filter=shared"
   },
   "devDependencies": {

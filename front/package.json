@@ -2,7 +2,7 @@
   "name": "front",
   "version": "0.0.0",
   "scripts": {
-    "test": "jest --verbose --testRegex='^((?!(integration|manual)).)*.test.ts$'",
+    "test": "bun test --only-failures",
     "test:manual": "jest --runInBand --watchAll --testRegex=.manual.test.ts",
     "setup-env-vars": "chmod +x ./env.sh && ./env.sh",
     "setup-env-vars-build": "chmod +x ./env.sh && ./env.sh ./dist/env-config.js",

@@ -14,7 +14,7 @@
     "noImplicitOverride": true,
     "noUncheckedSideEffectImports": false,
     "noEmit": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "types": ["*"],
     "paths": {
       "src/*": ["./src/*"],
