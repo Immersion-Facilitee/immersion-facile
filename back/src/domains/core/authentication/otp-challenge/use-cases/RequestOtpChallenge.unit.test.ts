@@ -176,7 +176,7 @@ describe("RequestOtpChallenge", () => {
 
         uow.conventionRepository.setConventions([conventionWithLandlinePhone]);
         uuidGenerator.setNextUuids(["otp-challenge-id"]);
-        otpCodeGeneratorGateway.setNextOtpCodes(["123456"]);
+        otpCodeGeneratorGateway.setNextOtpCodes(["1234"]);
 
         await expectPromiseToFailWithError(
           requestOtpChallenge.execute(
@@ -202,30 +202,30 @@ describe("RequestOtpChallenge", () => {
         expectSavedNotificationsAndEvents({ emails: [], sms: [] });
       });
 
-      it("should throw and not create otp challenge if an otp challenge was requested too recently for the same subject", async () => {
+      it("should throw and not create otp challenge if an otp challenge was requested less than 60 seconds ago for the same subject", async () => {
         const convention: ConventionDto = new ConventionDtoBuilder().build();
         const subject: VisitorOtpJwtPayload["subject"] = {
           conventionId: convention.id,
           role: "beneficiary",
           emailHash: makeEmailHash(convention.signatories.beneficiary.email),
         };
-        const otpChallengeRequestedThirtySecondsAgo =
+        const otpChallengeRequestedOneMillisecondLessThanSixtySecondsAgo =
           new OtpChallengeDtoBuilder()
             .withId("recent-otp-challenge-id")
             .withSubject(subject)
             .withRecipient(convention.signatories.beneficiary.email)
-            .withCreatedAt("2026-11-02T09:59:30.000Z")
-            .withExpiresAt("2026-11-02T10:29:30.000Z")
+            .withCreatedAt("2026-11-02T09:59:00.001Z")
+            .withExpiresAt("2026-11-02T10:14:00.001Z")
             .build();
 
         uow.conventionRepository.setConventions([convention]);
         uow.otpChallengeRepository.otpChallenges = [
-          otpChallengeRequestedThirtySecondsAgo,
+          otpChallengeRequestedOneMillisecondLessThanSixtySecondsAgo,
         ];
 
         timeGateway.defaultDate = new Date("2026-11-02T10:00:00.000Z");
         uuidGenerator.setNextUuids(["otp-challenge-id"]);
-        otpCodeGeneratorGateway.setNextOtpCodes(["123456"]);
+        otpCodeGeneratorGateway.setNextOtpCodes(["1234"]);
 
         await expectPromiseToFailWithError(
           requestOtpChallenge.execute(
@@ -241,7 +241,7 @@ describe("RequestOtpChallenge", () => {
         );
 
         expectToEqual(uow.otpChallengeRepository.otpChallenges, [
-          otpChallengeRequestedThirtySecondsAgo,
+          otpChallengeRequestedOneMillisecondLessThanSixtySecondsAgo,
         ]);
         expectSavedNotificationsAndEvents({ emails: [], sms: [] });
       });
@@ -274,7 +274,7 @@ describe("RequestOtpChallenge", () => {
           otpChallengesRequestedWithinLastHour;
         timeGateway.defaultDate = new Date("2026-11-02T10:00:00.000Z");
         uuidGenerator.setNextUuids(["otp-challenge-id"]);
-        otpCodeGeneratorGateway.setNextOtpCodes(["123456"]);
+        otpCodeGeneratorGateway.setNextOtpCodes(["1234"]);
 
         await expectPromiseToFailWithError(
           requestOtpChallenge.execute(
@@ -301,7 +301,7 @@ describe("RequestOtpChallenge", () => {
     describe("Right path", () => {
       const now = new Date("2026-11-02T10:00:00.000Z");
       const otpChallengeId = "otp-challenge-id";
-      const otpCode = "123456";
+      const otpCode = "1234";
 
       const convention: ConventionDto = new ConventionDtoBuilder()
         .withBeneficiaryEmail("beneficiary@email.fr")
@@ -531,6 +531,58 @@ describe("RequestOtpChallenge", () => {
             ...otpChallenge,
             revokedAt: now.toISOString(),
           })),
+          {
+            id: otpChallengeId,
+            purpose: "manageConvention",
+            subject,
+            channel: "email",
+            recipient: "beneficiary@email.fr",
+            codeHash: hashOtpCode({ otpChallengeId, otpCode }),
+            attempts: 0,
+            expiresAt: "2026-11-02T10:15:00.000Z",
+            usedAt: null,
+            revokedAt: null,
+            createdAt: now.toISOString(),
+          },
+        ]);
+      });
+
+      it("should create otp challenge when the previous one of the same subject was requested exactly 60 seconds ago", async () => {
+        const subject: VisitorOtpJwtPayload["subject"] = {
+          conventionId: convention.id,
+          role: "beneficiary",
+          emailHash: makeEmailHash("beneficiary@email.fr"),
+        };
+        const otpChallengeRequestedSixtySecondsAgo =
+          new OtpChallengeDtoBuilder()
+            .withId("otp-challenge-requested-sixty-seconds-ago")
+            .withSubject(subject)
+            .withRecipient("beneficiary@email.fr")
+            .withCreatedAt("2026-11-02T09:59:00.000Z")
+            .withExpiresAt("2026-11-02T10:14:00.000Z")
+            .build();
+
+        uow.conventionRepository.setConventions([convention]);
+        uow.otpChallengeRepository.otpChallenges = [
+          otpChallengeRequestedSixtySecondsAgo,
+        ];
+        timeGateway.defaultDate = now;
+        uuidGenerator.setNextUuids([otpChallengeId]);
+        otpCodeGeneratorGateway.setNextOtpCodes([otpCode]);
+
+        await requestOtpChallenge.execute(
+          { channel: "email" },
+          {
+            ...visitorOtpJwtPayload,
+            subject,
+          },
+        );
+
+        expectToEqual(uow.otpChallengeRepository.otpChallenges, [
+          {
+            ...otpChallengeRequestedSixtySecondsAgo,
+            revokedAt: now.toISOString(),
+          },
           {
             id: otpChallengeId,
             purpose: "manageConvention",

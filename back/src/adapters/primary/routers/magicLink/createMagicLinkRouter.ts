@@ -20,7 +20,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.createAssessment(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res.status(201), () =>
         deps.useCases.createAssessment.execute(
@@ -31,7 +31,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.getAssessmentByConventionId(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.getAssessmentByConventionId.execute(
@@ -42,7 +42,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.getConvention(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.getConvention.execute(
@@ -53,7 +53,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.updateConvention(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.updateConvention.execute(
@@ -64,7 +64,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.updateConventionStatus(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.updateConventionStatus.execute(
@@ -75,7 +75,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.signConvention(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.signConvention.execute(
@@ -86,7 +86,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.signAssessment(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.signAssessment.execute(
@@ -97,7 +97,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.getConventionStatusDashboard(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.getDashboard.execute(
@@ -111,7 +111,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.editConventionWithFinalStatus(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.editConventionWithFinalStatus.execute(
@@ -122,7 +122,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.sendSignatureLink(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.sendSignatureLink.execute(
@@ -137,7 +137,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.sendAssessmentLink(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.sendAssessmentLink.execute(
@@ -148,7 +148,7 @@ export const createMagicLinkRouter = (deps: AppDependencies) => {
   );
 
   sharedRouter.sendAssessmentSignatureReminder(
-    deps.conventionMagicLinkOrVisitorSessionAuthMiddleware,
+    deps.conventionMagicLinkOrOtpSessionAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.sendAssessmentSignatureReminder.execute(

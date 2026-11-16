@@ -16,12 +16,12 @@ import {
   makeHighlightFeatureFlag,
   makeTextImageAndRedirectFeatureFlag,
   makeTextWithSeverityFeatureFlag,
+  OtpSessionDtoBuilder,
+  otpSessionCookieName,
   type ShortLinkId,
   type TechnicalRoutes,
   technicalRoutes,
   type ValidateEmailFeedback,
-  VisitorSessionDtoBuilder,
-  visitorSessionCookieName,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -162,14 +162,14 @@ describe("technical router", () => {
       expectToEqual(response.status, 200);
     });
 
-    describe("with visitor session cookie", () => {
+    describe("with otp session cookie", () => {
       const now = new Date("2026-11-05T10:00:00.000Z");
       const conventionId: ConventionId = "convention-id";
       const htmlToPdfBody = {
         htmlContent: "<p>some html content</p>",
         conventionId,
       };
-      const visitorSession = new VisitorSessionDtoBuilder()
+      const otpSession = new OtpSessionDtoBuilder()
         .withSubject({
           conventionId,
           role: "beneficiary",
@@ -181,16 +181,16 @@ describe("technical router", () => {
 
       beforeEach(() => {
         gateways.timeGateway.defaultDate = now;
-        inMemoryUow.visitorSessionRepository.visitorSessions = [visitorSession];
+        inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
       });
 
       it(`${displayRouteName(
         technicalRoutes.htmlToPdf,
-      )} 200 - with visitor session cookie only`, async () => {
+      )} 200 - with otp session cookie only`, async () => {
         const { status, body } = await request
           .post(technicalRoutes.htmlToPdf.url)
           .send(htmlToPdfBody)
-          .set("Cookie", `${visitorSessionCookieName}=${visitorSession.id}`);
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
 
         expectHttpResponseToEqual(
           { status, body, headers: {} },
@@ -203,7 +203,7 @@ describe("technical router", () => {
 
       it(`${displayRouteName(
         technicalRoutes.htmlToPdf,
-      )} 400 - without authorization nor visitor session cookie`, async () => {
+      )} 400 - without authorization nor otp session cookie`, async () => {
         const response = await httpClient.htmlToPdf({
           body: htmlToPdfBody,
           headers: {},

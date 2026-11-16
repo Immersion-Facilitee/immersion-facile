@@ -4,6 +4,7 @@ import {
   currentJwtVersions,
   errors,
   expectPromiseToFailWithError,
+  expectToEqual,
   type VisitorOtpJwtPayload,
 } from "shared";
 import { makeEmailHash } from "../../../../../utils/jwt";
@@ -167,7 +168,7 @@ describe("GetMaskedOtpRecipients", () => {
           role: "beneficiary" as const,
           email: "beneficiary@email.fr",
           expectedMaskedRecipients: {
-            maskedEmail: "b**********@email.fr",
+            maskedEmail: "b*********y@email.fr",
             maskedPhone: "06******78",
           },
         },
@@ -175,7 +176,7 @@ describe("GetMaskedOtpRecipients", () => {
           role: "establishment-representative" as const,
           email: "patron@email.com",
           expectedMaskedRecipients: {
-            maskedEmail: "p*****@email.com",
+            maskedEmail: "p****n@email.com",
             maskedPhone: "06******89",
           },
         },
@@ -183,7 +184,7 @@ describe("GetMaskedOtpRecipients", () => {
           role: "establishment-tutor" as const,
           email: "tuteur@email.com",
           expectedMaskedRecipients: {
-            maskedEmail: "t*****@email.com",
+            maskedEmail: "t****r@email.com",
             maskedPhone: "06******91",
           },
         },
@@ -191,7 +192,7 @@ describe("GetMaskedOtpRecipients", () => {
           role: "beneficiary-representative" as const,
           email: "parent@email.com",
           expectedMaskedRecipients: {
-            maskedEmail: "p*****@email.com",
+            maskedEmail: "p****t@email.com",
             maskedPhone: "06******12",
           },
         },
@@ -199,7 +200,7 @@ describe("GetMaskedOtpRecipients", () => {
           role: "beneficiary-current-employer" as const,
           email: "employeur@email.com",
           expectedMaskedRecipients: {
-            maskedEmail: "e********@email.com",
+            maskedEmail: "e*******r@email.com",
             maskedPhone: "06******23",
           },
         },
@@ -220,7 +221,7 @@ describe("GetMaskedOtpRecipients", () => {
             },
           );
 
-          expect(maskedRecipients).toEqual(expectedMaskedRecipients);
+          expectToEqual(maskedRecipients, expectedMaskedRecipients);
         },
       );
     });
@@ -245,10 +246,46 @@ describe("GetMaskedOtpRecipients", () => {
         },
       });
 
-      expect(maskedRecipients).toEqual({
-        maskedEmail: "b**********@email.fr",
+      expectToEqual(maskedRecipients, {
+        maskedEmail: "b*********y@email.fr",
         maskedPhone: null,
       });
     });
+
+    it.each([
+      { email: "a@email.fr", expectedMaskedEmail: "*@email.fr" },
+      { email: "ab@email.fr", expectedMaskedEmail: "a*@email.fr" },
+      { email: "abc@email.fr", expectedMaskedEmail: "a*c@email.fr" },
+    ])(
+      "should mask the short local part of $email",
+      async ({ email, expectedMaskedEmail }) => {
+        const conventionWithShortBeneficiaryEmail: ConventionDto =
+          new ConventionDtoBuilder()
+            .withBeneficiaryEmail(email)
+            .withBeneficiaryPhone("+33612345678")
+            .build();
+
+        uow.conventionRepository.setConventions([
+          conventionWithShortBeneficiaryEmail,
+        ]);
+
+        const maskedRecipients = await getMaskedOtpRecipients.execute(
+          undefined,
+          {
+            ...visitorOtpJwtPayload,
+            subject: {
+              conventionId: conventionWithShortBeneficiaryEmail.id,
+              role: "beneficiary",
+              emailHash: makeEmailHash(email),
+            },
+          },
+        );
+
+        expectToEqual(maskedRecipients, {
+          maskedEmail: expectedMaskedEmail,
+          maskedPhone: "06******78",
+        });
+      },
+    );
   });
 });

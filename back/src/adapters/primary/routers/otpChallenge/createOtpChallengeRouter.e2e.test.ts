@@ -6,14 +6,14 @@ import {
   errors,
   expectHttpResponseToEqual,
   expectToEqual,
-  type GetVisitorSessionQueryParams,
+  type GetOtpSessionQueryParams,
   immersionFacileNoReplyEmailSender,
   type OtpChallenge,
   OtpChallengeDtoBuilder,
   type OtpChallengeId,
   type OtpChallengeRoutes,
+  OtpSessionDtoBuilder,
   otpChallengeRoutes,
-  VisitorSessionDtoBuilder,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
@@ -100,7 +100,7 @@ describe("otp challenge router", () => {
       expectHttpResponseToEqual(response, {
         status: 200,
         body: {
-          maskedEmail: "b**********@email.fr",
+          maskedEmail: "b*********y@email.fr",
           maskedPhone: "06******78",
         },
       });
@@ -187,7 +187,7 @@ describe("otp challenge router", () => {
 
   describe(`${displayRouteName(otpChallengeRoutes.requestOtpChallenge)}`, () => {
     const now = new Date("2026-11-02T10:00:00.000Z");
-    const otpCode = "123456";
+    const otpCode = "1234";
     const otpChallengeId: OtpChallengeId =
       "11111111-1111-4111-a111-111111111111";
 
@@ -412,11 +412,80 @@ describe("otp challenge router", () => {
         },
       });
     });
+
+    it("429 - too many otp challenges requested over the period", async () => {
+      const otpChallengesRequestedWithinLastHour = [
+        new OtpChallengeDtoBuilder()
+          .withId("22222222-2222-4222-a222-222222222222")
+          .withSubject(visitorOtpJwtPayload.subject)
+          .withRecipient(convention.signatories.beneficiary.email)
+          .withCreatedAt("2026-11-02T09:05:00.000Z")
+          .withExpiresAt("2026-11-02T09:20:00.000Z")
+          .withRevokedAt("2026-11-02T09:15:00.000Z")
+          .build(),
+        new OtpChallengeDtoBuilder()
+          .withId("33333333-3333-4333-a333-333333333333")
+          .withSubject(visitorOtpJwtPayload.subject)
+          .withRecipient(convention.signatories.beneficiary.email)
+          .withCreatedAt("2026-11-02T09:15:00.000Z")
+          .withExpiresAt("2026-11-02T09:30:00.000Z")
+          .withRevokedAt("2026-11-02T09:25:00.000Z")
+          .build(),
+        new OtpChallengeDtoBuilder()
+          .withId("44444444-4444-4444-a444-444444444444")
+          .withSubject(visitorOtpJwtPayload.subject)
+          .withRecipient(convention.signatories.beneficiary.email)
+          .withCreatedAt("2026-11-02T09:25:00.000Z")
+          .withExpiresAt("2026-11-02T09:40:00.000Z")
+          .withRevokedAt("2026-11-02T09:35:00.000Z")
+          .build(),
+        new OtpChallengeDtoBuilder()
+          .withId("55555555-5555-4555-a555-555555555555")
+          .withSubject(visitorOtpJwtPayload.subject)
+          .withRecipient(convention.signatories.beneficiary.email)
+          .withCreatedAt("2026-11-02T09:35:00.000Z")
+          .withExpiresAt("2026-11-02T09:50:00.000Z")
+          .withRevokedAt("2026-11-02T09:45:00.000Z")
+          .build(),
+        new OtpChallengeDtoBuilder()
+          .withId("66666666-6666-4666-a666-666666666666")
+          .withSubject(visitorOtpJwtPayload.subject)
+          .withRecipient(convention.signatories.beneficiary.email)
+          .withCreatedAt("2026-11-02T09:45:00.000Z")
+          .withExpiresAt("2026-11-02T10:00:00.000Z")
+          .build(),
+      ];
+      inMemoryUow.otpChallengeRepository.otpChallenges =
+        otpChallengesRequestedWithinLastHour;
+
+      const response = await httpClient.requestOtpChallenge({
+        body: { channel: "email" },
+        headers: {
+          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 429,
+        body: {
+          status: 429,
+          message: errors.otpChallenge.tooManyRequests({
+            maxRequests: 5,
+            periodInMinutes: 60,
+          }).message,
+        },
+      });
+      expectToEqual(
+        inMemoryUow.otpChallengeRepository.otpChallenges,
+        otpChallengesRequestedWithinLastHour,
+      );
+      expectSavedNotificationsAndEvents({ emails: [], sms: [] });
+    });
   });
 
   describe(`${displayRouteName(otpChallengeRoutes.verifyOtpChallenge)}`, () => {
     const now = new Date();
-    const otpCode = "123456";
+    const otpCode = "1234";
     const otpChallengeId: OtpChallengeId =
       "11111111-1111-4111-a111-111111111111";
     let otpChallenge: OtpChallenge;
@@ -433,7 +502,7 @@ describe("otp challenge router", () => {
       inMemoryUow.otpChallengeRepository.otpChallenges = [otpChallenge];
     });
 
-    it("204 - verifies otp code, creates visitor session and sets cookie", async () => {
+    it("204 - verifies otp code, creates otp session and sets cookie", async () => {
       const response = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
@@ -445,10 +514,9 @@ describe("otp challenge router", () => {
         status: 204,
         body: {},
       });
-      const visitorSession =
-        inMemoryUow.visitorSessionRepository.visitorSessions[0];
+      const otpSession = inMemoryUow.otpSessionRepository.otpSessions[0];
       expectToEqual(response.headers["set-cookie"], [
-        `if_visitor=${visitorSession.id}; Path=/; Expires=${new Date(visitorSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
+        `if_visitor=${otpSession.id}; Path=/; Expires=${new Date(otpSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
     });
 
@@ -478,10 +546,10 @@ describe("otp challenge router", () => {
           status: 204,
           body: {},
         });
-        const visitorSession =
-          testApp.inMemoryUow.visitorSessionRepository.visitorSessions[0];
+        const otpSession =
+          testApp.inMemoryUow.otpSessionRepository.otpSessions[0];
         expectToEqual(response.headers["set-cookie"], [
-          `if_visitor=${visitorSession.id}; Path=/; Expires=${new Date(visitorSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
+          `if_visitor=${otpSession.id}; Path=/; Expires=${new Date(otpSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
         ]);
       },
     );
@@ -494,8 +562,7 @@ describe("otp challenge router", () => {
         },
       });
       expect(firstResponse.status).toBe(204);
-      const firstSession =
-        inMemoryUow.visitorSessionRepository.visitorSessions[0];
+      const firstSession = inMemoryUow.otpSessionRepository.otpSessions[0];
 
       const otherConvention = new ConventionDtoBuilder(convention)
         .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
@@ -526,11 +593,10 @@ describe("otp challenge router", () => {
         .set("Cookie", `if_visitor=${firstSession.id}`)
         .send({ otpCode });
       expect(secondResponse.status).toBe(204);
-      const secondSession =
-        inMemoryUow.visitorSessionRepository.visitorSessions.find(
-          ({ subject }) => subject.conventionId === otherConvention.id,
-        );
-      if (!secondSession) throw new Error("Missing second visitor session");
+      const secondSession = inMemoryUow.otpSessionRepository.otpSessions.find(
+        ({ subject }) => subject.conventionId === otherConvention.id,
+      );
+      if (!secondSession) throw new Error("Missing second otp session");
       expect(secondResponse.headers["set-cookie"]).toEqual([
         `if_visitor=${secondSession.id}; Path=/; Expires=${new Date(secondSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
@@ -543,7 +609,7 @@ describe("otp challenge router", () => {
         { conventionId: convention.id, expectedStatus: 401 },
       ]) {
         const response = await request
-          .get(otpChallengeRoutes.getVisitorSession.url)
+          .get(otpChallengeRoutes.getOtpSession.url)
           .query({ purpose: "manageConvention", conventionId })
           .set("Cookie", `if_visitor=${secondSession.id}`);
         expect(response.status).toBe(expectedStatus);
@@ -552,7 +618,7 @@ describe("otp challenge router", () => {
 
     it("400 - invalid otp code does not set cookie", async () => {
       const response = await httpClient.verifyOtpChallenge({
-        body: { otpCode: "000000" },
+        body: { otpCode: "0000" },
         headers: {
           authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
         },
@@ -602,7 +668,7 @@ describe("otp challenge router", () => {
         status: 401,
         body: { status: 401, message: invalidTokenMessage },
       });
-      expectToEqual(inMemoryUow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(inMemoryUow.otpSessionRepository.otpSessions, []);
     });
 
     it("404 - no active otp challenge for the subject", async () => {
@@ -649,33 +715,33 @@ describe("otp challenge router", () => {
         },
       });
       expectToEqual(response.headers["set-cookie"], undefined);
-      expectToEqual(inMemoryUow.visitorSessionRepository.visitorSessions, []);
+      expectToEqual(inMemoryUow.otpSessionRepository.otpSessions, []);
     });
   });
 
-  describe(`${displayRouteName(otpChallengeRoutes.getVisitorSession)}`, () => {
+  describe(`${displayRouteName(otpChallengeRoutes.getOtpSession)}`, () => {
     const now = new Date("2026-11-05T10:00:00.000Z");
-    const visitorSession = new VisitorSessionDtoBuilder()
+    const otpSession = new OtpSessionDtoBuilder()
       .withSubject(visitorOtpJwtPayload.subject)
       .withExpiresAt(addMinutes(now, 60).toISOString())
       .withCreatedAt(now.toISOString())
       .build();
 
-    const manageConventionQuery: GetVisitorSessionQueryParams = {
+    const manageConventionQuery: GetOtpSessionQueryParams = {
       purpose: "manageConvention",
       conventionId: convention.id,
     };
 
     beforeEach(() => {
       timeGateway.defaultDate = now;
-      inMemoryUow.visitorSessionRepository.visitorSessions = [visitorSession];
+      inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
     });
 
-    it("200 - returns active visitor session", async () => {
+    it("200 - returns active otp session", async () => {
       const { status, body } = await request
-        .get(otpChallengeRoutes.getVisitorSession.url)
+        .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -685,14 +751,14 @@ describe("otp challenge router", () => {
             conventionId: convention.id,
             role: "beneficiary",
             purpose: "manageConvention",
-            expiresAt: visitorSession.expiresAt,
+            expiresAt: otpSession.expiresAt,
           },
         },
       );
     });
 
     it("401 - no cookie", async () => {
-      const response = await httpClient.getVisitorSession({
+      const response = await httpClient.getOtpSession({
         queryParams: manageConventionQuery,
       });
 
@@ -700,23 +766,23 @@ describe("otp challenge router", () => {
         status: 401,
         body: {
           status: 401,
-          message: errors.visitorSession.unauthorized().message,
+          message: errors.otpSession.unauthorized().message,
         },
       });
     });
 
     it("401 - ignores legacy convention-specific cookies", async () => {
       const response = await request
-        .get(otpChallengeRoutes.getVisitorSession.url)
+        .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor_${convention.id}=${visitorSession.id}`);
+        .set("Cookie", `if_visitor_${convention.id}=${otpSession.id}`);
 
       expect(response.status).toBe(401);
     });
 
     it("401 - unknown session id", async () => {
       const { status, body } = await request
-        .get(otpChallengeRoutes.getVisitorSession.url)
+        .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
         .set("Cookie", "if_visitor=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
 
@@ -726,7 +792,7 @@ describe("otp challenge router", () => {
           status: 401,
           body: {
             status: 401,
-            message: errors.visitorSession.unauthorized().message,
+            message: errors.otpSession.unauthorized().message,
           },
         },
       );
@@ -742,9 +808,9 @@ describe("otp challenge router", () => {
       } as const;
 
       const { status, body } = await request
-        .get(otpChallengeRoutes.getVisitorSession.url)
+        .get(otpChallengeRoutes.getOtpSession.url)
         .query(queryParams)
-        .set("Cookie", `if_visitor=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -752,23 +818,23 @@ describe("otp challenge router", () => {
           status: 401,
           body: {
             status: 401,
-            message: errors.visitorSession.unauthorized().message,
+            message: errors.otpSession.unauthorized().message,
           },
         },
       );
     });
 
     it("401 - expired session", async () => {
-      inMemoryUow.visitorSessionRepository.visitorSessions = [
-        new VisitorSessionDtoBuilder(visitorSession)
+      inMemoryUow.otpSessionRepository.otpSessions = [
+        new OtpSessionDtoBuilder(otpSession)
           .withExpiresAt(now.toISOString())
           .build(),
       ];
 
       const { status, body } = await request
-        .get(otpChallengeRoutes.getVisitorSession.url)
+        .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -776,23 +842,23 @@ describe("otp challenge router", () => {
           status: 401,
           body: {
             status: 401,
-            message: errors.visitorSession.unauthorized().message,
+            message: errors.otpSession.unauthorized().message,
           },
         },
       );
     });
 
     it("401 - revoked session", async () => {
-      inMemoryUow.visitorSessionRepository.visitorSessions = [
-        new VisitorSessionDtoBuilder(visitorSession)
+      inMemoryUow.otpSessionRepository.otpSessions = [
+        new OtpSessionDtoBuilder(otpSession)
           .withRevokedAt(now.toISOString())
           .build(),
       ];
 
       const { status, body } = await request
-        .get(otpChallengeRoutes.getVisitorSession.url)
+        .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -800,7 +866,7 @@ describe("otp challenge router", () => {
           status: 401,
           body: {
             status: 401,
-            message: errors.visitorSession.unauthorized().message,
+            message: errors.otpSession.unauthorized().message,
           },
         },
       );
@@ -814,9 +880,9 @@ describe("otp challenge router", () => {
       ]);
 
       const { status, body } = await request
-        .get(otpChallengeRoutes.getVisitorSession.url)
+        .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor=${visitorSession.id}`);
+        .set("Cookie", `if_visitor=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -827,7 +893,7 @@ describe("otp challenge router", () => {
             message: errors.convention.forbiddenMissingRightsEmailHash({
               conventionId: convention.id,
               role: "beneficiary",
-              emailHash: visitorSession.subject.emailHash,
+              emailHash: otpSession.subject.emailHash,
             }).message,
           },
         },

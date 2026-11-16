@@ -9,18 +9,18 @@ import {
   otpChallengeSubjectSchema,
 } from "../otpChallenge/otpChallenge.schema";
 import type {
-  ActiveVisitorSession,
-  GetVisitorSessionQueryParams,
-  VisitorSession,
-  VisitorSessionId,
-} from "./visitorSession.dto";
+  ActiveOtpSession,
+  GetOtpSessionQueryParams,
+  OtpSession,
+  OtpSessionId,
+} from "./otpSession.dto";
 
-export const visitorSessionIdSchema: ZodSchemaWithInputMatchingOutput<VisitorSessionId> =
+export const otpSessionIdSchema: ZodSchemaWithInputMatchingOutput<OtpSessionId> =
   zStringMinLength1Max255;
 
-export const visitorSessionSchema: ZodSchemaWithInputMatchingOutput<VisitorSession> =
+export const otpSessionSchema: ZodSchemaWithInputMatchingOutput<OtpSession> =
   z.object({
-    id: visitorSessionIdSchema,
+    id: otpSessionIdSchema,
     purpose: otpChallengePurposeSchema,
     subject: otpChallengeSubjectSchema,
     expiresAt: dateTimeIsoStringSchema,
@@ -28,7 +28,7 @@ export const visitorSessionSchema: ZodSchemaWithInputMatchingOutput<VisitorSessi
     createdAt: dateTimeIsoStringSchema,
   });
 
-export const getVisitorSessionQueryParamsSchema: ZodSchemaWithInputMatchingOutput<GetVisitorSessionQueryParams> =
+export const getOtpSessionQueryParamsSchema: ZodSchemaWithInputMatchingOutput<GetOtpSessionQueryParams> =
   z.discriminatedUnion("purpose", [
     z.object({
       purpose: z.literal("manageConvention"),
@@ -36,7 +36,7 @@ export const getVisitorSessionQueryParamsSchema: ZodSchemaWithInputMatchingOutpu
     }),
   ]);
 
-export const activeVisitorSessionSchema: ZodSchemaWithInputMatchingOutput<ActiveVisitorSession> =
+export const activeOtpSessionSchema: ZodSchemaWithInputMatchingOutput<ActiveOtpSession> =
   z.discriminatedUnion("purpose", [
     z.object({
       purpose: z.literal("manageConvention"),

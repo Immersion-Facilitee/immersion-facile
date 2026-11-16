@@ -67,11 +67,11 @@ export const requestOtpChallengeSchema: ZodSchemaWithInputMatchingOutput<Request
 
 export const otpCodeSchema: ZodSchemaWithInputMatchingOutput<OtpCode> =
   makeHardenedStringSchema({
-    min: 6,
-    max: 6,
+    min: 4,
+    max: 4,
     withRegExp: {
-      regex: /^\d{6}$/,
-      message: "Le code doit contenir 6 chiffres",
+      regex: /^\d{4}$/,
+      message: "Le code doit contenir 4 chiffres",
     },
   });
 

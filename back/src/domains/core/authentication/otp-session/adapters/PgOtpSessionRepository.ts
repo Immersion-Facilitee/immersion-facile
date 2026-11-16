@@ -1,39 +1,39 @@
 import { type Selectable, sql } from "kysely";
 import {
   errors,
-  type VisitorSession,
-  type VisitorSessionId,
-  visitorSessionSchema,
+  type OtpSession,
+  type OtpSessionId,
+  otpSessionSchema,
 } from "shared";
 import type { KyselyDb } from "../../../../../config/pg/kysely/kyselyUtils";
 import type { Database } from "../../../../../config/pg/kysely/model/database";
 import type {
-  GetVisitorSessionsByPurposeAndSubjectParams,
-  RevokeVisitorSessionParams,
-  VisitorSessionRepository,
-} from "../port/VisitorSessionRepository";
+  GetOtpSessionsByPurposeAndSubjectParams,
+  OtpSessionRepository,
+  RevokeOtpSessionParams,
+} from "../port/OtpSessionRepository";
 
-export class PgVisitorSessionRepository implements VisitorSessionRepository {
+export class PgOtpSessionRepository implements OtpSessionRepository {
   constructor(private transaction: KyselyDb) {}
 
-  public async save(visitorSession: VisitorSession): Promise<void> {
+  public async save(otpSession: OtpSession): Promise<void> {
     await this.transaction
-      .insertInto("visitor_sessions")
+      .insertInto("otp_sessions")
       .values({
-        id: visitorSession.id,
-        purpose: visitorSession.purpose,
-        subject: JSON.stringify(visitorSession.subject),
-        expires_at: new Date(visitorSession.expiresAt),
-        revoked_at: visitorSession.revokedAt
-          ? new Date(visitorSession.revokedAt)
+        id: otpSession.id,
+        purpose: otpSession.purpose,
+        subject: JSON.stringify(otpSession.subject),
+        expires_at: new Date(otpSession.expiresAt),
+        revoked_at: otpSession.revokedAt
+          ? new Date(otpSession.revokedAt)
           : null,
-        created_at: new Date(visitorSession.createdAt),
+        created_at: new Date(otpSession.createdAt),
       })
       .execute()
       .catch((error) => {
         // https://www.postgresql.org/docs/current/errcodes-appendix.html
         if (error.code === "23505")
-          throw errors.visitorSession.alreadyExists(visitorSession.id);
+          throw errors.otpSession.alreadyExists(otpSession.id);
 
         throw error;
       });
@@ -42,47 +42,47 @@ export class PgVisitorSessionRepository implements VisitorSessionRepository {
   public async revoke({
     id,
     revokedAt,
-  }: RevokeVisitorSessionParams): Promise<void> {
+  }: RevokeOtpSessionParams): Promise<void> {
     const result = await this.transaction
-      .updateTable("visitor_sessions")
+      .updateTable("otp_sessions")
       .set({ revoked_at: revokedAt })
       .where("id", "=", id)
       .where("revoked_at", "is", null)
       .executeTakeFirst();
 
     if (Number(result.numUpdatedRows) === 0)
-      throw errors.visitorSession.notFound(id);
+      throw errors.otpSession.notFound(id);
   }
 
-  public async getById(id: VisitorSessionId): Promise<VisitorSession | null> {
+  public async getById(id: OtpSessionId): Promise<OtpSession | null> {
     const result = await this.transaction
-      .selectFrom("visitor_sessions")
+      .selectFrom("otp_sessions")
       .selectAll()
       .where("id", "=", id)
       .executeTakeFirst();
 
-    return result ? toVisitorSession(result) : null;
+    return result ? toOtpSession(result) : null;
   }
 
   public async getByPurposeAndSubject({
     purpose,
     subject,
-  }: GetVisitorSessionsByPurposeAndSubjectParams): Promise<VisitorSession[]> {
+  }: GetOtpSessionsByPurposeAndSubjectParams): Promise<OtpSession[]> {
     const results = await this.transaction
-      .selectFrom("visitor_sessions")
+      .selectFrom("otp_sessions")
       .selectAll()
       .where("purpose", "=", purpose)
       .where(sql<boolean>`subject = ${JSON.stringify(subject)}::jsonb`)
       .execute();
 
-    return results.map(toVisitorSession);
+    return results.map(toOtpSession);
   }
 }
 
-const toVisitorSession = (
-  result: Selectable<Database["visitor_sessions"]>,
-): VisitorSession =>
-  visitorSessionSchema.parse({
+const toOtpSession = (
+  result: Selectable<Database["otp_sessions"]>,
+): OtpSession =>
+  otpSessionSchema.parse({
     id: result.id,
     purpose: result.purpose,
     subject: result.subject,

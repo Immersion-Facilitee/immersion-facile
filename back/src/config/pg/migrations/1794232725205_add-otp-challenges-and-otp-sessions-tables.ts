@@ -32,7 +32,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
     where: "used_at IS NULL AND revoked_at IS NULL",
   });
 
-  pgm.createTable("visitor_sessions", {
+  pgm.createTable("otp_sessions", {
     id: {
       type: "uuid",
       primaryKey: true,
@@ -48,11 +48,11 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
       default: pgm.func("now()"),
     },
   });
-  pgm.createIndex("visitor_sessions", ["purpose", "subject"]);
+  pgm.createIndex("otp_sessions", ["purpose", "subject"]);
 }
 
 export async function down(pgm: MigrationBuilder): Promise<void> {
-  pgm.dropTable("visitor_sessions");
+  pgm.dropTable("otp_sessions");
   pgm.dropTable("otp_challenges");
   pgm.dropType("otp_challenge_channel");
   pgm.dropType("otp_challenge_purpose");

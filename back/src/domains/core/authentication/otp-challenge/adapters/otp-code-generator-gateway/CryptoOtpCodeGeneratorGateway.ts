@@ -3,7 +3,7 @@ import type { OtpCode } from "shared";
 import type { OtpCodeGeneratorGateway } from "../../port/OtpCodeGeneratorGateway";
 
 export class CryptoOtpCodeGeneratorGateway implements OtpCodeGeneratorGateway {
-  public readonly codeLength = 6;
+  public readonly codeLength = 4;
 
   public generate(): OtpCode {
     return randomInt(0, 10 ** this.codeLength)
