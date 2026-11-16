@@ -241,11 +241,14 @@ export class EstablishmentAggregateBuilder
   ) {}
 
   withEstablishmentWebsite(website?: AbsoluteUrl | "") {
-    return new EstablishmentAggregateBuilder().withEstablishment(
-      new EstablishmentEntityBuilder(this.aggregate.establishment)
+    return new EstablishmentAggregateBuilder({
+      ...this.aggregate,
+      establishment: new EstablishmentEntityBuilder(
+        this.aggregate.establishment,
+      )
         .withWebsite(website ?? "")
         .build(),
-    );
+    });
   }
 
   public build() {

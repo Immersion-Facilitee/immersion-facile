@@ -5,6 +5,7 @@ import {
   type DiscussionReadDto,
   discussionIdSchema,
   discussionReadSchema,
+  type EstablishmentWebSite,
   errors,
 } from "shared";
 import { validateAndParseZodSchema } from "../../../../config/helpers/validateAndParseZodSchema";
@@ -48,13 +49,22 @@ export const makeGetDiscussionById = useCaseBuilder("GetDiscussionById")
         discussionId: inputParams,
         userId: currentUser.userId,
       });
-    return makeDiscussionRead(discussion, uow);
+    return makeDiscussionRead({
+      discussion,
+      establishmentWebsite: establishmentAggregate.establishment.website,
+      uow,
+    });
   });
 
-const makeDiscussionRead = async (
-  discussion: DiscussionDto,
-  uow: UnitOfWork,
-): Promise<DiscussionReadDto> => {
+const makeDiscussionRead = async ({
+  discussion,
+  establishmentWebsite,
+  uow,
+}: {
+  discussion: DiscussionDto;
+  establishmentWebsite: EstablishmentWebSite | undefined;
+  uow: UnitOfWork;
+}): Promise<DiscussionReadDto> => {
   const { appellationCode, ...rest } = discussion;
 
   const appellation = (
@@ -67,6 +77,7 @@ const makeDiscussionRead = async (
   const discussionRead: DiscussionReadDto = {
     ...rest,
     appellation,
+    ...(establishmentWebsite ? { establishmentWebsite } : {}),
   };
 
   return validateAndParseZodSchema({

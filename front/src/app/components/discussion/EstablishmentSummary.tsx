@@ -1,15 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { BorderedSection, useLayout } from "react-design-system";
 import { type DiscussionReadDto, frontRoutes } from "shared";
-import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { searchSelectors } from "src/core-logic/domain/search/search.selectors";
 
 export const EstablishmentSummary = ({
   discussion,
 }: {
   discussion: DiscussionReadDto;
 }) => {
-  const relatedOffer = useAppSelector(searchSelectors.currentSearchResult);
   const { isLayoutDesktop } = useLayout();
 
   return (
@@ -17,10 +14,10 @@ export const EstablishmentSummary = ({
       <h3 className={fr.cx("fr-h6")}>Entreprise</h3>
 
       <ul className={fr.cx("fr-raw-list")}>
-        {relatedOffer?.website && (
+        {discussion.establishmentWebsite && (
           <li className={fr.cx("fr-mb-1w")}>
             <a
-              href={relatedOffer.website}
+              href={discussion.establishmentWebsite}
               title="Site web de l'entreprise"
               target="_blank"
               rel="noreferrer"
