@@ -1,12 +1,6 @@
 import type { FormFieldKeys } from "src/app/contents/forms/convention/formConvention";
 import type { NumberOfSteps } from "src/core-logic/domain/convention/convention.slice";
-
-export type ConventionEmailValidationRole =
-  | "Bénéficiaire"
-  | "Responsable d'entreprise"
-  | "Tuteur de l'entreprise"
-  | "Représentant légal du bénéficiaire"
-  | "Employeur actuel du bénéficiaire";
+import type { ConventionEmailValidationRole } from "../ConventionForm";
 
 const emailFieldPathByRole: Record<
   ConventionEmailValidationRole,
@@ -22,9 +16,6 @@ const emailFieldPathByRole: Record<
 };
 
 const conventionFormSteps: NumberOfSteps[] = [1, 2, 3, 4, 5];
-
-export const conventionFormStepId = (step: NumberOfSteps): string =>
-  `im-convention-form__step-${step - 1}`;
 
 const isSameOrNestedPath = (path: string, parentPath: string): boolean =>
   path === parentPath || path.startsWith(`${parentPath}.`);

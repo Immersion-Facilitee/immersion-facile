@@ -1,10 +1,8 @@
 import { type RefObject, useEffect, useRef, useState } from "react";
 import type { FormFieldKeys } from "src/app/contents/forms/convention/formConvention";
 import type { NumberOfSteps } from "src/core-logic/domain/convention/convention.slice";
-import {
-  type ConventionEmailValidationRole,
-  makeConventionStepsInError,
-} from "./errorSummarySections";
+import type { ConventionEmailValidationRole } from "../ConventionForm";
+import { makeConventionStepsInError } from "./errorSummarySections";
 
 const formControlSelector =
   "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled])";

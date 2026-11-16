@@ -312,6 +312,8 @@ export const domElementIds = {
     submitFormButton: "im-convention-form__submit-form-button",
     submitFormButtonMobile: "im-convention-form__submit-form-button--mobile",
     errorSummary: "im-convention-form__error-summary",
+    step: ({ currentStep = 1 }) =>
+      `im-convention-form__step-${Number(currentStep) - 1}`,
     errorSummaryStepLink: {
       step1: "im-convention-form__error-summary-step-1-link",
       step2: "im-convention-form__error-summary-step-2-link",

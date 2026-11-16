@@ -543,8 +543,6 @@ const establishmentRepresentativeSection = ({
   },
 });
 
-export type FormFieldKeysWithoutUi = keyof typeof fieldsToExclude;
-
 const fieldsToExclude = {
   agencyContactEmail: {
     label: "",

@@ -8,6 +8,7 @@ import { useFormContext } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import type { ConventionDto, InternshipKind } from "shared";
 import type {
+  ConventionEmailValidationRole,
   EmailValidationErrorsState,
   SetEmailValidationErrorsState,
 } from "src/app/components/forms/convention/ConventionForm";
@@ -85,6 +86,12 @@ export const EstablishmentFormSection = ({
     );
   };
 
+  const clearEmailValidationError = (role: ConventionEmailValidationRole) => {
+    setEmailValidationErrors(
+      ({ [role]: _, ...remainingErrors }) => remainingErrors,
+    );
+  };
+
   const resetTutorFields = () => {
     setValue("establishmentTutor.firstName", "");
     setValue("establishmentTutor.lastName", "");
@@ -130,9 +137,7 @@ export const EstablishmentFormSection = ({
                   ),
                 );
                 if (isTutorRepresentative)
-                  setEmailValidationErrors(
-                    ({ "Tuteur de l'entreprise": _, ...rest }) => rest,
-                  );
+                  clearEmailValidationError("Tuteur de l'entreprise");
                 if (shouldResetTutorFields()) {
                   resetTutorFields();
                 }
