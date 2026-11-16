@@ -18,6 +18,7 @@ import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";
 import type { UnitOfWorkPerformer } from "../../core/unit-of-work/ports/UnitOfWorkPerformer";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import {
+  closeReferringAgencies,
   getInactiveAgenciesAmong,
   isAgencyActiveAfterWarning,
   makeInactiveAgenciesFilters,
@@ -127,6 +128,15 @@ export const makeCloseInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
         await deps.saveNotificationsBatchAndRelatedEvent(uow, notifications, {
           priority: 7,
         });
+
+        await executeInSequence(agenciesToClose, (agency) =>
+          closeReferringAgencies({
+            uow,
+            agencyId: agency.id,
+            now,
+          }),
+        );
+
         numberOfAgenciesClosed += agenciesToClose.length;
       });
     }

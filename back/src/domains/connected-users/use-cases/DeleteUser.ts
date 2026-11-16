@@ -19,6 +19,7 @@ import {
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import z from "zod";
+import { closeReferringAgencies } from "../../agency/helpers/inactiveAgencies.helpers";
 import {
   type DomainEvent,
   type TriggeredBy,
@@ -122,6 +123,19 @@ export const makeDeleteUser = useCaseBuilder("DeleteUser")
           ...agency,
           updatedAt: now.toISOString(),
         }),
+      );
+      await executeInSequence(
+        updatedAgencies.filter(
+          (updatedAgency, index) =>
+            agenciesWithUserRight[index].status !== "closed" &&
+            updatedAgency.status === "closed",
+        ),
+        (agency) =>
+          closeReferringAgencies({
+            uow,
+            agencyId: agency.id,
+            now,
+          }),
       );
       await uow.userRepository.delete(userToDelete.id);
       await uow.outboxRepository.saveNewEventsBatch(

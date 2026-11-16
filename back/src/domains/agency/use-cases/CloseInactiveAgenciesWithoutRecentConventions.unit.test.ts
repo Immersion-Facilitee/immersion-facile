@@ -23,6 +23,7 @@ import {
 } from "../../core/unit-of-work/adapters/createInMemoryUow";
 import { InMemoryUowPerformer } from "../../core/unit-of-work/adapters/InMemoryUowPerformer";
 import { UuidV4Generator } from "../../core/uuid-generator/adapters/UuidGeneratorImplementations";
+import { referringAgencyClosureJustification } from "../helpers/inactiveAgencies.helpers";
 import {
   type CloseInactiveAgenciesWithoutRecentConventions,
   makeCloseInactiveAgenciesWithoutRecentConventions,
@@ -1096,5 +1097,170 @@ describe("CloseInactiveAgenciesWithoutRecentConventions", () => {
         });
       },
     );
+
+    it("should close a recent referring agency outside the batch of inactive agencies without sending it an email", async () => {
+      const recentReferringAgency = AgencyDtoBuilder.create(
+        "recent-referring-id",
+      )
+        .withName("Structure récente")
+        .withUpdatedAt(subMonths(defaultDate, 1))
+        .withRefersToAgencyInfo({
+          refersToAgencyId: agency1.id,
+          refersToAgencyName: agency1.name,
+          refersToAgencyContactEmail: agency1.contactEmail,
+        })
+        .build();
+      const agency1WithRights = toAgencyWithRights(agency1, {
+        [admin1.id]: { isNotifiedByEmail: true, roles: ["agency-admin"] },
+      });
+      const recentReferringAgencyWithRights = toAgencyWithRights(
+        recentReferringAgency,
+        {
+          [admin2.id]: { isNotifiedByEmail: true, roles: ["agency-admin"] },
+        },
+      );
+
+      uow.agencyRepository.agencies = [
+        agency1WithRights,
+        recentReferringAgencyWithRights,
+      ];
+      uow.userRepository.users = [admin1, admin2];
+      uow.conventionRepository.setConventions([]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-agency1",
+          agencyId: agency1.id,
+          agencyName: agency1.name,
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
+          recipientEmail: admin1.email,
+        }),
+      ];
+
+      const result =
+        await closeInactiveAgenciesWithoutRecentConventions.execute({
+          numberOfMonthsWithoutConventionAfterWarning,
+        });
+
+      expectToEqual(result, { numberOfAgenciesClosed: 1 });
+      expectToEqual(uow.agencyRepository.agencies, [
+        {
+          ...agency1WithRights,
+          status: "closed",
+          statusJustification: "Agence fermée automatiquement pour inactivité",
+          updatedAt: timeGateway.now().toISOString(),
+        },
+        {
+          ...recentReferringAgencyWithRights,
+          status: "closed",
+          statusJustification: referringAgencyClosureJustification,
+          updatedAt: timeGateway.now().toISOString(),
+        },
+      ]);
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "AGENCY_CLOSED_FOR_INACTIVITY",
+            recipients: [admin1.email],
+            params: {
+              agencyName: agency1.name,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
+            },
+          },
+        ],
+      });
+    });
+
+    it("should keep the script justification and email when the referring agency is also in the batch", async () => {
+      const referringAgency = new AgencyDtoBuilder(agency2)
+        .withRefersToAgencyInfo({
+          refersToAgencyId: agency1.id,
+          refersToAgencyName: agency1.name,
+          refersToAgencyContactEmail: agency1.contactEmail,
+        })
+        .build();
+      const agency1WithRights = toAgencyWithRights(agency1, {
+        [admin1.id]: { isNotifiedByEmail: true, roles: ["agency-admin"] },
+      });
+      const referringAgencyWithRights = toAgencyWithRights(referringAgency, {
+        [admin2.id]: { isNotifiedByEmail: true, roles: ["agency-admin"] },
+      });
+
+      uow.agencyRepository.agencies = [
+        agency1WithRights,
+        referringAgencyWithRights,
+      ];
+      uow.userRepository.users = [admin1, admin2];
+      uow.conventionRepository.setConventions([]);
+      uow.notificationRepository.notifications = [
+        makeInactivityWarningNotification({
+          id: "warning-agency1",
+          agencyId: agency1.id,
+          agencyName: agency1.name,
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
+          recipientEmail: admin1.email,
+        }),
+        makeInactivityWarningNotification({
+          id: "warning-referring-agency",
+          agencyId: referringAgency.id,
+          agencyName: referringAgency.name,
+          createdAt: subMonths(
+            defaultDate,
+            numberOfMonthsWithoutConventionAfterWarning,
+          ),
+          recipientEmail: admin2.email,
+        }),
+      ];
+
+      await closeInactiveAgenciesWithoutRecentConventions.execute({
+        numberOfMonthsWithoutConventionAfterWarning,
+      });
+
+      expectToEqual(uow.agencyRepository.agencies, [
+        {
+          ...agency1WithRights,
+          status: "closed",
+          statusJustification: "Agence fermée automatiquement pour inactivité",
+          updatedAt: timeGateway.now().toISOString(),
+        },
+        {
+          ...referringAgencyWithRights,
+          status: "closed",
+          statusJustification: "Agence fermée automatiquement pour inactivité",
+          updatedAt: timeGateway.now().toISOString(),
+        },
+      ]);
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "AGENCY_CLOSED_FOR_INACTIVITY",
+            recipients: [admin1.email],
+            params: {
+              agencyName: agency1.name,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
+            },
+          },
+          {
+            kind: "AGENCY_CLOSED_FOR_INACTIVITY",
+            recipients: [admin2.email],
+            params: {
+              agencyName: referringAgency.name,
+              numberOfMonthsWithoutConvention:
+                numberOfMonthsWithoutConventionAfterWarning +
+                numberOfMonthsWithoutConventionBeforeWarning,
+            },
+          },
+        ],
+      });
+    });
   });
 });
