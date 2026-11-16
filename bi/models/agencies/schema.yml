@@ -69,5 +69,7 @@ models:
         description: Whether user has the agency-viewer role at this agency
       - name: to_review
         description: Whether user has the to-review role at this agency
+      - name: is_ambassador
+        description: Whether user is an ambassador (user-level status, same value for all their agencies)
       - name: is_notified_by_email
         description: Whether user receives email notifications

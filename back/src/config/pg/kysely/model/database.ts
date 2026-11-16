@@ -77,6 +77,7 @@ export interface Database {
   short_links: ShortLinks;
   users__agencies: UsersAgencies;
   users_admins: UsersAdmins;
+  users_ambassadors: UsersAmbassadors;
   users_ongoing_oauths: OngoingOauths;
   users: Users;
   view_appellations_dto: ViewAppellationsDto;
@@ -702,6 +703,11 @@ interface DelegationContacts {
 
 interface UsersAdmins {
   user_id: string;
+}
+
+interface UsersAmbassadors {
+  user_id: string;
+  created_at: Generated<Timestamp>;
 }
 
 type NotificationState = JSONColumnType<

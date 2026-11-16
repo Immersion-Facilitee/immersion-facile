@@ -22,6 +22,7 @@ select
     coalesce(au.roles ? 'counsellor', false) as counsellor,
     coalesce(au.roles ? 'agency-viewer', false) as agency_viewer,
     coalesce(au.roles ? 'to-review', false) as to_review,
+    ua.user_id is not null as is_ambassador,
     au.is_notified_by_email,
     u.created_at as user_created_at,
     u.updated_at as user_updated_at,
@@ -30,3 +31,5 @@ select
 from {{ source('immersion', 'users__agencies') }} as au
 inner join {{ source('immersion', 'users') }} as u
     on u.id = au.user_id
+left join {{ source('immersion', 'users_ambassadors') }} as ua
+    on ua.user_id = au.user_id
