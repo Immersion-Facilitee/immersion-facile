@@ -8,4 +8,4 @@ Test shared behavior at its contract boundary.
 - Add regression coverage for utility behavior rather than asserting TypeScript-only structure at runtime.
 - Use existing shared test helpers and nearby domain tests instead of framework mocks.
 
-Run the focused Jest test while iterating. `pnpm shared test` runs the shared test suite; use `pnpm shared typecheck` for contract-level type checking.
+Run the focused test with `bun test <file>` while iterating. `pnpm shared test` runs the shared test suite; use `pnpm shared typecheck` for contract-level type checking.

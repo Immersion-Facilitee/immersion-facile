@@ -29,8 +29,7 @@
       "src/**/*.json",
       "biome.json",
       "tsconfig.json",
-      "package.json",
-      "jest.config.js"
+      "package.json"
     ]
   }
 }

@@ -50,7 +50,7 @@
           "level": "error",
           "options": {
             "paths": {
-              "node:test": "Tests run with Jest: use Jest globals (describe, it, beforeEach, afterEach...) instead of node:test, whose hooks never run under Jest."
+              "node:test": "Tests run with bun test: use its globals (describe, it, beforeEach, afterEach...) instead of node:test."
             }
           }
         }

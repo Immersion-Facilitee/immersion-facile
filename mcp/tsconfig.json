@@ -13,7 +13,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["node", "jest"],
+    "types": ["node"],
     "paths": {
       "shared": ["../shared/src/index.ts"]
     }
