@@ -423,19 +423,14 @@ const createBroadcastFeedbackBaseBuilder = ({
           "bce.id",
           "c.beneficiary_current_employer_id",
         )
-        .innerJoinLateral(
-          (eb) =>
-            eb
-              .selectFrom("broadcast_feedbacks")
-              .selectAll()
-              .whereRef("broadcast_feedbacks.convention_id", "=", "c.id")
-              .where(
-                sql<boolean>`(c.agency_id, broadcast_feedbacks.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
-              )
-              .orderBy("broadcast_feedbacks.occurred_at", "desc")
-              .limit(1)
-              .as("bf"),
-          (join) => join.onTrue(),
+        .innerJoin("broadcast_feedbacks as bf", (join) =>
+          join
+            .onRef("bf.convention_id", "=", "c.id")
+            .on("bf.subscriber_error_feedback", "is not", null)
+            .on("bf.handled_by_agency", "=", false)
+            .on(
+              sql<boolean>`(c.agency_id, bf.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
+            ),
         )
         .select((eb) => [
           eb.ref("c.id").as("conventionId"),
@@ -464,7 +459,22 @@ const createBroadcastFeedbackBaseBuilder = ({
           eb.ref("bf.response").as("response"),
           eb.ref("c.date_submission").as("dateSubmission"),
         ])
-        .where((eb) => isInArray(eb, "c.agency_id", userAgencyIds));
+        .where((eb) => isInArray(eb, "c.agency_id", userAgencyIds))
+        .where(({ not, exists, selectFrom }) =>
+          not(
+            exists(
+              selectFrom("broadcast_feedbacks as newer_bf")
+                .select(sql`1`.as("__"))
+                .whereRef("newer_bf.convention_id", "=", "bf.convention_id")
+                .where(
+                  sql<boolean>`(newer_bf.occurred_at, newer_bf.id) > (bf.occurred_at, bf.id)`,
+                )
+                .where(
+                  sql<boolean>`(c.agency_id, newer_bf.consumer_name) in (select * from unnest(${sql.val(relevantConsumerAgencyIds)}::uuid[], ${sql.val(relevantConsumerNames)}::text[]))`,
+                ),
+            ),
+          ),
+        );
 
       if (conventionSubmittedAfter)
         return query.where("c.date_submission", ">=", conventionSubmittedAfter);
