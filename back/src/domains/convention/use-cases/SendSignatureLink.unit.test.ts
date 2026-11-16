@@ -1,4 +1,3 @@
-import { afterEach } from "node:test";
 import { subDays, subHours, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
@@ -406,113 +405,6 @@ describe("Send signature link", () => {
       });
     });
 
-    it(`throws too many requests if there was already a signature link sent less than ${CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS} hours before`, async () => {
-      const shortLinkId = "link2";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
-      uow.notificationRepository.notifications = [
-        {
-          id: "past-notification-id",
-          createdAt: subHours(timeGateway.now(), 2).toISOString(),
-          kind: "sms",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-            userId: undefined,
-          },
-          templatedContent: {
-            recipientPhone:
-              convention.signatories.establishmentRepresentative.phone,
-            kind: "ReminderForSignatories",
-            params: {
-              shortLink: makeShortLinkUrl(config, "shortLink"),
-            },
-          },
-        },
-      ];
-
-      await expectPromiseToFailWithError(
-        usecase.execute(
-          {
-            conventionId,
-            signatoryRole: "establishment-representative",
-            notificationKind: "sms",
-          },
-          establishmentRepresentativeJwtPayload,
-        ),
-        errors.convention.signatureLinkAlreadySent({
-          signatoryRole: "establishment-representative",
-          notificationKind: "sms",
-          minHoursBetweenReminder: CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS,
-          timeRemaining: "22h00",
-        }),
-      );
-    });
-
-    it(`throws too many requests if there was already an email signature link sent less than ${CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS} hours before`, async () => {
-      const shortLinkId = "link2";
-      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
-      uow.conventionRepository.setConventions([convention]);
-      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
-      uow.notificationRepository.notifications = [
-        {
-          id: "past-email-notification-id",
-          createdAt: subHours(timeGateway.now(), 2).toISOString(),
-          kind: "email",
-          followedIds: {
-            conventionId: convention.id,
-            agencyId: convention.agencyId,
-            establishmentSiret: convention.siret,
-            userId: undefined,
-          },
-          templatedContent: {
-            kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
-            recipients: [
-              convention.signatories.establishmentRepresentative.email,
-            ],
-            params: {
-              conventionId: convention.id,
-              internshipKind: convention.internshipKind,
-              signatoryName: getFormattedFirstnameAndLastname({
-                firstname:
-                  convention.signatories.establishmentRepresentative.firstName,
-                lastname:
-                  convention.signatories.establishmentRepresentative.lastName,
-              }),
-              signatoryEmail:
-                convention.signatories.establishmentRepresentative.email,
-              beneficiaryName: getFormattedFirstnameAndLastname({
-                firstname: convention.signatories.beneficiary.firstName,
-                lastname: convention.signatories.beneficiary.lastName,
-              }),
-              conventionSignatureLink: makeShortLinkUrl(config, "shortLink"),
-              agencyLogoUrl: undefined,
-              renewed: convention.renewed,
-            },
-          },
-        },
-      ];
-
-      await expectPromiseToFailWithError(
-        usecase.execute(
-          {
-            conventionId,
-            signatoryRole: "establishment-representative",
-            notificationKind: "email",
-          },
-          establishmentRepresentativeJwtPayload,
-        ),
-        errors.convention.signatureLinkAlreadySent({
-          signatoryRole: "establishment-representative",
-          notificationKind: "email",
-          minHoursBetweenReminder: CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS,
-          timeRemaining: "22h00",
-        }),
-      );
-    });
-
     it.each([
       "+33555689727", // Métropole
       "+262269612345", // Mayotte
@@ -575,6 +467,123 @@ describe("Send signature link", () => {
           signatoryRole: "beneficiary",
         }),
       );
+    });
+  });
+
+  describe("Wrong paths: signature link already sent recently", () => {
+    it(`throws too many requests if there was already a signature link sent less than ${CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS} hours before`, async () => {
+      const shortLinkId = "link2";
+      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+      uow.conventionRepository.setConventions([convention]);
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+      const pastSmsNotification: Notification = {
+        id: "past-notification-id",
+        createdAt: subHours(timeGateway.now(), 2).toISOString(),
+        kind: "sms",
+        followedIds: {
+          conventionId: convention.id,
+          agencyId: convention.agencyId,
+          establishmentSiret: convention.siret,
+          userId: undefined,
+        },
+        templatedContent: {
+          recipientPhone:
+            convention.signatories.establishmentRepresentative.phone,
+          kind: "ReminderForSignatories",
+          params: {
+            shortLink: makeShortLinkUrl(config, "shortLink"),
+          },
+        },
+      };
+      uow.notificationRepository.notifications = [pastSmsNotification];
+
+      await expectPromiseToFailWithError(
+        usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "establishment-representative",
+            notificationKind: "sms",
+          },
+          establishmentRepresentativeJwtPayload,
+        ),
+        errors.convention.signatureLinkAlreadySent({
+          signatoryRole: "establishment-representative",
+          notificationKind: "sms",
+          minHoursBetweenReminder: CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS,
+          timeRemaining: "22h00",
+        }),
+      );
+
+      expectToEqual(uow.notificationRepository.notifications, [
+        pastSmsNotification,
+      ]);
+      expectToEqual(uow.outboxRepository.events, []);
+    });
+
+    it(`throws too many requests if there was already an email signature link sent less than ${CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS} hours before`, async () => {
+      const shortLinkId = "link2";
+      shortLinkIdGeneratorGateway.addMoreShortLinkIds([shortLinkId]);
+      uow.conventionRepository.setConventions([convention]);
+      uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
+      const pastEmailNotification: Notification = {
+        id: "past-email-notification-id",
+        createdAt: subHours(timeGateway.now(), 2).toISOString(),
+        kind: "email",
+        followedIds: {
+          conventionId: convention.id,
+          agencyId: convention.agencyId,
+          establishmentSiret: convention.siret,
+          userId: undefined,
+        },
+        templatedContent: {
+          kind: "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
+          recipients: [
+            convention.signatories.establishmentRepresentative.email,
+          ],
+          params: {
+            conventionId: convention.id,
+            internshipKind: convention.internshipKind,
+            signatoryName: getFormattedFirstnameAndLastname({
+              firstname:
+                convention.signatories.establishmentRepresentative.firstName,
+              lastname:
+                convention.signatories.establishmentRepresentative.lastName,
+            }),
+            signatoryEmail:
+              convention.signatories.establishmentRepresentative.email,
+            beneficiaryName: getFormattedFirstnameAndLastname({
+              firstname: convention.signatories.beneficiary.firstName,
+              lastname: convention.signatories.beneficiary.lastName,
+            }),
+            conventionSignatureLink: makeShortLinkUrl(config, "shortLink"),
+            agencyLogoUrl: undefined,
+            renewed: convention.renewed,
+          },
+        },
+      };
+      uow.notificationRepository.notifications = [pastEmailNotification];
+
+      await expectPromiseToFailWithError(
+        usecase.execute(
+          {
+            conventionId,
+            signatoryRole: "establishment-representative",
+            notificationKind: "email",
+          },
+          establishmentRepresentativeJwtPayload,
+        ),
+        errors.convention.signatureLinkAlreadySent({
+          signatoryRole: "establishment-representative",
+          notificationKind: "email",
+          minHoursBetweenReminder: CONVENTION_MANUAL_REMINDER_COOLDOWN_IN_HOURS,
+          timeRemaining: "22h00",
+        }),
+      );
+
+      expectToEqual(uow.notificationRepository.notifications, [
+        pastEmailNotification,
+      ]);
+      expectToEqual(uow.outboxRepository.events, []);
     });
   });
 
