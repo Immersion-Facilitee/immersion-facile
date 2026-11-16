@@ -2964,6 +2964,91 @@ describe("Pg implementation of ConventionQueries", () => {
             },
           });
         });
+
+        it("should return the convention once with the last saved errored broadcast feedback when several share the same occurredAt", async () => {
+          const agency = new AgencyDtoBuilder().withId(agencyIdA).build();
+          const convention = new ConventionDtoBuilder()
+            .withId(conventionIdA)
+            .withAgencyId(agencyIdA)
+            .withDateSubmission("2025-01-02T00:00:00.000Z")
+            .build();
+          const sameOccurredAt = "2024-07-30T00:00:00.000Z";
+          const firstSavedBroadcast: BroadcastFeedback = {
+            consumerId: null,
+            consumerName: "any-consumer-name",
+            conventionId: convention.id,
+            agencyId: agencyIdA,
+            serviceName:
+              "FranceTravailGateway.notifyOnConventionUpdatedOrAssessmentCreated",
+            occurredAt: sameOccurredAt,
+            handledByAgency: false,
+            requestParams: {
+              conventionId: convention.id,
+              conventionStatus: "READY_TO_SIGN",
+            },
+            subscriberErrorFeedback: {
+              message: "any-error-message-1",
+              error: { code: "ANY_ERROR_CODE_1" },
+            },
+            response: {
+              httpStatus: 500,
+              body: { error: "ANY_ERROR_CODE_1" },
+            },
+          };
+          const lastSavedBroadcast: BroadcastFeedback = {
+            ...firstSavedBroadcast,
+            consumerName: "partner-consumer",
+            subscriberErrorFeedback: {
+              message: "any-error-message-2",
+              error: { code: "ANY_ERROR_CODE_2" },
+            },
+            response: {
+              httpStatus: 500,
+              body: { error: "ANY_ERROR_CODE_2" },
+            },
+          };
+          await agencyRepo.insert(
+            toAgencyWithRights(agency, {
+              [validator.id]: { isNotifiedByEmail: true, roles: ["validator"] },
+            }),
+          );
+          await conventionRepository.save(convention);
+          await broadcastFeedbacksRepository.save(firstSavedBroadcast);
+          await broadcastFeedbacksRepository.save(lastSavedBroadcast);
+
+          const result =
+            await conventionQueries.getConventionsWithErroredBroadcastFeedbackForAgencyUser(
+              {
+                userAgencyIds: [agencyIdA],
+                relevantConsumerNamesByAgencyId:
+                  defaultRelevantConsumerNamesByAgencyId,
+                pagination: { page: 1, perPage: 10 },
+              },
+            );
+
+          expectToEqual(result, {
+            data: [
+              {
+                id: convention.id,
+                status: "READY_TO_SIGN",
+                beneficiary: {
+                  firstname: convention.signatories.beneficiary.firstName,
+                  lastname: convention.signatories.beneficiary.lastName,
+                },
+                lastBroadcastFeedback:
+                  toExpectedLastBroadcastFeedback(lastSavedBroadcast),
+                agencyReferent: null,
+                agencyId: convention.agencyId,
+              },
+            ],
+            pagination: {
+              currentPage: 1,
+              totalPages: 1,
+              numberPerPage: 10,
+              totalRecords: 1,
+            },
+          });
+        });
       });
 
       describe("unvalidated convention status and prior successful broadcast (SQL filter)", () => {
