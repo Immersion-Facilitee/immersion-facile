@@ -66,12 +66,7 @@ describe("makeThrowIfIncorrectJwt", () => {
         exp: Math.floor(timeGateway.now().getTime() / 1000) - 7200,
       });
 
-      try {
-        throwIfIncorrect(expiredJwt);
-        fail("should have thrown");
-      } catch (error: any) {
-        expect(error.message).toMatch(/depuis 120 minutes/);
-      }
+      expect(() => throwIfIncorrect(expiredJwt)).toThrow(/depuis 120 minutes/);
     });
   });
 });

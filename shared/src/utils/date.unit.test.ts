@@ -196,7 +196,7 @@ describe("Date utils tests - makeDateStringSchema", () => {
     {
       title:
         "invalid date string ISO out of range in past (juste before 130 years ago)",
-      dateString: subYears(now, 130).toISOString(),
+      dateString: subSeconds(subYears(now, 130), 1).toISOString(),
       error: unsupportedDateZodError,
     },
     {

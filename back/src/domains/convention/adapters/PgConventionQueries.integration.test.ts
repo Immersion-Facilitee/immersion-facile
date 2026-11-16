@@ -14,7 +14,10 @@ import {
   type ConventionDto,
   ConventionDtoBuilder,
   type ConventionId,
+  type ConventionWithBroadcastFeedback,
+  type DataWithPagination,
   expectToEqual,
+  type PaginationQueryParams,
   reasonableSchedule,
   type SearchTextAlphaNumeric,
   type SiretDto,
@@ -3464,7 +3467,10 @@ describe("Pg implementation of ConventionQueries", () => {
           await broadcastFeedbacksRepository.save(broadcast3);
         });
 
-        it.each([
+        it.each<{
+          requestedPagination: Required<PaginationQueryParams>;
+          expectedResult: DataWithPagination<ConventionWithBroadcastFeedback>;
+        }>([
           {
             requestedPagination: { page: 3, perPage: 1 },
             expectedResult: {

@@ -542,7 +542,10 @@ describe("HttpOpenCageDataAddressGateway", () => {
   });
 
   describe("lookupLocationName", () => {
-    it.each([
+    it.each<{
+      candidateQuery: string;
+      expectedSearchResult: LookupSearchResult[];
+    }>([
       {
         candidateQuery: "Uzerche",
         expectedSearchResult: [
@@ -715,13 +718,7 @@ describe("HttpOpenCageDataAddressGateway", () => {
       },
     ])(
       "Should work if searching for '$candidateQuery' location query expect '$expectedSearchResult.length' results.",
-      async ({
-        candidateQuery,
-        expectedSearchResult,
-      }: {
-        candidateQuery: string;
-        expectedSearchResult: LookupSearchResult[];
-      }) => {
+      async ({ candidateQuery, expectedSearchResult }) => {
         const resultMetropolitanFrance =
           await httpAddressGateway.lookupLocationName(candidateQuery);
         expectToEqual(resultMetropolitanFrance, expectedSearchResult);

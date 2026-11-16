@@ -11,7 +11,6 @@ describe("feature flag utils tests", () => {
     expect(flag).toEqual({
       isActive: true,
       kind: "boolean",
-      value: undefined,
     });
   });
 

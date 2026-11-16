@@ -27,7 +27,7 @@ import {
 
 describe("string utils", () => {
   describe("joinWithCommasAnd", () => {
-    it.each([
+    it.each<{ items: string[]; expected: string }>([
       { items: [], expected: "" },
       { items: ["a"], expected: "a" },
       { items: ["a", "b"], expected: "a et b" },

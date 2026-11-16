@@ -110,7 +110,7 @@ export const expectHttpResponseToEqual = <
   expected: Omit<R, "headers"> & Partial<Pick<R, "headers">>,
 ) => {
   const { headers: expectedHeaders, ...expectedRest } = expected;
-  expect(rest).toEqual(expectedRest);
+  expect(rest).toEqual<typeof expectedRest>(expectedRest);
   expect(headers).toMatchObject(expectedHeaders ?? {});
 };
 

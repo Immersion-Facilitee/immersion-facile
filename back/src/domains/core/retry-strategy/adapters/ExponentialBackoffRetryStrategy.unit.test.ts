@@ -10,10 +10,10 @@ const maxBackoffPeriodMs = 10_000;
 const deadlineMs = 100_000;
 
 describe("ExponentialBackoffRetryStrategy", () => {
-  let mockNow: jest.Mock;
-  let mockSleep: jest.Mock;
-  let mockRandom: jest.Mock;
-  let mockCallback: jest.Mock;
+  let mockNow: ReturnType<typeof jest.fn>;
+  let mockSleep: ReturnType<typeof jest.fn>;
+  let mockRandom: ReturnType<typeof jest.fn>;
+  let mockCallback: ReturnType<typeof jest.fn>;
 
   let retryStrategy: ExponentialBackoffRetryStrategy;
 

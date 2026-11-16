@@ -1,4 +1,8 @@
-import { expectObjectsToMatch, expectToEqual } from "shared";
+import {
+  type AppellationDto,
+  expectObjectsToMatch,
+  expectToEqual,
+} from "shared";
 import { createFetchSharedClient } from "shared-routes/fetch";
 import { AppConfig } from "../../../../config/bootstrap/appConfig";
 import { withNoCache } from "../../caching-gateway/adapters/withNoCache";
@@ -71,7 +75,7 @@ describe("DiagorienteAppellationsGateway", () => {
     });
 
     const parallelCalls = 100;
-    it.each([
+    it.each<{ search: string; results: AppellationDto[] }>([
       {
         search: "faire du pain",
         results: [
