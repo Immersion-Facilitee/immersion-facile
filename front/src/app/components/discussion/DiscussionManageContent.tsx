@@ -9,7 +9,6 @@ import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { discussionSlice } from "src/core-logic/domain/discussion/discussion.slice";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
-import { searchSlice } from "src/core-logic/domain/search/search.slice";
 import { WithFeedbackReplacer } from "../feedback/WithFeedbackReplacer";
 import { DiscussionDetails } from "./DiscussionDetails";
 
@@ -61,21 +60,6 @@ export const DiscussionManageContent = ({
       }
     },
   );
-
-  useEffect(() => {
-    if (discussion && connectedUserJwt) {
-      dispatch(
-        searchSlice.actions.fetchSearchResultRequested({
-          searchResult: {
-            siret: discussion.siret,
-            appellationCode: discussion.appellation.appellationCode,
-            locationId: discussion.locationId,
-          },
-          feedbackTopic: "unused",
-        }),
-      );
-    }
-  }, [discussion, connectedUserJwt, dispatch]);
 
   useEffect(() => {
     if (discussion && connectedUserJwt) {

@@ -138,6 +138,27 @@ describe("GetDiscussionById use case", () => {
       );
     });
 
+    it("returns discussion with establishment website when establishment has one", async () => {
+      const establishmentWebsite = "https://www.mon-entreprise.fr";
+      uow.establishmentAggregateRepository.establishmentAggregates = [
+        new EstablishmentAggregateBuilder(
+          uow.establishmentAggregateRepository.establishmentAggregates[0],
+        )
+          .withEstablishmentWebsite(establishmentWebsite)
+          .build(),
+      ];
+
+      expectToEqual(
+        await getDiscussionById.execute(discussion.id, {
+          userId: establishmentAdmin.id,
+        }),
+        {
+          ...new DiscussionBuilder(discussion).buildRead(),
+          establishmentWebsite,
+        },
+      );
+    });
+
     describe("Discussion with kinds and methods", () => {
       it.each([
         new DiscussionBuilder(discussion)

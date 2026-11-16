@@ -13,7 +13,10 @@ import type {
   BusinessName,
   WithPhoneContactAdditionalCondition,
 } from "../establishment/establishment.dto";
-import type { ContactMode } from "../formEstablishment/FormEstablishment.dto";
+import type {
+  ContactMode,
+  EstablishmentWebSite,
+} from "../formEstablishment/FormEstablishment.dto";
 import type { PhoneNumber } from "../phone/phone.dto";
 import type {
   AppellationAndRomeDto,
@@ -287,6 +290,7 @@ export type GenericDiscussionReadDto<D extends DiscussionKind> =
     SpecificDiscussionDto<D> & {
       appellation: AppellationAndRomeDto;
       exchanges: ExchangeRead[];
+      establishmentWebsite?: EstablishmentWebSite;
     };
 
 export type DiscussionReadDto =

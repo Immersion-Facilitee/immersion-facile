@@ -334,6 +334,7 @@ export const discussionReadSchema: ZodSchemaWithInputMatchingOutput<DiscussionRe
       z.object({
         appellation: appellationAndRomeDtoSchema,
         exchanges: z.array(exchangeReadSchema),
+        establishmentWebsite: absoluteUrlCanBeEmpty.optional(),
       }),
     )
     .and(
