@@ -3,7 +3,6 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import type { Ref } from "react";
 import { domElementIds } from "shared";
 import type { NumberOfSteps } from "src/core-logic/domain/convention/convention.slice";
-import { conventionFormStepId } from "./errorSummarySections";
 
 export const ConventionErrorSummary = ({
   steps,
@@ -41,7 +40,7 @@ export const ConventionErrorSummary = ({
                         `step${step}`
                       ]
                     }
-                    href={`#${conventionFormStepId(step)}-collapse`}
+                    href={`#${domElementIds.conventionImmersion.step({ currentStep: step })}-collapse`}
                     onClick={(event) => {
                       event.preventDefault();
                       onStepLinkClick(step);

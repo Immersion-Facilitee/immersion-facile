@@ -113,20 +113,25 @@ import { siretSelectors } from "src/core-logic/domain/siret/siret.selectors";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import { useStyles } from "tss-react/dsfr";
 import { ConventionErrorSummary } from "./error-summary/ConventionErrorSummary";
-import {
-  type ConventionEmailValidationRole,
-  conventionFormStepId,
-} from "./error-summary/errorSummarySections";
 import { useConventionErrorSummary } from "./error-summary/useConventionErrorSummary";
 import { ShareConventionDraft } from "./ShareConventionDraft";
 
-type StepSeverity = "error" | "success" | "info";
+export type ConventionEmailValidationRole =
+  | "Bénéficiaire"
+  | "Responsable d'entreprise"
+  | "Tuteur de l'entreprise"
+  | "Représentant légal du bénéficiaire"
+  | "Employeur actuel du bénéficiaire";
+
 export type EmailValidationErrorsState = Partial<
   Record<ConventionEmailValidationRole, ReactNode>
 >;
+
 export type SetEmailValidationErrorsState = Dispatch<
   SetStateAction<EmailValidationErrorsState>
 >;
+
+type StepSeverity = "error" | "success" | "info";
 
 type ConventionRouteParams = Pick<
   CreateConventionPresentationInitialValues,
@@ -526,9 +531,9 @@ const ConventionFormContent = ({
   const [emailValidationErrors, setEmailValidationErrors] =
     useState<EmailValidationErrorsState>({});
 
+  const accordionExpandDelayMs = 400;
   const openStep = (step: NumberOfSteps, onStepOpened: () => void): void => {
-    // we need to wait for the accordion to shrink / expand before scrolling or focusing (otherwise the position is not accurate)
-    setTimeout(onStepOpened, 400);
+    setTimeout(onStepOpened, accordionExpandDelayMs);
     dispatch(conventionSlice.actions.setCurrentStep(step));
   };
 
@@ -615,7 +620,7 @@ const ConventionFormContent = ({
       });
     },
     expanded: currentStep === step,
-    id: conventionFormStepId(step),
+    id: domElementIds.conventionImmersion.step({ currentStep: step }),
   });
 
   const conventionIsLoading = isLoading || !reduxFormUiReady;

@@ -23,6 +23,7 @@ import { AddressAutocomplete } from "src/app/components/forms/autocomplete/Addre
 import { PhoneInput } from "src/app/components/forms/commons/PhoneInput";
 import { ConventionEmailWarning } from "src/app/components/forms/convention/ConventionEmailWarning";
 import type {
+  ConventionEmailValidationRole,
   EmailValidationErrorsState,
   SetEmailValidationErrorsState,
 } from "src/app/components/forms/convention/ConventionForm";
@@ -72,6 +73,15 @@ export const BeneficiaryFormSection = ({
     }),
   );
   const formContents = getFormFields();
+
+  const clearEmailValidationError = useCallback(
+    (role: ConventionEmailValidationRole) => {
+      setEmailValidationErrors(
+        ({ [role]: _, ...remainingErrors }) => remainingErrors,
+      );
+    },
+    [setEmailValidationErrors],
+  );
 
   useEffect(() => {
     if (
@@ -130,16 +140,14 @@ export const BeneficiaryFormSection = ({
         return;
       }
       setValue("signatories.beneficiaryRepresentative", undefined);
-      setEmailValidationErrors(
-        ({ "Représentant légal du bénéficiaire": _, ...rest }) => rest,
-      );
+      clearEmailValidationError("Représentant légal du bénéficiaire");
     },
     [
       dispatch,
       values.dateStart,
       setValue,
       isMinorAccordingToAge,
-      setEmailValidationErrors,
+      clearEmailValidationError,
     ],
   );
 
@@ -362,9 +370,8 @@ export const BeneficiaryFormSection = ({
                     : undefined,
                 );
                 if (!value)
-                  setEmailValidationErrors(
-                    ({ "Représentant légal du bénéficiaire": _, ...rest }) =>
-                      rest,
+                  clearEmailValidationError(
+                    "Représentant légal du bénéficiaire",
                   );
               },
             },
@@ -441,9 +448,8 @@ export const BeneficiaryFormSection = ({
                       : undefined,
                   );
                   if (!value)
-                    setEmailValidationErrors(
-                      ({ "Employeur actuel du bénéficiaire": _, ...rest }) =>
-                        rest,
+                    clearEmailValidationError(
+                      "Employeur actuel du bénéficiaire",
                     );
                 },
               },
