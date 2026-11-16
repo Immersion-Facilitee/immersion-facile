@@ -45,7 +45,15 @@
         "noUnusedTemplateLiteral": "error",
         "useNumberNamespace": "error",
         "noInferrableTypes": "error",
-        "noUselessElse": "error"
+        "noUselessElse": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "node:test": "Tests run with Jest: use Jest globals (describe, it, beforeEach, afterEach...) instead of node:test, whose hooks never run under Jest."
+            }
+          }
+        }
       }
     }
   },
