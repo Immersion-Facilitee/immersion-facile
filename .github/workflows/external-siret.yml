@@ -34,7 +34,7 @@ jobs:
       - name: Install Chromium
         run: pnpm --filter playwright-e2e exec playwright install --with-deps chromium
       - name: Post install bun
-        working-directory: back/node_modules/bun
+        working-directory: node_modules/bun
         run: node install.js
       - name: Real SIRET browser workflow
         run: pnpm test:e2e --config playwright.external.config.ts

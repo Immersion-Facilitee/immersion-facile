@@ -55,6 +55,11 @@ jobs:
         if: ${{ !inputs.code_already_tested }}
         run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
+      - name: Post install bun
+        if: ${{ !inputs.code_already_tested }}
+        working-directory: node_modules/bun
+        run: node install.js
+
       - name: ${{matrix.command}}
         if: ${{ !inputs.code_already_tested }}
         run: ${{matrix.command}}
@@ -113,9 +118,9 @@ jobs:
 
       - name: Post install bun
         run: |
-          cd back/node_modules/bun
+          cd node_modules/bun
           node install.js
-          cd ../../..
+          cd ../..
       - name: Run migrations
         run: NODE_ENV=test DATABASE_URL=$TEST_DATABASE_URL pnpm back db:up:bun
       - name: Run integration tests
@@ -185,9 +190,9 @@ jobs:
 
       - name: Post install bun
         run: |
-          cd back/node_modules/bun
+          cd node_modules/bun
           node install.js
-          cd ../../..
+          cd ../..
 
       - name: Run Playwright tests
         run: pnpm playwright test:ci
