@@ -13,7 +13,6 @@ import {
   establishmentDashboardTabsList,
   frontRoutes,
   immersionFacileHelpdeskRootUrl,
-  onlyAdminUserRightsWithStatusAccepted,
   partitionUserEstablishmentRightsByStatus,
   type UserEstablishmentRightDetails,
 } from "shared";
@@ -67,20 +66,6 @@ export const EstablishmentDashboardTabs = ({
     [currentUser, currentTab, userHasDiscussions],
   );
   const { enableEstablishmentDashboardHighlight } = useFeatureFlags();
-  const shouldRedirectToMainTab =
-    route.name === "establishmentDashboardFormEstablishment" &&
-    route.params.siret &&
-    !currentUser.establishments?.some(
-      (establishment) =>
-        establishment.siret === route.params.siret &&
-        onlyAdminUserRightsWithStatusAccepted(establishment),
-    );
-
-  if (shouldRedirectToMainTab) {
-    frontRoutes.establishmentDashboard().push();
-    return;
-  }
-
   return (
     <>
       {enableEstablishmentDashboardHighlight.isActive && (
@@ -211,7 +196,8 @@ const establishmentDashboardTabFromRouteName: Record<
 > = {
   establishmentDashboard: "conventions",
   establishmentDashboardConventions: "conventions",
-  establishmentDashboardFormEstablishment: "fiche-entreprise",
+  establishmentDashboardEstablishments: "fiche-entreprise",
+  establishmentDashboardEstablishmentDetail: "fiche-entreprise",
   establishmentDashboardDiscussions: "discussions",
 };
 
@@ -221,7 +207,7 @@ const establishmentDashboardRouteNameFromTabId: Record<
 > = {
   conventions: "establishmentDashboard",
   discussions: "establishmentDashboardDiscussions",
-  "fiche-entreprise": "establishmentDashboardFormEstablishment",
+  "fiche-entreprise": "establishmentDashboardEstablishments",
 };
 
 const isEstablishmentDashboardTab = (

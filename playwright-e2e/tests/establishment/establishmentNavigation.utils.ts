@@ -23,7 +23,7 @@ export const goToManageEstablishmentThroughEstablishmentDashboard = async (
   await goToEstablishmentDashboardTab(page, "fiche-entreprise");
 
   const establishmentDashboardUrl =
-    frontRoutes.establishmentDashboardFormEstablishment({
+    frontRoutes.establishmentDashboardEstablishmentDetail({
       siret: establishment.siret,
     }).href;
   await page

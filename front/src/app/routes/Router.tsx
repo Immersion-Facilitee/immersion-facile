@@ -40,6 +40,7 @@ import { frontErrors } from "src/app/pages/error/front-errors";
 import { EstablishmentLeadRegistrationRejectedPage } from "src/app/pages/establishment/EstablishmentLeadRegistrationRejectedPage";
 import { EstablishmentUserRegistrationPage } from "src/app/pages/establishment/EstablishmentUserRegistrationPage";
 import { EstablishmentDashboardMainTab } from "src/app/pages/establishment-dashboard/EstablishmentDashboardMainTab";
+import { EstablishmentDetailPage } from "src/app/pages/establishment-dashboard/EstablishmentDetailPage";
 import { StatsPage } from "src/app/pages/StatsPage";
 import { SearchPage } from "src/app/pages/search/SearchPage";
 import { MyAccountPage } from "src/app/pages/user/MyAccountPage";
@@ -100,36 +101,21 @@ const RedirectTo = ({ route }: { route: Route<typeof frontRoutes> }) => {
   return null;
 };
 
+const fetchCurrentUser = (): void => {
+  store.dispatch(
+    connectedUserSlice.actions.currentUserFetchRequested({
+      feedbackTopic: "unused",
+    }),
+  );
+};
+
 const getPageSideEffectByRouteName: Partial<Record<keyof Routes, () => void>> =
   {
-    establishmentDashboard: () => {
-      store.dispatch(
-        connectedUserSlice.actions.currentUserFetchRequested({
-          feedbackTopic: "unused",
-        }),
-      );
-    },
-    establishmentDashboardFormEstablishment: () => {
-      store.dispatch(
-        connectedUserSlice.actions.currentUserFetchRequested({
-          feedbackTopic: "unused",
-        }),
-      );
-    },
-    establishmentDashboardDiscussions: () => {
-      store.dispatch(
-        connectedUserSlice.actions.currentUserFetchRequested({
-          feedbackTopic: "unused",
-        }),
-      );
-    },
-    establishmentDashboardConventions: () => {
-      store.dispatch(
-        connectedUserSlice.actions.currentUserFetchRequested({
-          feedbackTopic: "unused",
-        }),
-      );
-    },
+    establishmentDashboard: fetchCurrentUser,
+    establishmentDashboardEstablishments: fetchCurrentUser,
+    establishmentDashboardDiscussions: fetchCurrentUser,
+    establishmentDashboardConventions: fetchCurrentUser,
+    establishmentDashboardEstablishmentDetail: fetchCurrentUser,
   };
 
 const getPageByRouteName: {
@@ -277,9 +263,14 @@ const getPageByRouteName: {
       <EstablishmentDashboardMainTab route={route} />
     </DashboardPrivateRoutePage>
   ),
-  establishmentDashboardFormEstablishment: (route) => (
+  establishmentDashboardEstablishments: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <EstablishmentDashboardMainTab route={route} />
+    </DashboardPrivateRoutePage>
+  ),
+  establishmentDashboardEstablishmentDetail: (route) => (
+    <DashboardPrivateRoutePage route={route}>
+      <EstablishmentDetailPage route={route} />
     </DashboardPrivateRoutePage>
   ),
   establishmentDashboardDiscussions: (route) => (

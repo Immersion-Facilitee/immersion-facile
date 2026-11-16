@@ -1156,8 +1156,6 @@ export const domElementIds = {
         "im-manage-establishment__admins-list-modal-close-button",
       adminsListModalCopyEmailButton:
         "im-manage-establishment__admins-list-modal-copy-email-button",
-      backToEstablishmentsButton:
-        "im-manage-establishment__back-to-establishments-button",
       addUserButton: "im-manage-establishment__add-user-button",
       createEstablishment:
         "im-manage-establishment__create-establishment-button",
@@ -1347,7 +1345,8 @@ export const domElementIds = {
     unarchiveConventionButton:
       "im-establishment-dashboard-conventions__unarchive-convention-button",
   },
-  establishmentDashboardFormEstablishment: {},
+  establishmentDashboardEstablishments: {},
+  establishmentDashboardEstablishmentDetail: {},
   openApiDoc: {},
   stats: {},
   temporaryError: {

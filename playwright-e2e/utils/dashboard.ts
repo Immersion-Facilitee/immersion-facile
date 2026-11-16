@@ -16,8 +16,7 @@ const establishmentDashboardTabUrls: Record<EstablishmentDashboardTab, string> =
   {
     conventions: frontRoutes.establishmentDashboardConventions().href,
     discussions: frontRoutes.establishmentDashboardDiscussions().href,
-    "fiche-entreprise": frontRoutes.establishmentDashboardFormEstablishment({})
-      .href,
+    "fiche-entreprise": frontRoutes.establishmentDashboardEstablishments().href,
   };
 
 export const goToEstablishmentDashboardTab = async (
