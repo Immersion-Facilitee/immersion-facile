@@ -82,7 +82,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
   const isEstablishmentCreation = route.name === "formEstablishment";
   const isEstablishmentAdmin = route.name === "adminEstablishments";
   const isEstablishmentDashboard =
-    route.name === "establishmentDashboardFormEstablishment";
+    route.name === "establishmentDashboardEstablishmentDetail";
 
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const federatedIdentity = useAppSelector(authSelectors.federatedIdentity);
@@ -150,11 +150,6 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
 
   const initialCurrentRoute = useRef(route).current;
   const currentRoute = isEstablishmentDashboard ? route : initialCurrentRoute;
-
-  const shouldUpdateAvailability =
-    route.name === "establishmentDashboardFormEstablishment"
-      ? Boolean(route.params.shouldUpdateAvailability)
-      : undefined;
 
   const methods = useForm<FormEstablishmentDto>({
     defaultValues: defaultFormValues,
@@ -246,7 +241,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       .with(
         {
           route: {
-            name: "establishmentDashboardFormEstablishment",
+            name: "establishmentDashboardEstablishmentDetail",
             params: { siret: P.string },
           },
           connectedUserJwt: P.not(P.nullish),
@@ -265,7 +260,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       .with(
         {
           route: {
-            name: "establishmentDashboardFormEstablishment",
+            name: "establishmentDashboardEstablishmentDetail",
             params: { siret: P.nullish },
           },
           connectedUserJwt: P.not(P.nullish),
@@ -274,7 +269,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       )
       .with(
         {
-          route: { name: "establishmentDashboardFormEstablishment" },
+          route: { name: "establishmentDashboardEstablishmentDetail" },
           connectedUserJwt: P.nullish,
         },
         () => {
@@ -361,7 +356,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       )
       .with(
         {
-          route: { name: "establishmentDashboardFormEstablishment" },
+          route: { name: "establishmentDashboardEstablishmentDetail" },
           connectedUserJwt: P.not(P.nullish),
         },
         ({ connectedUserJwt }) =>
@@ -389,7 +384,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
 
       .with(
         {
-          route: { name: "establishmentDashboardFormEstablishment" },
+          route: { name: "establishmentDashboardEstablishmentDetail" },
           connectedUserJwt: P.nullish,
         },
         () => {
@@ -473,7 +468,6 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
                     currentStep={currentStep}
                     availableForImmersion={availableForImmersion}
                     setAvailableForImmersion={setAvailableForImmersion}
-                    shouldUpdateAvailability={shouldUpdateAvailability}
                   />
                 </>
               ))
@@ -508,7 +502,6 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
                         currentStep={currentStep}
                         availableForImmersion={availableForImmersion}
                         setAvailableForImmersion={setAvailableForImmersion}
-                        shouldUpdateAvailability={shouldUpdateAvailability}
                       />
                     ))
                     .with(4, () => (

@@ -338,6 +338,13 @@ export const frontErrors = {
         buttons: [HomeButton, ContactUsButton()],
       });
     },
+    missingSiret: () =>
+      new FrontSpecificError({
+        title: "SIRET manquant",
+        description:
+          "Cette page est accessible uniquement avec le SIRET d'une entreprise.",
+        buttons: [HomeButton],
+      }),
     expiredLink: () =>
       new FrontSpecificError({
         title: "Lien périmé",

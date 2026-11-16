@@ -143,6 +143,9 @@ const establishmentDashboard = myAccount.extend(
   "/tableau-de-bord-etablissement",
 );
 
+const establishmentDashboardEstablishments =
+  establishmentDashboard.extend("/fiche-entreprise");
+
 const agencyDashboardAgencies = agencyDashboard.extend("/agences");
 
 const {
@@ -365,13 +368,12 @@ export const {
   establishmentDashboard,
   establishmentDashboardConventions:
     establishmentDashboard.extend("/conventions"),
-  establishmentDashboardFormEstablishment: establishmentDashboard.extend(
-    {
-      siret: param.query.optional.string,
-      shouldUpdateAvailability: param.query.optional.string,
-    },
-    () => "/fiche-entreprise",
-  ),
+  establishmentDashboardEstablishments,
+  establishmentDashboardEstablishmentDetail:
+    establishmentDashboardEstablishments.extend(
+      { siret: param.path.optional.string },
+      ({ siret }) => `/${siret}`,
+    ),
   establishmentDashboardDiscussions: establishmentDashboard.extend(
     {
       discussionId: param.path.optional.string,

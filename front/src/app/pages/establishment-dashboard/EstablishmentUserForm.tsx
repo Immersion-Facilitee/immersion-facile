@@ -44,7 +44,7 @@ type EstablishmentUserFormEmptyValues = OmitFromExistingKeys<
 const useEstablishmentUserFormRoute =
   makeUseTypedRoute<
     (
-      | typeof frontRoutes.establishmentDashboardFormEstablishment
+      | typeof frontRoutes.establishmentDashboardEstablishmentDetail
       | typeof frontRoutes.adminEstablishments
       | typeof frontRoutes.establishmentUserRegistration
     )["name"]
@@ -60,12 +60,12 @@ export const EstablishmentUserForm = ({
   );
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const route = useEstablishmentUserFormRoute([
-    "establishmentDashboardFormEstablishment",
+    "establishmentDashboardEstablishmentDetail",
     "adminEstablishments",
     "establishmentUserRegistration",
   ]);
-  const isEstablishmentDashboardFormEstablishment =
-    route.name === "establishmentDashboardFormEstablishment";
+  const isEstablishmentDetail =
+    route.name === "establishmentDashboardEstablishmentDetail";
   const isEstablishmentUserRegistration =
     route.name === "establishmentUserRegistration";
   const isManageEstablishmentAdmin = route.name === "adminEstablishments";
@@ -103,10 +103,7 @@ export const EstablishmentUserForm = ({
   const { formId } = useFormModal();
 
   const onSubmit = (data: FormEstablishmentUserRight) => {
-    if (
-      isEstablishmentDashboardFormEstablishment ||
-      isManageEstablishmentAdmin
-    ) {
+    if (isEstablishmentDetail || isManageEstablishmentAdmin) {
       const updatedFormEstablishment = {
         ...formEstablishment,
         userRights: mergeUserRights(formEstablishment.userRights, data),
@@ -146,7 +143,7 @@ export const EstablishmentUserForm = ({
 
   const formJsx = (
     <>
-      {values.email && isEstablishmentDashboardFormEstablishment && (
+      {values.email && isEstablishmentDetail && (
         <p>
           Pour modifier le nom, prénom ou l'email, l'utilisateur doit passer par
           son compte ProConnect créé avec l'email :{" "}
