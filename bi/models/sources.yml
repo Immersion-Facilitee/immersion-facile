@@ -938,6 +938,14 @@ sources:
           - name: user_id
             description: "Foreign key to users table"
 
+      - name: users_ambassadors
+        description: "Ambassador users, independent of their agencies"
+        columns:
+          - name: user_id
+            description: "Foreign key to users table"
+          - name: created_at
+            description: "Date the user was added as ambassador"
+
       - name: users_ongoing_oauths
         description: "Ongoing OAuth sessions"
         columns:
