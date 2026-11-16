@@ -11,7 +11,7 @@
     "scss-to-ts": "./dist/bin/cli.js"
   },
   "scripts": {
-    "test": "jest --testRegex=.unit.test.ts",
+    "test": "bun test --only-failures .unit.test.ts",
     "build": "tsc"
   },
   "dependencies": {
@@ -23,12 +23,9 @@
     "string-extract-class-names": "6.1.0"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
+    "@swc/core": "^1.15.11",
     "@types/node": "^24.12.0",
     "@types/ramda": "^0.30.2",
-    "@swc/core": "^1.15.11",
-    "@swc/jest": "^0.2.39",
-    "jest": "^30.2.0",
     "typescript": "^7.0.2"
   }
 }

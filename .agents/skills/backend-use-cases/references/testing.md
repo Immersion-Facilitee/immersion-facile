@@ -10,4 +10,4 @@ Every use case must have exhaustive unit tests covering successful behavior, bus
 - Use `expectPromiseToFailWithError` for expected domain errors.
 - Assert saved outbox events for mutations, including their topic and meaningful payload.
 
-Inspect a recent unit test in the same domain rather than copying a generic fixture. Run a targeted non-watch Jest command while iterating; `pnpm back test` runs the backend non-integration suite.
+Inspect a recent unit test in the same domain rather than copying a generic fixture. Run a targeted `bun test <file>` command while iterating; `pnpm back test` runs the backend non-integration suite.
