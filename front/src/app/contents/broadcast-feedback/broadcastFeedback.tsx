@@ -424,6 +424,28 @@ export const broadcastFeedbackErrorMessageMap: Record<
       </>
     ),
   },
+  "Une PMSMP ne peut être créée pour un dossier en état partiel.": {
+    description: "Le dossier du jeune dans I-Milo doit être complété",
+    solution: () => (
+      <>
+        <p>
+          La convention ne peut pas être transmise à I-Milo car le dossier du
+          jeune est au statut « Partiel ». Cela signifie que certaines
+          informations nécessaires pour justifier son identité sont manquantes.
+        </p>
+        <ol>
+          <li>
+            Complétez les informations manquantes dans le dossier du jeune sur
+            I-Milo afin qu'il atteigne au minimum le statut « Justifié ».
+          </li>
+          <li>
+            Une fois le dossier mis à jour, rediffusez la convention depuis
+            Immersion Facilitée.
+          </li>
+        </ol>
+      </>
+    ),
+  },
   "Identifiant National DE non trouvé": unidentifiedBeneficiaryError,
   "Identifiant National DE trouvé mais écart sur la date de naissance":
     birthDateMismatchError,
