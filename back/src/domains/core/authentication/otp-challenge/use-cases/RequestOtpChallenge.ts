@@ -12,10 +12,10 @@ import {
   OTP_CHALLENGE_DURATION_IN_MINUTES,
   type OtpChallenge,
   type OtpCode,
+  type OtpJwtPayload,
   type PhoneNumber,
   type RequestOtpChallengeDto,
   requestOtpChallengeSchema,
-  type VisitorOtpJwtPayload,
 } from "shared";
 import { match } from "ts-pattern";
 
@@ -38,7 +38,7 @@ export type RequestOtpChallenge = ReturnType<typeof makeRequestOtpChallenge>;
 
 export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
   .withInput<RequestOtpChallengeDto>(requestOtpChallengeSchema)
-  .withCurrentUser<VisitorOtpJwtPayload>()
+  .withCurrentUser<OtpJwtPayload>()
   .withDeps<{
     hashOtpCode: HashOtpCode;
     otpCodeGeneratorGateway: OtpCodeGeneratorGateway;

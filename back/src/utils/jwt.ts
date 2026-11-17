@@ -11,11 +11,11 @@ import {
   type EmailAuthCodeJwtPayload,
   errors,
   getJwtExpiredSinceInSeconds,
+  type OtpDomainJwtPayload,
+  type OtpJwtPayload,
   oneDayInSecond,
   oneHourInSeconds,
   oneMinuteInSeconds,
-  type VisitorOtpDomainJwtPayload,
-  type VisitorOtpJwtPayload,
 } from "shared";
 import type { JwtKind, VerifyJwtFn } from "../domains/core/jwt";
 import type { TimeGateway } from "../domains/core/time-gateway/ports/TimeGateway";
@@ -120,20 +120,20 @@ export const createConnectedUserJwtPayload = ({
   };
 };
 
-export type CreateVisitorOtpJwtPayloadProperties = {
+export type CreateOtpJwtPayloadProperties = {
   now: Date;
-} & VisitorOtpDomainJwtPayload;
+} & OtpDomainJwtPayload;
 
-export const createVisitorOtpJwtPayload = ({
+export const createOtpJwtPayload = ({
   purpose,
   subject,
   now,
-}: CreateVisitorOtpJwtPayloadProperties): VisitorOtpJwtPayload & {
+}: CreateOtpJwtPayloadProperties): OtpJwtPayload & {
   iat: number;
 } => ({
   purpose,
   subject,
-  version: currentJwtVersions.visitorOtp,
+  version: currentJwtVersions.otp,
   iat: Math.round(now.getTime() / 1000),
 });
 

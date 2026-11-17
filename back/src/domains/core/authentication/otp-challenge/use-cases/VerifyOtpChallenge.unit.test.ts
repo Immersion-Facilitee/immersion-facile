@@ -6,8 +6,8 @@ import {
   expectToEqual,
   OTP_SESSION_DURATION_IN_MINUTES,
   OtpChallengeDtoBuilder,
+  type OtpJwtPayload,
   OtpSessionDtoBuilder,
-  type VisitorOtpJwtPayload,
 } from "shared";
 import { CustomTimeGateway } from "../../../time-gateway/adapters/CustomTimeGateway";
 import {
@@ -34,10 +34,10 @@ describe("VerifyOtpChallenge", () => {
     .withExpiresAt("2024-04-28T12:00:00.000Z")
     .withCreatedAt("2024-04-28T10:00:00.000Z")
     .build();
-  const visitorOtpJwtPayload: VisitorOtpJwtPayload = {
+  const otpJwtPayload: OtpJwtPayload = {
     purpose: otpChallenge.purpose,
     subject: otpChallenge.subject,
-    version: currentJwtVersions.visitorOtp,
+    version: currentJwtVersions.otp,
     iat: now.getTime() / 1000,
     exp: addMinutes(now, 60).getTime() / 1000,
   };
@@ -65,7 +65,7 @@ describe("VerifyOtpChallenge", () => {
   describe("Wrong path", () => {
     it("throws if there is no otp challenge for the subject", async () => {
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         errors.otpChallenge.noActiveChallenge(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, []);
@@ -79,7 +79,7 @@ describe("VerifyOtpChallenge", () => {
       uow.otpChallengeRepository.otpChallenges = [otherSubjectOtpChallenge];
 
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         errors.otpChallenge.noActiveChallenge(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -95,7 +95,7 @@ describe("VerifyOtpChallenge", () => {
       uow.otpChallengeRepository.otpChallenges = [expiredOtpChallenge];
 
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         errors.otpChallenge.expired(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -111,7 +111,7 @@ describe("VerifyOtpChallenge", () => {
       uow.otpChallengeRepository.otpChallenges = [usedOtpChallenge];
 
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         errors.otpChallenge.noActiveChallenge(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -127,7 +127,7 @@ describe("VerifyOtpChallenge", () => {
       uow.otpChallengeRepository.otpChallenges = [revokedOtpChallenge];
 
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         errors.otpChallenge.noActiveChallenge(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -143,7 +143,7 @@ describe("VerifyOtpChallenge", () => {
       uow.otpChallengeRepository.otpChallenges = [lockedOtpChallenge];
 
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         errors.otpChallenge.tooManyAttempts({ maxAttempts: 5 }),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -159,7 +159,7 @@ describe("VerifyOtpChallenge", () => {
       uow.otpChallengeRepository.otpChallenges = [lastAttemptOtpChallenge];
 
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode: "0000" }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode: "0000" }, otpJwtPayload),
         errors.otpChallenge.invalidCode(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -194,7 +194,7 @@ describe("VerifyOtpChallenge", () => {
       ];
 
       await expectPromiseToFailWithError(
-        verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         errors.otpChallenge.invalidCode(),
       );
       expectToEqual(uow.otpChallengeRepository.otpChallenges, [
@@ -245,7 +245,7 @@ describe("VerifyOtpChallenge", () => {
       ).toISOString();
 
       expectToEqual(
-        await verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        await verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         { id: otpSessionId, expiresAt },
       );
 
@@ -301,7 +301,7 @@ describe("VerifyOtpChallenge", () => {
       expectToEqual(
         await verifyOtpChallenge.execute(
           { otpCode: activeOtpCode },
-          visitorOtpJwtPayload,
+          otpJwtPayload,
         ),
         { id: otpSessionId, expiresAt },
       );
@@ -332,7 +332,7 @@ describe("VerifyOtpChallenge", () => {
       ).toISOString();
 
       expectToEqual(
-        await verifyOtpChallenge.execute({ otpCode }, visitorOtpJwtPayload),
+        await verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         { id: otpSessionId, expiresAt },
       );
 

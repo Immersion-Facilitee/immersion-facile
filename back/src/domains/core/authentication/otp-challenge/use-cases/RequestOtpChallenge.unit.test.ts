@@ -7,7 +7,7 @@ import {
   expectToEqual,
   immersionFacileNoReplyEmailSender,
   OtpChallengeDtoBuilder,
-  type VisitorOtpJwtPayload,
+  type OtpJwtPayload,
 } from "shared";
 import { makeEmailHash } from "../../../../../utils/jwt";
 import {
@@ -65,38 +65,36 @@ describe("RequestOtpChallenge", () => {
   });
 
   describe("manageConvention", () => {
-    const visitorOtpJwtPayload: VisitorOtpJwtPayload = {
+    const otpJwtPayload: OtpJwtPayload = {
       purpose: "manageConvention",
       subject: {
         conventionId: "someConventionId",
         role: "beneficiary",
         emailHash: "someEmailHash",
       },
-      version: currentJwtVersions.visitorOtp,
+      version: currentJwtVersions.otp,
       iat: Date.now(),
       exp: Date.now() + 60 * 60,
     };
 
     describe("Wrong path", () => {
       it("should throw if the convention does not exist", async () => {
-        const visitorOtpJwtPayloadWithNonExistingConvention: VisitorOtpJwtPayload =
-          {
-            ...visitorOtpJwtPayload,
-            subject: {
-              ...visitorOtpJwtPayload.subject,
-              conventionId: "nonExistingConventionId",
-            },
-          };
+        const otpJwtPayloadWithNonExistingConvention: OtpJwtPayload = {
+          ...otpJwtPayload,
+          subject: {
+            ...otpJwtPayload.subject,
+            conventionId: "nonExistingConventionId",
+          },
+        };
 
         await expectPromiseToFailWithError(
           requestOtpChallenge.execute(
             { channel: "email" },
-            visitorOtpJwtPayloadWithNonExistingConvention,
+            otpJwtPayloadWithNonExistingConvention,
           ),
           errors.convention.notFound({
             conventionId:
-              visitorOtpJwtPayloadWithNonExistingConvention.subject
-                .conventionId,
+              otpJwtPayloadWithNonExistingConvention.subject.conventionId,
           }),
         );
       });
@@ -114,8 +112,8 @@ describe("RequestOtpChallenge", () => {
             conventionWithoutOptionalSignatories,
           ]);
 
-          const visitorOtpJwtPayloadWithMissingRole: VisitorOtpJwtPayload = {
-            ...visitorOtpJwtPayload,
+          const otpJwtPayloadWithMissingRole: OtpJwtPayload = {
+            ...otpJwtPayload,
             subject: {
               conventionId: conventionWithoutOptionalSignatories.id,
               role,
@@ -126,7 +124,7 @@ describe("RequestOtpChallenge", () => {
           await expectPromiseToFailWithError(
             requestOtpChallenge.execute(
               { channel: "email" },
-              visitorOtpJwtPayloadWithMissingRole,
+              otpJwtPayloadWithMissingRole,
             ),
             errors.convention.missingActor({
               conventionId: conventionWithoutOptionalSignatories.id,
@@ -141,22 +139,21 @@ describe("RequestOtpChallenge", () => {
 
         uow.conventionRepository.setConventions([convention]);
 
-        const visitorOtpJwtPayloadWithOtherActorEmailHash: VisitorOtpJwtPayload =
-          {
-            ...visitorOtpJwtPayload,
-            subject: {
-              conventionId: convention.id,
-              role: "beneficiary",
-              emailHash: makeEmailHash(
-                convention.signatories.establishmentRepresentative.email,
-              ),
-            },
-          };
+        const otpJwtPayloadWithOtherActorEmailHash: OtpJwtPayload = {
+          ...otpJwtPayload,
+          subject: {
+            conventionId: convention.id,
+            role: "beneficiary",
+            emailHash: makeEmailHash(
+              convention.signatories.establishmentRepresentative.email,
+            ),
+          },
+        };
 
         await expectPromiseToFailWithError(
           requestOtpChallenge.execute(
             { channel: "email" },
-            visitorOtpJwtPayloadWithOtherActorEmailHash,
+            otpJwtPayloadWithOtherActorEmailHash,
           ),
           errors.convention.forbiddenMissingRightsEmailHash({
             conventionId: convention.id,
@@ -182,7 +179,7 @@ describe("RequestOtpChallenge", () => {
           requestOtpChallenge.execute(
             { channel: "sms" },
             {
-              ...visitorOtpJwtPayload,
+              ...otpJwtPayload,
               subject: {
                 conventionId: conventionWithLandlinePhone.id,
                 role: "beneficiary",
@@ -204,7 +201,7 @@ describe("RequestOtpChallenge", () => {
 
       it("should throw and not create otp challenge if an otp challenge was requested less than 60 seconds ago for the same subject", async () => {
         const convention: ConventionDto = new ConventionDtoBuilder().build();
-        const subject: VisitorOtpJwtPayload["subject"] = {
+        const subject: OtpJwtPayload["subject"] = {
           conventionId: convention.id,
           role: "beneficiary",
           emailHash: makeEmailHash(convention.signatories.beneficiary.email),
@@ -231,7 +228,7 @@ describe("RequestOtpChallenge", () => {
           requestOtpChallenge.execute(
             { channel: "email" },
             {
-              ...visitorOtpJwtPayload,
+              ...otpJwtPayload,
               subject,
             },
           ),
@@ -248,7 +245,7 @@ describe("RequestOtpChallenge", () => {
 
       it("should throw and not create otp challenge if the maximum number of otp challenges over the period is reached for the same subject", async () => {
         const convention: ConventionDto = new ConventionDtoBuilder().build();
-        const subject: VisitorOtpJwtPayload["subject"] = {
+        const subject: OtpJwtPayload["subject"] = {
           conventionId: convention.id,
           role: "beneficiary",
           emailHash: makeEmailHash(convention.signatories.beneficiary.email),
@@ -280,7 +277,7 @@ describe("RequestOtpChallenge", () => {
           requestOtpChallenge.execute(
             { channel: "email" },
             {
-              ...visitorOtpJwtPayload,
+              ...otpJwtPayload,
               subject,
             },
           ),
@@ -366,8 +363,8 @@ describe("RequestOtpChallenge", () => {
           uuidGenerator.setNextUuids([otpChallengeId]);
           otpCodeGeneratorGateway.setNextOtpCodes([otpCode]);
 
-          const validVisitorOtpJwtPayload: VisitorOtpJwtPayload = {
-            ...visitorOtpJwtPayload,
+          const validOtpJwtPayload: OtpJwtPayload = {
+            ...otpJwtPayload,
             subject: {
               role,
               conventionId: convention.id,
@@ -377,14 +374,14 @@ describe("RequestOtpChallenge", () => {
 
           await requestOtpChallenge.execute(
             { channel: "email" },
-            validVisitorOtpJwtPayload,
+            validOtpJwtPayload,
           );
 
           expectToEqual(uow.otpChallengeRepository.otpChallenges, [
             {
               id: otpChallengeId,
               purpose: "manageConvention",
-              subject: validVisitorOtpJwtPayload.subject,
+              subject: validOtpJwtPayload.subject,
               channel: "email",
               recipient: email,
               codeHash: hashOtpCode({ otpChallengeId, otpCode }),
@@ -432,8 +429,8 @@ describe("RequestOtpChallenge", () => {
           uuidGenerator.setNextUuids([otpChallengeId]);
           otpCodeGeneratorGateway.setNextOtpCodes([otpCode]);
 
-          const validVisitorOtpJwtPayload: VisitorOtpJwtPayload = {
-            ...visitorOtpJwtPayload,
+          const validOtpJwtPayload: OtpJwtPayload = {
+            ...otpJwtPayload,
             subject: {
               role,
               conventionId: convention.id,
@@ -443,14 +440,14 @@ describe("RequestOtpChallenge", () => {
 
           await requestOtpChallenge.execute(
             { channel: "sms" },
-            validVisitorOtpJwtPayload,
+            validOtpJwtPayload,
           );
 
           expectToEqual(uow.otpChallengeRepository.otpChallenges, [
             {
               id: otpChallengeId,
               purpose: "manageConvention",
-              subject: validVisitorOtpJwtPayload.subject,
+              subject: validOtpJwtPayload.subject,
               channel: "sms",
               recipient: phone,
               codeHash: hashOtpCode({ otpChallengeId, otpCode }),
@@ -490,7 +487,7 @@ describe("RequestOtpChallenge", () => {
       );
 
       it("should create otp challenge when the maximum number of otp challenges was reached before the period", async () => {
-        const subject: VisitorOtpJwtPayload["subject"] = {
+        const subject: OtpJwtPayload["subject"] = {
           conventionId: convention.id,
           role: "beneficiary",
           emailHash: makeEmailHash("beneficiary@email.fr"),
@@ -521,7 +518,7 @@ describe("RequestOtpChallenge", () => {
         await requestOtpChallenge.execute(
           { channel: "email" },
           {
-            ...visitorOtpJwtPayload,
+            ...otpJwtPayload,
             subject,
           },
         );
@@ -548,7 +545,7 @@ describe("RequestOtpChallenge", () => {
       });
 
       it("should create otp challenge when the previous one of the same subject was requested exactly 60 seconds ago", async () => {
-        const subject: VisitorOtpJwtPayload["subject"] = {
+        const subject: OtpJwtPayload["subject"] = {
           conventionId: convention.id,
           role: "beneficiary",
           emailHash: makeEmailHash("beneficiary@email.fr"),
@@ -573,7 +570,7 @@ describe("RequestOtpChallenge", () => {
         await requestOtpChallenge.execute(
           { channel: "email" },
           {
-            ...visitorOtpJwtPayload,
+            ...otpJwtPayload,
             subject,
           },
         );
@@ -600,7 +597,7 @@ describe("RequestOtpChallenge", () => {
       });
 
       it("should revoke the previous active otp challenge of the same subject when a new one is requested", async () => {
-        const subject: VisitorOtpJwtPayload["subject"] = {
+        const subject: OtpJwtPayload["subject"] = {
           conventionId: convention.id,
           role: "beneficiary",
           emailHash: makeEmailHash("beneficiary@email.fr"),
@@ -636,7 +633,7 @@ describe("RequestOtpChallenge", () => {
         await requestOtpChallenge.execute(
           { channel: "email" },
           {
-            ...visitorOtpJwtPayload,
+            ...otpJwtPayload,
             subject,
           },
         );
@@ -661,7 +658,7 @@ describe("RequestOtpChallenge", () => {
       });
 
       it("should revoke expired otp challenges not yet revoked and keep used or already revoked ones of the same subject", async () => {
-        const subject: VisitorOtpJwtPayload["subject"] = {
+        const subject: OtpJwtPayload["subject"] = {
           conventionId: convention.id,
           role: "beneficiary",
           emailHash: makeEmailHash("beneficiary@email.fr"),
@@ -703,7 +700,7 @@ describe("RequestOtpChallenge", () => {
         await requestOtpChallenge.execute(
           { channel: "email" },
           {
-            ...visitorOtpJwtPayload,
+            ...otpJwtPayload,
             subject,
           },
         );

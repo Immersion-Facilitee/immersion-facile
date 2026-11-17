@@ -19,34 +19,37 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
   );
 
   sharedOtpChallengeRouter.getMaskedOtpRecipient(
-    deps.visitorOtpAuthMiddleware,
+    deps.otpAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.getMaskedOtpRecipients.execute(
           undefined,
-          getGenericAuthOrThrow(req.payloads?.visitorOtp),
+          getGenericAuthOrThrow(req.payloads?.otp),
         ),
       ),
   );
 
   sharedOtpChallengeRouter.requestOtpChallenge(
-    deps.visitorOtpAuthMiddleware,
+    deps.otpAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res.status(204), () =>
         deps.useCases.requestOtpChallenge.execute(
           req.body,
-          getGenericAuthOrThrow(req.payloads?.visitorOtp),
+          getGenericAuthOrThrow(req.payloads?.otp),
         ),
       ),
   );
 
   sharedOtpChallengeRouter.verifyOtpChallenge(
-    deps.visitorOtpAuthMiddleware,
+    deps.otpAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res.status(204), async () => {
-        const visitorOtp = getGenericAuthOrThrow(req.payloads?.visitorOtp);
+        const otpJwtPayload = getGenericAuthOrThrow(req.payloads?.otp);
         const { id, expiresAt } =
-          await deps.useCases.verifyOtpChallenge.execute(req.body, visitorOtp);
+          await deps.useCases.verifyOtpChallenge.execute(
+            req.body,
+            otpJwtPayload,
+          );
         res.cookie(otpSessionCookieName, id, {
           httpOnly: true,
           secure:

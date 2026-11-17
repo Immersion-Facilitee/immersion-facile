@@ -17,7 +17,7 @@ import type {
   GenerateApiConsumerJwt,
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
-  GenerateVisitorOtpJwt,
+  GenerateOtpJwt,
 } from "../domains/core/jwt";
 import type { InMemoryNotificationGateway } from "../domains/core/notifications/adapters/InMemoryNotificationGateway";
 import type { InMemoryPdfGeneratorGateway } from "../domains/core/pdf-generation/adapters/InMemoryPdfGeneratorGateway";
@@ -73,7 +73,7 @@ export type TestAppAndDeps = {
   generateApiConsumerJwt: GenerateApiConsumerJwt;
   generateConventionJwt: GenerateConventionJwt;
   generateConnectedUserJwt: GenerateConnectedUserJwt;
-  generateVisitorOtpJwt: GenerateVisitorOtpJwt;
+  generateOtpJwt: GenerateOtpJwt;
   uuidGenerator: UuidGenerator;
   inMemoryUow: InMemoryUnitOfWork;
   queries: InMemoryOutOfTransactionQueries;
@@ -123,7 +123,7 @@ export const buildTestApp = async (
     generateApiConsumerJwt,
     generateConventionJwt,
     generateConnectedUserJwt,
-    generateVisitorOtpJwt,
+    generateOtpJwt,
     uuidGenerator,
     inMemoryUow: uow,
     queries,
@@ -143,7 +143,7 @@ export const buildTestApp = async (
     generateApiConsumerJwt,
     generateConventionJwt,
     generateConnectedUserJwt,
-    generateVisitorOtpJwt,
+    generateOtpJwt,
     uuidGenerator,
     inMemoryUow,
     queries: queries as InMemoryOutOfTransactionQueries,

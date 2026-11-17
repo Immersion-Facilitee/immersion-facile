@@ -26,7 +26,7 @@ import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserA
 import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
-  GenerateVisitorOtpJwt,
+  GenerateOtpJwt,
 } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { toAgencyWithRights } from "../../../../utils/agency";
@@ -37,7 +37,7 @@ import {
 import { makeHashByRolesForTest } from "../../../../utils/emailHash";
 import {
   createConventionMagicLinkPayload,
-  createVisitorOtpJwtPayload,
+  createOtpJwtPayload,
   makeEmailHash,
 } from "../../../../utils/jwt";
 
@@ -68,7 +68,7 @@ describe("Magic link router", () => {
   let request: SuperTest<Test>;
   let generateConventionJwt: GenerateConventionJwt;
   let generateConnectedUserJwt: GenerateConnectedUserJwt;
-  let generateVisitorOtpJwt: GenerateVisitorOtpJwt;
+  let generateOtpJwt: GenerateOtpJwt;
   let inMemoryUow: InMemoryUnitOfWork;
   let httpClient: HttpClient<ConventionMagicLinkRoutes>;
   let gateways: InMemoryGateways;
@@ -78,7 +78,7 @@ describe("Magic link router", () => {
       request,
       generateConventionJwt,
       generateConnectedUserJwt,
-      generateVisitorOtpJwt,
+      generateOtpJwt,
       inMemoryUow,
       gateways,
     } = await buildTestApp());
@@ -402,7 +402,7 @@ describe("Magic link router", () => {
         );
       });
 
-      it("200 - ignores visitor otp JWT and signs with otp session cookie", async () => {
+      it("200 - ignores otp JWT and signs with otp session cookie", async () => {
         const { status, body } = await request
           .post(
             conventionMagicLinkRoutes.signConvention.url.replace(
@@ -412,8 +412,8 @@ describe("Magic link router", () => {
           )
           .set(
             "Authorization",
-            generateVisitorOtpJwt(
-              createVisitorOtpJwtPayload({
+            generateOtpJwt(
+              createOtpJwtPayload({
                 purpose: "manageConvention",
                 subject: {
                   conventionId: convention.id,
@@ -465,12 +465,12 @@ describe("Magic link router", () => {
       });
     });
 
-    it("401 - visitor otp JWT without otp session cookie cannot sign convention", async () => {
+    it("401 - otp JWT without otp session cookie cannot sign convention", async () => {
       const response = await httpClient.signConvention({
         urlParams: { conventionId: convention.id },
         headers: {
-          authorization: generateVisitorOtpJwt(
-            createVisitorOtpJwtPayload({
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
               purpose: "manageConvention",
               subject: {
                 conventionId: convention.id,

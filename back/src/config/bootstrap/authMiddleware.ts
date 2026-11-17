@@ -264,11 +264,11 @@ export const makeConsumerMiddleware = (
   };
 };
 
-export const makeVisitorOtpAuthMiddleware = (
+export const makeOtpAuthMiddleware = (
   config: AppConfig,
-  payloadKey: ExtractFromExisting<PayloadKind, "visitorOtp">,
+  payloadKey: ExtractFromExisting<PayloadKind, "otp">,
 ): RequestHandler => {
-  const verifyJwt = makeVerifyJwtES256<"visitorOtp">(config.jwtPublicKey);
+  const verifyJwt = makeVerifyJwtES256<"otp">(config.jwtPublicKey);
 
   return (req, res, next) => {
     const maybeJwt = req.headers.authorization;

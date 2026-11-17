@@ -25,7 +25,7 @@ import type {
   GenerateApiConsumerJwt,
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
-  GenerateVisitorOtpJwt,
+  GenerateOtpJwt,
 } from "../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import type { OutOfTransactionQueries } from "../../domains/core/unit-of-work/ports/UnitOfWork";
@@ -47,7 +47,7 @@ type CreateAppProperties = {
   generateApiConsumerJwt: GenerateApiConsumerJwt;
   generateConventionJwt: GenerateConventionJwt;
   generateConnectedUserJwt: GenerateConnectedUserJwt;
-  generateVisitorOtpJwt: GenerateVisitorOtpJwt;
+  generateOtpJwt: GenerateOtpJwt;
   uuidGenerator: UuidGenerator;
   inMemoryUow?: InMemoryUnitOfWork;
   queries: OutOfTransactionQueries;
@@ -125,7 +125,7 @@ export const createApp = async (
     generateApiConsumerJwt: deps.generateApiConsumerJwt,
     generateConventionJwt: deps.generateConventionJwt,
     generateConnectedUserJwt: deps.generateConnectedUserJwt,
-    generateVisitorOtpJwt: deps.generateVisitorOtpJwt,
+    generateOtpJwt: deps.generateOtpJwt,
     uuidGenerator: deps.uuidGenerator,
     queries: deps.queries,
   };

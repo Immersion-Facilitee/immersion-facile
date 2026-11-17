@@ -47,7 +47,7 @@ import type { BasicEventCrawler } from "../../../../domains/core/events/adapters
 import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
-  GenerateVisitorOtpJwt,
+  GenerateOtpJwt,
 } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
@@ -62,7 +62,7 @@ import {
 import { shortLinkRedirectToLinkWithValidation } from "../../../../utils/e2eTestHelpers";
 import {
   createConventionMagicLinkPayload,
-  createVisitorOtpJwtPayload,
+  createOtpJwtPayload,
   makeEmailHash,
 } from "../../../../utils/jwt";
 import { processEventsForEmailToBeSent } from "../../../../utils/processEventsForEmailToBeSent";
@@ -114,7 +114,7 @@ describe("convention e2e", () => {
   let technicalRoutesClient: HttpClient<TechnicalRoutes>;
   let generateConventionJwt: GenerateConventionJwt;
   let generateConnectedUserJwt: GenerateConnectedUserJwt;
-  let generateVisitorOtpJwt: GenerateVisitorOtpJwt;
+  let generateOtpJwt: GenerateOtpJwt;
   let inMemoryUow: InMemoryUnitOfWork;
   let eventCrawler: BasicEventCrawler;
   let gateways: InMemoryGateways;
@@ -129,7 +129,7 @@ describe("convention e2e", () => {
       gateways,
       generateConventionJwt,
       generateConnectedUserJwt,
-      generateVisitorOtpJwt,
+      generateOtpJwt,
       inMemoryUow,
     } = testApp);
 
@@ -461,11 +461,11 @@ describe("convention e2e", () => {
       },
     );
 
-    it("401 - visitor OTP JWT does not grant access to the convention", async () => {
+    it("401 - OTP JWT does not grant access to the convention", async () => {
       const response = await magicLinkRequest.getConvention({
         headers: {
-          authorization: generateVisitorOtpJwt(
-            createVisitorOtpJwtPayload({
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
               purpose: "manageConvention",
               subject: {
                 conventionId: convention.id,

@@ -5,8 +5,8 @@ import {
   executeInSequence,
   OTP_SESSION_DURATION_IN_MINUTES,
   type OtpChallenge,
+  type OtpJwtPayload,
   type OtpSession,
-  type VisitorOtpJwtPayload,
   verifyOtpChallengeSchema,
 } from "shared";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
@@ -23,7 +23,7 @@ export type VerifyOtpChallenge = ReturnType<typeof makeVerifyOtpChallenge>;
 
 export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
   .withInput(verifyOtpChallengeSchema)
-  .withCurrentUser<VisitorOtpJwtPayload>()
+  .withCurrentUser<OtpJwtPayload>()
   .withOutput<VerifyOtpChallengeOutput>()
   .withDeps<{
     hashOtpCode: HashOtpCode;
