@@ -15,9 +15,9 @@ Url de production:
 
 La clé API est à fournir en authorization header de toutes les requêtes.
 
-## Mise en contact
+## Candidatures
 
-La mise en contact peut se faire sur la route :
+La candidature peut se faire sur la route :
 
 POST`/contact-establishment`
 

@@ -212,7 +212,7 @@ const formEstablishmentCommonShape = {
   maxContactsPerMonth: z
     .number({
       error:
-        "Veuillez renseigner le nombre maximum de mise en contact par semaine que vous souhaitez recevoir",
+        "Veuillez renseigner le nombre maximum de candidatures par semaine que vous souhaitez recevoir",
     })
     .nonnegative({
       message: "La valeur renseignée ne peut pas être négative",
