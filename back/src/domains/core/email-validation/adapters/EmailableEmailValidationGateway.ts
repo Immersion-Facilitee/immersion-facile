@@ -14,7 +14,7 @@ const logger = createLogger(__filename);
 
 const emailableVerifyEmailMaxRatePerSeconds = 25;
 
-const thirtyDaysInHours = 24 * 30;
+const sevenDaysInHours = 24 * 7;
 
 export class EmailableEmailValidationGateway implements EmailValidationGetaway {
   #limiter = new Bottleneck({
@@ -39,7 +39,7 @@ export class EmailableEmailValidationGateway implements EmailValidationGetaway {
         partner: "emailable",
         route: emailableValidationRoutes.validateEmail,
       },
-      overrideCacheDurationInHours: thirtyDaysInHours,
+      overrideCacheDurationInHours: sevenDaysInHours,
       getCacheKey: (email) => `emailable_${email}`,
       cb: (email) =>
         this.#limiter.schedule(() =>
