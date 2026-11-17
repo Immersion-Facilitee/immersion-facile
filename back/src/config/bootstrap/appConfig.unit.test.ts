@@ -1,3 +1,4 @@
+import { expectToEqual } from "shared";
 import { AppConfig } from "./appConfig";
 
 const createAppConfig = (configParams: any): AppConfig =>
@@ -5,17 +6,20 @@ const createAppConfig = (configParams: any): AppConfig =>
 
 describe("appConfig", () => {
   it("quarantinedTopics", () => {
-    expect(createAppConfig({}).quarantinedTopics).toEqual([]);
-    expect(
+    expectToEqual(createAppConfig({}).quarantinedTopics, []);
+    expectToEqual(
       createAppConfig({ QUARANTINED_TOPICS: "" }).quarantinedTopics,
-    ).toEqual([]);
-    expect(
+      [],
+    );
+    expectToEqual(
       createAppConfig({ QUARANTINED_TOPICS: ",,," }).quarantinedTopics,
-    ).toEqual([]);
-    expect(
+      [],
+    );
+    expectToEqual(
       createAppConfig({
         QUARANTINED_TOPICS: "ConventionRejected,AgencyActivated",
       }).quarantinedTopics,
-    ).toEqual(["ConventionRejected", "AgencyActivated"]);
+      ["ConventionRejected", "AgencyActivated"],
+    );
   });
 });
