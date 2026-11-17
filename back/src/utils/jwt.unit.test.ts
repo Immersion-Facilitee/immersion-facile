@@ -7,7 +7,7 @@ import {
 import { makeGenerateJwtES256, makeVerifyJwtES256 } from "../domains/core/jwt";
 import { CustomTimeGateway } from "../domains/core/time-gateway/adapters/CustomTimeGateway";
 import {
-  createVisitorOtpJwtPayload,
+  createOtpJwtPayload,
   generateES256KeyPair,
   makeThrowIfIncorrectJwt,
 } from "./jwt";
@@ -85,7 +85,7 @@ describe("makeThrowIfIncorrectJwt", () => {
   });
 });
 
-describe("createVisitorOtpJwtPayload", () => {
+describe("createOtpJwtPayload", () => {
   it("issues a payload without expiration", () => {
     const now = new Date("2026-01-01T00:00:00Z");
     const subject = {
@@ -95,7 +95,7 @@ describe("createVisitorOtpJwtPayload", () => {
     } satisfies ManageConventionSubject;
 
     expectToEqual(
-      createVisitorOtpJwtPayload({
+      createOtpJwtPayload({
         purpose: "manageConvention",
         subject,
         now,
@@ -103,7 +103,7 @@ describe("createVisitorOtpJwtPayload", () => {
       {
         purpose: "manageConvention",
         subject,
-        version: currentJwtVersions.visitorOtp,
+        version: currentJwtVersions.otp,
         iat: now.getTime() / 1000,
       },
     );

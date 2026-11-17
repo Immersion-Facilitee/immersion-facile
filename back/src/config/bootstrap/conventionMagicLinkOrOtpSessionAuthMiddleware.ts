@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { errors, otpSessionCookieName } from "shared";
 import { handleHttpJsonResponseError } from "../helpers/handleHttpJsonResponseError";
 
-const isVisitorOtpJwt = (authorization: string): boolean => {
+const isOtpJwt = (authorization: string): boolean => {
   const unsafePayload = jwt.decode(authorization);
   return (
     unsafePayload !== null &&
@@ -26,7 +26,7 @@ export const makeConventionMagicLinkOrOtpSessionAuthMiddleware =
         errors.auth.missingAuthentication(),
       );
 
-    if (!authorization || isVisitorOtpJwt(authorization))
+    if (!authorization || isOtpJwt(authorization))
       return deps.otpSessionAuthMiddleware(req, res, next);
 
     return deps.magicLinkAuthMiddleware(req, res, next);

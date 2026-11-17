@@ -5,7 +5,7 @@ import {
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
-  type VisitorOtpJwtPayload,
+  type OtpJwtPayload,
 } from "shared";
 import { makeEmailHash } from "../../../../../utils/jwt";
 import {
@@ -31,38 +31,36 @@ describe("GetMaskedOtpRecipients", () => {
   });
 
   describe("manageConvention purpose", () => {
-    const visitorOtpJwtPayload: VisitorOtpJwtPayload = {
+    const otpJwtPayload: OtpJwtPayload = {
       purpose: "manageConvention",
       subject: {
         conventionId: "someConventionId",
         role: "beneficiary",
         emailHash: "someEmailHash",
       },
-      version: currentJwtVersions.visitorOtp,
+      version: currentJwtVersions.otp,
       iat: Date.now(),
       exp: Date.now() + 60 * 60,
     };
 
     describe("Wrong path", () => {
       it("should throw if the convention does not exist", async () => {
-        const visitorOtpJwtPayloadWithNonExistingConvention: VisitorOtpJwtPayload =
-          {
-            ...visitorOtpJwtPayload,
-            subject: {
-              ...visitorOtpJwtPayload.subject,
-              conventionId: "nonExistingConventionId",
-            },
-          };
+        const otpJwtPayloadWithNonExistingConvention: OtpJwtPayload = {
+          ...otpJwtPayload,
+          subject: {
+            ...otpJwtPayload.subject,
+            conventionId: "nonExistingConventionId",
+          },
+        };
 
         await expectPromiseToFailWithError(
           getMaskedOtpRecipients.execute(
             undefined,
-            visitorOtpJwtPayloadWithNonExistingConvention,
+            otpJwtPayloadWithNonExistingConvention,
           ),
           errors.convention.notFound({
             conventionId:
-              visitorOtpJwtPayloadWithNonExistingConvention.subject
-                .conventionId,
+              otpJwtPayloadWithNonExistingConvention.subject.conventionId,
           }),
         );
       });
@@ -80,8 +78,8 @@ describe("GetMaskedOtpRecipients", () => {
             conventionWithoutOptionalSignatories,
           ]);
 
-          const visitorOtpJwtPayloadWithMissingRole: VisitorOtpJwtPayload = {
-            ...visitorOtpJwtPayload,
+          const otpJwtPayloadWithMissingRole: OtpJwtPayload = {
+            ...otpJwtPayload,
             subject: {
               conventionId: conventionWithoutOptionalSignatories.id,
               role,
@@ -92,7 +90,7 @@ describe("GetMaskedOtpRecipients", () => {
           await expectPromiseToFailWithError(
             getMaskedOtpRecipients.execute(
               undefined,
-              visitorOtpJwtPayloadWithMissingRole,
+              otpJwtPayloadWithMissingRole,
             ),
             errors.convention.missingActor({
               conventionId: conventionWithoutOptionalSignatories.id,
@@ -107,22 +105,21 @@ describe("GetMaskedOtpRecipients", () => {
 
         uow.conventionRepository.setConventions([convention]);
 
-        const visitorOtpJwtPayloadWithOtherActorEmailHash: VisitorOtpJwtPayload =
-          {
-            ...visitorOtpJwtPayload,
-            subject: {
-              conventionId: convention.id,
-              role: "beneficiary",
-              emailHash: makeEmailHash(
-                convention.signatories.establishmentRepresentative.email,
-              ),
-            },
-          };
+        const otpJwtPayloadWithOtherActorEmailHash: OtpJwtPayload = {
+          ...otpJwtPayload,
+          subject: {
+            conventionId: convention.id,
+            role: "beneficiary",
+            emailHash: makeEmailHash(
+              convention.signatories.establishmentRepresentative.email,
+            ),
+          },
+        };
 
         await expectPromiseToFailWithError(
           getMaskedOtpRecipients.execute(
             undefined,
-            visitorOtpJwtPayloadWithOtherActorEmailHash,
+            otpJwtPayloadWithOtherActorEmailHash,
           ),
           errors.convention.forbiddenMissingRightsEmailHash({
             conventionId: convention.id,
@@ -212,7 +209,7 @@ describe("GetMaskedOtpRecipients", () => {
           const maskedRecipients = await getMaskedOtpRecipients.execute(
             undefined,
             {
-              ...visitorOtpJwtPayload,
+              ...otpJwtPayload,
               subject: {
                 conventionId: convention.id,
                 role,
@@ -236,7 +233,7 @@ describe("GetMaskedOtpRecipients", () => {
       uow.conventionRepository.setConventions([conventionWithLandlinePhone]);
 
       const maskedRecipients = await getMaskedOtpRecipients.execute(undefined, {
-        ...visitorOtpJwtPayload,
+        ...otpJwtPayload,
         subject: {
           conventionId: conventionWithLandlinePhone.id,
           role: "beneficiary",
@@ -272,7 +269,7 @@ describe("GetMaskedOtpRecipients", () => {
         const maskedRecipients = await getMaskedOtpRecipients.execute(
           undefined,
           {
-            ...visitorOtpJwtPayload,
+            ...otpJwtPayload,
             subject: {
               conventionId: conventionWithShortBeneficiaryEmail.id,
               role: "beneficiary",

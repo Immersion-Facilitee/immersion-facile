@@ -10,15 +10,15 @@ import type {
   ConventionJwtPayload,
   EmailAuthCodeJwt,
   EmailAuthCodeJwtPayload,
-  VisitorOtpJwt,
-  VisitorOtpJwtPayload,
+  OtpJwt,
+  OtpJwtPayload,
 } from "shared";
 
 export type GenerateConventionJwt = GenerateJwtFn<"convention">;
 export type GenerateConnectedUserJwt = GenerateJwtFn<"connectedUser">;
 export type GenerateApiConsumerJwt = GenerateJwtFn<"apiConsumer">;
 export type GenerateEmailAuthCodeJwt = GenerateJwtFn<"emailAuthCode">;
-export type GenerateVisitorOtpJwt = GenerateJwtFn<"visitorOtp">;
+export type GenerateOtpJwt = GenerateJwtFn<"otp">;
 
 type JwtTokenMapping<
   K extends string,
@@ -35,7 +35,7 @@ type JwtMap =
   | JwtTokenMapping<"connectedUser", ConnectedUserJwt, ConnectedUserJwtPayload>
   | JwtTokenMapping<"apiConsumer", ApiConsumerJwt, ApiConsumerJwtPayload>
   | JwtTokenMapping<"emailAuthCode", EmailAuthCodeJwt, EmailAuthCodeJwtPayload>
-  | JwtTokenMapping<"visitorOtp", VisitorOtpJwt, VisitorOtpJwtPayload>;
+  | JwtTokenMapping<"otp", OtpJwt, OtpJwtPayload>;
 
 export type JwtKind = JwtMap["kind"];
 

@@ -4,8 +4,8 @@ import {
   errors,
   isValidMobilePhone,
   type MaskedOtpRecipients,
+  type OtpJwtPayload,
   type PhoneNumber,
-  type VisitorOtpJwtPayload,
 } from "shared";
 import { match } from "ts-pattern";
 import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
@@ -18,7 +18,7 @@ export type GetMaskedOtpRecipients = ReturnType<
 export const makeGetMaskedOtpRecipients = useCaseBuilder(
   "GetMaskedOtpRecipients",
 )
-  .withCurrentUser<VisitorOtpJwtPayload>()
+  .withCurrentUser<OtpJwtPayload>()
   .withOutput<MaskedOtpRecipients>()
   .build(async ({ currentUser, uow }) =>
     match(currentUser.purpose)

@@ -26,7 +26,7 @@ import {
 } from "../../../../domains/core/authentication/otp-challenge/entities/otpChallenge.helper";
 import type {
   GenerateConventionJwt,
-  GenerateVisitorOtpJwt,
+  GenerateOtpJwt,
 } from "../../../../domains/core/jwt";
 import type { CustomTimeGateway } from "../../../../domains/core/time-gateway/adapters/CustomTimeGateway";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
@@ -35,7 +35,7 @@ import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
 import { buildTestApp } from "../../../../utils/buildTestApp";
 import {
   createConventionMagicLinkPayload,
-  createVisitorOtpJwtPayload,
+  createOtpJwtPayload,
   makeEmailHash,
 } from "../../../../utils/jwt";
 import {
@@ -49,7 +49,7 @@ describe("otp challenge router", () => {
     .withBeneficiaryPhone("+33612345678")
     .build();
 
-  const visitorOtpJwtPayload = createVisitorOtpJwtPayload({
+  const otpJwtPayload = createOtpJwtPayload({
     purpose: "manageConvention",
     subject: {
       conventionId: convention.id,
@@ -61,7 +61,7 @@ describe("otp challenge router", () => {
 
   let httpClient: HttpClient<OtpChallengeRoutes>;
   let request: SuperTest<Test>;
-  let generateVisitorOtpJwt: GenerateVisitorOtpJwt;
+  let generateOtpJwt: GenerateOtpJwt;
   let generateConventionJwt: GenerateConventionJwt;
   let inMemoryUow: InMemoryUnitOfWork;
   let timeGateway: CustomTimeGateway;
@@ -72,7 +72,7 @@ describe("otp challenge router", () => {
 
   beforeEach(async () => {
     const testApp = await buildTestApp();
-    generateVisitorOtpJwt = testApp.generateVisitorOtpJwt;
+    generateOtpJwt = testApp.generateOtpJwt;
     generateConventionJwt = testApp.generateConventionJwt;
     inMemoryUow = testApp.inMemoryUow;
     uuidGenerator = testApp.uuidGenerator;
@@ -94,7 +94,7 @@ describe("otp challenge router", () => {
   describe(`${displayRouteName(otpChallengeRoutes.getMaskedOtpRecipient)}`, () => {
     it("200 - returns the masked email and phone of the convention actor", async () => {
       const response = await httpClient.getMaskedOtpRecipient({
-        headers: { authorization: generateVisitorOtpJwt(visitorOtpJwtPayload) },
+        headers: { authorization: generateOtpJwt(otpJwtPayload) },
       });
 
       expectHttpResponseToEqual(response, {
@@ -124,8 +124,8 @@ describe("otp challenge router", () => {
 
       const response = await httpClient.getMaskedOtpRecipient({
         headers: {
-          authorization: generateVisitorOtpJwt(
-            createVisitorOtpJwtPayload({
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
               purpose: "manageConvention",
               subject: {
                 conventionId: convention.id,
@@ -157,8 +157,8 @@ describe("otp challenge router", () => {
 
       const response = await httpClient.getMaskedOtpRecipient({
         headers: {
-          authorization: generateVisitorOtpJwt(
-            createVisitorOtpJwtPayload({
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
               purpose: "manageConvention",
               subject: {
                 conventionId: unknownConventionId,
@@ -202,7 +202,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "email" },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -230,7 +230,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "sms" },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -263,7 +263,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "sms" },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -293,7 +293,7 @@ describe("otp challenge router", () => {
       });
     });
 
-    it("401 - convention magic link JWT instead of visitor otp JWT", async () => {
+    it("401 - convention magic link JWT instead of otp JWT", async () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "email" },
         headers: {
@@ -324,8 +324,8 @@ describe("otp challenge router", () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "email" },
         headers: {
-          authorization: generateVisitorOtpJwt(
-            createVisitorOtpJwtPayload({
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
               purpose: "manageConvention",
               subject: {
                 conventionId: convention.id,
@@ -358,8 +358,8 @@ describe("otp challenge router", () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "email" },
         headers: {
-          authorization: generateVisitorOtpJwt(
-            createVisitorOtpJwtPayload({
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
               purpose: "manageConvention",
               subject: {
                 conventionId: unknownConventionId,
@@ -388,7 +388,7 @@ describe("otp challenge router", () => {
     it("429 - otp challenge requested too recently", async () => {
       inMemoryUow.otpChallengeRepository.otpChallenges = [
         new OtpChallengeDtoBuilder()
-          .withSubject(visitorOtpJwtPayload.subject)
+          .withSubject(otpJwtPayload.subject)
           .withRecipient(convention.signatories.beneficiary.email)
           .withCreatedAt("2026-11-02T09:59:30.000Z")
           .withExpiresAt("2026-11-02T10:29:30.000Z")
@@ -398,7 +398,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "email" },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -417,7 +417,7 @@ describe("otp challenge router", () => {
       const otpChallengesRequestedWithinLastHour = [
         new OtpChallengeDtoBuilder()
           .withId("22222222-2222-4222-a222-222222222222")
-          .withSubject(visitorOtpJwtPayload.subject)
+          .withSubject(otpJwtPayload.subject)
           .withRecipient(convention.signatories.beneficiary.email)
           .withCreatedAt("2026-11-02T09:05:00.000Z")
           .withExpiresAt("2026-11-02T09:20:00.000Z")
@@ -425,7 +425,7 @@ describe("otp challenge router", () => {
           .build(),
         new OtpChallengeDtoBuilder()
           .withId("33333333-3333-4333-a333-333333333333")
-          .withSubject(visitorOtpJwtPayload.subject)
+          .withSubject(otpJwtPayload.subject)
           .withRecipient(convention.signatories.beneficiary.email)
           .withCreatedAt("2026-11-02T09:15:00.000Z")
           .withExpiresAt("2026-11-02T09:30:00.000Z")
@@ -433,7 +433,7 @@ describe("otp challenge router", () => {
           .build(),
         new OtpChallengeDtoBuilder()
           .withId("44444444-4444-4444-a444-444444444444")
-          .withSubject(visitorOtpJwtPayload.subject)
+          .withSubject(otpJwtPayload.subject)
           .withRecipient(convention.signatories.beneficiary.email)
           .withCreatedAt("2026-11-02T09:25:00.000Z")
           .withExpiresAt("2026-11-02T09:40:00.000Z")
@@ -441,7 +441,7 @@ describe("otp challenge router", () => {
           .build(),
         new OtpChallengeDtoBuilder()
           .withId("55555555-5555-4555-a555-555555555555")
-          .withSubject(visitorOtpJwtPayload.subject)
+          .withSubject(otpJwtPayload.subject)
           .withRecipient(convention.signatories.beneficiary.email)
           .withCreatedAt("2026-11-02T09:35:00.000Z")
           .withExpiresAt("2026-11-02T09:50:00.000Z")
@@ -449,7 +449,7 @@ describe("otp challenge router", () => {
           .build(),
         new OtpChallengeDtoBuilder()
           .withId("66666666-6666-4666-a666-666666666666")
-          .withSubject(visitorOtpJwtPayload.subject)
+          .withSubject(otpJwtPayload.subject)
           .withRecipient(convention.signatories.beneficiary.email)
           .withCreatedAt("2026-11-02T09:45:00.000Z")
           .withExpiresAt("2026-11-02T10:00:00.000Z")
@@ -461,7 +461,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "email" },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -493,7 +493,7 @@ describe("otp challenge router", () => {
     beforeEach(() => {
       otpChallenge = new OtpChallengeDtoBuilder()
         .withId(otpChallengeId)
-        .withSubject(visitorOtpJwtPayload.subject)
+        .withSubject(otpJwtPayload.subject)
         .withCodeHash(hashOtpCode({ otpChallengeId, otpCode }))
         .withCreatedAt(now.toISOString())
         .withExpiresAt(addMinutes(now, 30).toISOString())
@@ -506,7 +506,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -516,7 +516,7 @@ describe("otp challenge router", () => {
       });
       const otpSession = inMemoryUow.otpSessionRepository.otpSessions[0];
       expectToEqual(response.headers["set-cookie"], [
-        `if_visitor=${otpSession.id}; Path=/; Expires=${new Date(otpSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
+        `if_otp_session=${otpSession.id}; Path=/; Expires=${new Date(otpSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
     });
 
@@ -538,7 +538,7 @@ describe("otp challenge router", () => {
         ).verifyOtpChallenge({
           body: { otpCode },
           headers: {
-            authorization: testApp.generateVisitorOtpJwt(visitorOtpJwtPayload),
+            authorization: testApp.generateOtpJwt(otpJwtPayload),
           },
         });
 
@@ -549,7 +549,7 @@ describe("otp challenge router", () => {
         const otpSession =
           testApp.inMemoryUow.otpSessionRepository.otpSessions[0];
         expectToEqual(response.headers["set-cookie"], [
-          `if_visitor=${otpSession.id}; Path=/; Expires=${new Date(otpSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
+          `if_otp_session=${otpSession.id}; Path=/; Expires=${new Date(otpSession.expiresAt).toUTCString()}; HttpOnly; Secure; SameSite=Lax`,
         ]);
       },
     );
@@ -558,7 +558,7 @@ describe("otp challenge router", () => {
       const firstResponse = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
       expect(firstResponse.status).toBe(204);
@@ -568,7 +568,7 @@ describe("otp challenge router", () => {
         .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
         .build();
       const otherSubject = {
-        ...visitorOtpJwtPayload.subject,
+        ...otpJwtPayload.subject,
         conventionId: otherConvention.id,
       };
       inMemoryUow.conventionRepository.setConventions([
@@ -585,12 +585,12 @@ describe("otp challenge router", () => {
         .post(otpChallengeRoutes.verifyOtpChallenge.url)
         .set(
           "Authorization",
-          generateVisitorOtpJwt({
-            ...visitorOtpJwtPayload,
+          generateOtpJwt({
+            ...otpJwtPayload,
             subject: otherSubject,
           }),
         )
-        .set("Cookie", `if_visitor=${firstSession.id}`)
+        .set("Cookie", `if_otp_session=${firstSession.id}`)
         .send({ otpCode });
       expect(secondResponse.status).toBe(204);
       const secondSession = inMemoryUow.otpSessionRepository.otpSessions.find(
@@ -598,10 +598,10 @@ describe("otp challenge router", () => {
       );
       if (!secondSession) throw new Error("Missing second otp session");
       expect(secondResponse.headers["set-cookie"]).toEqual([
-        `if_visitor=${secondSession.id}; Path=/; Expires=${new Date(secondSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
+        `if_otp_session=${secondSession.id}; Path=/; Expires=${new Date(secondSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
       expect(firstResponse.headers["set-cookie"]).toEqual([
-        `if_visitor=${firstSession.id}; Path=/; Expires=${new Date(firstSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
+        `if_otp_session=${firstSession.id}; Path=/; Expires=${new Date(firstSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
 
       for (const { conventionId, expectedStatus } of [
@@ -611,7 +611,7 @@ describe("otp challenge router", () => {
         const response = await request
           .get(otpChallengeRoutes.getOtpSession.url)
           .query({ purpose: "manageConvention", conventionId })
-          .set("Cookie", `if_visitor=${secondSession.id}`);
+          .set("Cookie", `if_otp_session=${secondSession.id}`);
         expect(response.status).toBe(expectedStatus);
       }
     });
@@ -620,7 +620,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.verifyOtpChallenge({
         body: { otpCode: "0000" },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -649,7 +649,7 @@ describe("otp challenge router", () => {
       });
     });
 
-    it("401 - convention magic link JWT instead of visitor otp JWT", async () => {
+    it("401 - convention magic link JWT instead of otp JWT", async () => {
       const response = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
@@ -681,7 +681,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -702,7 +702,7 @@ describe("otp challenge router", () => {
       const response = await httpClient.verifyOtpChallenge({
         body: { otpCode },
         headers: {
-          authorization: generateVisitorOtpJwt(visitorOtpJwtPayload),
+          authorization: generateOtpJwt(otpJwtPayload),
         },
       });
 
@@ -722,7 +722,7 @@ describe("otp challenge router", () => {
   describe(`${displayRouteName(otpChallengeRoutes.getOtpSession)}`, () => {
     const now = new Date("2026-11-05T10:00:00.000Z");
     const otpSession = new OtpSessionDtoBuilder()
-      .withSubject(visitorOtpJwtPayload.subject)
+      .withSubject(otpJwtPayload.subject)
       .withExpiresAt(addMinutes(now, 60).toISOString())
       .withCreatedAt(now.toISOString())
       .build();
@@ -741,7 +741,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor=${otpSession.id}`);
+        .set("Cookie", `if_otp_session=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -775,7 +775,7 @@ describe("otp challenge router", () => {
       const response = await request
         .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor_${convention.id}=${otpSession.id}`);
+        .set("Cookie", `if_otp_session_${convention.id}=${otpSession.id}`);
 
       expect(response.status).toBe(401);
     });
@@ -784,7 +784,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", "if_visitor=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+        .set("Cookie", "if_otp_session=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -810,7 +810,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getOtpSession.url)
         .query(queryParams)
-        .set("Cookie", `if_visitor=${otpSession.id}`);
+        .set("Cookie", `if_otp_session=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -834,7 +834,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor=${otpSession.id}`);
+        .set("Cookie", `if_otp_session=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -858,7 +858,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor=${otpSession.id}`);
+        .set("Cookie", `if_otp_session=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },
@@ -882,7 +882,7 @@ describe("otp challenge router", () => {
       const { status, body } = await request
         .get(otpChallengeRoutes.getOtpSession.url)
         .query(manageConventionQuery)
-        .set("Cookie", `if_visitor=${otpSession.id}`);
+        .set("Cookie", `if_otp_session=${otpSession.id}`);
 
       expectHttpResponseToEqual(
         { status, body, headers: {} },

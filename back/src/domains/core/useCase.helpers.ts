@@ -7,9 +7,9 @@ import {
   calculateDurationInSecondsFrom,
   castError,
   type LegacySearchQueryParamsDto,
+  type OtpJwtPayload,
   type OtpSessionPayload,
   type UserId,
-  type VisitorOtpJwtPayload,
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import { validateAndParseZodSchema } from "../../config/helpers/validateAndParseZodSchema";
@@ -47,7 +47,7 @@ export type UseCaseIdentityPayload =
   | ConnectedUserDomainJwtPayload
   | ConnectedUser
   | ApiConsumer
-  | VisitorOtpJwtPayload
+  | OtpJwtPayload
   | OtpSessionPayload
   | void;
 

@@ -16,11 +16,11 @@ export type PayloadKind =
   | "connectedUser"
   | "currentUser"
   | "emailAuthCode"
-  | "visitorOtp";
+  | "otp";
 
 export type JwtPayloads = {
   convention?: ConventionDomainJwtPayload;
-  visitorOtp?: VisitorOtpJwtPayload;
+  otp?: OtpJwtPayload;
   connectedUser?: ConnectedUserJwtPayload;
   emailAuthCode?: EmailAuthCodeJwtPayload;
   currentUser?: ConnectedUser;
@@ -31,7 +31,7 @@ export type AppSupportedJwtPayload =
   | ConnectedUserJwtPayload
   | EmailAuthCodeJwtPayload
   | ConnectedUser
-  | VisitorOtpJwtPayload;
+  | OtpJwtPayload;
 
 export type AppSupportedDomainJwtPayload =
   | ApiConsumerDomainJwtPayload
@@ -52,7 +52,7 @@ export type ConventionDomainJwtPayload = {
   sub?: string;
 };
 
-export type VisitorOtpDomainJwtPayload = {
+export type OtpDomainJwtPayload = {
   subject: OtpChallenge["subject"];
   purpose: OtpChallenge["purpose"];
 };
@@ -72,8 +72,7 @@ export type ApiConsumerJwtPayload = CommonJwtPayload &
 export type ConventionJwtPayload = CommonJwtPayload &
   ConventionDomainJwtPayload;
 
-export type VisitorOtpJwtPayload = CommonJwtPayload &
-  VisitorOtpDomainJwtPayload;
+export type OtpJwtPayload = CommonJwtPayload & OtpDomainJwtPayload;
 
 export type ConventionRelatedJwtPayload =
   | ConventionDomainJwtPayload

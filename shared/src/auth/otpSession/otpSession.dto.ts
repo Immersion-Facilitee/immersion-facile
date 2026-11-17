@@ -9,7 +9,7 @@ import type {
 
 export type OtpSessionId = Flavor<string, "OtpSessionId">;
 export type OtpSessionCookieName = Flavor<string, "OtpSessionCookieName">;
-export const otpSessionCookieName: OtpSessionCookieName = "if_visitor";
+export const otpSessionCookieName: OtpSessionCookieName = "if_otp_session";
 
 export type OtpSessionPayload = {
   sessionId: OtpSessionId;
