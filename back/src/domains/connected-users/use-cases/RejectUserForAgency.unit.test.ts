@@ -230,7 +230,11 @@ describe("RejectUserForAgency", () => {
     },
   );
 
-  it.each([
+  it.each<{
+    currentUserLabel: string;
+    currentUser: ConnectedUser;
+    usersInRepo: User[];
+  }>([
     {
       currentUserLabel: "backoffice admin",
       currentUser: connectedAdmin,
@@ -254,7 +258,7 @@ describe("RejectUserForAgency", () => {
         }),
       ];
 
-      uow.userRepository.users = [...usersInRepo];
+      uow.userRepository.users = usersInRepo;
 
       await rejectUserForAgencyUsecase.execute(
         {
