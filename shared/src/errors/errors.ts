@@ -793,8 +793,8 @@ export const errors = {
     }) =>
       new ConflictError(
         [
-          `Une demande de mise en contact existe déjà pour l'entreprise '${siret}', le code métier '${appellationCode}' et l'email du candidat.`,
-          `Un minimum de ${minimumNumberOfDaysBetweenSimilarContactRequests} jours entre deux demande de mise en contact sont permises.`,
+          `Une candidature existe déjà pour l'entreprise '${siret}', le code métier '${appellationCode}' et l'email du candidat.`,
+          `Un minimum de ${minimumNumberOfDaysBetweenSimilarContactRequests} jours entre deux candidatures sont permises.`,
         ].join("\n"),
       ),
     contactRequestContactModeMismatch: ({
@@ -805,7 +805,7 @@ export const errors = {
       contactModes: { inParams: ContactMode; inRepo: ContactMode };
     }) =>
       new BadRequestError(
-        `Incohérence sur le mode de mise en contact. '${contactModes.inParams}' dans les params. '${contactModes.inRepo}' dans le contact d'entreprise '${siret}'.`,
+        `Incohérence sur le mode de contact. '${contactModes.inParams}' dans les params. '${contactModes.inRepo}' dans le contact d'entreprise '${siret}'.`,
       ),
     offerMissing: ({
       siret,
