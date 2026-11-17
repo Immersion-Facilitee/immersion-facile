@@ -55,24 +55,6 @@ describe("dashboardUrls slice", () => {
       expectDashboardError(null);
     });
 
-    it("should store AbsoluteUrl in events when requesting events dashboard", () => {
-      expectUrlsToMatch({ adminEvents: null });
-
-      store.dispatch(
-        dashboardUrlsSlice.actions.dashboardUrlRequested({
-          name: "adminEvents",
-        }),
-      );
-      const valueFromApi: DashboardUrlAndName = {
-        name: "adminEvents",
-        url: "https://events.url",
-      };
-      dependencies.adminGateway.dashboardUrl$.next(valueFromApi);
-
-      expectUrlsToMatch({ adminEvents: valueFromApi.url });
-      expectDashboardError(null);
-    });
-
     it("should fails on requesting conventions dashboard with error", () => {
       expectUrlsToMatch({ adminConventions: null });
 

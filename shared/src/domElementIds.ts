@@ -1335,7 +1335,13 @@ export const domElementIds = {
     markArchivedConventionRequestAsTreatedButton:
       "im-admin-conventions__mark-archived-convention-request-as-treated-button",
   },
-  adminEvents: {},
+  adminEvents: {
+    eventListShowDetailsButton:
+      "im-admin-events__event-list-show-details-button",
+    eventListTriggeredByUserLink:
+      "im-admin-events__event-list-triggered-by-user-link",
+    eventDetailsModal: "im-admin-events__event-details-modal",
+  },
   adminUsers: {},
   adminNotifications: {},
   adminEmailPreview: {},
