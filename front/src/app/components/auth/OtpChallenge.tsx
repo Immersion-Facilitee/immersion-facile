@@ -24,6 +24,7 @@ import {
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { useWebOtpCode } from "src/app/hooks/webOtp.hooks";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { otpChallengeSelectors } from "src/core-logic/domain/otpChallenge/otpChallenge.selectors";
@@ -45,6 +46,7 @@ export const OtpChallenge = ({ jwt }: OtpChallengeProps): JSX.Element => {
   );
   const isCodeSent = useAppSelector(otpChallengeSelectors.isCodeSent);
   const isLoading = useAppSelector(otpChallengeSelectors.isLoading);
+  const [sentCodeCount, setSentCodeCount] = useState(0);
   const channelFormMethods = useForm<RequestOtpChallengeDto>({
     resolver: zodResolver(requestOtpChallengeSchema),
     defaultValues: { channel: "email" },
@@ -85,13 +87,15 @@ export const OtpChallenge = ({ jwt }: OtpChallengeProps): JSX.Element => {
         {maskedRecipients !== null &&
           (isCodeSent ? (
             <OtpCodeStep
+              key={sentCodeCount}
               jwt={jwt}
               channel={channelFormMethods.getValues("channel")}
               maskedRecipients={maskedRecipients}
               isLoading={isLoading}
-              onResendCode={() =>
-                requestOtpCode(channelFormMethods.getValues())
-              }
+              onResendCode={() => {
+                setSentCodeCount((count) => count + 1);
+                requestOtpCode(channelFormMethods.getValues());
+              }}
               onChangeChannel={() => {
                 dispatch(
                   feedbackSlice.actions.clearFeedbackTopics([
@@ -216,11 +220,10 @@ const OtpCodeStep = ({
   onChangeChannel,
 }: OtpCodeStepProps): JSX.Element => {
   const dispatch = useDispatch();
-  const [sentCodeCount, setSentCodeCount] = useState(0);
   const {
     register,
     handleSubmit,
-    resetField,
+    setValue,
     formState: { errors },
   } = useForm<VerifyOtpChallengeDto>({
     resolver: zodResolver(verifyOtpChallengeSchema),
@@ -236,6 +239,14 @@ const OtpCodeStep = ({
       }),
     );
   };
+
+  useWebOtpCode({
+    isEnabled: channel === "sms",
+    onCode: (otpCode) => {
+      setValue("otpCode", otpCode);
+      handleSubmit(verifyOtpCode)();
+    },
+  });
 
   const { title, recipientIntroduction, maskedRecipient } = match(channel)
     .with("email", () => ({
@@ -259,7 +270,6 @@ const OtpCodeStep = ({
         est valable {OTP_CHALLENGE_DURATION_IN_MINUTES} minutes.
       </p>
       <Feedback
-        key={sentCodeCount}
         topics={[otpChallengeFeedbackTopic]}
         className={fr.cx("fr-mb-3w")}
         closable
@@ -295,11 +305,7 @@ const OtpCodeStep = ({
           type="button"
           className={fr.cx("fr-link")}
           disabled={isLoading}
-          onClick={() => {
-            resetField("otpCode");
-            setSentCodeCount((count) => count + 1);
-            onResendCode();
-          }}
+          onClick={onResendCode}
         >
           Renvoyer le code
         </button>{" "}

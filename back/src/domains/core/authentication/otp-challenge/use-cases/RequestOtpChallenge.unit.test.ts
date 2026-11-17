@@ -9,6 +9,7 @@ import {
   OtpChallengeDtoBuilder,
   type OtpJwtPayload,
 } from "shared";
+import { AppConfigBuilder } from "../../../../../utils/AppConfigBuilder";
 import { makeEmailHash } from "../../../../../utils/jwt";
 import {
   type ExpectSavedNotificationsAndEvents,
@@ -31,6 +32,7 @@ import {
 
 describe("RequestOtpChallenge", () => {
   const hashOtpCode = makeHashOtpCode("test-otp-code-hmac-secret");
+  const appConfig = new AppConfigBuilder().build();
 
   let uow: InMemoryUnitOfWork;
   let requestOtpChallenge: RequestOtpChallenge;
@@ -48,6 +50,7 @@ describe("RequestOtpChallenge", () => {
     requestOtpChallenge = makeRequestOtpChallenge({
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
+        appConfig,
         hashOtpCode,
         otpCodeGeneratorGateway,
         saveNotificationAndRelatedEvent: makeSaveNotificationAndRelatedEvent(
@@ -464,7 +467,7 @@ describe("RequestOtpChallenge", () => {
             sms: [
               {
                 kind: "RequestOtpCode",
-                params: { otpCode },
+                params: { otpCode, domain: appConfig.immersionFacileDomain },
                 recipientPhone: phone,
               },
             ],

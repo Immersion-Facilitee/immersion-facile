@@ -1376,6 +1376,7 @@ export const createUseCases = ({
     requestOtpChallenge: makeRequestOtpChallenge({
       uowPerformer,
       deps: {
+        appConfig: config,
         hashOtpCode: makeHashOtpCode(config.otpCodeHmacSecret),
         otpCodeGeneratorGateway: gateways.otpCodeGeneratorGateway,
         saveNotificationAndRelatedEvent,

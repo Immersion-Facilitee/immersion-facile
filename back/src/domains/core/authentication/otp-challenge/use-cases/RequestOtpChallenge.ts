@@ -18,7 +18,7 @@ import {
   requestOtpChallengeSchema,
 } from "shared";
 import { match } from "ts-pattern";
-
+import type { AppConfig } from "../../../../../config/bootstrap/appConfig";
 import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
 import type {
   NotificationContentAndFollowedIds,
@@ -40,6 +40,7 @@ export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
   .withInput<RequestOtpChallengeDto>(requestOtpChallengeSchema)
   .withCurrentUser<OtpJwtPayload>()
   .withDeps<{
+    appConfig: AppConfig;
     hashOtpCode: HashOtpCode;
     otpCodeGeneratorGateway: OtpCodeGeneratorGateway;
     saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
@@ -80,6 +81,7 @@ export const makeRequestOtpChallenge = useCaseBuilder("RequestOtpChallenge")
           role,
           actor,
           otpCode,
+          domain: deps.appConfig.immersionFacileDomain,
         });
 
         await executeInSequence(
@@ -160,12 +162,14 @@ const makeOtpNotification = ({
   role,
   actor,
   otpCode,
+  domain,
 }: {
   channel: NotificationKind;
   convention: ConventionDto;
   role: ConventionActorRole;
   actor: GenericActor<ConventionActorRole>;
   otpCode: OtpCode;
+  domain: string;
 }): OtpNotification => {
   const followedIds = {
     conventionId: convention.id,
@@ -204,7 +208,7 @@ const makeOtpNotification = ({
           templatedContent: {
             kind: "RequestOtpCode",
             recipientPhone: actor.phone,
-            params: { otpCode },
+            params: { otpCode, domain },
           },
           followedIds,
         },
