@@ -1,3 +1,4 @@
+import { adminEventListInitialState } from "src/core-logic/domain/admin/adminEventList/adminEventList.slice";
 import { connectedUsersAdminInitialState } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { dashboardInitialState } from "src/core-logic/domain/admin/dashboardUrls/dashboardUrls.slice";
 import { fetchUserInitialState } from "src/core-logic/domain/admin/fetchUser/fetchUser.slice";
@@ -12,6 +13,7 @@ type AdminState = RootState["admin"];
 export const adminPreloadedState = (
   state: Partial<AdminState>,
 ): AdminState => ({
+  adminEventList: adminEventListInitialState,
   dashboardUrls: dashboardInitialState,
   notifications: notificationsInitialState,
   fetchAgencyOptions: fetchAgencyOptionsInitialState,
