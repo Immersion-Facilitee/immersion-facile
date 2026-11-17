@@ -18,13 +18,13 @@ import { geocodingSlice } from "src/core-logic/domain/geocoding/geocoding.slice"
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import type { Route } from "type-route";
 
-type EstablishmentDetailPageProps = {
-  route: Route<typeof frontRoutes.establishmentDashboardEstablishmentDetail>;
+type EstablishmentDetailsPageProps = {
+  route: Route<typeof frontRoutes.establishmentDashboardEstablishmentDetails>;
 };
 
-export const EstablishmentDetailPage = ({
+export const EstablishmentDetailsPage = ({
   route,
-}: EstablishmentDetailPageProps): ReactNode => {
+}: EstablishmentDetailsPageProps): ReactNode => {
   const dispatch = useDispatch();
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isLoadingUser = useAppSelector(connectedUserSelectors.isLoading);

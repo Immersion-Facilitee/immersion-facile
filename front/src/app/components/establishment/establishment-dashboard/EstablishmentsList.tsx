@@ -363,7 +363,7 @@ const EstablishmentActions = ({
         priority="secondary"
         size="small"
         linkProps={
-          frontRoutes.establishmentDashboardEstablishmentDetail({
+          frontRoutes.establishmentDashboardEstablishmentDetails({
             siret: establishment.siret,
           }).link
         }

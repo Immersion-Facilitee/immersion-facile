@@ -197,7 +197,7 @@ const establishmentDashboardTabFromRouteName: Record<
   establishmentDashboard: "conventions",
   establishmentDashboardConventions: "conventions",
   establishmentDashboardEstablishments: "fiche-entreprise",
-  establishmentDashboardEstablishmentDetail: "fiche-entreprise",
+  establishmentDashboardEstablishmentDetails: "fiche-entreprise",
   establishmentDashboardDiscussions: "discussions",
 };
 

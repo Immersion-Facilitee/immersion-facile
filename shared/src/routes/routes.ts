@@ -369,7 +369,7 @@ export const {
   establishmentDashboardConventions:
     establishmentDashboard.extend("/conventions"),
   establishmentDashboardEstablishments,
-  establishmentDashboardEstablishmentDetail:
+  establishmentDashboardEstablishmentDetails:
     establishmentDashboardEstablishments.extend(
       { siret: param.path.optional.string },
       ({ siret }) => `/${siret}`,

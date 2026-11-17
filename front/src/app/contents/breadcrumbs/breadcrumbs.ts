@@ -84,9 +84,9 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
             label: "Mes entreprises",
             route: frontRoutes.establishmentDashboardEstablishments(),
             children: {
-              establishmentDashboardEstablishmentDetail: {
+              establishmentDashboardEstablishmentDetails: {
                 label: "Détail de l'entreprise",
-                route: frontRoutes.establishmentDashboardEstablishmentDetail({
+                route: frontRoutes.establishmentDashboardEstablishmentDetails({
                   siret: "",
                 }),
               },
