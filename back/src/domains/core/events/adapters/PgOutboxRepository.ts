@@ -1,6 +1,7 @@
 import { differenceWith, propEq, splitEvery } from "ramda";
 import {
   type DateString,
+  type EventStatus,
   errors,
   pipeWithValue,
   replaceArrayElement,
@@ -9,11 +10,9 @@ import type { KyselyDb } from "../../../../config/pg/kysely/kyselyUtils";
 import { createLogger } from "../../../../utils/logger";
 import type {
   DomainEvent,
-  DomainTopic,
   EventFailure,
   EventPriority,
   EventPublication,
-  EventStatus,
 } from "../events";
 import { defaultPriority } from "../ports/EventBus";
 import type {
@@ -25,10 +24,10 @@ const saveNewEventsBatchChunkSize = 500;
 
 export type StoredEventRow = {
   id: string;
-  topic: DomainTopic;
+  topic: string;
   payload: any;
   occurred_at: Date;
-  was_quarantined: boolean;
+  was_quarantined: boolean | null;
   published_at: Date | null;
   subscription_id: string | null;
   error_message: string | null;
@@ -104,7 +103,7 @@ export class PgOutboxRepository implements OutboxRepository {
       .where("status", "=", status)
       .executeTakeFirst()) as { total: string };
 
-    return Number.parseInt(result.total);
+    return Number.parseInt(result.total, 10);
   }
 
   public async markEventsAsInProcess(events: DomainEvent[]): Promise<void> {
@@ -264,9 +263,7 @@ export class PgOutboxRepository implements OutboxRepository {
       .orderBy("published_at", "asc")
       .execute();
 
-    return !results.length
-      ? undefined
-      : storedEventRowsToDomainEvent(results as StoredEventRow[]);
+    return !results.length ? undefined : storedEventRowsToDomainEvent(results);
   }
 }
 
@@ -348,7 +345,7 @@ const storedEventOutboxToDomainEvent = (row: StoredEventRow): DomainEvent => ({
   topic: row.topic as any, //this is to avoid the error due to : https://github.com/microsoft/TypeScript/issues/42518
   occurredAt: row.occurred_at.toISOString(),
   payload: row.payload,
-  wasQuarantined: row.was_quarantined,
+  wasQuarantined: row.was_quarantined ?? false,
   publications: [],
   status: row.status,
   priority: (row.priority ?? defaultPriority) as EventPriority,

@@ -7,6 +7,10 @@ import {
 } from "../apiConsumer/apiConsumer.schema";
 import { dashboardUrlAndNameSchema } from "../dashboard/dashboard.schema";
 import { banEstablishmentPayloadSchema } from "../establishment/bannedEstablishmentInformations.schema";
+import {
+  getEventsForAdminParamsSchema,
+  paginatedAdminEventListSchema,
+} from "../event/event.schema";
 import { setFeatureFlagSchema } from "../featureFlag/featureFlags.schema";
 import {
   establishmentBatchReportSchema,
@@ -110,6 +114,18 @@ export const adminRoutes = defineRoutes({
     ...withAuthorizationHeaders,
     responses: {
       200: notificationsByKindSchema,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+    },
+  }),
+  getEventsForAdmin: defineRoute({
+    method: "get",
+    url: "/admin/events",
+    ...withAuthorizationHeaders,
+    queryParamsSchema: getEventsForAdminParamsSchema,
+    responses: {
+      200: paginatedAdminEventListSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
       403: httpErrorSchema,

@@ -1,39 +1,36 @@
-import {
-  type AgencyId,
-  type ArchivedConventionRequestHandledStatus,
-  type ContactEstablishmentEventPayload,
-  type ConventionDraftId,
-  type ConventionId,
-  type ConventionTemplateId,
-  type DateString,
-  type DeleteAssessmentRequestDto,
-  type Flavor,
-  type FtExternalId,
-  type InitiateLoginByEmailParams,
-  type NotificationKind,
-  type RangeOfPosition,
-  type RejectConnectedUserRoleForAgencyParams,
-  type Role,
-  roleSchema,
-  type SignatoryRole,
-  type UserId,
-  userIdSchema,
-  type WithAgencyId,
-  type WithAgencyIdAndUserId,
-  type WithArchivedConventionRequestId,
-  type WithAssessmentDto,
-  type WithConventionDraftId,
-  type WithConventionDto,
-  type WithConventionId,
-  type WithConventionIdLegacy,
-  type WithDiscussionDto,
-  type WithDiscussionId,
-  type WithOptionalFirstnameAndLastname,
-  type WithSiretDto,
-  type WithUserId,
-  type ZodSchemaWithInputMatchingOutput,
+import type {
+  AgencyId,
+  ArchivedConventionRequestHandledStatus,
+  ContactEstablishmentEventPayload,
+  ConventionDraftId,
+  ConventionId,
+  ConventionTemplateId,
+  DateString,
+  DeleteAssessmentRequestDto,
+  EventStatus,
+  Flavor,
+  FtExternalId,
+  InitiateLoginByEmailParams,
+  NotificationKind,
+  RangeOfPosition,
+  RejectConnectedUserRoleForAgencyParams,
+  SignatoryRole,
+  UserId,
+  WithAgencyId,
+  WithAgencyIdAndUserId,
+  WithArchivedConventionRequestId,
+  WithAssessmentDto,
+  WithConventionDraftId,
+  WithConventionDto,
+  WithConventionId,
+  WithConventionIdLegacy,
+  WithDiscussionDto,
+  WithDiscussionId,
+  WithOptionalFirstnameAndLastname,
+  WithSiretDto,
+  WithTriggeredBy,
+  WithUserId,
 } from "shared";
-import { z } from "zod";
 import type { DeleteUserInputSchema } from "../../connected-users/use-cases/DeleteUser";
 import type { UserAuthenticatedPayload } from "../../connected-users/use-cases/LinkFranceTravailUsersToTheirAgencies";
 import type { NotifyConventionDraftSavedInputParams } from "../../convention/use-cases/notifications/NotifyConventionDraftSaved";
@@ -62,14 +59,6 @@ export type EventPublication = {
   failures: EventFailure[];
 };
 
-export type EventStatus =
-  | "never-published"
-  | "to-republish"
-  | "in-process"
-  | "published"
-  | "failed-but-will-retry"
-  | "failed-to-many-times";
-
 // The lower is the higher the priority:
 // 0 super important to process ASAP
 // 10 can be delayed without problems
@@ -91,30 +80,9 @@ export type NotificationAddedEvent = GenericEvent<
   WithNotificationIdAndKind
 >;
 
-export type TriggeredBy =
-  | { kind: "connected-user"; userId: UserId }
-  | { kind: "convention-magic-link"; role: Role }
-  | { kind: "crawler" };
-
-export const triggeredBySchema: ZodSchemaWithInputMatchingOutput<TriggeredBy> =
-  z.discriminatedUnion("kind", [
-    z.object({ kind: z.literal("connected-user"), userId: userIdSchema }),
-    z.object({ kind: z.literal("convention-magic-link"), role: roleSchema }),
-    z.object({ kind: z.literal("crawler") }),
-  ]);
-
-export const withTriggeredBySchema: ZodSchemaWithInputMatchingOutput<WithTriggeredBy> =
-  z.object({
-    triggeredBy: triggeredBySchema,
-  });
-
 type WithFTConnectEvent = {
   ftConnectUserId: FtExternalId;
   conventionDraftId: ConventionDraftId;
-};
-
-export type WithTriggeredBy = {
-  triggeredBy: TriggeredBy | null;
 };
 
 // biome-ignore format: better readability without formatting

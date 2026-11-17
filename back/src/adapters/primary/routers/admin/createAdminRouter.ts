@@ -42,6 +42,17 @@ export const createAdminRouter = (deps: AppDependencies): Router => {
       ),
   );
 
+  sharedAdminRouter.getEventsForAdmin(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.getEventsForAdmin.execute(
+          req.query,
+          getGenericAuthOrThrow(req.payloads?.currentUser),
+        ),
+      ),
+  );
+
   sharedAdminRouter.updateFeatureFlags(
     deps.connectedUserAuthMiddleware,
     (req, res) =>
