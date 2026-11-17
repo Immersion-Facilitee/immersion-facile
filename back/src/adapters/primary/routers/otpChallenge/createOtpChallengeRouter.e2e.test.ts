@@ -70,6 +70,7 @@ describe("otp challenge router", () => {
   let otpCodeGeneratorGateway: DeterministicOtpCodeGeneratorGateway;
   let uuidGenerator: UuidGenerator;
   let hashOtpCode: HashOtpCode;
+  let immersionFacileDomain: string;
   let expectSavedNotificationsAndEvents: ExpectSavedNotificationsAndEvents;
 
   beforeEach(async () => {
@@ -79,6 +80,7 @@ describe("otp challenge router", () => {
     inMemoryUow = testApp.inMemoryUow;
     uuidGenerator = testApp.uuidGenerator;
     hashOtpCode = makeHashOtpCode(testApp.appConfig.otpCodeHmacSecret);
+    immersionFacileDomain = testApp.appConfig.immersionFacileDomain;
     timeGateway = testApp.gateways.timeGateway;
     otpCodeGeneratorGateway = testApp.gateways.otpCodeGeneratorGateway;
     expectSavedNotificationsAndEvents = makeExpectSavedNotificationsAndEvents(
@@ -284,7 +286,7 @@ describe("otp challenge router", () => {
         sms: [
           {
             kind: "RequestOtpCode",
-            params: { otpCode },
+            params: { otpCode, domain: immersionFacileDomain },
             recipientPhone: convention.signatories.beneficiary.phone,
           },
         ],

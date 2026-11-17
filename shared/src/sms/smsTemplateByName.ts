@@ -21,6 +21,7 @@ type SmsParamsBySmsType = {
   ReminderForAssessmentSignature: WithShortLink;
   RequestOtpCode: {
     otpCode: OtpCode;
+    domain: string;
   };
   HelloWorld: {
     testMessage: string;
@@ -57,8 +58,8 @@ export const smsTemplatesByName = createSmsTemplates({
       `Bonjour,\n\nSignez votre bilan avec ce lien :\n${shortLink}\n\nImmersion Facilitée`,
   },
   RequestOtpCode: {
-    createContent: ({ otpCode }) =>
-      `Immersion Facilitée : votre code de vérification est ${otpCode}. Valable ${OTP_CHALLENGE_DURATION_IN_MINUTES} min. Ne le communiquez à personne.`,
+    createContent: ({ otpCode, domain }) =>
+      `Immersion Facilitée : votre code de vérification est ${otpCode}. Valable ${OTP_CHALLENGE_DURATION_IN_MINUTES} min. Ne le communiquez à personne.\n\n@${domain} #${otpCode}`,
   },
   HelloWorld: {
     createContent: ({ testMessage }) =>
