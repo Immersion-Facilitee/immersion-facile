@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { expectPromiseToFailWithError, ONE_SECOND_MS } from "shared";
 import { RetryableError } from "../ports/RetryStrategy";
 import { ExponentialBackoffRetryStrategy } from "./ExponentialBackoffRetryStrategy";
@@ -10,18 +11,18 @@ const maxBackoffPeriodMs = 10_000;
 const deadlineMs = 100_000;
 
 describe("ExponentialBackoffRetryStrategy", () => {
-  let mockNow: ReturnType<typeof jest.fn>;
-  let mockSleep: ReturnType<typeof jest.fn>;
-  let mockRandom: ReturnType<typeof jest.fn>;
-  let mockCallback: ReturnType<typeof jest.fn>;
+  let mockNow: ReturnType<typeof mock>;
+  let mockSleep: ReturnType<typeof mock>;
+  let mockRandom: ReturnType<typeof mock>;
+  let mockCallback: ReturnType<typeof mock>;
 
   let retryStrategy: ExponentialBackoffRetryStrategy;
 
   beforeEach(() => {
-    mockNow = jest.fn();
-    mockSleep = jest.fn();
-    mockRandom = jest.fn();
-    mockCallback = jest.fn();
+    mockNow = mock();
+    mockSleep = mock();
+    mockRandom = mock();
+    mockCallback = mock();
 
     retryStrategy = new ExponentialBackoffRetryStrategy(
       maxBackoffPeriodMs,
