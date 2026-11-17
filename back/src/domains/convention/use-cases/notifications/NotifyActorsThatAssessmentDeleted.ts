@@ -3,14 +3,12 @@ import {
   deleteAssessmentRequestDtoSchema,
   errors,
   getFormattedFirstnameAndLastname,
+  triggeredBySchema,
+  type WithTriggeredBy,
 } from "shared";
 import { z } from "zod";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import type { GenerateConventionMagicLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
-import {
-  triggeredBySchema,
-  type WithTriggeredBy,
-} from "../../../core/events/events";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import type { ShortLinkIdGeneratorGateway } from "../../../core/short-link/ports/ShortLinkIdGeneratorGateway";
 import { prepareConventionMagicShortLinkMaker } from "../../../core/short-link/ShortLink";

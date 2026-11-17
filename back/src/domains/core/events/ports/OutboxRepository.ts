@@ -1,4 +1,5 @@
-import type { DomainEvent, EventStatus } from "../events";
+import type { EventStatus } from "shared";
+import type { DomainEvent } from "../events";
 
 export type DeleteOldestEventsParams = {
   limit: number;

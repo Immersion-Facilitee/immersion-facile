@@ -16,12 +16,12 @@ import {
   getConventionManageAllowedRoles,
   getDisplayedBusinessName,
   type Role,
+  type TriggeredBy,
   type User,
 } from "shared";
 import { throwForbiddenIfNotAllowedForAssessments } from "../../../utils/assessment";
 import { makeEmailHash } from "../../../utils/jwt";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
-import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";

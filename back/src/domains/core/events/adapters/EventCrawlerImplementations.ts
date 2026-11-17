@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/node";
 import { subHours } from "date-fns";
 import { splitEvery } from "ramda";
-import { calculateDurationInSecondsFrom } from "shared";
+import { calculateDurationInSecondsFrom, type EventStatus } from "shared";
 import {
   createLogger,
   type LoggerParamsWithMessage,
@@ -9,7 +9,7 @@ import {
 import { notifyErrorObjectToTeam } from "../../../../utils/notifyTeam";
 import type { TimeGateway } from "../../time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../unit-of-work/ports/UnitOfWorkPerformer";
-import type { DomainEvent, EventStatus } from "../events";
+import type { DomainEvent } from "../events";
 import type { EventBus } from "../ports/EventBus";
 import type { EventCrawler } from "../ports/EventCrawler";
 

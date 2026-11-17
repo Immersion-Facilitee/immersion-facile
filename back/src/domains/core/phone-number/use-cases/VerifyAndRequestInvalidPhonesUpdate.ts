@@ -6,9 +6,9 @@ import {
   getSupportedCountryCodesForCountry,
   type Phone,
   phoneStatus,
+  type TriggeredBy,
 } from "shared";
 import z from "zod";
-import type { TriggeredBy } from "../../events/events";
 import type { CreateNewEvent } from "../../events/ports/EventBus";
 import type { TimeGateway } from "../../time-gateway/ports/TimeGateway";
 import type { UnitOfWorkPerformer } from "../../unit-of-work/ports/UnitOfWorkPerformer";

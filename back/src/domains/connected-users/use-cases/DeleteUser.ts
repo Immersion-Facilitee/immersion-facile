@@ -12,20 +12,18 @@ import {
   isNotEmptyArray,
   onlyAdminUserRightsWithStatusAccepted,
   onlyUserRightWithStatusAccepted,
+  type TriggeredBy,
   type UserId,
   type UserWithAdminRights,
+  type WithTriggeredBy,
   type WithUserId,
+  withTriggeredBySchema,
   withUserIdSchema,
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import z from "zod";
 import { closeReferringAgencies } from "../../agency/helpers/inactiveAgencies.helpers";
-import {
-  type DomainEvent,
-  type TriggeredBy,
-  type WithTriggeredBy,
-  withTriggeredBySchema,
-} from "../../core/events/events";
+import type { DomainEvent } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";

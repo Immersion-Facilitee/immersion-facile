@@ -1,6 +1,7 @@
 import { values } from "ramda";
+import type { EventStatus } from "shared";
 import { createLogger } from "../../../../utils/logger";
-import type { DomainEvent, EventStatus } from "../events";
+import type { DomainEvent } from "../events";
 import type {
   DeleteOldestEventsParams,
   OutboxRepository,

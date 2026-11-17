@@ -1,6 +1,11 @@
-import { type Phone, type PhoneNumber, phoneNumberSchema } from "shared";
+import {
+  type Phone,
+  type PhoneNumber,
+  phoneNumberSchema,
+  type TriggeredBy,
+  triggeredBySchema,
+} from "shared";
 import z from "zod";
-import { type TriggeredBy, triggeredBySchema } from "../../events/events";
 import { useCaseBuilder } from "../../useCaseBuilder";
 import type { PhoneId } from "../adapters/pgPhoneHelper";
 

@@ -1,5 +1,9 @@
-import { errors, executeInSequence, withSiretSchema } from "shared";
-import { withTriggeredBySchema } from "../../../core/events/events";
+import {
+  errors,
+  executeInSequence,
+  withSiretSchema,
+  withTriggeredBySchema,
+} from "shared";
 import type { CreateNewEvent } from "../../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
