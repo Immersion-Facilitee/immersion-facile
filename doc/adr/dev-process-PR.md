@@ -1,7 +1,7 @@
 # Comment s'organise-t-on pour gérer le cycle de vie d'une feature ?
 
 1. Dans "Prêt à développer", on est censé avoir les story qui sont prêtes à être développées (description claire, intervenants et partenaires identifiés sur le ticket)
-2. Les story à "faire dans l'itération" sont les prochaines à être développées
+2. Les stories à faire sont celles au statut "Prêt à développer" et rattachées au sprint en cours (champ "Sprint" du projet GitHub). Ce sont les prochaines à être développées, par ordre de priorité (la plus haute en premier) dans la vue Itération
 3. Les dev se mettent d'accord entre eux sur qui prend quoi
 4. Une story prise en charge par un/des devs doit avoir :
    - les devs assignés dessus
@@ -52,7 +52,7 @@ Tout besoin de refactorisation doit suivre un parcours formel pour être planifi
 
 - Communication : Proposition lors du point tech du mardi, du point matin (si urgent) ou en asynchrone dans l'issue (voir point suivant). Dans tout les cas, une formalisation dans l'issue est obligatoire pour le suivi général.
 
-- Validation : Vote par l'ensemble des devs qui ne sont pas en congés via réactions (👍, 👎 ou abstention). Les commentaires servent à argumenter. Une tâche validée est placée dans "A faire dans l'itération".
+- Validation : Vote par l'ensemble des devs qui ne sont pas en congés via réactions (👍, 👎 ou abstention). Les commentaires servent à argumenter. Une tâche validée reste dans "Prêt à Dev" et est rattachée au Sprint de l'itération dans laquelle elle sera traitée.
 > L'équipe technique est garant du temps disponible pour traiter ses sujets dans les itérations. Il est convenu que les tâches validées soient visible idéalement dans l'itération avant qu'elle démarre. Les tâches ne sont pas des choses à faire "en plus" en surchargeant les itérations. Le ratio tâches techs / métier est discutable en début d'itération.
 
 - Issue non acceptée : Clôturée comme "Non planifiée". Elle peut être reproposée ultérieurement.
