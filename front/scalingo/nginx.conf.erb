@@ -93,8 +93,9 @@ location ~ ^/tableau-de-bord-etablissement(.*)$ {
     return 301 $scheme://$http_host/mon-compte/tableau-de-bord-etablissement$1$is_args$args;
 }
 
-if ($request_uri ~ "^/mon-compte/tableau-de-bord-etablissement/fiche-entreprise\?(.*&)?siret=([^&]+)") {
-    return 301 $scheme://$http_host/mon-compte/tableau-de-bord-etablissement/fiche-entreprise/$2;
+if ($request_uri ~ "^/mon-compte/tableau-de-bord-etablissement/fiche-entreprise\?siret=(?<siret>[^&]+)&?(?<other_args>.*)$") {
+    set $args $other_args;
+    return 301 $scheme://$http_host/mon-compte/tableau-de-bord-etablissement/fiche-entreprise/$siret$is_args$args;
 }
 
 location ~ ^/mon-profil(.*)$ {

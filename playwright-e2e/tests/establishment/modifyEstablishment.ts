@@ -30,7 +30,7 @@ export const updateEstablishmentThroughEstablishmentDashboard =
     await goToEstablishmentDashboardTab(page, "fiche-entreprise");
 
     const establishmentDashboardUrl =
-      frontRoutes.establishmentDashboardEstablishmentDetail({
+      frontRoutes.establishmentDashboardEstablishmentDetails({
         siret: updatedFormEstablishment.siret,
       }).href;
     await page
@@ -211,6 +211,10 @@ const step4 = async (
   updatedEstablishment: FormEstablishmentDto,
 ) => {
   await page.click(`#${domElementIds.formEstablishment.edit.submitFormButton}`);
-  await expect(page.url()).toContain(`siret=${updatedEstablishment.siret}`);
+  await expect(page.url()).toContain(
+    frontRoutes.establishmentDashboardEstablishmentDetails({
+      siret: updatedEstablishment.siret,
+    }).href,
+  );
   await expect(page.locator(".fr-alert--success")).toBeVisible();
 };

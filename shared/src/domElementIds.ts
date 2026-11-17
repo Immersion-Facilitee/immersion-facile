@@ -1346,7 +1346,7 @@ export const domElementIds = {
       "im-establishment-dashboard-conventions__unarchive-convention-button",
   },
   establishmentDashboardEstablishments: {},
-  establishmentDashboardEstablishmentDetail: {},
+  establishmentDashboardEstablishmentDetails: {},
   openApiDoc: {},
   stats: {},
   temporaryError: {

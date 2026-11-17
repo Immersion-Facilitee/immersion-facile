@@ -82,7 +82,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
   const isEstablishmentCreation = route.name === "formEstablishment";
   const isEstablishmentAdmin = route.name === "adminEstablishments";
   const isEstablishmentDashboard =
-    route.name === "establishmentDashboardEstablishmentDetail";
+    route.name === "establishmentDashboardEstablishmentDetails";
 
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const federatedIdentity = useAppSelector(authSelectors.federatedIdentity);
@@ -241,7 +241,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       .with(
         {
           route: {
-            name: "establishmentDashboardEstablishmentDetail",
+            name: "establishmentDashboardEstablishmentDetails",
             params: { siret: P.string },
           },
           connectedUserJwt: P.not(P.nullish),
@@ -260,7 +260,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       .with(
         {
           route: {
-            name: "establishmentDashboardEstablishmentDetail",
+            name: "establishmentDashboardEstablishmentDetails",
             params: { siret: P.nullish },
           },
           connectedUserJwt: P.not(P.nullish),
@@ -269,7 +269,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       )
       .with(
         {
-          route: { name: "establishmentDashboardEstablishmentDetail" },
+          route: { name: "establishmentDashboardEstablishmentDetails" },
           connectedUserJwt: P.nullish,
         },
         () => {
@@ -356,7 +356,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       )
       .with(
         {
-          route: { name: "establishmentDashboardEstablishmentDetail" },
+          route: { name: "establishmentDashboardEstablishmentDetails" },
           connectedUserJwt: P.not(P.nullish),
         },
         ({ connectedUserJwt }) =>
@@ -384,7 +384,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
 
       .with(
         {
-          route: { name: "establishmentDashboardEstablishmentDetail" },
+          route: { name: "establishmentDashboardEstablishmentDetails" },
           connectedUserJwt: P.nullish,
         },
         () => {
