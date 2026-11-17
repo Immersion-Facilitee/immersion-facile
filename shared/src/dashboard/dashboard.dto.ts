@@ -29,7 +29,6 @@ export const agencyDashboardNames = [
 
 export const adminDashboardNames = [
   "adminConventions",
-  "adminEvents",
   "adminEstablishments",
 ] as const;
 

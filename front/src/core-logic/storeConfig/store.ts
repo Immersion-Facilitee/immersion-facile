@@ -3,6 +3,8 @@ import * as Sentry from "@sentry/browser";
 import { combineEpics, createEpicMiddleware } from "redux-observable";
 import { catchError } from "rxjs";
 import type { Dependencies } from "src/config/dependencies";
+import { adminEventListEpics } from "src/core-logic/domain/admin/adminEventList/adminEventList.epics";
+import { adminEventListSlice } from "src/core-logic/domain/admin/adminEventList/adminEventList.slice";
 import { dashboardUrlsEpics } from "src/core-logic/domain/admin/dashboardUrls/dashboardUrls.epics";
 import { dashboardUrlsSlice } from "src/core-logic/domain/admin/dashboardUrls/dashboardUrls.slice";
 import { fetchUserEpics } from "src/core-logic/domain/admin/fetchUser/fetchUser.epic";
@@ -100,6 +102,7 @@ const allEpics: AppEpic<any>[] = [
   ...appellationEpics,
   ...assessmentEpics,
   ...adminAgencyListEpics,
+  ...adminEventListEpics,
   ...authEpics,
   ...archivedConventionRequestEpics,
   ...conventionActionEpics,
@@ -140,6 +143,7 @@ const allEpics: AppEpic<any>[] = [
 
 const appReducer = combineReducers({
   admin: combineReducers({
+    [adminEventListSlice.name]: adminEventListSlice.reducer,
     [fetchAgencyOptionsSlice.name]: fetchAgencyOptionsSlice.reducer,
     [connectedUsersAdminSlice.name]: connectedUsersAdminSlice.reducer,
     [dashboardUrlsSlice.name]: dashboardUrlsSlice.reducer,

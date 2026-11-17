@@ -1,5 +1,6 @@
 import { type Observable, of, throwError } from "rxjs";
 import {
+  type AdminEventListItemDto,
   AgencyDtoBuilder,
   type AgencyRight,
   type AgencyUserForListing,
@@ -9,10 +10,15 @@ import {
   type BanEstablishmentPayload,
   type ConnectedUser,
   type ConnectedUserJwt,
+  calculatePaginationResult,
   type DashboardUrlAndName,
+  type DataWithPagination,
+  defaultPageInPagination,
+  defaultPerPageInWebPagination,
   type EstablishmentBatchReport,
   type FormEstablishmentBatchDto,
   type GetDashboardParams,
+  type GetEventsForAdminParams,
   type GetUsersFilters,
   type NotificationsByKind,
   noAgencyDashboards,
@@ -103,6 +109,25 @@ export class SimulatedAdminGateway implements AdminGateway {
     _token: ConnectedUserJwt,
   ): Observable<DashboardUrlAndName> {
     return of({ name, url: `http://${name}.com` });
+  }
+
+  public getEventsForAdmin$(
+    {
+      search,
+      page = defaultPageInPagination,
+      perPage = defaultPerPageInWebPagination,
+    }: GetEventsForAdminParams,
+    _token: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminEventListItemDto>> {
+    const events = simulatedAdminEvents(search);
+    return of({
+      data: events.slice((page - 1) * perPage, page * perPage),
+      pagination: calculatePaginationResult({
+        page,
+        perPage,
+        totalRecords: events.length,
+      }),
+    });
   }
 
   public getLastNotifications$(
@@ -308,5 +333,38 @@ const apiConsumers: ApiConsumer[] = [
         subscriptions: [],
       },
     },
+  },
+];
+
+const simulatedAdminEvents = (search: string): AdminEventListItemDto[] => [
+  {
+    id: "11111111-1111-4111-8111-111111111111",
+    occurredAt: "2026-11-02T10:00:00.000Z",
+    topic: "ConventionSubmittedByBeneficiary",
+    status: "published",
+    wasQuarantined: false,
+    triggeredBy: { kind: "convention-magic-link", role: "beneficiary" },
+    payload: { convention: { id: search } },
+    publications: [{ publishedAt: "2026-11-02T10:00:01.000Z", failures: [] }],
+  },
+  {
+    id: "22222222-2222-4222-8222-222222222222",
+    occurredAt: "2026-11-01T09:00:00.000Z",
+    topic: "AgencyActivated",
+    status: "failed-but-will-retry",
+    wasQuarantined: false,
+    triggeredBy: { kind: "connected-user", userId: search },
+    payload: { agencyId: search },
+    publications: [
+      {
+        publishedAt: "2026-11-01T09:00:01.000Z",
+        failures: [
+          {
+            subscriptionId: "SendEmailWhenAgencyIsActivated",
+            errorMessage: "Erreur simulée",
+          },
+        ],
+      },
+    ],
   },
 ];

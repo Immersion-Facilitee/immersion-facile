@@ -125,22 +125,6 @@ describe("Admin router", () => {
   describe(`${displayRouteName(
     adminRoutes.getDashboardUrl,
   )} Get dashboard Absolute Url`, () => {
-    it("200 - Gets the absolute Url of the events dashboard", async () => {
-      const response = await sharedRequest.getDashboardUrl({
-        urlParams: { dashboardName: "adminEvents" },
-        headers: { authorization: backOfficeAdminToken },
-        queryParams: {},
-      });
-
-      expectHttpResponseToEqual(response, {
-        status: 200,
-        body: {
-          name: "adminEvents",
-          url: `http://stubDashboard/adminEvents/${gateways.timeGateway.now()}`,
-        },
-      });
-    });
-
     it("200 - Gets the absolute Url of the establishments dashboard", async () => {
       const response = await sharedRequest.getDashboardUrl({
         urlParams: { dashboardName: "adminEstablishments" },

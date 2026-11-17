@@ -1,5 +1,6 @@
 import { from, type Observable } from "rxjs";
 import {
+  type AdminEventListItemDto,
   type AdminRoutes,
   type AgencyUserForListing,
   type ApiConsumer,
@@ -10,9 +11,11 @@ import {
   type ConnectedUserJwt,
   createApiConsumerParamsFromApiConsumer,
   type DashboardUrlAndName,
+  type DataWithPagination,
   type EstablishmentBatchReport,
   type FormEstablishmentBatchDto,
   type GetDashboardParams,
+  type GetEventsForAdminParams,
   type GetUsersFilters,
   type RejectConnectedUserRoleForAgencyParams,
   type SetFeatureFlagParam,
@@ -124,6 +127,26 @@ export class HttpAdminGateway implements AdminGateway {
           headers: {
             authorization: token,
           },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403) }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public getEventsForAdmin$(
+    params: GetEventsForAdminParams,
+    token: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminEventListItemDto>> {
+    return from(
+      this.httpClient
+        .getEventsForAdmin({
+          queryParams: params,
+          headers: { authorization: token },
         })
         .then((response) =>
           match(response)
