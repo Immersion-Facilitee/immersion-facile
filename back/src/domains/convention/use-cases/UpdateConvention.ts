@@ -10,12 +10,12 @@ import {
   isStillSignatoryOnUpdatedConvention,
   type Signatories,
   statusTransitionConfigs,
+  type TriggeredBy,
   updateConventionRequestSchema,
   type WithConventionIdLegacy,
 } from "shared";
 import { throwErrorIfConventionStatusNotAllowed } from "../../../utils/convention";
 import { throwIfNotAuthorizedForRole } from "../../connected-users/helpers/authorization.helper";
-import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";

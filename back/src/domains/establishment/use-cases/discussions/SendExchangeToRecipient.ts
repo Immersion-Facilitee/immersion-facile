@@ -9,15 +9,13 @@ import {
   makeRouteAbsoluteUrl,
   renderCTAInEmailContent,
   type SiretDto,
+  triggeredBySchema,
   type WithDiscussionId,
+  type WithTriggeredBy,
   withDiscussionIdSchema,
 } from "shared";
 import { z } from "zod";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
-import {
-  triggeredBySchema,
-  type WithTriggeredBy,
-} from "../../../core/events/events";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import type { NotificationGateway } from "../../../core/notifications/ports/NotificationGateway";
 import type { UnitOfWork } from "../../../core/unit-of-work/ports/UnitOfWork";

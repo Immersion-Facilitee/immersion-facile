@@ -5,10 +5,10 @@ import {
   closeAgencyAndTransferConventionsRequestSchema,
   errors,
   executeInSequence,
+  type TriggeredBy,
 } from "shared";
 import { throwErrorIfAgencyNotFound } from "../../../utils/agency";
 import { throwIfNotAdmin } from "../../connected-users/helpers/authorization.helper";
-import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
