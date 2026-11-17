@@ -36,6 +36,7 @@ export const functionalBroadcastFeedbackErrorMessage = [
   "Aucun métier trouvé pour le code ROME renseigné",
   "L'email et le téléphone transmis par le partenaires ne correspondent pas aux email et téléphone renseignés dans le dossier du jeune",
   "Plusieurs dossiers trouvés pour les critères transmis",
+  "Une PMSMP ne peut être créée pour un dossier en état partiel.",
   "Identifiant National DE non trouvé",
   "Identifiant National DE trouvé mais écart sur la date de naissance",
   "Identifiant National DE trouvé, le bénéficiaire est un candidat",
