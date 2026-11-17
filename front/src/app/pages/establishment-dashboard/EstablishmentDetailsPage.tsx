@@ -10,7 +10,6 @@ import {
 } from "shared";
 import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { frontErrors } from "src/app/pages/error/front-errors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { establishmentSelectors } from "src/core-logic/domain/establishment/establishment.selectors";
 import { establishmentSlice } from "src/core-logic/domain/establishment/establishment.slice";
@@ -58,8 +57,6 @@ export const EstablishmentDetailsPage = ({
     },
     [dispatch],
   );
-
-  if (!siret) throw frontErrors.establishment.missingSiret();
 
   if (!currentUser)
     return isLoadingUser ? (
