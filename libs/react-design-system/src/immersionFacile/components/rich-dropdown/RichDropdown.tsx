@@ -130,6 +130,7 @@ export const RichDropdown = ({
     <div
       className={cx(
         Styles.root,
+        isOpened && Styles.opened,
         submenuPosition === "bottom-right" && Styles.openedBottomRight,
       )}
       ref={wrapperElement}
