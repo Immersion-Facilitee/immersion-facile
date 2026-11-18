@@ -12,7 +12,6 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
   ForbiddenError,
-  makeBooleanFeatureFlag,
   reasonableSchedule,
   type UserId,
   validSignatoryRoles,
@@ -610,7 +609,7 @@ describe("UpdateConventionStatus", () => {
   });
 
   describe("archived convention", () => {
-    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+    it("throws when convention is archived and caller is not admin", async () => {
       const { uow, updateConventionStatusUseCase, timeGateway } =
         prepareUseCaseForStandAloneTests();
       const user = new ConnectedUserBuilder()
@@ -635,10 +634,6 @@ describe("UpdateConventionStatus", () => {
       uow.userRepository.users = [user];
       uow.agencyRepository.agencies = [agency];
       uow.conventionRepository.setConventions([convention]);
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
-
       await expectPromiseToFailWithError(
         updateConventionStatusUseCase.execute(
           { status: "READY_TO_SIGN", conventionId: convention.id },

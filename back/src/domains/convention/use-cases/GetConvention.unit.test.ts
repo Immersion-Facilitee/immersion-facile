@@ -17,7 +17,6 @@ import {
   establishmentsRoles,
   expectPromiseToFailWithError,
   expectToEqual,
-  makeBooleanFeatureFlag,
   makeEmptyLastReminders,
   type Notification,
   type Role,
@@ -1032,155 +1031,133 @@ describe("Get Convention", () => {
       subscriptions: [],
     });
 
-    describe("when enableRequestArchivedConvention is inactive", () => {
-      it("returns the convention for a connected user with rights", async () => {
-        uow.conventionRepository.setConventions([archivedConvention]);
+    it("returns a non archived convention for a connected user with rights", async () => {
+      expectToEqual(
+        await getConvention.execute(
+          { conventionId: convention.id },
+          { userId: establishmentRep.id },
+        ),
+        {
+          ...convention,
+          agencyName: agency.name,
+          agencyDepartment: agency.address.departmentCode,
+          agencyKind: agency.kind,
+          agencyContactEmail: agency.contactEmail,
+          agencySiret: agency.agencySiret,
+          agencyValidationSteps: "validator-only",
+          assessment: {
+            status: assessment.status,
+            endedWithAJob: assessment.endedWithAJob,
+            signedAt: assessment.signedAt,
+            createdAt: assessment.createdAt,
+          },
+          lastReminders: makeEmptyLastReminders(),
+          isEstablishmentBanned: false,
+        },
+      );
+    });
 
-        expectToEqual(
-          await getConvention.execute(
+    describe("when convention is archived", () => {
+      beforeEach(() => {
+        uow.conventionRepository.setConventions([archivedConvention]);
+      });
+
+      it("throws if convention is archived for a connected user with rights", async () => {
+        await expectPromiseToFailWithError(
+          getConvention.execute(
             { conventionId: archivedConvention.id },
             { userId: establishmentRep.id },
           ),
-          expectedArchivedConventionRead,
+          errors.convention.archived({
+            conventionId: archivedConvention.id,
+          }),
         );
       });
-    });
 
-    describe("when enableRequestArchivedConvention is active", () => {
-      beforeEach(() => {
-        uow.featureFlagRepository.featureFlags = {
-          enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-        };
+      it("throws if convention is archived for a magic link with rights", async () => {
+        await expectPromiseToFailWithError(
+          getConvention.execute(
+            { conventionId: archivedConvention.id },
+            establishmentRepJwtPayload,
+          ),
+          errors.convention.archived({
+            conventionId: archivedConvention.id,
+          }),
+        );
       });
 
-      it("returns a non archived convention for a connected user with rights", async () => {
+      it("throws if convention is archived for an api consumer with rights", async () => {
+        await expectPromiseToFailWithError(
+          getConvention.execute(
+            { conventionId: archivedConvention.id },
+            apiConsumerWithRights,
+          ),
+          errors.convention.archived({
+            conventionId: archivedConvention.id,
+          }),
+        );
+      });
+
+      it("throws missing rights for a connected user without rights", async () => {
+        await expectPromiseToFailWithError(
+          getConvention.execute(
+            { conventionId: archivedConvention.id },
+            { userId: userWithNoRight.id },
+          ),
+          errors.convention.forbiddenMissingRightsUserId({
+            conventionId: archivedConvention.id,
+            userId: userWithNoRight.id,
+          }),
+        );
+      });
+
+      it("throws missing rights for a magic link without rights", async () => {
+        const emailHash = "thisHashDontMatch";
+
+        await expectPromiseToFailWithError(
+          getConvention.execute(
+            { conventionId: archivedConvention.id },
+            {
+              role: "establishment-representative",
+              emailHash,
+              applicationId: archivedConvention.id,
+            },
+          ),
+          errors.convention.forbiddenMissingRightsEmailHash({
+            conventionId: archivedConvention.id,
+            emailHash,
+            role: "establishment-representative",
+          }),
+        );
+      });
+
+      it("throws missing rights for an api consumer without rights", async () => {
+        const apiConsumer = createApiConsumer({
+          kinds: ["READ"],
+          scope: { agencyIds: ["out-of-scope-agency-id"] },
+          subscriptions: [],
+        });
+
+        await expectPromiseToFailWithError(
+          getConvention.execute(
+            { conventionId: archivedConvention.id },
+            apiConsumer,
+          ),
+          errors.convention.forbiddenMissingRightsApiConsumer(
+            archivedConvention.id,
+            apiConsumer.id,
+          ),
+        );
+      });
+
+      it("returns the convention for a backoffice admin", async () => {
         expectToEqual(
           await getConvention.execute(
-            { conventionId: convention.id },
-            { userId: establishmentRep.id },
+            { conventionId: archivedConvention.id },
+            { userId: backofficeAdminUser.id },
           ),
-          {
-            ...convention,
-            agencyName: agency.name,
-            agencyDepartment: agency.address.departmentCode,
-            agencyKind: agency.kind,
-            agencyContactEmail: agency.contactEmail,
-            agencySiret: agency.agencySiret,
-            agencyValidationSteps: "validator-only",
-            assessment: {
-              status: assessment.status,
-              endedWithAJob: assessment.endedWithAJob,
-              signedAt: assessment.signedAt,
-              createdAt: assessment.createdAt,
-            },
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
+          expectedArchivedConventionRead,
         );
-      });
-
-      describe("when convention is archived", () => {
-        beforeEach(() => {
-          uow.conventionRepository.setConventions([archivedConvention]);
-        });
-
-        it("throws if convention is archived for a connected user with rights", async () => {
-          await expectPromiseToFailWithError(
-            getConvention.execute(
-              { conventionId: archivedConvention.id },
-              { userId: establishmentRep.id },
-            ),
-            errors.convention.archived({
-              conventionId: archivedConvention.id,
-            }),
-          );
-        });
-
-        it("throws if convention is archived for a magic link with rights", async () => {
-          await expectPromiseToFailWithError(
-            getConvention.execute(
-              { conventionId: archivedConvention.id },
-              establishmentRepJwtPayload,
-            ),
-            errors.convention.archived({
-              conventionId: archivedConvention.id,
-            }),
-          );
-        });
-
-        it("throws if convention is archived for an api consumer with rights", async () => {
-          await expectPromiseToFailWithError(
-            getConvention.execute(
-              { conventionId: archivedConvention.id },
-              apiConsumerWithRights,
-            ),
-            errors.convention.archived({
-              conventionId: archivedConvention.id,
-            }),
-          );
-        });
-
-        it("throws missing rights for a connected user without rights", async () => {
-          await expectPromiseToFailWithError(
-            getConvention.execute(
-              { conventionId: archivedConvention.id },
-              { userId: userWithNoRight.id },
-            ),
-            errors.convention.forbiddenMissingRightsUserId({
-              conventionId: archivedConvention.id,
-              userId: userWithNoRight.id,
-            }),
-          );
-        });
-
-        it("throws missing rights for a magic link without rights", async () => {
-          const emailHash = "thisHashDontMatch";
-
-          await expectPromiseToFailWithError(
-            getConvention.execute(
-              { conventionId: archivedConvention.id },
-              {
-                role: "establishment-representative",
-                emailHash,
-                applicationId: archivedConvention.id,
-              },
-            ),
-            errors.convention.forbiddenMissingRightsEmailHash({
-              conventionId: archivedConvention.id,
-              emailHash,
-              role: "establishment-representative",
-            }),
-          );
-        });
-
-        it("throws missing rights for an api consumer without rights", async () => {
-          const apiConsumer = createApiConsumer({
-            kinds: ["READ"],
-            scope: { agencyIds: ["out-of-scope-agency-id"] },
-            subscriptions: [],
-          });
-
-          await expectPromiseToFailWithError(
-            getConvention.execute(
-              { conventionId: archivedConvention.id },
-              apiConsumer,
-            ),
-            errors.convention.forbiddenMissingRightsApiConsumer(
-              archivedConvention.id,
-              apiConsumer.id,
-            ),
-          );
-        });
-
-        it("returns the convention for a backoffice admin", async () => {
-          expectToEqual(
-            await getConvention.execute(
-              { conventionId: archivedConvention.id },
-              { userId: backofficeAdminUser.id },
-            ),
-            expectedArchivedConventionRead,
-          );
-        });
       });
     });
   });

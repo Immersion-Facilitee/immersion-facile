@@ -11,6 +11,7 @@ import {
   expectToEqual,
   frontRoutes,
   makeRouteAbsoluteUrl,
+  reasonableSchedule,
   type Signatories,
   type UpdateConventionStatusRequestDto,
   unauthenticatedConventionRoutes,
@@ -104,6 +105,11 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       .withStatus("READY_TO_SIGN")
       .withoutDateValidation()
       .withFederatedIdentity({ provider: "ftConnect", token: "fake" })
+      .withDateSubmission(new Date("2026-10-02").toISOString())
+      .withDateStart(new Date("2026-10-06").toISOString())
+      .withDateEnd(new Date("2026-10-15").toISOString())
+      .withUpdatedAt(new Date("2026-10-02").toISOString())
+      .withSchedule(reasonableSchedule)
       .build();
 
     const appAndDeps = await buildTestApp();
