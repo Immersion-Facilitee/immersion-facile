@@ -1,4 +1,4 @@
-import { type Observable, of, throwError } from "rxjs";
+import { type Observable, of } from "rxjs";
 import {
   AgencyDtoBuilder,
   type AgencyRight,
@@ -7,7 +7,6 @@ import {
   type ApiConsumerId,
   type ApiConsumerJwt,
   type BanEstablishmentPayload,
-  type ConnectedUser,
   type ConnectedUserJwt,
   type DashboardUrlAndName,
   type EstablishmentBatchReport,
@@ -15,12 +14,8 @@ import {
   type GetDashboardParams,
   type GetUsersFilters,
   type NotificationsByKind,
-  noAgencyDashboards,
-  noEstablishmentDashboard,
-  type RejectConnectedUserRoleForAgencyParams,
   toAgencyDtoForAgencyUsersAndAdmins,
   toAgencyRightsByAgencyId,
-  type UserParamsForAgency,
   type UserWithNumberOfAgenciesAndEstablishments,
   type WithPreventToDelete,
   type WithUserId,
@@ -52,31 +47,6 @@ export class SimulatedAdminGateway implements AdminGateway {
         },
       ],
     });
-  }
-
-  public createUserForAgency$(
-    { agencyId }: UserParamsForAgency,
-    _token: string,
-  ): Observable<ConnectedUser> {
-    return agencyId === "non-existing-agency-id"
-      ? throwError(() => new Error(`Agency Id ${agencyId} not found`))
-      : of({
-          id: "fake-user-id-2",
-          email: "remi@sanfamille.fr",
-          firstName: "Rémi",
-          lastName: "Sanfamille",
-          agencyRights: [],
-          dashboards: {
-            agencies: noAgencyDashboards,
-            establishments: noEstablishmentDashboard,
-          },
-          proConnect: {
-            externalId: "fake-user-external-id-2",
-            siret: "00000000001234",
-          },
-          createdAt: new Date().toISOString(),
-          preventToDelete: false,
-        });
   }
 
   public getConnectedUsers$(): Observable<AgencyUserForListing[]> {
@@ -115,15 +85,6 @@ export class SimulatedAdminGateway implements AdminGateway {
     return of(notificationsByKind);
   }
 
-  public rejectUserForAgency$(
-    { agencyId }: RejectConnectedUserRoleForAgencyParams,
-    _token: string,
-  ): Observable<void> {
-    return agencyId === "non-existing-agency-id"
-      ? throwError(() => new Error(`Agency Id ${agencyId} not found`))
-      : of(undefined);
-  }
-
   public saveApiConsumer$(
     _apiConsumer: ApiConsumer,
     _adminToken: ConnectedUserJwt,
@@ -131,15 +92,6 @@ export class SimulatedAdminGateway implements AdminGateway {
     return of(
       "fakeTokenJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk4ZDE3NTE3LWJlNDItNDY2OS04OTVkLTQ3ODE0MjBhNjhiOCIsImlhdCI6MTY5MTM5MTk4Mn0.WuGBIyvVa7rNaIxjZTgVTSIcU0LkN8GRDmFxXMYTRYFh0vK0c6ImupszTJF4VXHGpkkpE1AXasOwBWhOg",
     );
-  }
-
-  public updateUserRoleForAgency$(
-    { agencyId }: UserParamsForAgency,
-    _token: string,
-  ): Observable<void> {
-    return agencyId === "non-existing-agency-id"
-      ? throwError(() => new Error(`Agency Id ${agencyId} not found`))
-      : of(undefined);
   }
 
   public listUsers$(

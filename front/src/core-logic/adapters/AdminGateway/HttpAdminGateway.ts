@@ -6,7 +6,6 @@ import {
   type ApiConsumerId,
   type ApiConsumerJwt,
   type BanEstablishmentPayload,
-  type ConnectedUser,
   type ConnectedUserJwt,
   createApiConsumerParamsFromApiConsumer,
   type DashboardUrlAndName,
@@ -14,9 +13,7 @@ import {
   type FormEstablishmentBatchDto,
   type GetDashboardParams,
   type GetUsersFilters,
-  type RejectConnectedUserRoleForAgencyParams,
   type SetFeatureFlagParam,
-  type UserParamsForAgency,
   type UserWithNumberOfAgenciesAndEstablishments,
   type WithPreventToDelete,
   type WithUserFilters,
@@ -51,26 +48,6 @@ export class HttpAdminGateway implements AdminGateway {
             .with({ status: 200 }, ({ body }) => body)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: 401 }, logBodyAndThrow)
-            .otherwise(otherwiseThrow),
-        ),
-    );
-  }
-
-  public createUserForAgency$(
-    params: UserParamsForAgency,
-    token: string,
-  ): Observable<ConnectedUser> {
-    return from(
-      this.httpClient
-        .createUserForAgency({
-          body: params,
-          headers: { authorization: token },
-        })
-        .then((response) =>
-          match(response)
-            .with({ status: 200 }, ({ body }) => body)
-            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
-            .with({ status: P.union(401, 404) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );
@@ -149,25 +126,6 @@ export class HttpAdminGateway implements AdminGateway {
     );
   }
 
-  public rejectUserForAgency$(
-    params: RejectConnectedUserRoleForAgencyParams,
-    token: string,
-  ): Observable<void> {
-    return from(
-      this.httpClient
-        .rejectIcUserForAgency({
-          body: params,
-          headers: { authorization: token },
-        })
-        .then((response) =>
-          match(response)
-            .with({ status: 201 }, () => undefined)
-            .with({ status: P.union(401, 404) }, logBodyAndThrow)
-            .otherwise(otherwiseThrow),
-        ),
-    );
-  }
-
   public saveApiConsumer$(
     apiConsumer: ApiConsumer,
     adminToken: ConnectedUserJwt,
@@ -201,26 +159,6 @@ export class HttpAdminGateway implements AdminGateway {
           match(response)
             .with({ status: 201 }, () => undefined)
             .with({ status: P.union(401, 403) }, logBodyAndThrow)
-            .otherwise(otherwiseThrow),
-        ),
-    );
-  }
-
-  public updateUserRoleForAgency$(
-    params: UserParamsForAgency,
-    token: string,
-  ): Observable<void> {
-    return from(
-      this.httpClient
-        .updateUserRoleForAgency({
-          body: params,
-          headers: { authorization: token },
-        })
-        .then((response) =>
-          match(response)
-            .with({ status: 201 }, () => undefined)
-            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
-            .with({ status: P.union(401, 404) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

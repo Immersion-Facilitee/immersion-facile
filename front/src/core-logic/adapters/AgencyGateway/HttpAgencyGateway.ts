@@ -15,6 +15,7 @@ import type {
   GetAgenciesForAdminParams,
   GetAgencyUsersFilters,
   ListAgencyOptionsRequestDto,
+  RejectConnectedUserRoleForAgencyParams,
   UserParamsForAgency,
   WithAgencyId,
   WithAgencyIdAndUserId,
@@ -197,8 +198,27 @@ export class HttpAgencyGateway implements AgencyGateway {
           match(response)
             .with({ status: 201 }, () => undefined)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
-            .with({ status: 403 }, logBodyAndThrow)
-            .with({ status: P.union(401, 404) }, logBodyAndThrow)
+            .with({ status: P.union(401, 403, 404) }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public rejectUserForAgency$(
+    params: RejectConnectedUserRoleForAgencyParams,
+    token: ConnectedUserJwt,
+  ): Observable<void> {
+    return from(
+      this.httpClient
+        .rejectUserForAgency({
+          headers: { authorization: token },
+          body: params,
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 201 }, () => undefined)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403, 404) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

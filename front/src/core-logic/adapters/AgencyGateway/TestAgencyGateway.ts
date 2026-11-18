@@ -13,6 +13,7 @@ import type {
   DataWithPagination,
   GetAgenciesForAdminParams,
   ListAgencyOptionsRequestDto,
+  RejectConnectedUserRoleForAgencyParams,
   UserParamsForAgency,
   WithAgencyId,
   WithAgencyIdAndUserId,
@@ -41,6 +42,8 @@ export class TestAgencyGateway implements AgencyGateway {
   public updateAgencyResponse$ = new Subject<undefined>();
 
   public updateUserAgencyRightResponse$ = new Subject<undefined>();
+
+  public rejectUserForAgencyResponse$ = new Subject<void>();
 
   public removeUserFromAgencyResponse$ = new Subject<undefined>();
 
@@ -98,6 +101,13 @@ export class TestAgencyGateway implements AgencyGateway {
 
   public updateUserAgencyRight$(): Observable<void> {
     return this.updateUserAgencyRightResponse$;
+  }
+
+  public rejectUserForAgency$(
+    _params: RejectConnectedUserRoleForAgencyParams,
+    _token: ConnectedUserJwt,
+  ): Observable<void> {
+    return this.rejectUserForAgencyResponse$;
   }
 
   public removeUserFromAgency$(

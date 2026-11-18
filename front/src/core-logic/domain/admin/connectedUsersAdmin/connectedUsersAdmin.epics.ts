@@ -73,7 +73,7 @@ const fetchConnectedUsersWithAgencyIdEpic: ConnectedUsersAdminActionEpic = (
 const registerAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
   action$,
   state$,
-  { adminGateway },
+  { agencyGateway },
 ) =>
   action$.pipe(
     filter(
@@ -81,8 +81,8 @@ const registerAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
         .match,
     ),
     switchMap((action: PayloadActionWithFeedbackTopic<UserParamsForAgency>) =>
-      adminGateway
-        .updateUserRoleForAgency$(
+      agencyGateway
+        .updateUserAgencyRight$(
           action.payload,
           getConnectedUserJwt(state$.value),
         )
@@ -107,7 +107,7 @@ const registerAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
 const rejectAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
   action$,
   state$,
-  { adminGateway },
+  { agencyGateway },
 ) =>
   action$.pipe(
     filter(
@@ -118,7 +118,7 @@ const rejectAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
       (
         action: PayloadActionWithFeedbackTopic<RejectConnectedUserRoleForAgencyParams>,
       ) =>
-        adminGateway
+        agencyGateway
           .rejectUserForAgency$(
             action.payload,
             getConnectedUserJwt(state$.value),
@@ -144,12 +144,12 @@ const rejectAgencyToUserEpic: ConnectedUsersAdminActionEpic = (
 const createUserOnAgencyEpic: ConnectedUsersAdminActionEpic = (
   action$,
   state$,
-  { adminGateway },
+  { agencyGateway },
 ) =>
   action$.pipe(
     filter(connectedUsersAdminSlice.actions.createUserOnAgencyRequested.match),
     switchMap((action) =>
-      adminGateway
+      agencyGateway
         .createUserForAgency$(action.payload, getConnectedUserJwt(state$.value))
         .pipe(
           map(() =>
@@ -171,13 +171,13 @@ const createUserOnAgencyEpic: ConnectedUsersAdminActionEpic = (
 const updateUserOnAgencyEpic: ConnectedUsersAdminActionEpic = (
   action$,
   state$,
-  { adminGateway },
+  { agencyGateway },
 ) =>
   action$.pipe(
     filter(connectedUsersAdminSlice.actions.updateUserOnAgencyRequested.match),
     switchMap((action) =>
-      adminGateway
-        .updateUserRoleForAgency$(
+      agencyGateway
+        .updateUserAgencyRight$(
           action.payload,
           getConnectedUserJwt(state$.value),
         )
