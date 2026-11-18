@@ -117,7 +117,11 @@ export const makeWarnInactiveAgenciesWithoutRecentConventions = useCaseBuilder(
         priority: 7,
       });
 
-      return notifications.length;
+      return uniq(
+        notifications.flatMap(({ followedIds }) =>
+          followedIds.agencyId ? [followedIds.agencyId] : [],
+        ),
+      ).length;
     });
 
     return { numberOfAgenciesWarned };
@@ -163,36 +167,29 @@ const buildWarningNotificationsForAgencies = async ({
     return acc;
   }, {});
 
-  return agenciesWithNotifiableUsers
-    .map(
-      ({
-        agency,
-        notifiableUserIds,
-      }): NotificationContentAndFollowedIds | null => {
-        const emails = uniq(
-          notifiableUserIds
-            .map((userId) => emailsByUserId[userId])
-            .filter(isTruthy),
-        );
+  return agenciesWithNotifiableUsers.flatMap(
+    ({ agency, notifiableUserIds }): NotificationContentAndFollowedIds[] => {
+      const emails = uniq(
+        notifiableUserIds
+          .map((userId) => emailsByUserId[userId])
+          .filter(isTruthy),
+      );
 
-        return emails.length > 0
-          ? {
-              kind: "email",
-              templatedContent: {
-                kind: "AGENCY_INACTIVITY_WARNING",
-                bcc: emails,
-                params: {
-                  agencyName: agency.name,
-                },
-              },
-              followedIds: {
-                agencyId: agency.id,
-              },
-            }
-          : null;
-      },
-    )
-    .filter(isTruthy);
+      return emails.map((email) => ({
+        kind: "email",
+        templatedContent: {
+          kind: "AGENCY_INACTIVITY_WARNING",
+          recipients: [email],
+          params: {
+            agencyName: agency.name,
+          },
+        },
+        followedIds: {
+          agencyId: agency.id,
+        },
+      }));
+    },
+  );
 };
 
 const isWarningNeeded = async (params: {
