@@ -13,7 +13,10 @@ import {
   frontRoutes,
   useRoute,
 } from "shared";
-import { ressourcesAndWebinarsUrl } from "src/app/contents/home/content";
+import {
+  establishmentResourcesAndWebinarsUrl,
+  ressourcesAndWebinarsUrl,
+} from "src/app/contents/home/content";
 import { useFeedbackEventCallback } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useFeatureFlags } from "src/app/hooks/useFeatureFlags";
@@ -202,6 +205,14 @@ export const LayoutHeader = () => {
           },
         },
         {
+          text: "Ressources et webinaires",
+          isActive: false,
+          linkProps: {
+            href: establishmentResourcesAndWebinarsUrl,
+            id: establishmentIds.resourcesAndWebinars,
+          },
+        },
+        {
           text: "Mon espace",
           isActive:
             currentRoute.name ===
@@ -244,19 +255,19 @@ export const LayoutHeader = () => {
           },
         },
         {
-          text: "Mon espace",
-          isActive: false,
-          linkProps: {
-            ...frontRoutes.agencyDashboardMain().link,
-            id: agencyIds.dashboard,
-          },
-        },
-        {
           text: "Ressources et webinaires",
           isActive: false,
           linkProps: {
             href: ressourcesAndWebinarsUrl,
             id: agencyIds.resourcesAndWebinars,
+          },
+        },
+        {
+          text: "Mon espace",
+          isActive: false,
+          linkProps: {
+            ...frontRoutes.agencyDashboardMain().link,
+            id: agencyIds.dashboard,
           },
         },
       ],

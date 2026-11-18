@@ -55,6 +55,9 @@ export const domElementIds = {
         home: buildHeaderNavLinkId("establishment-home"),
         addEstablishmentForm: buildHeaderNavLinkId("establishment-form"),
         formConvention: buildHeaderNavLinkId("establishment-form-convention"),
+        resourcesAndWebinars: buildHeaderNavLinkId(
+          "establishment-resources-and-webinars",
+        ),
         dashboard: buildHeaderNavLinkId("establishment-dashboard"),
       },
       agency: {
@@ -138,6 +141,9 @@ export const domElementIds = {
     heroHeader: {
       addEstablishmentForm: buildHeroHeaderId("establishment-form-register"),
       formConvention: buildHeroHeaderId("establishment-form-convention"),
+      resourcesAndWebinars: buildHeroHeaderId(
+        "establishment-resources-and-webinars",
+      ),
       establishmentDashboard: buildHeroHeaderId("establishment-dashboard"),
     },
   },
