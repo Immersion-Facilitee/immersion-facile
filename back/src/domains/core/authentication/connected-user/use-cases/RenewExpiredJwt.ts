@@ -8,7 +8,7 @@ import {
   errors,
   ForbiddenError,
   frontRoutes,
-  type MagicLinkRenewalParams,
+  type LinkRenewalParams,
   type OAuthState,
   removeAllParamsFromUrl,
   renewExpiredJwtRequestSchema,
@@ -150,7 +150,7 @@ const onEmailAuthCodeDomainJwtPayload = async ({
         uow,
         email: ongoingOAuth.email,
         params: {
-          magicLink: await prepareEmailAuthCodeShortLinkMaker({
+          link: await prepareEmailAuthCodeShortLinkMaker({
             uow,
             config: deps.config,
             generateEmailAuthCodeLoginUrl: deps.generateEmailAuthCodeUrl,
@@ -191,7 +191,7 @@ const onConnectedUserDomainJwtPayload = async ({
     uow,
     email: user.email,
     params: {
-      magicLink: await prepareConnectedUserMagicShortLinkMaker({
+      link: await prepareConnectedUserMagicShortLinkMaker({
         uow,
         config: deps.config,
         shortLinkIdGeneratorGateway: deps.shortLinkIdGeneratorGateway,
@@ -251,7 +251,7 @@ const onConventionDomainJwtPayload = async (
     email: emailMatchingEmailHash,
     params: {
       internshipKind: convention.internshipKind,
-      magicLink: await makeConventionMagicShortLink({
+      link: await makeConventionMagicShortLink({
         targetRoute: routeToRenew,
         lifetime: "1Month",
       }),
@@ -269,7 +269,7 @@ const sendTokenRenewal = async ({
 }: {
   uow: UnitOfWork;
   email: string;
-  params: MagicLinkRenewalParams;
+  params: LinkRenewalParams;
   deps: Deps;
 }): Promise<void> => {
   await deps.saveNotificationAndRelatedEvent(
@@ -277,7 +277,7 @@ const sendTokenRenewal = async ({
     {
       kind: "email",
       templatedContent: {
-        kind: "MAGIC_LINK_RENEWAL",
+        kind: "LINK_RENEWAL",
         recipients: [email],
         params,
       },

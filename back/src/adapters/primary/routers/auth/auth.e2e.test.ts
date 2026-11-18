@@ -951,13 +951,13 @@ describe("auth router", () => {
 
           expect(sentEmails).toHaveLength(1);
 
-          const email = expectEmailOfType(sentEmails[0], "MAGIC_LINK_RENEWAL");
+          const email = expectEmailOfType(sentEmails[0], "LINK_RENEWAL");
           expect(email.recipients).toEqual([
             validConvention.signatories.beneficiary.email,
           ]);
 
           const magicLink = await shortLinkRedirectToLinkWithValidation(
-            email.params.magicLink,
+            email.params.link,
             technicalRoutesClient,
           );
 
