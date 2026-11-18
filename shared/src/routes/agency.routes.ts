@@ -132,7 +132,7 @@ export const agencyRoutes = defineRoutes({
 
   updateUserRoleForAgency: defineRoute({
     method: "patch",
-    url: "/agencies/:agencyId/users",
+    url: "/agency/users",
     requestBodySchema: userParamsForAgencySchema,
     ...withAuthorizationHeaders,
     responses: {

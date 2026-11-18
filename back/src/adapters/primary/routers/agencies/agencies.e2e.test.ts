@@ -381,7 +381,6 @@ describe("Agency routes", () => {
   )} update user role for agency`, () => {
     it("401 - rejects request with invalid token", async () => {
       const response = await httpClient.updateUserRoleForAgency({
-        urlParams: { agencyId: "any-agency" },
         headers: { authorization: "invalid-token" },
         body: {
           agencyId: "any-agency",
@@ -437,7 +436,6 @@ describe("Agency routes", () => {
       });
 
       const response = await httpClient.updateUserRoleForAgency({
-        urlParams: { agencyId: agency.id },
         headers: { authorization: attackerToken },
         body: {
           agencyId: agency.id,
@@ -481,7 +479,6 @@ describe("Agency routes", () => {
       ];
 
       const response = await httpClient.updateUserRoleForAgency({
-        urlParams: { agencyId: agency.id },
         headers: { authorization: backofficeAdminToken },
         body: {
           agencyId: agency.id,
