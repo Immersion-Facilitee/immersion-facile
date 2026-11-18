@@ -16,7 +16,6 @@ import {
   expectPromiseToFailWithError,
   ForbiddenError,
   getDisplayedBusinessName,
-  makeBooleanFeatureFlag,
   reasonableSchedule,
   splitCasesBetweenPassingAndFailing,
   type User,
@@ -695,7 +694,7 @@ describe("CreateAssessment", () => {
   });
 
   describe("archived convention", () => {
-    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+    it("throws when convention is archived and caller is not admin", async () => {
       const archivedDateEnd = subMonths(
         timeGateway.now(),
         defaultMonthsThresholdForConventionsListing + 1,
@@ -707,10 +706,6 @@ describe("CreateAssessment", () => {
         .withSchedule(reasonableSchedule)
         .build();
       uow.conventionRepository.setConventions([archivedConvention]);
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
-
       await expectPromiseToFailWithError(
         createAssessment.execute(
           { ...assessment, conventionId: archivedConvention.id },

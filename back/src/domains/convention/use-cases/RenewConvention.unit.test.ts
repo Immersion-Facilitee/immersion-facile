@@ -10,7 +10,6 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
   ForbiddenError,
-  makeBooleanFeatureFlag,
   type RenewConventionParams,
   reasonableSchedule,
   ScheduleDtoBuilder,
@@ -281,7 +280,7 @@ describe("RenewConvention", () => {
       );
     });
 
-    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+    it("throws when convention is archived and caller is not admin", async () => {
       const archivedDateEnd = subMonths(
         timeGateway.now(),
         defaultMonthsThresholdForConventionsListing + 1,
@@ -295,10 +294,6 @@ describe("RenewConvention", () => {
         .withSchedule(reasonableSchedule)
         .build();
       uow.conventionRepository.setConventions([archivedConvention]);
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
-
       await expectPromiseToFailWithError(
         renewConvention.execute(renewConventionParams, {
           userId: validator.id,

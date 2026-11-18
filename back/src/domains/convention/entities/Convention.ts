@@ -188,8 +188,6 @@ export const throwIfConventionArchivedAndUserIsNotAdmin = async ({
     const user = await getUserWithRights(uow, jwtPayload.userId);
     if (user.isBackofficeAdmin) return;
   }
-  const featureFlags = await uow.featureFlagQueries.getAll();
-  if (!featureFlags.enableRequestArchivedConvention.isActive) return;
   if (!isConventionArchived({ dateEnd: convention.dateEnd, now })) return;
   throw errors.convention.archived({ conventionId: convention.id });
 };

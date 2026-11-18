@@ -314,7 +314,6 @@ export const createUseCases = ({
     }),
     getBeneficiaryConventionList: makeGetBeneficiaryConventionList({
       uowPerformer,
-      deps: { timeGateway },
     }),
 
     saveConventionDraft: makeSaveConventionDraft({
@@ -1130,11 +1129,9 @@ export const createUseCases = ({
     }),
     getConventionsForAgencyUser: makeGetConventionsForAgencyUser({
       uowPerformer,
-      deps: { timeGateway },
     }),
     getConventionsForEstablishmentUser: makeGetConventionsForEstablishmentUser({
       uowPerformer,
-      deps: { timeGateway },
     }),
     getConventionsWithUnfinalizedAssessment:
       makeGetConventionsWithUnfinalizedAssessment({

@@ -18,7 +18,6 @@ export const featureFlagNames = [
   "enableBeneficiaryDashboardHighlight",
   "enableInactiveUsersCleanup",
   "enableInactiveUsersDeletionAutoProcessing",
-  "enableRequestArchivedConvention",
   "enableBeneficiaryManageConvention",
   "enableFranceTravailConventionBroadcast",
 ] as const;
@@ -93,7 +92,6 @@ export type FeatureFlags = {
   enableBeneficiaryDashboardHighlight: FeatureFlagHighlight;
   enableInactiveUsersCleanup: FeatureFlagBoolean;
   enableInactiveUsersDeletionAutoProcessing: FeatureFlagBoolean;
-  enableRequestArchivedConvention: FeatureFlagBoolean;
   enableBeneficiaryManageConvention: FeatureFlagBoolean;
   enableFranceTravailConventionBroadcast: FeatureFlagBoolean;
 };

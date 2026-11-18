@@ -13,7 +13,6 @@ import {
   expectPromiseToFailWithError,
   expectToEqual,
   type LegacyAssessmentDto,
-  makeBooleanFeatureFlag,
   reasonableSchedule,
   splitCasesBetweenPassingAndFailing,
 } from "shared";
@@ -414,85 +413,63 @@ describe("GetAssessmentByConventionId", () => {
   });
 
   describe("archived convention access", () => {
-    describe("when enableRequestArchivedConvention is inactive", () => {
-      it("returns the assessment for a connected user with rights", async () => {
-        uow.conventionRepository.setConventions([archivedConvention]);
+    it("returns the assessment of a non archived convention for a connected user with rights", async () => {
+      expectToEqual(
+        await getAssessment.execute(
+          { conventionId: convention.id },
+          { userId: establishmentTutorUser.id },
+        ),
+        assessment,
+      );
+    });
 
-        expectToEqual(
-          await getAssessment.execute(
+    describe("when convention is archived", () => {
+      beforeEach(() => {
+        uow.conventionRepository.setConventions([archivedConvention]);
+      });
+
+      it("throws if convention is archived for a connected user with rights", async () => {
+        await expectPromiseToFailWithError(
+          getAssessment.execute(
             { conventionId: archivedConvention.id },
             { userId: establishmentTutorUser.id },
           ),
-          assessment,
+          errors.convention.archived({
+            conventionId: archivedConvention.id,
+          }),
         );
       });
-    });
 
-    describe("when enableRequestArchivedConvention is active", () => {
-      beforeEach(() => {
-        uow.featureFlagRepository.featureFlags = {
-          enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-        };
+      it("throws if convention is archived for a magic link with rights", async () => {
+        await expectPromiseToFailWithError(
+          getAssessment.execute(
+            { conventionId: archivedConvention.id },
+            establishmentTutorPayload,
+          ),
+          errors.convention.archived({
+            conventionId: archivedConvention.id,
+          }),
+        );
       });
 
-      it("returns the assessment of a non archived convention for a connected user with rights", async () => {
+      it("throws forbidden for a connected user without rights", async () => {
+        await expectPromiseToFailWithError(
+          getAssessment.execute(
+            { conventionId: archivedConvention.id },
+            { userId: userWithoutRoleOnConvention.id },
+          ),
+          errors.assessment.forbidden("GetAssessment"),
+        );
+      });
+
+      it("returns the assessment for a backoffice admin", async () => {
         expectToEqual(
           await getAssessment.execute(
-            { conventionId: convention.id },
-            { userId: establishmentTutorUser.id },
+            { conventionId: archivedConvention.id },
+            { userId: backOfficeAdmin.id },
           ),
           assessment,
         );
-      });
-
-      describe("when convention is archived", () => {
-        beforeEach(() => {
-          uow.conventionRepository.setConventions([archivedConvention]);
-        });
-
-        it("throws if convention is archived for a connected user with rights", async () => {
-          await expectPromiseToFailWithError(
-            getAssessment.execute(
-              { conventionId: archivedConvention.id },
-              { userId: establishmentTutorUser.id },
-            ),
-            errors.convention.archived({
-              conventionId: archivedConvention.id,
-            }),
-          );
-        });
-
-        it("throws if convention is archived for a magic link with rights", async () => {
-          await expectPromiseToFailWithError(
-            getAssessment.execute(
-              { conventionId: archivedConvention.id },
-              establishmentTutorPayload,
-            ),
-            errors.convention.archived({
-              conventionId: archivedConvention.id,
-            }),
-          );
-        });
-
-        it("throws forbidden for a connected user without rights", async () => {
-          await expectPromiseToFailWithError(
-            getAssessment.execute(
-              { conventionId: archivedConvention.id },
-              { userId: userWithoutRoleOnConvention.id },
-            ),
-            errors.assessment.forbidden("GetAssessment"),
-          );
-        });
-
-        it("returns the assessment for a backoffice admin", async () => {
-          expectToEqual(
-            await getAssessment.execute(
-              { conventionId: archivedConvention.id },
-              { userId: backOfficeAdmin.id },
-            ),
-            assessment,
-          );
-        });
       });
     });
   });

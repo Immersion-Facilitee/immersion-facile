@@ -48,7 +48,6 @@ export const featureFlagsSeed = async (uow: UnitOfWork) => {
     }),
     enableInactiveUsersCleanup: makeBooleanFeatureFlag(false),
     enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
-    enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
     enableBeneficiaryManageConvention: makeBooleanFeatureFlag(true),
     enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
   };

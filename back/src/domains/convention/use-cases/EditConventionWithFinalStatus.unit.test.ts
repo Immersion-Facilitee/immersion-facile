@@ -13,7 +13,6 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
-  makeBooleanFeatureFlag,
   reasonableSchedule,
   UserBuilder,
 } from "shared";
@@ -692,7 +691,7 @@ describe("EditConventionWithFinalStatus", () => {
   });
 
   describe("archived convention", () => {
-    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+    it("throws when convention is archived and caller is not admin", async () => {
       const dateEnd = subMonths(
         timeGateway.now(),
         defaultMonthsThresholdForConventionsListing + 1,
@@ -714,10 +713,6 @@ describe("EditConventionWithFinalStatus", () => {
           },
         }),
       ];
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
-
       await expectPromiseToFailWithError(
         usecase.execute(tutorOnlyRequest, counsellorJwtPayload),
         errors.convention.archived({ conventionId: archivedConvention.id }),

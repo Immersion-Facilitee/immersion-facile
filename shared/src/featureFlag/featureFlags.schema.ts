@@ -119,7 +119,6 @@ export const featureFlagsSchema: ZodSchemaWithInputMatchingOutput<FeatureFlags> 
     enableBeneficiaryDashboardHighlight: featureFlagHighlightSchema,
     enableInactiveUsersCleanup: featureFlagBooleanSchema,
     enableInactiveUsersDeletionAutoProcessing: featureFlagBooleanSchema,
-    enableRequestArchivedConvention: featureFlagBooleanSchema,
     enableBeneficiaryManageConvention: featureFlagBooleanSchema,
     enableFranceTravailConventionBroadcast: featureFlagBooleanSchema,
   });

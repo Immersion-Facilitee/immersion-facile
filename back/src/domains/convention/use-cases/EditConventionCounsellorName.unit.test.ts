@@ -17,7 +17,6 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
-  makeBooleanFeatureFlag,
   reasonableSchedule,
   UserBuilder,
 } from "shared";
@@ -559,7 +558,7 @@ describe("EditCounsellorName", () => {
   });
 
   describe("archived convention", () => {
-    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+    it("throws when convention is archived and caller is not admin", async () => {
       const archivedDateEnd = subMonths(
         timeGateway.now(),
         defaultMonthsThresholdForConventionsListing + 1,
@@ -582,10 +581,6 @@ describe("EditCounsellorName", () => {
         }),
         toAgencyWithRights(otherAgency, {}),
       ];
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
-
       await expectPromiseToFailWithError(
         usecase.execute(
           {
