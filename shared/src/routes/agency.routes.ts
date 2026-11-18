@@ -1,6 +1,5 @@
 import { defineRoute, defineRoutes } from "shared-routes";
 import { z } from "zod";
-import { userParamsForAgencySchema } from "../admin/admin.schema";
 import {
   getAgenciesForAdminParamsSchema,
   paginatedAdminAgencyListSchema,
@@ -15,6 +14,7 @@ import {
   listAgencyOptionsRequestSchema,
   withAgencyIdSchema,
 } from "../agency/agency.schema";
+import { userParamsForAgencySchema } from "../agency/agencyUser.schema";
 import { agencyPublicDisplaySchema } from "../agency/publicAgency.schema";
 import { withAuthorizationHeaders } from "../headers";
 import { httpErrorSchema } from "../httpClient/httpErrors.schema";
