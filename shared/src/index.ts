@@ -11,6 +11,8 @@ export * from "./agency/AgencyDtoBuilder";
 export * from "./agency/agency.dto";
 export * from "./agency/agency.schema";
 export * from "./agency/agency.utils";
+export * from "./agency/agencyUser.dto";
+export * from "./agency/agencyUser.schema";
 export * from "./agency/publicAgency.dto";
 export * from "./agency/publicAgency.schema";
 export * from "./agency-group/agencyGroup";

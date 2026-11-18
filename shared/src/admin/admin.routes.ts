@@ -2,6 +2,10 @@ import { defineRoute, defineRoutes } from "shared-routes";
 import { z } from "zod";
 import { withAgencyIdSchemaPartial } from "../agency/agency.schema";
 import {
+  rejectIcUserRoleForAgencyParamsSchema,
+  userParamsForAgencySchema,
+} from "../agency/agencyUser.schema";
+import {
   apiConsumerJwtSchema,
   apiConsumerSchema,
   writeApiConsumerSchema,
@@ -23,12 +27,7 @@ import {
   withPreventToDeleteSchema,
 } from "../user/user.schema";
 import { expressEmptyResponseBody } from "../zodUtils";
-import {
-  getUsersFiltersSchema,
-  rejectIcUserRoleForAgencyParamsSchema,
-  userParamsForAgencySchema,
-  withUserFiltersSchema,
-} from "./admin.schema";
+import { getUsersFiltersSchema, withUserFiltersSchema } from "./admin.schema";
 
 export type AdminRoutes = typeof adminRoutes;
 export const adminRoutes = defineRoutes({
