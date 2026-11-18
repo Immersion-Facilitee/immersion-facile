@@ -263,3 +263,44 @@ export const makeConsumerMiddleware = (
     }
   };
 };
+
+export const makeOtpAuthMiddleware = (
+  config: AppConfig,
+  payloadKey: ExtractFromExisting<PayloadKind, "otp">,
+): RequestHandler => {
+  const { verifyJwt, verifyDeprecatedJwt } = verifyJwtConfig<"otp">(config);
+
+  return (req, res, next) => {
+    const maybeJwt = req.headers.authorization;
+    if (!maybeJwt) {
+      return responseError(res, "unauthenticated", 401);
+    }
+
+    try {
+      const payload = verifyJwt(maybeJwt);
+
+      if (!payload.purpose || !payload.subject || !Number.isFinite(payload.exp))
+        return sendAuthenticationError(res, errors.user.invalidJwt());
+
+      if (!payload.version || payload.version < currentJwtVersions[payloadKey])
+        return sendAuthenticationError(
+          res,
+          new Error("Token corresponds to an old version"),
+        );
+
+      req.payloads = { [payloadKey]: payload };
+
+      next();
+    } catch (error) {
+      if (error instanceof TokenExpiredError)
+        return sendNeedsRenewedLinkError(res, error);
+
+      try {
+        verifyDeprecatedJwt(maybeJwt);
+        return sendNeedsRenewedLinkError(res, castError(error));
+      } catch (deprecatedJwtError) {
+        return sendAuthenticationError(res, castError(deprecatedJwtError));
+      }
+    }
+  };
+};

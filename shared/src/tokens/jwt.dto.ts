@@ -5,12 +5,14 @@ export type ApiConsumerJwt = Flavor<string, "ApiConsumerJwt">;
 export type ConventionJwt = Flavor<string, "ConventionJwt">;
 export type ConnectedUserJwt = Flavor<string, "ConnectedUserJwt">;
 export type EmailAuthCodeJwt = Flavor<string, "EmailAuthCodeJwt">;
+export type OtpJwt = Flavor<string, "OtpJwt">;
 
 export type AppSupportedJwt =
   | ApiConsumerJwt
   | ConventionJwt
   | ConnectedUserJwt
-  | EmailAuthCodeJwt;
+  | EmailAuthCodeJwt
+  | OtpJwt;
 
 export type ConventionSupportedJwt = ConventionJwt | ConnectedUserJwt;
 
@@ -19,6 +21,7 @@ export const currentJwtVersions: Record<PayloadKind, number> = {
   connectedUser: 1,
   currentUser: 1, // useless, just for typecheck
   emailAuthCode: 1,
+  otp: 1,
 };
 
 export type JwtDto = {
@@ -45,4 +48,5 @@ export type RenewExpiredJwtRequestDto =
       kind: "connectedUser";
       expiredJwt: ConnectedUserJwt;
     }
-  | { kind: "emailAuthCode"; state: OAuthState; expiredJwt: EmailAuthCodeJwt };
+  | { kind: "emailAuthCode"; state: OAuthState; expiredJwt: EmailAuthCodeJwt }
+  | { kind: "otp"; expiredJwt: OtpJwt };

@@ -1,7 +1,15 @@
-import { currentJwtVersions, errors } from "shared";
+import {
+  currentJwtVersions,
+  errors,
+  type ManageConventionSubject,
+} from "shared";
 import { makeGenerateJwtES256, makeVerifyJwtES256 } from "../domains/core/jwt";
 import { CustomTimeGateway } from "../domains/core/time-gateway/adapters/CustomTimeGateway";
-import { generateES256KeyPair, makeThrowIfIncorrectJwt } from "./jwt";
+import {
+  createOtpJwtPayload,
+  generateES256KeyPair,
+  makeThrowIfIncorrectJwt,
+} from "./jwt";
 
 describe("makeThrowIfIncorrectJwt", () => {
   const { publicKey, privateKey } = generateES256KeyPair();
@@ -74,4 +82,28 @@ describe("makeThrowIfIncorrectJwt", () => {
       }
     });
   });
+});
+
+describe("OTP link expiration", () => {
+  const subject = {
+    conventionId: "convention-id",
+    role: "beneficiary",
+    emailHash: "hash",
+  } satisfies ManageConventionSubject;
+
+  it.each([
+    ["2026-04-01T00:00:00Z", "2026-10-01T00:00:00.000Z"],
+    ["2026-03-31T00:00:00Z", "2026-09-30T00:00:00.000Z"],
+  ])(
+    "expires six calendar months after issuance on %s",
+    (issuedAt, expiresAt) => {
+      const payload = createOtpJwtPayload({
+        purpose: "manageConvention",
+        subject,
+        now: new Date(issuedAt),
+      });
+
+      expect(new Date(payload.exp * 1000).toISOString()).toBe(expiresAt);
+    },
+  );
 });

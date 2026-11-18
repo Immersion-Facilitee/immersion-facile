@@ -29,16 +29,18 @@ import {
   makeBooleanFeatureFlag,
   makeEmptyLastReminders,
   makeRouteAbsoluteUrl,
+  OtpSessionDtoBuilder,
+  otpSessionCookieName,
   reasonableSchedule,
   type TechnicalRoutes,
   technicalRoutes,
   type UnauthenticatedConventionRoutes,
   type User,
   unauthenticatedConventionRoutes,
-  type WithAuthorizationHeader,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
+import type { SuperTest, Test } from "supertest";
 import { match } from "ts-pattern";
 import { v4 as uuid } from "uuid";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
@@ -47,6 +49,7 @@ import type { BasicEventCrawler } from "../../../../domains/core/events/adapters
 import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
+  GenerateOtpJwt,
 } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { AppConfigBuilder } from "../../../../utils/AppConfigBuilder";
@@ -61,6 +64,7 @@ import {
 import { shortLinkRedirectToLinkWithValidation } from "../../../../utils/e2eTestHelpers";
 import {
   createConventionMagicLinkPayload,
+  createOtpJwtPayload,
   makeEmailHash,
 } from "../../../../utils/jwt";
 import { processEventsForEmailToBeSent } from "../../../../utils/processEventsForEmailToBeSent";
@@ -101,19 +105,22 @@ describe("convention e2e", () => {
   let technicalRoutesClient: HttpClient<TechnicalRoutes>;
   let generateConventionJwt: GenerateConventionJwt;
   let generateConnectedUserJwt: GenerateConnectedUserJwt;
+  let generateOtpJwt: GenerateOtpJwt;
   let inMemoryUow: InMemoryUnitOfWork;
   let eventCrawler: BasicEventCrawler;
   let gateways: InMemoryGateways;
+  let request: SuperTest<Test>;
 
   beforeEach(async () => {
     const testApp = await buildTestApp(new AppConfigBuilder().build());
-    const request = testApp.request;
+    request = testApp.request;
 
     ({
       eventCrawler,
       gateways,
       generateConventionJwt,
       generateConnectedUserJwt,
+      generateOtpJwt,
       inMemoryUow,
     } = testApp);
 
@@ -445,24 +452,49 @@ describe("convention e2e", () => {
       },
     );
 
-    it("400 - no JWT", async () => {
+    it("401 - OTP JWT does not grant access to the convention", async () => {
+      const response = await magicLinkRequest.getConvention({
+        headers: {
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
+              purpose: "manageConvention",
+              subject: {
+                conventionId: convention.id,
+                role: "beneficiary",
+                emailHash: makeEmailHash(
+                  convention.signatories.beneficiary.email,
+                ),
+              },
+              now: gateways.timeGateway.now(),
+            }),
+          ),
+        },
+        urlParams: { conventionId: convention.id },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: errors.otpSession.unauthorized().message,
+        },
+      });
+    });
+
+    it("400 - without authorization nor otp session cookie", async () => {
       const response = await magicLinkRequest.getConvention({
         urlParams: {
           conventionId: convention.id,
         },
-        headers: undefined as unknown as WithAuthorizationHeader,
+        headers: {},
       });
 
       expectHttpResponseToEqual(response, {
-        body: {
-          issues: [
-            "authorization : Invalid input: expected string, received undefined",
-          ],
-          message:
-            "Shared-route schema 'headersSchema' was not respected in adapter 'express'.\nRoute: GET /auth/demandes-immersion/:conventionId",
-          status: 400,
-        },
         status: 400,
+        body: {
+          status: 400,
+          message: errors.auth.missingAuthentication().message,
+        },
       });
     });
 
@@ -607,6 +639,195 @@ describe("convention e2e", () => {
             userId: userWithNoRightOnConvention.id,
           }).message,
         },
+      });
+    });
+
+    describe("otp session cookie", () => {
+      const now = new Date("2026-11-05T10:00:00.000Z");
+      const otpSession = new OtpSessionDtoBuilder()
+        .withSubject({
+          conventionId: convention.id,
+          role: "beneficiary",
+          emailHash: makeEmailHash(convention.signatories.beneficiary.email),
+        })
+        .withExpiresAt(addDays(now, 1).toISOString())
+        .withCreatedAt(now.toISOString())
+        .build();
+
+      const expectedConventionRead: ConventionReadDto = {
+        ...convention,
+        agencyName: ftAgency.name,
+        agencyDepartment: ftAgency.address.departmentCode,
+        agencyContactEmail: ftAgency.contactEmail,
+        agencyKind: ftAgency.kind,
+        agencySiret: ftAgency.agencySiret,
+        agencyValidationSteps: "validator-only",
+        assessment: null,
+        lastReminders: makeEmptyLastReminders(),
+        isEstablishmentBanned: false,
+      };
+
+      beforeEach(() => {
+        gateways.timeGateway.defaultDate = now;
+        inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
+        inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
+      });
+
+      it("200 - succeeds with otp session cookie", async () => {
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: expectedConventionRead,
+          },
+        );
+      });
+
+      it("401 - unknown session id", async () => {
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Cookie",
+            `${otpSessionCookieName}=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
+          );
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.otpSession.unauthorized().message,
+            },
+          },
+        );
+      });
+
+      it("401 - expired session", async () => {
+        inMemoryUow.otpSessionRepository.otpSessions = [
+          new OtpSessionDtoBuilder(otpSession)
+            .withExpiresAt(now.toISOString())
+            .build(),
+        ];
+
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.otpSession.unauthorized().message,
+            },
+          },
+        );
+      });
+
+      it("401 - revoked session", async () => {
+        inMemoryUow.otpSessionRepository.otpSessions = [
+          new OtpSessionDtoBuilder(otpSession)
+            .withRevokedAt(now.toISOString())
+            .build(),
+        ];
+
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.otpSession.unauthorized().message,
+            },
+          },
+        );
+      });
+
+      it("401 - conventionId does not match session", async () => {
+        const otherConventionId: ConventionId =
+          "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              otherConventionId,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.otpSession.unauthorized().message,
+            },
+          },
+        );
+      });
+
+      it("403 - email hash no longer matches convention actor", async () => {
+        inMemoryUow.conventionRepository.setConventions([
+          new ConventionDtoBuilder(convention)
+            .withBeneficiaryEmail("changed-beneficiary@email.fr")
+            .build(),
+        ]);
+
+        const { status, body } = await request
+          .get(
+            conventionMagicLinkRoutes.getConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 403,
+            body: {
+              status: 403,
+              message: errors.convention.forbiddenMissingRightsEmailHash({
+                conventionId: convention.id,
+                role: "beneficiary",
+                emailHash: otpSession.subject.emailHash,
+              }).message,
+            },
+          },
+        );
       });
     });
 
@@ -875,6 +1096,150 @@ describe("convention e2e", () => {
           },
         },
       ]);
+    });
+
+    describe("otp session cookie", () => {
+      const now = new Date("2026-11-05T10:00:00.000Z");
+      const otpSession = new OtpSessionDtoBuilder()
+        .withSubject({
+          conventionId: convention.id,
+          role: "beneficiary",
+          emailHash: makeEmailHash(convention.signatories.beneficiary.email),
+        })
+        .withExpiresAt(addDays(now, 1).toISOString())
+        .withCreatedAt(now.toISOString())
+        .build();
+
+      const updatedConvention = new ConventionDtoBuilder(convention)
+        .withBeneficiaryFirstName("Updated first name")
+        .withStatus("READY_TO_SIGN")
+        .withStatusJustification("justif")
+        .build();
+
+      beforeEach(() => {
+        gateways.timeGateway.defaultDate = now;
+        inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
+      });
+
+      it("200 - succeeds with otp session cookie", async () => {
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.updateConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`)
+          .send({ convention: updatedConvention });
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: { id: convention.id },
+          },
+        );
+        const expectedConvention = new ConventionDtoBuilder(updatedConvention)
+          .notSigned()
+          .withStatus("PARTIALLY_SIGNED")
+          .signedByBeneficiary(now.toISOString())
+          .build();
+        expectToEqual(inMemoryUow.conventionRepository.conventions, [
+          expectedConvention,
+        ]);
+        expectArraysToMatch(inMemoryUow.outboxRepository.events, [
+          {
+            topic: "ConventionModifiedAndSigned",
+            payload: {
+              convention: expectedConvention,
+              triggeredBy: {
+                kind: "convention-magic-link",
+                role: "beneficiary",
+              },
+            },
+          },
+        ]);
+      });
+
+      it("401 - otp session of another convention", async () => {
+        const otherConventionId: ConventionId =
+          "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+        inMemoryUow.otpSessionRepository.otpSessions = [
+          new OtpSessionDtoBuilder(otpSession)
+            .withSubject({
+              ...otpSession.subject,
+              conventionId: otherConventionId,
+            })
+            .build(),
+        ];
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.updateConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`)
+          .send({ convention: updatedConvention });
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 401,
+            body: {
+              status: 401,
+              message: errors.otpSession.unauthorized().message,
+            },
+          },
+        );
+        expectToEqual(inMemoryUow.conventionRepository.conventions, [
+          convention,
+        ]);
+        expectToEqual(inMemoryUow.outboxRepository.events, []);
+      });
+      it("403 - cookie matching the URL cannot update another convention in the body", async () => {
+        const otherConvention = new ConventionDtoBuilder(convention)
+          .withId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
+          .build();
+        inMemoryUow.conventionRepository.setConventions([
+          convention,
+          otherConvention,
+        ]);
+
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.updateConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`)
+          .send({
+            convention: new ConventionDtoBuilder(updatedConvention)
+              .withId(otherConvention.id)
+              .build(),
+          });
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 403,
+            body: {
+              status: 403,
+              message: errors.convention.forbiddenConventionIdMismatch({
+                requestedConventionId: otherConvention.id,
+                jwtConventionId: convention.id,
+                jwtRole: "beneficiary",
+              }).message,
+            },
+          },
+        );
+        expectToEqual(inMemoryUow.conventionRepository.conventions, [
+          convention,
+          otherConvention,
+        ]);
+        expectToEqual(inMemoryUow.outboxRepository.events, []);
+      });
     });
 
     it("403 - connected user whose email is not linked to the convention cannot update convention", async () => {
@@ -1164,7 +1529,7 @@ describe("convention e2e", () => {
       );
     });
 
-    it("400 - no JWT", async () => {
+    it("400 - without authorization nor otp session cookie", async () => {
       const response = await magicLinkRequest.updateConventionStatus({
         body: {
           status: "ACCEPTED_BY_VALIDATOR",
@@ -1173,19 +1538,15 @@ describe("convention e2e", () => {
           lastname: "Doe",
           isAlsoAgencyReferent: false,
         },
-        headers: undefined as unknown as WithAuthorizationHeader,
+        headers: {},
       });
 
       expectHttpResponseToEqual(response, {
-        body: {
-          issues: [
-            "authorization : Invalid input: expected string, received undefined",
-          ],
-          message:
-            "Shared-route schema 'headersSchema' was not respected in adapter 'express'.\nRoute: POST /auth/update-application-status",
-          status: 400,
-        },
         status: 400,
+        body: {
+          status: 400,
+          message: errors.auth.missingAuthentication().message,
+        },
       });
     });
 
