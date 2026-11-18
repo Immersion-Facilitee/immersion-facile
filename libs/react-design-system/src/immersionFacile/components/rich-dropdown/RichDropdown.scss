@@ -31,7 +31,6 @@
   }
 }
 
-// DSFR tabs clip their content (overflow: hidden) and size their frame (::before) from the whole tabs height: https://www.systeme-de-design.gouv.fr/composants-et-modeles/composants/onglets
 .fr-tabs:has(.im-rich-dropdown--opened) {
   overflow: visible;
 
