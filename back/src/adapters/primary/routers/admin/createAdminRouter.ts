@@ -68,45 +68,12 @@ export const createAdminRouter = (deps: AppDependencies): Router => {
       ),
   );
 
-  sharedAdminRouter.updateUserRoleForAgency(
-    deps.connectedUserAuthMiddleware,
-    (req, res) =>
-      sendHttpResponse(req, res.status(201), () =>
-        deps.useCases.updateUserForAgency.execute(
-          req.body,
-          getGenericAuthOrThrow(req.payloads?.currentUser),
-        ),
-      ),
-  );
-
   sharedAdminRouter.getConnectedUsers(
     deps.connectedUserAuthMiddleware,
     (req, res) =>
       sendHttpResponse(req, res, () =>
         deps.useCases.getAgencyUsers.execute(
           req.query,
-          getGenericAuthOrThrow(req.payloads?.currentUser),
-        ),
-      ),
-  );
-
-  sharedAdminRouter.createUserForAgency(
-    deps.connectedUserAuthMiddleware,
-    (req, res) =>
-      sendHttpResponse(req, res, () =>
-        deps.useCases.createUserForAgency.execute(
-          req.body,
-          getGenericAuthOrThrow(req.payloads?.currentUser),
-        ),
-      ),
-  );
-
-  sharedAdminRouter.rejectIcUserForAgency(
-    deps.connectedUserAuthMiddleware,
-    (req, res) =>
-      sendHttpResponse(req, res.status(201), () =>
-        deps.useCases.rejectUserForAgency.execute(
-          req.body,
           getGenericAuthOrThrow(req.payloads?.currentUser),
         ),
       ),
