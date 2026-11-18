@@ -17,10 +17,13 @@ import {
   expectEmailOfType,
   expectHttpResponseToEqual,
   expectToEqual,
+  ForbiddenError,
   FTConnectError,
   frontRoutes,
   ManagedFTConnectError,
   makeRouteAbsoluteUrl,
+  type OtpChallengeRoutes,
+  otpChallengeRoutes,
   queryParamsAsString,
   type Role,
   type TechnicalRoutes,
@@ -44,6 +47,7 @@ import type { BasicEventCrawler } from "../../../../domains/core/events/adapters
 import {
   type GenerateConnectedUserJwt,
   type GenerateConventionJwt,
+  type GenerateOtpJwt,
   makeGenerateJwtES256,
   makeVerifyJwtES256,
 } from "../../../../domains/core/jwt";
@@ -59,6 +63,8 @@ import { shortLinkRedirectToLinkWithValidation } from "../../../../utils/e2eTest
 import {
   createConnectedUserJwtPayload,
   createConventionMagicLinkPayload,
+  createOtpJwtPayload,
+  makeEmailHash,
 } from "../../../../utils/jwt";
 import { processEventsForEmailToBeSent } from "../../../../utils/processEventsForEmailToBeSent";
 
@@ -68,6 +74,7 @@ describe("auth router", () => {
 
   let authRoutesClient: HttpClient<AuthRoutes>;
   let technicalRoutesClient: HttpClient<TechnicalRoutes>;
+  let otpChallengeRoutesClient: HttpClient<OtpChallengeRoutes>;
   let uuidGenerator: UuidGenerator;
   let gateways: InMemoryGateways;
   let eventCrawler: BasicEventCrawler;
@@ -75,6 +82,7 @@ describe("auth router", () => {
   let appConfig: AppConfig;
   let generateConnectedUserJwt: GenerateConnectedUserJwt;
   let generateConventionJwt: GenerateConventionJwt;
+  let generateOtpJwt: GenerateOtpJwt;
 
   beforeEach(async () => {
     let request: SuperTest<Test>;
@@ -88,6 +96,7 @@ describe("auth router", () => {
       appConfig,
       generateConnectedUserJwt,
       generateConventionJwt,
+      generateOtpJwt,
     } = await buildTestApp(
       new AppConfigBuilder({
         PRO_CONNECT_GATEWAY: "IN_MEMORY",
@@ -100,6 +109,10 @@ describe("auth router", () => {
     authRoutesClient = createSupertestSharedClient(authRoutes, request);
     technicalRoutesClient = createSupertestSharedClient(
       technicalRoutes,
+      request,
+    );
+    otpChallengeRoutesClient = createSupertestSharedClient(
+      otpChallengeRoutes,
       request,
     );
     gateways.timeGateway.setNextDate(now);
@@ -1047,6 +1060,131 @@ describe("auth router", () => {
               status: 403,
             },
           });
+        });
+      });
+
+      describe("otp jwt", () => {
+        const convention = new ConventionDtoBuilder()
+          .withBeneficiaryEmail("beneficiary@email.fr")
+          .withBeneficiaryPhone("+33612345678")
+          .build();
+
+        beforeEach(() => {
+          inMemoryUow.conventionRepository.setConventions([convention]);
+        });
+
+        it("200 - sends by email a renewed link that grants access to the otp routes", async () => {
+          gateways.timeGateway.setNextDate(new Date());
+
+          const response = await authRoutesClient.renewExpiredJwt({
+            queryParams: {
+              kind: "otp",
+              expiredJwt: generateOtpJwt(
+                createOtpJwtPayload({
+                  purpose: "manageConvention",
+                  subject: {
+                    conventionId: convention.id,
+                    role: "beneficiary",
+                    emailHash: makeEmailHash(
+                      convention.signatories.beneficiary.email,
+                    ),
+                  },
+                  now: new Date(),
+                  expOverride: Math.round(Date.now() / 1000) - 60,
+                }),
+              ),
+            },
+          });
+
+          expectHttpResponseToEqual(response, { status: 200, body: "" });
+
+          await processEventsForEmailToBeSent(eventCrawler);
+
+          const sentEmails = gateways.notification.getSentEmails();
+
+          expect(sentEmails).toHaveLength(1);
+
+          const email = expectEmailOfType(sentEmails[0], "LINK_RENEWAL");
+          expectToEqual(email.recipients, [
+            convention.signatories.beneficiary.email,
+          ]);
+          expect(
+            email.params.link.startsWith(
+              makeRouteAbsoluteUrl({
+                route: frontRoutes.manageConvention({ jwt: "" }),
+                baseUrl: appConfig.immersionFacileBaseUrl,
+              }),
+            ),
+          ).toBe(true);
+
+          const renewedJwt = new URL(email.params.link).searchParams.get("jwt");
+          if (!renewedJwt)
+            throw new Error("Expected a renewed JWT in the link");
+
+          const maskedOtpRecipientResponse =
+            await otpChallengeRoutesClient.getMaskedOtpRecipient({
+              headers: { authorization: renewedJwt },
+            });
+
+          expectHttpResponseToEqual(maskedOtpRecipientResponse, {
+            status: 200,
+            body: {
+              maskedEmail: "b*********y@email.fr",
+              maskedPhone: "06******78",
+            },
+          });
+        });
+
+        it("400 - missing expired JWT", async () => {
+          const response = await authRoutesClient.renewExpiredJwt({
+            queryParams: { kind: "otp", expiredJwt: "" },
+          });
+
+          expectHttpResponseToEqual(response, {
+            status: 400,
+            body: {
+              status: 400,
+              message: `Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: POST ${authRoutes.renewExpiredJwt.url}`,
+              issues: ["expiredJwt : Ce champ est obligatoire"],
+            },
+          });
+          expectToEqual(inMemoryUow.notificationRepository.notifications, []);
+        });
+
+        it("403 - JWT not signed by immersion facile", async () => {
+          const response = await authRoutesClient.renewExpiredJwt({
+            queryParams: { kind: "otp", expiredJwt: "invalid-jwt" },
+          });
+
+          expectHttpResponseToEqual(response, {
+            status: 403,
+            body: { status: 403, message: new ForbiddenError().message },
+          });
+          expectToEqual(inMemoryUow.notificationRepository.notifications, []);
+        });
+
+        it("403 - convention magic link JWT instead of otp JWT", async () => {
+          const conventionJwt: string = generateConventionJwt(
+            createConventionMagicLinkPayload({
+              id: convention.id,
+              role: "beneficiary",
+              email: convention.signatories.beneficiary.email,
+              now: new Date(),
+            }),
+          );
+
+          const response = await authRoutesClient.renewExpiredJwt({
+            queryParams: { kind: "otp", expiredJwt: conventionJwt },
+          });
+
+          expectHttpResponseToEqual(response, {
+            status: 403,
+            body: {
+              status: 403,
+              message: errors.user.unsupportedJwtPayload().message,
+            },
+          });
+          expectToEqual(inMemoryUow.notificationRepository.notifications, []);
         });
       });
     });

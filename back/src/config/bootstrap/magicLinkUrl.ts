@@ -9,6 +9,8 @@ import {
   makeRouteAbsoluteUrl,
   type OAuthSuccessLoginParams,
   type OmitFromExistingKeys,
+  type OtpChallengePurpose,
+  type OtpDomainJwtPayload,
   queryParamsAsString,
   type User,
   type WithAcquisitionQueryParams,
@@ -18,12 +20,14 @@ import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
   GenerateEmailAuthCodeJwt,
+  GenerateOtpJwt,
 } from "../../domains/core/jwt";
 import {
   type CreateConventionMagicLinkPayloadProperties,
   createConnectedUserJwtPayload,
   createConventionMagicLinkPayload,
   createEmailAuthCodeJwtPayload,
+  createOtpJwtPayload,
 } from "../../utils/jwt";
 import type { AppConfig } from "./appConfig";
 
@@ -164,3 +168,24 @@ export const makeGenerateEmailAuthCodeUrl =
       expiresAt: new Date(expiresInMs).toISOString(),
     };
   };
+
+export type GenerateOtpLinkUrl = (
+  params: OtpDomainJwtPayload & { now: Date },
+) => AbsoluteUrl;
+
+const otpLinkRouteByPurpose: Record<
+  OtpChallengePurpose,
+  Extract<FrontRouteKeys, "manageConvention">
+> = {
+  manageConvention: "manageConvention",
+};
+
+export const makeGenerateOtpLinkUrl =
+  (config: AppConfig, generateOtpJwt: GenerateOtpJwt): GenerateOtpLinkUrl =>
+  ({ purpose, subject, now }) =>
+    makeRouteAbsoluteUrl({
+      route: frontRoutes[otpLinkRouteByPurpose[purpose]]({
+        jwt: generateOtpJwt(createOtpJwtPayload({ purpose, subject, now })),
+      }),
+      baseUrl: config.immersionFacileBaseUrl,
+    });

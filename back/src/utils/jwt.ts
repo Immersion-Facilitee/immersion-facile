@@ -1,5 +1,9 @@
 import { createHash, generateKeyPairSync } from "node:crypto";
+import { addMonths } from "date-fns";
+import { decode, TokenExpiredError } from "jsonwebtoken";
 import {
+  type AppSupportedDomainJwtPayload,
+  type AppSupportedJwt,
   type ConnectedUserDomainJwtPayload,
   type ConnectedUserJwtPayload,
   type ConventionActorRole,
@@ -10,13 +14,17 @@ import {
   type EmailAuthCodeDomainJwtPayload,
   type EmailAuthCodeJwtPayload,
   errors,
+  ForbiddenError,
   getJwtExpiredSinceInSeconds,
+  OTP_LINK_DURATION_IN_MONTHS,
   type OtpDomainJwtPayload,
   type OtpJwtPayload,
   oneDayInSecond,
   oneHourInSeconds,
   oneMinuteInSeconds,
 } from "shared";
+import type { AppConfig } from "../config/bootstrap/appConfig";
+import { verifyJwtConfig } from "../config/bootstrap/authMiddleware";
 import type { JwtKind, VerifyJwtFn } from "../domains/core/jwt";
 import type { TimeGateway } from "../domains/core/time-gateway/ports/TimeGateway";
 
@@ -122,20 +130,31 @@ export const createConnectedUserJwtPayload = ({
 
 export type CreateOtpJwtPayloadProperties = {
   now: Date;
+  expOverride?: number;
 } & OtpDomainJwtPayload;
 
 export const createOtpJwtPayload = ({
   purpose,
   subject,
   now,
+  expOverride,
 }: CreateOtpJwtPayloadProperties): OtpJwtPayload & {
   iat: number;
-} => ({
-  purpose,
-  subject,
-  version: currentJwtVersions.otp,
-  iat: Math.round(now.getTime() / 1000),
-});
+  exp: number;
+} => {
+  const iat = Math.round(now.getTime() / 1000);
+  const exp =
+    expOverride ??
+    Math.floor(addMonths(now, OTP_LINK_DURATION_IN_MONTHS).getTime() / 1000);
+
+  return {
+    purpose,
+    subject,
+    version: currentJwtVersions.otp,
+    iat,
+    exp,
+  };
+};
 
 export type EmailAuthCodeJwtPayloadProperties = {
   now: Date;
@@ -161,4 +180,30 @@ export const createEmailAuthCodeJwtPayload = ({
     iat,
     exp,
   };
+};
+
+export const extractJwtPayloadFromExpiredJwt = (
+  config: AppConfig,
+  expiredJwt: AppSupportedJwt,
+): AppSupportedDomainJwtPayload => {
+  const { verifyJwt, verifyDeprecatedJwt } = verifyJwtConfig(config);
+  let payloadToExtract: AppSupportedDomainJwtPayload | undefined;
+  try {
+    payloadToExtract = verifyJwt(expiredJwt) as AppSupportedDomainJwtPayload;
+  } catch (err) {
+    if (err instanceof TokenExpiredError) {
+      payloadToExtract = decode(expiredJwt) as AppSupportedDomainJwtPayload;
+    } else {
+      try {
+        verifyDeprecatedJwt(expiredJwt);
+        // The previous private key may be compromised: the payload must not be trusted,
+        // callers only use its identifiers and must reload the remaining data from the database.
+        payloadToExtract = decode(expiredJwt) as AppSupportedDomainJwtPayload;
+      } catch (_) {
+        throw new ForbiddenError();
+      }
+    }
+  }
+  if (payloadToExtract) return payloadToExtract;
+  throw errors.convention.malformedExpiredJwt();
 };

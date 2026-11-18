@@ -4,6 +4,7 @@ import {
   maskedOtpRecipientsSchema,
   withAuthorizationHeaders,
 } from "../..";
+import { renewExpiredJwtResponseSchema } from "../../tokens/jwt.schema";
 import { expressEmptyResponseBodyOrEmptyObject } from "../../zodUtils";
 import {
   activeOtpSessionSchema,
@@ -35,7 +36,7 @@ export const otpChallengeRoutes = defineRoutes({
       200: maskedOtpRecipientsSchema,
       400: httpErrorSchema,
       401: httpErrorSchema,
-      403: httpErrorSchema,
+      403: renewExpiredJwtResponseSchema.or(httpErrorSchema),
       404: httpErrorSchema,
     },
   }),
@@ -48,7 +49,7 @@ export const otpChallengeRoutes = defineRoutes({
       204: expressEmptyResponseBodyOrEmptyObject,
       400: httpErrorSchema,
       401: httpErrorSchema,
-      403: httpErrorSchema,
+      403: renewExpiredJwtResponseSchema.or(httpErrorSchema),
       404: httpErrorSchema,
       429: httpErrorSchema,
     },
@@ -62,7 +63,7 @@ export const otpChallengeRoutes = defineRoutes({
       204: expressEmptyResponseBodyOrEmptyObject,
       400: httpErrorSchema,
       401: httpErrorSchema,
-      403: httpErrorSchema,
+      403: renewExpiredJwtResponseSchema.or(httpErrorSchema),
       404: httpErrorSchema,
       429: httpErrorSchema,
     },

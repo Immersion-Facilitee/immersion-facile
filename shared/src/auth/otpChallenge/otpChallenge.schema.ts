@@ -4,6 +4,7 @@ import { emailSchema } from "../../email/email.schema";
 import { notificationKindSchema } from "../../notifications/notifications.schema";
 import { phoneNumberSchema } from "../../phone/phone.schema";
 import { conventionActorRoleSchema } from "../../role/role.schema";
+import type { OtpDomainJwtPayload } from "../../tokens/payload.dto";
 import { dateTimeIsoStringSchema } from "../../utils/date";
 import {
   makeHardenedStringSchema,
@@ -78,4 +79,10 @@ export const otpCodeSchema: ZodSchemaWithInputMatchingOutput<OtpCode> =
 export const verifyOtpChallengeSchema: ZodSchemaWithInputMatchingOutput<VerifyOtpChallengeDto> =
   z.object({
     otpCode: otpCodeSchema,
+  });
+
+export const otpDomainJwtPayloadSchema: ZodSchemaWithInputMatchingOutput<OtpDomainJwtPayload> =
+  z.object({
+    purpose: otpChallengePurposeSchema,
+    subject: otpChallengeSubjectSchema,
   });
