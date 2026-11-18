@@ -249,7 +249,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: agencyUpdatedRecently.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: agencyUpdatedRecently.name,
             },
@@ -300,7 +300,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -366,7 +366,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -386,7 +386,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
   });
 
   describe("When there are agencies to warn", () => {
-    it("should send AGENCY_INACTIVITY_WARNING in bcc to notifiable users", async () => {
+    it("should send one AGENCY_INACTIVITY_WARNING per notifiable user", async () => {
       const agency1WithRights = toAgencyWithRights(agency1, {
         [agencyAdmin1.id]: {
           isNotifiedByEmail: true,
@@ -419,14 +419,21 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
         emails: [
           {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email, validator1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: agency1.name,
             },
           },
           {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin2.email],
+            recipients: [validator1.email],
+            params: {
+              agencyName: agency1.name,
+            },
+          },
+          {
+            kind: "AGENCY_INACTIVITY_WARNING",
+            recipients: [agencyAdmin2.email],
             params: {
               agencyName: agency2.name,
             },
@@ -471,7 +478,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
         emails: [
           {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: agency1.name,
             },
@@ -505,7 +512,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -527,7 +534,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -537,7 +544,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -574,7 +581,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: agencyUpdatedAfterOldWarning.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: agencyUpdatedAfterOldWarning.name,
             },
@@ -596,7 +603,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: agencyUpdatedAfterOldWarning.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: agencyUpdatedAfterOldWarning.name,
             },
@@ -606,7 +613,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: agencyUpdatedAfterOldWarning.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: agencyUpdatedAfterOldWarning.name,
             },
@@ -648,7 +655,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -670,7 +677,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -680,7 +687,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -738,7 +745,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -760,7 +767,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -770,7 +777,7 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
           followedIds: { agencyId: veryOldAgency.id },
           templatedContent: {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: veryOldAgency.name,
             },
@@ -838,28 +845,28 @@ describe("WarnInactiveAgenciesWithoutRecentConventions", () => {
         emails: [
           {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: agencyToWarn1.name,
             },
           },
           {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin2.email],
+            recipients: [agencyAdmin2.email],
             params: {
               agencyName: agencyToWarn2.name,
             },
           },
           {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin1.email],
+            recipients: [agencyAdmin1.email],
             params: {
               agencyName: agencyToWarn3.name,
             },
           },
           {
             kind: "AGENCY_INACTIVITY_WARNING",
-            bcc: [agencyAdmin2.email],
+            recipients: [agencyAdmin2.email],
             params: {
               agencyName: agencyToWarn4.name,
             },
