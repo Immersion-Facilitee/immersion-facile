@@ -14,6 +14,7 @@ import {
   type ListAgencyOptionsRequestDto,
   noAgencyDashboards,
   noEstablishmentDashboard,
+  type RejectConnectedUserRoleForAgencyParams,
   toAgencyDtoForAgencyUsersAndAdmins,
   toAgencyPublicDisplayDto,
   type UserParamsForAgency,
@@ -173,6 +174,15 @@ export class SimulatedAgencyGateway implements AgencyGateway {
 
   public updateUserAgencyRight$(
     { agencyId }: UserParamsForAgency,
+    _token: string,
+  ): Observable<void> {
+    return agencyId === "non-existing-agency-id"
+      ? throwError(() => new Error(`Agency Id ${agencyId} not found`))
+      : of(undefined);
+  }
+
+  public rejectUserForAgency$(
+    { agencyId }: RejectConnectedUserRoleForAgencyParams,
     _token: string,
   ): Observable<void> {
     return agencyId === "non-existing-agency-id"

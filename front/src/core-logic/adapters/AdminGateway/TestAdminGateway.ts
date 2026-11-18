@@ -5,16 +5,13 @@ import type {
   ApiConsumerId,
   ApiConsumerJwt,
   BanEstablishmentPayload,
-  ConnectedUser,
   ConnectedUserJwt,
   DashboardUrlAndName,
   EstablishmentBatchReport,
   FormEstablishmentBatchDto,
   GetUsersFilters,
   NotificationsByKind,
-  RejectConnectedUserRoleForAgencyParams,
   SetFeatureFlagParam,
-  UserParamsForAgency,
   UserWithNumberOfAgenciesAndEstablishments,
   WithPreventToDelete,
   WithUserId,
@@ -33,8 +30,6 @@ export class TestAdminGateway implements AdminGateway {
 
   public lastNotifications$ = new Subject<NotificationsByKind>();
 
-  public rejectUserToAgencyResponse$ = new Subject<void>();
-
   public saveApiConsumersResponse$ = new Subject<ApiConsumerJwt>();
 
   public setFeatureFlagLastCalledWith: SetFeatureFlagParam | undefined =
@@ -43,10 +38,6 @@ export class TestAdminGateway implements AdminGateway {
   public setFeatureFlagResponse$ = new Subject<void>();
 
   public token$ = new Subject<string>();
-
-  public updateAgencyRoleForUserResponse$ = new Subject<undefined>();
-
-  public createUserForAgencyResponse$ = new Subject<ConnectedUser>();
 
   public getConnectedUsersResponse$ = new Subject<AgencyUserForListing[]>();
 
@@ -73,13 +64,6 @@ export class TestAdminGateway implements AdminGateway {
     return this.establishmentBatchResponse$;
   }
 
-  public createUserForAgency$(
-    _params: UserParamsForAgency,
-    _token: string,
-  ): Observable<ConnectedUser> {
-    return this.createUserForAgencyResponse$;
-  }
-
   public getConnectedUsers$(): Observable<AgencyUserForListing[]> {
     return this.getConnectedUsersResponse$;
   }
@@ -94,25 +78,11 @@ export class TestAdminGateway implements AdminGateway {
     return this.lastNotifications$;
   }
 
-  public rejectUserForAgency$(
-    _params: RejectConnectedUserRoleForAgencyParams,
-    _token: string,
-  ): Observable<void> {
-    return this.rejectUserToAgencyResponse$;
-  }
-
   public saveApiConsumer$(
     _apiConsumer: ApiConsumer,
     _adminToken: ConnectedUserJwt,
   ): Observable<ApiConsumerJwt> {
     return this.saveApiConsumersResponse$;
-  }
-
-  public updateUserRoleForAgency$(
-    _params: UserParamsForAgency,
-    _token: string,
-  ): Observable<void> {
-    return this.updateAgencyRoleForUserResponse$;
   }
 
   public listUsers$(

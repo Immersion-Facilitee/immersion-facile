@@ -11,6 +11,7 @@ import type {
   CreateAgencyDto,
   GetAgencyUsersFilters,
   ListAgencyOptionsRequestDto,
+  RejectConnectedUserRoleForAgencyParams,
   UserParamsForAgency,
   WithAgencyId,
   WithAgencyIdAndUserId,
@@ -42,6 +43,10 @@ export interface AgencyGateway {
   ): Observable<void>;
   updateUserAgencyRight$(
     params: UserParamsForAgency,
+    token: ConnectedUserJwt,
+  ): Observable<void>;
+  rejectUserForAgency$(
+    params: RejectConnectedUserRoleForAgencyParams,
     token: ConnectedUserJwt,
   ): Observable<void>;
   registerAgenciesToCurrentUser$(

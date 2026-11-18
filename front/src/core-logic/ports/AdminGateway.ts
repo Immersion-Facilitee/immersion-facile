@@ -5,7 +5,6 @@ import type {
   ApiConsumerId,
   ApiConsumerJwt,
   BanEstablishmentPayload,
-  ConnectedUser,
   ConnectedUserJwt,
   DashboardUrlAndName,
   EstablishmentBatchReport,
@@ -13,9 +12,7 @@ import type {
   GetDashboardParams,
   GetUsersFilters,
   NotificationsByKind,
-  RejectConnectedUserRoleForAgencyParams,
   SetFeatureFlagParam,
-  UserParamsForAgency,
   UserWithNumberOfAgenciesAndEstablishments,
   WithPreventToDelete,
   WithUserFilters,
@@ -27,11 +24,6 @@ export interface AdminGateway {
     establishmentBatch: FormEstablishmentBatchDto,
     token: ConnectedUserJwt,
   ) => Observable<EstablishmentBatchReport>;
-
-  createUserForAgency$(
-    params: UserParamsForAgency,
-    token: ConnectedUserJwt,
-  ): Observable<ConnectedUser>;
 
   getConnectedUsers$: (
     token: ConnectedUserJwt,
@@ -53,16 +45,6 @@ export interface AdminGateway {
   getLastNotifications$(
     token: ConnectedUserJwt,
   ): Observable<NotificationsByKind>;
-
-  updateUserRoleForAgency$(
-    params: UserParamsForAgency,
-    token: ConnectedUserJwt,
-  ): Observable<void>;
-
-  rejectUserForAgency$(
-    params: RejectConnectedUserRoleForAgencyParams,
-    token: ConnectedUserJwt,
-  ): Observable<void>;
 
   saveApiConsumer$(
     apiConsumer: ApiConsumer,

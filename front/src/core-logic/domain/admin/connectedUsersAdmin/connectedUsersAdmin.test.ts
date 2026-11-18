@@ -289,9 +289,7 @@ describe("Agency registration for authenticated users", () => {
         }),
       );
       expectIsUpdatingUserAgencyToBe(true);
-      dependencies.adminGateway.updateAgencyRoleForUserResponse$.next(
-        undefined,
-      );
+      dependencies.agencyGateway.updateUserAgencyRightResponse$.next(undefined);
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
       expectIsFetchingIcUsersNeedingReviewToBe(true);
@@ -330,9 +328,7 @@ describe("Agency registration for authenticated users", () => {
           feedbackTopic: "agency-users-to-review",
         }),
       );
-      dependencies.adminGateway.updateAgencyRoleForUserResponse$.next(
-        undefined,
-      );
+      dependencies.agencyGateway.updateUserAgencyRightResponse$.next(undefined);
 
       expectFeedbackToEqual({ kind: "agencyRegisterToUserSuccess" });
       expectIsFetchingIcUsersNeedingReviewToBe(false);
@@ -355,7 +351,7 @@ describe("Agency registration for authenticated users", () => {
         }),
       );
       expectIsUpdatingUserAgencyToBe(true);
-      dependencies.adminGateway.updateAgencyRoleForUserResponse$.error(
+      dependencies.agencyGateway.updateUserAgencyRightResponse$.error(
         new Error(errorMessage),
       );
       expectIsUpdatingUserAgencyToBe(false);
@@ -389,7 +385,7 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(true);
 
-      dependencies.adminGateway.rejectUserToAgencyResponse$.next();
+      dependencies.agencyGateway.rejectUserForAgencyResponse$.next();
 
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
@@ -426,7 +422,7 @@ describe("Agency registration for authenticated users", () => {
         }),
       );
 
-      dependencies.adminGateway.rejectUserToAgencyResponse$.next();
+      dependencies.agencyGateway.rejectUserForAgencyResponse$.next();
 
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
       expectIsFetchingIcUsersNeedingReviewToBe(false);
@@ -453,7 +449,7 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(true);
 
-      dependencies.adminGateway.rejectUserToAgencyResponse$.next();
+      dependencies.agencyGateway.rejectUserForAgencyResponse$.next();
 
       expectIsUpdatingUserAgencyToBe(false);
       expectFeedbackToEqual({ kind: "agencyRejectionForUserSuccess" });
@@ -484,7 +480,7 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(true);
 
-      dependencies.adminGateway.rejectUserToAgencyResponse$.error(
+      dependencies.agencyGateway.rejectUserForAgencyResponse$.error(
         new Error(errorMessage),
       );
 
@@ -552,9 +548,7 @@ describe("Agency registration for authenticated users", () => {
       );
 
       expectIsUpdatingUserAgencyToBe(true);
-      dependencies.adminGateway.updateAgencyRoleForUserResponse$.next(
-        undefined,
-      );
+      dependencies.agencyGateway.updateUserAgencyRightResponse$.next(undefined);
       expectIsUpdatingUserAgencyToBe(false);
       expectIsFetchingAgencyUsersToBe(true);
 
@@ -612,7 +606,7 @@ describe("Agency registration for authenticated users", () => {
       );
 
       expectIsUpdatingUserAgencyToBe(true);
-      dependencies.adminGateway.updateAgencyRoleForUserResponse$.error(
+      dependencies.agencyGateway.updateUserAgencyRightResponse$.error(
         new Error(errorMessage),
       );
       expectIsUpdatingUserAgencyToBe(false);
@@ -661,9 +655,7 @@ describe("Agency registration for authenticated users", () => {
         }),
       );
       expectIsUpdatingUserAgencyToBe(true);
-      dependencies.adminGateway.updateAgencyRoleForUserResponse$.next(
-        undefined,
-      );
+      dependencies.agencyGateway.updateUserAgencyRightResponse$.next(undefined);
 
       const expectedAgency: AgencyDto = {
         ...agency,
@@ -727,7 +719,7 @@ describe("Agency registration for authenticated users", () => {
           },
         ],
       };
-      dependencies.adminGateway.createUserForAgencyResponse$.next(user);
+      dependencies.agencyGateway.createUserForAgencyResponse$.next(user);
 
       expectIsUpdatingUserAgencyToBe(false);
       expectIsFetchingAgencyUsersToBe(true);
@@ -791,7 +783,7 @@ describe("Agency registration for authenticated users", () => {
 
       expectIsUpdatingUserAgencyToBe(true);
 
-      dependencies.adminGateway.createUserForAgencyResponse$.error(
+      dependencies.agencyGateway.createUserForAgencyResponse$.error(
         errors.agency.notFound({ agencyId: agency2.id }),
       );
 
