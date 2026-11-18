@@ -20,19 +20,19 @@ export const withAgencyIdAndUserIdSchema: ZodSchemaWithInputMatchingOutput<WithA
   });
 
 export const userParamsForAgencySchema: ZodSchemaWithInputMatchingOutput<UserParamsForAgency> =
-  z.object({
-    agencyId: agencyIdSchema,
-    userId: userIdSchema,
-    roles: z
-      .array(agencyRoleSchema)
-      .min(1, { message: localization.atLeastOneRole }),
-    isNotifiedByEmail: z.boolean(),
-    email: emailSchema,
-  });
+  withAgencyIdAndUserIdSchema.and(
+    z.object({
+      roles: z
+        .array(agencyRoleSchema)
+        .min(1, { message: localization.atLeastOneRole }),
+      isNotifiedByEmail: z.boolean(),
+      email: emailSchema,
+    }),
+  );
 
 export const rejectIcUserRoleForAgencyParamsSchema: ZodSchemaWithInputMatchingOutput<RejectConnectedUserRoleForAgencyParams> =
-  z.object({
-    agencyId: agencyIdSchema,
-    userId: userIdSchema,
-    justification: zStringMinLength1Max1024,
-  });
+  withAgencyIdAndUserIdSchema.and(
+    z.object({
+      justification: zStringMinLength1Max1024,
+    }),
+  );
