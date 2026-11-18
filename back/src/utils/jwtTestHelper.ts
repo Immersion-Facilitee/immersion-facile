@@ -17,6 +17,7 @@ import type {
   GenerateConventionMagicLinkRouteName,
   GenerateConventionMagicLinkUrl,
   GenerateEmailAuthCodeUrl,
+  GenerateOtpLinkUrl,
 } from "../config/bootstrap/magicLinkUrl";
 import type { GenerateApiConsumerJwt } from "../domains/core/jwt";
 import type { CreateConventionMagicLinkPayloadProperties } from "./jwt";
@@ -89,3 +90,21 @@ export const fakeGenerateEmailAuthCodeUrlFn: GenerateEmailAuthCodeUrl = ({
       loginByEmailLinkDurationInMinutes * oneMinuteInSeconds * ONE_SECOND_MS,
   ).toISOString(),
 });
+
+export const fakeGenerateOtpLinkUrlFn: GenerateOtpLinkUrl = ({
+  purpose,
+  subject,
+  now,
+}) =>
+  makeRouteAbsoluteUrl({
+    route: frontRoutes.manageConvention({
+      jwt: [
+        purpose,
+        subject.conventionId,
+        subject.role,
+        subject.emailHash,
+        now.toISOString(),
+      ].join("/"),
+    }),
+    baseUrl: "http://fake-otp-link",
+  });

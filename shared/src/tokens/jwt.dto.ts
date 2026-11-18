@@ -48,4 +48,5 @@ export type RenewExpiredJwtRequestDto =
       kind: "connectedUser";
       expiredJwt: ConnectedUserJwt;
     }
-  | { kind: "emailAuthCode"; state: OAuthState; expiredJwt: EmailAuthCodeJwt };
+  | { kind: "emailAuthCode"; state: OAuthState; expiredJwt: EmailAuthCodeJwt }
+  | { kind: "otp"; expiredJwt: OtpJwt };

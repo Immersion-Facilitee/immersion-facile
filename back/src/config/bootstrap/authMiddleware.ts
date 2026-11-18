@@ -268,7 +268,7 @@ export const makeOtpAuthMiddleware = (
   config: AppConfig,
   payloadKey: ExtractFromExisting<PayloadKind, "otp">,
 ): RequestHandler => {
-  const verifyJwt = makeVerifyJwtES256<"otp">(config.jwtPublicKey);
+  const { verifyJwt, verifyDeprecatedJwt } = verifyJwtConfig<"otp">(config);
 
   return (req, res, next) => {
     const maybeJwt = req.headers.authorization;
@@ -279,7 +279,7 @@ export const makeOtpAuthMiddleware = (
     try {
       const payload = verifyJwt(maybeJwt);
 
-      if (!payload.purpose || !payload.subject)
+      if (!payload.purpose || !payload.subject || !Number.isFinite(payload.exp))
         return sendAuthenticationError(res, errors.user.invalidJwt());
 
       if (!payload.version || payload.version < currentJwtVersions[payloadKey])
@@ -292,7 +292,15 @@ export const makeOtpAuthMiddleware = (
 
       next();
     } catch (error) {
-      return sendAuthenticationError(res, castError(error));
+      if (error instanceof TokenExpiredError)
+        return sendNeedsRenewedLinkError(res, error);
+
+      try {
+        verifyDeprecatedJwt(maybeJwt);
+        return sendNeedsRenewedLinkError(res, castError(error));
+      } catch (deprecatedJwtError) {
+        return sendAuthenticationError(res, castError(deprecatedJwtError));
+      }
     }
   };
 };

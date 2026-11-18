@@ -1,7 +1,6 @@
 import {
   currentJwtVersions,
   errors,
-  expectToEqual,
   type ManageConventionSubject,
 } from "shared";
 import { makeGenerateJwtES256, makeVerifyJwtES256 } from "../domains/core/jwt";
@@ -80,27 +79,26 @@ describe("makeThrowIfIncorrectJwt", () => {
   });
 });
 
-describe("createOtpJwtPayload", () => {
-  it("issues a payload without expiration", () => {
-    const now = new Date("2026-01-01T00:00:00Z");
-    const subject = {
-      conventionId: "convention-id",
-      role: "beneficiary",
-      emailHash: "hash",
-    } satisfies ManageConventionSubject;
+describe("OTP link expiration", () => {
+  const subject = {
+    conventionId: "convention-id",
+    role: "beneficiary",
+    emailHash: "hash",
+  } satisfies ManageConventionSubject;
 
-    expectToEqual(
-      createOtpJwtPayload({
+  it.each([
+    ["2026-04-01T00:00:00Z", "2026-10-01T00:00:00.000Z"],
+    ["2026-03-31T00:00:00Z", "2026-09-30T00:00:00.000Z"],
+  ])(
+    "expires six calendar months after issuance on %s",
+    (issuedAt, expiresAt) => {
+      const payload = createOtpJwtPayload({
         purpose: "manageConvention",
         subject,
-        now,
-      }),
-      {
-        purpose: "manageConvention",
-        subject,
-        version: currentJwtVersions.otp,
-        iat: now.getTime() / 1000,
-      },
-    );
-  });
+        now: new Date(issuedAt),
+      });
+
+      expect(new Date(payload.exp * 1000).toISOString()).toBe(expiresAt);
+    },
+  );
 });

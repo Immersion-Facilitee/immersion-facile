@@ -1,3 +1,4 @@
+import { subDays } from "date-fns";
 import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
@@ -11,7 +12,9 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  ForbiddenError,
   frontRoutes,
+  type ManageConventionSubject,
   type RenewExpiredJwtRequestDto,
   type ShortLinkId,
 } from "shared";
@@ -23,11 +26,15 @@ import {
   createConnectedUserJwtPayload,
   createConventionMagicLinkPayload,
   createEmailAuthCodeJwtPayload,
+  createOtpJwtPayload,
+  generateES256KeyPair,
+  makeEmailHash,
 } from "../../../../../utils/jwt";
 import {
   fakeGenerateConnectedUserUrlFn,
   fakeGenerateEmailAuthCodeUrlFn,
   fakeGenerateMagicLinkUrlFn,
+  fakeGenerateOtpLinkUrlFn,
 } from "../../../../../utils/jwtTestHelper";
 import {
   type ExpectSavedNotificationsAndEvents,
@@ -112,6 +119,7 @@ describe("RenewExpiredJwt use case", () => {
         generateConventionMagicLinkUrl: fakeGenerateMagicLinkUrlFn,
         generateConnectedUserLoginUrl: fakeGenerateConnectedUserUrlFn,
         generateEmailAuthCodeUrl: fakeGenerateEmailAuthCodeUrlFn,
+        generateOtpLinkUrl: fakeGenerateOtpLinkUrlFn,
         config,
         timeGateway,
         shortLinkIdGeneratorGateway,
@@ -347,6 +355,32 @@ describe("RenewExpiredJwt use case", () => {
             ],
           }),
         );
+      });
+
+      it("throws when JWT is not a convention payload", async () => {
+        const generateConnectedUserJwt = makeGenerateJwtES256<"connectedUser">(
+          config.jwtPrivateKey,
+          undefined,
+        );
+        const connectedUserJwt: string = generateConnectedUserJwt(
+          createConnectedUserJwtPayload({
+            userId: validator.id,
+            durationHours: 1,
+            now: timeGateway.now(),
+          }),
+        );
+
+        await expectPromiseToFailWithError(
+          useCase.execute({
+            kind: "convention",
+            originalUrl:
+              "http://immersionfacile.fr/verifier-et-signer?jwt=toto",
+            expiredJwt: connectedUserJwt,
+          }),
+          errors.user.unsupportedJwtPayload(),
+        );
+
+        expectSavedNotificationsAndEvents({ emails: [] });
       });
 
       it("on missing short link", async () => {
@@ -666,6 +700,31 @@ describe("RenewExpiredJwt use case", () => {
         );
       });
 
+      it("throws when JWT is not a connected user payload", async () => {
+        const generateConventionJwt = makeGenerateJwtES256<"convention">(
+          config.jwtPrivateKey,
+          undefined,
+        );
+        const conventionJwt: string = generateConventionJwt(
+          createConventionMagicLinkPayload({
+            id: validConvention.id,
+            role: "beneficiary",
+            email: validConvention.signatories.beneficiary.email,
+            now: timeGateway.now(),
+          }),
+        );
+
+        await expectPromiseToFailWithError(
+          useCase.execute({
+            kind: "connectedUser",
+            expiredJwt: conventionJwt,
+          }),
+          errors.user.unsupportedJwtPayload(),
+        );
+
+        expectSavedNotificationsAndEvents({ emails: [] });
+      });
+
       it("with missing onGoingOAuth", () => {
         uow.ongoingOAuthRepository.ongoingOAuths = [];
 
@@ -798,6 +857,32 @@ describe("RenewExpiredJwt use case", () => {
         );
       });
 
+      it("throws when JWT is not an email auth code payload", async () => {
+        const generateConnectedUserJwt = makeGenerateJwtES256<"connectedUser">(
+          config.jwtPrivateKey,
+          undefined,
+        );
+        const connectedUserJwt: string = generateConnectedUserJwt(
+          createConnectedUserJwtPayload({
+            userId: user.id,
+            durationHours: 1,
+            now: timeGateway.now(),
+          }),
+        );
+
+        await expectPromiseToFailWithError(
+          useCase.execute({
+            kind: "emailAuthCode",
+            state: emailUnusedOnGoingOAuth.state,
+            expiredJwt: connectedUserJwt,
+          }),
+          errors.user.unsupportedJwtPayload(),
+        );
+
+        expectSavedNotificationsAndEvents({ emails: [] });
+        expectToEqual(uow.outboxRepository.events, []);
+      });
+
       it("missing oauth", () => {
         uow.ongoingOAuthRepository.ongoingOAuths = [];
 
@@ -808,6 +893,186 @@ describe("RenewExpiredJwt use case", () => {
             expiredJwt: generateEmailAuthCodeJwt(expiredPayload),
           }),
           errors.auth.missingOAuth({ state: emailUnusedOnGoingOAuth.state }),
+        );
+      });
+    });
+  });
+
+  describe("With OTP Jwt", () => {
+    const generateOtpJwt = makeGenerateJwtES256<"otp">(
+      config.jwtPrivateKey,
+      undefined,
+    );
+
+    describe("Wrong paths", () => {
+      it("throws when the JWT is not signed by immersion facile", async () => {
+        const generateJwtWithUnknownKey = makeGenerateJwtES256<"otp">(
+          generateES256KeyPair().privateKey,
+          undefined,
+        );
+
+        await expectPromiseToFailWithError(
+          useCase.execute({
+            kind: "otp",
+            expiredJwt: generateJwtWithUnknownKey(
+              createOtpJwtPayload({
+                purpose: "manageConvention",
+                subject: {
+                  conventionId: validConvention.id,
+                  role: "beneficiary",
+                  emailHash: makeEmailHash(
+                    validConvention.signatories.beneficiary.email,
+                  ),
+                },
+                now: subDays(timeGateway.now(), 200),
+              }),
+            ),
+          }),
+          new ForbiddenError(),
+        );
+
+        expectSavedNotificationsAndEvents({ emails: [] });
+      });
+
+      it("throws when the JWT is not an OTP payload", async () => {
+        const generateConventionJwt = makeGenerateJwtES256<"convention">(
+          config.jwtPrivateKey,
+          undefined,
+        );
+        const conventionJwt: string = generateConventionJwt(
+          createConventionMagicLinkPayload({
+            id: validConvention.id,
+            role: "beneficiary",
+            email: validConvention.signatories.beneficiary.email,
+            now: subDays(timeGateway.now(), 200),
+          }),
+        );
+
+        await expectPromiseToFailWithError(
+          useCase.execute({ kind: "otp", expiredJwt: conventionJwt }),
+          errors.user.unsupportedJwtPayload(),
+        );
+
+        expectSavedNotificationsAndEvents({ emails: [] });
+      });
+    });
+
+    describe("manageConvention", () => {
+      describe("Wrong path", () => {
+        it("throws when the convention does not exist", async () => {
+          const subject: ManageConventionSubject = {
+            conventionId: "11111111-1111-4111-8111-111111111111",
+            role: "beneficiary",
+            emailHash: makeEmailHash(
+              validConvention.signatories.beneficiary.email,
+            ),
+          };
+
+          await expectPromiseToFailWithError(
+            useCase.execute({
+              kind: "otp",
+              expiredJwt: generateOtpJwt(
+                createOtpJwtPayload({
+                  purpose: "manageConvention",
+                  subject,
+                  now: subDays(timeGateway.now(), 200),
+                }),
+              ),
+            }),
+            errors.convention.notFound({ conventionId: subject.conventionId }),
+          );
+
+          expectSavedNotificationsAndEvents({ emails: [] });
+        });
+
+        it("throws when the email hash does not match the actor email of the role in the convention", async () => {
+          const subject: ManageConventionSubject = {
+            conventionId: validConvention.id,
+            role: "beneficiary",
+            emailHash: makeEmailHash(
+              validConvention.signatories.establishmentRepresentative.email,
+            ),
+          };
+
+          await expectPromiseToFailWithError(
+            useCase.execute({
+              kind: "otp",
+              expiredJwt: generateOtpJwt(
+                createOtpJwtPayload({
+                  purpose: "manageConvention",
+                  subject,
+                  now: subDays(timeGateway.now(), 200),
+                }),
+              ),
+            }),
+            errors.convention.forbiddenMissingRightsEmailHash({
+              conventionId: validConvention.id,
+              role: "beneficiary",
+              emailHash: subject.emailHash,
+            }),
+          );
+
+          expectSavedNotificationsAndEvents({ emails: [] });
+        });
+      });
+
+      describe("Right path", () => {
+        it.each<[ConventionActorRole, Email]>([
+          ["beneficiary", validConvention.signatories.beneficiary.email],
+          [
+            "beneficiary-current-employer",
+            // biome-ignore lint/style/noNonNullAssertion: provided
+            validConvention.signatories.beneficiaryCurrentEmployer!.email,
+          ],
+          [
+            "beneficiary-representative",
+            // biome-ignore lint/style/noNonNullAssertion: provided
+            validConvention.signatories.beneficiaryRepresentative!.email,
+          ],
+          [
+            "establishment-representative",
+            validConvention.signatories.establishmentRepresentative.email,
+          ],
+          ["establishment-tutor", validConvention.establishmentTutor.email],
+        ])(
+          "sends a renewed link to the %s of the convention",
+          async (role, email) => {
+            const subject: ManageConventionSubject = {
+              conventionId: validConvention.id,
+              role,
+              emailHash: makeEmailHash(email),
+            };
+
+            await useCase.execute({
+              kind: "otp",
+              expiredJwt: generateOtpJwt(
+                createOtpJwtPayload({
+                  purpose: "manageConvention",
+                  subject,
+                  now: subDays(timeGateway.now(), 200),
+                }),
+              ),
+            });
+
+            expectSavedNotificationsAndEvents({
+              emails: [
+                {
+                  kind: "LINK_RENEWAL",
+                  recipients: [email],
+                  params: {
+                    conventionId: validConvention.id,
+                    internshipKind: validConvention.internshipKind,
+                    link: fakeGenerateOtpLinkUrlFn({
+                      purpose: "manageConvention",
+                      subject,
+                      now: timeGateway.now(),
+                    }),
+                  },
+                },
+              ],
+            });
+            expectToEqual(uow.shortLinkQuery.getShortLinks(), []);
+          },
         );
       });
     });

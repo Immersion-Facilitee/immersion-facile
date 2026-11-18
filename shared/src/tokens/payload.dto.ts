@@ -37,7 +37,8 @@ export type AppSupportedDomainJwtPayload =
   | ApiConsumerDomainJwtPayload
   | ConventionDomainJwtPayload
   | ConnectedUserDomainJwtPayload
-  | EmailAuthCodeDomainJwtPayload;
+  | EmailAuthCodeDomainJwtPayload
+  | OtpDomainJwtPayload;
 
 export type ConnectedUserDomainJwtPayload = { userId: UserId };
 export type ConnectedUserJwtPayload = CommonJwtPayload &

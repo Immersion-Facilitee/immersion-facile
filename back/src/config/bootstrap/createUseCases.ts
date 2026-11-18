@@ -127,6 +127,7 @@ import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
   GenerateEmailAuthCodeJwt,
+  GenerateOtpJwt,
   VerifyJwtFn,
 } from "../../domains/core/jwt";
 import { makeGetAllNafSections } from "../../domains/core/naf/use-cases/GetAllNafSections";
@@ -196,6 +197,7 @@ import {
   makeGenerateConnectedUserLoginUrl,
   makeGenerateConventionMagicLinkUrl,
   makeGenerateEmailAuthCodeUrl,
+  makeGenerateOtpLinkUrl,
 } from "./magicLinkUrl";
 
 type CreateUsecasesParams = {
@@ -211,6 +213,7 @@ type CreateUsecasesParams = {
     generateConnectedUserJwt: GenerateConnectedUserJwt;
     generateApiConsumerJwt: GenerateApiConsumerJwt;
     generateEmailAuthCodeJwt: GenerateEmailAuthCodeJwt;
+    generateOtpJwt: GenerateOtpJwt;
     verifyEmailAuthCodeJwt: VerifyJwtFn<"emailAuthCode">;
   };
 };
@@ -224,6 +227,7 @@ export const createUseCases = ({
     generateConnectedUserJwt,
     generateConventionJwt,
     generateEmailAuthCodeJwt,
+    generateOtpJwt,
     verifyEmailAuthCodeJwt,
   },
 }: CreateUsecasesParams) => {
@@ -271,6 +275,7 @@ export const createUseCases = ({
     config,
     generateEmailAuthCodeJwt,
   );
+  const generateOtpLinkUrl = makeGenerateOtpLinkUrl(config, generateOtpJwt);
 
   const addConvention = makeAddConvention({
     deps: { createNewEvent, siretGateway: gateways.siret },
@@ -886,6 +891,7 @@ export const createUseCases = ({
         generateConnectedUserLoginUrl,
         generateConventionMagicLinkUrl,
         generateEmailAuthCodeUrl,
+        generateOtpLinkUrl,
         saveNotificationAndRelatedEvent,
         createNewEvent,
       },

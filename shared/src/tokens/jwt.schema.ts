@@ -37,6 +37,10 @@ export const renewExpiredJwtRequestSchema: ZodSchemaWithInputMatchingOutput<Rene
       expiredJwt: expiredJwtSchema,
       state: zUuidLike,
     }),
+    z.object({
+      kind: z.literal("otp"),
+      expiredJwt: expiredJwtSchema,
+    }),
   ]);
 
 export const renewExpiredJwtResponseSchema: ZodSchemaWithInputMatchingOutput<RenewExpiredJwtResponse> =

@@ -2,10 +2,12 @@ import { addMinutes } from "date-fns";
 import {
   ConventionDtoBuilder,
   type ConventionId,
+  currentJwtVersions,
   displayRouteName,
   errors,
   expectHttpResponseToEqual,
   expectToEqual,
+  expiredJwtErrorMessage,
   type GetOtpSessionQueryParams,
   immersionFacileNoReplyEmailSender,
   type OtpChallenge,
@@ -114,6 +116,44 @@ describe("otp challenge router", () => {
       expectHttpResponseToEqual(response, {
         status: 401,
         body: { status: 401, message: invalidTokenMessage },
+      });
+    });
+
+    it("401 - JWT without expiration", async () => {
+      const response = await httpClient.getMaskedOtpRecipient({
+        headers: {
+          authorization: generateOtpJwt({
+            purpose: "manageConvention",
+            subject: otpJwtPayload.subject,
+            version: currentJwtVersions.otp,
+            iat: otpJwtPayload.iat,
+          }),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: invalidTokenMessage },
+      });
+    });
+
+    it("403 - expired JWT needs a renewed link", async () => {
+      const response = await httpClient.getMaskedOtpRecipient({
+        headers: {
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
+              purpose: "manageConvention",
+              subject: otpJwtPayload.subject,
+              now: new Date(),
+              expOverride: Math.round(Date.now() / 1000) - 60,
+            }),
+          ),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 403,
+        body: { message: expiredJwtErrorMessage, needsNewMagicLink: true },
       });
     });
 
