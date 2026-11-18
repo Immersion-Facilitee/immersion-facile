@@ -48,10 +48,10 @@ export type UserParamsForMail = {
   email: Email;
 };
 
-export type MagicLinkRenewalParams = {
+export type LinkRenewalParams = {
   conventionId?: ConventionId;
   internshipKind?: InternshipKind;
-  magicLink: string;
+  link: string;
 };
 
 export type EmailParamsByEmailType = {
@@ -458,7 +458,7 @@ export type EmailParamsByEmailType = {
     fullname?: string;
     loginLink: AbsoluteUrl;
   };
-  MAGIC_LINK_RENEWAL: MagicLinkRenewalParams;
+  LINK_RENEWAL: LinkRenewalParams;
   NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE: {
     agencyLogoUrl: AbsoluteUrl | undefined;
     beneficiaryName: string;

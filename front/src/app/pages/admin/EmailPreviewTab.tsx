@@ -580,10 +580,10 @@ export const defaultEmailValueByEmailKind: {
     firstName: "USER_FIRST_NAME",
     lastName: "USER_LAST_NAME",
   },
-  MAGIC_LINK_RENEWAL: {
+  LINK_RENEWAL: {
     conventionId: "CONVENTION_ID",
     internshipKind: "immersion",
-    magicLink: "MAGIC_LINK",
+    link: "LINK",
   },
   ASSESSMENT_CREATED_WITH_STATUS_COMPLETED_AGENCY_NOTIFICATION: {
     agencyReferentName: "AGENCY_REFERENT_NAME",

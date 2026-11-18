@@ -3313,10 +3313,10 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
         };
       },
     },
-    MAGIC_LINK_RENEWAL: {
+    LINK_RENEWAL: {
       niceName: "Renouvellement de lien",
       tags: ["template:renouvellement de lien", "role:utilisateurInitiateur"],
-      createEmailVariables: ({ conventionId, internshipKind, magicLink }) => ({
+      createEmailVariables: ({ conventionId, internshipKind, link }) => ({
         subject: "Voici votre nouveau lien",
 
         greetings: conventionId
@@ -3333,7 +3333,7 @@ Vous pouvez vous rapprocher du candidat ${beneficiaryFirstName} ${beneficiaryLas
           },
           {
             kind: "button",
-            url: magicLink,
+            url: link,
             label: "Mon lien renouvelé",
             marginBottom: "lg",
           },

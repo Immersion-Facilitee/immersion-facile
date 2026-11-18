@@ -180,11 +180,11 @@ describe("RenewExpiredJwt use case", () => {
           expectSavedNotificationsAndEvents({
             emails: [
               {
-                kind: "MAGIC_LINK_RENEWAL",
+                kind: "LINK_RENEWAL",
                 params: {
                   conventionId: validConvention.id,
                   internshipKind: validConvention.internshipKind,
-                  magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
+                  link: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
                 },
                 recipients: [expectedEmail],
               },
@@ -228,11 +228,11 @@ describe("RenewExpiredJwt use case", () => {
         expectSavedNotificationsAndEvents({
           emails: [
             {
-              kind: "MAGIC_LINK_RENEWAL",
+              kind: "LINK_RENEWAL",
               params: {
                 conventionId: validConvention.id,
                 internshipKind: validConvention.internshipKind,
-                magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinkId}`,
+                link: `${config.immersionFacileBaseUrl}/api/to/${shortLinkId}`,
               },
               recipients: [validConvention.signatories.beneficiary.email],
             },
@@ -260,11 +260,11 @@ describe("RenewExpiredJwt use case", () => {
         expectSavedNotificationsAndEvents({
           emails: [
             {
-              kind: "MAGIC_LINK_RENEWAL",
+              kind: "LINK_RENEWAL",
               params: {
                 conventionId: validConvention.id,
                 internshipKind: validConvention.internshipKind,
-                magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinkId}`,
+                link: `${config.immersionFacileBaseUrl}/api/to/${shortLinkId}`,
               },
               recipients: [validConvention.signatories.beneficiary.email],
             },
@@ -430,11 +430,11 @@ describe("RenewExpiredJwt use case", () => {
           expectSavedNotificationsAndEvents({
             emails: [
               {
-                kind: "MAGIC_LINK_RENEWAL",
+                kind: "LINK_RENEWAL",
                 params: {
                   conventionId: validConvention.id,
                   internshipKind: validConvention.internshipKind,
-                  magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
+                  link: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
                 },
                 recipients: [expectedEmail],
               },
@@ -594,9 +594,9 @@ describe("RenewExpiredJwt use case", () => {
       expectSavedNotificationsAndEvents({
         emails: [
           {
-            kind: "MAGIC_LINK_RENEWAL",
+            kind: "LINK_RENEWAL",
             params: {
-              magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
+              link: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
             },
             recipients: [user.email],
           },
@@ -724,9 +724,9 @@ describe("RenewExpiredJwt use case", () => {
       expectSavedNotificationsAndEvents({
         emails: [
           {
-            kind: "MAGIC_LINK_RENEWAL",
+            kind: "LINK_RENEWAL",
             params: {
-              magicLink: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
+              link: `${config.immersionFacileBaseUrl}/api/to/${shortLinks[0]}`,
             },
             recipients: [user.email],
           },
