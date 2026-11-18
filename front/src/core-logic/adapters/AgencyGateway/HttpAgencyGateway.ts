@@ -168,9 +168,6 @@ export class HttpAgencyGateway implements AgencyGateway {
       this.httpClient
         .updateUserRoleForAgency({
           headers: { authorization: token },
-          urlParams: {
-            agencyId: params.agencyId,
-          },
           body: params,
         })
         .then((response) =>
