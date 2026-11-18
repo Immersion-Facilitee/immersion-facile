@@ -60,6 +60,9 @@ export const heroHeaderContent: Record<UserType, HeroHeaderInfos> = {
 export const ressourcesAndWebinarsUrl =
   "https://pages.immersion-facile.beta.gouv.fr/ressources-webinaires-prescripteurs-immersion-professionnelle-pmsmp";
 
+export const establishmentResourcesAndWebinarsUrl =
+  "https://pages.immersion-facile.beta.gouv.fr/ressources-entreprises/fiche-conseil-entreprise/";
+
 export const heroHeaderNavCards: (
   storeDispatch: Dispatch,
 ) => Record<UserType, HeroHeaderNavCard[]> = (storeDispatch: Dispatch) => ({
@@ -148,6 +151,15 @@ export const heroHeaderNavCards: (
         "Remplir la demande de convention : en quelques minutes, sans avoir besoin de créer un compte.",
     },
     {
+      title: "Ressources et webinaires",
+      icon: "fr-icon-book-2-line",
+      type: "establishment",
+      id: domElementIds.homeEstablishments.heroHeader.resourcesAndWebinars,
+      link: { href: establishmentResourcesAndWebinarsUrl },
+      alternateTitle:
+        "Ressources et webinaires : découvrez les conseils et webinaires pour les entreprises.",
+    },
+    {
       title: "Mon espace",
       icon: "fr-icon-admin-line",
       type: "establishment",
@@ -187,15 +199,6 @@ export const heroHeaderNavCards: (
         "Remplir la demande de convention : en quelques minutes, sans avoir besoin de créer un compte.",
     },
     {
-      title: "Mon espace",
-      icon: "fr-icon-admin-line",
-      type: "agency",
-      id: domElementIds.homeAgencies.heroHeader.agencyDashboard,
-      link: frontRoutes.agencyDashboardMain().link,
-      alternateTitle:
-        "Mon espace : espace personnel nominatif où retrouver mes conventions et statistiques.",
-    },
-    {
       title: "Ressources et webinaires",
       icon: "fr-icon-book-2-line",
       type: "agency",
@@ -203,6 +206,15 @@ export const heroHeaderNavCards: (
       link: { href: ressourcesAndWebinarsUrl },
       alternateTitle:
         "Ressources et webinaires : découvrez nos ressources dédiées pour guider et être guidé.",
+    },
+    {
+      title: "Mon espace",
+      icon: "fr-icon-admin-line",
+      type: "agency",
+      id: domElementIds.homeAgencies.heroHeader.agencyDashboard,
+      link: frontRoutes.agencyDashboardMain().link,
+      alternateTitle:
+        "Mon espace : espace personnel nominatif où retrouver mes conventions et statistiques.",
     },
   ],
 });
