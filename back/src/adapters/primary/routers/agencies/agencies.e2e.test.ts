@@ -13,6 +13,7 @@ import {
   displayRouteName,
   errors,
   expectHttpResponseToEqual,
+  expectObjectsToMatch,
   expectToEqual,
   toAgencyDtoForAgencyUsersAndAdmins,
   type User,
@@ -492,6 +493,138 @@ describe("Agency routes", () => {
       expectHttpResponseToEqual(response, {
         status: 201,
         body: "",
+      });
+    });
+  });
+
+  describe(`${displayRouteName(
+    agencyRoutes.rejectUserForAgency,
+  )} reject user registration to agency`, () => {
+    it("201 - backoffice admin rejects user registration to agency and a notification email is sent", async () => {
+      const agency = new AgencyDtoBuilder().build();
+
+      const userToReject: User = {
+        id: "my-user-id",
+        email: "john@mail.com",
+        firstName: "John",
+        lastName: "Doe",
+        proConnect: defaultProConnectInfos,
+        createdAt: new Date().toISOString(),
+        preventToDelete: false,
+      };
+
+      inMemoryUow.userRepository.users = [userToReject, backofficeAdminUser];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          validator: { roles: ["validator"], isNotifiedByEmail: true },
+          [userToReject.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+        }),
+      ];
+
+      const response = await httpClient.rejectUserForAgency({
+        body: {
+          agencyId: agency.id,
+          userId: userToReject.id,
+          justification: "Demande non justifiée",
+        },
+        headers: { authorization: backofficeAdminToken },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 201,
+        body: "",
+      });
+
+      expectObjectsToMatch(inMemoryUow.agencyRepository.agencies, [
+        toAgencyWithRights(
+          { ...agency, updatedAt: gateways.timeGateway.now().toISOString() },
+          {
+            validator: { roles: ["validator"], isNotifiedByEmail: true },
+          },
+        ),
+      ]);
+
+      await processEventsForEmailToBeSent(eventCrawler);
+
+      expect(gateways.notification.getSentEmails()).toMatchObject([
+        {
+          kind: "IC_USER_REGISTRATION_TO_AGENCY_REJECTED",
+          recipients: [userToReject.email],
+        },
+      ]);
+    });
+
+    it("201 - agency admin rejects user registration to agency", async () => {
+      const agency = new AgencyDtoBuilder().build();
+
+      const agencyAdmin = new ConnectedUserBuilder()
+        .withId("agency-admin-id")
+        .withEmail("agency-admin@mail.com")
+        .buildUser();
+
+      const userToReject = new ConnectedUserBuilder()
+        .withId("user-to-reject-id")
+        .withEmail("user-to-reject@mail.com")
+        .buildUser();
+
+      inMemoryUow.userRepository.users = [agencyAdmin, userToReject];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [agencyAdmin.id]: {
+            roles: ["agency-admin", "validator"],
+            isNotifiedByEmail: true,
+          },
+          [userToReject.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+        }),
+      ];
+
+      const agencyAdminToken = generateConnectedUserJwt({
+        userId: agencyAdmin.id,
+        version: currentJwtVersions.connectedUser,
+        iat: Date.now(),
+        exp: addDays(new Date(), 5).getTime(),
+      });
+
+      const response = await httpClient.rejectUserForAgency({
+        body: {
+          agencyId: agency.id,
+          userId: userToReject.id,
+          justification: "Demande non justifiée",
+        },
+        headers: { authorization: agencyAdminToken },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 201,
+        body: "",
+      });
+
+      expectToEqual(inMemoryUow.agencyRepository.agencies, [
+        toAgencyWithRights(
+          { ...agency, updatedAt: gateways.timeGateway.now().toISOString() },
+          {
+            [agencyAdmin.id]: {
+              roles: ["agency-admin", "validator"],
+              isNotifiedByEmail: true,
+            },
+          },
+        ),
+      ]);
+    });
+
+    it("401 - missing token", async () => {
+      const response = await httpClient.rejectUserForAgency({
+        body: {
+          agencyId: "yo",
+          userId: "yolo",
+          justification: "yolo",
+        },
+        headers: { authorization: "" },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: { status: 401, message: "Veuillez vous authentifier" },
       });
     });
   });

@@ -90,6 +90,17 @@ export const createAgenciesRouter = (deps: AppDependencies) => {
       ),
   );
 
+  sharedAgencyRouter.rejectUserForAgency(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res.status(201), () =>
+        deps.useCases.rejectUserForAgency.execute(
+          req.body,
+          getGenericAuthOrThrow(req.payloads?.currentUser),
+        ),
+      ),
+  );
+
   sharedAgencyRouter.removeUserFromAgency(
     deps.connectedUserAuthMiddleware,
     (req, res) =>

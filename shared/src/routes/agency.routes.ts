@@ -14,7 +14,10 @@ import {
   listAgencyOptionsRequestSchema,
   withAgencyIdSchema,
 } from "../agency/agency.schema";
-import { userParamsForAgencySchema } from "../agency/agencyUser.schema";
+import {
+  rejectIcUserRoleForAgencyParamsSchema,
+  userParamsForAgencySchema,
+} from "../agency/agencyUser.schema";
 import { agencyPublicDisplaySchema } from "../agency/publicAgency.schema";
 import { withAuthorizationHeaders } from "../headers";
 import { httpErrorSchema } from "../httpClient/httpErrors.schema";
@@ -134,6 +137,20 @@ export const agencyRoutes = defineRoutes({
     method: "patch",
     url: "/agency/users",
     requestBodySchema: userParamsForAgencySchema,
+    ...withAuthorizationHeaders,
+    responses: {
+      201: expressEmptyResponseBody,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
+      404: httpErrorSchema,
+    },
+  }),
+
+  rejectUserForAgency: defineRoute({
+    method: "delete",
+    url: "/agency/users",
+    requestBodySchema: rejectIcUserRoleForAgencyParamsSchema,
     ...withAuthorizationHeaders,
     responses: {
       201: expressEmptyResponseBody,
