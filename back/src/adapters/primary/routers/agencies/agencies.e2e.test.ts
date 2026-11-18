@@ -2,6 +2,7 @@ import { addDays } from "date-fns";
 import {
   type AddressDto,
   AgencyDtoBuilder,
+  type AgencyRole,
   type AgencyRoutes,
   agencyRoutes,
   ConnectedUserBuilder,
@@ -380,6 +381,24 @@ describe("Agency routes", () => {
   describe(`${displayRouteName(
     agencyRoutes.updateUserRoleForAgency,
   )} update user role for agency`, () => {
+    const validatorInAgency = new ConnectedUserBuilder()
+      .withId("validator-in-agency")
+      .buildUser();
+
+    const counsellorInAgency = new ConnectedUserBuilder()
+      .withId("counsellor-in-agency")
+      .buildUser();
+
+    const toReviewUser: User = {
+      id: "to-review",
+      email: "john@mail.com",
+      firstName: "John",
+      lastName: "Doe",
+      proConnect: defaultProConnectInfos,
+      createdAt: new Date().toISOString(),
+      preventToDelete: false,
+    };
+
     it("401 - rejects request with invalid token", async () => {
       const response = await httpClient.updateUserRoleForAgency({
         headers: { authorization: "invalid-token" },
@@ -456,31 +475,103 @@ describe("Agency routes", () => {
       });
     });
 
-    it("201 - backoffice admin can update user role for agency", async () => {
-      const agency = new AgencyDtoBuilder().build();
+    it("201 - backoffice admin updates role of user from 'to-review' to 'counsellor' with email notification enabled for given agency", async () => {
+      const agency = new AgencyDtoBuilder()
+        .withId("two-steps-validation-agency")
+        .build();
 
-      const userToUpdate: User = {
-        id: "user-to-update-id",
-        email: "user-to-update@mail.com",
-        firstName: "User",
-        lastName: "ToUpdate",
-        proConnect: null,
-        createdAt: new Date().toISOString(),
-        preventToDelete: false,
-      };
-
-      inMemoryUow.userRepository.users = [backofficeAdminUser, userToUpdate];
       inMemoryUow.agencyRepository.agencies = [
         toAgencyWithRights(agency, {
-          [userToUpdate.id]: {
-            roles: ["to-review"],
-            isNotifiedByEmail: false,
+          [validatorInAgency.id]: {
+            roles: ["validator"],
+            isNotifiedByEmail: true,
           },
+          [counsellorInAgency.id]: {
+            isNotifiedByEmail: false,
+            roles: ["counsellor"],
+          },
+          [toReviewUser.id]: { roles: ["to-review"], isNotifiedByEmail: false },
         }),
       ];
 
+      inMemoryUow.userRepository.users = [
+        toReviewUser,
+        validatorInAgency,
+        counsellorInAgency,
+        backofficeAdminUser,
+      ];
+
+      const updatedRole: AgencyRole = "counsellor";
+
       const response = await httpClient.updateUserRoleForAgency({
+        body: {
+          agencyId: agency.id,
+          userId: toReviewUser.id,
+          roles: [updatedRole],
+          isNotifiedByEmail: true,
+          email: toReviewUser.email,
+        },
         headers: { authorization: backofficeAdminToken },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 201,
+        body: "",
+      });
+
+      expectToEqual(inMemoryUow.agencyRepository.agencies, [
+        toAgencyWithRights(
+          { ...agency, updatedAt: gateways.timeGateway.now().toISOString() },
+          {
+            [validatorInAgency.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: true,
+            },
+            [counsellorInAgency.id]: {
+              isNotifiedByEmail: false,
+              roles: ["counsellor"],
+            },
+            [toReviewUser.id]: {
+              roles: [updatedRole],
+              isNotifiedByEmail: true,
+            },
+          },
+        ),
+      ]);
+    });
+
+    it("201 - agency admin updates role of user from 'to-review' to 'validator' for given agency", async () => {
+      const agency = new AgencyDtoBuilder().build();
+
+      const agencyAdmin = new ConnectedUserBuilder()
+        .withId("agency-admin-id")
+        .withEmail("agency-admin@mail.com")
+        .buildUser();
+
+      const userToUpdate = new ConnectedUserBuilder()
+        .withId("user-to-update-id")
+        .withEmail("user-to-update@mail.com")
+        .buildUser();
+
+      inMemoryUow.userRepository.users = [agencyAdmin, userToUpdate];
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agency, {
+          [agencyAdmin.id]: {
+            roles: ["agency-admin", "validator"],
+            isNotifiedByEmail: true,
+          },
+          [userToUpdate.id]: { roles: ["to-review"], isNotifiedByEmail: false },
+        }),
+      ];
+
+      const agencyAdminToken = generateConnectedUserJwt({
+        userId: agencyAdmin.id,
+        version: currentJwtVersions.connectedUser,
+        iat: Date.now(),
+        exp: addDays(new Date(), 5).getTime(),
+      });
+
+      const response = await httpClient.updateUserRoleForAgency({
         body: {
           agencyId: agency.id,
           userId: userToUpdate.id,
@@ -488,11 +579,110 @@ describe("Agency routes", () => {
           isNotifiedByEmail: true,
           email: userToUpdate.email,
         },
+        headers: { authorization: agencyAdminToken },
       });
 
       expectHttpResponseToEqual(response, {
         status: 201,
         body: "",
+      });
+
+      expectToEqual(inMemoryUow.agencyRepository.agencies, [
+        toAgencyWithRights(
+          { ...agency, updatedAt: gateways.timeGateway.now().toISOString() },
+          {
+            [agencyAdmin.id]: {
+              roles: ["agency-admin", "validator"],
+              isNotifiedByEmail: true,
+            },
+            [userToUpdate.id]: {
+              roles: ["validator"],
+              isNotifiedByEmail: true,
+            },
+          },
+        ),
+      ]);
+    });
+
+    it("400 - when trying to Update role of user from 'to-review' to 'counsellor' without notification for agency that have only one step validation", async () => {
+      inMemoryUow.userRepository.users = [
+        toReviewUser,
+        validatorInAgency,
+        backofficeAdminUser,
+      ];
+
+      const agencyWithOneStep = new AgencyDtoBuilder().build();
+      inMemoryUow.agencyRepository.agencies = [
+        toAgencyWithRights(agencyWithOneStep, {
+          [validatorInAgency.id]: {
+            roles: ["validator"],
+            isNotifiedByEmail: true,
+          },
+          [toReviewUser.id]: { roles: ["to-review"], isNotifiedByEmail: true },
+        }),
+      ];
+
+      const updatedRole: AgencyRole = "counsellor";
+
+      const response = await httpClient.updateUserRoleForAgency({
+        body: {
+          agencyId: agencyWithOneStep.id,
+          userId: toReviewUser.id,
+          roles: [updatedRole],
+          isNotifiedByEmail: false,
+          email: toReviewUser.email,
+        },
+        headers: { authorization: backofficeAdminToken },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 400,
+        body: {
+          message: errors.agency.notEnoughCounsellors({
+            agencyId: agencyWithOneStep.id,
+          }).message,
+
+          status: 400,
+        },
+      });
+
+      expectToEqual(inMemoryUow.agencyRepository.agencies, [
+        toAgencyWithRights(agencyWithOneStep, {
+          [validatorInAgency.id]: {
+            roles: ["validator"],
+            isNotifiedByEmail: true,
+          },
+          [toReviewUser.id]: { roles: ["to-review"], isNotifiedByEmail: true },
+        }),
+      ]);
+    });
+
+    it("404 - Missing user", async () => {
+      const agency = new AgencyDtoBuilder().build();
+      const missingUser = new ConnectedUserBuilder()
+        .withId("missing-user-id")
+        .withEmail("missing-user@mail.com")
+        .buildUser();
+
+      const updatedRole: AgencyRole = "counsellor";
+
+      const response = await httpClient.updateUserRoleForAgency({
+        body: {
+          agencyId: agency.id,
+          userId: missingUser.id,
+          roles: [updatedRole],
+          isNotifiedByEmail: false,
+          email: missingUser.email,
+        },
+        headers: { authorization: backofficeAdminToken },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 404,
+        body: {
+          status: 404,
+          message: errors.user.notFound({ userId: missingUser.id }).message,
+        },
       });
     });
   });

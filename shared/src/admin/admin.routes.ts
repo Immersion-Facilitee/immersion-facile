@@ -1,10 +1,6 @@
 import { defineRoute, defineRoutes } from "shared-routes";
 import { z } from "zod";
 import {
-  rejectIcUserRoleForAgencyParamsSchema,
-  userParamsForAgencySchema,
-} from "../agency/agencyUser.schema";
-import {
   apiConsumerJwtSchema,
   apiConsumerSchema,
   writeApiConsumerSchema,
@@ -21,7 +17,6 @@ import { httpErrorSchema } from "../httpClient/httpErrors.schema";
 import { notificationsByKindSchema } from "../notifications/notifications.schema";
 import {
   agencyUserForListingSchema,
-  connectedUserSchema,
   userInListSchema,
   withPreventToDeleteSchema,
 } from "../user/user.schema";
@@ -52,19 +47,6 @@ export const adminRoutes = defineRoutes({
       401: httpErrorSchema,
     },
   }),
-  updateUserRoleForAgency: defineRoute({
-    method: "patch",
-    url: "/admin/inclusion-connected/users",
-    requestBodySchema: userParamsForAgencySchema,
-    ...withAuthorizationHeaders,
-    responses: {
-      201: expressEmptyResponseBody,
-      400: httpErrorSchema,
-      401: httpErrorSchema,
-      404: httpErrorSchema,
-    },
-  }),
-
   getConnectedUsers: defineRoute({
     method: "get",
     url: "/admin/agencies/users",
@@ -78,31 +60,6 @@ export const adminRoutes = defineRoutes({
     },
   }),
 
-  // Cette route existe aussi dans le agency router, qui enclenche le même usecase >> c'est un bordel ici ...
-  createUserForAgency: defineRoute({
-    method: "post",
-    url: "/admin/inclusion-connected/users",
-    requestBodySchema: userParamsForAgencySchema,
-    ...withAuthorizationHeaders,
-    responses: {
-      200: connectedUserSchema,
-      400: httpErrorSchema,
-      401: httpErrorSchema,
-      404: httpErrorSchema,
-    },
-  }),
-
-  rejectIcUserForAgency: defineRoute({
-    method: "delete",
-    url: "/admin/inclusion-connected/users",
-    requestBodySchema: rejectIcUserRoleForAgencyParamsSchema,
-    ...withAuthorizationHeaders,
-    responses: {
-      201: expressEmptyResponseBody,
-      401: httpErrorSchema,
-      404: httpErrorSchema,
-    },
-  }),
   getLastNotifications: defineRoute({
     method: "get",
     url: "/admin/notifications",
