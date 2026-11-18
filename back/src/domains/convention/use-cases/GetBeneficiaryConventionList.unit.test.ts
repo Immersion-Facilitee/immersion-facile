@@ -4,10 +4,8 @@ import {
   ConventionDtoBuilder,
   defaultMonthsThresholdForConventionsListing,
   expectToEqual,
-  makeBooleanFeatureFlag,
   reasonableSchedule,
 } from "shared";
-import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -61,7 +59,6 @@ describe("GetBeneficiaryConventionList", () => {
     uow = createInMemoryUow();
     getBeneficiaryConventionList = makeGetBeneficiaryConventionList({
       uowPerformer: new InMemoryUowPerformer(uow),
-      deps: { timeGateway: new CustomTimeGateway(now) },
     });
   });
 
@@ -177,81 +174,42 @@ describe("GetBeneficiaryConventionList", () => {
     });
   });
 
-  describe("when enableRequestArchivedConvention is active", () => {
-    it(`returns archived conventions (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
+  it(`returns archived conventions (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
+    uow.conventionRepository.setConventions([
+      archivedBeneficiaryConvention,
+      notArchivedBeneficiaryConvention,
+    ]);
 
-      uow.conventionRepository.setConventions([
-        archivedBeneficiaryConvention,
-        notArchivedBeneficiaryConvention,
-      ]);
+    const result = await getBeneficiaryConventionList.execute(
+      { pagination: { page: 1, perPage: 10 } },
+      currentUser,
+    );
 
-      const result = await getBeneficiaryConventionList.execute(
-        { pagination: { page: 1, perPage: 10 } },
-        currentUser,
-      );
-
-      expectToEqual(result, {
-        data: [
-          {
-            conventionId: notArchivedBeneficiaryConvention.id,
-            businessName: notArchivedBeneficiaryConvention.businessName,
-            status: notArchivedBeneficiaryConvention.status,
-            assessment: null,
-            dateStart: notArchivedBeneficiaryConvention.dateStart,
-            dateEnd: notArchivedBeneficiaryConvention.dateEnd,
-          },
-          {
-            conventionId: archivedBeneficiaryConvention.id,
-            businessName: archivedBeneficiaryConvention.businessName,
-            status: archivedBeneficiaryConvention.status,
-            assessment: null,
-            dateStart: archivedBeneficiaryConvention.dateStart,
-            dateEnd: archivedBeneficiaryConvention.dateEnd,
-          },
-        ],
-        pagination: {
-          totalRecords: 2,
-          currentPage: 1,
-          totalPages: 1,
-          numberPerPage: 10,
+    expectToEqual(result, {
+      data: [
+        {
+          conventionId: notArchivedBeneficiaryConvention.id,
+          businessName: notArchivedBeneficiaryConvention.businessName,
+          status: notArchivedBeneficiaryConvention.status,
+          assessment: null,
+          dateStart: notArchivedBeneficiaryConvention.dateStart,
+          dateEnd: notArchivedBeneficiaryConvention.dateEnd,
         },
-      });
-    });
-  });
-
-  describe("when enableRequestArchivedConvention is inactive", () => {
-    it(`does not return archived conventions (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
-      uow.conventionRepository.setConventions([
-        archivedBeneficiaryConvention,
-        notArchivedBeneficiaryConvention,
-      ]);
-
-      const result = await getBeneficiaryConventionList.execute(
-        { pagination: { page: 1, perPage: 10 } },
-        currentUser,
-      );
-
-      expectToEqual(result, {
-        data: [
-          {
-            conventionId: notArchivedBeneficiaryConvention.id,
-            businessName: notArchivedBeneficiaryConvention.businessName,
-            status: notArchivedBeneficiaryConvention.status,
-            assessment: null,
-            dateStart: notArchivedBeneficiaryConvention.dateStart,
-            dateEnd: notArchivedBeneficiaryConvention.dateEnd,
-          },
-        ],
-        pagination: {
-          totalRecords: 1,
-          currentPage: 1,
-          totalPages: 1,
-          numberPerPage: 10,
+        {
+          conventionId: archivedBeneficiaryConvention.id,
+          businessName: archivedBeneficiaryConvention.businessName,
+          status: archivedBeneficiaryConvention.status,
+          assessment: null,
+          dateStart: archivedBeneficiaryConvention.dateStart,
+          dateEnd: archivedBeneficiaryConvention.dateEnd,
         },
-      });
+      ],
+      pagination: {
+        totalRecords: 2,
+        currentPage: 1,
+        totalPages: 1,
+        numberPerPage: 10,
+      },
     });
   });
 

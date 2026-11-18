@@ -4,11 +4,9 @@ import {
   ConventionDtoBuilder,
   defaultMonthsThresholdForConventionsListing,
   expectToEqual,
-  makeBooleanFeatureFlag,
   reasonableSchedule,
   type UserEstablishmentRightDetails,
 } from "shared";
-import { CustomTimeGateway } from "../../core/time-gateway/adapters/CustomTimeGateway";
 import {
   createInMemoryUow,
   type InMemoryUnitOfWork,
@@ -85,7 +83,6 @@ describe("GetConventionsForEstablishmentUser", () => {
     getConventionsForEstablishmentUser = makeGetConventionsForEstablishmentUser(
       {
         uowPerformer: new InMemoryUowPerformer(uow),
-        deps: { timeGateway: new CustomTimeGateway(now) },
       },
     );
   });
@@ -487,149 +484,81 @@ describe("GetConventionsForEstablishmentUser", () => {
     });
   });
 
-  describe("when enableRequestArchivedConvention is active", () => {
-    it(`returns archived conventions (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
+  it(`returns archived conventions (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
+    const archivedConvention = new ConventionDtoBuilder()
+      .withId("11111111-1111-4111-8111-111111111111")
+      .withSiret(acceptedAdminRight.siret)
+      .withEstablishmentRepresentativeEmail("other-representative@mail.com")
+      .withEstablishmentTutorEmail("other-tutor@mail.com")
+      .withDateStart(subDays(monthsAgo_25, 4).toISOString())
+      .withDateEnd(subDays(monthsAgo_25, 1).toISOString())
+      .withSchedule(reasonableSchedule)
+      .build();
+    const notArchivedConvention = new ConventionDtoBuilder()
+      .withId("11111111-1111-4111-8111-111111111112")
+      .withSiret(acceptedAdminRight.siret)
+      .withEstablishmentRepresentativeEmail("other-representative@mail.com")
+      .withEstablishmentTutorEmail("other-tutor@mail.com")
+      .withDateStart(addDays(monthsAgo_25, 1).toISOString())
+      .withDateEnd(addDays(monthsAgo_25, 4).toISOString())
+      .withSchedule(reasonableSchedule)
+      .build();
 
-      const archivedConvention = new ConventionDtoBuilder()
-        .withId("11111111-1111-4111-8111-111111111111")
-        .withSiret(acceptedAdminRight.siret)
-        .withEstablishmentRepresentativeEmail("other-representative@mail.com")
-        .withEstablishmentTutorEmail("other-tutor@mail.com")
-        .withDateStart(subDays(monthsAgo_25, 4).toISOString())
-        .withDateEnd(subDays(monthsAgo_25, 1).toISOString())
-        .withSchedule(reasonableSchedule)
-        .build();
-      const notArchivedConvention = new ConventionDtoBuilder()
-        .withId("11111111-1111-4111-8111-111111111112")
-        .withSiret(acceptedAdminRight.siret)
-        .withEstablishmentRepresentativeEmail("other-representative@mail.com")
-        .withEstablishmentTutorEmail("other-tutor@mail.com")
-        .withDateStart(addDays(monthsAgo_25, 1).toISOString())
-        .withDateEnd(addDays(monthsAgo_25, 4).toISOString())
-        .withSchedule(reasonableSchedule)
-        .build();
+    uow.conventionRepository.setConventions([
+      archivedConvention,
+      notArchivedConvention,
+    ]);
 
-      uow.conventionRepository.setConventions([
-        archivedConvention,
-        notArchivedConvention,
-      ]);
+    const result = await getConventionsForEstablishmentUser.execute(
+      pagination,
+      userWithAcceptedAdminRight,
+    );
 
-      const result = await getConventionsForEstablishmentUser.execute(
-        pagination,
-        userWithAcceptedAdminRight,
-      );
-
-      expectToEqual(result, {
-        data: [
-          {
-            id: "11111111-1111-4111-8111-111111111112",
-            status: "READY_TO_SIGN",
-            dateStart: "2024-08-02T10:10:00.000Z",
-            dateEnd: "2024-08-05T10:10:00.000Z",
-            businessName: "Beta.gouv.fr",
-            immersionAppellation: {
-              romeCode: "A1101",
-              romeLabel: "Conduite d'engins agricoles et forestiers",
-              appellationCode: "17751",
-              appellationLabel: "Pilote de machines d'abattage",
-            },
-            assessment: null,
-            beneficiary: {
-              firstName: "Esteban",
-              lastName: "Ocon",
-            },
+    expectToEqual(result, {
+      data: [
+        {
+          id: "11111111-1111-4111-8111-111111111112",
+          status: "READY_TO_SIGN",
+          dateStart: "2024-08-02T10:10:00.000Z",
+          dateEnd: "2024-08-05T10:10:00.000Z",
+          businessName: "Beta.gouv.fr",
+          immersionAppellation: {
+            romeCode: "A1101",
+            romeLabel: "Conduite d'engins agricoles et forestiers",
+            appellationCode: "17751",
+            appellationLabel: "Pilote de machines d'abattage",
           },
-          {
-            id: "11111111-1111-4111-8111-111111111111",
-            status: "READY_TO_SIGN",
-            dateStart: "2024-07-28T10:10:00.000Z",
-            dateEnd: "2024-07-31T10:10:00.000Z",
-            businessName: "Beta.gouv.fr",
-            immersionAppellation: {
-              romeCode: "A1101",
-              romeLabel: "Conduite d'engins agricoles et forestiers",
-              appellationCode: "17751",
-              appellationLabel: "Pilote de machines d'abattage",
-            },
-            assessment: null,
-            beneficiary: {
-              firstName: "Esteban",
-              lastName: "Ocon",
-            },
+          assessment: null,
+          beneficiary: {
+            firstName: "Esteban",
+            lastName: "Ocon",
           },
-        ],
-        pagination: {
-          currentPage: 1,
-          totalPages: 1,
-          numberPerPage: 10,
-          totalRecords: 2,
         },
-      });
-    });
-  });
-
-  describe("when enableRequestArchivedConvention is inactive", () => {
-    it(`does not return archived conventions (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
-      const archivedConvention = new ConventionDtoBuilder()
-        .withId("11111111-1111-4111-8111-111111111111")
-        .withSiret(acceptedAdminRight.siret)
-        .withEstablishmentRepresentativeEmail("other-representative@mail.com")
-        .withEstablishmentTutorEmail("other-tutor@mail.com")
-        .withDateStart(subDays(monthsAgo_25, 4).toISOString())
-        .withDateEnd(subDays(monthsAgo_25, 1).toISOString())
-        .withSchedule(reasonableSchedule)
-        .build();
-      const notArchivedConvention = new ConventionDtoBuilder()
-        .withId("11111111-1111-4111-8111-111111111112")
-        .withSiret(acceptedAdminRight.siret)
-        .withEstablishmentRepresentativeEmail("other-representative@mail.com")
-        .withEstablishmentTutorEmail("other-tutor@mail.com")
-        .withDateStart(addDays(monthsAgo_25, 1).toISOString())
-        .withDateEnd(addDays(monthsAgo_25, 4).toISOString())
-        .withSchedule(reasonableSchedule)
-        .build();
-
-      uow.conventionRepository.setConventions([
-        archivedConvention,
-        notArchivedConvention,
-      ]);
-
-      const result = await getConventionsForEstablishmentUser.execute(
-        pagination,
-        userWithAcceptedAdminRight,
-      );
-
-      expectToEqual(result, {
-        data: [
-          {
-            id: "11111111-1111-4111-8111-111111111112",
-            status: "READY_TO_SIGN",
-            dateStart: "2024-08-02T10:10:00.000Z",
-            dateEnd: "2024-08-05T10:10:00.000Z",
-            businessName: "Beta.gouv.fr",
-            immersionAppellation: {
-              romeCode: "A1101",
-              romeLabel: "Conduite d'engins agricoles et forestiers",
-              appellationCode: "17751",
-              appellationLabel: "Pilote de machines d'abattage",
-            },
-            assessment: null,
-            beneficiary: {
-              firstName: "Esteban",
-              lastName: "Ocon",
-            },
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          status: "READY_TO_SIGN",
+          dateStart: "2024-07-28T10:10:00.000Z",
+          dateEnd: "2024-07-31T10:10:00.000Z",
+          businessName: "Beta.gouv.fr",
+          immersionAppellation: {
+            romeCode: "A1101",
+            romeLabel: "Conduite d'engins agricoles et forestiers",
+            appellationCode: "17751",
+            appellationLabel: "Pilote de machines d'abattage",
           },
-        ],
-        pagination: {
-          currentPage: 1,
-          totalPages: 1,
-          numberPerPage: 10,
-          totalRecords: 1,
+          assessment: null,
+          beneficiary: {
+            firstName: "Esteban",
+            lastName: "Ocon",
+          },
         },
-      });
+      ],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        numberPerPage: 10,
+        totalRecords: 2,
+      },
     });
   });
 
@@ -664,23 +593,11 @@ describe("GetConventionsForEstablishmentUser", () => {
       .withDateEnd("2026-01-15")
       .withSchedule(reasonableSchedule)
       .build();
-    const archivedBakeryConvention = new ConventionDtoBuilder()
-      .withId("55555555-5555-4555-8555-555555555551")
-      .withSiret(acceptedAdminRight.siret)
-      .withEstablishmentRepresentativeEmail("other-representative@mail.com")
-      .withEstablishmentTutorEmail("other-tutor@mail.com")
-      .withBusinessName("Boulangerie Dupont")
-      .withDateStart(subDays(monthsAgo_25, 4).toISOString())
-      .withDateEnd(subDays(monthsAgo_25, 1).toISOString())
-      .withSchedule(reasonableSchedule)
-      .build();
-
     beforeEach(() => {
       uow.conventionRepository.setConventions([
         bakeryConvention,
         floristConvention,
         otherEstablishmentConvention,
-        archivedBakeryConvention,
       ]);
     });
 
@@ -759,37 +676,6 @@ describe("GetConventionsForEstablishmentUser", () => {
           totalPages: 1,
           numberPerPage: 10,
           totalRecords: 0,
-        },
-      });
-    });
-
-    it(`does not return archived conventions matching search when enableRequestArchivedConvention is inactive (date end older than ${defaultMonthsThresholdForConventionsListing} months)`, async () => {
-      const result = await getConventionsForEstablishmentUser.execute(
-        { ...pagination, search: "Boulangerie" },
-        userWithAcceptedAdminRight,
-      );
-
-      expectToEqual(result, {
-        data: [
-          {
-            id: bakeryConvention.id,
-            status: bakeryConvention.status,
-            dateStart: bakeryConvention.dateStart,
-            dateEnd: bakeryConvention.dateEnd,
-            businessName: bakeryConvention.businessName,
-            immersionAppellation: bakeryConvention.immersionAppellation,
-            assessment: null,
-            beneficiary: {
-              firstName: bakeryConvention.signatories.beneficiary.firstName,
-              lastName: bakeryConvention.signatories.beneficiary.lastName,
-            },
-          },
-        ],
-        pagination: {
-          currentPage: 1,
-          totalPages: 1,
-          numberPerPage: 10,
-          totalRecords: 1,
         },
       });
     });

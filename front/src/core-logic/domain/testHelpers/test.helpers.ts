@@ -43,7 +43,6 @@ const defaultFlagsInFront: FeatureFlags = {
   }),
   enableInactiveUsersCleanup: makeBooleanFeatureFlag(false),
   enableInactiveUsersDeletionAutoProcessing: makeBooleanFeatureFlag(false),
-  enableRequestArchivedConvention: makeBooleanFeatureFlag(false),
   enableBeneficiaryManageConvention: makeBooleanFeatureFlag(false),
   enableFranceTravailConventionBroadcast: makeBooleanFeatureFlag(true),
 };

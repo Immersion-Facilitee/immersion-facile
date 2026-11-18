@@ -8,7 +8,6 @@ import {
   errors,
   expectHttpResponseToEqual,
   expectToEqual,
-  makeBooleanFeatureFlag,
   makeEmptyLastReminders,
   type Notification,
   reasonableSchedule,
@@ -241,36 +240,7 @@ describe("Convention routes", () => {
         inMemoryUow.conventionRepository.setConventions([archivedConvention]);
       });
 
-      it("returns 200 when enableRequestArchivedConvention is inactive", async () => {
-        const response = await sharedRequest.getConventionById({
-          headers: {
-            authorization: conventionReadConsumerWithAgencyIdsScopeToken,
-          },
-          urlParams: { conventionId: archivedConvention.id },
-        });
-
-        expectHttpResponseToEqual(response, {
-          body: {
-            ...archivedConvention,
-            agencyName: agency.name,
-            agencyDepartment: agency.address.departmentCode,
-            agencyContactEmail: agency.contactEmail,
-            agencyKind: "pole-emploi",
-            agencySiret: agency.agencySiret,
-            agencyValidationSteps: "validator-only",
-            assessment: null,
-            lastReminders: makeEmptyLastReminders(),
-            isEstablishmentBanned: false,
-          },
-          status: 200,
-        });
-      });
-
-      it("403 when enableRequestArchivedConvention is active", async () => {
-        inMemoryUow.featureFlagRepository.featureFlags = {
-          enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-        };
-
+      it("403 when convention is archived", async () => {
         const response = await sharedRequest.getConventionById({
           headers: {
             authorization: conventionReadConsumerWithAgencyIdsScopeToken,
