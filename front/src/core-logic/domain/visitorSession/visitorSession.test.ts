@@ -1,4 +1,4 @@
-import { type ActiveVisitorSession, expectToEqual } from "shared";
+import { type ActiveOtpSession, expectToEqual } from "shared";
 import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
 import {
   visitorSessionInitialState,
@@ -12,7 +12,7 @@ import type { ReduxStore } from "src/core-logic/storeConfig/store";
 
 describe("visitorSession slice", () => {
   const conventionId = "add5c20e-6dd2-45af-affe-927358005251";
-  const activeSession: ActiveVisitorSession = {
+  const activeSession: ActiveOtpSession = {
     purpose: "manageConvention",
     conventionId,
     role: "beneficiary",

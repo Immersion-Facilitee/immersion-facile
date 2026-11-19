@@ -1,19 +1,17 @@
 import { addMinutes } from "date-fns";
 import { type Observable, of } from "rxjs";
 import type {
-  ActiveVisitorSession,
-  GetVisitorSessionQueryParams,
+  ActiveOtpSession,
+  GetOtpSessionQueryParams,
   MaskedOtpRecipients,
+  OtpJwt,
   RequestOtpChallengeDto,
   VerifyOtpChallengeDto,
-  VisitorOtpJwt,
 } from "shared";
 import type { OtpChallengeGateway } from "src/core-logic/ports/OtpChallengeGateway";
 
 export class SimulatedOtpChallengeGateway implements OtpChallengeGateway {
-  public getMaskedOtpRecipient$(
-    _jwt: VisitorOtpJwt,
-  ): Observable<MaskedOtpRecipients> {
+  public getMaskedOtpRecipient$(_jwt: OtpJwt): Observable<MaskedOtpRecipients> {
     return of({
       maskedEmail: "j***@mail.com",
       maskedPhone: "+33 6 ** ** ** 78",
@@ -22,15 +20,15 @@ export class SimulatedOtpChallengeGateway implements OtpChallengeGateway {
 
   public requestOtpChallenge$(
     _params: RequestOtpChallengeDto,
-    _jwt: VisitorOtpJwt,
+    _jwt: OtpJwt,
   ): Observable<void> {
     return of(undefined);
   }
 
   public verifyOtpChallenge$(
     _params: VerifyOtpChallengeDto,
-    _jwt: VisitorOtpJwt,
-  ): Observable<ActiveVisitorSession> {
+    _jwt: OtpJwt,
+  ): Observable<ActiveOtpSession> {
     return of({
       purpose: "manageConvention",
       conventionId: "add5c20e-6dd2-45af-affe-927358005251",
@@ -40,8 +38,8 @@ export class SimulatedOtpChallengeGateway implements OtpChallengeGateway {
   }
 
   public getVisitorSession$(
-    params: GetVisitorSessionQueryParams,
-  ): Observable<ActiveVisitorSession | null> {
+    params: GetOtpSessionQueryParams,
+  ): Observable<ActiveOtpSession | null> {
     return of({
       ...params,
       role: "beneficiary",

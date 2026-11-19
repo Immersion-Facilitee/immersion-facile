@@ -17,11 +17,11 @@ import {
   type EditConventionWithFinalStatusRequestDto,
   type ExcludeFromExisting,
   type MarkPartnersErroredConventionAsHandledRequest,
+  type OtpJwt,
   type RenewConventionParams,
   type Role,
   type TransferConventionToAgencyRequestDto,
   type UpdateConventionStatusRequestDto,
-  type VisitorOtpJwt,
   type WithConventionId,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
@@ -73,7 +73,7 @@ export type JwtKindProps =
       kind: "connected user";
     }
   | {
-      jwt: VisitorOtpJwt;
+      jwt: OtpJwt;
       kind: "visitor session";
     };
 

@@ -15,10 +15,10 @@ import {
   type MaskedOtpRecipients,
   type NotificationKind,
   OTP_CHALLENGE_DURATION_IN_MINUTES,
+  type OtpJwt,
   type RequestOtpChallengeDto,
   requestOtpChallengeSchema,
   type VerifyOtpChallengeDto,
-  type VisitorOtpJwt,
   verifyOtpChallengeSchema,
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
@@ -36,7 +36,7 @@ const otpStepCount = 2;
 const otpChallengeFeedbackTopic: FeedbackTopic = "otp-challenge";
 
 type OtpChallengeProps = {
-  jwt: VisitorOtpJwt;
+  jwt: OtpJwt;
 };
 
 export const OtpChallenge = ({ jwt }: OtpChallengeProps): JSX.Element => {
@@ -203,7 +203,7 @@ const OtpChannelStep = ({
 };
 
 type OtpCodeStepProps = {
-  jwt: VisitorOtpJwt;
+  jwt: OtpJwt;
   channel: NotificationKind;
   maskedRecipients: MaskedOtpRecipients;
   isLoading: boolean;

@@ -5,7 +5,7 @@ import {
   type ConventionSupportedJwt,
   decodeMagicLinkJwtWithoutSignatureCheck,
   type frontRoutes,
-  type VisitorOtpJwt,
+  type OtpJwt,
 } from "shared";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
@@ -40,9 +40,7 @@ export const getConventionAccessFromJwt = (
   return undefined;
 };
 
-export const isVisitorOtpJwt = (
-  jwt: ConventionSupportedJwt,
-): jwt is VisitorOtpJwt =>
+export const isVisitorOtpJwt = (jwt: ConventionSupportedJwt): jwt is OtpJwt =>
   getConventionAccessFromJwt(jwt)?.isVisitorOtp ?? false;
 
 export const useJwt = (

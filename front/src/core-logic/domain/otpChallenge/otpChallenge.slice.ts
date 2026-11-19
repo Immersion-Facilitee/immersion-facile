@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type {
-  ActiveVisitorSession,
+  ActiveOtpSession,
   MaskedOtpRecipients,
+  OtpJwt,
   RequestOtpChallengeDto,
   VerifyOtpChallengeDto,
-  VisitorOtpJwt,
 } from "shared";
 import type {
   PayloadActionWithFeedbackTopic,
@@ -29,7 +29,7 @@ export const otpChallengeSlice = createSlice({
   reducers: {
     maskedOtpRecipientsRequested: (
       state,
-      _action: PayloadActionWithFeedbackTopic<{ jwt: VisitorOtpJwt }>,
+      _action: PayloadActionWithFeedbackTopic<{ jwt: OtpJwt }>,
     ) => {
       state.isLoading = true;
     },
@@ -52,7 +52,7 @@ export const otpChallengeSlice = createSlice({
     otpChallengeRequested: (
       state,
       _action: PayloadActionWithFeedbackTopic<
-        RequestOtpChallengeDto & { jwt: VisitorOtpJwt }
+        RequestOtpChallengeDto & { jwt: OtpJwt }
       >,
     ) => {
       state.isLoading = true;
@@ -71,7 +71,7 @@ export const otpChallengeSlice = createSlice({
     otpChallengeVerificationRequested: (
       state,
       _action: PayloadActionWithFeedbackTopic<
-        VerifyOtpChallengeDto & { jwt: VisitorOtpJwt }
+        VerifyOtpChallengeDto & { jwt: OtpJwt }
       >,
     ) => {
       state.isLoading = true;
@@ -79,7 +79,7 @@ export const otpChallengeSlice = createSlice({
     otpChallengeVerificationSucceeded: (
       state,
       _action: PayloadActionWithFeedbackTopic<{
-        activeVisitorSession: ActiveVisitorSession;
+        activeVisitorSession: ActiveOtpSession;
       }>,
     ) => {
       state.isLoading = false;

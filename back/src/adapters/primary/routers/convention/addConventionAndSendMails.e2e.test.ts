@@ -186,7 +186,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
 
   const numberOfEmailInitialySent = 3;
 
-  const expectVisitorOtpManageConventionLink = ({
+  const expectOtpManageConventionLink = ({
     link,
     convention,
     role,
@@ -200,14 +200,14 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
     appConfig: TestAppAndDeps["appConfig"];
   }) => {
     const jwt = new URL(link).searchParams.get("jwt");
-    if (!jwt) throw new Error("Missing visitor otp jwt");
+    if (!jwt) throw new Error("Missing otp jwt");
     const { purpose, subject, version } =
-      decodeMagicLinkJwtWithoutSignatureCheck<VisitorOtpJwtPayload>(jwt);
+      decodeMagicLinkJwtWithoutSignatureCheck<OtpJwtPayload>(jwt);
 
     expectToEqual(
       {
         path: removeAllParamsFromUrl(link),
-        visitorOtpPayload: { purpose, subject, version },
+        otpPayload: { purpose, subject, version },
       },
       {
         path: removeAllParamsFromUrl(
@@ -216,14 +216,14 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
             baseUrl: appConfig.immersionFacileBaseUrl,
           }),
         ),
-        visitorOtpPayload: {
+        otpPayload: {
           purpose: "manageConvention",
           subject: {
             conventionId: convention.id,
             role,
             emailHash: makeEmailHash(email),
           },
-          version: currentJwtVersions.visitorOtp,
+          version: currentJwtVersions.otp,
         },
       },
     );
@@ -286,7 +286,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       )!,
       "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
     );
-    expectVisitorOtpManageConventionLink({
+    expectOtpManageConventionLink({
       link: beneficiarySignEmail.params.conventionSignatureLink,
       convention,
       role: convention.signatories.beneficiary.role,
@@ -303,7 +303,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       )!,
       "NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE",
     );
-    expectVisitorOtpManageConventionLink({
+    expectOtpManageConventionLink({
       link: establishmentSignEmail.params.conventionSignatureLink,
       convention,
       role: convention.signatories.establishmentRepresentative.role,

@@ -10,7 +10,8 @@ import {
   type SignatoryRole,
 } from "shared";
 import { toAgencyWithRights } from "../../../../utils/agency";
-import { fakeGenerateVisitorOtpUrl } from "../../../../utils/jwtTestHelper";
+import { makeEmailHash } from "../../../../utils/jwt";
+import { fakeGenerateOtpLinkUrlFn } from "../../../../utils/jwtTestHelper";
 import {
   type ExpectSavedNotificationsAndEvents,
   makeExpectSavedNotificationsAndEvents,
@@ -40,12 +41,14 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
     role: SignatoryRole,
     email: Email,
   ): AbsoluteUrl =>
-    fakeGenerateVisitorOtpUrl({
-      conventionId,
-      role,
-      email,
+    fakeGenerateOtpLinkUrlFn({
+      purpose: "manageConvention",
+      subject: {
+        conventionId,
+        role,
+        emailHash: makeEmailHash(email),
+      },
       now,
-      targetRoute: "manageConvention",
     });
 
   beforeEach(() => {
@@ -59,7 +62,7 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignatureAfterModificatio
           deps: {
             saveNotificationAndRelatedEvent:
               makeSaveNotificationAndRelatedEvent(uuidGenerator, timeGateway),
-            generateVisitorOtpUrl: fakeGenerateVisitorOtpUrl,
+            generateOtpLinkUrl: fakeGenerateOtpLinkUrlFn,
             timeGateway,
           },
         },

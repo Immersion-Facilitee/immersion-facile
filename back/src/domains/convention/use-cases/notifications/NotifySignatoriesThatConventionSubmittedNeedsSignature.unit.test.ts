@@ -10,7 +10,8 @@ import {
   type Signatory,
 } from "shared";
 import { toAgencyWithRights } from "../../../../utils/agency";
-import { fakeGenerateVisitorOtpUrl } from "../../../../utils/jwtTestHelper";
+import { makeEmailHash } from "../../../../utils/jwt";
+import { fakeGenerateOtpLinkUrlFn } from "../../../../utils/jwtTestHelper";
 import { expectEmailSignatoryConfirmationSignatureRequestMatchingConvention } from "../../../core/notifications/adapters/InMemoryNotificationRepository";
 import {
   makeSaveNotificationAndRelatedEvent,
@@ -64,7 +65,7 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
           new UuidV4Generator(),
           timeGateway,
         ),
-        generateVisitorOtpUrl: fakeGenerateVisitorOtpUrl,
+        generateOtpLinkUrl: fakeGenerateOtpLinkUrlFn,
         timeGateway,
       },
     });
@@ -185,11 +186,13 @@ describe("NotifySignatoriesThatConventionSubmittedNeedsSignature", () => {
     convention: ConventionDto,
     signatory: Signatory,
   ): AbsoluteUrl =>
-    fakeGenerateVisitorOtpUrl({
-      conventionId: convention.id,
-      role: signatory.role,
-      email: signatory.email,
+    fakeGenerateOtpLinkUrlFn({
+      purpose: "manageConvention",
+      subject: {
+        conventionId: convention.id,
+        role: signatory.role,
+        emailHash: makeEmailHash(signatory.email),
+      },
       now,
-      targetRoute: "manageConvention",
     });
 });

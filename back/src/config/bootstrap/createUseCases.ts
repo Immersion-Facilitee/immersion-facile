@@ -1104,7 +1104,7 @@ export const createUseCases = ({
         timeGateway,
         config,
         saveNotificationAndRelatedEvent,
-        generateVisitorOtpUrl,
+        generateOtpLinkUrl,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         createNewEvent,
       },
@@ -1312,7 +1312,7 @@ export const createUseCases = ({
         uowPerformer,
         deps: {
           saveNotificationAndRelatedEvent,
-          generateVisitorOtpUrl,
+          generateOtpLinkUrl,
           timeGateway,
         },
       }),
@@ -1322,7 +1322,7 @@ export const createUseCases = ({
           uowPerformer,
           deps: {
             saveNotificationAndRelatedEvent,
-            generateVisitorOtpUrl,
+            generateOtpLinkUrl,
             timeGateway,
           },
         },
