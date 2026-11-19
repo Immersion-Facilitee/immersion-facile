@@ -83,7 +83,7 @@ export class HttpOtpChallengeGateway implements OtpChallengeGateway {
     );
   }
 
-  public getVisitorSession$(
+  public getOtpSession$(
     params: GetOtpSessionQueryParams,
   ): Observable<ActiveOtpSession | null> {
     return from(

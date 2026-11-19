@@ -17,7 +17,7 @@ import {
 import { AdminAgencyDetail } from "src/app/components/forms/agency/AdminAgencyDetail";
 import { AgencyDetailForAgencyDashboard } from "src/app/components/forms/agency/AgencyDetailForAgencyDashboard";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
-import { isVisitorOtpJwt } from "src/app/hooks/jwt.hooks";
+import { isOtpJwt } from "src/app/hooks/jwt.hooks";
 import { AdminTabs } from "src/app/pages/admin/AdminTabs";
 import { AdminUserDetail } from "src/app/pages/admin/AdminUserDetail";
 import { AddAgencyPage } from "src/app/pages/agency/AddAgencyPage";
@@ -27,7 +27,7 @@ import { AdminPrivateRoutePage } from "src/app/pages/auth/AdminPrivateRoutePage"
 import { ConnectedPrivateRoutePage } from "src/app/pages/auth/ConnectedPrivateRoutePage";
 import { DashboardPrivateRoutePage } from "src/app/pages/auth/DashboardPrivateRoutePage";
 import { MagicLinkInterstitialPage } from "src/app/pages/auth/MagicLinkInterstitialPage";
-import { VisitorPrivateRoutePage } from "src/app/pages/auth/VisitorPrivateRoutePage";
+import { OtpPrivateRoutePage } from "src/app/pages/auth/OtpPrivateRoutePage";
 import { BeneficiaryDashboardPage } from "src/app/pages/beneficiary-dashboard/BeneficiaryDashboardPage";
 import { ArchivedConventionRequestPage } from "src/app/pages/convention/ArchivedConventionRequestPage";
 import { AssessmentDocumentPage } from "src/app/pages/convention/AssessmentDocumentPage";
@@ -112,12 +112,12 @@ const fetchCurrentUser = (): void => {
   );
 };
 
-const withVisitorPrivateRoute = (
+const withOtpPrivateRoute = (
   jwt: ConventionSupportedJwt | undefined,
   page: ReactElement,
 ): ReactElement =>
-  jwt && isVisitorOtpJwt(jwt) ? (
-    <VisitorPrivateRoutePage jwt={jwt}>{page}</VisitorPrivateRoutePage>
+  jwt && isOtpJwt(jwt) ? (
+    <OtpPrivateRoutePage jwt={jwt}>{page}</OtpPrivateRoutePage>
   ) : (
     page
   );
@@ -212,7 +212,7 @@ const getPageByRouteName: {
   ),
   assessmentDocument: (route) =>
     route.params.jwt ? (
-      withVisitorPrivateRoute(
+      withOtpPrivateRoute(
         route.params.jwt,
         <AssessmentDocumentPage route={route} />,
       )
@@ -256,12 +256,12 @@ const getPageByRouteName: {
   ),
   initiateConvention: () => <InitiateConventionPage />,
   conventionImmersion: (route) =>
-    withVisitorPrivateRoute(
+    withOtpPrivateRoute(
       route.params.jwt,
       <ConventionImmersionPage route={route} />,
     ),
   conventionMiniStage: (route) =>
-    withVisitorPrivateRoute(
+    withOtpPrivateRoute(
       route.params.jwt,
       <ConventionMiniStagePage route={route} />,
     ),
@@ -272,7 +272,7 @@ const getPageByRouteName: {
     <ConventionPageForExternals route={route} />
   ),
   conventionDocument: (route) =>
-    withVisitorPrivateRoute(
+    withOtpPrivateRoute(
       route.params.jwt,
       <ConventionDocumentPage route={route} />,
     ),
@@ -313,12 +313,12 @@ const getPageByRouteName: {
   homeCandidates: () => <HomePage type="candidate" />,
   homeEstablishments: () => <HomePage type="establishment" />,
   assessment: (route) =>
-    withVisitorPrivateRoute(route.params.jwt, <AssessmentPage route={route} />),
+    withOtpPrivateRoute(route.params.jwt, <AssessmentPage route={route} />),
   searchResult: () => <SearchResultPage isExternal={false} />,
   searchResultForStudent: () => <SearchResultPage isExternal={false} />,
   searchResultExternal: () => <SearchResultPage isExternal={true} />,
   manageConvention: (route) =>
-    withVisitorPrivateRoute(
+    withOtpPrivateRoute(
       route.params.jwt,
       <ConventionManagePage route={route} />,
     ),

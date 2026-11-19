@@ -6,7 +6,7 @@ import {
   otpChallengeInitialState,
   otpChallengeSlice,
 } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
-import { visitorSessionInitialState } from "src/core-logic/domain/visitorSession/visitorSession.slice";
+import { otpSessionInitialState } from "src/core-logic/domain/otpSession/otpSession.slice";
 import {
   createTestStore,
   type TestDependencies,
@@ -14,7 +14,7 @@ import {
 import type { ReduxStore } from "src/core-logic/storeConfig/store";
 
 describe("otpChallenge slice", () => {
-  const jwt = "visitor-otp-jwt";
+  const jwt = "otp-jwt";
   const conventionId = "add5c20e-6dd2-45af-affe-927358005251";
   const maskedRecipients: MaskedOtpRecipients = {
     maskedEmail: "j***@mail.com",
@@ -104,7 +104,7 @@ describe("otpChallenge slice", () => {
     });
   });
 
-  it("verifies an otp challenge and activates the returned visitor session", () => {
+  it("verifies an otp challenge and activates the returned otp session", () => {
     store.dispatch(
       otpChallengeSlice.actions.otpChallengeVerificationRequested({
         jwt,
@@ -122,7 +122,7 @@ describe("otpChallenge slice", () => {
     });
 
     expectOtpChallengeState(otpChallengeInitialState);
-    expectToEqual(store.getState().visitorSession, {
+    expectToEqual(store.getState().otpSession, {
       status: "active",
       activeSession: {
         purpose: "manageConvention",
@@ -133,7 +133,7 @@ describe("otpChallenge slice", () => {
     });
   });
 
-  it("keeps the visitor session unchanged and shows the back message when the code is wrong", () => {
+  it("keeps the otp session unchanged and shows the back message when the code is wrong", () => {
     store.dispatch(
       otpChallengeSlice.actions.otpChallengeVerificationRequested({
         jwt,
@@ -147,7 +147,7 @@ describe("otpChallenge slice", () => {
     );
 
     expectOtpChallengeState(otpChallengeInitialState);
-    expectToEqual(store.getState().visitorSession, visitorSessionInitialState);
+    expectToEqual(store.getState().otpSession, otpSessionInitialState);
     expectOtpChallengeFeedback({
       on: "update",
       level: "error",

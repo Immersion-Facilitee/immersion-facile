@@ -12,7 +12,7 @@ import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import type { Route } from "type-route";
 
 type ConventionAccess = {
-  isVisitorOtp: boolean;
+  isOtp: boolean;
   conventionId: ConventionId;
   role: ConventionActorRole;
 };
@@ -25,14 +25,14 @@ export const getConventionAccessFromJwt = (
 
   if ("purpose" in payload)
     return {
-      isVisitorOtp: true,
+      isOtp: true,
       conventionId: payload.subject.conventionId,
       role: payload.subject.role,
     };
 
   if ("applicationId" in payload)
     return {
-      isVisitorOtp: false,
+      isOtp: false,
       conventionId: payload.applicationId,
       role: payload.role,
     };
@@ -40,8 +40,8 @@ export const getConventionAccessFromJwt = (
   return undefined;
 };
 
-export const isVisitorOtpJwt = (jwt: ConventionSupportedJwt): jwt is OtpJwt =>
-  getConventionAccessFromJwt(jwt)?.isVisitorOtp ?? false;
+export const isOtpJwt = (jwt: ConventionSupportedJwt): jwt is OtpJwt =>
+  getConventionAccessFromJwt(jwt)?.isOtp ?? false;
 
 export const useJwt = (
   route: Route<

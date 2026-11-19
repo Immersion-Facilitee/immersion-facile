@@ -254,7 +254,7 @@ export const frontErrors = {
         ),
         buttons: [HomeButton, ContactUsButton()],
       }),
-    visitorSessionRefused: ({
+    otpSessionRefused: ({
       conventionId,
       errorMessage,
     }: {

@@ -6,45 +6,43 @@ import type {
 } from "src/core-logic/domain/feedback/feedback.slice";
 import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
 
-export type VisitorSessionState =
+export type OtpSessionState =
   | { status: "idle" | "loading" | "otpRequired" }
   | { status: "active"; activeSession: ActiveOtpSession };
 
-export const visitorSessionInitialState: VisitorSessionState = {
+export const otpSessionInitialState: OtpSessionState = {
   status: "idle",
 };
 
-const getVisitorSessionInitialState = (): VisitorSessionState =>
-  visitorSessionInitialState;
+const getOtpSessionInitialState = (): OtpSessionState => otpSessionInitialState;
 
-export const visitorSessionSlice = createSlice({
-  name: "visitorSession",
-  initialState: getVisitorSessionInitialState,
+export const otpSessionSlice = createSlice({
+  name: "otpSession",
+  initialState: getOtpSessionInitialState,
   reducers: {
-    visitorSessionRequested: (
+    otpSessionRequested: (
       _state,
       _action: PayloadActionWithFeedbackTopic<GetOtpSessionQueryParams>,
-    ): VisitorSessionState => ({ status: "loading" }),
-    visitorSessionSucceeded: (
+    ): OtpSessionState => ({ status: "loading" }),
+    otpSessionSucceeded: (
       _state,
       action: PayloadAction<ActiveOtpSession | null>,
-    ): VisitorSessionState =>
+    ): OtpSessionState =>
       action.payload
         ? { status: "active", activeSession: action.payload }
         : { status: "otpRequired" },
-    visitorSessionFailed: (
+    otpSessionFailed: (
       _state,
       _action: PayloadActionWithFeedbackTopicError,
-    ): VisitorSessionState => visitorSessionInitialState,
-    resetVisitorSessionRequested: (): VisitorSessionState =>
-      visitorSessionInitialState,
+    ): OtpSessionState => otpSessionInitialState,
+    resetOtpSessionRequested: (): OtpSessionState => otpSessionInitialState,
   },
   extraReducers: (builder) => {
     builder.addCase(
       otpChallengeSlice.actions.otpChallengeVerificationSucceeded,
-      (_state, action): VisitorSessionState => ({
+      (_state, action): OtpSessionState => ({
         status: "active",
-        activeSession: action.payload.activeVisitorSession,
+        activeSession: action.payload.activeOtpSession,
       }),
     );
   },

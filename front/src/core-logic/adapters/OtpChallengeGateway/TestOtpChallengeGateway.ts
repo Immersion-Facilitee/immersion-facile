@@ -13,7 +13,7 @@ export class TestOtpChallengeGateway implements OtpChallengeGateway {
   public maskedOtpRecipientResponse$ = new Subject<MaskedOtpRecipients>();
   public requestOtpChallengeResponse$ = new Subject<void>();
   public verifyOtpChallengeResponse$ = new Subject<ActiveOtpSession>();
-  public visitorSessionResponse$ = new Subject<ActiveOtpSession | null>();
+  public otpSessionResponse$ = new Subject<ActiveOtpSession | null>();
 
   public getMaskedOtpRecipient$(_jwt: OtpJwt): Observable<MaskedOtpRecipients> {
     return this.maskedOtpRecipientResponse$;
@@ -33,9 +33,9 @@ export class TestOtpChallengeGateway implements OtpChallengeGateway {
     return this.verifyOtpChallengeResponse$;
   }
 
-  public getVisitorSession$(
+  public getOtpSession$(
     _params: GetOtpSessionQueryParams,
   ): Observable<ActiveOtpSession | null> {
-    return this.visitorSessionResponse$;
+    return this.otpSessionResponse$;
   }
 }

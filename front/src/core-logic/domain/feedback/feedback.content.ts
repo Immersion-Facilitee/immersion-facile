@@ -32,9 +32,9 @@ import type {
   Feedback,
 } from "src/core-logic/domain/feedback/feedback.slice";
 import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
+import { otpSessionSlice } from "src/core-logic/domain/otpSession/otpSession.slice";
 import { partnersErroredConventionSlice } from "src/core-logic/domain/partnersErroredConvention/partnersErroredConvention.slice";
 import { searchSlice } from "src/core-logic/domain/search/search.slice";
-import { visitorSessionSlice } from "src/core-logic/domain/visitorSession/visitorSession.slice";
 import { authSlice } from "../auth/auth.slice";
 
 type FeedbackWithActionName = {
@@ -116,7 +116,7 @@ const topics = [
   "transfer-convention-to-agency",
   "unused",
   "user",
-  "visitor-session",
+  "otp-session",
 ] as const;
 
 export const conventionManageFeedbackTopicsToClearOnUnmount: FeedbackTopic[] = [
@@ -1221,9 +1221,9 @@ export const feedbacks: Record<
       message: "Une erreur est survenue lors de la vérification du code.",
     },
   },
-  "visitor-session": {
+  "otp-session": {
     "fetch.error": {
-      action: visitorSessionSlice.actions.visitorSessionFailed,
+      action: otpSessionSlice.actions.otpSessionFailed,
       title: "Problème lors de la récupération de votre session",
       message:
         "Une erreur est survenue lors de la récupération de votre session.",

@@ -727,10 +727,10 @@ const getRouteToRedirectAfterSubmit = ({
       },
       ({ route, fetchedConvention }) =>
         match(getConventionAccessFromJwt(route.params.jwt))
-          .with({ isVisitorOtp: true }, () =>
+          .with({ isOtp: true }, () =>
             frontRoutes.manageConvention({ jwt: route.params.jwt }),
           )
-          .with({ isVisitorOtp: false }, () =>
+          .with({ isOtp: false }, () =>
             frontRoutes.conventionToSign({ jwt: route.params.jwt }),
           )
           .otherwise(() =>
