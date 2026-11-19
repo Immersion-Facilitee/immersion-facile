@@ -43,7 +43,7 @@ export const makeNotifyConventionSummaryToAgency = useCaseBuilder(
           makeNotificationsForAgency({ uow, now, agencyId, appConfig }),
       );
 
-      await saveNotificationsBatchAndRelatedEvent(
+      const savedNotifications = await saveNotificationsBatchAndRelatedEvent(
         uow,
         notificationsByAgency.flat(),
         {
@@ -51,7 +51,7 @@ export const makeNotifyConventionSummaryToAgency = useCaseBuilder(
         },
       );
 
-      return notificationsByAgency.length;
+      return savedNotifications.length;
     },
   );
 

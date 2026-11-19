@@ -1,9 +1,10 @@
 import { addDays } from "date-fns";
 import { sql } from "kysely";
-import { map, uniq } from "ramda";
+import { map, splitEvery, uniq } from "ramda";
 import {
   type DateRange,
   type EmailNotification,
+  executeInSequence,
   exhaustiveCheck,
   type Notification,
   type NotificationId,
@@ -36,6 +37,8 @@ const getDefaultNotificationState = (): NotificationState => ({
   status: "to-be-send",
   occurredAt: new Date().toISOString(),
 });
+
+const saveNotificationsBatchChunkSize = 500;
 
 const stripNullsFromNotification = <T>(value: T): T => {
   if (value === null || typeof value !== "object") return value;
@@ -291,6 +294,13 @@ export class PgNotificationRepository implements NotificationRepository {
   }
 
   public async saveBatch(notifications: Notification[]): Promise<void> {
+    await executeInSequence(
+      splitEvery(saveNotificationsBatchChunkSize, notifications),
+      (notificationsChunk) => this.#saveNotificationsChunk(notificationsChunk),
+    );
+  }
+
+  async #saveNotificationsChunk(notifications: Notification[]): Promise<void> {
     const { smsNotifications, emailNotifications } = notifications.reduce(
       (acc, notification) => {
         if (notification.kind === "sms")
