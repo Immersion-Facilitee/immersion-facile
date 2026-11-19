@@ -7,6 +7,7 @@ import {
   type ConventionJwt,
   type EmailAuthCodeJwt,
   errors,
+  type OtpJwt,
   type RenewExpiredJwtRequestDto,
 } from "shared";
 import { rootAppSlice } from "src/core-logic/domain/rootApp/rootApp.slice";
@@ -334,6 +335,12 @@ const makeExpiredJwtParams = (
       kind: "emailAuthCode",
       expiredJwt: expiredJwt as EmailAuthCodeJwt,
       state: state,
+    };
+
+  if ("purpose" in jwtPayload)
+    return {
+      kind: "otp",
+      expiredJwt: expiredJwt as OtpJwt,
     };
 
   throw errors.user.unsupportedJwtPayload();
