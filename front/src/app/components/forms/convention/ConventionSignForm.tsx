@@ -159,9 +159,10 @@ export const ConventionSignForm = ({
             submittedAt={toDisplayedDate({
               date: new Date(convention.dateSubmission),
             })}
-            {...makeConventionSummaryContent(
+            {...makeConventionSummaryContent({
               convention,
-              sendSignatureLinkButtonProps({
+              showStatusBadges: true,
+              signatoriesSubsectionButtonProps: sendSignatureLinkButtonProps({
                 triggeredByRole: currentSignatory.role,
                 onClick: ({
                   signatoryRole,
@@ -183,7 +184,7 @@ export const ConventionSignForm = ({
                   sendSignatureLinkModal.open();
                 },
               }),
-            )}
+            })}
             conventionId={convention.id}
           />
         </>
@@ -210,31 +211,33 @@ export const ConventionSignForm = ({
                 submittedAt={toDisplayedDate({
                   date: new Date(convention.dateSubmission),
                 })}
-                {...makeConventionSummaryContent(
+                {...makeConventionSummaryContent({
                   convention,
-                  sendSignatureLinkButtonProps({
-                    triggeredByRole: currentSignatory.role,
-                    onClick: ({
-                      signatoryRole,
-                      signatoryPhone,
-                      signatoryEmail,
-                    }) => {
-                      const signatoryKey =
-                        conventionSignatoryRoleBySignatoryKey[signatoryRole];
-                      const selectedSignatory =
-                        convention.signatories[signatoryKey];
-                      if (!selectedSignatory) return;
-                      setSignatoryToSendSignatureLink({
-                        role: signatoryRole,
-                        phone: signatoryPhone,
-                        email: signatoryEmail,
-                        firstName: selectedSignatory.firstName,
-                        lastName: selectedSignatory.lastName,
-                      });
-                      sendSignatureLinkModal.open();
-                    },
-                  }),
-                )}
+                  showStatusBadges: true,
+                  signatoriesSubsectionButtonProps:
+                    sendSignatureLinkButtonProps({
+                      triggeredByRole: currentSignatory.role,
+                      onClick: ({
+                        signatoryRole,
+                        signatoryPhone,
+                        signatoryEmail,
+                      }) => {
+                        const signatoryKey =
+                          conventionSignatoryRoleBySignatoryKey[signatoryRole];
+                        const selectedSignatory =
+                          convention.signatories[signatoryKey];
+                        if (!selectedSignatory) return;
+                        setSignatoryToSendSignatureLink({
+                          role: signatoryRole,
+                          phone: signatoryPhone,
+                          email: signatoryEmail,
+                          firstName: selectedSignatory.firstName,
+                          lastName: selectedSignatory.lastName,
+                        });
+                        sendSignatureLinkModal.open();
+                      },
+                    }),
+                })}
                 conventionId={convention.id}
               />
             )}

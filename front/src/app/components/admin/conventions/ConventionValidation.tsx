@@ -281,9 +281,10 @@ export const ConventionValidation = ({
         submittedAt={toDisplayedDate({
           date: new Date(convention.dateSubmission),
         })}
-        {...makeConventionSummaryContent(
+        {...makeConventionSummaryContent({
           convention,
-          sendSignatureLinkButtonProps({
+          showStatusBadges: true,
+          signatoriesSubsectionButtonProps: sendSignatureLinkButtonProps({
             onClick: ({ signatoryRole, signatoryPhone, signatoryEmail }) => {
               const signatoryKey =
                 conventionSignatoryRoleBySignatoryKey[signatoryRole];
@@ -299,21 +300,22 @@ export const ConventionValidation = ({
               sendSignatureLinkModal.open();
             },
           }),
-          shouldShowAssessmentReminderButton
+          assessmentReminderButtonProps: shouldShowAssessmentReminderButton
             ? sendAssessmentLinkButtonProps({
                 onClick: () => {
                   sendAssessmentLinkModal.open();
                 },
               })
             : undefined,
-          shouldShowAssessmentSignatureReminderButton
-            ? sendAssessmentSignatureReminderButtonProps({
-                onClick: () => {
-                  sendAssessmentSignatureReminderModal.open();
-                },
-              })
-            : undefined,
-        )}
+          assessmentSignatureReminderButtonProps:
+            shouldShowAssessmentSignatureReminderButton
+              ? sendAssessmentSignatureReminderButtonProps({
+                  onClick: () => {
+                    sendAssessmentSignatureReminderModal.open();
+                  },
+                })
+              : undefined,
+        })}
         conventionId={convention.id}
       />
 

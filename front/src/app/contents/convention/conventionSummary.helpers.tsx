@@ -88,6 +88,7 @@ const getAgencyValidationStatusBadge = (
 
 export const makeAgencySubSection = (
   convention: ConventionReadDto,
+  showStatusBadges: boolean,
 ): AgencySubSection => {
   const prescriberAgencyName = convention.agencyRefersTo
     ? convention.agencyRefersTo.name
@@ -116,7 +117,9 @@ export const makeAgencySubSection = (
                   convention.validators.agencyCounsellor,
                 )
               : undefined,
-            statusBadge: getAgencyApprovalStatusBadge(convention),
+            statusBadge: showStatusBadges
+              ? getAgencyApprovalStatusBadge(convention)
+              : undefined,
           },
         }
       : {}),
@@ -137,33 +140,44 @@ export const makeAgencySubSection = (
             convention.validators.agencyValidator,
           )
         : undefined,
-      statusBadge: getAgencyValidationStatusBadge(convention),
+      statusBadge: showStatusBadges
+        ? getAgencyValidationStatusBadge(convention)
+        : undefined,
     },
   };
 };
 
-export const makeConventionSummaryContent = (
-  convention: ConventionReadDto,
+export const makeConventionSummaryContent = ({
+  convention,
+  signatoriesSubsectionButtonProps,
+  assessmentReminderButtonProps,
+  assessmentSignatureReminderButtonProps,
+  showStatusBadges,
+}: {
+  convention: ConventionReadDto;
   signatoriesSubsectionButtonProps?: (
     signatoryRole: SignatoryRole,
     signatoryPhone: PhoneNumber,
     signatoryEmail: Email,
     signatoryAlreadySign: boolean,
-  ) => ButtonProps | null,
-  assesmentReminderButtonProps?: (phone: PhoneNumber) => ButtonProps,
-  assessmentSignatureReminderButtonProps?: () => ButtonProps | null,
-) => ({
+  ) => ButtonProps | null;
+  assessmentReminderButtonProps?: (phone: PhoneNumber) => ButtonProps;
+  assessmentSignatureReminderButtonProps?: () => ButtonProps | null;
+  showStatusBadges: boolean;
+}) => ({
   summary: makeConventionSections(
     convention,
+    showStatusBadges,
     signatoriesSubsectionButtonProps,
-    assesmentReminderButtonProps,
+    assessmentReminderButtonProps,
     assessmentSignatureReminderButtonProps,
   ),
-  agencySubSection: makeAgencySubSection(convention),
+  agencySubSection: makeAgencySubSection(convention, showStatusBadges),
 });
 
 const makeSignatoriesSubsections = (
   convention: ConventionReadDto,
+  showStatusBadges: boolean,
   signatoriesSubsectionButtonProps?: (
     signatoryRole: SignatoryRole,
     signatoryPhone: PhoneNumber,
@@ -172,32 +186,34 @@ const makeSignatoriesSubsections = (
   ) => ButtonProps | null,
   assessmentSignatureReminderButtonProps?: () => ButtonProps | null,
 ): ConventionSummarySubSection[] => {
-  const shouldDisplayDefaultSignatoryBadge =
-    convention.status === "READY_TO_SIGN" ||
-    convention.status === "PARTIALLY_SIGNED";
-  const defaultSignatoryBadgeValue = (): BadgeProps | undefined =>
-    shouldDisplayDefaultSignatoryBadge
-      ? {
-          children: "Signature en attente",
-          severity: "warning",
-        }
-      : undefined;
+  const makeSignatoryStatusBadge = (
+    signedAt: DateString | undefined,
+  ): BadgeProps | undefined => {
+    if (!showStatusBadges) return undefined;
+    if (signedAt)
+      return {
+        children: `Signée - Le ${toDisplayedDate({ date: new Date(signedAt) })}`,
+        severity: "success",
+      };
+    if (
+      convention.status === "READY_TO_SIGN" ||
+      convention.status === "PARTIALLY_SIGNED"
+    )
+      return {
+        children: "Signature en attente",
+        severity: "warning",
+      };
+    return undefined;
+  };
 
   return removeEmptyValue([
     {
       key: "beneficiary",
       header: {
         title: "Bénéficiaire",
-        badge: convention.signatories.beneficiary.signedAt
-          ? ({
-              children:
-                convention.signatories.beneficiary.signedAt &&
-                `Signée - Le ${toDisplayedDate({
-                  date: new Date(convention.signatories.beneficiary.signedAt),
-                })}`,
-              severity: "success",
-            } satisfies BadgeProps)
-          : defaultSignatoryBadgeValue(),
+        badge: makeSignatoryStatusBadge(
+          convention.signatories.beneficiary.signedAt,
+        ),
         action: (() => {
           if (
             ["READY_TO_SIGN", "PARTIALLY_SIGNED"].includes(convention.status) &&
@@ -267,19 +283,9 @@ const makeSignatoriesSubsections = (
           key: "beneficiaryRepresentative",
           header: {
             title: "Représentant légal du bénéficiaire",
-            badge: convention.signatories.beneficiaryRepresentative.signedAt
-              ? ({
-                  children:
-                    convention.signatories.beneficiaryRepresentative.signedAt &&
-                    `Signée - Le ${toDisplayedDate({
-                      date: new Date(
-                        convention.signatories.beneficiaryRepresentative
-                          .signedAt,
-                      ),
-                    })}`,
-                  severity: "success",
-                } satisfies BadgeProps)
-              : defaultSignatoryBadgeValue(),
+            badge: makeSignatoryStatusBadge(
+              convention.signatories.beneficiaryRepresentative.signedAt,
+            ),
             action:
               ["READY_TO_SIGN", "PARTIALLY_SIGNED"].includes(
                 convention.status,
@@ -344,18 +350,9 @@ const makeSignatoriesSubsections = (
       key: "establishmentRepresentative",
       header: {
         title: "Représentant de l'entreprise",
-        badge: convention.signatories.establishmentRepresentative.signedAt
-          ? ({
-              children:
-                convention.signatories.establishmentRepresentative.signedAt &&
-                `Signée - Le ${toDisplayedDate({
-                  date: new Date(
-                    convention.signatories.establishmentRepresentative.signedAt,
-                  ),
-                })}`,
-              severity: "success",
-            } satisfies BadgeProps)
-          : defaultSignatoryBadgeValue(),
+        badge: makeSignatoryStatusBadge(
+          convention.signatories.establishmentRepresentative.signedAt,
+        ),
         action:
           ["READY_TO_SIGN", "PARTIALLY_SIGNED"].includes(convention.status) &&
           signatoriesSubsectionButtonProps
@@ -433,20 +430,9 @@ const makeSignatoriesSubsections = (
           key: "beneficiaryCurrentEmployer",
           header: {
             title: "Employeur actuel du bénéficiaire",
-            badge: convention.signatories.beneficiaryCurrentEmployer.signedAt
-              ? ({
-                  children:
-                    convention.signatories.beneficiaryCurrentEmployer
-                      .signedAt &&
-                    `Signée - Le ${toDisplayedDate({
-                      date: new Date(
-                        convention.signatories.beneficiaryCurrentEmployer
-                          .signedAt,
-                      ),
-                    })}`,
-                  severity: "success",
-                } satisfies BadgeProps)
-              : defaultSignatoryBadgeValue(),
+            badge: makeSignatoryStatusBadge(
+              convention.signatories.beneficiaryCurrentEmployer.signedAt,
+            ),
             action:
               ["READY_TO_SIGN", "PARTIALLY_SIGNED"].includes(
                 convention.status,
@@ -854,6 +840,7 @@ const makeAdditionalInformationSubSections = (
 
 export const makeConventionSections = (
   convention: ConventionReadDto,
+  showStatusBadges: boolean,
   signatoriesSubsectionButtonProps?: (
     signatoryRole: SignatoryRole,
     signatoryPhone: PhoneNumber,
@@ -867,6 +854,7 @@ export const makeConventionSections = (
     title: "Signataires de la convention",
     subSections: makeSignatoriesSubsections(
       convention,
+      showStatusBadges,
       signatoriesSubsectionButtonProps,
       assessmentSignatureReminderButtonProps,
     ),
