@@ -476,7 +476,10 @@ const ConventionSummarySection = ({
         submittedAt={toDisplayedDate({
           date: new Date(convention.dateSubmission),
         })}
-        {...makeConventionSummaryContent(convention)}
+        {...makeConventionSummaryContent({
+          convention,
+          showStatusBadges: false,
+        })}
       />
 
       {convention?.internshipKind === "mini-stage-cci" && (
