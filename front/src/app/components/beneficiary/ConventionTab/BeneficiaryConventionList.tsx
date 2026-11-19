@@ -1,7 +1,9 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
+import type { ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { Fragment, useEffect } from "react";
 import {
+  type GridItemProps,
   RichTable,
   type RichTableProps,
   SectionHighlight,
@@ -11,8 +13,12 @@ import {
   type BeneficiaryConventionInList,
   defaultPerPageInWebPagination,
   domElementIds,
+  frontRoutes,
   immersionFacileHelpdeskRootUrl,
   isConventionArchived,
+  isConventionEndingInOneDayOrMore,
+  isConventionValidated,
+  toDisplayedDate,
 } from "shared";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -86,7 +92,11 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
             enableBeneficiaryManageConvention.isActive,
           )}
           label={"Listing des conventions"}
-          hasViewSwitch={false}
+          hasViewSwitch={true}
+          gridData={toBeneficiaryConventionGridData(
+            conventions,
+            enableBeneficiaryManageConvention.isActive,
+          )}
           searchBar={{
             label: "Rechercher",
             placeholder:
@@ -180,6 +190,110 @@ const getTableHeaders = (hasConventions: boolean): RichTableProps["headers"] =>
             "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche",
         },
       ];
+
+const toBeneficiaryConventionGridData = (
+  conventions: BeneficiaryConventionInList[],
+  isBeneficiaryManageConventionEnabled: boolean,
+): GridItemProps[] =>
+  conventions.map((convention) => {
+    const shouldShowAssessmentBadge =
+      isConventionValidated(convention.status) &&
+      !isConventionEndingInOneDayOrMore(convention.dateEnd);
+    const isArchived = isConventionArchived({
+      dateEnd: convention.dateEnd,
+      now: new Date(),
+    });
+    return {
+      id: convention.conventionId,
+      title: convention.businessName,
+      badge: (
+        <ul className={fr.cx("fr-badges-group", "fr-badges-group--sm")}>
+          <li>
+            <ConventionStatusBadge
+              conventionStatus={convention.status}
+              userKind="beneficiary"
+            />
+          </li>
+          {shouldShowAssessmentBadge && (
+            <li>
+              <ConventionAssessmentStatusBadge
+                conventionParams={convention}
+                userKind="beneficiary"
+              />
+            </li>
+          )}
+          {isArchived && (
+            <li>
+              <Badge small>Archivée</Badge>
+            </li>
+          )}
+        </ul>
+      ),
+      content: (
+        <dl className={fr.cx("fr-raw-list", "fr-mt-1w")}>
+          <dt className={fr.cx("fr-text--xs", "fr-mb-0")}>Dates</dt>
+          <dd className={fr.cx("fr-text--sm", "fr-text--bold")}>
+            {`Du ${toDisplayedDate({
+              date: new Date(convention.dateStart),
+              withHours: false,
+            })} au ${toDisplayedDate({
+              date: new Date(convention.dateEnd),
+              withHours: false,
+            })}`}
+          </dd>
+        </dl>
+      ),
+      cta: toBeneficiaryConventionGridCta({
+        convention,
+        isDisabled: !isBeneficiaryManageConventionEnabled,
+      }),
+    };
+  });
+
+const toBeneficiaryConventionGridCta = ({
+  convention,
+  isDisabled,
+}: {
+  convention: BeneficiaryConventionInList;
+  isDisabled: boolean;
+}): ButtonProps => {
+  const id = `${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`;
+
+  if (isDisabled)
+    return {
+      id,
+      disabled: true,
+      children: "Voir la convention",
+    };
+
+  if (
+    isConventionArchived({
+      dateEnd: convention.dateEnd,
+      now: new Date(),
+    })
+  )
+    return {
+      id: `${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${convention.conventionId}`,
+      children: "Désarchiver",
+      linkProps: {
+        ...frontRoutes.archivedConventionRequest({
+          conventionId: convention.conventionId,
+        }).link,
+        target: "_blank",
+      },
+    };
+
+  return {
+    id,
+    children: "Voir la convention",
+    linkProps: {
+      ...frontRoutes.manageConventionConnectedUser({
+        conventionId: convention.conventionId,
+      }).link,
+      target: "_blank",
+    },
+  };
+};
 
 const conventionListToTableData = (
   conventionList: BeneficiaryConventionInList[],
