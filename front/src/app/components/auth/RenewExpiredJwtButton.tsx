@@ -8,6 +8,7 @@ import {
   domElementIds,
   type EmailAuthCodeJwt,
   type OAuthState,
+  type OtpJwt,
   type ShortLinkId,
 } from "shared";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
@@ -24,7 +25,7 @@ export const RenewExpiredJwtButton = ({
   originalUrl,
   shortLinkId,
 }: {
-  expiredJwt: ConventionJwt | ConnectedUserJwt | EmailAuthCodeJwt;
+  expiredJwt: ConventionJwt | ConnectedUserJwt | EmailAuthCodeJwt | OtpJwt;
   feedbackTopic: FeedbackTopic;
   state?: OAuthState;
   originalUrl?: string;

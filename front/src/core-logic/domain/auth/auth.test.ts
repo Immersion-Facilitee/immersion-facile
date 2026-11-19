@@ -629,6 +629,40 @@ describe("Auth slice", () => {
       );
     });
 
+    it("should renew expired otp jwt successfully", () => {
+      dependencies.jwtValidator.nextDecodeJwtResult = {
+        purpose: "manageConvention",
+        subject: {
+          conventionId: "add5c20e-6dd2-45af-affe-927358005251",
+          role: "beneficiary",
+          emailHash: "email-hash",
+        },
+        version: currentJwtVersions.otp,
+      };
+
+      store.dispatch(authSlice.actions.renewExpiredJwtRequested(payload));
+
+      expectAuthStateToBe({
+        ...initialAuthState,
+        isRequestingRenewExpiredJwt: true,
+      });
+
+      dependencies.authGateway.renewExpiredJwtResponse$.next();
+
+      expectAuthStateToBe(initialAuthState);
+      expectToEqual(
+        feedbacksSelectors.feedbacks(store.getState())[feedbackTopic],
+        {
+          on: "create",
+          level: "success",
+          // biome-ignore lint/style/noNonNullAssertion: Should crash if not present
+          title: feedbacks[feedbackTopic]["create.success"]!.title,
+          // biome-ignore lint/style/noNonNullAssertion: Should crash if not present
+          message: feedbacks[feedbackTopic]["create.success"]!.message,
+        },
+      );
+    });
+
     it("should renew expired jwt failed on error response", () => {
       expectAuthStateToBe(initialAuthState);
 

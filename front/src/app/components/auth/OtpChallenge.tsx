@@ -12,6 +12,7 @@ import { type UseFormReturn, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
   domElementIds,
+  expiredJwtErrorMessage,
   type MaskedOtpRecipients,
   type NotificationKind,
   OTP_CHALLENGE_DURATION_IN_MINUTES,
@@ -21,10 +22,13 @@ import {
   type VerifyOtpChallengeDto,
   verifyOtpChallengeSchema,
 } from "shared";
+import { RenewExpiredJwtButton } from "src/app/components/auth/RenewExpiredJwtButton";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
+import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { useWebOtpCode } from "src/app/hooks/webOtp.hooks";
+import { frontErrors } from "src/app/pages/error/front-errors";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { otpChallengeSelectors } from "src/core-logic/domain/otpChallenge/otpChallenge.selectors";
@@ -34,6 +38,7 @@ import { match } from "ts-pattern";
 const otpCodeLength = 6;
 const otpStepCount = 2;
 const otpChallengeFeedbackTopic: FeedbackTopic = "otp-challenge";
+const renewExpiredJwtFeedbackTopic: FeedbackTopic = "renew-expired-jwt";
 
 type OtpChallengeProps = {
   jwt: OtpJwt;
@@ -47,6 +52,7 @@ export const OtpChallenge = ({ jwt }: OtpChallengeProps): JSX.Element => {
   const isCodeSent = useAppSelector(otpChallengeSelectors.isCodeSent);
   const isLoading = useAppSelector(otpChallengeSelectors.isLoading);
   const [sentCodeCount, setSentCodeCount] = useState(0);
+  const otpChallengeFeedback = useFeedbackTopic(otpChallengeFeedbackTopic);
   const channelFormMethods = useForm<RequestOtpChallengeDto>({
     resolver: zodResolver(requestOtpChallengeSchema),
     defaultValues: { channel: "email" },
@@ -66,6 +72,20 @@ export const OtpChallenge = ({ jwt }: OtpChallengeProps): JSX.Element => {
       );
     };
   }, [dispatch, jwt]);
+
+  if (
+    otpChallengeFeedback?.level === "error" &&
+    otpChallengeFeedback.message.includes(expiredJwtErrorMessage)
+  )
+    throw frontErrors.jwtLink.expired({
+      RenewJwtButton: (
+        <RenewExpiredJwtButton
+          key={RenewExpiredJwtButton.name}
+          expiredJwt={jwt}
+          feedbackTopic={renewExpiredJwtFeedbackTopic}
+        />
+      ),
+    });
 
   const requestOtpCode = ({ channel }: RequestOtpChallengeDto): void => {
     dispatch(
