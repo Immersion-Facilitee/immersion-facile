@@ -220,6 +220,23 @@ const displayedOrderDirections: Record<DiscussionOrderDirection, string> = {
 const isStringDiscussionStatus = (value: string): value is DiscussionStatus =>
   discussionStatuses.includes(value as DiscussionStatus);
 
+const establishmentDiscussionTableHeaders: RichTableProps["headers"] = [
+  { content: "Offre d'immersion" },
+  { content: "Candidat" },
+  { content: "But de l'immersion" },
+  { content: "Date" },
+  { content: "Statut" },
+  { content: "Actions" },
+];
+
+const beneficiaryDiscussionTableHeaders: RichTableProps["headers"] = [
+  { content: "Métier" },
+  { content: "Nom d'entreprise" },
+  { content: "Date" },
+  { content: "Statut" },
+  { content: "Actions" },
+];
+
 const EstablishmentDiscussionTable = ({
   discussions,
   filters,
@@ -240,53 +257,19 @@ const EstablishmentDiscussionTable = ({
   dateOptions: RadioButtonsProps["options"];
 }) => {
   const dispatch = useDispatch();
-  const hasDiscussions = discussions.length > 0;
   const filtersAreEmpty = equals(
     filters,
     initialDiscussionsWithPagination.filters,
   );
 
-  const getTableHeaders = (): RichTableProps["headers"] => {
-    if (hasDiscussions) {
-      return [
-        {
-          content: "Offre d'immersion",
-        },
-        {
-          content: "Candidat",
-        },
-        {
-          content: "But de l'immersion",
-        },
-        {
-          content: "Date",
-        },
-        {
-          content: "Statut",
-        },
-        {
-          content: "Actions",
-        },
-      ];
-    }
-    if (!filtersAreEmpty) {
-      return [
-        {
-          content:
-            "Aucune candidature trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
-        },
-      ];
-    }
-    return [
-      {
-        content:
-          "Nous n'avons pas trouvé de candidatures où vous êtes référencé en tant que contact d'entreprise.",
-      },
-    ];
-  };
   return (
     <RichTable
-      headers={getTableHeaders()}
+      headers={establishmentDiscussionTableHeaders}
+      emptyStateMessage={
+        filtersAreEmpty
+          ? "Nous n'avons pas trouvé de candidatures où vous êtes référencé en tant que contact d'entreprise."
+          : "Aucune candidature trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche."
+      }
       className={fr.cx("fr-mt-4w")}
       isLoading={isLoading}
       label={"Listing des candidatures"}
@@ -469,49 +452,18 @@ const BeneficiaryDiscussionTable = ({
   pagination: DataWithPagination<DiscussionInList>["pagination"];
 }) => {
   const dispatch = useDispatch();
-  const hasDiscussions = discussions.length > 0;
   const filtersAreEmpty = equals(
     filters,
     initialDiscussionsWithPagination.filters,
   );
-  const getTableHeaders = (): RichTableProps["headers"] => {
-    if (hasDiscussions) {
-      return [
-        {
-          content: "Métier",
-        },
-        {
-          content: "Nom d'entreprise",
-        },
-        {
-          content: "Date",
-        },
-        {
-          content: "Statut",
-        },
-        {
-          content: "Actions",
-        },
-      ];
-    }
-    if (!filtersAreEmpty) {
-      return [
-        {
-          content:
-            "Aucune candidature envoyée avec votre adresse email trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
-        },
-      ];
-    }
-    return [
-      {
-        content:
-          "Nous n'avons pas trouvé de candidatures envoyées avec votre adresse email.",
-      },
-    ];
-  };
   return (
     <RichTable
-      headers={getTableHeaders()}
+      headers={beneficiaryDiscussionTableHeaders}
+      emptyStateMessage={
+        filtersAreEmpty
+          ? "Nous n'avons pas trouvé de candidatures envoyées avec votre adresse email."
+          : "Aucune candidature envoyée avec votre adresse email trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche."
+      }
       isLoading={isLoading}
       hasViewSwitch={true}
       gridData={discussions.map((discussion) => ({

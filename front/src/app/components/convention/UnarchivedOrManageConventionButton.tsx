@@ -2,7 +2,6 @@ import { Button, type ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import {
   type ConventionId,
   type DateString,
-  domElementIds,
   frontRoutes,
   isConventionArchived,
 } from "shared";
@@ -13,6 +12,7 @@ type UnarchivedOrManageConventionButtonParams = {
   conventionDateEnd: DateString;
   isDisabled: boolean;
   id: string;
+  unarchiveButtonId: string;
 };
 
 export const getUnarchivedOrManageConventionButtonProps = ({
@@ -22,9 +22,7 @@ export const getUnarchivedOrManageConventionButtonProps = ({
   isDisabled,
   id,
   unarchiveButtonId,
-}: UnarchivedOrManageConventionButtonParams & {
-  unarchiveButtonId: string;
-}): ButtonProps => {
+}: UnarchivedOrManageConventionButtonParams): ButtonProps => {
   if (isDisabled)
     return {
       id,
@@ -58,9 +56,6 @@ export const UnarchivedOrManageConventionButton = (
   <Button
     size="small"
     priority="secondary"
-    {...getUnarchivedOrManageConventionButtonProps({
-      ...params,
-      unarchiveButtonId: `${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${params.conventionId}`,
-    })}
+    {...getUnarchivedOrManageConventionButtonProps(params)}
   />
 );

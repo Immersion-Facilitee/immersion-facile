@@ -51,7 +51,6 @@ export const EstablishmentConventionList = ({
     filters,
   } = useAppSelector(conventionListSelectors.establishmentConventionList);
   const isLoading = useAppSelector(conventionListSelectors.isLoading);
-  const hasConventions = conventions.length > 0;
 
   useEffect(() => {
     if (!connectedUserJwt) return;
@@ -89,15 +88,12 @@ export const EstablishmentConventionList = ({
       )}
       <WithFeedbackReplacer topic={establishmentConventionListFeedbackTopic}>
         <RichTable
-          headers={getEstablishmentConventionTableHeaders({
-            hasConventions,
-            search: filters.search,
-          })}
+          headers={establishmentConventionTableHeaders}
           isLoading={isLoading}
           label={"Listing des conventions"}
           hasViewSwitch={true}
           gridData={toEstablishmentConventionGridData(conventions)}
-          emptyGridMessage={getEstablishmentNoConventionFoundMessage(
+          emptyStateMessage={getEstablishmentNoConventionFoundMessage(
             filters.search,
           )}
           tableData={toEstablishmentConventionTableData(conventions)}
@@ -149,24 +145,13 @@ export const EstablishmentConventionList = ({
   );
 };
 
-const getEstablishmentConventionTableHeaders = ({
-  hasConventions,
-  search,
-}: {
-  hasConventions: boolean;
-  search: string | undefined;
-}): RichTableProps["headers"] =>
-  match({ hasConventions, search })
-    .with({ hasConventions: true }, () => [
-      { content: "Personne en immersion" },
-      { content: "Statut" },
-      { content: "Bilan" },
-      { content: "Dates" },
-      { content: "Actions" },
-    ])
-    .otherwise(() => [
-      { content: getEstablishmentNoConventionFoundMessage(search) },
-    ]);
+const establishmentConventionTableHeaders: RichTableProps["headers"] = [
+  { content: "Personne en immersion" },
+  { content: "Statut" },
+  { content: "Bilan" },
+  { content: "Dates" },
+  { content: "Actions" },
+];
 
 const getEstablishmentNoConventionFoundMessage = (
   search: string | undefined,
@@ -299,5 +284,6 @@ const toEstablishmentConventionTableData = (
       conventionDateEnd={convention.dateEnd}
       isDisabled={false}
       id={`${domElementIds.establishmentDashboardConventions.goToConventionButton}--${convention.id}`}
+      unarchiveButtonId={`${domElementIds.establishmentDashboardConventions.unarchiveConventionButton}--${convention.id}`}
     />,
   ]);

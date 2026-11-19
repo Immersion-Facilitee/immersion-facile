@@ -86,7 +86,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
       <WithFeedbackReplacer topic={feedbackTopic} level="error" />
       {showTable && (
         <RichTable
-          headers={getTableHeaders(hasConventions)}
+          headers={beneficiaryConventionTableHeaders}
           isLoading={isLoading}
           tableData={conventionListToTableData(
             conventions,
@@ -98,7 +98,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
             conventions,
             enableBeneficiaryManageConvention.isActive,
           )}
-          emptyGridMessage={noConventionFoundWithFiltersMessage}
+          emptyStateMessage={noConventionFoundWithFiltersMessage}
           searchBar={{
             label: "Rechercher",
             placeholder:
@@ -180,16 +180,13 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
 const noConventionFoundWithFiltersMessage =
   "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche";
 
-const getTableHeaders = (hasConventions: boolean): RichTableProps["headers"] =>
-  hasConventions
-    ? [
-        { content: "Entreprise" },
-        { content: "Statut" },
-        { content: "Bilan" },
-        { content: "Dates" },
-        { content: "Actions" },
-      ]
-    : [{ content: noConventionFoundWithFiltersMessage }];
+const beneficiaryConventionTableHeaders: RichTableProps["headers"] = [
+  { content: "Entreprise" },
+  { content: "Statut" },
+  { content: "Bilan" },
+  { content: "Dates" },
+  { content: "Actions" },
+];
 
 const toBeneficiaryConventionGridData = (
   conventions: BeneficiaryConventionInList[],
@@ -297,5 +294,6 @@ const conventionListToTableData = (
       conventionDateEnd={convention.dateEnd}
       isDisabled={!isBeneficiaryManageConventionEnabled}
       id={`${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`}
+      unarchiveButtonId={`${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${convention.conventionId}`}
     />,
   ]);

@@ -95,32 +95,25 @@ export const EstablishmentsList = ({
           placeholder: "Nom d’enseigne, raison sociale ou SIRET",
           onSubmit: setSearchQuery,
         }}
-        headers={
-          displayedEstablishments.length > 0
-            ? [
-                {
-                  content: "Entreprise",
-                  sort: {
-                    direction: sortDirectionFor("businessName"),
-                    onClick: () => onSortClick("businessName"),
-                  },
-                },
-                {
-                  content: "Mon rôle",
-                  sort: {
-                    direction: sortDirectionFor("role"),
-                    onClick: () => onSortClick("role"),
-                  },
-                },
-                { content: "Administrateurs" },
-                { content: "Actions" },
-              ]
-            : [
-                {
-                  content: `Aucune entreprise trouvée pour la recherche « ${searchQuery} », vous pouvez modifier votre recherche pour l'élargir.`,
-                },
-              ]
-        }
+        emptyStateMessage={`Aucune entreprise trouvée pour la recherche « ${searchQuery} », vous pouvez modifier votre recherche pour l'élargir.`}
+        headers={[
+          {
+            content: "Entreprise",
+            sort: {
+              direction: sortDirectionFor("businessName"),
+              onClick: () => onSortClick("businessName"),
+            },
+          },
+          {
+            content: "Mon rôle",
+            sort: {
+              direction: sortDirectionFor("role"),
+              onClick: () => onSortClick("role"),
+            },
+          },
+          { content: "Administrateurs" },
+          { content: "Actions" },
+        ]}
         tableData={displayedEstablishments.map((establishment) => [
           <EstablishmentNameAndSiret
             key={`${establishment.siret}-name`}

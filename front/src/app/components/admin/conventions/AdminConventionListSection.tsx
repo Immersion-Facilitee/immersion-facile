@@ -323,20 +323,17 @@ export const AdminConventionListSection = ({
                   onSubmit: () => applyFilters(tempFilters, filters.search),
                 }
           }
-          headers={
-            conventions.length > 0
-              ? [
-                  { content: "Conseiller" },
-                  ...(isAgencyScoped ? [] : [{ content: "Structure" }]),
-                  { content: "Statut" },
-                  { content: "Bilan" },
-                  { content: "Personne en immersion" },
-                  { content: "Établissement" },
-                  { content: "Dates" },
-                  { content: "Actions" },
-                ]
-              : [{ content: content.emptyResultMessage }]
-          }
+          emptyStateMessage={content.emptyResultMessage}
+          headers={[
+            { content: "Conseiller" },
+            ...(isAgencyScoped ? [] : [{ content: "Structure" }]),
+            { content: "Statut" },
+            { content: "Bilan" },
+            { content: "Personne en immersion" },
+            { content: "Établissement" },
+            { content: "Dates" },
+            { content: "Actions" },
+          ]}
           tableData={conventions.map((convention) =>
             makeAdminConventionListLine({
               convention,

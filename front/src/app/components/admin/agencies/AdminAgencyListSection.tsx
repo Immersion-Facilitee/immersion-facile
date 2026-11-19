@@ -143,23 +143,15 @@ export const AdminAgencyListSection = (): React.ReactNode => {
             items: dropdownFilters,
             onSubmit: () => applyFilters(tempFilters, filters.search),
           }}
-          headers={
-            agencies.length > 0
-              ? [
-                  { content: "Agence" },
-                  { content: "Type d'agence" },
-                  { content: "SIRET" },
-                  { content: "Statut" },
-                  { content: "Structure prescriptrice" },
-                  { content: "Actions" },
-                ]
-              : [
-                  {
-                    content:
-                      "Aucune agence trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
-                  },
-                ]
-          }
+          emptyStateMessage="Aucune agence trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche."
+          headers={[
+            { content: "Agence" },
+            { content: "Type d'agence" },
+            { content: "SIRET" },
+            { content: "Statut" },
+            { content: "Structure prescriptrice" },
+            { content: "Actions" },
+          ]}
           tableData={agencies.map(makeAdminAgencyListLine)}
           pagination={{
             count: pagination.totalPages,
