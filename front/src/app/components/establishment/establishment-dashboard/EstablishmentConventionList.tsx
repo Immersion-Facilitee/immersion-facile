@@ -1,6 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
-import type { ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { Fragment, type ReactNode, useEffect } from "react";
 import {
   type GridItemProps,
@@ -12,7 +11,6 @@ import {
   type AbsoluteUrl,
   domElementIds,
   type EstablishmentUserConventionListDto,
-  frontRoutes,
   getFormattedFirstnameAndLastname,
   isConventionArchived,
   isConventionEndingInOneDayOrMore,
@@ -30,7 +28,10 @@ import { match, P } from "ts-pattern";
 import { ConventionAssessmentStatusBadge } from "../../convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "../../convention/ConventionDatesDisplay";
 import { ConventionStatusBadge } from "../../convention/ConventionStatusBadge";
-import { UnarchivedOrManageConventionButton } from "../../convention/UnarchivedOrManageConventionButton";
+import {
+  getUnarchivedOrManageConventionButtonProps,
+  UnarchivedOrManageConventionButton,
+} from "../../convention/UnarchivedOrManageConventionButton";
 
 const establishmentConventionListFeedbackTopic: FeedbackTopic =
   "connected-user-establishment-convention-list";
@@ -96,6 +97,9 @@ export const EstablishmentConventionList = ({
           label={"Listing des conventions"}
           hasViewSwitch={true}
           gridData={toEstablishmentConventionGridData(conventions)}
+          emptyGridMessage={getEstablishmentNoConventionFoundMessage(
+            filters.search,
+          )}
           tableData={toEstablishmentConventionTableData(conventions)}
           searchBar={{
             label: "Rechercher",
@@ -160,12 +164,20 @@ const getEstablishmentConventionTableHeaders = ({
       { content: "Dates" },
       { content: "Actions" },
     ])
-    .with({ search: P.string.minLength(1) }, ({ search }) => [
-      {
-        content: `Aucune convention trouvée pour la recherche « ${search} », vous pouvez modifier votre recherche pour l'élargir.`,
-      },
-    ])
-    .otherwise(() => [{ content: "Nous n'avons pas trouvé de convention." }]);
+    .otherwise(() => [
+      { content: getEstablishmentNoConventionFoundMessage(search) },
+    ]);
+
+const getEstablishmentNoConventionFoundMessage = (
+  search: string | undefined,
+): string =>
+  match(search)
+    .with(
+      P.string.minLength(1),
+      (search) =>
+        `Aucune convention trouvée pour la recherche « ${search} », vous pouvez modifier votre recherche pour l'élargir.`,
+    )
+    .otherwise(() => "Nous n'avons pas trouvé de convention.");
 
 const toEstablishmentConventionGridData = (
   conventions: EstablishmentUserConventionListDto[],
@@ -222,57 +234,16 @@ const toEstablishmentConventionGridData = (
           </dd>
         </dl>
       ),
-      cta: toEstablishmentConventionGridCta({
-        convention,
+      cta: getUnarchivedOrManageConventionButtonProps({
+        label: "Voir la convention",
+        conventionId: convention.id,
+        conventionDateEnd: convention.dateEnd,
         isDisabled: false,
+        id: `${domElementIds.establishmentDashboardConventions.goToConventionButton}--${convention.id}`,
+        unarchiveButtonId: `${domElementIds.establishmentDashboardConventions.unarchiveConventionButton}--${convention.id}`,
       }),
     };
   });
-
-const toEstablishmentConventionGridCta = ({
-  convention,
-  isDisabled,
-}: {
-  convention: EstablishmentUserConventionListDto;
-  isDisabled: boolean;
-}): ButtonProps => {
-  const id = `${domElementIds.establishmentDashboardConventions.goToConventionButton}--${convention.id}`;
-
-  if (isDisabled)
-    return {
-      id,
-      disabled: true,
-      children: "Voir la convention",
-    };
-
-  if (
-    isConventionArchived({
-      dateEnd: convention.dateEnd,
-      now: new Date(),
-    })
-  )
-    return {
-      id: `${domElementIds.establishmentDashboardConventions.unarchiveConventionButton}--${convention.id}`,
-      children: "Désarchiver",
-      linkProps: {
-        ...frontRoutes.archivedConventionRequest({
-          conventionId: convention.id,
-        }).link,
-        target: "_blank",
-      },
-    };
-
-  return {
-    id,
-    children: "Voir la convention",
-    linkProps: {
-      ...frontRoutes.manageConventionConnectedUser({
-        conventionId: convention.id,
-      }).link,
-      target: "_blank",
-    },
-  };
-};
 
 const toEstablishmentConventionTableData = (
   conventions: EstablishmentUserConventionListDto[],

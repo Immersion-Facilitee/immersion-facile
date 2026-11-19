@@ -70,10 +70,12 @@ export type RichTableProps = {
   | {
       hasViewSwitch: true;
       gridData: GridItemProps[];
+      emptyGridMessage?: ReactNode;
     }
   | {
       hasViewSwitch: false;
       gridData?: never;
+      emptyGridMessage?: never;
     }
 );
 
@@ -81,6 +83,7 @@ export const RichTable = ({
   headers,
   tableData,
   gridData,
+  emptyGridMessage,
   dropdownFilters,
   searchBar,
   pagination,
@@ -236,6 +239,13 @@ export const RichTable = ({
           bordered={false}
         />
       )}
+      {hasViewSwitch &&
+        selectedViewMode === "grid" &&
+        gridData.length === 0 &&
+        !isLoading &&
+        emptyGridMessage && (
+          <p className={fr.cx("fr-mt-2w")}>{emptyGridMessage}</p>
+        )}
       {hasViewSwitch && selectedViewMode === "grid" && (
         <div
           className={fr.cx(

@@ -1,6 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
-import type { ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { Fragment, useEffect } from "react";
 import {
   type GridItemProps,
@@ -13,7 +12,6 @@ import {
   type BeneficiaryConventionInList,
   defaultPerPageInWebPagination,
   domElementIds,
-  frontRoutes,
   immersionFacileHelpdeskRootUrl,
   isConventionArchived,
   isConventionEndingInOneDayOrMore,
@@ -32,7 +30,10 @@ import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { ConventionAssessmentStatusBadge } from "../../convention/ConventionAssessmentStatusBadge";
 import { ConventionDatesDisplay } from "../../convention/ConventionDatesDisplay";
 import { ConventionStatusBadge } from "../../convention/ConventionStatusBadge";
-import { UnarchivedOrManageConventionButton } from "../../convention/UnarchivedOrManageConventionButton";
+import {
+  getUnarchivedOrManageConventionButtonProps,
+  UnarchivedOrManageConventionButton,
+} from "../../convention/UnarchivedOrManageConventionButton";
 import { WithFeedbackReplacer } from "../../feedback/WithFeedbackReplacer";
 
 export const BeneficiaryConventionList = (): React.ReactNode => {
@@ -97,6 +98,7 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
             conventions,
             enableBeneficiaryManageConvention.isActive,
           )}
+          emptyGridMessage={noConventionFoundWithFiltersMessage}
           searchBar={{
             label: "Rechercher",
             placeholder:
@@ -175,6 +177,9 @@ export const BeneficiaryConventionList = (): React.ReactNode => {
   );
 };
 
+const noConventionFoundWithFiltersMessage =
+  "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche";
+
 const getTableHeaders = (hasConventions: boolean): RichTableProps["headers"] =>
   hasConventions
     ? [
@@ -184,12 +189,7 @@ const getTableHeaders = (hasConventions: boolean): RichTableProps["headers"] =>
         { content: "Dates" },
         { content: "Actions" },
       ]
-    : [
-        {
-          content:
-            "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche",
-        },
-      ];
+    : [{ content: noConventionFoundWithFiltersMessage }];
 
 const toBeneficiaryConventionGridData = (
   conventions: BeneficiaryConventionInList[],
@@ -243,57 +243,16 @@ const toBeneficiaryConventionGridData = (
           </dd>
         </dl>
       ),
-      cta: toBeneficiaryConventionGridCta({
-        convention,
+      cta: getUnarchivedOrManageConventionButtonProps({
+        label: "Voir la convention",
+        conventionId: convention.conventionId,
+        conventionDateEnd: convention.dateEnd,
         isDisabled: !isBeneficiaryManageConventionEnabled,
+        id: `${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`,
+        unarchiveButtonId: `${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${convention.conventionId}`,
       }),
     };
   });
-
-const toBeneficiaryConventionGridCta = ({
-  convention,
-  isDisabled,
-}: {
-  convention: BeneficiaryConventionInList;
-  isDisabled: boolean;
-}): ButtonProps => {
-  const id = `${domElementIds.beneficiaryDashboardConventions.goToConventionButton}--${convention.conventionId}`;
-
-  if (isDisabled)
-    return {
-      id,
-      disabled: true,
-      children: "Voir la convention",
-    };
-
-  if (
-    isConventionArchived({
-      dateEnd: convention.dateEnd,
-      now: new Date(),
-    })
-  )
-    return {
-      id: `${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${convention.conventionId}`,
-      children: "Désarchiver",
-      linkProps: {
-        ...frontRoutes.archivedConventionRequest({
-          conventionId: convention.conventionId,
-        }).link,
-        target: "_blank",
-      },
-    };
-
-  return {
-    id,
-    children: "Voir la convention",
-    linkProps: {
-      ...frontRoutes.manageConventionConnectedUser({
-        conventionId: convention.conventionId,
-      }).link,
-      target: "_blank",
-    },
-  };
-};
 
 const conventionListToTableData = (
   conventionList: BeneficiaryConventionInList[],
