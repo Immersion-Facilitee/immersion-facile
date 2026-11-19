@@ -244,6 +244,16 @@ export const domElementIds = {
     contactByPhoneForm: "im-contact-form--phone",
     contactInPersonButton: "im-contact-establishment__contact-in-person-button",
     contactInPersonForm: "im-contact-form--in-person",
+    aboutAccordion: "im-search-result-about__accordion",
+    jobAccordion: "im-search-result-job__accordion",
+    appellationInformationLink: "im-search-result-job__appellation-link",
+    nafInformationLink: "im-search-result-job__naf-link",
+    websiteLink: "im-search-result-header__website-link",
+    googleMapsLink: "im-search-result-location__google-maps-link",
+    siretLink: "im-search-result-company__siret-link",
+    searchAnotherEstablishmentButton:
+      "im-search-result-contact__search-another-establishment-button",
+    backToSearchButton: "im-search-result-page__back-to-search-button",
   },
   searchResultForStudent: {
     contactByMailButton:
@@ -255,10 +265,33 @@ export const domElementIds = {
     contactInPersonButton:
       "im-contact-establishment__contact-in-person-button--student",
     contactInPersonForm: "im-contact-form--in-person-student",
+    aboutAccordion: "im-search-result-about__accordion--student",
+    jobAccordion: "im-search-result-job__accordion--student",
+    appellationInformationLink:
+      "im-search-result-job__appellation-link--student",
+    nafInformationLink: "im-search-result-job__naf-link--student",
+    websiteLink: "im-search-result-header__website-link--student",
+    googleMapsLink: "im-search-result-location__google-maps-link--student",
+    siretLink: "im-search-result-company__siret-link--student",
+    searchAnotherEstablishmentButton:
+      "im-search-result-contact__search-another-establishment-button--student",
+    backToSearchButton: "im-search-result-page__back-to-search-button--student",
   },
   searchResultExternal: {
     contactByMailButton:
       "im-contact-establishment__contact-email-button--external",
+    aboutAccordion: "im-search-result-about__accordion--external",
+    jobAccordion: "im-search-result-job__accordion--external",
+    appellationInformationLink:
+      "im-search-result-job__appellation-link--external",
+    nafInformationLink: "im-search-result-job__naf-link--external",
+    websiteLink: "im-search-result-header__website-link--external",
+    googleMapsLink: "im-search-result-location__google-maps-link--external",
+    siretLink: "im-search-result-company__siret-link--external",
+    searchAnotherEstablishmentButton:
+      "im-search-result-contact__search-another-establishment-button--external",
+    backToSearchButton:
+      "im-search-result-page__back-to-search-button--external",
   },
   login: {
     radioButtons: "im-login-form__persona-radio-buttons",
