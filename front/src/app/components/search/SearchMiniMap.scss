@@ -33,8 +33,9 @@
     }
 
     .search-map-results__map {
-      height: 42vh;
-      min-height: 386px;
+      height: auto;
+      min-height: 0;
+      aspect-ratio: 577 / 371;
     }
   }
 

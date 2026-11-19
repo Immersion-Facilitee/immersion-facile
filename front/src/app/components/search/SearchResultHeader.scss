@@ -1,0 +1,21 @@
+.im-search-result-header__tag {
+  color: var(--text-label-grey);
+  background-color: var(--background-contrast-grey);
+
+  &--super-enterprise {
+    background-color: var(--yellow-tournesol-925-125);
+  }
+
+  &--rqth {
+    background-color: var(--background-contrast-info);
+  }
+
+  &--lbb {
+    color: var(--text-label-purple-glycine);
+    background-color: var(--background-contrast-purple-glycine);
+  }
+}
+
+.im-search-result-header__tags > li {
+  line-height: 1.5rem;
+}
