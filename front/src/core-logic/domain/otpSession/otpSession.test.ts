@@ -1,16 +1,16 @@
 import { type ActiveOtpSession, expectToEqual } from "shared";
 import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
 import {
-  visitorSessionInitialState,
-  visitorSessionSlice,
-} from "src/core-logic/domain/visitorSession/visitorSession.slice";
+  otpSessionInitialState,
+  otpSessionSlice,
+} from "src/core-logic/domain/otpSession/otpSession.slice";
 import {
   createTestStore,
   type TestDependencies,
 } from "src/core-logic/storeConfig/createTestStore";
 import type { ReduxStore } from "src/core-logic/storeConfig/store";
 
-describe("visitorSession slice", () => {
+describe("otpSession slice", () => {
   const conventionId = "add5c20e-6dd2-45af-affe-927358005251";
   const activeSession: ActiveOtpSession = {
     purpose: "manageConvention",
@@ -28,28 +28,26 @@ describe("visitorSession slice", () => {
 
   it("is loading while the session is requested", () => {
     store.dispatch(
-      visitorSessionSlice.actions.visitorSessionRequested({
+      otpSessionSlice.actions.otpSessionRequested({
         purpose: "manageConvention",
         conventionId,
-        feedbackTopic: "visitor-session",
+        feedbackTopic: "otp-session",
       }),
     );
-    expectToEqual(store.getState().visitorSession, { status: "loading" });
+    expectToEqual(store.getState().otpSession, { status: "loading" });
   });
 
   it("stores the active session", () => {
     store.dispatch(
-      visitorSessionSlice.actions.visitorSessionRequested({
+      otpSessionSlice.actions.otpSessionRequested({
         purpose: "manageConvention",
         conventionId,
-        feedbackTopic: "visitor-session",
+        feedbackTopic: "otp-session",
       }),
     );
-    dependencies.otpChallengeGateway.visitorSessionResponse$.next(
-      activeSession,
-    );
+    dependencies.otpChallengeGateway.otpSessionResponse$.next(activeSession);
 
-    expectToEqual(store.getState().visitorSession, {
+    expectToEqual(store.getState().otpSession, {
       status: "active",
       activeSession,
     });
@@ -57,35 +55,35 @@ describe("visitorSession slice", () => {
 
   it("requires an otp when there is no session", () => {
     store.dispatch(
-      visitorSessionSlice.actions.visitorSessionRequested({
+      otpSessionSlice.actions.otpSessionRequested({
         purpose: "manageConvention",
         conventionId,
-        feedbackTopic: "visitor-session",
+        feedbackTopic: "otp-session",
       }),
     );
-    dependencies.otpChallengeGateway.visitorSessionResponse$.next(null);
+    dependencies.otpChallengeGateway.otpSessionResponse$.next(null);
 
-    expectToEqual(store.getState().visitorSession, { status: "otpRequired" });
+    expectToEqual(store.getState().otpSession, { status: "otpRequired" });
   });
 
   it("stores the back message when the request fails", () => {
     store.dispatch(
-      visitorSessionSlice.actions.visitorSessionRequested({
+      otpSessionSlice.actions.otpSessionRequested({
         purpose: "manageConvention",
         conventionId,
-        feedbackTopic: "visitor-session",
+        feedbackTopic: "otp-session",
       }),
     );
 
     const errorMessage =
       "L'email saisi dans la convention a été modifié. Vous ne pouvez plus accéder à cette convention avec l'email que vous venez d'utiliser.";
-    dependencies.otpChallengeGateway.visitorSessionResponse$.error(
+    dependencies.otpChallengeGateway.otpSessionResponse$.error(
       new Error(errorMessage),
     );
 
-    expectToEqual(store.getState().visitorSession, visitorSessionInitialState);
+    expectToEqual(store.getState().otpSession, otpSessionInitialState);
     expectToEqual(
-      feedbacksSelectors.feedbacks(store.getState())["visitor-session"],
+      feedbacksSelectors.feedbacks(store.getState())["otp-session"],
       {
         on: "fetch",
         level: "error",
@@ -95,16 +93,16 @@ describe("visitorSession slice", () => {
     );
   });
 
-  it("resets the visitor session", () => {
+  it("resets the otp session", () => {
     ({ store } = createTestStore({
-      visitorSession: {
+      otpSession: {
         status: "active",
         activeSession,
       },
     }));
 
-    store.dispatch(visitorSessionSlice.actions.resetVisitorSessionRequested());
+    store.dispatch(otpSessionSlice.actions.resetOtpSessionRequested());
 
-    expectToEqual(store.getState().visitorSession, visitorSessionInitialState);
+    expectToEqual(store.getState().otpSession, otpSessionInitialState);
   });
 });

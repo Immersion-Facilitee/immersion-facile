@@ -18,7 +18,7 @@ export interface OtpChallengeGateway {
     params: VerifyOtpChallengeDto,
     jwt: OtpJwt,
   ): Observable<ActiveOtpSession>;
-  getVisitorSession$(
+  getOtpSession$(
     params: GetOtpSessionQueryParams,
   ): Observable<ActiveOtpSession | null>;
 }

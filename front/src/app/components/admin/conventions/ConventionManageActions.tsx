@@ -74,7 +74,7 @@ export type JwtKindProps =
     }
   | {
       jwt: OtpJwt;
-      kind: "visitor session";
+      kind: "otp session";
     };
 
 type ConventionManageActionsProps = {
@@ -193,8 +193,7 @@ export const ConventionManageActions = ({
     if (verificationAction === "EDIT_CONVENTION_WITH_FINAL_STATUS") {
       if (
         "beneficiary" in params &&
-        (jwtParams.kind === "convention" ||
-          jwtParams.kind === "visitor session")
+        (jwtParams.kind === "convention" || jwtParams.kind === "otp session")
       )
         return;
       dispatch(

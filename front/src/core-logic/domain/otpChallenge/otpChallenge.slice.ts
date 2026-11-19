@@ -79,7 +79,7 @@ export const otpChallengeSlice = createSlice({
     otpChallengeVerificationSucceeded: (
       state,
       _action: PayloadActionWithFeedbackTopic<{
-        activeVisitorSession: ActiveOtpSession;
+        activeOtpSession: ActiveOtpSession;
       }>,
     ) => {
       state.isLoading = false;

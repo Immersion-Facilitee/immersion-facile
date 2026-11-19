@@ -37,7 +37,7 @@ export class SimulatedOtpChallengeGateway implements OtpChallengeGateway {
     });
   }
 
-  public getVisitorSession$(
+  public getOtpSession$(
     params: GetOtpSessionQueryParams,
   ): Observable<ActiveOtpSession | null> {
     return of({

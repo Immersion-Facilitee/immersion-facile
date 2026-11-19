@@ -12,50 +12,48 @@ import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { frontErrors } from "src/app/pages/error/front-errors";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
-import { visitorSessionSelectors } from "src/core-logic/domain/visitorSession/visitorSession.selectors";
-import { visitorSessionSlice } from "src/core-logic/domain/visitorSession/visitorSession.slice";
+import { otpSessionSelectors } from "src/core-logic/domain/otpSession/otpSession.selectors";
+import { otpSessionSlice } from "src/core-logic/domain/otpSession/otpSession.slice";
 
-const visitorSessionFeedbackTopic: FeedbackTopic = "visitor-session";
+const otpSessionFeedbackTopic: FeedbackTopic = "otp-session";
 
-type VisitorPrivateRoutePageProps = {
+type OtpPrivateRoutePageProps = {
   jwt: OtpJwt;
   children: ReactNode;
 };
 
-export const VisitorPrivateRoutePage = ({
+export const OtpPrivateRoutePage = ({
   jwt,
   children,
-}: VisitorPrivateRoutePageProps): JSX.Element => {
+}: OtpPrivateRoutePageProps): JSX.Element => {
   const dispatch = useDispatch();
   const { purpose, subject } =
     decodeMagicLinkJwtWithoutSignatureCheck<OtpJwtPayload>(jwt);
   const { conventionId } = subject;
-  const activeSession = useAppSelector(visitorSessionSelectors.activeSession);
-  const isOtpRequired = useAppSelector(visitorSessionSelectors.isOtpRequired);
-  const visitorSessionFeedback = useFeedbackTopic(visitorSessionFeedbackTopic);
+  const activeSession = useAppSelector(otpSessionSelectors.activeSession);
+  const isOtpRequired = useAppSelector(otpSessionSelectors.isOtpRequired);
+  const otpSessionFeedback = useFeedbackTopic(otpSessionFeedbackTopic);
 
   useEffect(() => {
     dispatch(
-      visitorSessionSlice.actions.visitorSessionRequested({
+      otpSessionSlice.actions.otpSessionRequested({
         purpose,
         conventionId,
-        feedbackTopic: visitorSessionFeedbackTopic,
+        feedbackTopic: otpSessionFeedbackTopic,
       }),
     );
     return () => {
-      dispatch(visitorSessionSlice.actions.resetVisitorSessionRequested());
+      dispatch(otpSessionSlice.actions.resetOtpSessionRequested());
       dispatch(
-        feedbackSlice.actions.clearFeedbackTopics([
-          visitorSessionFeedbackTopic,
-        ]),
+        feedbackSlice.actions.clearFeedbackTopics([otpSessionFeedbackTopic]),
       );
     };
   }, [dispatch, purpose, conventionId]);
 
-  if (visitorSessionFeedback?.level === "error")
-    throw frontErrors.convention.visitorSessionRefused({
+  if (otpSessionFeedback?.level === "error")
+    throw frontErrors.convention.otpSessionRefused({
       conventionId,
-      errorMessage: visitorSessionFeedback.message,
+      errorMessage: otpSessionFeedback.message,
     });
 
   if (activeSession?.conventionId === conventionId) return <>{children}</>;

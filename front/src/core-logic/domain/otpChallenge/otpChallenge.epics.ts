@@ -78,9 +78,9 @@ const verifyOtpChallengeEpic: OtpChallengeEpic = (
           action.payload.jwt,
         )
         .pipe(
-          map((activeVisitorSession) =>
+          map((activeOtpSession) =>
             otpChallengeSlice.actions.otpChallengeVerificationSucceeded({
-              activeVisitorSession,
+              activeOtpSession,
               feedbackTopic: action.payload.feedbackTopic,
             }),
           ),
