@@ -18,8 +18,9 @@ import {
   type UserId,
 } from "shared";
 import type { AppConfig } from "../../../config/bootstrap/appConfig";
-import type { GenerateVisitorOtpUrl } from "../../../config/bootstrap/magicLinkUrl";
+import type { GenerateOtpLinkUrl } from "../../../config/bootstrap/magicLinkUrl";
 import { throwErrorIfConventionStatusNotAllowed } from "../../../utils/convention";
+import { makeEmailHash } from "../../../utils/jwt";
 import { throwIfNotAuthorizedForRole } from "../../connected-users/helpers/authorization.helper";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { SaveNotificationAndRelatedEvent } from "../../core/notifications/helpers/Notification";
@@ -45,7 +46,7 @@ export const makeSendSignatureLink = useCaseBuilder("RemindSignatories")
   .withCurrentUser<ConventionRelatedJwtPayload>()
   .withDeps<{
     saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-    generateVisitorOtpUrl: GenerateVisitorOtpUrl;
+    generateOtpLinkUrl: GenerateOtpLinkUrl;
     timeGateway: TimeGateway;
     shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
     config: AppConfig;
@@ -118,12 +119,14 @@ export const makeSendSignatureLink = useCaseBuilder("RemindSignatories")
       conventionId: convention.id,
     });
 
-    const conventionSignatureLink = deps.generateVisitorOtpUrl({
-      conventionId: convention.id,
-      role: signatory.role,
-      email: signatory.email,
+    const conventionSignatureLink = deps.generateOtpLinkUrl({
+      purpose: "manageConvention",
+      subject: {
+        conventionId: convention.id,
+        role: signatory.role,
+        emailHash: makeEmailHash(signatory.email),
+      },
       now: deps.timeGateway.now(),
-      targetRoute: "manageConvention",
     });
 
     if (notificationKind === "sms") {

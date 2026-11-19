@@ -1,13 +1,13 @@
 import { from, type Observable } from "rxjs";
 import type {
-  ActiveVisitorSession,
-  GetVisitorSessionQueryParams,
+  ActiveOtpSession,
+  GetOtpSessionQueryParams,
   HttpErrorBody,
   MaskedOtpRecipients,
   OtpChallengeRoutes,
+  OtpJwt,
   RequestOtpChallengeDto,
   VerifyOtpChallengeDto,
-  VisitorOtpJwt,
 } from "shared";
 import type { HttpClient, HttpResponse } from "shared-routes";
 import {
@@ -20,16 +20,14 @@ import { match, P } from "ts-pattern";
 
 const throwWithBackMessage = ({
   body,
-}: HttpResponse<number, HttpErrorBody>): never => {
+}: HttpResponse<number, Pick<HttpErrorBody, "message">>): never => {
   throw new Error(body.message);
 };
 
 export class HttpOtpChallengeGateway implements OtpChallengeGateway {
   constructor(private readonly httpClient: HttpClient<OtpChallengeRoutes>) {}
 
-  public getMaskedOtpRecipient$(
-    jwt: VisitorOtpJwt,
-  ): Observable<MaskedOtpRecipients> {
+  public getMaskedOtpRecipient$(jwt: OtpJwt): Observable<MaskedOtpRecipients> {
     return from(
       this.httpClient
         .getMaskedOtpRecipient({ headers: { authorization: jwt } })
@@ -45,7 +43,7 @@ export class HttpOtpChallengeGateway implements OtpChallengeGateway {
 
   public requestOtpChallenge$(
     params: RequestOtpChallengeDto,
-    jwt: VisitorOtpJwt,
+    jwt: OtpJwt,
   ): Observable<void> {
     return from(
       this.httpClient
@@ -66,8 +64,8 @@ export class HttpOtpChallengeGateway implements OtpChallengeGateway {
 
   public verifyOtpChallenge$(
     params: VerifyOtpChallengeDto,
-    jwt: VisitorOtpJwt,
-  ): Observable<ActiveVisitorSession> {
+    jwt: OtpJwt,
+  ): Observable<ActiveOtpSession> {
     return from(
       this.httpClient
         .verifyOtpChallenge({
@@ -86,19 +84,17 @@ export class HttpOtpChallengeGateway implements OtpChallengeGateway {
   }
 
   public getVisitorSession$(
-    params: GetVisitorSessionQueryParams,
-  ): Observable<ActiveVisitorSession | null> {
+    params: GetOtpSessionQueryParams,
+  ): Observable<ActiveOtpSession | null> {
     return from(
-      this.httpClient
-        .getVisitorSession({ queryParams: params })
-        .then((response) =>
-          match(response)
-            .with({ status: 200 }, ({ body }) => body)
-            .with({ status: 401 }, () => null)
-            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
-            .with({ status: 403 }, throwWithBackMessage)
-            .otherwise(otherwiseThrow),
-        ),
+      this.httpClient.getOtpSession({ queryParams: params }).then((response) =>
+        match(response)
+          .with({ status: 200 }, ({ body }) => body)
+          .with({ status: 401 }, () => null)
+          .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+          .with({ status: 403 }, throwWithBackMessage)
+          .otherwise(otherwiseThrow),
+      ),
     );
   }
 }

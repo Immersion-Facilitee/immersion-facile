@@ -1,8 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type {
-  ActiveVisitorSession,
-  GetVisitorSessionQueryParams,
-} from "shared";
+import type { ActiveOtpSession, GetOtpSessionQueryParams } from "shared";
 import type {
   PayloadActionWithFeedbackTopic,
   PayloadActionWithFeedbackTopicError,
@@ -11,7 +8,7 @@ import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallen
 
 export type VisitorSessionState =
   | { status: "idle" | "loading" | "otpRequired" }
-  | { status: "active"; activeSession: ActiveVisitorSession };
+  | { status: "active"; activeSession: ActiveOtpSession };
 
 export const visitorSessionInitialState: VisitorSessionState = {
   status: "idle",
@@ -26,11 +23,11 @@ export const visitorSessionSlice = createSlice({
   reducers: {
     visitorSessionRequested: (
       _state,
-      _action: PayloadActionWithFeedbackTopic<GetVisitorSessionQueryParams>,
+      _action: PayloadActionWithFeedbackTopic<GetOtpSessionQueryParams>,
     ): VisitorSessionState => ({ status: "loading" }),
     visitorSessionSucceeded: (
       _state,
-      action: PayloadAction<ActiveVisitorSession | null>,
+      action: PayloadAction<ActiveOtpSession | null>,
     ): VisitorSessionState =>
       action.payload
         ? { status: "active", activeSession: action.payload }

@@ -3,8 +3,8 @@ import { Loader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   decodeMagicLinkJwtWithoutSignatureCheck,
-  type VisitorOtpJwt,
-  type VisitorOtpJwtPayload,
+  type OtpJwt,
+  type OtpJwtPayload,
 } from "shared";
 import { OtpChallenge } from "src/app/components/auth/OtpChallenge";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
@@ -18,7 +18,7 @@ import { visitorSessionSlice } from "src/core-logic/domain/visitorSession/visito
 const visitorSessionFeedbackTopic: FeedbackTopic = "visitor-session";
 
 type VisitorPrivateRoutePageProps = {
-  jwt: VisitorOtpJwt;
+  jwt: OtpJwt;
   children: ReactNode;
 };
 
@@ -28,7 +28,7 @@ export const VisitorPrivateRoutePage = ({
 }: VisitorPrivateRoutePageProps): JSX.Element => {
   const dispatch = useDispatch();
   const { purpose, subject } =
-    decodeMagicLinkJwtWithoutSignatureCheck<VisitorOtpJwtPayload>(jwt);
+    decodeMagicLinkJwtWithoutSignatureCheck<OtpJwtPayload>(jwt);
   const { conventionId } = subject;
   const activeSession = useAppSelector(visitorSessionSelectors.activeSession);
   const isOtpRequired = useAppSelector(visitorSessionSelectors.isOtpRequired);

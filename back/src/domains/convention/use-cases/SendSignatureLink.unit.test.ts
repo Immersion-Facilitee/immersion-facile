@@ -22,8 +22,11 @@ import {
 } from "shared";
 import { AppConfigBuilder } from "../../../utils/AppConfigBuilder";
 import { toAgencyWithRights } from "../../../utils/agency";
-import { createConventionMagicLinkPayload } from "../../../utils/jwt";
-import { fakeGenerateVisitorOtpUrl } from "../../../utils/jwtTestHelper";
+import {
+  createConventionMagicLinkPayload,
+  makeEmailHash,
+} from "../../../utils/jwt";
+import { fakeGenerateOtpLinkUrlFn } from "../../../utils/jwtTestHelper";
 import { makeCreateNewEvent } from "../../core/events/ports/EventBus";
 import {
   makeSaveNotificationAndRelatedEvent,
@@ -165,7 +168,7 @@ describe("Send signature link", () => {
       uowPerformer: new InMemoryUowPerformer(uow),
       deps: {
         saveNotificationAndRelatedEvent,
-        generateVisitorOtpUrl: fakeGenerateVisitorOtpUrl,
+        generateOtpLinkUrl: fakeGenerateOtpLinkUrlFn,
         timeGateway,
         shortLinkIdGeneratorGateway,
         config,
@@ -615,12 +618,16 @@ describe("Send signature link", () => {
           expectToEqual(uow.shortLinkQuery.getShortLinks(), [
             {
               id: shortLinkId,
-              url: fakeGenerateVisitorOtpUrl({
-                conventionId: convention.id,
-                role: convention.signatories.establishmentRepresentative.role,
-                email: convention.signatories.establishmentRepresentative.email,
+              url: fakeGenerateOtpLinkUrlFn({
+                purpose: "manageConvention",
+                subject: {
+                  conventionId: convention.id,
+                  role: convention.signatories.establishmentRepresentative.role,
+                  emailHash: makeEmailHash(
+                    convention.signatories.establishmentRepresentative.email,
+                  ),
+                },
                 now: timeGateway.now(),
-                targetRoute: "manageConvention",
               }),
               lastUsedAt: null,
             },
@@ -718,12 +725,14 @@ describe("Send signature link", () => {
           expectToEqual(uow.shortLinkQuery.getShortLinks(), [
             {
               id: shortLinkId,
-              url: fakeGenerateVisitorOtpUrl({
-                conventionId: conventionWithAllSignatories.id,
-                role: recipient.role,
-                email: recipient.email,
+              url: fakeGenerateOtpLinkUrlFn({
+                purpose: "manageConvention",
+                subject: {
+                  conventionId: conventionWithAllSignatories.id,
+                  role: recipient.role,
+                  emailHash: makeEmailHash(recipient.email),
+                },
                 now: timeGateway.now(),
-                targetRoute: "manageConvention",
               }),
               lastUsedAt: null,
             },
@@ -1044,7 +1053,7 @@ describe("Send signature link", () => {
   describe("Right paths: send signature link email", () => {
     describe("from connected user", () => {
       it.each(["beneficiary", "establishment-representative"] as const)(
-        "sends visitor OTP signature link by email to %s",
+        "sends OTP signature link by email to %s",
         async (signatoryRole) => {
           uow.conventionRepository.setConventions([convention]);
           uow.agencyRepository.agencies = [
@@ -1110,12 +1119,14 @@ describe("Send signature link", () => {
                     firstname: convention.signatories.beneficiary.firstName,
                     lastname: convention.signatories.beneficiary.lastName,
                   }),
-                  conventionSignatureLink: fakeGenerateVisitorOtpUrl({
-                    conventionId: convention.id,
-                    role: recipient.role,
-                    email: recipient.email,
+                  conventionSignatureLink: fakeGenerateOtpLinkUrlFn({
+                    purpose: "manageConvention",
+                    subject: {
+                      conventionId: convention.id,
+                      role: recipient.role,
+                      emailHash: makeEmailHash(recipient.email),
+                    },
                     now: timeGateway.now(),
-                    targetRoute: "manageConvention",
                   }),
                   agencyLogoUrl: undefined,
                   renewed: convention.renewed,

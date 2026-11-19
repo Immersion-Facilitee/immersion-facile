@@ -10,8 +10,9 @@ import {
   type TemplatedEmail,
   withConventionSchema,
 } from "shared";
-import type { GenerateVisitorOtpUrl } from "../../../../config/bootstrap/magicLinkUrl";
+import type { GenerateOtpLinkUrl } from "../../../../config/bootstrap/magicLinkUrl";
 import { agencyWithRightToAgencyDto } from "../../../../utils/agency";
+import { makeEmailHash } from "../../../../utils/jwt";
 import { createLogger } from "../../../../utils/logger";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import type { TimeGateway } from "../../../core/time-gateway/ports/TimeGateway";
@@ -25,7 +26,7 @@ export type NotifySignatoriesThatConventionSubmittedNeedsSignature = ReturnType<
 
 type Deps = {
   saveNotificationAndRelatedEvent: SaveNotificationAndRelatedEvent;
-  generateVisitorOtpUrl: GenerateVisitorOtpUrl;
+  generateOtpLinkUrl: GenerateOtpLinkUrl;
   timeGateway: TimeGateway;
 };
 
@@ -59,12 +60,14 @@ export const makeNotifySignatoriesThatConventionSubmittedNeedsSignature =
             signatory,
             convention,
             agency: await agencyWithRightToAgencyDto(uow, agencyWithRights),
-            conventionSignatureLink: deps.generateVisitorOtpUrl({
-              conventionId: convention.id,
-              role: signatory.role,
-              email: signatory.email,
+            conventionSignatureLink: deps.generateOtpLinkUrl({
+              purpose: "manageConvention",
+              subject: {
+                conventionId: convention.id,
+                role: signatory.role,
+                emailHash: makeEmailHash(signatory.email),
+              },
               now,
-              targetRoute: "manageConvention",
             }),
           }),
           followedIds: {

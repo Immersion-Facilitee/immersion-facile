@@ -1,24 +1,24 @@
 import type { Observable } from "rxjs";
 import type {
-  ActiveVisitorSession,
-  GetVisitorSessionQueryParams,
+  ActiveOtpSession,
+  GetOtpSessionQueryParams,
   MaskedOtpRecipients,
+  OtpJwt,
   RequestOtpChallengeDto,
   VerifyOtpChallengeDto,
-  VisitorOtpJwt,
 } from "shared";
 
 export interface OtpChallengeGateway {
-  getMaskedOtpRecipient$(jwt: VisitorOtpJwt): Observable<MaskedOtpRecipients>;
+  getMaskedOtpRecipient$(jwt: OtpJwt): Observable<MaskedOtpRecipients>;
   requestOtpChallenge$(
     params: RequestOtpChallengeDto,
-    jwt: VisitorOtpJwt,
+    jwt: OtpJwt,
   ): Observable<void>;
   verifyOtpChallenge$(
     params: VerifyOtpChallengeDto,
-    jwt: VisitorOtpJwt,
-  ): Observable<ActiveVisitorSession>;
+    jwt: OtpJwt,
+  ): Observable<ActiveOtpSession>;
   getVisitorSession$(
-    params: GetVisitorSessionQueryParams,
-  ): Observable<ActiveVisitorSession | null>;
+    params: GetOtpSessionQueryParams,
+  ): Observable<ActiveOtpSession | null>;
 }
