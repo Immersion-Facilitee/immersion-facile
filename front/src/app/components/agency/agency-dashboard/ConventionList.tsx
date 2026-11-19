@@ -63,7 +63,6 @@ export const ConventionList = () => {
     pagination,
     filters,
   } = useAppSelector(conventionListSelectors.conventionsWithPagination);
-  const hasConventions = conventions.length > 0;
   const hasManyAgencies = (currentUser?.agencyRights?.length ?? 0) > 1;
   const filtersAreEmpty = equals(
     filters,
@@ -183,28 +182,15 @@ export const ConventionList = () => {
     return;
   }
 
-  const getTableHeaders = (): RichTableProps["headers"] => {
-    if (hasConventions) {
-      return [
-        { content: "Conseiller" },
-        { content: "Statut" },
-        { content: "Bilan" },
-        { content: "Personne en immersion" },
-        { content: "Établissement" },
-        { content: "Dates" },
-        { content: "Actions" },
-      ];
-    }
-    if (!filtersAreEmpty) {
-      return [
-        {
-          content:
-            "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche.",
-        },
-      ];
-    }
-    return [{ content: "Nous n'avons pas trouvé de convention." }];
-  };
+  const agencyConventionTableHeaders: RichTableProps["headers"] = [
+    { content: "Conseiller" },
+    { content: "Statut" },
+    { content: "Bilan" },
+    { content: "Personne en immersion" },
+    { content: "Établissement" },
+    { content: "Dates" },
+    { content: "Actions" },
+  ];
 
   return (
     <HeadingSection
@@ -231,9 +217,14 @@ export const ConventionList = () => {
           ))
           .with({ conventions: P.not(P.nullish) }, () => (
             <RichTable
-              headers={getTableHeaders()}
+              headers={agencyConventionTableHeaders}
               isLoading={isLoading}
               label={"Listing des conventions"}
+              emptyStateMessage={
+                filtersAreEmpty
+                  ? "Nous n'avons pas trouvé de convention."
+                  : "Aucune convention trouvée avec ces filtres, vous pouvez modifier les filtres pour élargir votre recherche."
+              }
               hasViewSwitch={false}
               tableData={conventions.map((convention) => [
                 <AgencyReferentCell
@@ -274,6 +265,7 @@ export const ConventionList = () => {
                   conventionDateEnd={convention.dateEnd}
                   isDisabled={false}
                   id={`${domElementIds.agencyDashboard.dashboard.goToConventionButton}--${convention.id}`}
+                  unarchiveButtonId={`${domElementIds.agencyDashboard.dashboard.unarchiveConventionButton}--${convention.id}`}
                 />,
               ])}
               dropdownFilters={{

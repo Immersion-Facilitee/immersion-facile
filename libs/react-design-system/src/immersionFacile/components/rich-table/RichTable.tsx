@@ -65,17 +65,16 @@ export type RichTableProps = {
   pagination?: PaginationProps;
   isLoading: boolean;
   label: string;
+  emptyStateMessage: ReactNode;
   className?: string;
 } & (
   | {
       hasViewSwitch: true;
       gridData: GridItemProps[];
-      emptyGridMessage?: ReactNode;
     }
   | {
       hasViewSwitch: false;
       gridData?: never;
-      emptyGridMessage?: never;
     }
 );
 
@@ -83,7 +82,7 @@ export const RichTable = ({
   headers,
   tableData,
   gridData,
-  emptyGridMessage,
+  emptyStateMessage,
   dropdownFilters,
   searchBar,
   pagination,
@@ -116,6 +115,12 @@ export const RichTable = ({
       />
     );
   });
+
+  const isTableViewDisplayed = !hasViewSwitch || selectedViewMode === "table";
+  const displayedItemsCount = isTableViewDisplayed
+    ? tableData.length
+    : (gridData?.length ?? 0);
+  const isEmptyStateDisplayed = !isLoading && displayedItemsCount === 0;
 
   const rootId = useId();
 
@@ -231,7 +236,10 @@ export const RichTable = ({
           </div>
         )}
       </header>
-      {(!hasViewSwitch || selectedViewMode === "table") && (
+      {isEmptyStateDisplayed && (
+        <p className={fr.cx("fr-mt-2w")}>{emptyStateMessage}</p>
+      )}
+      {!isEmptyStateDisplayed && isTableViewDisplayed && (
         <ResponsiveTable
           ref={tableRef}
           headers={headersWithControls}
@@ -239,14 +247,7 @@ export const RichTable = ({
           bordered={false}
         />
       )}
-      {hasViewSwitch &&
-        selectedViewMode === "grid" &&
-        gridData.length === 0 &&
-        !isLoading &&
-        emptyGridMessage && (
-          <p className={fr.cx("fr-mt-2w")}>{emptyGridMessage}</p>
-        )}
-      {hasViewSwitch && selectedViewMode === "grid" && (
+      {!isEmptyStateDisplayed && hasViewSwitch && !isTableViewDisplayed && (
         <div
           className={fr.cx(
             "fr-grid-row",
