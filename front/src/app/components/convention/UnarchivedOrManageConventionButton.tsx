@@ -1,4 +1,4 @@
-import { Button } from "@codegouvfr/react-dsfr/Button";
+import { Button, type ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import {
   type ConventionId,
   type DateString,
@@ -7,54 +7,60 @@ import {
   isConventionArchived,
 } from "shared";
 
-export const UnarchivedOrManageConventionButton = ({
-  label,
-  conventionId,
-  conventionDateEnd,
-  isDisabled,
-  id,
-}: {
+type UnarchivedOrManageConventionButtonParams = {
   label: string;
   conventionId: ConventionId;
   conventionDateEnd: DateString;
   isDisabled: boolean;
   id: string;
-}): React.ReactNode => {
-  if (isDisabled)
-    return (
-      <Button disabled size="small" priority="secondary" id={id}>
-        {label}
-      </Button>
-    );
+};
 
-  return isConventionArchived({
-    dateEnd: conventionDateEnd,
-    now: new Date(),
-  }) ? (
-    <Button
-      id={`${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${conventionId}`}
-      size="small"
-      priority="secondary"
-      linkProps={{
+export const getUnarchivedOrManageConventionButtonProps = ({
+  label,
+  conventionId,
+  conventionDateEnd,
+  isDisabled,
+  id,
+  unarchiveButtonId,
+}: UnarchivedOrManageConventionButtonParams & {
+  unarchiveButtonId: string;
+}): ButtonProps => {
+  if (isDisabled)
+    return {
+      id,
+      disabled: true,
+      children: label,
+    };
+
+  if (isConventionArchived({ dateEnd: conventionDateEnd, now: new Date() }))
+    return {
+      id: unarchiveButtonId,
+      children: "Désarchiver",
+      linkProps: {
         ...frontRoutes.archivedConventionRequest({ conventionId }).link,
         target: "_blank",
-      }}
-    >
-      Désarchiver
-    </Button>
-  ) : (
-    <Button
-      id={id}
-      size="small"
-      priority="secondary"
-      linkProps={{
-        ...frontRoutes.manageConventionConnectedUser({
-          conventionId,
-        }).link,
-        target: "_blank",
-      }}
-    >
-      {label}
-    </Button>
-  );
+      },
+    };
+
+  return {
+    id,
+    children: label,
+    linkProps: {
+      ...frontRoutes.manageConventionConnectedUser({ conventionId }).link,
+      target: "_blank",
+    },
+  };
 };
+
+export const UnarchivedOrManageConventionButton = (
+  params: UnarchivedOrManageConventionButtonParams,
+): React.ReactNode => (
+  <Button
+    size="small"
+    priority="secondary"
+    {...getUnarchivedOrManageConventionButtonProps({
+      ...params,
+      unarchiveButtonId: `${domElementIds.beneficiaryDashboardConventions.unarchiveConventionButton}--${params.conventionId}`,
+    })}
+  />
+);
