@@ -1,10 +1,8 @@
-import { subMonths } from "date-fns";
 import {
   type ConnectedUser,
   type ConventionDto,
   type ConventionId,
   type DataWithPagination,
-  defaultMonthsThresholdForConventionsListing,
   type EstablishmentUserConventionListDto,
   type FlatGetConventionsForEstablishmentUserParams,
   flatGetConventionsForEstablishmentUserParamsSchema,
@@ -13,7 +11,6 @@ import {
   partitionUserEstablishmentRightsByStatus,
 } from "shared";
 import { assesmentEntityToConventionAssessmentFields } from "../../../utils/convention";
-import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { AssessmentEntity } from "../entities/AssessmentEntity";
 
@@ -25,9 +22,7 @@ export const makeGetConventionsForEstablishmentUser = useCaseBuilder(
   )
   .withOutput<DataWithPagination<EstablishmentUserConventionListDto>>()
   .withCurrentUser<ConnectedUser>()
-  .withDeps<{ timeGateway: TimeGateway }>()
-  .build(async ({ inputParams, uow, currentUser, deps }) => {
-    const featureFlags = await uow.featureFlagQueries.getAll();
+  .build(async ({ inputParams, uow, currentUser }) => {
     const { acceptedUserEstablishmentsRights } =
       partitionUserEstablishmentRightsByStatus(currentUser.establishments);
 
@@ -40,16 +35,6 @@ export const makeGetConventionsForEstablishmentUser = useCaseBuilder(
             email: currentUser.email,
             sirets: acceptedUserEstablishmentsRights.map(({ siret }) => siret),
           },
-          ...(featureFlags.enableRequestArchivedConvention.isActive
-            ? {}
-            : {
-                dateEnd: {
-                  from: subMonths(
-                    deps.timeGateway.now(),
-                    defaultMonthsThresholdForConventionsListing,
-                  ).toISOString(),
-                },
-              }),
         },
         pagination: getPaginationParamsForWeb(inputParams),
       });

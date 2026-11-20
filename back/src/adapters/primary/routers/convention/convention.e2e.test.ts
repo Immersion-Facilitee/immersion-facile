@@ -1,4 +1,4 @@
-import { addDays, subDays, subHours, subMonths } from "date-fns";
+import { addDays, subHours } from "date-fns";
 import {
   type AbsoluteUrl,
   type AddConventionInput,
@@ -15,7 +15,6 @@ import {
   type ConventionReadDto,
   conventionMagicLinkRoutes,
   currentJwtVersions,
-  defaultMonthsThresholdForConventionsListing,
   defaultProConnectInfos,
   displayRouteName,
   errors,
@@ -26,7 +25,6 @@ import {
   expectToEqual,
   expiredJwtErrorMessage,
   frontRoutes,
-  makeBooleanFeatureFlag,
   makeEmptyLastReminders,
   makeRouteAbsoluteUrl,
   reasonableSchedule,
@@ -77,9 +75,20 @@ describe("convention e2e", () => {
     createdAt: new Date().toISOString(),
     preventToDelete: false,
   };
+  const archivedConvention = new ConventionDtoBuilder()
+    .withAgencyId(ftAgency.id)
+    .withFederatedIdentity({ provider: "ftConnect", token: "some-id" })
+    .build();
   const convention = new ConventionDtoBuilder()
     .withAgencyId(ftAgency.id)
     .withFederatedIdentity({ provider: "ftConnect", token: "some-id" })
+    .withDateSubmission(new Date("2026-10-02").toISOString())
+    .withDateStart(new Date("2026-10-06").toISOString())
+    .withDateEnd(new Date("2026-10-15").toISOString())
+    .withUpdatedAt(new Date("2026-10-02").toISOString())
+    .withSchedule(reasonableSchedule)
+    .signedByBeneficiary(new Date("2026-10-02").toISOString())
+    .signedByEstablishmentRepresentative(new Date("2026-10-02").toISOString())
     .build();
 
   const unknownId: ConventionId = "add5c20e-6dd2-45af-affe-927358005251";
@@ -611,18 +620,6 @@ describe("convention e2e", () => {
     });
 
     describe("when convention is archived", () => {
-      const now = new Date("2021-09-01T10:10:00.000Z");
-      const dateEnd = subMonths(
-        now,
-        defaultMonthsThresholdForConventionsListing + 1,
-      );
-      const archivedConvention = new ConventionDtoBuilder(convention)
-        .withDateSubmission(subDays(dateEnd, 10).toISOString())
-        .withDateStart(subDays(dateEnd, 4).toISOString())
-        .withDateEnd(dateEnd.toISOString())
-        .withSchedule(reasonableSchedule)
-        .build();
-
       const expectedArchivedConventionBody: ConventionReadDto = {
         ...archivedConvention,
         agencyName: ftAgency.name,
@@ -641,11 +638,64 @@ describe("convention e2e", () => {
         inMemoryUow.userRepository.users = [validator, backofficeAdminUser];
       });
 
-      it("200 - flag inactive, connected user with rights", async () => {
+      it("403 - magic link with rights gets archived error", async () => {
+        const response = await magicLinkRequest.getConvention({
+          headers: {
+            authorization: generateConventionJwt({
+              applicationId: archivedConvention.id,
+              role: "beneficiary",
+              emailHash: makeEmailHash(
+                archivedConvention.signatories.beneficiary.email,
+              ),
+              iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+              exp:
+                Math.round(gateways.timeGateway.now().getTime() / 1000) +
+                31 * 24 * 3600,
+              version: currentJwtVersions.convention,
+            }),
+          },
+          urlParams: { conventionId: archivedConvention.id },
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 403,
+          body: {
+            status: 403,
+            message: errors.convention.archived({
+              conventionId: archivedConvention.id,
+            }).message,
+          },
+        });
+      });
+
+      it("403 - connected user with rights gets archived error", async () => {
         const response = await magicLinkRequest.getConvention({
           headers: {
             authorization: generateConnectedUserJwt({
               userId: validator.id,
+              version: currentJwtVersions.connectedUser,
+              iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+            }),
+          },
+          urlParams: { conventionId: archivedConvention.id },
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 403,
+          body: {
+            status: 403,
+            message: errors.convention.archived({
+              conventionId: archivedConvention.id,
+            }).message,
+          },
+        });
+      });
+
+      it("200 - backoffice admin can get archived convention", async () => {
+        const response = await magicLinkRequest.getConvention({
+          headers: {
+            authorization: generateConnectedUserJwt({
+              userId: backofficeAdminUser.id,
               version: currentJwtVersions.connectedUser,
               iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
             }),
@@ -659,113 +709,34 @@ describe("convention e2e", () => {
         });
       });
 
-      describe("when enableRequestArchivedConvention is active", () => {
-        beforeEach(() => {
-          inMemoryUow.featureFlagRepository.featureFlags = {
-            enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-          };
+      it("403 - connected user without rights gets missing rights, not archived", async () => {
+        const userWithNoRightOnConvention = new ConnectedUserBuilder()
+          .withId("user-with-no-right-on-convention")
+          .withEmail("user-with-no-right-on-convention@mail.com")
+          .buildUser();
+
+        inMemoryUow.userRepository.users = [userWithNoRightOnConvention];
+
+        const response = await magicLinkRequest.getConvention({
+          headers: {
+            authorization: generateConnectedUserJwt({
+              userId: userWithNoRightOnConvention.id,
+              version: currentJwtVersions.connectedUser,
+              iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
+            }),
+          },
+          urlParams: { conventionId: archivedConvention.id },
         });
 
-        it("403 - magic link with rights gets archived error", async () => {
-          const response = await magicLinkRequest.getConvention({
-            headers: {
-              authorization: generateConventionJwt({
-                applicationId: archivedConvention.id,
-                role: "beneficiary",
-                emailHash: makeEmailHash(
-                  archivedConvention.signatories.beneficiary.email,
-                ),
-                iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
-                exp:
-                  Math.round(gateways.timeGateway.now().getTime() / 1000) +
-                  31 * 24 * 3600,
-                version: currentJwtVersions.convention,
-              }),
-            },
-            urlParams: { conventionId: archivedConvention.id },
-          });
-
-          expectHttpResponseToEqual(response, {
+        expectHttpResponseToEqual(response, {
+          status: 403,
+          body: {
             status: 403,
-            body: {
-              status: 403,
-              message: errors.convention.archived({
-                conventionId: archivedConvention.id,
-              }).message,
-            },
-          });
-        });
-
-        it("403 - connected user with rights gets archived error", async () => {
-          const response = await magicLinkRequest.getConvention({
-            headers: {
-              authorization: generateConnectedUserJwt({
-                userId: validator.id,
-                version: currentJwtVersions.connectedUser,
-                iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
-              }),
-            },
-            urlParams: { conventionId: archivedConvention.id },
-          });
-
-          expectHttpResponseToEqual(response, {
-            status: 403,
-            body: {
-              status: 403,
-              message: errors.convention.archived({
-                conventionId: archivedConvention.id,
-              }).message,
-            },
-          });
-        });
-
-        it("200 - backoffice admin can get archived convention", async () => {
-          const response = await magicLinkRequest.getConvention({
-            headers: {
-              authorization: generateConnectedUserJwt({
-                userId: backofficeAdminUser.id,
-                version: currentJwtVersions.connectedUser,
-                iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
-              }),
-            },
-            urlParams: { conventionId: archivedConvention.id },
-          });
-
-          expectHttpResponseToEqual(response, {
-            status: 200,
-            body: expectedArchivedConventionBody,
-          });
-        });
-
-        it("403 - connected user without rights gets missing rights, not archived", async () => {
-          const userWithNoRightOnConvention = new ConnectedUserBuilder()
-            .withId("user-with-no-right-on-convention")
-            .withEmail("user-with-no-right-on-convention@mail.com")
-            .buildUser();
-
-          inMemoryUow.userRepository.users = [userWithNoRightOnConvention];
-
-          const response = await magicLinkRequest.getConvention({
-            headers: {
-              authorization: generateConnectedUserJwt({
-                userId: userWithNoRightOnConvention.id,
-                version: currentJwtVersions.connectedUser,
-                iat: Math.round(gateways.timeGateway.now().getTime() / 1000),
-              }),
-            },
-            urlParams: { conventionId: archivedConvention.id },
-          });
-
-          expectHttpResponseToEqual(response, {
-            status: 403,
-            body: {
-              status: 403,
-              message: errors.convention.forbiddenMissingRightsUserId({
-                conventionId: archivedConvention.id,
-                userId: userWithNoRightOnConvention.id,
-              }).message,
-            },
-          });
+            message: errors.convention.forbiddenMissingRightsUserId({
+              conventionId: archivedConvention.id,
+              userId: userWithNoRightOnConvention.id,
+            }).message,
+          },
         });
       });
     });

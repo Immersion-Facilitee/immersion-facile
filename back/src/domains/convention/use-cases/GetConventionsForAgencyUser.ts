@@ -1,23 +1,17 @@
-import { subMonths } from "date-fns";
 import {
   type AgencyRight,
   type AgencyRole,
   type AgencyUserConventionListDto,
   type ConnectedUser,
   type DataWithPagination,
-  type DateFilter,
-  type DateString,
-  defaultMonthsThresholdForConventionsListing,
   type GetConventionsForAgencyUserParams,
   type GetPaginatedConventionsSortBy,
   getConventionsForAgencyUserParamsSchema,
   getPaginationParamsForWeb,
-  isConventionArchived,
   type WithSort,
 } from "shared";
 import { conventionDtosToAgencyUserConventionListDtos } from "../../../utils/convention";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
-import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 
 export const makeGetConventionsForAgencyUser = useCaseBuilder(
@@ -28,8 +22,7 @@ export const makeGetConventionsForAgencyUser = useCaseBuilder(
   )
   .withOutput<DataWithPagination<AgencyUserConventionListDto>>()
   .withCurrentUser<ConnectedUser>()
-  .withDeps<{ timeGateway: TimeGateway }>()
-  .build(async ({ inputParams, uow, currentUser, deps }) => {
+  .build(async ({ inputParams, uow, currentUser }) => {
     const { filters, sort } = inputParams;
     const {
       agencyDepartmentCodes: departmentCodesFilter,
@@ -69,8 +62,6 @@ export const makeGetConventionsForAgencyUser = useCaseBuilder(
       .filter(isValidatorOfAgencyRefersTo)
       .map(({ agency }) => agency.id);
 
-    const featureFlags = await uow.featureFlagQueries.getAll();
-
     const paginated = await uow.conventionQueries.getPaginatedConventions({
       ...withSort,
       filters: {
@@ -84,14 +75,6 @@ export const makeGetConventionsForAgencyUser = useCaseBuilder(
               },
             }
           : {}),
-        ...(featureFlags.enableRequestArchivedConvention.isActive
-          ? {}
-          : {
-              dateEnd: computeDateEnd(
-                restFilters.dateEnd,
-                deps.timeGateway.now(),
-              ),
-            }),
       },
       pagination,
     });
@@ -116,29 +99,3 @@ const isValidatorOfAgencyRefersTo = ({ agency, roles }: AgencyRight) =>
   !roles.includes("counsellor") &&
   !roles.includes("agency-admin") &&
   !roles.includes("agency-viewer");
-
-const computeDateEnd = (
-  dateEnd: DateFilter | undefined,
-  now: Date,
-): DateFilter => ({
-  ...dateEnd,
-  from: shouldUseDefaultDateEndFrom(dateEnd?.from, now)
-    ? subMonths(now, defaultMonthsThresholdForConventionsListing).toISOString()
-    : dateEnd?.from,
-  to: shouldIgnoreDateEndTo(dateEnd?.to, now) ? undefined : dateEnd?.to,
-});
-
-const isRequestingArchivedConventions = isConventionArchived;
-
-const shouldUseDefaultDateEndFrom = (
-  dateEndFrom: DateString | undefined,
-  now: Date,
-): boolean =>
-  !dateEndFrom ||
-  isRequestingArchivedConventions({ dateEnd: dateEndFrom, now });
-
-const shouldIgnoreDateEndTo = (
-  dateEndTo: DateString | undefined,
-  now: Date,
-): boolean =>
-  !!dateEndTo && isRequestingArchivedConventions({ dateEnd: dateEndTo, now });

@@ -13,7 +13,6 @@ import {
   expectObjectInArrayToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
-  makeBooleanFeatureFlag,
   type Notification,
   reasonableSchedule,
   type SignatoryRole,
@@ -1000,7 +999,7 @@ describe("SendAssessmentLink", () => {
   });
 
   describe("archived convention", () => {
-    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+    it("throws when convention is archived and caller is not admin", async () => {
       const archivedDateEnd = subMonths(
         timeGateway.now(),
         defaultMonthsThresholdForConventionsListing + 1,
@@ -1014,10 +1013,6 @@ describe("SendAssessmentLink", () => {
 
       uow.agencyRepository.agencies = [toAgencyWithRights(agency, {})];
       uow.conventionRepository.setConventions([archivedConvention]);
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
-
       await expectPromiseToFailWithError(
         usecase.execute(
           {

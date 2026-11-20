@@ -17,7 +17,6 @@ import {
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
-  makeBooleanFeatureFlag,
   reasonableSchedule,
   type Signatories,
   type SignatoryRole,
@@ -537,15 +536,12 @@ describe("Sign convention", () => {
         .build();
     };
 
-    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+    it("throws when convention is archived and caller is not admin", async () => {
       const { convention, agency } =
         prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
       const archivedConvention = makeArchivedConvention(convention);
       uow.conventionRepository.setConventions([archivedConvention]);
       uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
 
       await expectPromiseToFailWithError(
         signConvention.execute(
@@ -560,35 +556,6 @@ describe("Sign convention", () => {
           conventionId: archivedConvention.id,
         }),
       );
-    });
-
-    it("signs when enableRequestArchivedConvention is inactive", async () => {
-      const { convention, agency } =
-        prepareAgencyAndConventionWithStatus("READY_TO_SIGN");
-      const archivedConvention = makeArchivedConvention(convention);
-      uow.conventionRepository.setConventions([archivedConvention]);
-      uow.agencyRepository.agencies = [toAgencyWithRights(agency)];
-      const signedAt = new Date("2022-01-01");
-      timeGateway.setNextDate(signedAt);
-
-      await signConvention.execute(
-        { conventionId: archivedConvention.id },
-        {
-          role: "beneficiary",
-          applicationId: archivedConvention.id,
-          emailHash: "toto",
-        },
-      );
-
-      expectToEqual(uow.conventionRepository.conventions, [
-        {
-          ...archivedConvention,
-          status: "PARTIALLY_SIGNED",
-          signatories: makeSignatories(archivedConvention, {
-            beneficiarySignedAt: signedAt.toISOString(),
-          }),
-        },
-      ]);
     });
   });
 

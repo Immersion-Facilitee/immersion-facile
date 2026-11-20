@@ -1,15 +1,12 @@
-import { subMonths } from "date-fns";
 import {
   type BeneficiaryConventionListDto,
   type ConnectedUser,
   type ConventionId,
-  defaultMonthsThresholdForConventionsListing,
   type GetBeneficiaryConventionListParams,
   getBeneficiaryConventionListParamsSchema,
   getPaginationParamsForWeb,
 } from "shared";
 import { assesmentEntityToConventionAssessmentFields } from "../../../utils/convention";
-import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { AssessmentEntity } from "../entities/AssessmentEntity";
 
@@ -21,25 +18,13 @@ export const makeGetBeneficiaryConventionList = useCaseBuilder(
   )
   .withOutput<BeneficiaryConventionListDto>()
   .withCurrentUser<ConnectedUser>()
-  .withDeps<{ timeGateway: TimeGateway }>()
-  .build(async ({ inputParams, uow, currentUser, deps }) => {
-    const featureFlags = await uow.featureFlagQueries.getAll();
+  .build(async ({ inputParams, uow, currentUser }) => {
     const pagination = getPaginationParamsForWeb(inputParams.pagination);
 
     const paginated = await uow.conventionQueries.getPaginatedConventions({
       filters: {
         search: inputParams.filters?.search,
         beneficiaryEmail: currentUser.email,
-        ...(featureFlags.enableRequestArchivedConvention.isActive
-          ? {}
-          : {
-              dateEnd: {
-                from: subMonths(
-                  deps.timeGateway.now(),
-                  defaultMonthsThresholdForConventionsListing,
-                ).toISOString(),
-              },
-            }),
       },
       sort: { by: "dateStart", direction: "desc" },
       pagination,

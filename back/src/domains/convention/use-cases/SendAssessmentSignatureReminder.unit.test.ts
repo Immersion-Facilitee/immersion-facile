@@ -17,7 +17,6 @@ import {
   expectToEqual,
   frontRoutes,
   getFormattedFirstnameAndLastname,
-  makeBooleanFeatureFlag,
   makeRouteAbsoluteUrl,
   reasonableSchedule,
 } from "shared";
@@ -498,7 +497,7 @@ describe("SendAssessmentSignatureReminder", () => {
   };
 
   describe("archived convention", () => {
-    it("throws when enableRequestArchivedConvention is active and caller is not admin", async () => {
+    it("throws when convention is archived and caller is not admin", async () => {
       const archivedDateEnd = subMonths(
         timeGateway.now(),
         defaultMonthsThresholdForConventionsListing + 1,
@@ -510,10 +509,6 @@ describe("SendAssessmentSignatureReminder", () => {
         .withSchedule(reasonableSchedule)
         .build();
       uow.conventionRepository.setConventions([archivedConvention]);
-      uow.featureFlagRepository.featureFlags = {
-        enableRequestArchivedConvention: makeBooleanFeatureFlag(true),
-      };
-
       await expectPromiseToFailWithError(
         usecase.execute(
           { conventionId: archivedConvention.id, notificationKind: "email" },
