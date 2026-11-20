@@ -114,6 +114,7 @@ import type { DashboardGateway } from "../../domains/core/dashboard/port/Dashboa
 import { makeGetDashboardUrl } from "../../domains/core/dashboard/useCases/GetDashboardUrl";
 import { makeValidateEmail } from "../../domains/core/email-validation/use-cases/ValidateEmail";
 import { makeCreateNewEvent } from "../../domains/core/events/ports/EventBus";
+import { makeGetEventsForAdmin } from "../../domains/core/events/usecase/GetEventsForAdmin";
 import { makeSetFeatureFlag } from "../../domains/core/feature-flags/use-cases/SetFeatureFlag";
 import { makeUploadFile } from "../../domains/core/file-storage/useCases/UploadFile";
 import type {
@@ -813,6 +814,9 @@ export const createUseCases = ({
       uowPerformer,
     }),
     getAgenciesForAdmin: makeGetAgenciesForAdmin({
+      uowPerformer,
+    }),
+    getEventsForAdmin: makeGetEventsForAdmin({
       uowPerformer,
     }),
 

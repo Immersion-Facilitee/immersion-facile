@@ -12,6 +12,7 @@ import {
   editConventionWithFinalStatusRequestSchema,
   errors,
   hasAgencyAllowedRolesToUpdateBeneficiaryBirthdateWithFinalStatus,
+  type TriggeredBy,
 } from "shared";
 import { throwErrorIfConventionStatusNotAllowed } from "../../../utils/convention";
 import {
@@ -19,7 +20,6 @@ import {
   throwIfNotAuthorizedForRole,
 } from "../../connected-users/helpers/authorization.helper";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
-import type { TriggeredBy } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";

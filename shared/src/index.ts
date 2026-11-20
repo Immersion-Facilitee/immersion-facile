@@ -92,6 +92,8 @@ export * from "./establishment/establishment.dto";
 export * from "./establishment/establishment.schema";
 export * from "./establishment/establishment.utils";
 export * from "./establishment/superEstablishment";
+export * from "./event/event.dto";
+export * from "./event/event.schema";
 export * from "./featureFlag/featureFlags.dto";
 export * from "./featureFlag/featureFlags.schema";
 export * from "./federatedIdentities/federatedIdentity.dto";

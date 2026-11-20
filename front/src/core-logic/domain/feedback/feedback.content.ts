@@ -1,4 +1,5 @@
 import type { ActionCreatorWithPayload } from "@reduxjs/toolkit";
+import { adminEventListSlice } from "src/core-logic/domain/admin/adminEventList/adminEventList.slice";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
 import { adminAgencyListSlice } from "src/core-logic/domain/agencies/admin-agency-list/adminAgencyList.slice";
 import { closeAgencyAndTransferConventionsSlice } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.slice";
@@ -43,6 +44,7 @@ type FeedbackWithActionName = {
 const topics = [
   "admin-agency-list",
   "admin-convention-list",
+  "admin-event-list",
   "agency-admin",
   "agency-for-dashboard",
   "agency-user-for-dashboard",
@@ -1140,6 +1142,13 @@ export const feedbacks: Record<
       action: adminAgencyListSlice.actions.fetchAdminAgencyListFailed,
       title: "Problème lors de la récupération des agences",
       message: "Une erreur est survenue lors de la récupération des agences",
+    },
+  },
+  "admin-event-list": {
+    "fetch.error": {
+      action: adminEventListSlice.actions.fetchAdminEventListFailed,
+      title: "Problème lors de la récupération des événements",
+      message: "Une erreur est survenue lors de la récupération des événements",
     },
   },
   "admin-convention-list": {

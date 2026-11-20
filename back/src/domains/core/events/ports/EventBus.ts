@@ -1,4 +1,4 @@
-import type { DateString } from "shared";
+import type { DateString, EventStatus } from "shared";
 import type { TimeGateway } from "../../time-gateway/ports/TimeGateway";
 import type { UuidGenerator } from "../../uuid-generator/ports/UuidGenerator";
 import type {
@@ -6,7 +6,6 @@ import type {
   DomainTopic,
   EventPriority,
   EventPublication,
-  EventStatus,
   SubscriptionId,
 } from "../events";
 

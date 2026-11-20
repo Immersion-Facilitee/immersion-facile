@@ -1,5 +1,6 @@
 import { type Observable, Subject } from "rxjs";
 import type {
+  AdminEventListItemDto,
   AgencyUserForListing,
   ApiConsumer,
   ApiConsumerId,
@@ -7,8 +8,10 @@ import type {
   BanEstablishmentPayload,
   ConnectedUserJwt,
   DashboardUrlAndName,
+  DataWithPagination,
   EstablishmentBatchReport,
   FormEstablishmentBatchDto,
+  GetEventsForAdminParams,
   GetUsersFilters,
   NotificationsByKind,
   SetFeatureFlagParam,
@@ -27,6 +30,10 @@ export class TestAdminGateway implements AdminGateway {
 
   public getAllApiConsumers$ = (_adminToken: ConnectedUserJwt) =>
     this.apiConsumers$;
+
+  public getEventsForAdminResponse$ = new Subject<
+    DataWithPagination<AdminEventListItemDto>
+  >();
 
   public lastNotifications$ = new Subject<NotificationsByKind>();
 
@@ -70,6 +77,13 @@ export class TestAdminGateway implements AdminGateway {
 
   public getDashboardUrl$(): Observable<DashboardUrlAndName> {
     return this.dashboardUrl$;
+  }
+
+  public getEventsForAdmin$(
+    _params: GetEventsForAdminParams,
+    _token: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminEventListItemDto>> {
+    return this.getEventsForAdminResponse$;
   }
 
   public getLastNotifications$(

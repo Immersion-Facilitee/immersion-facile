@@ -7,13 +7,11 @@ import {
   executeInSequence,
   getDisplayedBusinessName,
   type WithSiretDto,
+  type WithTriggeredBy,
   withSiretSchema,
+  withTriggeredBySchema,
 } from "shared";
 import { throwIfNotAdmin } from "../../connected-users/helpers/authorization.helper";
-import {
-  type WithTriggeredBy,
-  withTriggeredBySchema,
-} from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { SaveNotificationAndRelatedEvent } from "../../core/notifications/helpers/Notification";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";

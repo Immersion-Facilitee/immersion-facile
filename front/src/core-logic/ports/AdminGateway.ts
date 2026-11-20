@@ -1,5 +1,6 @@
 import type { Observable } from "rxjs";
 import type {
+  AdminEventListItemDto,
   AgencyUserForListing,
   ApiConsumer,
   ApiConsumerId,
@@ -7,9 +8,11 @@ import type {
   BanEstablishmentPayload,
   ConnectedUserJwt,
   DashboardUrlAndName,
+  DataWithPagination,
   EstablishmentBatchReport,
   FormEstablishmentBatchDto,
   GetDashboardParams,
+  GetEventsForAdminParams,
   GetUsersFilters,
   NotificationsByKind,
   SetFeatureFlagParam,
@@ -41,6 +44,11 @@ export interface AdminGateway {
   getAllApiConsumers$: (
     adminToken: ConnectedUserJwt,
   ) => Observable<ApiConsumer[]>;
+
+  getEventsForAdmin$(
+    params: GetEventsForAdminParams,
+    token: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminEventListItemDto>>;
 
   getLastNotifications$(
     token: ConnectedUserJwt,

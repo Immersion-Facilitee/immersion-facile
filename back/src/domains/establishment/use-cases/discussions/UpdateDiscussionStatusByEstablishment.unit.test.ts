@@ -7,9 +7,9 @@ import {
   expectArraysToMatch,
   expectPromiseToFailWithError,
   expectToEqual,
+  type TriggeredBy,
   type UpdateDiscussionStatusParams,
 } from "shared";
-import type { TriggeredBy } from "../../../core/events/events";
 import { makeCreateNewEvent } from "../../../core/events/ports/EventBus";
 import { CustomTimeGateway } from "../../../core/time-gateway/adapters/CustomTimeGateway";
 import {

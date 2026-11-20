@@ -8,6 +8,7 @@ import {
   hasCompleteAgencyReferent,
   type Role,
   reviewedConventionStatuses,
+  type TriggeredBy,
   type UpdateConventionStatusRequestDto,
   type UpdateConventionStatusWithValidator,
   type UserWithRights,
@@ -17,7 +18,7 @@ import {
 } from "shared";
 import { getAgencyValidationSteps } from "../../../utils/agency";
 import { getUserWithRights } from "../../connected-users/helpers/userRights.helper";
-import type { DomainTopic, TriggeredBy } from "../../core/events/events";
+import type { DomainTopic } from "../../core/events/events";
 import type { CreateNewEvent } from "../../core/events/ports/EventBus";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../core/unit-of-work/ports/UnitOfWork";

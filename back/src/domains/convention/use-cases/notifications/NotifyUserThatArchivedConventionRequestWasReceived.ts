@@ -1,13 +1,11 @@
 import {
   type ArchivedConventionRequestId,
   errors,
+  triggeredBySchema,
+  type WithTriggeredBy,
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
 import { z } from "zod";
-import {
-  triggeredBySchema,
-  type WithTriggeredBy,
-} from "../../../core/events/events";
 import type { SaveNotificationAndRelatedEvent } from "../../../core/notifications/helpers/Notification";
 import { useCaseBuilder } from "../../../core/useCaseBuilder";
 

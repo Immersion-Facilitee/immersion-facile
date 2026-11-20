@@ -29,7 +29,6 @@ type MetabaseDashboard = {
 
 const dashboardByName: Record<DashboardName, MetabaseDashboard> = {
   adminConventions: { kind: "dashboard", id: 5, endpoint: "v1" },
-  adminEvents: { kind: "question", id: 330, endpoint: "v1" },
   adminEstablishments: { kind: "dashboard", id: 115, endpoint: "v1" },
   agencyForUser: { kind: "dashboard", id: 150, endpoint: "v1" }, // https://metabase.immersion-facile.beta.gouv.fr/dashboard/150
   erroredConventionsForUser: {

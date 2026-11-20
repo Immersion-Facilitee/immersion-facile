@@ -1,6 +1,7 @@
+import { calculatePaginationResult, type DataWithPagination } from "shared";
 import { createLogger } from "../../../../utils/logger";
 import type { DomainEvent } from "../events";
-import type { OutboxQueries } from "../ports/OutboxQueries";
+import type { OutboxQueries, SearchEventsParams } from "../ports/OutboxQueries";
 import type { InMemoryOutboxRepository } from "./InMemoryOutboxRepository";
 
 const logger = createLogger(__filename);
@@ -20,6 +21,28 @@ export class InMemoryOutboxQueries implements OutboxQueries {
       if (!lastPublication) return false;
       return lastPublication.failures.length > 0;
     });
+  }
+
+  public async searchEvents({
+    search,
+    pagination: { page, perPage },
+  }: SearchEventsParams): Promise<DataWithPagination<DomainEvent>> {
+    const matchingEvents = this.outboxRepository.events
+      .filter((event) =>
+        searchablePaths.some(
+          (path) => getValueAtPath(event.payload, path) === search,
+        ),
+      )
+      .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
+
+    return {
+      data: matchingEvents.slice((page - 1) * perPage, page * perPage),
+      pagination: calculatePaginationResult({
+        page,
+        perPage,
+        totalRecords: matchingEvents.length,
+      }),
+    };
   }
 
   public async getEventsToPublish() {
@@ -42,3 +65,19 @@ export class InMemoryOutboxQueries implements OutboxQueries {
     return unpublishedEvents;
   }
 }
+
+const searchablePaths: string[][] = [
+  ["id"],
+  ["convention", "id"],
+  ["agencyId"],
+  ["siret"],
+];
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const getValueAtPath = (payload: unknown, path: string[]): unknown =>
+  path.reduce<unknown>(
+    (value, key) => (isRecord(value) ? value[key] : undefined),
+    payload,
+  );

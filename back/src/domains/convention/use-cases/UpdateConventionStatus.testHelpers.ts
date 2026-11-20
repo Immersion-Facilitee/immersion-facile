@@ -16,6 +16,7 @@ import {
   expectToEqual,
   getConventionManageAllowedRoles,
   splitCasesBetweenPassingAndFailing,
+  type TriggeredBy,
   toAgencyDtoForAgencyUsersAndAdmins,
   type UnauthorizedError,
   type UpdateConventionStatusRequestDto,
@@ -27,7 +28,7 @@ import { createConventionMagicLinkPayload } from "../../../utils/jwt";
 
 import { InMemoryOutboxQueries } from "../../core/events/adapters/InMemoryOutboxQueries";
 import type { InMemoryOutboxRepository } from "../../core/events/adapters/InMemoryOutboxRepository";
-import type { DomainTopic, TriggeredBy } from "../../core/events/events";
+import type { DomainTopic } from "../../core/events/events";
 import {
   makeCreateNewEvent,
   type NarrowEvent,
