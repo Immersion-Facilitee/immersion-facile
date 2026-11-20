@@ -2,12 +2,17 @@ import { z } from "zod";
 import { isAllAgencyKinds } from "../agency/agency.dto";
 import { agencyKindSchema } from "../agency/agency.schema";
 import { emailSchema } from "../email/email.schema";
+import { ftConnectIdentitySchema } from "../federatedIdentities/federatedIdentity.schema";
+import { appellationAndRomeDtoSchema } from "../romeAndAppellationDtos/romeAndAppellation.schema";
+import { scheduleSchema } from "../schedule/Schedule.schema";
 import { getNestedValue, isObject } from "../utils";
 import { zStringMinLength1Max1024 } from "../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
 import {
   immersionConventionSchema,
   miniStageConventionSchema,
+  renewedSchema,
+  beneficiaryAddressSchema,
 } from "./convention.schema";
 import { conventionDraftIdSchema } from "./conventionDraftId";
 import {
@@ -18,17 +23,41 @@ import {
   saveConventionDraftModes,
 } from "./saveConventionDraft.dto";
 
+const conventionDraftWholeObjectSchemas: ReadonlySet<z.ZodType> = new Set([
+  beneficiaryAddressSchema,
+  scheduleSchema,
+  appellationAndRomeDtoSchema,
+  renewedSchema,
+  ftConnectIdentitySchema,
+]);
+
+const isEmptyStringOrObjectOfEmptyStrings = (value: unknown): boolean =>
+  value === "" ||
+  (isObject(value) &&
+    Object.keys(value).length > 0 &&
+    Object.values(value).every((fieldValue) => fieldValue === ""));
+
+export const withEmptyStringAsUndefined = (
+  schema: z.ZodType,
+): z.ZodType =>
+  z.preprocess(
+    (value: unknown) => (isEmptyStringOrObjectOfEmptyStrings(value) ? undefined : value),
+    schema,
+  );
+
 export const makeConventionDeepPartialSchema = (
-  schema: z.ZodTypeAny,
-): z.ZodTypeAny => {
+  schema: z.ZodType,
+): z.ZodType => {
+  if (conventionDraftWholeObjectSchemas.has(schema)) return schema;
+
   if (schema.def.type === "object") {
-    const newShape: Record<string, z.ZodTypeAny> = {};
+    const newShape: Record<string, z.ZodType> = {};
     for (const [key, value] of Object.entries(
       (schema as unknown as z.ZodObject<any>).shape,
     )) {
-      newShape[key] = makeConventionDeepPartialSchema(
-        value as z.ZodTypeAny,
-      ).optional();
+      newShape[key] = withEmptyStringAsUndefined(
+        makeConventionDeepPartialSchema(value as z.ZodType).optional(),
+      );
     }
     return z.object(newShape);
   }
@@ -90,11 +119,12 @@ const validateImmersionBeneficiary = (input: unknown): void => {
   if (!isObject(beneficiary)) return;
 
   for (const field of miniStageBeneficiaryFields) {
-    if (beneficiary[field] !== undefined) {
+    const value = beneficiary[field];
+    if (value !== undefined && !isEmptyStringOrObjectOfEmptyStrings(value)) {
       throw new z.ZodError([
         {
           code: "custom",
-          input: beneficiary[field],
+          input: value,
           message: `${field} is not allowed for immersion conventions`,
           path: ["signatories", "beneficiary", field],
         },
@@ -113,11 +143,15 @@ const baseConventionDraftSchema = makeConventionDeepPartialSchema(
   .and(
     z.object({
       id: conventionDraftIdSchema,
-      agencyKind: z.preprocess(
-        (val) => (isAllAgencyKinds(val) ? undefined : val),
-        agencyKindSchema.optional(),
+      agencyKind: withEmptyStringAsUndefined(
+        z.preprocess(
+          (val) => (isAllAgencyKinds(val) ? undefined : val),
+          agencyKindSchema.optional(),
+        ),
       ),
-      agencyDepartment: agencyDepartmentSchema.optional(),
+      agencyDepartment: withEmptyStringAsUndefined(
+        agencyDepartmentSchema.optional(),
+      ),
     }),
   );
 

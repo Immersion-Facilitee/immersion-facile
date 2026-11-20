@@ -1,10 +1,11 @@
 import { v4 as uuidV4 } from "uuid";
+import type { AddressDto } from "../address/address.dto";
 import type { Email } from "../email/email.dto";
-import {
-  type OmitFromExistingKeys,
-  replaceEmptyValuesByUndefinedFromObject,
-} from "../utils";
-import type { InternshipKind } from "./convention.dto";
+import type { FtConnectIdentity } from "../federatedIdentities/federatedIdentity.dto";
+import type { AppellationAndRomeDto } from "../romeAndAppellationDtos/romeAndAppellation.dto";
+import type { ScheduleDto } from "../schedule/Schedule.dto";
+import type { OmitFromExistingKeys } from "../utils";
+import type { InternshipKind, Renewed } from "./convention.dto";
 import type { ConventionDraftId } from "./conventionDraftId";
 import type { CreateConventionPresentationInitialValues } from "./conventionPresentation.dto";
 
@@ -17,6 +18,11 @@ type ConventionDeepPartial<T> = T extends
   | null
   | undefined
   | Date
+  | AddressDto
+  | ScheduleDto
+  | AppellationAndRomeDto
+  | Renewed
+  | FtConnectIdentity
   ? T
   : T extends object
     ? {
@@ -62,6 +68,6 @@ export const toConventionDraftDto = ({
 }: {
   convention: CreateConventionPresentationInitialValues;
 }): ConventionDraftDto => ({
-  ...replaceEmptyValuesByUndefinedFromObject(convention),
+  ...convention,
   id: convention.fromConventionDraftId ?? uuidV4(),
 });

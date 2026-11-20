@@ -60,7 +60,6 @@ import {
   makeListAgencyOptionsKindFilter,
   remoteWorkModeLabels,
   remoteWorkModes,
-  replaceEmptyValuesByUndefinedFromObject,
   toConventionTemplate,
   type UserWithRights,
   undefinedIfEmptyString,
@@ -254,7 +253,7 @@ export const ConventionForm = ({
 
     if (isTemplateForm) {
       return isCreationMode
-        ? replaceEmptyValuesByUndefinedFromObject(initialValues)
+        ? initialValues
         : conventionPresentationFromConventionTemplate || initialValues;
     }
 
