@@ -9,6 +9,7 @@ export type TaskSummaryProps = {
   countLabel: string;
   icon?: string;
   buttonProps?: ButtonProps;
+  detail?: string;
 };
 
 export const TaskSummary = ({
@@ -17,6 +18,7 @@ export const TaskSummary = ({
   icon,
   className,
   buttonProps,
+  detail,
 }: TaskSummaryProps) => {
   const { cx } = useStyles();
 
@@ -52,6 +54,13 @@ export const TaskSummary = ({
               )}
               {...buttonProps}
             />
+          </div>
+        )}
+        {detail && (
+          <div className={fr.cx("fr-col-12", "fr-mt-1w")}>
+            <p className={fr.cx("fr-text--xs", "fr-hint-text", "fr-mb-0")}>
+              {detail}
+            </p>
           </div>
         )}
       </div>
