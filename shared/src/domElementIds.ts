@@ -254,6 +254,10 @@ export const domElementIds = {
     searchAnotherEstablishmentButton:
       "im-search-result-contact__search-another-establishment-button",
     backToSearchButton: "im-search-result-page__back-to-search-button",
+    notVoluntaryAdviceButton:
+      "im-search-result-page__not-voluntary-advice-button",
+    notVoluntaryPartnerOfferLink:
+      "im-search-result-page__not-voluntary-partner-offer-link",
   },
   searchResultForStudent: {
     contactByMailButton:
@@ -276,6 +280,10 @@ export const domElementIds = {
     searchAnotherEstablishmentButton:
       "im-search-result-contact__search-another-establishment-button--student",
     backToSearchButton: "im-search-result-page__back-to-search-button--student",
+    notVoluntaryAdviceButton:
+      "im-search-result-page__not-voluntary-advice-button--student",
+    notVoluntaryPartnerOfferLink:
+      "im-search-result-page__not-voluntary-partner-offer-link--student",
   },
   searchResultExternal: {
     contactByMailButton:
@@ -292,6 +300,10 @@ export const domElementIds = {
       "im-search-result-contact__search-another-establishment-button--external",
     backToSearchButton:
       "im-search-result-page__back-to-search-button--external",
+    notVoluntaryAdviceButton:
+      "im-search-result-page__not-voluntary-advice-button--external",
+    notVoluntaryPartnerOfferLink:
+      "im-search-result-page__not-voluntary-partner-offer-link--external",
   },
   login: {
     radioButtons: "im-login-form__persona-radio-buttons",
