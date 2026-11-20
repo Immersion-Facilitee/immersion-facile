@@ -70,7 +70,16 @@ describe("NotifyConventionSummaryToAgency", () => {
 
   beforeEach(() => {
     uow = createInMemoryUow();
-    uuidGenerator = new TestUuidGenerator(["1", "2", "3", "4"]);
+    uuidGenerator = new TestUuidGenerator([
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+    ]);
     timeGateway = new CustomTimeGateway(now);
     useCase = makeNotifyConventionSummaryToAgency({
       uowPerformer: new InMemoryUowPerformer(uow),
@@ -141,12 +150,73 @@ describe("NotifyConventionSummaryToAgency", () => {
                 newConventions: 0,
                 validatedConventions: 1,
               },
-              bcc: [agencyUser.email],
+              recipients: [agencyUser.email],
             },
           ],
         });
       },
     );
+
+    it("sends one email per notified user", async () => {
+      const secondAgencyUser = new ConnectedUserBuilder()
+        .withId("second-agency-user-id")
+        .withEmail("second-agency-user@mail.com")
+        .buildUser();
+      const userNotNotified = new ConnectedUserBuilder()
+        .withId("user-not-notified-id")
+        .withEmail("not-notified@mail.com")
+        .buildUser();
+
+      uow.userRepository.users = [
+        agencyUser,
+        secondAgencyUser,
+        userNotNotified,
+      ];
+      uow.agencyRepository.agencies = [
+        toAgencyWithRights(activeAgencyRelatedToConvention, {
+          [agencyUser.id]: { roles: ["validator"], isNotifiedByEmail: true },
+          [secondAgencyUser.id]: {
+            roles: ["counsellor"],
+            isNotifiedByEmail: true,
+          },
+          [userNotNotified.id]: {
+            roles: ["counsellor"],
+            isNotifiedByEmail: false,
+          },
+        }),
+      ];
+
+      await useCase.execute();
+
+      expectSavedNotificationsAndEvents({
+        emails: [
+          {
+            kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
+            params: {
+              agencyName: activeAgencyRelatedToConvention.name,
+              domain: appConfig.immersionFacileDomain,
+              conventionsToManage: 0,
+              conventionsToReview: 0,
+              newConventions: 0,
+              validatedConventions: 1,
+            },
+            recipients: [agencyUser.email],
+          },
+          {
+            kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
+            params: {
+              agencyName: activeAgencyRelatedToConvention.name,
+              domain: appConfig.immersionFacileDomain,
+              conventionsToManage: 0,
+              conventionsToReview: 0,
+              newConventions: 0,
+              validatedConventions: 1,
+            },
+            recipients: [secondAgencyUser.email],
+          },
+        ],
+      });
+    });
 
     it("do not send notificiation when no convention match convention report", async () => {
       uow.conventionRepository.setConventions([]);
@@ -194,7 +264,7 @@ describe("NotifyConventionSummaryToAgency", () => {
               newConventions: 0,
               validatedConventions: 2,
             },
-            bcc: [agencyUser.email],
+            recipients: [agencyUser.email],
           },
         ],
       });
@@ -245,7 +315,7 @@ describe("NotifyConventionSummaryToAgency", () => {
               newConventions: 0,
               validatedConventions: 1,
             },
-            bcc: [agencyUser.email],
+            recipients: [agencyUser.email],
           },
         ],
       });
@@ -300,7 +370,7 @@ describe("NotifyConventionSummaryToAgency", () => {
               newConventions: 2,
               validatedConventions: 0,
             },
-            bcc: [agencyUser.email],
+            recipients: [agencyUser.email],
           },
         ],
       });
@@ -386,7 +456,7 @@ describe("NotifyConventionSummaryToAgency", () => {
               newConventions: 0,
               validatedConventions: 0,
             },
-            bcc: [agencyUser.email],
+            recipients: [agencyUser.email],
           },
         ],
       });
@@ -438,7 +508,7 @@ describe("NotifyConventionSummaryToAgency", () => {
               newConventions: 0,
               validatedConventions: 0,
             },
-            bcc: [agencyUser.email],
+            recipients: [agencyUser.email],
           },
         ],
       });
@@ -469,7 +539,7 @@ describe("NotifyConventionSummaryToAgency", () => {
               newConventions: 0,
               validatedConventions: 0,
             },
-            bcc: [agencyUser.email],
+            recipients: [agencyUser.email],
           },
         ],
       });
@@ -587,7 +657,7 @@ describe("NotifyConventionSummaryToAgency", () => {
                 newConventions: 0,
                 validatedConventions: 0,
               },
-              bcc: [agencyUser.email],
+              recipients: [agencyUser.email],
             },
             {
               kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
@@ -599,7 +669,7 @@ describe("NotifyConventionSummaryToAgency", () => {
                 newConventions: 0,
                 validatedConventions: 0,
               },
-              bcc: [agencyRefersToUser.email],
+              recipients: [agencyRefersToUser.email],
             },
           ],
         });
@@ -630,7 +700,7 @@ describe("NotifyConventionSummaryToAgency", () => {
                 newConventions: 0,
                 validatedConventions: 0,
               },
-              bcc: [agencyRefersToUser.email],
+              recipients: [agencyRefersToUser.email],
             },
           ],
         });

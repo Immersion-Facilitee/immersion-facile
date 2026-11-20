@@ -5,7 +5,6 @@ import {
   type ConventionId,
   errors,
   executeInSequence,
-  isTruthy,
 } from "shared";
 import type { AppConfig } from "../../../../config/bootstrap/appConfig";
 import type {
@@ -38,24 +37,25 @@ export const makeNotifyConventionSummaryToAgency = useCaseBuilder(
         statuses: ["active", "from-api-PE"],
       });
 
-      const notifications = await executeInSequence(
+      const notificationsByAgency = await executeInSequence(
         activeAgencyIds,
-        (agencyId) => makeNotification({ uow, now, agencyId, appConfig }),
+        (agencyId) =>
+          makeNotificationsForAgency({ uow, now, agencyId, appConfig }),
       );
 
-      await saveNotificationsBatchAndRelatedEvent(
+      const savedNotifications = await saveNotificationsBatchAndRelatedEvent(
         uow,
-        notifications.filter(isTruthy),
+        notificationsByAgency.flat(),
         {
           priority: 1,
         },
       );
 
-      return notifications.length;
+      return savedNotifications.length;
     },
   );
 
-const makeNotification = async ({
+const makeNotificationsForAgency = async ({
   agencyId,
   now,
   uow,
@@ -65,7 +65,7 @@ const makeNotification = async ({
   now: Date;
   agencyId: AgencyId;
   appConfig: AppConfig;
-}): Promise<NotificationContentAndFollowedIds | null> => {
+}): Promise<NotificationContentAndFollowedIds[]> => {
   const agency = await uow.agencyRepository.getById(agencyId);
   if (!agency) throw errors.agency.notFound({ agencyId });
 
@@ -84,30 +84,33 @@ const makeNotification = async ({
     await getValidatedConventions(uow, now, agencyId)
   ).length;
 
-  return conventionsToManage +
-    conventionsToReview +
-    newConventions +
-    validatedConventions >
+  if (
+    conventionsToManage +
+      conventionsToReview +
+      newConventions +
+      validatedConventions ===
     0
-    ? {
-        kind: "email",
-        followedIds: {
-          agencyId,
-        },
-        templatedContent: {
-          kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
-          bcc: notifiedUsers.map(({ email }) => email),
-          params: {
-            domain: appConfig.immersionFacileDomain,
-            agencyName: agency.name,
-            conventionsToManage,
-            conventionsToReview,
-            newConventions,
-            validatedConventions,
-          },
-        },
-      }
-    : null;
+  )
+    return [];
+
+  return notifiedUsers.map((user) => ({
+    kind: "email",
+    followedIds: {
+      agencyId,
+    },
+    templatedContent: {
+      kind: "CONVENTION_SUMMARY_NOTIFICATION_TO_AGENCY",
+      recipients: [user.email],
+      params: {
+        domain: appConfig.immersionFacileDomain,
+        agencyName: agency.name,
+        conventionsToManage,
+        conventionsToReview,
+        newConventions,
+        validatedConventions,
+      },
+    },
+  }));
 };
 
 const getConventionsToManage = async (
