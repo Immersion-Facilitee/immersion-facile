@@ -1,14 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
+import type { ReactNode } from "react";
+import { ContentCard } from "react-design-system";
 import { getMapsLink, type OfferDto } from "shared";
 import { searchResultContent } from "src/app/contents/search/content";
 import { getIconMarker, SearchMiniMap } from "./SearchMiniMap";
 import { SearchResultAddress } from "./SearchResultAddress";
-import {
-  makeExternalLinkProps,
-  SearchResultCard,
-  type SearchResultDomIds,
-} from "./SearchResultCard";
+import type { SearchResultDomIds } from "./searchResult.helpers";
 
 const componentRootClassName = "im-search-result-location";
 const miniMapMarkerKey = "single-result-mini-map-marker";
@@ -24,10 +22,10 @@ export const SearchResultLocation = ({
   searchResult,
   isExternal,
   ids,
-}: SearchResultLocationProps): JSX.Element => {
+}: SearchResultLocationProps): ReactNode => {
   const { address, position } = searchResult;
   return (
-    <SearchResultCard title={content.title} className={componentRootClassName}>
+    <ContentCard title={content.title} className={componentRootClassName}>
       <SearchMiniMap
         kind="single"
         isExternal={isExternal}
@@ -53,12 +51,13 @@ export const SearchResultLocation = ({
             linkProps: {
               id: ids.googleMapsLink,
               href: getMapsLink(searchResult) ?? "",
-              ...makeExternalLinkProps(content.googleMapsLink),
+              target: "_blank",
+              rel: "noreferrer",
             },
             children: content.googleMapsLink,
           },
         ]}
       />
-    </SearchResultCard>
+    </ContentCard>
   );
 };

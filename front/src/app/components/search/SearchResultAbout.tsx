@@ -1,12 +1,10 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import type { ReactNode } from "react";
+import { ContentCard } from "react-design-system";
 import type { OfferDto } from "shared";
 import { searchResultContent } from "src/app/contents/search/content";
-import { useStyles } from "tss-react/dsfr";
-import "./SearchResultAbout.scss";
-import { SearchResultCard, type SearchResultDomIds } from "./SearchResultCard";
+import type { SearchResultDomIds } from "./searchResult.helpers";
 import { getSearchResultBadges } from "./searchResultBadges";
-
-const componentRootClassName = "im-search-result-about";
 
 type SearchResultAboutProps = {
   searchResult: OfferDto;
@@ -18,13 +16,12 @@ export const SearchResultAbout = ({
   searchResult,
   asAccordion,
   ids,
-}: SearchResultAboutProps): JSX.Element | null => {
-  const { cx } = useStyles();
+}: SearchResultAboutProps): ReactNode => {
   const badges = getSearchResultBadges(searchResult);
   const { additionalInformation } = searchResult;
   if (!additionalInformation && badges.length === 0) return null;
   return (
-    <SearchResultCard
+    <ContentCard
       title={searchResultContent.about.title}
       accordionId={asAccordion ? ids.aboutAccordion : undefined}
     >
@@ -33,9 +30,10 @@ export const SearchResultAbout = ({
       )}
       {badges.length > 0 && (
         <ul
-          className={cx(
-            `${componentRootClassName}__badges`,
-            fr.cx("fr-raw-list", !!additionalInformation && "fr-mt-3w"),
+          className={fr.cx(
+            "fr-raw-list",
+            "fr-col-6",
+            !!additionalInformation && "fr-mt-3w",
           )}
         >
           {badges.map(({ label, description, iconId }, index) => (
@@ -48,19 +46,12 @@ export const SearchResultAbout = ({
                 <p className={fr.cx("fr-text--sm", "fr-text--bold", "fr-mb-0")}>
                   {label}
                 </p>
-                <p
-                  className={cx(
-                    `${componentRootClassName}__badge-description`,
-                    fr.cx("fr-text--sm", "fr-mb-0"),
-                  )}
-                >
-                  {description}
-                </p>
+                <p className={fr.cx("fr-text--sm", "fr-mb-0")}>{description}</p>
               </div>
             </li>
           ))}
         </ul>
       )}
-    </SearchResultCard>
+    </ContentCard>
   );
 };

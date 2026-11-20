@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import type { ReactNode } from "react";
 import type { AddressDto } from "shared";
 import { useStyles } from "tss-react/dsfr";
 import "./SearchResultAddress.scss";
@@ -9,7 +10,7 @@ type SearchResultAddressProps = {
 
 export const SearchResultAddress = ({
   address,
-}: SearchResultAddressProps): JSX.Element => {
+}: SearchResultAddressProps): ReactNode => {
   const { cx } = useStyles();
   return (
     <>

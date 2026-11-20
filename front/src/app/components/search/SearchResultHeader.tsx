@@ -1,6 +1,7 @@
-import { fr } from "@codegouvfr/react-dsfr";
+import { type FrIconClassName, fr } from "@codegouvfr/react-dsfr";
 import type { TagProps } from "@codegouvfr/react-dsfr/Tag";
 import { TagsGroup } from "@codegouvfr/react-dsfr/TagsGroup";
+import type { ReactNode } from "react";
 import {
   isInternalOfferDto,
   isPhysicalWorkMode,
@@ -10,15 +11,13 @@ import {
 import { searchResultContent } from "src/app/contents/search/content";
 import { useStyles } from "tss-react/dsfr";
 import { SearchResultAddress } from "./SearchResultAddress";
-import {
-  makeExternalLinkProps,
-  type SearchResultDomIds,
-} from "./SearchResultCard";
 import "./SearchResultHeader.scss";
+import type { SearchResultDomIds } from "./searchResult.helpers";
 import { getSearchResultBadges } from "./searchResultBadges";
 
 const componentRootClassName = "im-search-result-header";
 const content = searchResultContent.header;
+const lbbIconId: FrIconClassName = "fr-icon-draft-line";
 
 type SearchResultHeaderProps = {
   searchResult: OfferDto;
@@ -28,7 +27,7 @@ type SearchResultHeaderProps = {
 export const SearchResultHeader = ({
   searchResult,
   ids,
-}: SearchResultHeaderProps): JSX.Element => {
+}: SearchResultHeaderProps): ReactNode => {
   const { cx } = useStyles();
   const tagClassName = `${componentRootClassName}__tag`;
   const isPhysical =
@@ -36,53 +35,59 @@ export const SearchResultHeader = ({
     isPhysicalWorkMode(searchResult.remoteWorkMode);
   const { address, numberOfEmployeeRange, website } = searchResult;
 
-  const tags: TagProps[] = [];
-  for (const tag of getSearchResultBadges(searchResult)) {
-    tags.push({
-      children: tag.label,
-      iconId: tag.iconId,
-      className: cx(tagClassName, `${tagClassName}--${tag.modifier}`),
-    });
-  }
-  if (searchResult.voluntaryToImmersion) {
-    tags.push({
-      children: content.lbbTag,
-      iconId: "fr-icon-draft-line",
-      className: cx(tagClassName, `${tagClassName}--lbb`),
-    });
-  }
-  if (isPhysical) {
-    tags.push({
-      children: `${address.city} (${address.departmentCode})`,
-      className: tagClassName,
-    });
-  }
-  if (isInternalOfferDto(searchResult)) {
-    tags.push({
-      children: remoteWorkModeLabels[searchResult.remoteWorkMode].label,
-      className: tagClassName,
-    });
-  }
-
-  if (numberOfEmployeeRange) {
-    tags.push({
-      children: content.employeesCount(numberOfEmployeeRange),
-      className: tagClassName,
-    });
-  }
-
-  const [firstTag, ...otherTags] = tags;
+  const [firstTag, ...otherTags]: TagProps[] = [
+    ...getSearchResultBadges(searchResult).map(
+      (badge): TagProps => ({
+        children: badge.label,
+        iconId: badge.iconId,
+        className: cx(tagClassName, `${tagClassName}--${badge.modifier}`),
+      }),
+    ),
+    ...(searchResult.voluntaryToImmersion
+      ? []
+      : [
+          {
+            children: content.lbbTag,
+            iconId: lbbIconId,
+            className: cx(tagClassName, `${tagClassName}--lbb`),
+          },
+        ]),
+    ...(isPhysical
+      ? [
+          {
+            children: `${address.city} (${address.departmentCode})`,
+            className: tagClassName,
+          },
+        ]
+      : []),
+    ...(isInternalOfferDto(searchResult)
+      ? [
+          {
+            children: remoteWorkModeLabels[searchResult.remoteWorkMode].label,
+            className: tagClassName,
+          },
+        ]
+      : []),
+    ...(numberOfEmployeeRange
+      ? [
+          {
+            children: content.employeesCount(numberOfEmployeeRange),
+            className: tagClassName,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className={fr.cx("fr-mb-4w")}>
-      <h1 className={fr.cx("fr-mb-2w")}>
+      <h1 className={fr.cx("fr-mb-2w", "fr-mt-2w", "fr-mt-md-4w")}>
         {searchResult.customizedName ?? searchResult.name}
       </h1>
       {firstTag && (
         <TagsGroup
           smallTags
           tags={[firstTag, ...otherTags]}
-          className={cx(`${componentRootClassName}__tags`, fr.cx("fr-mb-1w"))}
+          className={cx(`${componentRootClassName}__tags`, fr.cx("fr-mb-2w"))}
         />
       )}
       {(isPhysical || website) && (
@@ -94,7 +99,8 @@ export const SearchResultHeader = ({
               id={ids.websiteLink}
               className={fr.cx("fr-link")}
               href={website}
-              {...makeExternalLinkProps(content.websiteLink)}
+              target="_blank"
+              rel="noreferrer"
             >
               {content.websiteLink}
             </a>
