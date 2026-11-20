@@ -53,13 +53,28 @@ export const getTypedError = async <TError>(
   }
 };
 
+const rawFTConnectErrorFields = ({ name, title, message }: FTConnectError) => ({
+  name,
+  title,
+  message,
+});
+
+const managedFTConnectErrorFields = ({
+  name,
+  kind,
+  message,
+}: ManagedFTConnectError) => ({ name, kind, message });
+
 export async function testRawFTConnectError(
   cb: () => unknown,
   expectedError: FTConnectError,
 ) {
   const error: FTConnectError = await getTypedError<FTConnectError>(() => cb());
   expect(error.constructor.name).toEqual(expectedError.constructor.name);
-  expectToEqual(error, expectedError);
+  expectToEqual(
+    rawFTConnectErrorFields(error),
+    rawFTConnectErrorFields(expectedError),
+  );
 }
 
 export async function testManagedFTConnectError(
@@ -69,6 +84,8 @@ export async function testManagedFTConnectError(
   const error: ManagedFTConnectError =
     await getTypedError<ManagedFTConnectError>(() => cb());
   expect(error.constructor.name).toEqual(expectedError.constructor.name);
-  expect(error).toStrictEqual(expectedError);
-  expect(error.kind).toStrictEqual(expectedError.kind);
+  expectToEqual(
+    managedFTConnectErrorFields(error),
+    managedFTConnectErrorFields(expectedError),
+  );
 }

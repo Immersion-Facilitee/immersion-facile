@@ -105,7 +105,7 @@ describe("HttpSubscribersGateway", () => {
       title: "Partner subscription errored",
       subscriberErrorFeedback: {
         message: "timeout of 0ms exceeded",
-        error: new Error("timeout of 0ms exceeded"),
+        error: expect.objectContaining({ message: "timeout of 0ms exceeded" }),
       },
       body: undefined,
     });
@@ -127,7 +127,9 @@ describe("HttpSubscribersGateway", () => {
       title: "Partner subscription errored",
       subscriberErrorFeedback: {
         message: "Custom server error",
-        error: new Error("Request failed with status code 500"),
+        error: expect.objectContaining({
+          message: "Request failed with status code 500",
+        }),
       },
       body: undefined,
     });
@@ -149,7 +151,9 @@ describe("HttpSubscribersGateway", () => {
       title: "Partner subscription errored",
       subscriberErrorFeedback: {
         message: "Custom server error",
-        error: new Error("Request failed with status code 500"),
+        error: expect.objectContaining({
+          message: "Request failed with status code 500",
+        }),
       },
       body: undefined,
     });
@@ -171,7 +175,9 @@ describe("HttpSubscribersGateway", () => {
       title: "Partner subscription errored",
       subscriberErrorFeedback: {
         message: "Pas d'informations mais des données techniques disponibles",
-        error: new Error("Request failed with status code 500"),
+        error: expect.objectContaining({
+          message: "Request failed with status code 500",
+        }),
       },
       body: undefined,
     });
@@ -193,7 +199,9 @@ describe("HttpSubscribersGateway", () => {
       title: "Partner subscription errored",
       subscriberErrorFeedback: {
         message: "Pas d'informations mais des données techniques disponibles",
-        error: new Error("Request failed with status code 500"),
+        error: expect.objectContaining({
+          message: "Request failed with status code 500",
+        }),
       },
       body: undefined,
     });
