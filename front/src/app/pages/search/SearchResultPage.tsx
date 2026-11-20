@@ -224,7 +224,10 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
         </div>
         {currentSearchResult && showConfirmationMessage === null && (
           <div
-            className={cx("im-search-result-page__content", fr.cx("fr-py-5w"))}
+            className={cx(
+              "im-search-result-page__content",
+              fr.cx("fr-py-2w", "fr-py-md-5w"),
+            )}
           >
             <div className={fr.cx("fr-container")}>
               <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>

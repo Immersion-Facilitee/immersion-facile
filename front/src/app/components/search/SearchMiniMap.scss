@@ -25,12 +25,8 @@
   }
 
   &--inline {
-    display: none;
+    display: block;
     overflow: hidden;
-
-    @include for-screen-min($bp-lg) {
-      display: block;
-    }
 
     .search-map-results__map {
       height: auto;

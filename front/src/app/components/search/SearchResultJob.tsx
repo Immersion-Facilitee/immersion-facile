@@ -1,4 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import type { ReactNode } from "react";
+import { ContentCard } from "react-design-system";
 import {
   makeAppellationInformationUrl,
   makeNafClassInformationUrl,
@@ -6,11 +8,7 @@ import {
 } from "shared";
 import { searchResultContent } from "src/app/contents/search/content";
 import { useStyles } from "tss-react/dsfr";
-import {
-  makeExternalLinkProps,
-  SearchResultCard,
-  type SearchResultDomIds,
-} from "./SearchResultCard";
+import type { SearchResultDomIds } from "./searchResult.helpers";
 
 type SearchResultJobProps = {
   searchResult: OfferDto;
@@ -28,7 +26,7 @@ export const SearchResultJob = ({
   searchResult,
   asAccordion,
   ids,
-}: SearchResultJobProps): JSX.Element => {
+}: SearchResultJobProps): ReactNode => {
   const { cx } = useStyles();
   const { appellations, romeLabel, rome, naf } = searchResult;
   const title =
@@ -50,13 +48,14 @@ export const SearchResultJob = ({
   const renderLink = (
     { id, label, href }: JobInformationLink,
     className?: string,
-  ): JSX.Element => (
+  ): ReactNode => (
     <a
       key={id}
       id={id}
       className={cx(fr.cx("fr-link", "fr-link--sm"), className)}
       href={href}
-      {...makeExternalLinkProps(label)}
+      target="_blank"
+      rel="noreferrer"
     >
       {label}
     </a>
@@ -64,7 +63,7 @@ export const SearchResultJob = ({
 
   if (asAccordion)
     return (
-      <SearchResultCard title={title} accordionId={ids.jobAccordion}>
+      <ContentCard title={title} accordionId={ids.jobAccordion}>
         <ul className={fr.cx("fr-raw-list")}>
           {links.map((link, index) => (
             <li key={link.id} className={fr.cx(index > 0 && "fr-mt-1w")}>
@@ -72,11 +71,11 @@ export const SearchResultJob = ({
             </li>
           ))}
         </ul>
-      </SearchResultCard>
+      </ContentCard>
     );
 
   return (
-    <SearchResultCard
+    <ContentCard
       title={title}
       titleAside={links.map((link, index) =>
         renderLink(link, fr.cx(index < links.length - 1 && "fr-mr-2w")),
