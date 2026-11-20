@@ -161,7 +161,7 @@ export const AgencyAdminTabContent = ({
             mode="other-rights"
             agencyRights={agenciesUserIsAdminOn}
             user={currentUser}
-            title={`Organismes sur lesquels vous êtes administrateur (${agenciesUserIsAdminOn.length} organismes)`}
+            title={`Organismes sur lesquels vous êtes administrateur (${agenciesUserIsAdminOn.length} ${agenciesUserIsAdminOn.length === 1 ? "organisme" : "organismes"})`}
             modalId={domElementIds.agencyDashboard.agencyTab.adminRightsModal}
             onUserUpdateRequested={onUserUpdateRequested(
               "agency-user-for-dashboard",
@@ -174,7 +174,7 @@ export const AgencyAdminTabContent = ({
             mode="other-rights"
             agencyRights={agenciesUserIsNotAdminOn}
             user={currentUser}
-            title={`Organismes auxquels vous êtes rattaché (${agenciesUserIsNotAdminOn.length} organismes)`}
+            title={`Organismes auxquels vous êtes rattaché (${agenciesUserIsNotAdminOn.length} ${agenciesUserIsNotAdminOn.length === 1 ? "organisme" : "organismes"})`}
             modalId={domElementIds.agencyDashboard.agencyTab.userRightsModal}
             onUserUpdateRequested={onUserUpdateRequested(
               "agency-user-for-dashboard",
@@ -184,21 +184,16 @@ export const AgencyAdminTabContent = ({
         <SelfRemoveUserAgencyRightFeedback />
 
         {toReviewAgencyRights.length > 0 && (
-          <>
-            <h2 className={fr.cx("fr-h4")}>
-              Mes demandes d'accès envoyées ({toReviewAgencyRights.length}{" "}
-              {toReviewAgencyRights.length === 1 ? "organisme" : "organismes"})
-            </h2>
-
-            <AgencyRightsTable
-              mode="rights-to-review"
-              agencyRights={toReviewAgencyRights}
-              user={currentUser}
-              onUserRegistrationCancelledRequested={onUserRegistrationCancelledRequested(
-                "user",
-              )}
-            />
-          </>
+          <AgencyRightsTable
+            mode="rights-to-review"
+            agencyRights={toReviewAgencyRights}
+            user={currentUser}
+            title={`Mes demandes d'accès envoyées (${toReviewAgencyRights.length}
+              ${toReviewAgencyRights.length === 1 ? "organisme" : "organismes"})`}
+            onUserRegistrationCancelledRequested={onUserRegistrationCancelledRequested(
+              "user",
+            )}
+          />
         )}
       </HeadingSection>
     </>
