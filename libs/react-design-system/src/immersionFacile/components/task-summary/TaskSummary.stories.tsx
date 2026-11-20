@@ -35,3 +35,12 @@ export const Default: Story = {
     },
   },
 };
+
+export const WithDetail: Story = {
+  args: {
+    count: 2,
+    countLabel: "Rattachements en attente",
+    icon: "fr-icon-edit-line",
+    detail: "Gestion réservée aux administrateurs",
+  },
+};

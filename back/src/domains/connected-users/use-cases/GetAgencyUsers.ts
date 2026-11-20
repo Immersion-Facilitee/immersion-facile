@@ -7,7 +7,10 @@ import {
   withUserFiltersSchema,
 } from "shared";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
-import { throwIfNotAgencyAdminOrBackofficeAdmin } from "../helpers/authorization.helper";
+import {
+  throwIfNotAgencyAdminOrBackofficeAdmin,
+  throwIfNotValidAgencyRole,
+} from "../helpers/authorization.helper";
 import {
   getAgencyUsersByUserIdsAndAgencyIds,
   sortUsersByName,
@@ -24,10 +27,20 @@ export const makeGetAgencyUsers = useCaseBuilder("GetAgencyUsers")
     if (!currentUser.isBackofficeAdmin && agencyIds.length === 0)
       throw errors.user.forbidden({ userId: currentUser.id });
 
-    throwIfNotAgencyAdminOrBackofficeAdmin({
-      agencyIds,
-      currentUser,
-    });
+    if (
+      filters.agencyRole === "to-review" &&
+      !currentUser.isBackofficeAdmin &&
+      agencyIds.length === 1
+    )
+      throwIfNotValidAgencyRole({
+        agencyId: agencyIds[0],
+        currentUser,
+      });
+    else
+      throwIfNotAgencyAdminOrBackofficeAdmin({
+        agencyIds,
+        currentUser,
+      });
 
     if (!currentUser.isBackofficeAdmin)
       throwIfRequestingToReviewUsersOnNeedsReviewAgency({

@@ -20,6 +20,7 @@ import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedU
 import { hasCounsellorRoles } from "src/core-logic/domain/agencies/agencies.helpers";
 import { fetchAgencySelectors } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.selectors";
 import { fetchAgencySlice } from "src/core-logic/domain/agencies/fetch-agency/fetchAgency.slice";
+import { usersToReviewSelectors } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.selectors";
 import type { UserToReview } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
 import {
   type FeedbackLevel,
@@ -76,12 +77,9 @@ const getFeedbackDescription = ({
   return `${username} n'a pas été ajouté à l'organisme ${agencyName}.`;
 };
 
-export const AgencyAdminUsersToReview = ({
-  usersToReview,
-}: {
-  usersToReview: UserToReview[];
-}) => {
+export const AgencyAdminUsersToReview = () => {
   const dispatch = useDispatch();
+  const usersToReview = useAppSelector(usersToReviewSelectors.usersToReview);
   const [reviewActionProps, setReviewActionProps] =
     useState<ReviewActionProps | null>(null);
 
