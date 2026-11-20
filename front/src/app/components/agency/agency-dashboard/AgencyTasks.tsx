@@ -8,12 +8,19 @@ import {
   type TitleLevel,
 } from "react-design-system";
 import { useDispatch } from "react-redux";
-import { NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE } from "shared";
+import {
+  activeAgencyStatuses,
+  agencyRoleIsNotToReview,
+  NUMBER_ITEM_TO_DISPLAY_IN_PAGINATED_PAGE,
+} from "shared";
+import { AgencyAdminUsersToReview } from "src/app/components/agency/agency-dashboard/AgencyAdminUsersToReview";
 import { ConventionsToManageList } from "src/app/components/agency/agency-dashboard/ConventionsToManageList";
 import { ConventionsWithAssessmentToCompleteList } from "src/app/components/agency/agency-dashboard/ConventionsWithAssessmentToCompleteList";
 import { ConventionsWithBroadcastErrorList } from "src/app/components/agency/agency-dashboard/ConventionsWithBroadcastErrorList";
 import { hasUserRightsOnAgencyBroadcast } from "src/app/components/forms/convention/manage-actions/getButtonConfigBySubStatus";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { usersToReviewSelectors } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.selectors";
+import { usersToReviewSlice } from "src/core-logic/domain/agency-admin/usersToReview/usersToReview.slice";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { connectedUserConventionsToManageSelectors } from "src/core-logic/domain/connected-user/conventionsToManage/connectedUserConventionsToManage.selectors";
@@ -50,6 +57,33 @@ export const AgencyTasks = ({
   const conventionsWithErroredBroadcastFeedbackPagination = useAppSelector(
     conventionsWithBroadcastFeedbackSelectors.erroredBroadcastConventionsWithPagination,
   );
+  const usersToReview = useAppSelector(usersToReviewSelectors.usersToReview);
+  const isLoadingUsersToReview = useAppSelector(
+    usersToReviewSelectors.isLoading,
+  );
+  const usersToReviewFetch = useMemo(() => {
+    const activeAgencyRights = (currentUser?.agencyRights ?? []).filter(
+      (agencyRight) =>
+        agencyRoleIsNotToReview(agencyRight.roles) &&
+        activeAgencyStatuses.includes(agencyRight.agency.status),
+    );
+    const adminAgencies = activeAgencyRights
+      .filter((agencyRight) => agencyRight.roles.includes("agency-admin"))
+      .map((agencyRight) => agencyRight.agency);
+
+    if (adminAgencies.length > 0) {
+      return { agencies: adminAgencies, canManageUsersToReview: true };
+    }
+
+    if (activeAgencyRights.length === 1) {
+      return {
+        agencies: [activeAgencyRights[0].agency],
+        canManageUsersToReview: false,
+      };
+    }
+
+    return { agencies: [], canManageUsersToReview: false };
+  }, [currentUser?.agencyRights]);
   const dateStartFrom1MonthAgoToIn5Days = useMemo(
     () => ({
       dateStartFrom: subMonths(new Date(), 1).toISOString(),
@@ -118,10 +152,25 @@ export const AgencyTasks = ({
     }
   }, [connectedUserJwt, currentUser, dispatch]);
 
+  useEffect(() => {
+    if (!connectedUserJwt || usersToReviewFetch.agencies.length === 0) return;
+
+    dispatch(
+      usersToReviewSlice.actions.fetchUsersToReviewRequested({
+        agencies: usersToReviewFetch.agencies,
+        feedbackTopic: "agency-users-to-review",
+      }),
+    );
+  }, [connectedUserJwt, dispatch, usersToReviewFetch.agencies]);
+
   const isLoadingTasks =
     isLoadingConventionsToManage ||
     isLoadingConventionsWithUnfinalizedAssessment ||
-    isLoadingConventionsWithBroadcastError;
+    isLoadingConventionsWithBroadcastError ||
+    isLoadingUsersToReview;
+
+  const hasNoPendingUsersToReview =
+    usersToReviewFetch.agencies.length === 0 || usersToReview.length === 0;
 
   const hasNoUrgentTasks =
     currentUser !== null &&
@@ -129,7 +178,8 @@ export const AgencyTasks = ({
     conventionsToManagePagination?.totalRecords === 0 &&
     conventionsWithUnfinalizedAssessmentPagination?.totalRecords === 0 &&
     conventionsWithErroredBroadcastFeedbackPagination.pagination
-      .totalRecords === 0;
+      .totalRecords === 0 &&
+    hasNoPendingUsersToReview;
 
   return (
     <HeadingSection
@@ -208,6 +258,30 @@ export const AgencyTasks = ({
                       <ConventionsWithBroadcastErrorList title="Conventions à vérifier" />,
                     ),
                 }}
+              />
+            </div>
+          )}
+        {usersToReviewFetch.agencies.length > 0 &&
+          !isLoadingUsersToReview &&
+          usersToReview.length > 0 && (
+            <div className={fr.cx("fr-col-12", "fr-col-md-4")}>
+              <TaskSummary
+                count={usersToReview.length}
+                countLabel={`${usersToReview.length > 1 ? "Rattachements" : "Rattachement"} en attente`}
+                icon="fr-icon-edit-line"
+                {...(usersToReviewFetch.canManageUsersToReview
+                  ? {
+                      buttonProps: {
+                        children: "Traiter cette liste",
+                        onClick: () =>
+                          onSeeAllConventionsClick(
+                            <AgencyAdminUsersToReview />,
+                          ),
+                      },
+                    }
+                  : {
+                      detail: "Gestion réservée aux administrateurs",
+                    })}
               />
             </div>
           )}

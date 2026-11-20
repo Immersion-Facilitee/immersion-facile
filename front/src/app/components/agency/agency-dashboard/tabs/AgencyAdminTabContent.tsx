@@ -111,7 +111,7 @@ export const AgencyAdminTabContent = ({
         >
           Retour
         </Button>
-        <AgencyAdminUsersToReview usersToReview={usersToReview} />
+        <AgencyAdminUsersToReview />
       </>
     );
   }
@@ -137,7 +137,7 @@ export const AgencyAdminTabContent = ({
           </Button>
         }
       >
-        {usersToReview.length > 0 && (
+        {usersToReview.length > 0 && activeAgenciesUserIsAdminOn.length > 0 && (
           <HeadingSection
             title="Tâches à traiter"
             titleAs="h3"
