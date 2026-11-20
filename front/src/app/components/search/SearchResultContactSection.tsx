@@ -1,23 +1,28 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Button from "@codegouvfr/react-dsfr/Button";
 import Highlight from "@codegouvfr/react-dsfr/Highlight";
 import type { ReactNode } from "react";
 import { ContentCard } from "react-design-system";
 import { isInternalOfferDto, type OfferDto } from "shared";
-import { FeedbackContent } from "src/app/components/feedback/FeedbackContent";
-import { commonIllustrations } from "src/assets/img/illustrations";
+import { searchResultContent } from "src/app/contents/search/content";
 import { match, P } from "ts-pattern";
 import { CreateDiscussionForm } from "../immersion-offer/CreateDiscussionForm";
+import type { SearchResultDomIds } from "./searchResult.helpers";
+
+const contactUnavailableContent = searchResultContent.contactUnavailable;
 
 export const SearchResultContactSection = ({
   formContactRef,
   onFormSubmitSuccess,
   currentSearchResult,
   onButtonClick,
+  ids,
 }: {
   onFormSubmitSuccess: () => void;
   formContactRef: React.RefObject<HTMLDivElement>;
   currentSearchResult: OfferDto;
   onButtonClick: () => void;
+  ids: SearchResultDomIds;
 }): ReactNode => {
   const isNotAvailable =
     isInternalOfferDto(currentSearchResult) && !currentSearchResult.isAvailable;
@@ -37,35 +42,28 @@ export const SearchResultContactSection = ({
             isNotAvailable: true,
           },
           () => (
-            <FeedbackContent
-              title="Mise en relation temporairement indisponible"
-              titleAs="h2"
-              content={
-                <>
-                  <p>
-                    Cette entreprise a atteint son nombre maximal de mises en
-                    relation pour le moment. Nous vous invitons à consulter
-                    d’autres entreprises accueillantes via le moteur de
-                    recherche afin de poursuivre votre démarche d’immersion.
-                  </p>
-                  <Highlight>
-                    <strong>Quand réessayer ?</strong> Les mises en relation
-                    sont réinitialisées chaque mois. Il est donc possible que
-                    cette entreprise soit à nouveau disponible prochainement,
-                    notamment en début de mois.
-                  </Highlight>
-                </>
-              }
-              buttons={[
-                {
-                  children: "Rechercher une autre entreprise",
-                  onClick: onButtonClick,
-                  iconId: "fr-icon-search-line",
-                },
-              ]}
-              illustration={commonIllustrations.error}
-              titleClassName="fr-h3"
-            />
+            <>
+              <h2 className={fr.cx("fr-h3", "fr-mb-2w")}>
+                {contactUnavailableContent.title}
+              </h2>
+              <p className={fr.cx("fr-text--lg", "fr-mb-3w")}>
+                {contactUnavailableContent.maxReached}
+              </p>
+              <p className={fr.cx("fr-text--lg", "fr-mb-4w")}>
+                {contactUnavailableContent.searchOtherEstablishments}
+              </p>
+              <Highlight className={fr.cx("fr-ml-0", "fr-mb-5w")}>
+                <strong>{contactUnavailableContent.retryTitle}</strong>{" "}
+                {contactUnavailableContent.retryDescription}
+              </Highlight>
+              <Button
+                id={ids.searchAnotherEstablishmentButton}
+                iconId="fr-icon-search-line"
+                onClick={onButtonClick}
+              >
+                {contactUnavailableContent.searchAnotherEstablishmentButton}
+              </Button>
+            </>
           ),
         )
         .with(

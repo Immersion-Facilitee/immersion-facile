@@ -287,6 +287,7 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                     formContactRef={formContactRef}
                     currentSearchResult={currentSearchResult}
                     onButtonClick={onGoBackClick}
+                    ids={searchResultIds}
                   />
                 </div>
                 <div className={fr.cx("fr-col-12", "fr-col-lg-4")}>
