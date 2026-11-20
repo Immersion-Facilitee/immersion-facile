@@ -1,11 +1,13 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Highlight from "@codegouvfr/react-dsfr/Highlight";
+import type { ReactNode } from "react";
+import { ContentCard } from "react-design-system";
 import { isInternalOfferDto, type OfferDto } from "shared";
 import { searchResultContent } from "src/app/contents/search/content";
 import { match, P } from "ts-pattern";
 import { CreateDiscussionForm } from "../immersion-offer/CreateDiscussionForm";
-import { SearchResultCard, type SearchResultDomIds } from "./SearchResultCard";
+import type { SearchResultDomIds } from "./searchResult.helpers";
 
 const contactUnavailableContent = searchResultContent.contactUnavailable;
 
@@ -21,13 +23,14 @@ export const SearchResultContactSection = ({
   currentSearchResult: OfferDto;
   onButtonClick: () => void;
   ids: SearchResultDomIds;
-}): JSX.Element => {
+}): ReactNode => {
   const isNotAvailable =
     isInternalOfferDto(currentSearchResult) && !currentSearchResult.isAvailable;
   return (
-    <SearchResultCard
+    <ContentCard
       hasLargePadding={isNotAvailable && !!currentSearchResult.contactMode}
       sectionRef={formContactRef}
+      last
     >
       {match({
         contactMode: currentSearchResult.contactMode,
@@ -171,6 +174,6 @@ export const SearchResultContactSection = ({
           ),
         )
         .exhaustive()}
-    </SearchResultCard>
+    </ContentCard>
   );
 };
