@@ -1,18 +1,27 @@
 import { filter } from "ramda";
 import {
+  type AgencyDto,
   type ApiConsumer,
   type ApiConsumerName,
   type AppellationAndRomeDto,
+  type AssessmentDto,
   type ConventionReadDto,
   errors,
   executeInSequence,
   isApiConsumerAllowed,
+  type LegacyAssessmentDto,
   pipeWithValue,
 } from "shared";
-import { toPartnerAgencyKind } from "../../../../utils/agency";
 import { conventionDtosToConventionReadDtos } from "../../../../utils/convention";
 import { createLogger } from "../../../../utils/logger";
+import { getOnlyAssessmentDto } from "../../../convention/entities/AssessmentEntity";
+import { getLinkedAgenciesFromAgencyId } from "../../../convention/entities/Convention";
+import type { BroadcastConventionDto } from "../../../convention/use-cases/broadcast/broadcastConvention.dto";
 import { withConventionIdAndPreviousAgencySchema } from "../../../convention/use-cases/broadcast/broadcastConventionParams";
+import {
+  toBroadcastAssessment,
+  toBroadcastConvention,
+} from "../../../convention/use-cases/broadcast/toBroadcastConvention";
 import { broadcastToPartnersServiceName } from "../../saved-errors/ports/BroadcastFeedbacksRepository";
 import type { TimeGateway } from "../../time-gateway/ports/TimeGateway";
 import type { UnitOfWork } from "../../unit-of-work/ports/UnitOfWork";
@@ -40,16 +49,21 @@ export const makeBroadcastToPartnersOnConventionUpdates = useCaseBuilder(
     const convention = await uow.conventionRepository.getById(conventionId);
     if (!convention) throw errors.convention.notFound({ conventionId });
 
-    const {
-      acquisitionCampaign: _,
-      acquisitionKeyword: __,
-      ...conventionWithoutAcquisitionParams
-    } = convention;
-
     const [conventionRead] = await conventionDtosToConventionReadDtos(
-      [conventionWithoutAcquisitionParams],
+      [convention],
       uow,
     );
+
+    const { agency, refersToAgency } = await getLinkedAgenciesFromAgencyId(
+      uow,
+      conventionRead.agencyId,
+    );
+
+    const assessmentEntity =
+      await uow.assessmentRepository.getByConventionId(conventionId);
+    const assessment = assessmentEntity
+      ? getOnlyAssessmentDto(assessmentEntity)
+      : undefined;
 
     const previousAgencyWithRights = inputParams.previousAgencyId
       ? await uow.agencyRepository.getById(inputParams.previousAgencyId)
@@ -97,7 +111,14 @@ export const makeBroadcastToPartnersOnConventionUpdates = useCaseBuilder(
     }
 
     await executeInSequence(apiConsumers, (apiConsumer) =>
-      notifySubscriber({ uow, conventionRead, deps })(apiConsumer),
+      notifySubscriber({
+        uow,
+        conventionRead,
+        agency,
+        refersToAgency,
+        assessment,
+        deps,
+      })(apiConsumer),
     );
   });
 
@@ -139,10 +160,16 @@ const notifySubscriber =
   ({
     uow,
     conventionRead,
+    agency,
+    refersToAgency,
+    assessment,
     deps,
   }: {
     uow: UnitOfWork;
     conventionRead: ConventionReadDto;
+    agency: AgencyDto;
+    refersToAgency: AgencyDto | null;
+    assessment: AssessmentDto | LegacyAssessmentDto | undefined;
     deps: {
       subscribersGateway: SubscribersGateway;
       timeGateway: TimeGateway;
@@ -169,19 +196,9 @@ const notifySubscriber =
       });
     }
 
-    const { agencyKind, agencyRefersTo, ...rest } = conventionRead;
-    const convention = {
-      ...rest,
+    const convention: BroadcastConventionDto = {
+      ...toBroadcastConvention(conventionRead, agency, refersToAgency),
       immersionAppellation,
-      agencyKind: toPartnerAgencyKind(agencyKind),
-      ...(agencyRefersTo
-        ? {
-            agencyRefersTo: {
-              ...agencyRefersTo,
-              kind: toPartnerAgencyKind(agencyRefersTo.kind),
-            },
-          }
-        : {}),
     };
 
     if (conventionRead.agencyKind === "mission-locale") {
@@ -193,7 +210,10 @@ const notifySubscriber =
 
     const response = await deps.subscribersGateway.notify(
       {
-        payload: { convention },
+        payload: {
+          convention,
+          assessment: toBroadcastAssessment(assessment),
+        },
         subscribedEvent: "convention.updated",
       },
       {

@@ -6,7 +6,7 @@ import {
 import { defineRoute, defineRoutes } from "shared-routes";
 import { z } from "zod";
 import type { AccessTokenResponse } from "../../../../config/bootstrap/appConfig";
-import { notifyFranceTravailOnConventionUpdatedParamsSchema } from "../../ports/FranceTravailGateway";
+import { broadcastPayloadSchema } from "../../use-cases/broadcast/broadcastConvention.schema";
 
 export const getFtTestPrefix = (ftApiUrl: AbsoluteUrl) =>
   ["https://api.peio.pe-qvr.fr", "https://api-r.es-qvr.fr"].includes(ftApiUrl)
@@ -61,7 +61,7 @@ export const createFranceTravailRoutes = ({
     broadcastConvention: defineRoute({
       method: "post",
       url: `${ftApiUrl}/partenaire/${ftTestPrefix}immersion-pro/v3/demandes-immersion`, // we need to wait for FT to provide the new URL
-      requestBodySchema: notifyFranceTravailOnConventionUpdatedParamsSchema,
+      requestBodySchema: broadcastPayloadSchema,
       ...withAuthorizationHeaders,
       responses: {
         200: z.any(),

@@ -1,23 +1,6 @@
-import {
-  type AgencyId,
-  type AgencyRefersToInConvention,
-  type AssessmentDto,
-  agencyIdSchema,
-  agencyValidationSteps,
-  assessmentDtoSchema,
-  type ConventionReadDto,
-  conventionAssessmentFieldsSchema,
-  conventionLastRemindersSchema,
-  conventionSchema,
-  emailSchema,
-  type PartnerAgencyKind,
-  partnerAgencyKindSchema,
-  type SubscriberErrorFeedback,
-  siretSchema,
-  withBannedEstablishmentInformationSchema,
-} from "shared";
-import z from "zod";
+import type { SubscriberErrorFeedback } from "shared";
 import type { AccessTokenResponse } from "../../../config/bootstrap/appConfig";
+import type { BroadcastPayload } from "../use-cases/broadcast/broadcastConvention.dto";
 
 // This is an interface contract with France Travail (conventions broadcast).
 // ! Beware of NOT breaking contract ! !
@@ -37,78 +20,13 @@ export type FranceTravailBroadcastResponse =
   | FranceTravailBroadcastSuccessResponse
   | FranceTravailBroadcastErrorResponse;
 
-export type NotifyFranceTravailOnConventionUpdatedParams =
-  | {
-      eventType: "CONVENTION_UPDATED";
-      convention: FranceTravailConventionReadDto;
-      previousAgencyId?: AgencyId;
-      assessment?: AssessmentDto;
-    }
-  | {
-      eventType: "ASSESSMENT_CREATED";
-      convention: FranceTravailConventionReadDto;
-      assessment: AssessmentDto;
-    };
-
 export interface FranceTravailGateway {
   notifyOnConventionUpdated: (
-    params: NotifyFranceTravailOnConventionUpdatedParams,
+    params: BroadcastPayload,
   ) => Promise<FranceTravailBroadcastResponse>;
 
   getAccessToken: (scope: string) => Promise<AccessTokenResponse>;
 }
-
-export type FranceTravailConventionReadDto = Omit<
-  ConventionReadDto,
-  "agencyKind" | "agencyRefersTo"
-> & {
-  agencyKind: PartnerAgencyKind;
-  agencyRefersTo?: Omit<AgencyRefersToInConvention, "kind"> & {
-    kind: PartnerAgencyKind;
-  };
-  agencyValidatorEmails: string[];
-};
-
-const franceTravailConventionReadDtoSchema: z.ZodType<FranceTravailConventionReadDto> =
-  conventionSchema
-    .and(
-      z.object({
-        agencyName: z.string(),
-        agencyDepartment: z.string(),
-        agencyKind: partnerAgencyKindSchema,
-        agencyContactEmail: emailSchema,
-        agencySiret: siretSchema,
-        agencyValidationSteps: z.enum(agencyValidationSteps),
-        agencyRefersTo: z
-          .object({
-            id: z.string(),
-            name: z.string(),
-            contactEmail: emailSchema,
-            kind: partnerAgencyKindSchema,
-            siret: siretSchema,
-          })
-          .optional(),
-        assessment: conventionAssessmentFieldsSchema,
-        lastReminders: conventionLastRemindersSchema,
-        agencyValidatorEmails: z.array(emailSchema),
-      }),
-    )
-    .and(withBannedEstablishmentInformationSchema);
-
-export const notifyFranceTravailOnConventionUpdatedParamsSchema: z.ZodType<NotifyFranceTravailOnConventionUpdatedParams> =
-  z.union([
-    z.object({
-      eventType: z.literal("CONVENTION_UPDATED"),
-      convention: franceTravailConventionReadDtoSchema,
-      previousAgencyId: agencyIdSchema.optional(),
-      assessment: assessmentDtoSchema.optional(),
-    }),
-    z.object({
-      eventType: z.literal("ASSESSMENT_CREATED"),
-      convention: franceTravailConventionReadDtoSchema,
-      assessment: assessmentDtoSchema,
-    }),
-  ]);
 
 export const isBroadcastSuccessResponse = (
   response: FranceTravailBroadcastResponse,
