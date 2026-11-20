@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import {
+  ContentCard,
   Loader,
   MainWrapper,
   SectionSteps,
@@ -254,7 +255,7 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                     />
                   </div>
                   {!currentSearchResult.voluntaryToImmersion && (
-                    <div className={fr.cx("fr-mb-3w")}>
+                    <ContentCard>
                       <p>
                         Cette entreprise n'est pas inscrite comme entreprise
                         accueillante mais peut recruter sur le métier que vous
@@ -264,12 +265,14 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                         inlineLayoutWhen="md and up"
                         buttons={[
                           {
+                            id: searchResultIds.notVoluntaryAdviceButton,
                             onClick: scrollToContactForm,
                             children: "Voir nos conseils",
                             priority: "secondary",
                           },
                           {
                             linkProps: {
+                              id: searchResultIds.notVoluntaryPartnerOfferLink,
                               href: currentSearchResult.urlOfPartner,
                               target: "_blank",
                             },
@@ -277,14 +280,13 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                           },
                         ]}
                       />
-                    </div>
+                    </ContentCard>
                   )}
                   <SearchResultContactSection
                     onFormSubmitSuccess={onFormSubmitSuccess}
                     formContactRef={formContactRef}
                     currentSearchResult={currentSearchResult}
                     onButtonClick={onGoBackClick}
-                    ids={searchResultIds}
                   />
                 </div>
                 <div className={fr.cx("fr-col-12", "fr-col-lg-4")}>

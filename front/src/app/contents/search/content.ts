@@ -76,17 +76,6 @@ export const searchResultContent = {
       "L'offre ne peut plus être affichée (paramètre de localisation invalide), veuillez relancer une recherche d'offre d'immersion pour retrouver une offre.",
     backToSearchButton: "Retour à la recherche",
   },
-  contactUnavailable: {
-    title: "Mise en relation temporairement indisponible",
-    maxReached:
-      "Cette entreprise a atteint son nombre maximal de mises en relation pour le moment.",
-    searchOtherEstablishments:
-      "Nous vous invitons à consulter d’autres entreprises accueillantes via le moteur de recherche afin de poursuivre votre démarche d’immersion.",
-    retryTitle: "Quand réessayer ?",
-    retryDescription:
-      "Les mises en relation sont réinitialisées chaque mois. Il est donc possible que cette entreprise soit à nouveau disponible prochainement, notamment en début de mois.",
-    searchAnotherEstablishmentButton: "Rechercher une autre entreprise",
-  },
   about: {
     title: "À propos de l’entreprise",
   },
