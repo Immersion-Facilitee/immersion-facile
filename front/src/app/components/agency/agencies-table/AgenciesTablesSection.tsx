@@ -7,6 +7,7 @@ import {
   type UserParamsForAgency,
 } from "shared";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { removeUserFromAgencySlice } from "src/core-logic/domain/agencies/remove-user-from-agency/removeUserFromAgency.slice";
 import { updateUserOnAgencySlice } from "src/core-logic/domain/agencies/update-user-on-agency/updateUserOnAgency.slice";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
@@ -29,7 +30,8 @@ export const AgenciesTablesSection = ({
   if (!agencyRights.length)
     return <p>Cet utilisateur n'est lié à aucun organisme.</p>;
 
-  const { activeAgencyRights } = distinguishAgencyRights(agencyRights);
+  const { toReviewAgencyRights, activeAgencyRights } =
+    distinguishAgencyRights(agencyRights);
 
   const onUserUpdateRequested =
     (feedbackTopic: FeedbackTopic) =>
@@ -38,6 +40,18 @@ export const AgenciesTablesSection = ({
         updateUserOnAgencySlice.actions.updateUserAgencyRightRequested({
           ...userParamsForAgency,
           feedbackTopic,
+        }),
+      );
+    };
+
+  const onUserRegistrationCancelledRequested =
+    (feedbackTopic: FeedbackTopic, user: User) =>
+    (agencyRight: AgencyRight) => {
+      dispatch(
+        removeUserFromAgencySlice.actions.removeUserFromAgencyRequested({
+          agencyId: agencyRight.agency.id,
+          feedbackTopic,
+          userId: user.id,
         }),
       );
     };
@@ -51,8 +65,23 @@ export const AgenciesTablesSection = ({
           mode="other-rights"
           agencyRights={activeAgencyRights}
           user={user}
+          title={`Organismes rattachés (${activeAgencyRights.length} ${activeAgencyRights.length === 1 ? "organisme" : "organismes"})`}
           modalId={domElementIds.admin.agencyTab.editAgencyManageUserModal}
           onUserUpdateRequested={onUserUpdateRequested("user")}
+        />
+      )}
+      {toReviewAgencyRights.length > 0 && (
+        <AgencyRightsTable
+          mode="rights-to-review"
+          agencyRights={toReviewAgencyRights}
+          user={user}
+          title={`Demandes d'accès envoyées (${toReviewAgencyRights.length}
+              ${toReviewAgencyRights.length === 1 ? "organisme" : "organismes"})`}
+          modalId={domElementIds.admin.agencyTab.editAgencyManageUserModal}
+          onUserRegistrationCancelledRequested={onUserRegistrationCancelledRequested(
+            "user",
+            user,
+          )}
         />
       )}
     </>

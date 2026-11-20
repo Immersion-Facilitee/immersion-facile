@@ -93,12 +93,10 @@ export const UserProfile = ({
         userAgenciesRights.length === 0 ? (
           adminEmptyContent.agencies
         ) : (
-          <>
-            <AgenciesTablesSection
-              user={userWithRights}
-              agencyRights={userWithRights.agencyRights}
-            />
-          </>
+          <AgenciesTablesSection
+            user={userWithRights}
+            agencyRights={userWithRights.agencyRights}
+          />
         ),
     },
     {
@@ -180,7 +178,9 @@ export const UserProfile = ({
         {userWithRights.proConnect &&
           `Connecté avec ProConnect (SIRET : ${userWithRights.proConnect.siret})`}
       </p>
-      <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>Mes rattachements</h2>
+      <h2 className={fr.cx("fr-h4", "fr-mt-4w")}>
+        Rattachements de l'utilisateur
+      </h2>
       <Tabs
         onTabChange={(tabId) => onTabChange(tabId as UserProfileTabId)}
         selectedTabId={currentTab}
