@@ -62,3 +62,52 @@ export const immersionStepsContent: Record<InternshipKind, SectionStepsProps> =
       ],
     },
   };
+
+export const searchResultContent = {
+  header: {
+    lbbTag: "Tentez votre chance",
+    websiteLink: "Site web",
+    employeesCount: (numberOfEmployeeRange: string): string =>
+      `${numberOfEmployeeRange} salariés`,
+  },
+  error: {
+    locationMissingTitle: "Oups !",
+    locationMissingDescription:
+      "L'offre ne peut plus être affichée (paramètre de localisation invalide), veuillez relancer une recherche d'offre d'immersion pour retrouver une offre.",
+    backToSearchButton: "Retour à la recherche",
+  },
+  about: {
+    title: "À propos de l’entreprise",
+  },
+  job: {
+    appellationInformationLink: "Fiche métier France Travail",
+    nafInformationLink: "Données INSEE",
+  },
+  location: {
+    title: "Localisation",
+    googleMapsLink: "Ouvrir dans Google Maps",
+  },
+  company: {
+    title: "L'entreprise",
+    nafLabel: "Secteur d'activité (NAF)",
+    employeesLabel: "Effectif",
+    siretLabel: "SIRET",
+  },
+  badges: {
+    superEstablishment: {
+      label: "Super entreprise",
+      description:
+        "Cette entreprise a déjà accueilli des immersions et répond activement aux candidatures.",
+    },
+    disabledWorkersDeclared: {
+      label: "Personnes en situation de handicap bienvenues",
+      description:
+        "L’entreprise a indiqué être prête à accueillir une personne en situation de handicap.",
+    },
+    disabledWorkersCertified: {
+      label: "Reconnue handi-engagée",
+      description:
+        "L’entreprise est reconnue handi-engagée pour l’accueil de personnes en situation de handicap.",
+    },
+  },
+};

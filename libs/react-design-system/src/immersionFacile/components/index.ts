@@ -1,5 +1,6 @@
 export * from "./bordered-section";
 export * from "./button-with-submenu";
+export * from "./content-card";
 export * from "./convention-agency-sub-section";
 export * from "./convention-form-layout";
 export * from "./convention-form-sidebar";
