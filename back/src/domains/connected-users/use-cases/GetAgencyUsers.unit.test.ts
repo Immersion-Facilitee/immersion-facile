@@ -1,8 +1,11 @@
 import {
+  type AgencyDto,
   AgencyDtoBuilder,
   type AgencyRight,
+  type AgencyRole,
   type AgencyUserForListing,
   type AgencyUserRight,
+  type ConnectedUser,
   ConnectedUserBuilder,
   closedOrRejectedAgencyStatuses,
   errors,
@@ -554,6 +557,122 @@ describe("GetAgencyUsers", () => {
           toExpectedAgencyUserForListing(johnUser, [commonAgencyRight]),
         ]);
       });
+    });
+  });
+
+  describe("when a non admin agency user requests users to review", () => {
+    const connectedUserWithRole = (
+      role: AgencyRole,
+      agency: AgencyDto,
+      id: string,
+    ): ConnectedUser =>
+      new ConnectedUserBuilder()
+        .withId(id)
+        .withEmail(`${id}@mail.com`)
+        .withAgencyRights([
+          {
+            agency: toAgencyDtoForAgencyUsersAndAdmins(agency, []),
+            roles: [role],
+            isNotifiedByEmail: false,
+          },
+        ])
+        .build();
+
+    it.each(["counsellor", "validator", "agency-viewer"])(
+      "gets to-review users of their agency when current user is %s",
+      async (role) => {
+        const agencyUser = connectedUserWithRole(role, agency1, `${role}-user`);
+
+        uow.userRepository.users = [johnUser];
+        uow.agencyRepository.agencies = [
+          toAgencyWithRights(agency1, {
+            [johnUser.id]: toReviewAndNotifiedUserRight,
+            [agencyUser.id]: {
+              roles: [role],
+              isNotifiedByEmail: false,
+            },
+          }),
+        ];
+
+        const users = await getAgencyUsers.execute(
+          { agencyRole: "to-review", agencyIds: [agency1.id] },
+          agencyUser,
+        );
+
+        expectToEqual(users, [
+          toExpectedAgencyUserForListing(johnUser, [
+            {
+              agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
+              ...toReviewAndNotifiedUserRight,
+            },
+          ]),
+        ]);
+      },
+    );
+
+    it("throws Forbidden when a valid agency role requests to-review users of an agency where they have no role", async () => {
+      const counsellorOnAgency1 = connectedUserWithRole(
+        "counsellor",
+        agency1,
+        "counsellor-user",
+      );
+
+      await expectPromiseToFailWithError(
+        getAgencyUsers.execute(
+          { agencyRole: "to-review", agencyIds: [agency2.id] },
+          counsellorOnAgency1,
+        ),
+        errors.user.forbidden({ userId: counsellorOnAgency1.id }),
+      );
+    });
+
+    it("throws Forbidden when the user only has the to-review role", async () => {
+      const userWithOnlyToReviewRole = connectedUserWithRole(
+        "to-review",
+        agency1,
+        "to-review-only",
+      );
+
+      await expectPromiseToFailWithError(
+        getAgencyUsers.execute(
+          { agencyRole: "to-review", agencyIds: [agency1.id] },
+          userWithOnlyToReviewRole,
+        ),
+        errors.user.forbidden({ userId: userWithOnlyToReviewRole.id }),
+      );
+    });
+
+    it("throws Forbidden when a non admin user with a valid agency role requests to-review users of several agencies", async () => {
+      const notAdminUserWithValidRoleOnMultipleAgencies =
+        new ConnectedUserBuilder()
+          .withId("counsellor-on-both")
+          .withEmail("counsellor.both@mail.com")
+          .withAgencyRights([
+            {
+              agency: toAgencyDtoForAgencyUsersAndAdmins(agency1, []),
+              roles: ["counsellor"],
+              isNotifiedByEmail: false,
+            },
+            {
+              agency: toAgencyDtoForAgencyUsersAndAdmins(agency2, []),
+              roles: ["counsellor"],
+              isNotifiedByEmail: false,
+            },
+          ])
+          .build();
+
+      await expectPromiseToFailWithError(
+        getAgencyUsers.execute(
+          {
+            agencyRole: "to-review",
+            agencyIds: [agency1.id, agency2.id],
+          },
+          notAdminUserWithValidRoleOnMultipleAgencies,
+        ),
+        errors.user.forbidden({
+          userId: notAdminUserWithValidRoleOnMultipleAgencies.id,
+        }),
+      );
     });
   });
 });
