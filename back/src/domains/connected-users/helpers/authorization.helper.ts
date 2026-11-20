@@ -2,6 +2,7 @@ import {
   type AgencyDto,
   type AgencyId,
   type AgencyWithUsersRights,
+  agencyRoleIsNotToReview,
   type ConnectedUser,
   type ConnectedUserDomainJwtPayload,
   type ConventionDomainJwtPayload,
@@ -47,6 +48,22 @@ export const throwIfNotAgencyAdminOrBackofficeAdmin = ({
     ),
   );
   if (!hasPermission) throw errors.user.forbidden({ userId: currentUser.id });
+};
+
+export const throwIfNotValidAgencyRole = ({
+  agencyId,
+  currentUser,
+}: {
+  agencyId: AgencyId;
+  currentUser: ConnectedUser;
+}): void => {
+  const hasValidRole = currentUser.agencyRights.some(
+    (agencyRight) =>
+      agencyRight.agency.id === agencyId &&
+      agencyRoleIsNotToReview(agencyRight.roles) &&
+      !closedOrRejectedAgencyStatuses.includes(agencyRight.agency.status),
+  );
+  if (!hasValidRole) throw errors.user.forbidden({ userId: currentUser.id });
 };
 
 export const throwIfNotAuthorizedForRole = async ({
