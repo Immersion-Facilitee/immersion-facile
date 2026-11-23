@@ -120,7 +120,7 @@ export const errors = {
     expired: () => new ForbiddenError("Le code de vérification a expiré."),
     tooManyAttempts: ({ maxAttempts }: { maxAttempts: number }) =>
       new TooManyRequestApiError(
-        `Trop de tentatives (${maxAttempts}). Merci de demander un nouveau code.`,
+        `Ce code n'est plus utilisable après ${maxAttempts} saisies incorrectes. Merci de demander un nouveau code.`,
       ),
   },
   fetch: {

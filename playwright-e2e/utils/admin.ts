@@ -14,6 +14,7 @@ import {
   type EmailType,
   type EstablishmentDashboardTab,
   frontRoutes,
+  OTP_CODE_LENGTH,
 } from "shared";
 import { testConfig } from "../custom.config";
 import { acceptCookiesIfBannerVisible } from "./utils";
@@ -164,7 +165,9 @@ export const getOtpCodeFromEmail = async ({
     .locator("li")
     .filter({ hasText: "otpCode" })
     .textContent();
-  return otpCodeParamText?.match(/\d{6}/)?.[0] ?? null;
+  return (
+    otpCodeParamText?.match(new RegExp(`\\d{${OTP_CODE_LENGTH}}`))?.[0] ?? null
+  );
 };
 
 export const openConventionWithOtpAsRecipient = async (

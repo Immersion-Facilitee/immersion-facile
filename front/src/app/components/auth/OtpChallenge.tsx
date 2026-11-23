@@ -16,6 +16,7 @@ import {
   type MaskedOtpRecipients,
   type NotificationKind,
   OTP_CHALLENGE_DURATION_IN_MINUTES,
+  OTP_CODE_LENGTH,
   type OtpJwt,
   type RequestOtpChallengeDto,
   requestOtpChallengeSchema,
@@ -35,7 +36,6 @@ import { otpChallengeSelectors } from "src/core-logic/domain/otpChallenge/otpCha
 import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
 import { match } from "ts-pattern";
 
-const otpCodeLength = 6;
 const otpStepCount = 2;
 const otpChallengeFeedbackTopic: FeedbackTopic = "otp-challenge";
 const renewExpiredJwtFeedbackTopic: FeedbackTopic = "renew-expired-jwt";
@@ -175,8 +175,8 @@ const OtpChannelStep = ({
       />
       <p>
         Pour renforcer la sécurité de vos actions, Immersion Facilitée doit
-        vérifier votre identité à l’aide d’un code temporaire à {otpCodeLength}{" "}
-        chiffres.
+        vérifier votre identité à l’aide d’un code temporaire à{" "}
+        {OTP_CODE_LENGTH} chiffres.
       </p>
       <p className={fr.cx("fr-hint-text")}>
         Ce code ne peut être envoyé qu’aux coordonnées disponibles dans la
@@ -285,7 +285,7 @@ const OtpCodeStep = ({
     <>
       <Stepper currentStep={2} stepCount={otpStepCount} title={title} />
       <p>
-        Nous vous avons envoyé un code de vérification à {otpCodeLength}{" "}
+        Nous vous avons envoyé un code de vérification à {OTP_CODE_LENGTH}{" "}
         chiffres {recipientIntroduction} <strong>{maskedRecipient}</strong>. Il
         est valable {OTP_CHALLENGE_DURATION_IN_MINUTES} minutes.
       </p>
@@ -300,16 +300,16 @@ const OtpCodeStep = ({
       >
         <Input
           className={fr.cx("fr-col-12", "fr-col-md-6", "fr-mb-0")}
-          label={`Saisissez le code à ${otpCodeLength} chiffres pour confirmer votre identité`}
+          label={`Saisissez le code à ${OTP_CODE_LENGTH} chiffres pour confirmer votre identité`}
           hintText="La vérification se lance dès la saisie complète."
           nativeInputProps={{
             id: domElementIds.otpChallenge.otpCodeInput,
             inputMode: "numeric",
             autoComplete: "one-time-code",
-            maxLength: otpCodeLength,
+            maxLength: OTP_CODE_LENGTH,
             ...register("otpCode", {
               onChange: (event) => {
-                if (event.target.value.length === otpCodeLength)
+                if (event.target.value.length === OTP_CODE_LENGTH)
                   handleSubmit(verifyOtpCode)();
               },
             }),

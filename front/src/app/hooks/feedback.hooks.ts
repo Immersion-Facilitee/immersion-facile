@@ -22,14 +22,19 @@ export const useFeedbackEventCallback = (
   }, [feedback, memoizedCallback, event]);
 };
 
-export const useFeedbackTopics = (topics: FeedbackTopic[]): Feedback[] => {
+export const useFeedbackTopics = (
+  topics: FeedbackTopic[],
+): (Feedback & { topic: FeedbackTopic })[] => {
   const feedbacks = useAppSelector(feedbacksSelectors.feedbacks);
-  return topics.map((t) => feedbacks[t]).filter((item) => !!item);
+  return topics.flatMap((topic) => {
+    const feedback = feedbacks[topic];
+    return feedback ? [{ ...feedback, topic }] : [];
+  });
 };
 
 export const useFeedbackTopic = (
   topic: FeedbackTopic,
 ): Feedback | undefined => {
-  const feedbacks = useFeedbackTopics([topic]);
-  return feedbacks[0];
+  const feedbacks = useAppSelector(feedbacksSelectors.feedbacks);
+  return feedbacks[topic];
 };

@@ -108,7 +108,7 @@ describe("otpChallenge slice", () => {
     store.dispatch(
       otpChallengeSlice.actions.otpChallengeVerificationRequested({
         jwt,
-        otpCode: "123456",
+        otpCode: "1234",
         feedbackTopic: "otp-challenge",
       }),
     );
@@ -137,7 +137,7 @@ describe("otpChallenge slice", () => {
     store.dispatch(
       otpChallengeSlice.actions.otpChallengeVerificationRequested({
         jwt,
-        otpCode: "000000",
+        otpCode: "0000",
         feedbackTopic: "otp-challenge",
       }),
     );
