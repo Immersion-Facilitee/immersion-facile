@@ -247,6 +247,8 @@ export const domElementIds = {
     aboutAccordion: "im-search-result-about__accordion",
     jobAccordion: "im-search-result-job__accordion",
     appellationInformationLink: "im-search-result-job__appellation-link",
+    noImmersionActivitiesAppellationInformationLink:
+      "im-search-result-job__no-immersion-activities-appellation-link",
     nafInformationLink: "im-search-result-job__naf-link",
     websiteLink: "im-search-result-header__website-link",
     googleMapsLink: "im-search-result-location__google-maps-link",
@@ -273,6 +275,8 @@ export const domElementIds = {
     jobAccordion: "im-search-result-job__accordion--student",
     appellationInformationLink:
       "im-search-result-job__appellation-link--student",
+    noImmersionActivitiesAppellationInformationLink:
+      "im-search-result-job__no-immersion-activities-appellation-link--student",
     nafInformationLink: "im-search-result-job__naf-link--student",
     websiteLink: "im-search-result-header__website-link--student",
     googleMapsLink: "im-search-result-location__google-maps-link--student",
@@ -292,6 +296,8 @@ export const domElementIds = {
     jobAccordion: "im-search-result-job__accordion--external",
     appellationInformationLink:
       "im-search-result-job__appellation-link--external",
+    noImmersionActivitiesAppellationInformationLink:
+      "im-search-result-job__no-immersion-activities-appellation-link--external",
     nafInformationLink: "im-search-result-job__naf-link--external",
     websiteLink: "im-search-result-header__website-link--external",
     googleMapsLink: "im-search-result-location__google-maps-link--external",

@@ -93,6 +93,11 @@ export const searchResultContent = {
   job: {
     appellationInformationLink: "Fiche métier France Travail",
     nafInformationLink: "Données INSEE",
+    immersionActivitiesTitle: "Activités pendant l'immersion",
+    noImmersionActivities:
+      "L'entreprise n'a pas encore décrit cette immersion. Pour découvrir ce métier, consultez",
+    noImmersionActivitiesAppellationInformationLink:
+      "la fiche métier France Travail",
   },
   location: {
     title: "Localisation",
