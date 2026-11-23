@@ -176,6 +176,17 @@ export const createEstablishmentRouter = (deps: AppDependencies) => {
       ),
   );
 
+  establishmentSharedRouter.getEstablishmentsForAdmin(
+    deps.connectedUserAuthMiddleware,
+    (req, res) =>
+      sendHttpResponse(req, res, () =>
+        deps.useCases.getEstablishmentsForAdmin.execute(
+          req.query,
+          getGenericAuthOrThrow(req.payloads?.currentUser),
+        ),
+      ),
+  );
+
   establishmentSharedRouter.getEstablishmentPublicOptionsByFilters(
     deps.connectedUserAuthMiddleware,
     (req, res) =>

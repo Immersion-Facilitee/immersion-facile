@@ -164,6 +164,7 @@ import { makeUpdateDiscussionStatusByEstablishment } from "../../domains/establi
 import { makeWarnSenderThatMessageCouldNotBeDelivered } from "../../domains/establishment/use-cases/discussions/WarnSenderThatMessageCouldNotBeDelivered";
 import { makeGetEstablishmentNameAndAdmins } from "../../domains/establishment/use-cases/GetEstablishmentNameAndAdmins";
 import { makeGetEstablishmentPublicOptionsByFilters } from "../../domains/establishment/use-cases/GetEstablishmentPublicOptionsByFilters";
+import { makeGetEstablishmentsForAdmin } from "../../domains/establishment/use-cases/GetEstablishmentsForAdmin";
 import { makeGetExternalOffers } from "../../domains/establishment/use-cases/GetExternalOffers";
 import { makeGetExternalSearchResult } from "../../domains/establishment/use-cases/GetExternalSearchResult";
 import { makeGetOffersByGroupSlug } from "../../domains/establishment/use-cases/GetGroupBySlug";
@@ -1063,6 +1064,9 @@ export const createUseCases = ({
       uowPerformer,
     }),
     getSearchResultBySearchQuery: makeGetSearchResultBySearchQuery({
+      deps: { establishmentAggregateQueries: queries.establishmentAggregate },
+    }),
+    getEstablishmentsForAdmin: makeGetEstablishmentsForAdmin({
       deps: { establishmentAggregateQueries: queries.establishmentAggregate },
     }),
     contactEstablishment: makeContactEstablishment({
