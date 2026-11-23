@@ -1,9 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   type AdminEstablishmentListItemDto,
+  adminEstablishmentListDefaultPerPage,
   type ConnectedUserJwt,
   type DataWithPagination,
-  defaultPerPageInWebPagination,
   type GetEstablishmentsForAdminParams,
 } from "shared";
 import type {
@@ -25,7 +25,7 @@ export type AdminEstablishmentListState =
 export const initialAdminEstablishmentListFilters: GetEstablishmentsForAdminParams =
   {
     page: 1,
-    perPage: defaultPerPageInWebPagination,
+    perPage: adminEstablishmentListDefaultPerPage,
   };
 
 export const adminEstablishmentListInitialState: AdminEstablishmentListState = {
@@ -35,7 +35,7 @@ export const adminEstablishmentListInitialState: AdminEstablishmentListState = {
     totalRecords: 0,
     currentPage: 1,
     totalPages: 1,
-    numberPerPage: defaultPerPageInWebPagination,
+    numberPerPage: adminEstablishmentListDefaultPerPage,
   },
   filters: initialAdminEstablishmentListFilters,
 };

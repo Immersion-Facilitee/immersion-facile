@@ -5,8 +5,8 @@ import { RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AdminEstablishmentListItemDto,
+  adminEstablishmentListDefaultPerPage,
   adminEstablishmentListSearchMinLength,
-  defaultPerPageInWebPagination,
   domElementIds,
   frontRoutes,
   type GetEstablishmentsForAdminParams,
@@ -84,7 +84,7 @@ export const AdminEstablishmentListSection = (): React.ReactNode => {
     fetchEstablishments({
       search: search || undefined,
       page: 1,
-      perPage: defaultPerPageInWebPagination,
+      perPage: adminEstablishmentListDefaultPerPage,
     });
   };
 

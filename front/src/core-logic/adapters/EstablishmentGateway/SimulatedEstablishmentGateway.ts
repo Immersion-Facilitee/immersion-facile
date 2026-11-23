@@ -1,6 +1,7 @@
 import { delay, type Observable, of } from "rxjs";
 import {
   type AdminEstablishmentListItemDto,
+  adminEstablishmentListDefaultPerPage,
   type ConnectedUserJwt,
   calculatePaginationResult,
   type DataWithPagination,
@@ -11,7 +12,6 @@ import {
   type DiscussionReadDto,
   defaultAddress,
   defaultPageInPagination,
-  defaultPerPageInWebPagination,
   type EstablishmentNameAndAdmins,
   type EstablishmentPublicOption,
   type Exchange,
@@ -58,7 +58,7 @@ export class SimulatedEstablishmentGateway implements EstablishmentGateway {
   getEstablishmentsForAdmin$(
     {
       page = defaultPageInPagination,
-      perPage = defaultPerPageInWebPagination,
+      perPage = adminEstablishmentListDefaultPerPage,
     }: GetEstablishmentsForAdminParams,
     _jwt: ConnectedUserJwt,
   ): Observable<DataWithPagination<AdminEstablishmentListItemDto>> {

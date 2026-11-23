@@ -3,6 +3,8 @@ import type { SiretDto } from "../siret/siret";
 import type { DateTimeIsoString } from "../utils/date";
 
 export const adminEstablishmentListSearchMinLength = 3;
+export const adminEstablishmentListDefaultPerPage = 10;
+export const adminEstablishmentListMaxPerPage = 50;
 
 export type GetEstablishmentsForAdminParams = PaginationQueryParams & {
   search?: string;

@@ -1,10 +1,12 @@
 import {
   type AdminEstablishmentListItemDto,
+  adminEstablishmentListDefaultPerPage,
+  adminEstablishmentListMaxPerPage,
   type ConnectedUser,
   type DataWithPagination,
+  defaultPageInPagination,
   type GetEstablishmentsForAdminParams,
   getEstablishmentsForAdminParamsSchema,
-  getPaginationParamsForWeb,
   removeSpaces,
   siretRegex,
 } from "shared";
@@ -36,7 +38,13 @@ export const makeGetEstablishmentsForAdmin = useCaseBuilder(
 
       return establishmentAggregateQueries.getEstablishmentsForAdmin({
         search: search && toNormalizedSearch(search),
-        pagination: getPaginationParamsForWeb({ page, perPage }),
+        pagination: {
+          page: page ?? defaultPageInPagination,
+          perPage: Math.min(
+            perPage ?? adminEstablishmentListDefaultPerPage,
+            adminEstablishmentListMaxPerPage,
+          ),
+        },
       });
     },
   );

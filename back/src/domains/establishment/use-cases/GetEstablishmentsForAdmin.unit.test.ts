@@ -1,9 +1,10 @@
 import {
   type AdminEstablishmentListItemDto,
+  adminEstablishmentListDefaultPerPage,
+  adminEstablishmentListMaxPerPage,
   ConnectedUserBuilder,
   ConventionDtoBuilder,
   DiscussionBuilder,
-  defaultPerPageInWebPagination,
   errors,
   expectPromiseToFailWithError,
   expectToEqual,
@@ -176,7 +177,7 @@ describe("GetEstablishmentsForAdmin", () => {
       data: [bakeryListItem, garageListItem],
       pagination: {
         currentPage: 1,
-        numberPerPage: defaultPerPageInWebPagination,
+        numberPerPage: adminEstablishmentListDefaultPerPage,
         totalPages: 1,
         totalRecords: 2,
       },
@@ -195,6 +196,18 @@ describe("GetEstablishmentsForAdmin", () => {
           totalRecords: 2,
         },
       },
+    );
+  });
+
+  it("caps the number of establishments per page", async () => {
+    expectToEqual(
+      (
+        await getEstablishmentsForAdmin.execute(
+          { perPage: adminEstablishmentListMaxPerPage + 1 },
+          admin,
+        )
+      ).pagination.numberPerPage,
+      adminEstablishmentListMaxPerPage,
     );
   });
 
@@ -229,7 +242,7 @@ describe("GetEstablishmentsForAdmin", () => {
           data: [],
           pagination: {
             currentPage: 1,
-            numberPerPage: defaultPerPageInWebPagination,
+            numberPerPage: adminEstablishmentListDefaultPerPage,
             totalPages: 1,
             totalRecords: 0,
           },

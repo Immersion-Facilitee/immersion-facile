@@ -39,14 +39,14 @@ describe("Admin establishment list", () => {
         totalRecords: 1,
         currentPage: 1,
         totalPages: 1,
-        numberPerPage: 20,
+        numberPerPage: 10,
       },
     };
 
   const filters: GetEstablishmentsForAdminParams = {
     search: "fournil",
     page: 1,
-    perPage: 20,
+    perPage: 10,
   };
 
   let store: ReduxStore;
