@@ -1,5 +1,6 @@
 import type { Observable } from "rxjs";
 import type {
+  AdminEstablishmentListItemDto,
   ConnectedUserJwt,
   ConventionSupportedJwt,
   DataWithPagination,
@@ -14,6 +15,7 @@ import type {
   FormEstablishmentDto,
   FormEstablishmentUserRight,
   GetEstablishmentPublicOptionsByFiltersInput,
+  GetEstablishmentsForAdminParams,
   SendMessageToDiscussionFromDashboardRequestPayload,
   SiretDto,
   WithDiscussionStatus,
@@ -52,6 +54,10 @@ export interface EstablishmentGateway {
     discussionId: DiscussionId,
     jwt: ConnectedUserJwt,
   ): Observable<DiscussionEstablishmentContactInfo>;
+  getEstablishmentsForAdmin$(
+    params: GetEstablishmentsForAdminParams,
+    jwt: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminEstablishmentListItemDto>>;
   getEstablishmentPublicOptions$(
     filters: GetEstablishmentPublicOptionsByFiltersInput,
     jwt: ConnectedUserJwt,

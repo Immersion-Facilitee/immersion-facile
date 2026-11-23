@@ -1,8 +1,11 @@
 import { faker } from "@faker-js/faker/locale/fr";
 import { addMonths } from "date-fns";
-import { domElementIds, FormEstablishmentDtoBuilder } from "shared";
+import {
+  domElementIds,
+  FormEstablishmentDtoBuilder,
+  frontRoutes,
+} from "shared";
 import { testConfig } from "../../custom.config";
-import { goToAdminTab } from "../../utils/admin";
 import { getFormEstablishmentApiPath } from "../../utils/apiRoutes";
 import { e2eSiretEstablishments } from "../../utils/siret";
 import { test, validPhonesData } from "../../utils/utils";
@@ -105,21 +108,12 @@ test.describe("Establishment creation and modification workflow", () => {
         page,
       }) => {
         page.on("dialog", (dialog) => dialog.accept());
-        await page.goto("/");
-        await goToAdminTab(page, "adminEstablishments");
-        const siretInput = page.locator(
-          `#${domElementIds.admin.manageEstablishment.siretInput}`,
-        );
-        await siretInput.waitFor();
-        await siretInput.fill(siret);
         const formEstablishmentApiPath = getFormEstablishmentApiPath(siret);
         const [establishmentResponse] = await Promise.all([
           page.waitForResponse((response) =>
             response.url().includes(formEstablishmentApiPath),
           ),
-          page.click(
-            `#${domElementIds.admin.manageEstablishment.searchButton}`,
-          ),
+          page.goto(frontRoutes.adminEstablishments({ siret }).href),
         ]);
         if (establishmentResponse.status() === 404) return;
 

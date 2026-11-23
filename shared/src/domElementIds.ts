@@ -936,8 +936,6 @@ export const domElementIds = {
       internshipKindSelect: "email-preview-internshipKind-select",
     },
     manageEstablishment: {
-      siretInput: "im-manage-establishment__siret-input",
-      searchButton: "im-manage-establishment__search-button",
       titleInput: "im-form-add-by-batch__title-input",
       descriptionInput: "im-form-add-by-batch__description-input",
       groupNameInput: "im-form-add-by-batch__group-name-input",
@@ -1100,7 +1098,10 @@ export const domElementIds = {
     confirmLoginButton: "im-magic-link-interstitial__confirm-login-button",
     renewalButton: "im-magic-link-interstitial__renewal-button",
   },
-  adminEstablishments: {},
+  adminEstablishments: {
+    establishmentListEditEstablishmentButton:
+      "im-admin-establishments__establishment-list-edit-establishment-button",
+  },
   establishmentDashboard: {
     tabContainer: "im-establishment-dashboard__tab-container",
     initiateConvention: {

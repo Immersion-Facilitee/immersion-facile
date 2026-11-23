@@ -1,11 +1,16 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
+import { Button } from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { omit, pick, values } from "ramda";
 import { ErrorNotifications, HeadingSection } from "react-design-system";
 import { useFormContext } from "react-hook-form";
 import { domElementIds, type FormEstablishmentDto } from "shared";
+import {
+  BanEstablishmentModal,
+  banEstablishmentModal,
+} from "src/app/components/admin/establishments/BanEstablishmentModal";
 import { PhoneInput } from "src/app/components/forms/commons/PhoneInput";
 import { CreationSiretRelatedInputs } from "src/app/components/forms/establishment/CreationSiretRelatedInputs";
 import { EditionSiretRelatedInputs } from "src/app/components/forms/establishment/EditionSiretRelatedInputs";
@@ -58,6 +63,23 @@ export const BusinessAndAdminSection = ({
       <HeadingSection
         title="Informations de votre établissement"
         className={fr.cx("fr-mt-0")}
+        titleAction={
+          mode === "admin" && (
+            <>
+              <Button
+                id={domElementIds.admin.manageEstablishment.banButton}
+                iconId="fr-icon-error-warning-line"
+                priority="secondary"
+                size="small"
+                type="button"
+                onClick={() => banEstablishmentModal.open()}
+              >
+                Bannir l'entreprise
+              </Button>
+              <BanEstablishmentModal siret={formEstablishment.siret} />
+            </>
+          )
+        }
       >
         {formEstablishment.userRights.some(
           (userRight) => userRight.status === "PENDING",

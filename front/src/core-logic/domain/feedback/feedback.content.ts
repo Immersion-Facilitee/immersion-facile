@@ -1,5 +1,6 @@
 import type { ActionCreatorWithPayload } from "@reduxjs/toolkit";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
+import { adminEstablishmentListSlice } from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.slice";
 import { adminAgencyListSlice } from "src/core-logic/domain/agencies/admin-agency-list/adminAgencyList.slice";
 import { closeAgencyAndTransferConventionsSlice } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.slice";
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
@@ -43,6 +44,7 @@ type FeedbackWithActionName = {
 const topics = [
   "admin-agency-list",
   "admin-convention-list",
+  "admin-establishment-list",
   "agency-admin",
   "agency-for-dashboard",
   "agency-user-for-dashboard",
@@ -1140,6 +1142,15 @@ export const feedbacks: Record<
       action: adminAgencyListSlice.actions.fetchAdminAgencyListFailed,
       title: "Problème lors de la récupération des agences",
       message: "Une erreur est survenue lors de la récupération des agences",
+    },
+  },
+  "admin-establishment-list": {
+    "fetch.error": {
+      action:
+        adminEstablishmentListSlice.actions.fetchAdminEstablishmentListFailed,
+      title: "Problème lors de la récupération des établissements",
+      message:
+        "Une erreur est survenue lors de la récupération des établissements",
     },
   },
   "admin-convention-list": {
