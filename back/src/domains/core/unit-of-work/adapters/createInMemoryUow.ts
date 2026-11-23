@@ -127,8 +127,5 @@ export const createInMemoryOutOfTransactionQueries = (
     archivedConventionRequest: new InMemoryArchivedConventionRequestQueries(),
     establishmentAggregate: new InMemoryEstablishmentAggregateQueries(
       uow.establishmentAggregateRepository,
-      uow.discussionRepository,
-      uow.conventionRepository,
-      uow.userRepository,
     ),
   }) satisfies OutOfTransactionQueries;

@@ -1,5 +1,6 @@
 import { addDays } from "date-fns";
 import {
+  type AdminEstablishmentListItemDto,
   type AdminRoutes,
   adminRoutes,
   ConnectedUserBuilder,
@@ -12,8 +13,7 @@ import {
 import type { HttpClient } from "shared-routes";
 import { createSupertestSharedClient } from "shared-routes/supertest";
 import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
-import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
-import { EstablishmentAggregateBuilder } from "../../../../domains/establishment/helpers/EstablishmentBuilders";
+import type { InMemoryOutOfTransactionQueries } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { buildTestApp } from "../../../../utils/buildTestApp";
 
 describe(`${displayRouteName(adminRoutes.getEstablishmentsForAdmin)} to list establishments for backoffice admin`, () => {
@@ -27,34 +27,30 @@ describe(`${displayRouteName(adminRoutes.getEstablishmentsForAdmin)} to list est
     .withIsAdmin(false)
     .buildUser();
 
-  const bakery = new EstablishmentAggregateBuilder()
-    .withEstablishmentSiret("11111111111111")
-    .withEstablishmentName("BOULANGERIE DU CENTRE")
-    .withEstablishmentCustomizedName("Le Fournil")
-    .withEstablishmentCreatedAt(new Date("2024-01-10T10:00:00.000Z"))
-    .withEstablishmentUpdatedAt(new Date("2026-10-20T10:00:00.000Z"))
-    .build();
-
-  const garage = new EstablishmentAggregateBuilder()
-    .withEstablishmentSiret("22222222222222")
-    .withEstablishmentName("GARAGE MARTIN")
-    .build();
+  const bakeryListItem: AdminEstablishmentListItemDto = {
+    siret: "11111111111111",
+    name: "BOULANGERIE DU CENTRE",
+    customizedName: "Le Fournil",
+    city: "Lyon",
+    postcode: "69001",
+    otherLocationsCount: 0,
+    createdAt: "2024-01-10T10:00:00.000Z",
+    updatedAt: "2026-10-20T10:00:00.000Z",
+    discussionsCount: 0,
+    validatedConventionsCount: 0,
+  };
 
   let httpClient: HttpClient<AdminRoutes>;
-  let inMemoryUow: InMemoryUnitOfWork;
+  let queries: InMemoryOutOfTransactionQueries;
   let backofficeAdminToken: ConnectedUserJwt;
   let nonAdminToken: ConnectedUserJwt;
 
   beforeEach(async () => {
     const deps = await buildTestApp();
-    inMemoryUow = deps.inMemoryUow;
+    queries = deps.queries;
     httpClient = createSupertestSharedClient(adminRoutes, deps.request);
 
-    inMemoryUow.userRepository.users = [backofficeAdminUser, nonAdminUser];
-    inMemoryUow.establishmentAggregateRepository.establishmentAggregates = [
-      bakery,
-      garage,
-    ];
+    deps.inMemoryUow.userRepository.users = [backofficeAdminUser, nonAdminUser];
 
     backofficeAdminToken = deps.generateConnectedUserJwt({
       userId: backofficeAdminUser.id,
@@ -115,6 +111,8 @@ describe(`${displayRouteName(adminRoutes.getEstablishmentsForAdmin)} to list est
   });
 
   it("200 - returns establishments matching the search", async () => {
+    queries.establishmentAggregate.establishmentsForAdmin = [bakeryListItem];
+
     const response = await httpClient.getEstablishmentsForAdmin({
       headers: { authorization: backofficeAdminToken },
       queryParams: { page: 1, perPage: 10, search: "fournil" },
@@ -123,20 +121,7 @@ describe(`${displayRouteName(adminRoutes.getEstablishmentsForAdmin)} to list est
     expectHttpResponseToEqual(response, {
       status: 200,
       body: {
-        data: [
-          {
-            siret: bakery.establishment.siret,
-            name: "BOULANGERIE DU CENTRE",
-            customizedName: "Le Fournil",
-            city: bakery.establishment.locations[0].address.city,
-            postcode: bakery.establishment.locations[0].address.postcode,
-            otherLocationsCount: 0,
-            createdAt: "2024-01-10T10:00:00.000Z",
-            updatedAt: "2026-10-20T10:00:00.000Z",
-            discussionsCount: 0,
-            validatedConventionsCount: 0,
-          },
-        ],
+        data: [bakeryListItem],
         pagination: {
           currentPage: 1,
           totalPages: 1,
