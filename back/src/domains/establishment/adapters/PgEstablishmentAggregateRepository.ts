@@ -112,6 +112,7 @@ export class PgEstablishmentAggregateRepository
         offersWithSiret.map((offerWithSiret) => ({
           appellation_code: Number.parseInt(offerWithSiret.appellationCode, 10),
           remote_work_mode: offerWithSiret.remoteWorkMode,
+          immersion_activities: offerWithSiret.immersionActivities ?? null,
           siret: offerWithSiret.siret,
           created_at: sql`${offerWithSiret.createdAt.toISOString()}`,
         })),
@@ -684,9 +685,32 @@ export class PgEstablishmentAggregateRepository
           offersToAdd.map((offerToAdd) => ({
             appellation_code: Number.parseInt(offerToAdd.appellationCode, 10),
             remote_work_mode: offerToAdd.remoteWorkMode,
+            immersion_activities: offerToAdd.immersionActivities ?? null,
             created_at: sql`${offerToAdd.createdAt.toISOString()}`,
             siret,
           })),
+        )
+        .execute();
+
+    const offersWithUpdatedImmersionActivities = updatedOffers.filter(
+      (updatedOffer) =>
+        existingOffers.some(
+          (existingOffer) =>
+            offersEqual(existingOffer, updatedOffer) &&
+            existingOffer.immersionActivities !==
+              updatedOffer.immersionActivities,
+        ),
+    );
+
+    for (const offer of offersWithUpdatedImmersionActivities)
+      await this.transaction
+        .updateTable("immersion_offers")
+        .set({ immersion_activities: offer.immersionActivities ?? null })
+        .where("siret", "=", siret)
+        .where(
+          "appellation_code",
+          "=",
+          Number.parseInt(offer.appellationCode, 10),
         )
         .execute();
   }
@@ -920,6 +944,7 @@ const establishmentByFiltersQueryBuilder = (db: KyselyDb) =>
                   romeCode: ref("pad.code_rome"),
                   romeLabel: ref("prd.libelle_rome"),
                   remoteWorkMode: ref("io.remote_work_mode"),
+                  immersionActivities: ref("io.immersion_activities"),
                   appellationCode: sql<string>`${ref(
                     "io.appellation_code",
                   )}::text`,

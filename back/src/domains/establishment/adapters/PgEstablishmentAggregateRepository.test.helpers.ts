@@ -48,6 +48,9 @@ export const makeExpectedSearchResult = ({
     appellations: matchingOffersForRemoteWorkMode.map((offer) => ({
       appellationCode: offer.appellationCode,
       appellationLabel: offer.appellationLabel,
+      ...(offer.immersionActivities
+        ? { immersionActivities: offer.immersionActivities }
+        : {}),
     })),
     establishmentScore: establishmentAggregate.establishment.score,
     contactMode: establishmentAggregate.establishment.contactMode,

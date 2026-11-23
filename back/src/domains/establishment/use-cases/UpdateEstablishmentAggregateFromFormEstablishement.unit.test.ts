@@ -1295,6 +1295,69 @@ describe("Update Establishment aggregate from form data", () => {
         );
       });
 
+      it("adds immersion activities to an offer", async () => {
+        uow.userRepository.users = [user];
+        const initialOffer = updatedFormEstablishment.offers[0];
+        const immersionActivities =
+          "Accueillir les clients\nRéaliser un shampoing";
+
+        await updateEstablishmentAggregateFromFormUseCase.execute(
+          {
+            formEstablishment: {
+              ...updatedFormEstablishment,
+              offers: [{ ...initialOffer, immersionActivities }],
+            },
+          },
+          { userId: user.id },
+        );
+
+        expectToEqual(
+          uow.establishmentAggregateRepository.establishmentAggregates.map(
+            ({ offers }) => offers,
+          ),
+          [
+            [
+              {
+                ...initialOffer,
+                immersionActivities,
+                createdAt: timeGateway.now(),
+              },
+            ],
+          ],
+        );
+      });
+
+      it("clears immersion activities of an offer", async () => {
+        uow.userRepository.users = [user];
+        uow.establishmentAggregateRepository.establishmentAggregates = [
+          {
+            ...existingEstablishmentAggregate,
+            offers: existingEstablishmentAggregate.offers.map((offer) => ({
+              ...offer,
+              immersionActivities: "Accueillir les clients",
+            })),
+          },
+        ];
+        const initialOffer = updatedFormEstablishment.offers[0];
+
+        await updateEstablishmentAggregateFromFormUseCase.execute(
+          {
+            formEstablishment: {
+              ...updatedFormEstablishment,
+              offers: [{ ...initialOffer, immersionActivities: "" }],
+            },
+          },
+          { userId: user.id },
+        );
+
+        expectToEqual(
+          uow.establishmentAggregateRepository.establishmentAggregates.map(
+            ({ offers }) => offers,
+          ),
+          [[{ ...initialOffer, createdAt: timeGateway.now() }]],
+        );
+      });
+
       it("cannot ban an establishment", async () => {
         uow.userRepository.users = [user];
         const updatedFormEstablishmentWithBan: FormEstablishmentDto = {

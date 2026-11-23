@@ -49,6 +49,8 @@ const searchImmersionResult: SearchImmersionResultPublicV3 = {
     {
       appellationCode: "19540",
       appellationLabel: "Styliste",
+      immersionActivities:
+        "Participer à la création des croquis de la collection\nObserver la sélection des tissus avec l'équipe",
     },
     {
       appellationCode: "12831",

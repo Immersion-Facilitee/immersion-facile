@@ -64,6 +64,7 @@ describe("Retrieve Form Establishment From Aggregate when payload is valid", () 
       new OfferEntityBuilder()
         .withRomeCode("A1101")
         .withAppellationCode("11987")
+        .withImmersionActivities("Conduire un tracteur\nSoigner les animaux")
         .build(),
     ])
     .withUserRights([
@@ -552,6 +553,7 @@ const makeExpectedFormEstablishment = ({
     remoteWorkMode: offer.remoteWorkMode,
     romeCode: offer.romeCode,
     romeLabel: offer.romeLabel,
+    immersionActivities: offer.immersionActivities,
   })),
   userRights: [
     {

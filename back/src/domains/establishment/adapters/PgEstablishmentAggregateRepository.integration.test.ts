@@ -29,6 +29,7 @@ import {
 import { PgUserRepository } from "../../core/authentication/connected-user/adapters/PgUserRepository";
 import { phoneNumbersExist } from "../../core/phone-number/adapters/pgPhoneHelper";
 import type { EstablishmentAggregate } from "../entities/EstablishmentAggregate";
+import type { OfferEntity } from "../entities/OfferEntity";
 import type { GeoParams } from "../entities/SearchMadeEntity";
 import {
   defaultNafCode,
@@ -302,6 +303,52 @@ describe("PgEstablishmentAggregateRepository", () => {
                 }),
             ),
           });
+        });
+      });
+
+      describe("immersion activities", () => {
+        it("returns immersion activities of each appellation when provided", async () => {
+          const cartographeWithImmersionActivities: OfferEntity = {
+            ...cartographeImmersionOffer,
+            immersionActivities:
+              "Réaliser des relevés de terrain\nMettre à jour les cartes",
+          };
+          await pgEstablishmentAggregateRepository.insertEstablishmentAggregate(
+            new EstablishmentAggregateBuilder()
+              .withEstablishmentSiret("11111111111111")
+              .withOffers([
+                cartographeWithImmersionActivities,
+                analysteEnGeomatiqueImmersionOffer,
+              ])
+              .withUserRights([osefUserRight])
+              .build(),
+          );
+
+          const { data } = await pgEstablishmentAggregateRepository.getOffers({
+            pagination: { page: 1, perPage: 20 },
+            sort: defaultSort,
+            filters: defaultFilters,
+          });
+
+          expectToEqual(
+            data.map(({ appellations }) => appellations),
+            [
+              [
+                {
+                  appellationCode:
+                    analysteEnGeomatiqueImmersionOffer.appellationCode,
+                  appellationLabel:
+                    analysteEnGeomatiqueImmersionOffer.appellationLabel,
+                },
+                {
+                  appellationCode: cartographeImmersionOffer.appellationCode,
+                  appellationLabel: cartographeImmersionOffer.appellationLabel,
+                  immersionActivities:
+                    "Réaliser des relevés de terrain\nMettre à jour les cartes",
+                },
+              ],
+            ],
+          );
         });
       });
 
@@ -2592,6 +2639,101 @@ describe("PgEstablishmentAggregateRepository", () => {
         expectToEqual(
           await pgEstablishmentAggregateRepository.getAllEstablishmentAggregatesForTest(),
           [establishment],
+        );
+      });
+    });
+
+    describe("immersion activities", () => {
+      const offerWithImmersionActivities = new OfferEntityBuilder()
+        .withImmersionActivities(
+          "Participer à la fabrication des pains\nObserver le pétrissage",
+        )
+        .build();
+
+      it("adds a new row in immersion_offers table with immersion activities", async () => {
+        const establishment = new EstablishmentAggregateBuilder()
+          .withEstablishmentSiret("11111111111111")
+          .withOffers([offerWithImmersionActivities])
+          .withUserRights([osefUserRight])
+          .build();
+
+        await pgEstablishmentAggregateRepository.insertEstablishmentAggregate(
+          establishment,
+        );
+
+        expectToEqual(
+          await pgEstablishmentAggregateRepository.getAllEstablishmentAggregatesForTest(),
+          [establishment],
+        );
+      });
+
+      it("updates immersion activities of an existing offer and keeps its creation date", async () => {
+        const originalOffer = new OfferEntityBuilder()
+          .withCreatedAt(new Date("2022-05-15T12:00:00.000Z"))
+          .build();
+        const originalEstablishment = new EstablishmentAggregateBuilder()
+          .withEstablishmentSiret("11111111111111")
+          .withOffers([originalOffer])
+          .withUserRights([osefUserRight])
+          .build();
+        await pgEstablishmentAggregateRepository.insertEstablishmentAggregate(
+          originalEstablishment,
+        );
+
+        await pgEstablishmentAggregateRepository.updateEstablishmentAggregate(
+          {
+            ...originalEstablishment,
+            offers: [
+              {
+                ...offerWithImmersionActivities,
+                createdAt: new Date("2025-01-01T00:00:00.000Z"),
+              },
+            ],
+          },
+          new Date(),
+        );
+
+        expectToEqual(
+          await pgEstablishmentAggregateRepository.getAllEstablishmentAggregatesForTest(),
+          [
+            {
+              ...originalEstablishment,
+              offers: [
+                {
+                  ...originalOffer,
+                  immersionActivities:
+                    offerWithImmersionActivities.immersionActivities,
+                },
+              ],
+            },
+          ],
+        );
+      });
+
+      it("removes immersion activities of an existing offer", async () => {
+        const originalEstablishment = new EstablishmentAggregateBuilder()
+          .withEstablishmentSiret("11111111111111")
+          .withOffers([offerWithImmersionActivities])
+          .withUserRights([osefUserRight])
+          .build();
+        await pgEstablishmentAggregateRepository.insertEstablishmentAggregate(
+          originalEstablishment,
+        );
+
+        const { immersionActivities: _, ...offerWithoutImmersionActivities } =
+          offerWithImmersionActivities;
+        const updatedEstablishment: EstablishmentAggregate = {
+          ...originalEstablishment,
+          offers: [offerWithoutImmersionActivities],
+        };
+        await pgEstablishmentAggregateRepository.updateEstablishmentAggregate(
+          updatedEstablishment,
+          new Date(),
+        );
+
+        expectToEqual(
+          await pgEstablishmentAggregateRepository.getAllEstablishmentAggregatesForTest(),
+          [updatedEstablishment],
         );
       });
     });

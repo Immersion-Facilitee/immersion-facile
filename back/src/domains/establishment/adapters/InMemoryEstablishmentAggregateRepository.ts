@@ -9,6 +9,7 @@ import {
   type GroupSlug,
   type InternalOfferDto,
   type LocationId,
+  type OfferAppellationDto,
   path,
   pathEq,
   type RemoteWorkMode,
@@ -18,6 +19,7 @@ import {
 } from "shared";
 import { distanceBetweenCoordinatesInMeters } from "../../../utils/distanceBetweenCoordinatesInMeters";
 import type { EstablishmentAggregate } from "../entities/EstablishmentAggregate";
+import type { OfferEntity } from "../entities/OfferEntity";
 import type {
   EstablishmentAggregateFilters,
   EstablishmentAggregateRepository,
@@ -382,10 +384,7 @@ export const buildSearchImmersionResultDtoForSiretRomeAndLocation = ({
     establishmentScore: establishmentAgg.establishment.score,
     appellations: establishmentAgg.offers
       .filter((immersionOffer) => immersionOffer.romeCode === romeCode)
-      .map((immersionOffer) => ({
-        appellationLabel: immersionOffer.appellationLabel,
-        appellationCode: immersionOffer.appellationCode,
-      })),
+      .map(toOfferAppellation),
     siret: establishmentAgg.establishment.siret,
     voluntaryToImmersion: establishmentAgg.establishment.voluntaryToImmersion,
     contactMode: establishmentAgg.establishment.contactMode,
@@ -446,14 +445,21 @@ export const establishmentAggregateToSearchResultByRomeForFirstLocation = ({
       (offer) =>
         offer.romeCode === romeCode && offer.remoteWorkMode === remoteWorkMode,
     )
-    .map((offer) => ({
-      appellationCode: offer.appellationCode,
-      appellationLabel: offer.appellationLabel,
-    })),
+    .map(toOfferAppellation),
   updatedAt: establishmentAggregate.establishment.updatedAt?.toISOString(),
   createdAt: establishmentAggregate.establishment.createdAt.toISOString(),
   fitForDisabledWorkers: "no",
   remoteWorkMode: remoteWorkMode,
   isAvailable:
     !establishmentAggregate.establishment.isMaxDiscussionsForPeriodReached,
+});
+
+const toOfferAppellation = ({
+  appellationCode,
+  appellationLabel,
+  immersionActivities,
+}: OfferEntity): OfferAppellationDto => ({
+  appellationCode,
+  appellationLabel,
+  ...(immersionActivities ? { immersionActivities } : {}),
 });

@@ -7,6 +7,7 @@ import {
   type EstablishmentSearchableBy,
   type FitForDisableWorkerOption,
   type FormEstablishmentSource,
+  type ImmersionActivities,
   type Location,
   type NafDto,
   type NumberEmployeesRange,
@@ -564,6 +565,13 @@ export class OfferEntityBuilder implements Builder<OfferEntity> {
     return new OfferEntityBuilder({
       ...this.entity,
       remoteWorkMode,
+    });
+  }
+
+  public withImmersionActivities(immersionActivities: ImmersionActivities) {
+    return new OfferEntityBuilder({
+      ...this.entity,
+      immersionActivities,
     });
   }
 }

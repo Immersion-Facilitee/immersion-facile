@@ -136,9 +136,12 @@ export const makeEstablishmentAggregate = async ({
       ...withBannedEstablishmentInformations,
     },
     userRights: updatedUserRights,
-    offers: formEstablishment.offers.map((offer) => ({
-      ...offer,
-      createdAt: timeGateway.now(),
-    })),
+    offers: formEstablishment.offers.map(
+      ({ immersionActivities, ...offer }) => ({
+        ...offer,
+        ...(immersionActivities ? { immersionActivities } : {}),
+        createdAt: timeGateway.now(),
+      }),
+    ),
   };
 };

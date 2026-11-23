@@ -991,6 +991,63 @@ describe("InsertEstablishmentAggregateFromForm", () => {
       );
     });
 
+    it("keeps immersion activities of offers and ignores empty ones", async () => {
+      const coiffeurOffer: EstablishmentFormOffer = {
+        appellationCode: "12694",
+        appellationLabel: "Coiffeur / Coiffeuse mixte",
+        romeCode: "D1202",
+        romeLabel: "Coiffure",
+        remoteWorkMode: "ON_SITE",
+      };
+      const boulangerFormOffer: EstablishmentFormOffer = {
+        appellationCode: "11573",
+        appellationLabel: "Boulanger / Boulangère",
+        romeCode: "D1102",
+        romeLabel: "Boulangerie - viennoiserie",
+        remoteWorkMode: "ON_SITE",
+      };
+      uow.romeRepository.appellations = [coiffeurOffer, boulangerFormOffer];
+
+      const formEstablishment = FormEstablishmentDtoBuilder.valid()
+        .withBusinessAddresses([defaultAddress.formAddress])
+        .withOffers([
+          {
+            ...coiffeurOffer,
+            immersionActivities:
+              "Accueillir les clients\nRéaliser un shampoing",
+          },
+          { ...boulangerFormOffer, immersionActivities: "" },
+        ])
+        .build();
+      siretGateway.setSirenEstablishment({
+        ...TEST_OPEN_ESTABLISHMENT_1,
+        siret: formEstablishment.siret,
+        nafDto: expectedNafDto,
+      });
+
+      await insertEstablishmentAggregateFromForm.execute(
+        { formEstablishment },
+        connectedUser,
+      );
+
+      expectToEqual(
+        uow.establishmentAggregateRepository.establishmentAggregates.map(
+          ({ offers }) => offers,
+        ),
+        [
+          [
+            {
+              ...coiffeurOffer,
+              immersionActivities:
+                "Accueillir les clients\nRéaliser un shampoing",
+              createdAt: timeGateway.now(),
+            },
+            { ...boulangerFormOffer, createdAt: timeGateway.now() },
+          ],
+        ],
+      );
+    });
+
     it("cannot save an establishment with same siret", async () => {
       const formEstablishment = FormEstablishmentDtoBuilder.valid().build();
 

@@ -573,6 +573,7 @@ interface ImmersionOffers {
   remote_work_mode: string;
   score: Generated<number | null>;
   appellation_code: number;
+  immersion_activities: string | null;
 }
 
 type ContactMode = "EMAIL" | "IN_PERSON" | "PHONE";

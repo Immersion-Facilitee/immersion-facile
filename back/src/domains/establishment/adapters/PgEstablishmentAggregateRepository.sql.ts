@@ -1,13 +1,13 @@
 import { type QueryCreator, sql } from "kysely";
 import { values } from "ramda";
 import {
-  type AppellationDto,
   type DateTimeIsoString,
   type EstablishmentSearchableByValue,
   type EstablishmentWebSite,
   type ExpectTrue,
   errors,
   type NumberEmployeesRange,
+  type OfferAppellationDto,
   pipeWithValue,
   type RemoteWorkMode,
   type RomeCode,
@@ -494,6 +494,7 @@ const makeGetFilteredResultsSubQueryBuilder = ({
                   "created_at",
                   "appellation_code",
                   "remote_work_mode",
+                  "immersion_activities",
                 ]),
               (eb) =>
                 romeCodes
@@ -533,10 +534,11 @@ const makeGetFilteredResultsSubQueryBuilder = ({
           "loc.id as loc_id",
           "offer.rome_code as code_rome",
           "offer.remote_work_mode",
-          sql<AppellationDto[]>`JSON_AGG
+          sql<OfferAppellationDto[]>`JSON_AGG
               ( JSON_BUILD_OBJECT(
                   'appellationCode', a.ogr_appellation::text,
-                  'appellationLabel', a.libelle_appellation_long
+                  'appellationLabel', a.libelle_appellation_long,
+                  'immersionActivities', offer.immersion_activities
                   ) ORDER BY a.ogr_appellation)`.as("appellations"),
           sql<number>`ROW_NUMBER() OVER (ORDER BY ${makeOrderByClauses(
             sort,

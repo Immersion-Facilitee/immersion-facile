@@ -120,15 +120,18 @@ const makeValidatedOffers = async (
       offers.map(({ appellationCode }) => appellationCode),
     );
 
-  return offers.map(({ appellationCode, remoteWorkMode }) => {
-    const appelationAndRome = appellations.find(
-      (appelation) => appelation.appellationCode === appellationCode,
-    );
-    if (!appelationAndRome)
-      throw errors.rome.missingAppellation({ appellationCode });
-    return {
-      ...appelationAndRome,
-      remoteWorkMode,
-    };
-  });
+  return offers.map(
+    ({ appellationCode, remoteWorkMode, immersionActivities }) => {
+      const appelationAndRome = appellations.find(
+        (appelation) => appelation.appellationCode === appellationCode,
+      );
+      if (!appelationAndRome)
+        throw errors.rome.missingAppellation({ appellationCode });
+      return {
+        ...appelationAndRome,
+        remoteWorkMode,
+        immersionActivities,
+      };
+    },
+  );
 };
