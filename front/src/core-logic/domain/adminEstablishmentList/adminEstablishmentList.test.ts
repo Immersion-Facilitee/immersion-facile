@@ -75,7 +75,7 @@ describe("Admin establishment list", () => {
       filters,
     );
 
-    dependencies.establishmentGateway.getEstablishmentsForAdminResponse$.next(
+    dependencies.adminGateway.getEstablishmentsForAdminResponse$.next(
       adminEstablishmentList,
     );
 
@@ -111,7 +111,7 @@ describe("Admin establishment list", () => {
       }),
     );
 
-    dependencies.establishmentGateway.getEstablishmentsForAdminResponse$.error(
+    dependencies.adminGateway.getEstablishmentsForAdminResponse$.error(
       new Error("Erreur serveur"),
     );
 

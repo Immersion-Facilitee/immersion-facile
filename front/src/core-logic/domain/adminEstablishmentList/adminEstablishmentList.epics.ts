@@ -13,7 +13,7 @@ type AdminEstablishmentListAction = ActionOfSlice<
 const fetchAdminEstablishmentListEpic: AppEpic<AdminEstablishmentListAction> = (
   action$,
   _state$,
-  { establishmentGateway },
+  { adminGateway },
 ) =>
   action$.pipe(
     filter(
@@ -21,7 +21,7 @@ const fetchAdminEstablishmentListEpic: AppEpic<AdminEstablishmentListAction> = (
         .match,
     ),
     switchMap((action) =>
-      establishmentGateway
+      adminGateway
         .getEstablishmentsForAdmin$(action.payload.filters, action.payload.jwt)
         .pipe(
           map((adminEstablishmentList) =>

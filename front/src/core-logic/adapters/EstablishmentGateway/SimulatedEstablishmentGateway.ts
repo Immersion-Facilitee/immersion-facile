@@ -1,9 +1,6 @@
 import { delay, type Observable, of } from "rxjs";
 import {
-  type AdminEstablishmentListItemDto,
-  adminEstablishmentListDefaultPerPage,
   type ConnectedUserJwt,
-  calculatePaginationResult,
   type DataWithPagination,
   DiscussionBuilder,
   type DiscussionEstablishmentContactInfo,
@@ -11,14 +8,12 @@ import {
   type DiscussionInList,
   type DiscussionReadDto,
   defaultAddress,
-  defaultPageInPagination,
   type EstablishmentNameAndAdmins,
   type EstablishmentPublicOption,
   type Exchange,
   type FormEstablishmentDto,
   type FormEstablishmentUserRight,
   type GetEstablishmentPublicOptionsByFiltersInput,
-  type GetEstablishmentsForAdminParams,
   type SiretDto,
   type WithDiscussionStatusRejected,
 } from "shared";
@@ -53,37 +48,6 @@ export class SimulatedEstablishmentGateway implements EstablishmentGateway {
           .map(({ email }) => email),
       }).pipe(delay(this.delay));
     throw new Error(`Establishment with siret ${siret} not found.`);
-  }
-
-  getEstablishmentsForAdmin$(
-    {
-      page = defaultPageInPagination,
-      perPage = adminEstablishmentListDefaultPerPage,
-    }: GetEstablishmentsForAdminParams,
-    _jwt: ConnectedUserJwt,
-  ): Observable<DataWithPagination<AdminEstablishmentListItemDto>> {
-    const { city, postcode } = defaultAddress.addressAndPosition.address;
-    return of({
-      data: this.establishments.slice((page - 1) * perPage, page * perPage).map(
-        (establishment): AdminEstablishmentListItemDto => ({
-          siret: establishment.siret,
-          name: establishment.businessName,
-          customizedName: establishment.businessNameCustomized ?? null,
-          city,
-          postcode,
-          otherLocationsCount: establishment.businessAddresses.length - 1,
-          createdAt: new Date("2024-01-10T10:00:00.000Z").toISOString(),
-          updatedAt: new Date("2026-10-20T10:00:00.000Z").toISOString(),
-          discussionsCount: 3,
-          validatedConventionsCount: 1,
-        }),
-      ),
-      pagination: calculatePaginationResult({
-        page,
-        perPage,
-        totalRecords: this.establishments.length,
-      }),
-    }).pipe(delay(this.delay));
   }
 
   getEstablishmentPublicOptions$(

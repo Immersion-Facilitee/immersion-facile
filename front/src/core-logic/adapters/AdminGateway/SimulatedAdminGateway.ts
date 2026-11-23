@@ -1,17 +1,23 @@
 import { type Observable, of } from "rxjs";
 import {
+  type AdminEstablishmentListItemDto,
   AgencyDtoBuilder,
   type AgencyRight,
   type AgencyUserForListing,
   type ApiConsumer,
   type ApiConsumerId,
   type ApiConsumerJwt,
+  adminEstablishmentListDefaultPerPage,
   type BanEstablishmentPayload,
   type ConnectedUserJwt,
+  calculatePaginationResult,
   type DashboardUrlAndName,
+  type DataWithPagination,
+  defaultPageInPagination,
   type EstablishmentBatchReport,
   type FormEstablishmentBatchDto,
   type GetDashboardParams,
+  type GetEstablishmentsForAdminParams,
   type GetUsersFilters,
   type NotificationsByKind,
   toAgencyDtoForAgencyUsersAndAdmins,
@@ -73,6 +79,26 @@ export class SimulatedAdminGateway implements AdminGateway {
     _token: ConnectedUserJwt,
   ): Observable<DashboardUrlAndName> {
     return of({ name, url: `http://${name}.com` });
+  }
+
+  public getEstablishmentsForAdmin$(
+    {
+      page = defaultPageInPagination,
+      perPage = adminEstablishmentListDefaultPerPage,
+    }: GetEstablishmentsForAdminParams,
+    _jwt: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminEstablishmentListItemDto>> {
+    return of({
+      data: simulatedAdminEstablishments.slice(
+        (page - 1) * perPage,
+        page * perPage,
+      ),
+      pagination: calculatePaginationResult({
+        page,
+        perPage,
+        totalRecords: simulatedAdminEstablishments.length,
+      }),
+    });
   }
 
   public getLastNotifications$(
@@ -260,5 +286,32 @@ const apiConsumers: ApiConsumer[] = [
         subscriptions: [],
       },
     },
+  },
+];
+
+const simulatedAdminEstablishments: AdminEstablishmentListItemDto[] = [
+  {
+    siret: "12345678901236",
+    name: "BOULANGERIE DU CENTRE",
+    customizedName: "Le Fournil",
+    city: "Lyon",
+    postcode: "69001",
+    otherLocationsCount: 1,
+    createdAt: "2024-01-10T10:00:00.000Z",
+    updatedAt: "2026-10-20T10:00:00.000Z",
+    discussionsCount: 3,
+    validatedConventionsCount: 1,
+  },
+  {
+    siret: "12345678901237",
+    name: "GARAGE MARTIN",
+    customizedName: null,
+    city: "Villeurbanne",
+    postcode: "69100",
+    otherLocationsCount: 0,
+    createdAt: "2025-03-01T10:00:00.000Z",
+    updatedAt: "2025-06-15T10:00:00.000Z",
+    discussionsCount: 0,
+    validatedConventionsCount: 0,
   },
 ];

@@ -1,6 +1,5 @@
 import { from, type Observable } from "rxjs";
 import {
-  type AdminEstablishmentListItemDto,
   type ConnectedUserJwt,
   type DataWithPagination,
   type DiscussionEstablishmentContactInfo,
@@ -16,7 +15,6 @@ import {
   type FormEstablishmentDto,
   type FormEstablishmentPendingUserRight,
   type GetEstablishmentPublicOptionsByFiltersInput,
-  type GetEstablishmentsForAdminParams,
   type SendMessageToDiscussionFromDashboardRequestPayload,
   type SiretDto,
   type UpdateDiscussionStatusParams,
@@ -134,26 +132,6 @@ export class HttpEstablishmentGateway implements EstablishmentGateway {
             .with({ status: 404 }, () => {
               throw errors.establishment.notFound({ siret });
             })
-            .otherwise(otherwiseThrow),
-        ),
-    );
-  }
-
-  public getEstablishmentsForAdmin$(
-    params: GetEstablishmentsForAdminParams,
-    jwt: ConnectedUserJwt,
-  ): Observable<DataWithPagination<AdminEstablishmentListItemDto>> {
-    return from(
-      this.httpClient
-        .getEstablishmentsForAdmin({
-          queryParams: params,
-          headers: { authorization: jwt },
-        })
-        .then((response) =>
-          match(response)
-            .with({ status: 200 }, ({ body }) => body)
-            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
-            .with({ status: P.union(401, 403) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

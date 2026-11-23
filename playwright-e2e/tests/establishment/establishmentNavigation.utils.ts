@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import {
+  adminRoutes,
   domElementIds,
-  establishmentRoutes,
   type FormEstablishmentDto,
   frontRoutes,
   type SiretDto,
@@ -48,9 +48,8 @@ export const goToManageEtablishmentBySiretInAdmin = async (
     page.waitForResponse((response) => {
       const url = new URL(response.url());
       return (
-        url.pathname.endsWith(
-          establishmentRoutes.getEstablishmentsForAdmin.url,
-        ) && url.searchParams.get("search") === siret
+        url.pathname.endsWith(adminRoutes.getEstablishmentsForAdmin.url) &&
+        url.searchParams.get("search") === siret
       );
     }),
     page.getByRole("button", { name: "Rechercher", exact: true }).click(),

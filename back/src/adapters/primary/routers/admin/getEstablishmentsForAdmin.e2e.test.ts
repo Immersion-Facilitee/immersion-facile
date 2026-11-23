@@ -1,12 +1,12 @@
 import { addDays } from "date-fns";
 import {
+  type AdminRoutes,
+  adminRoutes,
   ConnectedUserBuilder,
   type ConnectedUserJwt,
   currentJwtVersions,
   displayRouteName,
-  type EstablishmentRoutes,
   errors,
-  establishmentRoutes,
   expectHttpResponseToEqual,
 } from "shared";
 import type { HttpClient } from "shared-routes";
@@ -16,7 +16,7 @@ import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/a
 import { EstablishmentAggregateBuilder } from "../../../../domains/establishment/helpers/EstablishmentBuilders";
 import { buildTestApp } from "../../../../utils/buildTestApp";
 
-describe(`${displayRouteName(establishmentRoutes.getEstablishmentsForAdmin)} to list establishments for backoffice admin`, () => {
+describe(`${displayRouteName(adminRoutes.getEstablishmentsForAdmin)} to list establishments for backoffice admin`, () => {
   const backofficeAdminUser = new ConnectedUserBuilder()
     .withId("backoffice-admin-user")
     .withIsAdmin(true)
@@ -40,7 +40,7 @@ describe(`${displayRouteName(establishmentRoutes.getEstablishmentsForAdmin)} to 
     .withEstablishmentName("GARAGE MARTIN")
     .build();
 
-  let httpClient: HttpClient<EstablishmentRoutes>;
+  let httpClient: HttpClient<AdminRoutes>;
   let inMemoryUow: InMemoryUnitOfWork;
   let backofficeAdminToken: ConnectedUserJwt;
   let nonAdminToken: ConnectedUserJwt;
@@ -48,7 +48,7 @@ describe(`${displayRouteName(establishmentRoutes.getEstablishmentsForAdmin)} to 
   beforeEach(async () => {
     const deps = await buildTestApp();
     inMemoryUow = deps.inMemoryUow;
-    httpClient = createSupertestSharedClient(establishmentRoutes, deps.request);
+    httpClient = createSupertestSharedClient(adminRoutes, deps.request);
 
     inMemoryUow.userRepository.users = [backofficeAdminUser, nonAdminUser];
     inMemoryUow.establishmentAggregateRepository.establishmentAggregates = [
@@ -108,7 +108,7 @@ describe(`${displayRouteName(establishmentRoutes.getEstablishmentsForAdmin)} to 
       body: {
         issues: ["search : Le minimum est de 3 caractères"],
         message:
-          "Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: GET /establishments-for-admin",
+          "Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: GET /admin/establishments",
         status: 400,
       },
     });

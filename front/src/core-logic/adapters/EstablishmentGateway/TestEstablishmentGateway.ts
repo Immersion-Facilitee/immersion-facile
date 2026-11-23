@@ -1,6 +1,5 @@
 import { type Observable, Subject } from "rxjs";
 import type {
-  AdminEstablishmentListItemDto,
   ConnectedUserJwt,
   DataWithPagination,
   DiscussionEstablishmentContactInfo,
@@ -13,7 +12,6 @@ import type {
   FormEstablishmentDto,
   FormEstablishmentUserRight,
   GetEstablishmentPublicOptionsByFiltersInput,
-  GetEstablishmentsForAdminParams,
   SiretDto,
   WithDiscussionStatusRejected,
 } from "shared";
@@ -35,10 +33,6 @@ export class TestEstablishmentGateway implements EstablishmentGateway {
   public formEstablishment$ = new Subject<FormEstablishmentDto>();
 
   public establishmentAdmins$ = new Subject<EstablishmentNameAndAdmins>();
-
-  public getEstablishmentsForAdminResponse$ = new Subject<
-    DataWithPagination<AdminEstablishmentListItemDto>
-  >();
 
   public establishmentPublicOptions$ = new Subject<
     EstablishmentPublicOption[]
@@ -84,13 +78,6 @@ export class TestEstablishmentGateway implements EstablishmentGateway {
     _jwt: ConnectedUserJwt,
   ): Observable<EstablishmentNameAndAdmins> {
     return this.establishmentAdmins$;
-  }
-
-  public getEstablishmentsForAdmin$(
-    _params: GetEstablishmentsForAdminParams,
-    _jwt: ConnectedUserJwt,
-  ): Observable<DataWithPagination<AdminEstablishmentListItemDto>> {
-    return this.getEstablishmentsForAdminResponse$;
   }
 
   public getEstablishmentPublicOptions$(

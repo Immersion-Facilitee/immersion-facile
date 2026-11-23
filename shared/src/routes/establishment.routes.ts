@@ -9,10 +9,6 @@ import {
   withExchangeMessageSchema,
 } from "../discussion/discussion.schema";
 import {
-  getEstablishmentsForAdminParamsSchema,
-  paginatedAdminEstablishmentListSchema,
-} from "../establishment/adminEstablishmentList.schema";
-import {
   discussionEstablishmentContactInfoSchema,
   establishmentNameAndAdminsSchema,
   establishmentPublicOptionsSchema,
@@ -84,18 +80,6 @@ export const establishmentRoutes = defineRoutes({
     responses: {
       200: establishmentNameAndAdminsSchema,
       404: httpErrorSchema,
-    },
-  }),
-  getEstablishmentsForAdmin: defineRoute({
-    method: "get",
-    url: "/establishments-for-admin",
-    ...withAuthorizationHeaders,
-    queryParamsSchema: getEstablishmentsForAdminParamsSchema,
-    responses: {
-      200: paginatedAdminEstablishmentListSchema,
-      400: httpErrorSchema,
-      401: httpErrorSchema,
-      403: httpErrorSchema,
     },
   }),
   getEstablishmentPublicOptionsByFilters: defineRoute({
