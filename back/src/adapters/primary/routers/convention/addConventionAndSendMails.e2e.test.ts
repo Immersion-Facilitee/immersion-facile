@@ -1,4 +1,4 @@
-import { addDays } from "date-fns";
+import { addDays, subDays, subMonths } from "date-fns";
 import {
   AgencyDtoBuilder,
   ConnectedUserBuilder,
@@ -6,6 +6,7 @@ import {
   ConventionDtoBuilder,
   conventionMagicLinkRoutes,
   currentJwtVersions,
+  defaultMonthsThresholdForConventionsListing,
   expectArraysToEqualIgnoringOrder,
   expectEmailOfType,
   expectToEqual,
@@ -99,16 +100,23 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
   it("Scenario: convention submitted, then signed, then validated", async () => {
     const ftAgency = new AgencyDtoBuilder().withKind("france-travail").build();
 
+    const conventionDateEnd = subMonths(
+      new Date(),
+      defaultMonthsThresholdForConventionsListing - 1,
+    );
+    const conventionDateStart = subDays(conventionDateEnd, 9);
+    const conventionDateSubmission = subDays(conventionDateStart, 4);
+
     const initialConvention = new ConventionDtoBuilder()
       .withAgencyId(ftAgency.id)
       .notSigned()
       .withStatus("READY_TO_SIGN")
       .withoutDateValidation()
       .withFederatedIdentity({ provider: "ftConnect", token: "fake" })
-      .withDateSubmission(new Date("2026-10-02").toISOString())
-      .withDateStart(new Date("2026-10-06").toISOString())
-      .withDateEnd(new Date("2026-10-15").toISOString())
-      .withUpdatedAt(new Date("2026-10-02").toISOString())
+      .withDateSubmission(conventionDateSubmission.toISOString())
+      .withDateStart(conventionDateStart.toISOString())
+      .withDateEnd(conventionDateEnd.toISOString())
+      .withUpdatedAt(conventionDateSubmission.toISOString())
       .withSchedule(reasonableSchedule)
       .build();
 
