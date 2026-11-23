@@ -690,6 +690,12 @@ export const domElementIds = {
       remoteWorkMode: "im-form-create-establishment__remote-work-mode",
       appellationsListLink:
         "im-form-create-establishment__appellations-list-link",
+      immersionActivities: "im-form-create-establishment__immersion-activities",
+      offerOptionalPartsAlert:
+        "im-form-create-establishment__offer-optional-parts-alert",
+      offerJobAccordion: "im-form-create-establishment__offer-job-accordion",
+      offerImmersionActivitiesAccordion:
+        "im-form-create-establishment__offer-immersion-activities-accordion",
       website: "im-form-create-establishment__website",
       additionalInformation:
         "im-form-create-establishment__additional-information",
@@ -760,6 +766,12 @@ export const domElementIds = {
       remoteWorkMode: "im-form-edit-establishment__remote-work-mode",
       appellationsListLink:
         "im-form-edit-establishment__appellations-list-link",
+      immersionActivities: "im-form-edit-establishment__immersion-activities",
+      offerOptionalPartsAlert:
+        "im-form-edit-establishment__offer-optional-parts-alert",
+      offerJobAccordion: "im-form-edit-establishment__offer-job-accordion",
+      offerImmersionActivitiesAccordion:
+        "im-form-edit-establishment__offer-immersion-activities-accordion",
       website: "im-form-edit-establishment__website",
       additionalInformation:
         "im-form-edit-establishment__additional-information",
@@ -837,6 +849,14 @@ export const domElementIds = {
       remoteWorkMode: "im-form-manage-establishment-admin__remote-work-mode",
       appellationsListLink:
         "im-form-manage-establishment-admin__appellations-list-link",
+      immersionActivities:
+        "im-form-manage-establishment-admin__immersion-activities",
+      offerOptionalPartsAlert:
+        "im-form-manage-establishment-admin__offer-optional-parts-alert",
+      offerJobAccordion:
+        "im-form-manage-establishment-admin__offer-job-accordion",
+      offerImmersionActivitiesAccordion:
+        "im-form-manage-establishment-admin__offer-immersion-activities-accordion",
       website: "im-form-manage-establishment-admin__website",
       additionalInformation:
         "im-form-manage-establishment-admin__additional-information",

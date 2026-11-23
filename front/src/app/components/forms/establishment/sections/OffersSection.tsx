@@ -262,6 +262,9 @@ const FirstOfferSection = ({ mode }: { mode: Mode }): ReactNode => {
           !!firstOfferErrors?.romeLabel
         }
         hasRemoteWorkModeError={!!firstOfferErrors?.remoteWorkMode}
+        immersionActivitiesErrorMessage={
+          firstOfferErrors?.immersionActivities?.message
+        }
       />
     </>
   );

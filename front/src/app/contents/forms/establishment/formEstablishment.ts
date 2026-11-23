@@ -226,6 +226,21 @@ export const deleteOfferModalContent = {
     `Le métier « ${appellationLabel} » sera supprimé de votre fiche entreprise et n'apparaîtra plus dans la recherche.`,
 };
 
+export const offerFieldsContent = {
+  optionalPartsAlert: {
+    title: "Seule la partie 1 est obligatoire.",
+    description:
+      "Les autres parties aident les candidats à savoir si l'immersion leur correspond. Vous pouvez les remplir maintenant ou plus tard depuis votre fiche entreprise.",
+  },
+  jobSectionTitle: "1. Le métier",
+  immersionActivitiesSectionTitle: "2. Activités pendant l'immersion",
+  requiredBadge: "Obligatoire",
+  optionalBadge: "Facultatif",
+  immersionActivitiesLabel:
+    "Décrivez ce que le candidat fera ou découvrira pendant l'immersion",
+  immersionActivitiesHint: "Soyez concret pour l'aider à se projeter.",
+};
+
 export const firstOfferIntro =
   "Elle apparaîtra dans la recherche. Vous pourrez ajouter d'autres offres une fois l'inscription terminée.";
 
