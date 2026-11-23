@@ -64,10 +64,11 @@ export const BusinessAndAdminSection = ({
         title="Informations de votre établissement"
         className={fr.cx("fr-mt-0")}
         titleAction={
-          mode === "admin" && (
+          mode === "admin" &&
+          !formEstablishment.isEstablishmentBanned && (
             <>
               <Button
-                id={domElementIds.admin.manageEstablishment.banButton}
+                id={domElementIds.adminEstablishments.banEstablishmentButton}
                 iconId="fr-icon-error-warning-line"
                 priority="secondary"
                 size="small"

@@ -259,6 +259,7 @@ export const establishmentSlice = createSlice({
       _action: PayloadActionWithFeedbackTopic,
     ) => {
       state.isLoading = false;
+      state.formEstablishment.isEstablishmentBanned = true;
     },
     banEstablishmentFailed: (
       state,

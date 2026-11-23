@@ -590,6 +590,11 @@ describe("Establishment", () => {
       expectToEqual(establishmentSelectors.isLoading(store.getState()), true);
       dependencies.adminGateway.banEstablishmentResponse$.next(undefined);
       expectToEqual(establishmentSelectors.isLoading(store.getState()), false);
+      expectToEqual(
+        establishmentSelectors.formEstablishment(store.getState())
+          .isEstablishmentBanned,
+        true,
+      );
       expectToEqual(feedbacksSelectors.feedbacks(store.getState()), {
         "ban-establishment": {
           on: "create",
