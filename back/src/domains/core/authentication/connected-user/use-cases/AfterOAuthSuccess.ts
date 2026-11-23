@@ -195,12 +195,12 @@ const saveFTConnectAuthenticationDataAndReturnRedirectURI = async ({
   updatedOngoingOAuth: FTConnectOngoingAuth;
   accessToken: GetAccessTokenResult;
 }): Promise<AfterOAuthSuccessRedirectionResponse> => {
-  await uow.ongoingOAuthRepository.save(updatedOngoingOAuth);
   const userAndAdvisors = await deps.ftConnectGateway.getUserAndAdvisors({
     value: accessToken.accessToken,
     expiresIn: accessToken.expire,
     idToken: accessToken.idToken,
   });
+  await uow.ongoingOAuthRepository.save(updatedOngoingOAuth);
   if (!userAndAdvisors) {
     return {
       provider: updatedOngoingOAuth.provider,

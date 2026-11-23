@@ -17,6 +17,8 @@ export class InMemoryFtConnectGateway implements FtConnectGateway {
 
   #user: FtConnectUserDto | undefined = undefined;
 
+  #userAndAdvisorsError: Error | undefined = undefined;
+
   public async getLoginUrl(params: GetLoginUrlParams): Promise<AbsoluteUrl> {
     return `https://fake-ft-connect-login-url?${queryParamsAsString(params)}`;
   }
@@ -35,6 +37,7 @@ export class InMemoryFtConnectGateway implements FtConnectGateway {
       }
     | undefined
   > {
+    if (this.#userAndAdvisorsError) throw this.#userAndAdvisorsError;
     if (!this.#user) return undefined;
     return {
       advisors: this.#advisors,
@@ -58,6 +61,10 @@ export class InMemoryFtConnectGateway implements FtConnectGateway {
 
   public setAdvisors(advisors: FtConnectAdvisorDto[]) {
     this.#advisors = advisors;
+  }
+
+  public setUserAndAdvisorsError(error: Error): void {
+    this.#userAndAdvisorsError = error;
   }
 
   // test
