@@ -802,6 +802,32 @@ describe("AfterOAuthSuccessRedirection use case", () => {
         expectToEqual(uow.conventionDraftRepository.conventionDrafts, []);
       });
 
+      it("fetches France Travail user and advisors before saving the ongoing OAuth", async () => {
+        uow.ongoingOAuthRepository.ongoingOAuths = [defaultFtOngoingOAuth];
+        ftConnectGateway.setAccessTokenResult({
+          type: "ftConnect",
+          expire: 60,
+          payload: defaultExpectedIftConnectcIdTokenPayload,
+          accessToken,
+          idToken,
+        });
+        const ftConnectTimeoutError = errors.generic.fakeError(
+          "France Travail Connect timeout",
+        );
+        ftConnectGateway.setUserAndAdvisorsError(ftConnectTimeoutError);
+
+        await expectPromiseToFailWithError(
+          afterOAuthSuccessRedirection.execute({ code, state }),
+          ftConnectTimeoutError,
+        );
+
+        expectToEqual(uow.ongoingOAuthRepository.ongoingOAuths, [
+          defaultFtOngoingOAuth,
+        ]);
+        expectToEqual(uow.conventionDraftRepository.conventionDrafts, []);
+        expectToEqual(uow.outboxRepository.events, []);
+      });
+
       it("should redirect with authFailure id on FtConnect auth failure", async () => {
         uow.ongoingOAuthRepository.ongoingOAuths = [defaultFtOngoingOAuth];
         ftConnectGateway.setAccessTokenResult({
