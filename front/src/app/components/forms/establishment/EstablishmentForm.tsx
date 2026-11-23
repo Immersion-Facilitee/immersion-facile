@@ -48,16 +48,16 @@ type FormStep = RangeOfPosition<4>;
 
 const steps: Record<FormStep, Pick<StepperProps, "title" | "nextTitle">> = {
   1: {
-    title: "Votre établissement",
-    nextTitle: "Vos offres",
+    title: "Votre entreprise",
+    nextTitle: "Vos préférences d'accueil",
   },
   2: {
-    title: "Vos offres",
-    nextTitle: "Paramètres de vos offres",
+    title: "Paramètres de vos offres",
+    nextTitle: "Vos offres",
   },
   3: {
-    title: "Paramètres de vos offres",
-    nextTitle: "Récapitulatif de votre établissement",
+    title: "Vos offres",
+    nextTitle: "Paramètres de vos offres",
   },
   4: {
     title: "Récapitulatif de votre établissement",
@@ -435,8 +435,6 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
         </>
       )}
     >
-      {/** biome-ignore lint/complexity/noUselessFragments: BUG BIOME */}
-      <>
         {isLoading && <Loader />}
         <FormProvider {...methods}>
           <form
@@ -517,7 +515,6 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
               ))}
           </form>
         </FormProvider>
-      </>
     </WithFeedbackReplacer>
   );
 };

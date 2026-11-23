@@ -1,11 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import { Input } from "@codegouvfr/react-dsfr/Input";
+import { Input, type InputProps } from "@codegouvfr/react-dsfr/Input";
 import { pick } from "ramda";
 import { useEffect } from "react";
 import { Loader } from "react-design-system";
 import { useFormContext } from "react-hook-form";
 import {
   defaultMaxContactsPerMonth,
+  domElementIds,
   type FormEstablishmentDto,
   type NumberEmployeesRange,
 } from "shared";
@@ -68,16 +69,25 @@ export const CreationSiretRelatedInputs = () => {
         : defaultMaxContactsPerMonth,
     );
   }, [establishmentInfos]);
-  const getSiretError = () => {
+
+  const getSiretInputStatus = (): {
+    siretState: InputProps["state"];
+    siretStateRelatedMessage: InputProps["stateRelatedMessage"];
+  } => {
     if (errors.siret) {
-      return errors.siret.message;
+      return { siretState: "error" , siretStateRelatedMessage: errors.siret.message} ;
     }
     if (siretErrorToDisplay && touchedFields.siret) {
-      return siretErrorToDisplay;
+      return { siretState: "error" , siretStateRelatedMessage: siretErrorToDisplay} ;
     }
-    return "";
+    if (establishmentInfos?.businessName) {
+      return { siretState: "success" , siretStateRelatedMessage: `Un établissement a bien été trouvé. Raison Sociale : ${establishmentInfos.businessName}.`} ;
+    }
+    return { siretState: "default" , siretStateRelatedMessage: ""};
   };
-  const siretError = getSiretError();
+
+  const { siretState, siretStateRelatedMessage  } = getSiretInputStatus();
+
   return (
     <>
       {isFetchingSiret && <Loader />}
@@ -92,11 +102,12 @@ export const CreationSiretRelatedInputs = () => {
             setValue("siret", event.target.value);
           },
         }}
-        state={siretError ? "error" : "default"}
-        stateRelatedMessage={siretError}
+        state={siretState}
+        stateRelatedMessage={siretStateRelatedMessage}
       />
       <p>
         <a
+          id={domElementIds.formEstablishment.create.annuaireEntreprisesLink}
           className={fr.cx("fr-link")}
           href={"https://annuaire-entreprises.data.gouv.fr"}
           target="_blank"
@@ -105,16 +116,6 @@ export const CreationSiretRelatedInputs = () => {
           Retrouver votre SIRET sur l’Annuaire des Entreprises
         </a>
       </p>
-
-      <Input
-        label={formContents.businessName.label}
-        hintText={formContents.businessName.hintText}
-        disabled
-        nativeInputProps={{
-          ...pick(["id", "name", "required"], formContents.businessName),
-          ...register("businessName"),
-        }}
-      />
       <Input
         label={formContents.businessNameCustomized.label}
         hintText={formContents.businessNameCustomized.hintText}
