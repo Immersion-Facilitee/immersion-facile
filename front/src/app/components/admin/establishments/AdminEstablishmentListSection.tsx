@@ -165,9 +165,10 @@ const makeAdminEstablishmentListLine = (
     id={`${domElementIds.adminEstablishments.establishmentListEditEstablishmentButton}--${establishment.siret}`}
     size="small"
     priority="secondary"
-    linkProps={
-      frontRoutes.adminEstablishments({ siret: establishment.siret }).link
-    }
+    linkProps={{
+      ...frontRoutes.adminEstablishments({ siret: establishment.siret }).link,
+      title: `Piloter l'établissement ${establishment.name}`,
+    }}
   >
     Piloter
   </Button>,
