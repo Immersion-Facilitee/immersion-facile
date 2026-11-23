@@ -26,7 +26,15 @@ export type ImmersionContactInEstablishmentId = Flavor<
   "ImmersionContactInEstablishmentId"
 >;
 
-export type EstablishmentFormOffer = AppellationAndRomeDto & WithRemoteWorkMode;
+export type ImmersionActivities = Flavor<string, "ImmersionActivities">;
+
+export type WithImmersionActivities = {
+  immersionActivities?: ImmersionActivities;
+};
+
+export type EstablishmentFormOffer = AppellationAndRomeDto &
+  WithRemoteWorkMode &
+  WithImmersionActivities;
 
 const contactModes = ["EMAIL", "PHONE", "IN_PERSON"] as const;
 export type ContactMode = (typeof contactModes)[number];

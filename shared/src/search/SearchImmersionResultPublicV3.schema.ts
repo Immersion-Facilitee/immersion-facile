@@ -7,6 +7,7 @@ import {
 import {
   contactModeSchema,
   fitForDisabledWorkersSchema,
+  immersionActivitiesShape,
 } from "../formEstablishment/FormEstablishment.schema";
 import { geoPositionSchema } from "../geoPosition/geoPosition.schema";
 import { nafCodeSchema, nafSousClasseLabelSchema } from "../naf/naf.schema";
@@ -60,6 +61,7 @@ const searchImmersionResultPublicV3SchemaCommon = z.object({
     z.object({
       appellationLabel: appellationLabelSchema,
       appellationCode: appellationCodeSchema,
+      ...immersionActivitiesShape,
     }),
   ),
   updatedAt: dateTimeIsoStringSchema.optional(),

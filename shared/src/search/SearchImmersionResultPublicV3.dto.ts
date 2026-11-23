@@ -12,18 +12,17 @@ import type { GeoPositionDto } from "../geoPosition/geoPosition.dto";
 import type { NafCode, NafSousClasseLabel } from "../naf/naf.dto";
 import type { RemoteWorkMode } from "../remoteWorkMode/remoteWorkMode.dto";
 import type {
-  AppellationDto,
   RomeCode,
   RomeLabel,
 } from "../romeAndAppellationDtos/romeAndAppellation.dto";
 import type { NumberEmployeesRange, SiretDto } from "../siret/siret";
 import type { DateTimeIsoString } from "../utils/date";
-import type { InternalOfferDto } from "./Offer.dto";
+import type { InternalOfferDto, OfferAppellationDto } from "./Offer.dto";
 
 export type SearchImmersionResultPublicV3 = {
   rome: RomeCode;
   romeLabel: RomeLabel;
-  appellations: AppellationDto[];
+  appellations: OfferAppellationDto[];
   establishmentScore: number;
   naf: NafCode;
   nafLabel: NafSousClasseLabel;

@@ -7,6 +7,7 @@ import type {
   ContactMode,
   EstablishmentWebSite,
   FitForDisableWorkerOption,
+  WithImmersionActivities,
 } from "../formEstablishment/FormEstablishment.dto";
 import type { GeoPositionDto } from "../geoPosition/geoPosition.dto";
 import type { NafCode, NafSousClasseLabel } from "../naf/naf.dto";
@@ -19,10 +20,12 @@ import type {
 import type { NumberEmployeesRange, SiretDto } from "../siret/siret";
 import type { DateTimeIsoString } from "../utils/date";
 
+export type OfferAppellationDto = AppellationDto & WithImmersionActivities;
+
 type CommonOfferDto = {
   rome: RomeCode;
   romeLabel: RomeLabel;
-  appellations: AppellationDto[];
+  appellations: OfferAppellationDto[];
   establishmentScore: number;
   naf: NafCode;
   nafLabel: NafSousClasseLabel;

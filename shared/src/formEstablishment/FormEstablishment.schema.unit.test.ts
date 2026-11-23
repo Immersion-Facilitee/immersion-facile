@@ -1,6 +1,10 @@
 import { ZodError } from "zod";
 import { expectToEqual } from "../test.helpers";
-import { formEstablishmentSchema } from "./FormEstablishment.schema";
+import type { EstablishmentFormOffer } from "./FormEstablishment.dto";
+import {
+  establishmentFormOfferSchema,
+  formEstablishmentSchema,
+} from "./FormEstablishment.schema";
 import { FormEstablishmentDtoBuilder } from "./FormEstablishmentDtoBuilder";
 
 describe("formEstablishmentSchema", () => {
@@ -228,5 +232,59 @@ describe("formEstablishmentSchema", () => {
         validFormEstablishment,
       );
     });
+  });
+});
+
+describe("establishmentFormOfferSchema", () => {
+  const offer: EstablishmentFormOffer = {
+    appellationCode: "11573",
+    appellationLabel: "Boulanger / Boulangère",
+    romeCode: "D1102",
+    romeLabel: "Boulangerie - viennoiserie",
+    remoteWorkMode: "ON_SITE",
+  };
+
+  it("accepts an offer without immersion activities", () => {
+    expectToEqual(establishmentFormOfferSchema.parse(offer), offer);
+  });
+
+  it("accepts and trims multiline immersion activities", () => {
+    expectToEqual(
+      establishmentFormOfferSchema.parse({
+        ...offer,
+        immersionActivities:
+          "  Préparer les pâtes\nCuire les pains au four à sole  ",
+      }),
+      {
+        ...offer,
+        immersionActivities:
+          "Préparer les pâtes\nCuire les pains au four à sole",
+      },
+    );
+  });
+
+  it("accepts empty immersion activities", () => {
+    expectToEqual(
+      establishmentFormOfferSchema.parse({ ...offer, immersionActivities: "" }),
+      { ...offer, immersionActivities: "" },
+    );
+  });
+
+  it("rejects immersion activities longer than 1024 characters", () => {
+    expect(
+      establishmentFormOfferSchema.safeParse({
+        ...offer,
+        immersionActivities: "a".repeat(1025),
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects immersion activities containing html", () => {
+    expect(
+      establishmentFormOfferSchema.safeParse({
+        ...offer,
+        immersionActivities: "<script>alert('xss')</script>",
+      }).success,
+    ).toBe(false);
   });
 });

@@ -4,7 +4,10 @@ import {
   businessCustomizedNameSchema,
   businessNameSchema,
 } from "../establishment/businessComponents.schema";
-import { fitForDisabledWorkersSchema } from "../formEstablishment/FormEstablishment.schema";
+import {
+  fitForDisabledWorkersSchema,
+  immersionActivitiesShape,
+} from "../formEstablishment/FormEstablishment.schema";
 import { geoPositionSchema } from "../geoPosition/geoPosition.schema";
 import { nafCodeSchema, nafSousClasseLabelSchema } from "../naf/naf.schema";
 import { createPaginatedSchema } from "../pagination/pagination.schema";
@@ -68,6 +71,7 @@ const commonOfferSchema = z.object({
     z.object({
       appellationLabel: appellationLabelSchema,
       appellationCode: appellationCodeSchema,
+      ...immersionActivitiesShape,
     }),
   ),
   updatedAt: dateTimeIsoStringSchema.optional(),

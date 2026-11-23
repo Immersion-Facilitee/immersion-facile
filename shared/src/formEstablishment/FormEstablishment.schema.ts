@@ -18,6 +18,7 @@ import { dateTimeIsoStringSchema } from "../utils/date";
 import { frenchEstablishmentKinds } from "../utils/establishment";
 import { addressWithPostalCodeSchema } from "../utils/postalCode";
 import {
+  optionalEmptyStringMax1024,
   zStringCanBeEmpty,
   zStringCanBeEmptyMax9200,
   zStringMinLength1Max8,
@@ -44,6 +45,7 @@ import type {
   FormEstablishmentUserRight,
   SiretAdditionFailure,
   WithFormEstablishmentDto,
+  WithImmersionActivities,
 } from "./FormEstablishment.dto";
 import {
   establishmentUserRightStatuses,
@@ -134,8 +136,17 @@ export const formEstablishmentUserRightSchema: ZodSchemaWithInputMatchingOutput<
     establishmentContactSchema,
   ]);
 
+export const immersionActivitiesShape = {
+  immersionActivities: optionalEmptyStringMax1024,
+};
+
+export const withImmersionActivitiesSchema: ZodSchemaWithInputMatchingOutput<WithImmersionActivities> =
+  z.object(immersionActivitiesShape);
+
 export const establishmentFormOfferSchema: ZodSchemaWithInputMatchingOutput<EstablishmentFormOffer> =
-  appellationAndRomeDtoSchema.and(withRemoteWorkModeSchema);
+  appellationAndRomeDtoSchema
+    .and(withRemoteWorkModeSchema)
+    .and(withImmersionActivitiesSchema);
 
 export const formEstablishmentPendingUserRightSchema =
   formEstablishmentUserRightSchema.and(
