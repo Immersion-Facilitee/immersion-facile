@@ -27,6 +27,16 @@ const makeBreadcrumbs = (
       },
     },
   },
+  homeEstablishments: {
+    label: "Entreprises",
+    route: frontRoutes.homeEstablishments(),
+    children: {
+      formEstablishment: {
+        label: "Inscrire une entreprise",
+        route: frontRoutes.formEstablishment(),
+      },
+    },
+  },
   homeCandidates: {
     label: "Candidats",
     route: frontRoutes.homeCandidates(),

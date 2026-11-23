@@ -660,6 +660,8 @@ export const domElementIds = {
       addressAutocomplete:
         "im-form-create-establishment__autocomplete-address-creation-establishment-form",
       siret: "im-form-create-establishment__siret",
+      annuaireEntreprisesLink:
+        "im-form-create-establishment__annuaire-entreprises-link",
       businessName: "im-form-create-establishment__business-name",
       businessNameCustomized:
         "im-form-create-establishment__business-name-customized",
