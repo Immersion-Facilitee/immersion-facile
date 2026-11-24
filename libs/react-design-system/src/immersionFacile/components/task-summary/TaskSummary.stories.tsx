@@ -41,6 +41,9 @@ export const WithDetail: Story = {
     count: 2,
     countLabel: "Rattachements en attente",
     icon: "fr-icon-edit-line",
-    detail: "Gestion réservée aux administrateurs",
+    detail: {
+      message: "Gestion réservée aux administrateurs",
+      icon: "fr-icon-lock-fill",
+    },
   },
 };

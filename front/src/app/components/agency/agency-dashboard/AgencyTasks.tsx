@@ -268,7 +268,7 @@ export const AgencyTasks = ({
               <TaskSummary
                 count={usersToReview.length}
                 countLabel={`${usersToReview.length > 1 ? "Rattachements" : "Rattachement"} en attente`}
-                icon="fr-icon-edit-line"
+                icon="fr-icon-user-add-line"
                 {...(usersToReviewFetch.canManageUsersToReview
                   ? {
                       buttonProps: {
@@ -280,7 +280,10 @@ export const AgencyTasks = ({
                       },
                     }
                   : {
-                      detail: "Gestion réservée aux administrateurs",
+                      detail: {
+                        message: "Gestion réservée aux administrateurs",
+                        icon: "fr-icon-lock-fill",
+                      },
                     })}
               />
             </div>

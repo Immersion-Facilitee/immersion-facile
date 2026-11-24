@@ -1,4 +1,4 @@
-import { fr } from "@codegouvfr/react-dsfr";
+import { type FrIconClassName, fr } from "@codegouvfr/react-dsfr";
 import Button, { type ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { useStyles } from "tss-react/dsfr";
 import { taskSummaryStyles } from "./TaskSummary.styles";
@@ -9,7 +9,10 @@ export type TaskSummaryProps = {
   countLabel: string;
   icon?: string;
   buttonProps?: ButtonProps;
-  detail?: string;
+  detail?: {
+    message: string;
+    icon?: FrIconClassName;
+  };
 };
 
 export const TaskSummary = ({
@@ -57,9 +60,15 @@ export const TaskSummary = ({
           </div>
         )}
         {detail && (
-          <div className={fr.cx("fr-col-12", "fr-mt-1w")}>
+          <div className={fr.cx("fr-col-12", "fr-mt-2w")}>
             <p className={fr.cx("fr-text--xs", "fr-hint-text", "fr-mb-0")}>
-              {detail}
+              {detail.icon && (
+                <span
+                  className={fr.cx(detail.icon, "fr-icon--xs", "fr-mr-1v")}
+                  aria-hidden="true"
+                />
+              )}
+              {detail.message}
             </p>
           </div>
         )}

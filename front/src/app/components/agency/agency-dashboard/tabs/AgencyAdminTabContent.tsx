@@ -147,7 +147,7 @@ export const AgencyAdminTabContent = ({
               <TaskSummary
                 count={usersToReview.length}
                 countLabel={`${usersToReview.length > 1 ? "Rattachements" : "Rattachement"} en attente`}
-                icon="fr-icon-edit-line"
+                icon="fr-icon-user-add-line"
                 buttonProps={{
                   children: "Traiter cette liste",
                   onClick: () => setHasRequestedUsersToReview(true),
