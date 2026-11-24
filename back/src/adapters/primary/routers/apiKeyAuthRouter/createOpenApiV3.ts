@@ -280,7 +280,7 @@ export const createOpenApiSpecV3 = (envType: string) =>
       },
 
       contactEstablishment: {
-        summary: "Mise en contact",
+        summary: "Candidature",
         description: `!Vous devez fournir le mode de contact qui a été renseigné par l’entreprise (dans les résultats de recherche) !. Ce qui se passe:
       
       EMAIL : L’entreprise va recevoir le message du candidat par email et c’est la responsabilité de l’entreprise de recontacter le candidat (le mail du candidat est fourni à l’entreprise).
