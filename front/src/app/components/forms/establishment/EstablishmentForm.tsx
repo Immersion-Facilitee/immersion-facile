@@ -52,12 +52,12 @@ const steps: Record<FormStep, Pick<StepperProps, "title" | "nextTitle">> = {
     nextTitle: "Vos préférences d'accueil",
   },
   2: {
-    title: "Paramètres de vos offres",
-    nextTitle: "Vos offres",
+    title: "Vos préférences d’accueil",
+    nextTitle: "Votre première offre",
   },
   3: {
-    title: "Vos offres",
-    nextTitle: "Paramètres de vos offres",
+    title: "Votre première offre",
+    nextTitle: "Récapitulatif de votre établissement",
   },
   4: {
     title: "Récapitulatif de votre établissement",

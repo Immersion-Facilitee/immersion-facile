@@ -134,7 +134,7 @@ export const formEstablishmentFieldsLabels = (
     placeholder: "Ex : https://mon-site-internet.fr (optionnel)",
   },
   additionalInformation: {
-    label: "Informations complémentaires",
+    label: "À propos de votre entreprise",
     id: domElementIds.formEstablishment[mode].additionalInformation,
     hintText:
       "En information complémentaire, nous vous conseillons de valoriser votre histoire afin de donner envie à un candidat de découvrir un métier au sein de votre établissement.",
