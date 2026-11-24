@@ -95,7 +95,7 @@ describe("BanEstablishment", () => {
         connectedAdminUser,
       ),
     ).rejects.toThrow(
-      `L'établissement avec le siret '${bannedEstablishment.siret}' est déjà banni.`,
+      `L'entreprise avec le siret '${bannedEstablishment.siret}' est déjà bannie.`,
     );
 
     expectArraysToMatch(uow.outboxRepository.events, []);

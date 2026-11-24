@@ -69,7 +69,7 @@ const defaultFormValues: InitiateConventionFormValues = {
 };
 
 const initiateConventionFormErrorLabels: Record<string, string> = {
-  siret: "Veuillez sélectionner un établissement",
+  siret: "Veuillez sélectionner une entreprise",
   appellation: "Veuillez sélectionner un métier",
   location: "Veuillez sélectionner un lieu d'immersion",
   conventionTemplateId: "Aucun modèle sélectionné",
@@ -357,9 +357,9 @@ export const InitiateConventionButton = () => {
                   Sélectionnez l'organisme pour lequel vous souhaitez initier la
                   convention.
                   <Select
-                    label={"Établissement *"}
+                    label={"Entreprise *"}
                     className={fr.cx("fr-mt-2w")}
-                    placeholder="Sélectionnez un établissement"
+                    placeholder="Sélectionnez une entreprise"
                     disabled={
                       currentUserEstablishments &&
                       currentUserEstablishments.length === 1

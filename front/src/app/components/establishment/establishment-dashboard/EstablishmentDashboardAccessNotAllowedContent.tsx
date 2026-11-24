@@ -25,10 +25,10 @@ export const EstablishmentDashboardAccessNotAllowedContent = ({
     <div className={fr.cx("fr-col-12", "fr-col-lg-10")}>
       <h2>Contacter votre administrateur</h2>
       <p>
-        L’établissement <strong>{establishmentNameAndAdmins.name}</strong> est
-        bien référencé chez Immersion Facilitée sous le numéro de SIRET{" "}
+        L’entreprise <strong>{establishmentNameAndAdmins.name}</strong> est bien
+        référencée chez Immersion Facilitée sous le numéro de SIRET{" "}
         {toFormatedTextSiret(siret)}, mais votre adresse mail ne correspond à
-        aucun rôle. Veuillez contacter l'administrateur de l’établissement via :{" "}
+        aucun rôle. Veuillez contacter l'administrateur de l’entreprise via :{" "}
         <ul>
           {establishmentNameAndAdmins.adminEmails.map((email) => (
             <li key={"adminEmails"}>

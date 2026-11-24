@@ -564,7 +564,7 @@ const makeBeneficiarySubSections = (
       convention.signatories.beneficiary.schoolName
         ? {
             key: "beneficiarySchoolName",
-            label: "Établissement",
+            label: "Entreprise",
             value: convention.signatories.beneficiary.schoolName,
           }
         : null,
@@ -572,7 +572,7 @@ const makeBeneficiarySubSections = (
       convention.signatories.beneficiary.schoolPostcode
         ? {
             key: "beneficiarySchoolName",
-            label: "Code postal de l'établissement",
+            label: "Code postal de l'entreprise",
             value: convention.signatories.beneficiary.schoolPostcode,
           }
         : null,
@@ -756,7 +756,7 @@ const makeImmersionSubSections = (
       },
       {
         key: "businessAdvantages",
-        label: "Avantages proposés par l'établissement d'accueil",
+        label: "Avantages proposés par l'entreprise d'accueil",
         value: convention.businessAdvantages || "-",
       },
     ],

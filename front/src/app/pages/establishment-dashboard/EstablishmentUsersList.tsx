@@ -336,7 +336,7 @@ const getEstablishmentUserRow = ({
           type: "button",
           disabled: isLastAdmin,
           title: isLastAdmin
-            ? "Vous devez avoir au moins un administrateur pour votre établissement."
+            ? "Vous devez avoir au moins un administrateur pour votre entreprise."
             : undefined,
           id: `${domElementIds.establishmentDashboard.manageEstablishments.deleteUserButton}-${index}`,
         },

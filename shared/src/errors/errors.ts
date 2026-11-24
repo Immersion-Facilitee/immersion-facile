@@ -535,7 +535,7 @@ export const errors = {
       ),
     roleNotAllowedToSign: ({ role }: { role: Role }) =>
       new ForbiddenError(
-        `Seules les roles bénéficaires, employeur du bénéficaire, représentant légal ou le réprésentant de l'établissement d'accueil ont la possibilitée de signer. Le role fourni était : ${role}`,
+        `Seules les roles bénéficaires, employeur du bénéficaire, représentant légal ou le réprésentant de l'entreprise d'accueil ont la possibilitée de signer. Le role fourni était : ${role}`,
       ),
     connectedUserNotSignatory: ({
       userId,
@@ -736,11 +736,11 @@ export const errors = {
       ),
     pgCreateConflict: ({ siret, error }: { siret: SiretDto; error: Error }) =>
       new ConflictError(
-        `Il n'est pas possible de créer l'établissement avec le siret '${siret}'. Erreur: '${error}'.`,
+        `Il n'est pas possible de créer l'entreprise avec le siret '${siret}'. Erreur: '${error}'.`,
       ),
     noUserRights: ({ siret }: { siret: SiretDto }) =>
       new BadRequestError(
-        `L'établissement avec le siret ${siret}, n'a aucun utilisateur.`,
+        `L'entreprise avec le siret ${siret}, n'a aucun utilisateur.`,
       ),
     notAdminOrContactRight: ({
       siret,
@@ -760,7 +760,7 @@ export const errors = {
       new BadRequestError(`L'entreprise ${siret} n'a aucun contact a notifier`),
     missingOrClosed: ({ siret }: { siret: SiretDto }) =>
       new BadRequestError(
-        `Ce SIRET (${siret}) n'est pas attribué ou correspond à un établissement fermé. Veuillez le corriger.`,
+        `Ce SIRET (${siret}) n'est pas attribué ou correspond à une entreprise fermée. Veuillez le corriger.`,
       ),
     notFound: ({ siret }: { siret: SiretDto }) =>
       new NotFoundError(
@@ -768,11 +768,11 @@ export const errors = {
       ),
     adminNotFound: ({ siret }: { siret: SiretDto }) =>
       new NotFoundError(
-        `Aucun administrateur trouvé pour l'établissement avec le siret : ${siret}.`,
+        `Aucun administrateur trouvé pour l'entreprise avec le siret : ${siret}.`,
       ),
     contactUserNotFound: ({ siret }: { siret: SiretDto }) =>
       new NotFoundError(
-        `Aucun utilisateur à contacter trouvé pour l'établissement avec le siret : ${siret}.`,
+        `Aucun utilisateur à contacter trouvé pour l'entreprise avec le siret : ${siret}.`,
       ),
     siretMismatch: () =>
       new ForbiddenError(
@@ -834,7 +834,7 @@ export const errors = {
         `L'addresse ${locationId ? `'${locationId}' ` : ""}n'existe pas pour l'entreprise '${siret}'.`,
       ),
     noLocation: ({ siret }: { siret: SiretDto }) =>
-      new NotFoundError(`L'établissement '${siret}' n'a pas de localisations.`),
+      new NotFoundError(`L'entreprise '${siret}' n'a pas de localisations.`),
     forbiddenUnavailable: ({ siret }: { siret: SiretDto }) =>
       new ForbiddenError(
         `L'entreprise ${siret} n'est pas disponible pour des immersions.`,
@@ -869,7 +869,7 @@ export const errors = {
   bannedEstablishment: {
     alreadyBanned: ({ siret }: { siret: SiretDto }) =>
       new ConflictError(
-        `L'établissement avec le siret '${siret}' est déjà banni.`,
+        `L'entreprise avec le siret '${siret}' est déjà bannie.`,
       ),
   },
   establishmentCsv: {
@@ -1097,7 +1097,7 @@ export const errors = {
       sirets: SiretDto[];
     }) =>
       new ForbiddenError(
-        `Il n'est pas possible de supprimer l'utilisateur '${userId}' car il est le seul administrateur accepté d'un établissement qui n'a que des utilisateurs en attente de rattachement (${sirets.join(", ")}).`,
+        `Il n'est pas possible de supprimer l'utilisateur '${userId}' car il est le seul administrateur accepté d'une entreprise qui n'a que des utilisateurs en attente de rattachement (${sirets.join(", ")}).`,
       ),
     forbidden: ({ userId }: { userId: UserId }) =>
       new ForbiddenError(
@@ -1359,7 +1359,7 @@ export const errors = {
   siretApi: {
     notFound: ({ siret }: { siret: SiretDto }) =>
       new NotFoundError(
-        `L'établissement avec le siret '${siret}' n'est pas trouvé dans l'API SIRET.`,
+        `L'entreprise avec le siret '${siret}' n'est pas trouvée dans l'API SIRET.`,
       ),
     tooManyRequests: ({ serviceName }: { serviceName: string }) =>
       new TooManyRequestApiError(

@@ -50,8 +50,8 @@ export const defaultPageMetaContents: Partial<
     description: "Page admin: Aperçus email",
   },
   adminEstablishments: {
-    title: "Admin: établissements",
-    description: "Page admin: Établissements",
+    title: "Admin: entreprises",
+    description: "Page admin: Entreprises",
   },
   formEstablishment: {
     title: "Formulaire de référencement entreprise",

@@ -40,11 +40,11 @@ const siretErrorToDisplay = createSelector(
 
 const errorTranslations: Partial<Record<SiretSliceError, ReactNode>> = {
   "Missing establishment on SIRENE API.":
-    "Nous n'avons pas trouvé d'établissement correspondant à votre SIRET.",
+    "Nous n'avons pas trouvé d'entreprise correspondant à votre SIRET.",
   "SIRET must be 14 digits": "Le SIRET doit être composé de 14 chiffres",
   "Already exists": (
     <span>
-      Cet établissement est déjà référencé. Veuillez faire une{" "}
+      Cette entreprise est déjà référencée. Veuillez faire une{" "}
       <a
         href={frontRoutes.establishmentUserRegistration().href}
         rel="noreferrer"

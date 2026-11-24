@@ -212,8 +212,8 @@ export const EstablishmentUserForm = ({
         />
 
         <ToggleSwitch
-          label="Recevoir les notifications pour toutes les candidatures de cet établissement"
-          inputTitle="Recevoir les notifications pour toutes les candidatures de cet établissement"
+          label="Recevoir les notifications pour toutes les candidatures de cette entreprise"
+          inputTitle="Recevoir les notifications pour toutes les candidatures de cette entreprise"
           onChange={(checked) => {
             setValue("shouldReceiveDiscussionNotifications", checked);
           }}

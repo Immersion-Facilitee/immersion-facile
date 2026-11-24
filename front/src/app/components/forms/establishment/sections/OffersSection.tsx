@@ -116,7 +116,7 @@ export const OffersSection = ({
       ).length > 0 && (
         <HeadingSection
           title={formContents.businessAddresses.label}
-          description="Par défaut, vous apparaîtrez dans les résultats de recherche liés à l’adresse de votre établissement. Vous pouvez ajouter d’autres adresses si vous proposez des immersions ailleurs. Par exemple : votre société est située à Dijon (adresse liée à votre SIRET) mais vous proposez une immersion dans votre antenne de Nantes."
+          description="Par défaut, vous apparaîtrez dans les résultats de recherche liés à l’adresse de votre entreprise. Vous pouvez ajouter d’autres adresses si vous proposez des immersions ailleurs. Par exemple : votre société est située à Dijon (adresse liée à votre SIRET) mais vous proposez une immersion dans votre antenne de Nantes."
         >
           <MultipleAddressInput
             name="businessAddress"

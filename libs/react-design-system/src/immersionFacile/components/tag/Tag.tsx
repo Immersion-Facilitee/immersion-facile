@@ -57,7 +57,7 @@ const themes: Themes = {
   },
   etablissement: {
     iconId: "fr-icon-building-line",
-    label: "Établissement",
+    label: "Entreprise",
   },
 };
 

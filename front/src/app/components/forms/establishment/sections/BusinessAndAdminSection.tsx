@@ -56,7 +56,7 @@ export const BusinessAndAdminSection = ({
   return (
     <>
       <HeadingSection
-        title="Informations de votre établissement"
+        title="Informations de votre entreprise"
         className={fr.cx("fr-mt-0")}
       >
         {formEstablishment.userRights.some(
@@ -113,7 +113,7 @@ export const BusinessAndAdminSection = ({
       {match(mode)
         .with(P.union("edit", "admin"), () => <EstablishmentUsersList />)
         .with("create", () => (
-          <HeadingSection title="Administrateurs de l'établissement">
+          <HeadingSection title="Administrateurs de l'entreprise">
             <EstablishmentAdminInfos />
           </HeadingSection>
         ))
@@ -191,7 +191,7 @@ const EstablishmentAdminInfos = () => {
         className={fr.cx("fr-mb-2w")}
         severity="info"
         small
-        description="L’administrateur accède aux conventions, aux candidatures et peut gérer la fiche entreprise et les utilisateurs de l’établissement. Vous pourrez ajouter d’autres utilisateurs à votre établissement une fois celui-ci créé."
+        description="L’administrateur accède aux conventions, aux candidatures et peut gérer la fiche entreprise et les utilisateurs de l’entreprise. Vous pourrez ajouter d’autres utilisateurs à votre établissement une fois celui-ci créé."
       />
       {/* 
       

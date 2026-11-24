@@ -41,7 +41,7 @@ const rawAdminTabs: Record<AdminTabRouteName, RawAdminTab> = {
     content: <AgencyTab />,
   },
   adminEstablishments: {
-    label: "Établissements",
+    label: "Entreprises",
     content: <EstablishmentsTab />,
   },
   adminUsers: {

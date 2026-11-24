@@ -56,7 +56,7 @@ export const SummarySection = ({
     {
       children: isEstablishmentAdmin
         ? "Enregistrer les modifications"
-        : "Valider et créer l'établissement",
+        : "Valider et créer l'entreprise",
       iconId: "fr-icon-checkbox-circle-line",
       iconPosition: "right",
       type: "submit",
@@ -75,7 +75,7 @@ export const SummarySection = ({
   return (
     <>
       <p>
-        Voici un récapitulatif des informations saisies pour l’établissement{" "}
+        Voici un récapitulatif des informations saisies pour l’entreprise{" "}
         {formValues.businessName} (SIRET :{" "}
         <strong id={domElementIds.formEstablishment.create.summarySiretValue}>
           {formValues.siret}
@@ -93,7 +93,7 @@ export const SummarySection = ({
       </p>
       <HeadingSection
         title="Lieux et métiers référencés"
-        description="Ces éléments apparaîtront dans la recherche d’entreprises accueillantes. Votre établissement peut donc apparaître dans différentes recherches."
+        description="Ces éléments apparaîtront dans la recherche d’entreprises accueillantes. Votre entreprise peut donc apparaître dans différentes recherches."
       >
         <SectionHighlight>
           {formValues.offers.filter(
@@ -132,7 +132,7 @@ export const SummarySection = ({
         <SectionHighlight>
           <p className={fr.cx("fr-text--bold", "fr-mb-0")}>Disponibilité :</p>
           <p>
-            L’établissement sera visible dans l’annuaire, avec un maximum de{" "}
+            L’entreprise sera visible dans l’annuaire, avec un maximum de{" "}
             {formValues.maxContactsPerMonth} candidatures par mois
           </p>
 
@@ -154,7 +154,7 @@ export const SummarySection = ({
         </SectionHighlight>
       </HeadingSection>
       <HeadingSection
-        title="Prévisualisation de votre établissement"
+        title="Prévisualisation de votre entreprise"
         description="Cette prévisualisation est donnée à titre indicatif. Elle affiche un exemple parmi les métiers et lieux que vous avez renseignés."
       >
         <SearchResultPreview establishment={formValues} />

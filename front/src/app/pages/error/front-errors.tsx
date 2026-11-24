@@ -331,7 +331,7 @@ export const frontErrors = {
   },
   establishment: {
     notFound: ({ siret }: { siret?: SiretDto }) => {
-      const description = `Nous n'avons trouvé aucun établissement ${siret ? `avec le siret ${siret}` : ""}.`;
+      const description = `Nous n'avons trouvé aucune entreprise ${siret ? `avec le siret ${siret}` : ""}.`;
       return new FrontSpecificError({
         title: "Établissment non trouvé",
         description,
@@ -341,7 +341,7 @@ export const frontErrors = {
     expiredLink: () =>
       new FrontSpecificError({
         title: "Lien périmé",
-        description: `Nous n'utilisons plus de lien magique pour vous permettre de modifier votre fiche établissement. Pour effectuer cette action, connectez-vous à votre espace entreprise.`,
+        description: `Nous n'utilisons plus de lien magique pour vous permettre de modifier votre fiche entreprise. Pour effectuer cette action, connectez-vous à votre espace entreprise.`,
         buttons: [EstablishmentDashboardButton],
       }),
   },

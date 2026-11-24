@@ -116,14 +116,14 @@ export const AddEstablishmentsByBatch = () => {
         <ul>
           {!!addBatchResponse.numberOfEstablishmentsProcessed && (
             <li>
-              {addBatchResponse.numberOfEstablishmentsProcessed} établissements
-              traités
+              {addBatchResponse.numberOfEstablishmentsProcessed} entreprises
+              traitées
             </li>
           )}
 
           {!!addBatchResponse.numberOfSuccess && (
             <li>
-              {addBatchResponse.numberOfSuccess} établissements ajoutés avec
+              {addBatchResponse.numberOfSuccess} entreprises ajoutées avec
               succès
             </li>
           )}
@@ -132,7 +132,7 @@ export const AddEstablishmentsByBatch = () => {
               <li>
                 <span>
                   {addBatchResponse.failures.length} erreurs lors d'ajout
-                  d'établissements
+                  d'entreprises
                 </span>
                 <ul>
                   {addBatchResponse.failures.map((failure) => (
@@ -264,16 +264,16 @@ export const AddEstablishmentsByBatch = () => {
                 {!!numberOfValidCandidateEstablishments && (
                   <li>
                     <span className={fr.cx("fr-valid-text")}>
-                      {numberOfValidCandidateEstablishments} établissement(s)
-                      prêts à être importés
+                      {numberOfValidCandidateEstablishments} entreprise(s)
+                      prêtes à être importées
                     </span>
                   </li>
                 )}
                 {!!numberOfInvalidCandidateEstablishments && (
                   <li>
                     <span className={fr.cx("fr-error-text")}>
-                      {numberOfInvalidCandidateEstablishments} établissement(s)
-                      en erreur et ne seront pas importés
+                      {numberOfInvalidCandidateEstablishments} entreprise(s) en
+                      erreur et ne seront pas importées
                     </span>
                     <ul>
                       {candidateEstablishments

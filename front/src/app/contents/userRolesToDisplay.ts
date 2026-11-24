@@ -42,13 +42,13 @@ export const establishmentRolesToDisplay: UserRoleDisplay<EstablishmentRole> = {
     label: "Administrateur",
     className: ["fr-badge--info", "fr-badge--no-icon"],
     description:
-      "L’administrateur accède aux conventions, aux candidatures (lecture et réponse) et peut gérer la fiche entreprise et les utilisateurs de l’établissement.",
+      "L’administrateur accède aux conventions, aux candidatures (lecture et réponse) et peut gérer la fiche entreprise et les utilisateurs de l’entreprise.",
   },
   "establishment-contact": {
     label: "Contact",
     className: null,
     description:
-      "Le contact accède aux conventions et aux candidatures (lecture et réponse) de l’établissement.",
+      "Le contact accède aux conventions et aux candidatures (lecture et réponse) de l’entreprise.",
   },
 };
 

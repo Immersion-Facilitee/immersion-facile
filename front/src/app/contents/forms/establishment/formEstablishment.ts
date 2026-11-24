@@ -27,20 +27,20 @@ export const formEstablishmentFieldsLabels = (
   mode: Mode,
 ): FormEstablishmentFieldsLabels => ({
   siret: {
-    label: "Indiquez le SIRET de votre établissement",
+    label: "Indiquez le SIRET de votre entreprise",
     id: domElementIds.formEstablishment[mode].siret,
     hintText: "Format attendu : 123 456 789 01234",
     required: true,
   },
 
   businessName: {
-    label: "Vérifiez le nom (raison sociale) de votre établissement",
+    label: "Vérifiez le nom (raison sociale) de votre entreprise",
     id: domElementIds.formEstablishment[mode].businessName,
     required: true,
   },
   businessNameCustomized: {
     label:
-      "Indiquez le nom de l'enseigne de l'établissement, si elle diffère de la raison sociale",
+      "Indiquez le nom de l'enseigne de l'entreprise, si elle diffère de la raison sociale",
     id: domElementIds.formEstablishment[mode].businessNameCustomized,
     autoComplete: "organization",
     hintText:
@@ -127,7 +127,7 @@ export const formEstablishmentFieldsLabels = (
   offers: {
     label: "Les métiers que vous proposez à l'immersion",
     hintText:
-      "Chaque métier correspond à une offre qui apparaitra dans la recherche. Votre établissement peut donc apparaître dans différentes recherches.",
+      "Chaque métier correspond à une offre qui apparaitra dans la recherche. Votre entreprise peut donc apparaître dans différentes recherches.",
     id: domElementIds.formEstablishment[mode].appellations,
     required: true,
   },
@@ -140,7 +140,7 @@ export const formEstablishmentFieldsLabels = (
     label: "Informations complémentaires",
     id: domElementIds.formEstablishment[mode].additionalInformation,
     hintText:
-      "En information complémentaire, nous vous conseillons de valoriser votre histoire afin de donner envie à un candidat de découvrir un métier au sein de votre établissement.",
+      "En information complémentaire, nous vous conseillons de valoriser votre histoire afin de donner envie à un candidat de découvrir un métier au sein de votre entreprise.",
     placeholder:
       "Ex : ma biographie d’entreprise (valeurs, écosystème, projections), mon potentiel d’embauche ou toute autre information essentielle pour l’accueil du bénéficiaire au sein de mon établissement (optionnel)",
   },

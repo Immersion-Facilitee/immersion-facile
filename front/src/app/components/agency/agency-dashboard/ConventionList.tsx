@@ -187,7 +187,7 @@ export const ConventionList = () => {
     { content: "Statut" },
     { content: "Bilan" },
     { content: "Personne en immersion" },
-    { content: "Établissement" },
+    { content: "Entreprise" },
     { content: "Dates" },
     { content: "Actions" },
   ];

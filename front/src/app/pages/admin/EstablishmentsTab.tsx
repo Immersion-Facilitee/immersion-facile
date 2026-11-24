@@ -41,7 +41,7 @@ export const EstablishmentsTab = () => {
     <div className={cx("admin-tab__import-establishments")}>
       <Feedback topics={["ban-establishment"]} className={fr.cx("fr-mb-2w")} />
       <ManageEstablishment />
-      <MetabaseView title="Consulter les établissements" url={url} />
+      <MetabaseView title="Consulter les entreprises" url={url} />
       <AddEstablishmentsByBatch />
     </div>
   );

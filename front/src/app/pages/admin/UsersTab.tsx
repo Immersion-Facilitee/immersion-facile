@@ -71,7 +71,7 @@ const UsersTable = () => {
       headers={[
         "Utilisateur",
         "Nombre d'agences liées",
-        "Nombre d'établissements liés",
+        "Nombre d'entreprises liées",
         "Actions",
       ]}
       data={users.map((user) => [

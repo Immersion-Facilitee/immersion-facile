@@ -48,7 +48,7 @@ type FormStep = RangeOfPosition<4>;
 
 const steps: Record<FormStep, Pick<StepperProps, "title" | "nextTitle">> = {
   1: {
-    title: "Votre établissement",
+    title: "Votre entreprise",
     nextTitle: "Vos offres",
   },
   2: {
@@ -57,10 +57,10 @@ const steps: Record<FormStep, Pick<StepperProps, "title" | "nextTitle">> = {
   },
   3: {
     title: "Paramètres de vos offres",
-    nextTitle: "Récapitulatif de votre établissement",
+    nextTitle: "Récapitulatif de votre entreprise",
   },
   4: {
-    title: "Récapitulatif de votre établissement",
+    title: "Récapitulatif de votre entreprise",
   },
 };
 

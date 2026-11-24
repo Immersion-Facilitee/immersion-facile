@@ -138,7 +138,7 @@ export const OffersSettingsSection = ({
 
   const onClickEstablishmentDeleteButton = () => {
     const confirmed = confirm(
-      `! Etes-vous sûr de vouloir supprimer cet établissement ? !
+      `! Etes-vous sûr de vouloir supprimer cette entreprise ? !
                 (cette opération est irréversible 💀)`,
     );
     if (confirmed && connectedUserJwt)
@@ -407,7 +407,7 @@ export const OffersSettingsSection = ({
               ...(isEstablishmentAdmin
                 ? [
                     {
-                      children: "Supprimer l'établissement",
+                      children: "Supprimer l'entreprise",
                       iconId: "fr-icon-delete-bin-line",
                       priority: "secondary",
                       type: "button",
