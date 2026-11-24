@@ -10,6 +10,14 @@ const formControlSelector =
 const fieldInErrorSelector =
   ".fr-input-group--error, .fr-select-group--error, .fr-fieldset--error";
 
+const expandStepAccordion = (stepElement: HTMLElement): void => {
+  const collapse = stepElement.querySelector(".fr-collapse");
+  if (collapse?.classList.contains("fr-collapse--expanded")) return;
+  stepElement
+    .querySelector(".fr-accordion__btn")
+    ?.setAttribute("aria-expanded", "true");
+};
+
 const focusFirstFieldInError = (stepElement: HTMLElement): void => {
   const firstControlInError = Array.from(
     stepElement.querySelectorAll(fieldInErrorSelector),
@@ -68,10 +76,13 @@ export const useConventionErrorSummary = ({
     stepsInError,
     errorSummaryRef,
     focusErrorSummary: () => setShouldFocusErrorSummary(true),
-    onErrorSummaryStepClick: (step) =>
+    onErrorSummaryStepClick: (step) => {
+      const stepElement = getStepElement(step);
+      if (!stepElement) return;
+      expandStepAccordion(stepElement);
       openStep(step, () => {
-        const stepElement = getStepElement(step);
-        if (stepElement) focusFirstFieldInError(stepElement);
-      }),
+        focusFirstFieldInError(stepElement);
+      });
+    },
   };
 };
