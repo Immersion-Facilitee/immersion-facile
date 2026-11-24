@@ -426,10 +426,15 @@ const ConventionFormContent = ({
     shouldShowUnavailableAgencyAlert,
     setShouldShowUnavailableAgencyAlert,
   ] = useState(false);
+  const wereAgenciesLoadingRef = useRef(false);
 
   useEffect(() => {
+    const justFinishedLoadingAgencies =
+      wereAgenciesLoadingRef.current && !areAgenciesLoading;
+    wereAgenciesLoadingRef.current = areAgenciesLoading;
+
     if (mode === "edit-convention") return;
-    if (areAgenciesLoading) return;
+    if (!justFinishedLoadingAgencies) return;
     if (agenciesFeedback.kind !== "agencyOptionsFetched") return;
     const agencyId = getValues("agencyId");
     if (!agencyId || agencyOptions.some(({ id }) => id === agencyId)) return;

@@ -55,6 +55,8 @@ export const agenciesSlice = createSlice({
       _action: PayloadAction<ListAgencyOptionsRequestDto>,
     ) => {
       state.isLoading = true;
+      state.options = [];
+      state.feedback = { kind: "idle" };
     },
     fetchAgencyOptionsSucceeded: (
       state,
