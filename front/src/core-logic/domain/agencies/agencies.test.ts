@@ -104,6 +104,28 @@ describe("Agencies in store", () => {
       expectOptionsToEqual([agencyOption]);
     });
 
+    it("clears previous agency options and feedback when a new fetch is requested", () => {
+      ({ store, dependencies } = createTestStore({
+        agencies: {
+          ...agenciesSlice.getInitialState(),
+          options: [agencyOption],
+          feedback: { kind: "agencyOptionsFetched" },
+        },
+      }));
+      expectOptionsToEqual([agencyOption]);
+      expectFeedbackToEqual({ kind: "agencyOptionsFetched" });
+
+      store.dispatch(
+        agenciesSlice.actions.fetchAgencyOptionsRequested({
+          departmentCode: "69",
+        }),
+      );
+
+      expectIsLoadingToBe(true);
+      expectOptionsToEqual([]);
+      expectFeedbackToEqual({ kind: "idle" });
+    });
+
     it("clears agency options when fetch fails", () => {
       ({ store, dependencies } = createTestStore({
         agencies: {
