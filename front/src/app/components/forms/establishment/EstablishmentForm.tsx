@@ -487,19 +487,19 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
                       />
                     ))
                     .with(2, () => (
-                      <OffersSection
-                        mode={mode}
-                        onStepChange={onStepChange}
-                        currentStep={currentStep}
-                      />
-                    ))
-                    .with(3, () => (
                       <OffersSettingsSection
                         mode={mode}
                         onStepChange={onStepChange}
                         currentStep={currentStep}
                         availableForImmersion={availableForImmersion}
                         setAvailableForImmersion={setAvailableForImmersion}
+                      />
+                    ))
+                    .with(3, () => (
+                      <OffersSection
+                        mode={mode}
+                        onStepChange={onStepChange}
+                        currentStep={currentStep}
                       />
                     ))
                     .with(4, () => (
