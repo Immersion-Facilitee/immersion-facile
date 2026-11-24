@@ -7,17 +7,20 @@ import { FeedbackContent } from "src/app/components/feedback/FeedbackContent";
 import { commonIllustrations } from "src/assets/img/illustrations";
 import { match, P } from "ts-pattern";
 import { CreateDiscussionForm } from "../immersion-offer/CreateDiscussionForm";
+import type { SearchResultDomIds } from "./searchResult.helpers";
 
 export const SearchResultContactSection = ({
   formContactRef,
   onFormSubmitSuccess,
   currentSearchResult,
   onButtonClick,
+  ids,
 }: {
   onFormSubmitSuccess: () => void;
   formContactRef: React.RefObject<HTMLDivElement>;
   currentSearchResult: OfferDto;
   onButtonClick: () => void;
+  ids: SearchResultDomIds;
 }): ReactNode => {
   const isNotAvailable =
     isInternalOfferDto(currentSearchResult) && !currentSearchResult.isAvailable;
@@ -59,6 +62,7 @@ export const SearchResultContactSection = ({
               buttons={[
                 {
                   children: "Rechercher une autre entreprise",
+                  id: ids.searchAnotherEstablishmentButton,
                   onClick: onButtonClick,
                   iconId: "fr-icon-search-line",
                 },
