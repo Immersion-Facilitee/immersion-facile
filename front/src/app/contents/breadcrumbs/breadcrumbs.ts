@@ -1,5 +1,5 @@
 import type { BreadcrumbProps } from "@codegouvfr/react-dsfr/Breadcrumb";
-import { type FrontRouteKeys, frontRoutes, useRoute } from "shared";
+import { type FrontRouteKeys, frontRoutes } from "shared";
 import {
   type Breadcrumbs,
   makeBreadcrumbsSegments,
@@ -10,7 +10,13 @@ const defaultAncestor: BreadcrumbProps["segments"][0] = {
   linkProps: frontRoutes.home().link,
 };
 
-export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
+export type BreadcrumbsRoutesParams = {
+  [K in FrontRouteKeys]?: Parameters<(typeof frontRoutes)[K]>[0];
+};
+
+const makeBreadcrumbs = (
+  routesParams: BreadcrumbsRoutesParams,
+): Breadcrumbs<FrontRouteKeys> => ({
   homeAgencies: {
     label: "Organismes prescripteurs",
     route: frontRoutes.homeAgencies(),
@@ -27,12 +33,7 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
     children: {
       search: {
         label: "Recherche",
-        route: () => {
-          const route = useRoute();
-          return frontRoutes.search(
-            route.name === "externalSearch" ? route.params : {},
-          );
-        },
+        route: frontRoutes.search(routesParams.search),
         children: {
           searchResult: {
             label: "Détail de l'offre",
@@ -168,9 +169,16 @@ export const breadcrumbs: Breadcrumbs<FrontRouteKeys> = {
       },
     },
   },
-};
+});
 
-export const getBreadcrumbs = makeBreadcrumbsSegments<typeof breadcrumbs>(
-  breadcrumbs,
-  defaultAncestor,
-);
+export const getBreadcrumbs = ({
+  currentRouteKey,
+  routesParams = {},
+}: {
+  currentRouteKey: FrontRouteKeys;
+  routesParams?: BreadcrumbsRoutesParams;
+}): BreadcrumbProps["segments"] =>
+  makeBreadcrumbsSegments<Breadcrumbs<FrontRouteKeys>>(
+    makeBreadcrumbs(routesParams),
+    defaultAncestor,
+  )({ currentRouteKey });

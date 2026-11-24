@@ -163,7 +163,7 @@ export const SearchMiniMap = ({
 
   const mapContainerJsx = (
     <MapContainer
-      className={cx("search-map-results__map")}
+      className={cx(fr.cx("fr-ratio-3x2"), "search-map-results__map")}
       scrollWheelZoom={false}
       center={
         kind === "single"
