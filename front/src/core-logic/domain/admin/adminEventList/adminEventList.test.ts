@@ -31,6 +31,7 @@ describe("Admin event list", () => {
         triggeredBy: {
           kind: "connected-user",
           userId: searchedUserId,
+          email: "admin@immersion-facile.beta.gouv.fr",
         },
         payload: {
           agencyId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",

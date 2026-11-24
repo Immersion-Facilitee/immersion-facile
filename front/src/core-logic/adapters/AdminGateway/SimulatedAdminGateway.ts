@@ -305,7 +305,11 @@ const simulatedAdminEvents = (search: string): AdminEventListItemDto[] => [
     topic: "AgencyActivated",
     status: "failed-but-will-retry",
     wasQuarantined: false,
-    triggeredBy: { kind: "connected-user", userId: search },
+    triggeredBy: {
+      kind: "connected-user",
+      userId: search,
+      email: "admin@immersion-facile.beta.gouv.fr",
+    },
     payload: { agencyId: search },
     publications: [
       {

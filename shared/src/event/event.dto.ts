@@ -1,3 +1,4 @@
+import type { Email } from "../email/email.dto";
 import type { PaginationQueryParams } from "../pagination/pagination.dto";
 import type { Role } from "../role/role.dto";
 import type { UserId } from "../user/user.dto";
@@ -23,6 +24,10 @@ export type WithTriggeredBy = {
   triggeredBy: TriggeredBy | null;
 };
 
+export type AdminEventTriggeredBy =
+  | Exclude<TriggeredBy, { kind: "connected-user" }>
+  | { kind: "connected-user"; userId: UserId; email: Email | null };
+
 export type GetEventsForAdminParams = PaginationQueryParams & {
   search: string;
 };
@@ -43,7 +48,7 @@ export type AdminEventListItemDto = {
   topic: string;
   status: EventStatus;
   wasQuarantined: boolean;
-  triggeredBy: TriggeredBy | null;
+  triggeredBy: AdminEventTriggeredBy | null;
   payload: unknown;
   publications: AdminEventPublicationDto[];
 };

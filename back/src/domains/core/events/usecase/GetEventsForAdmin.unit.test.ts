@@ -20,10 +20,11 @@ import {
 } from "./GetEventsForAdmin";
 
 describe("GetEventsForAdmin", () => {
-  const admin = new ConnectedUserBuilder()
+  const adminBuilder = new ConnectedUserBuilder()
     .withId("admin-id")
-    .withIsAdmin(true)
-    .build();
+    .withEmail("admin@immersion-facile.beta.gouv.fr")
+    .withIsAdmin(true);
+  const admin = adminBuilder.build();
   const notAdmin = new ConnectedUserBuilder()
     .withId("not-admin-id")
     .withIsAdmin(false)
@@ -85,6 +86,7 @@ describe("GetEventsForAdmin", () => {
     getEventsForAdmin = makeGetEventsForAdmin({
       uowPerformer: new InMemoryUowPerformer(uow),
     });
+    uow.userRepository.users = [adminBuilder.buildUser()];
     uow.outboxRepository.events = [
       conventionSignedEvent,
       agencyActivatedEvent,
@@ -113,7 +115,11 @@ describe("GetEventsForAdmin", () => {
           topic: "ConventionPartiallySigned",
           status: "failed-but-will-retry",
           wasQuarantined: false,
-          triggeredBy: { kind: "connected-user", userId: admin.id },
+          triggeredBy: {
+            kind: "connected-user",
+            userId: admin.id,
+            email: admin.email,
+          },
           payload: conventionSignedEvent.payload,
           publications: conventionSignedEvent.publications,
         },
@@ -125,6 +131,20 @@ describe("GetEventsForAdmin", () => {
         totalRecords: 1,
       },
     });
+  });
+
+  it("returns no email for a triggering user who no longer exists", async () => {
+    uow.userRepository.users = [];
+
+    const result = await getEventsForAdmin.execute(
+      { search: convention.id },
+      admin,
+    );
+
+    expectToEqual(
+      result.data.map(({ triggeredBy }) => triggeredBy),
+      [{ kind: "connected-user", userId: admin.id, email: null }],
+    );
   });
 
   it.each<{ searchedBy: string; search: string; expectedEventIds: string[] }>([
