@@ -8,6 +8,7 @@ import { agencySeed } from "./seed/agencySeed";
 import { conventionDraftSeed } from "./seed/conventionDraftSeed";
 import { conventionSeed } from "./seed/conventionSeed";
 import { establishmentSeed } from "./seed/establishmentSeed";
+import { eventSeed } from "./seed/eventSeed";
 import { featureFlagsSeed } from "./seed/featureFlagSeed";
 import { userSeed } from "./seed/userSeed";
 
@@ -23,6 +24,7 @@ const executeSeedTasks = async (db: KyselyDb, deps: AppDependencies) => {
     await establishmentSeed(uow);
     await conventionSeed(uow, agencyIds);
     await conventionDraftSeed(uow);
+    await eventSeed(uow);
   });
 
   // biome-ignore lint/suspicious/noConsole: <explanation>

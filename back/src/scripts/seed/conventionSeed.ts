@@ -146,11 +146,12 @@ export const conventionSeed = async (
       establishmentSiret: conventionWithAssessmentReadyToFill.siret,
     },
   });
+  const assessmentLinkSentAt = new Date().toISOString();
   await uow.outboxRepository.save({
     id: uuidGenerator.new(),
-    occurredAt: new Date().toISOString(),
+    occurredAt: assessmentLinkSentAt,
     status: "published",
-    publications: [],
+    publications: [{ publishedAt: assessmentLinkSentAt, failures: [] }],
     wasQuarantined: false,
     topic: "EmailWithLinkToCreateAssessmentSent",
     priority: defaultPriority,
