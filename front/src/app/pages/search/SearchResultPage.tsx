@@ -44,6 +44,7 @@ import {
   searchResultContent,
 } from "src/app/contents/search/content";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { useLastSearchQueryRouteParams } from "src/app/hooks/search.hooks";
 import { useSearchResultRoute } from "src/app/routes/routes.hooks";
 import { commonIllustrations } from "src/assets/img/illustrations";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
@@ -92,6 +93,7 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const defaultMetaContents = defaultPageMetaContents.searchResult;
   const isLoading = useAppSelector(searchSelectors.isLoading);
+  const lastSearchQueryRouteParams = useLastSearchQueryRouteParams();
   const { isLayoutDesktop } = useLayout();
   const { cx } = useStyles();
   const formContactRef = useRef<ElementRef<"div">>(null);
@@ -168,7 +170,9 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
     isPhysicalWorkMode(currentSearchResult.remoteWorkMode);
 
   return (
-    <HeaderFooterLayout>
+    <HeaderFooterLayout
+      breadcrumbsRoutesParams={{ search: lastSearchQueryRouteParams }}
+    >
       <Helmet>
         <title>
           {getMetaForSearchResult(currentSearchResult).title} :{" "}

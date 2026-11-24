@@ -10,10 +10,12 @@ import {
   type SortDirection,
   searchSortedByOptions,
 } from "shared";
+import { useAppSelector } from "src/app/hooks/reduxHooks";
 import {
   getUrlParameters,
   isKeyInObjectAndValueNotUndefinedNorEmpty,
 } from "src/app/utils/url.utils";
+import { searchSelectors } from "src/core-logic/domain/search/search.selectors";
 import type { SearchPageParams } from "src/core-logic/domain/search/search.slice";
 import type { Route } from "type-route";
 
@@ -184,3 +186,9 @@ export const useSearch = ({ name }: SearchRoute) => ({
     });
   },
 });
+
+export const useLastSearchQueryRouteParams = (): SearchQueryRouteParams =>
+  buildSearchQueryRouteParams({
+    values: useAppSelector(searchSelectors.searchParams),
+    urlParams: getUrlParameters(window.location),
+  });
