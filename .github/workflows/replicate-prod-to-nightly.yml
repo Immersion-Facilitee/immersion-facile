@@ -31,7 +31,7 @@ jobs:
           --file .github/scripts/nightly-db/run-dbt.sh
           -- bash /tmp/uploads/run-dbt.sh
 
-      - name: Vacuum and analyze nightly database
+      - name: Vacuum and analyze nightly analytics tables
         if: always()
         run: >-
           scalingo --region osc-secnum-fr1 --app if-prod-nightly-db run --size XL
