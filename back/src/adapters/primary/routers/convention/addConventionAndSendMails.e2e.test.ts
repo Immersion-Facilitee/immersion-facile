@@ -117,7 +117,7 @@ describe("Add Convention Notifications, then checks the mails are sent (trigerre
       .withDateStart(conventionDateStart.toISOString())
       .withDateEnd(conventionDateEnd.toISOString())
       .withUpdatedAt(conventionDateSubmission.toISOString())
-      .withSchedule(reasonableSchedule)
+      .withSchedule(reasonableSchedule, ["samedi", "dimanche"])
       .build();
 
     const appAndDeps = await buildTestApp();
