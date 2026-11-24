@@ -100,6 +100,7 @@ describe(`${displayRouteName(adminRoutes.getEventsForAdmin)}`, () => {
             triggeredBy: {
               kind: "connected-user",
               userId: adminUser.id,
+              email: adminUser.email,
             },
             payload: agencyActivatedEvent.payload,
             publications: [],

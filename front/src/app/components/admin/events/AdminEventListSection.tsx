@@ -8,11 +8,11 @@ import { RichTable } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
   type AdminEventListItemDto,
+  type AdminEventTriggeredBy,
   defaultPerPageInWebPagination,
   domElementIds,
   type EventStatus,
   frontRoutes,
-  type TriggeredBy,
   titleByRole,
   toDisplayedDate,
 } from "shared";
@@ -218,7 +218,7 @@ const TriggeredByLabel = ({
   triggeredBy,
 }: {
   eventId: string;
-  triggeredBy: TriggeredBy | null;
+  triggeredBy: AdminEventTriggeredBy | null;
 }): React.ReactNode => {
   if (!triggeredBy) return "—";
   if (triggeredBy.kind === "crawler") return "Tâche automatique";
@@ -230,7 +230,7 @@ const TriggeredByLabel = ({
       {...frontRoutes.adminUserDetail({ userId: triggeredBy.userId }).link}
       target="_blank"
     >
-      {triggeredBy.userId}
+      {triggeredBy.email ?? triggeredBy.userId}
     </a>
   );
 };

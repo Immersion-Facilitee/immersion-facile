@@ -14,6 +14,7 @@ import {
 import {
   type AdminEventListItemDto,
   type AdminEventPublicationDto,
+  type AdminEventTriggeredBy,
   type EventStatus,
   eventStatuses,
   type GetEventsForAdminParams,
@@ -36,6 +37,17 @@ export const withTriggeredBySchema: ZodSchemaWithInputMatchingOutput<WithTrigger
     triggeredBy: triggeredBySchema,
   });
 
+const adminEventTriggeredBySchema: ZodSchemaWithInputMatchingOutput<AdminEventTriggeredBy> =
+  z.discriminatedUnion("kind", [
+    z.object({
+      kind: z.literal("connected-user"),
+      userId: userIdSchema,
+      email: z.string().nullable(),
+    }),
+    z.object({ kind: z.literal("convention-magic-link"), role: roleSchema }),
+    z.object({ kind: z.literal("crawler") }),
+  ]);
+
 const adminEventPublicationSchema: ZodSchemaWithInputMatchingOutput<AdminEventPublicationDto> =
   z.object({
     publishedAt: dateTimeIsoStringSchema,
@@ -54,7 +66,7 @@ const adminEventListItemSchema: ZodSchemaWithInputMatchingOutput<AdminEventListI
     topic: z.string(),
     status: eventStatusSchema,
     wasQuarantined: z.boolean(),
-    triggeredBy: triggeredBySchema.nullable(),
+    triggeredBy: adminEventTriggeredBySchema.nullable(),
     payload: z.unknown(),
     publications: z.array(adminEventPublicationSchema),
   });
