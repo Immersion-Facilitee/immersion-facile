@@ -174,13 +174,13 @@ export const OffersSection = ({
                 }),
                 type: "button",
                 onClick: () => {
-                  onStepChange(1, []);
+                  onStepChange(2, []);
                 },
               },
               {
                 children: "Étape suivante",
                 onClick: () => {
-                  onStepChange(3, ["offers", "businessAddresses"]);
+                  onStepChange(4, ["offers", "businessAddresses"]);
                 },
                 type: "button",
                 iconId: "fr-icon-arrow-right-line",
