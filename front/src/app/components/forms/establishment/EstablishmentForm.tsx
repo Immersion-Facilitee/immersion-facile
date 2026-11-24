@@ -20,6 +20,7 @@ import {
 } from "shared";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
+import { EstablishmentCreationConfirmation } from "src/app/components/forms/establishment/EstablishmentCreationConfirmation";
 import { BusinessAndAdminSection } from "src/app/components/forms/establishment/sections/BusinessAndAdminSection";
 import { OffersSection } from "src/app/components/forms/establishment/sections/OffersSection";
 import { OffersSettingsSection } from "src/app/components/forms/establishment/sections/OffersSettingsSection";
@@ -416,105 +417,109 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
   return (
     <WithFeedbackReplacer
       topic="form-establishment"
-      renderFeedback={() => (
-        <>
-          <Feedback topics={["form-establishment"]} />
-          {mode !== "create" && (
-            <Button
-              onClick={() => {
-                dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
-              }}
-              className={fr.cx("fr-mt-2w")}
-              size="small"
-              type="button"
-              priority="secondary"
-            >
-              Revenir à la fiche entreprise
-            </Button>
-          )}
-        </>
-      )}
+      renderFeedback={({ level }) =>
+        mode === "create" && level === "success" ? (
+          <EstablishmentCreationConfirmation formEstablishment={getValues()} />
+        ) : (
+          <>
+            <Feedback topics={["form-establishment"]} />
+            {mode !== "create" && (
+              <Button
+                onClick={() => {
+                  dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
+                }}
+                className={fr.cx("fr-mt-2w")}
+                size="small"
+                type="button"
+                priority="secondary"
+              >
+                Revenir à la fiche entreprise
+              </Button>
+            )}
+          </>
+        )
+      }
     >
-        {isLoading && <Loader />}
-        <FormProvider {...methods}>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            id={domElementIds.formEstablishment[mode].form}
-          >
-            {match(currentStep)
-              .with(null, () => (
-                <>
-                  {currentUser?.isBackofficeAdmin &&
-                    initialFormEstablishment.isEstablishmentBanned && (
-                      <Badge severity="error" className={fr.cx("fr-mb-2w")}>
-                        ENTREPRISE BANNIE
-                      </Badge>
-                    )}
-                  <BusinessAndAdminSection
-                    mode={mode}
-                    onStepChange={onStepChange}
-                    currentStep={currentStep}
-                  />
-                  <OffersSection
-                    mode={mode}
-                    onStepChange={onStepChange}
-                    currentStep={currentStep}
-                  />
-                  <OffersSettingsSection
-                    mode={mode}
-                    onStepChange={onStepChange}
-                    currentStep={currentStep}
-                    availableForImmersion={availableForImmersion}
-                    setAvailableForImmersion={setAvailableForImmersion}
-                  />
-                </>
-              ))
-              .otherwise((currentStep) => (
-                <div className={fr.cx("fr-col")}>
-                  <Stepper
-                    currentStep={currentStep}
-                    stepCount={keys(steps).length}
-                    title={steps[currentStep].title}
-                    nextTitle={steps[currentStep].nextTitle}
-                  />
-                  {match(currentStep)
-                    // TODO : remettre ordre
-                    .with(1, () => (
-                      <BusinessAndAdminSection
-                        mode={mode}
-                        currentStep={currentStep}
-                        onStepChange={onStepChange}
-                      />
-                    ))
-                    .with(2, () => (
-                      <OffersSettingsSection
-                        mode={mode}
-                        onStepChange={onStepChange}
-                        currentStep={currentStep}
-                        availableForImmersion={availableForImmersion}
-                        setAvailableForImmersion={setAvailableForImmersion}
-                      />
-                    ))
-                    .with(3, () => (
-                      <OffersSection
-                        mode={mode}
-                        onStepChange={onStepChange}
-                        currentStep={currentStep}
-                      />
-                    ))
-                    .with(4, () => (
-                      <SummarySection
-                        mode={mode}
-                        onStepChange={onStepChange}
-                        currentStep={currentStep}
-                        isEstablishmentAdmin={isEstablishmentAdmin}
-                      />
-                    ))
-                    .exhaustive()}
-                </div>
-              ))}
-          </form>
-        </FormProvider>
+      {isLoading && <Loader />}
+      <FormProvider {...methods}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          id={domElementIds.formEstablishment[mode].form}
+        >
+          {match(currentStep)
+            .with(null, () => (
+              <>
+                {currentUser?.isBackofficeAdmin &&
+                  initialFormEstablishment.isEstablishmentBanned && (
+                    <Badge severity="error" className={fr.cx("fr-mb-2w")}>
+                      ENTREPRISE BANNIE
+                    </Badge>
+                  )}
+                <BusinessAndAdminSection
+                  mode={mode}
+                  onStepChange={onStepChange}
+                  currentStep={currentStep}
+                />
+                <OffersSection
+                  mode={mode}
+                  onStepChange={onStepChange}
+                  currentStep={currentStep}
+                />
+                <OffersSettingsSection
+                  mode={mode}
+                  onStepChange={onStepChange}
+                  currentStep={currentStep}
+                  availableForImmersion={availableForImmersion}
+                  setAvailableForImmersion={setAvailableForImmersion}
+                />
+              </>
+            ))
+            .otherwise((currentStep) => (
+              <div className={fr.cx("fr-col")}>
+                <Stepper
+                  currentStep={currentStep}
+                  stepCount={keys(steps).length}
+                  title={steps[currentStep].title}
+                  nextTitle={steps[currentStep].nextTitle}
+                />
+                {match(currentStep)
+                  // TODO : remettre ordre
+                  .with(1, () => (
+                    <BusinessAndAdminSection
+                      mode={mode}
+                      currentStep={currentStep}
+                      onStepChange={onStepChange}
+                    />
+                  ))
+                  .with(2, () => (
+                    <OffersSettingsSection
+                      mode={mode}
+                      onStepChange={onStepChange}
+                      currentStep={currentStep}
+                      availableForImmersion={availableForImmersion}
+                      setAvailableForImmersion={setAvailableForImmersion}
+                    />
+                  ))
+                  .with(3, () => (
+                    <OffersSection
+                      mode={mode}
+                      onStepChange={onStepChange}
+                      currentStep={currentStep}
+                    />
+                  ))
+                  .with(4, () => (
+                    <SummarySection
+                      mode={mode}
+                      onStepChange={onStepChange}
+                      currentStep={currentStep}
+                      isEstablishmentAdmin={isEstablishmentAdmin}
+                    />
+                  ))
+                  .exhaustive()}
+              </div>
+            ))}
+        </form>
+      </FormProvider>
     </WithFeedbackReplacer>
   );
 };

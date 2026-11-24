@@ -704,6 +704,8 @@ export const domElementIds = {
         "im-form-create-establishment__next-availability-date",
       navigateToEstablishmentDashboard:
         "im-form-create-establishment__navigate-establishment-dahsboard-button",
+      addOtherOfferButton:
+        "im-form-create-establishment__add-other-offer-button",
       previousButtonFromStepAndMode: ({ currentStep }) =>
         `im-form-create-establishment__previous-button--step-${currentStep}`,
       nextButtonFromStepAndMode: ({ currentStep }) =>
