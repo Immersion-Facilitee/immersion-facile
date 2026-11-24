@@ -1,5 +1,5 @@
 import { filter, map, switchMap } from "rxjs";
-import { adminEstablishmentListSlice } from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.slice";
+import { adminEstablishmentListSlice } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.slice";
 import { catchEpicError } from "src/core-logic/storeConfig/catchEpicError";
 import type {
   ActionOfSlice,

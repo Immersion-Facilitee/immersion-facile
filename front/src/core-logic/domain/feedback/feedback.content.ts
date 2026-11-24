@@ -1,6 +1,5 @@
 import type { ActionCreatorWithPayload } from "@reduxjs/toolkit";
 import { connectedUsersAdminSlice } from "src/core-logic/domain/admin/connectedUsersAdmin/connectedUsersAdmin.slice";
-import { adminEstablishmentListSlice } from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.slice";
 import { adminAgencyListSlice } from "src/core-logic/domain/agencies/admin-agency-list/adminAgencyList.slice";
 import { closeAgencyAndTransferConventionsSlice } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.slice";
 import { createUserOnAgencySlice } from "src/core-logic/domain/agencies/create-user-on-agency/createUserOnAgency.slice";
@@ -24,6 +23,7 @@ import { editConventionWithFinalStatusSlice } from "src/core-logic/domain/conven
 import { sendSignatureLinkSlice } from "src/core-logic/domain/convention/send-signature-link/sendSignatureLink.slice";
 import { conventionTemplateSlice } from "src/core-logic/domain/convention-template/conventionTemplate.slice";
 import { discussionSlice } from "src/core-logic/domain/discussion/discussion.slice";
+import { adminEstablishmentListSlice } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.slice";
 import { establishmentSlice } from "src/core-logic/domain/establishment/establishment.slice";
 import { establishmentBatchSlice } from "src/core-logic/domain/establishmentBatch/establishmentBatch.slice";
 import { featureFlagsSlice } from "src/core-logic/domain/featureFlags/featureFlags.slice";

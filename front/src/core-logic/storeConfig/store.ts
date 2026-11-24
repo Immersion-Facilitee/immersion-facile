@@ -11,8 +11,6 @@ import { listUsersEpics } from "src/core-logic/domain/admin/listUsers/listUsers.
 import { listUsersSlice } from "src/core-logic/domain/admin/listUsers/listUsers.slice";
 import { notificationsEpics } from "src/core-logic/domain/admin/notifications/notifications.epics";
 import { notificationsSlice } from "src/core-logic/domain/admin/notifications/notificationsSlice";
-import { adminEstablishmentListEpics } from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.epics";
-import { adminEstablishmentListSlice } from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.slice";
 import { adminAgencyListEpics } from "src/core-logic/domain/agencies/admin-agency-list/adminAgencyList.epics";
 import { adminAgencyListSlice } from "src/core-logic/domain/agencies/admin-agency-list/adminAgencyList.slice";
 import { closeAgencyAndTransfertConventionsEpics } from "src/core-logic/domain/agencies/close-agency-and-transfert-conventions/closeAgencyAndTransferConventions.epics";
@@ -58,6 +56,8 @@ import { sendSignatureLinkEpics } from "src/core-logic/domain/convention/send-si
 import { sendSignatureLinkSlice } from "src/core-logic/domain/convention/send-signature-link/sendSignatureLink.slice";
 import { conventionTemplateEpics } from "src/core-logic/domain/convention-template/conventionTemplate.epics";
 import { conventionTemplateSlice } from "src/core-logic/domain/convention-template/conventionTemplate.slice";
+import { adminEstablishmentListEpics } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.epics";
+import { adminEstablishmentListSlice } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.slice";
 import { establishmentEpics } from "src/core-logic/domain/establishment/establishment.epics";
 import { establishmentLeadEpics } from "src/core-logic/domain/establishmentLead/establishmentLead.epics";
 import { establishmentLeadSlice } from "src/core-logic/domain/establishmentLead/establishmentLead.slice";

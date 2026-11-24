@@ -4,11 +4,11 @@ import {
   expectToEqual,
   type GetEstablishmentsForAdminParams,
 } from "shared";
-import { adminEstablishmentListSelectors } from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.selectors";
+import { adminEstablishmentListSelectors } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.selectors";
 import {
   adminEstablishmentListInitialState,
   adminEstablishmentListSlice,
-} from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.slice";
+} from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.slice";
 import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
 import {
   createTestStore,

@@ -14,12 +14,12 @@ import {
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { BackofficeDashboardTabContent } from "src/app/components/layout/BackofficeDashboardTabContent";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { adminEstablishmentListSelectors } from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.selectors";
+import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
+import { adminEstablishmentListSelectors } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.selectors";
 import {
   adminEstablishmentListSlice,
   initialAdminEstablishmentListFilters,
-} from "src/core-logic/domain/adminEstablishmentList/adminEstablishmentList.slice";
-import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
+} from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.slice";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
 
 const feedbackTopic: FeedbackTopic = "admin-establishment-list";
