@@ -8,6 +8,8 @@ const maskedRecipients = createSelector(
   ({ maskedRecipients }) => maskedRecipients,
 );
 
+const channel = createSelector(otpChallengeState, ({ channel }) => channel);
+
 const isCodeSent = createSelector(
   otpChallengeState,
   ({ isCodeSent }) => isCodeSent,
@@ -20,6 +22,7 @@ const isLoading = createSelector(
 
 export const otpChallengeSelectors = {
   maskedRecipients,
+  channel,
   isCodeSent,
   isLoading,
 };

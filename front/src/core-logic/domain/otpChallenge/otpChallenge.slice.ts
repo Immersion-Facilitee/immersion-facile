@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import type {
   ActiveOtpSession,
   MaskedOtpRecipients,
+  NotificationKind,
   OtpJwt,
   RequestOtpChallengeDto,
   VerifyOtpChallengeDto,
@@ -13,12 +14,14 @@ import type {
 
 export type OtpChallengeState = {
   maskedRecipients: MaskedOtpRecipients | null;
+  channel: NotificationKind;
   isCodeSent: boolean;
   isLoading: boolean;
 };
 
 export const otpChallengeInitialState: OtpChallengeState = {
   maskedRecipients: null,
+  channel: "email",
   isCodeSent: false,
   isLoading: false,
 };
@@ -51,11 +54,12 @@ export const otpChallengeSlice = createSlice({
 
     otpChallengeRequested: (
       state,
-      _action: PayloadActionWithFeedbackTopic<
+      action: PayloadActionWithFeedbackTopic<
         RequestOtpChallengeDto & { jwt: OtpJwt }
       >,
     ) => {
       state.isLoading = true;
+      state.channel = action.payload.channel;
     },
     otpChallengeSucceeded: (state, _action: PayloadActionWithFeedbackTopic) => {
       state.isLoading = false;

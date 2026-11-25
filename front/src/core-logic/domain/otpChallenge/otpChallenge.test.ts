@@ -65,15 +65,15 @@ describe("otpChallenge slice", () => {
     store.dispatch(
       otpChallengeSlice.actions.otpChallengeRequested({
         jwt,
-        channel: "email",
+        channel: "sms",
         feedbackTopic: "otp-challenge",
       }),
     );
-    expectOtpChallengeState({ isLoading: true });
+    expectOtpChallengeState({ channel: "sms", isLoading: true });
 
     dependencies.otpChallengeGateway.requestOtpChallengeResponse$.next();
 
-    expectOtpChallengeState({ isCodeSent: true });
+    expectOtpChallengeState({ channel: "sms", isCodeSent: true });
     expectOtpChallengeFeedback({
       on: "create",
       level: "success",
@@ -95,7 +95,7 @@ describe("otpChallenge slice", () => {
       new Error("Trop de demandes de code, réessayez plus tard."),
     );
 
-    expectOtpChallengeState(otpChallengeInitialState);
+    expectOtpChallengeState({ channel: "sms" });
     expectOtpChallengeFeedback({
       on: "create",
       level: "error",
@@ -156,10 +156,11 @@ describe("otpChallenge slice", () => {
     });
   });
 
-  it("clears the sent code when the channel changes", () => {
+  it("clears the sent code and keeps the chosen channel when the channel changes", () => {
     ({ store } = createTestStore({
       otpChallenge: {
         maskedRecipients,
+        channel: "sms",
         isCodeSent: true,
         isLoading: false,
       },
@@ -167,13 +168,18 @@ describe("otpChallenge slice", () => {
 
     store.dispatch(otpChallengeSlice.actions.otpChannelChangeRequested());
 
-    expectOtpChallengeState({ maskedRecipients, isCodeSent: false });
+    expectOtpChallengeState({
+      maskedRecipients,
+      channel: "sms",
+      isCodeSent: false,
+    });
   });
 
   it("resets the otp challenge state", () => {
     ({ store } = createTestStore({
       otpChallenge: {
         maskedRecipients,
+        channel: "sms",
         isCodeSent: true,
         isLoading: false,
       },
