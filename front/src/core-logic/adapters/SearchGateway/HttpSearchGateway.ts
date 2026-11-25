@@ -1,16 +1,17 @@
 import { from, type Observable } from "rxjs";
-import type {
-  CreateDiscussionDto,
-  DataWithPagination,
-  ExternalOfferDto,
-  GetExternalOffersFlatQueryParams,
-  GetOffersFlatQueryParams,
-  GroupSlug,
-  GroupWithResults,
-  InternalOfferDto,
-  SearchResultQuery,
-  SearchRoutes,
-  SiretAndAppellationDto,
+import {
+  type CreateDiscussionDto,
+  type DataWithPagination,
+  type ExternalOfferDto,
+  errors,
+  type GetExternalOffersFlatQueryParams,
+  type GetOffersFlatQueryParams,
+  type GroupSlug,
+  type GroupWithResults,
+  type InternalOfferDto,
+  type SearchResultQuery,
+  type SearchRoutes,
+  type SiretAndAppellationDto,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import {
@@ -22,7 +23,7 @@ import type {
   ContactErrorKind,
   SearchGateway,
 } from "src/core-logic/ports/SearchGateway";
-import { match, P } from "ts-pattern";
+import { match } from "ts-pattern";
 
 export class HttpSearchGateway implements SearchGateway {
   constructor(private readonly httpClient: HttpClient<SearchRoutes>) {}
@@ -55,10 +56,8 @@ export class HttpSearchGateway implements SearchGateway {
       .then((response) =>
         match(response)
           .with({ status: 200 }, ({ body }) => body)
-          .with({ status: P.union(404) }, () => {
-            throw new Error(
-              `Nous n'avons pas trouvé le groupe: '${groupSlug}'`,
-            );
+          .with({ status: 404 }, () => {
+            throw errors.establishmentGroup.missingBySlug({ groupSlug });
           })
           .otherwise(otherwiseThrow),
       );

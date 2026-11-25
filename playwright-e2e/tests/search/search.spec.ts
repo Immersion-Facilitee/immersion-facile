@@ -84,6 +84,17 @@ test.describe("Search", () => {
     ).toHaveCount(0);
     await expectSearchToHaveResults(page);
   });
+
+  test("shows group not found page for an unknown group slug", async ({
+    page,
+  }) => {
+    await page.goto(
+      frontRoutes.group({ groupSlug: "faux-nom-de-groupe" }).href,
+    );
+    await expect(page.getByText("Groupe introuvable")).toBeVisible();
+    await page.click(`#${domElementIds.search.groupNotFoundSearchButton}`);
+    await expect(page).toHaveURL(new RegExp(`${frontRoutes.search().href}$`));
+  });
 });
 
 test.skip("checks that share URL have the correct params values", async () => {});

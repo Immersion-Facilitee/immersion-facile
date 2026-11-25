@@ -26,6 +26,7 @@ import {
   domElementIds,
   type Group,
   type GroupSlug,
+  NotFoundError,
   type ValueOf,
 } from "shared";
 import { AppellationAutocomplete } from "src/app/components/forms/autocomplete/AppellationAutocomplete";
@@ -40,6 +41,11 @@ import {
   searchPageParamsFromRoute,
   useSearch,
 } from "src/app/hooks/search.hooks";
+import { ErrorPage } from "src/app/pages/error/ErrorPage";
+import {
+  type FrontSpecificError,
+  frontErrors,
+} from "src/app/pages/error/front-errors";
 import { canSubmitSearch } from "src/app/pages/search/SearchPage.utils";
 import { useSearchRoute } from "src/app/routes/routes.hooks";
 import {
@@ -163,6 +169,8 @@ export const SearchPage = () => {
   const { navigateToSearch } = useSearch(route);
   const [searchMade, setSearchMade] = useState<SearchPageParams | null>(null);
   const [groupData, setGroupData] = useState<Group | null>(null);
+  const [groupPageError, setGroupPageError] =
+    useState<FrontSpecificError | null>(null);
   const searchResultsWrapper = useRef<ElementRef<"div">>(null);
   const innerSearchResultWrapper = useRef<ElementRef<"div">>(null);
   const acquisitionParams = useGetAcquisitionParams();
@@ -255,14 +263,22 @@ export const SearchPage = () => {
   );
 
   const getInitialGroupData = useCallback(async (groupSlug: GroupSlug) => {
-    const response =
-      await outOfReduxDependencies.searchGateway.getGroupBySlug(groupSlug);
-    const { group } = response;
-    setGroupData(group);
-    setIsLoadingGroupData(false);
+    try {
+      const { group } =
+        await outOfReduxDependencies.searchGateway.getGroupBySlug(groupSlug);
+      setGroupData(group);
+    } catch (error) {
+      setGroupPageError(
+        error instanceof NotFoundError
+          ? frontErrors.search.groupNotFound()
+          : frontErrors.generic.temporaryError(),
+      );
+    } finally {
+      setIsLoadingGroupData(false);
+    }
   }, []);
 
-  if (groupSlug && groupData === null) {
+  if (groupSlug && groupData === null && groupPageError === null) {
     getInitialGroupData(groupSlug);
   }
 
@@ -319,6 +335,8 @@ export const SearchPage = () => {
     },
     [dispatch],
   );
+
+  if (groupPageError) return <ErrorPage error={groupPageError} />;
 
   return (
     <HeaderFooterLayout isBreadcrumbsDisplayed={!groupData}>
