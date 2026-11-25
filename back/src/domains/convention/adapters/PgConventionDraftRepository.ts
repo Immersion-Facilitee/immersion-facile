@@ -8,6 +8,7 @@ import {
   type DepartmentCode,
   type EstablishmentTutor,
   isRemoteWorkMode,
+  type OmitFromExistingKeys,
   pipeWithValue,
   type ScheduleDto,
   type Signatories,
@@ -134,7 +135,7 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
   ): Promise<void> {
     await this.transaction
       .insertInto("convention_drafts")
-      .values(mapToEntity(conventionDraft, now))
+      .values(mapConventionDraftToEntity(conventionDraft, now))
       .onConflict((oc) =>
         oc.column("id").doUpdateSet(({ ref }) => ({
           agency_id: ref("excluded.agency_id"),
@@ -188,54 +189,106 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
   }
 }
 
-const mapToEntity = (
-  conventionDraft: ConventionDraftDto,
+type ConventionDraftKeysNotPersisted =
+  | "updatedAt"
+  | "fromFtConnectedUser"
+  | "agencyContactEmail"
+  | "agencyRefersTo"
+  | "assessment"
+  | "dateApproval"
+  | "dateSubmission"
+  | "dateValidation"
+  | "fromConventionDraftId"
+  | "isEstablishmentBanned"
+  | "lastReminders"
+  | "renewed"
+  | "sourceConventionDraftId"
+  | "status"
+  | "statusJustification"
+  | "validators";
+
+type ConventionDraftEntity = OmitFromExistingKeys<
+  ConventionDraftDto,
+  ConventionDraftKeysNotPersisted
+>;
+
+const mapConventionDraftToEntity = (
+  conventionDraft: ConventionDraftEntity,
   now: DateString,
-): InsertExpression<Database, "convention_drafts"> => ({
-  id: conventionDraft.id,
-  agency_id: conventionDraft.agencyId,
-  agency_kind: conventionDraft.agencyKind,
-  agency_department: conventionDraft.agencyDepartment,
-  date_start: conventionDraft.dateStart,
-  date_end: conventionDraft.dateEnd,
-  siret: conventionDraft.siret,
-  business_name: conventionDraft.businessName,
-  business_name_customized: conventionDraft.businessNameCustomized,
-  schedule: conventionDraft.schedule
-    ? sql`${JSON.stringify(conventionDraft.schedule)}`
-    : null,
-  individual_protection: conventionDraft.individualProtection,
-  individual_protection_description:
-    conventionDraft.individualProtectionDescription,
-  sanitary_prevention: conventionDraft.sanitaryPrevention,
-  sanitary_prevention_description:
-    conventionDraft.sanitaryPreventionDescription,
-  remote_work_mode: conventionDraft.remoteWorkMode,
-  immersion_address: conventionDraft.immersionAddress,
-  immersion_objective: conventionDraft.immersionObjective,
-  immersion_appellation: sql`${conventionDraft.immersionAppellation?.appellationCode}`,
-  immersion_activities: conventionDraft.immersionActivities,
-  immersion_skills: conventionDraft.immersionSkills,
-  work_conditions: conventionDraft.workConditions,
-  internship_kind: conventionDraft.internshipKind,
-  business_advantages: conventionDraft.businessAdvantages,
-  acquisition_campaign: conventionDraft.acquisitionCampaign,
-  acquisition_keyword: conventionDraft.acquisitionKeyword,
-  acquisition_medium: conventionDraft.acquisitionMedium,
-  establishment_number_employees:
-    conventionDraft.establishmentNumberEmployeesRange,
-  agency_referent_first_name: conventionDraft.agencyReferent?.firstname,
-  agency_referent_last_name: conventionDraft.agencyReferent?.lastname,
-  ft_connect_id:
-    conventionDraft.signatories?.beneficiary?.federatedIdentity?.provider ===
-    "ftConnect"
-      ? conventionDraft.signatories?.beneficiary?.federatedIdentity?.token
-      : undefined,
-  establishment_tutor: conventionDraft.establishmentTutor
-    ? sql`${JSON.stringify(conventionDraft.establishmentTutor)}`
-    : null,
-  signatories: conventionDraft.signatories
-    ? sql`${JSON.stringify(conventionDraft.signatories)}`
-    : null,
-  updated_at: now,
-});
+): InsertExpression<Database, "convention_drafts"> => {
+  const {
+    id,
+    agencyId,
+    agencyKind,
+    agencyDepartment,
+    dateStart,
+    dateEnd,
+    siret,
+    businessName,
+    businessNameCustomized,
+    schedule,
+    individualProtection,
+    individualProtectionDescription,
+    sanitaryPrevention,
+    sanitaryPreventionDescription,
+    remoteWorkMode,
+    immersionAddress,
+    immersionObjective,
+    immersionAppellation,
+    immersionActivities,
+    immersionSkills,
+    workConditions,
+    internshipKind,
+    businessAdvantages,
+    acquisitionCampaign,
+    acquisitionKeyword,
+    acquisitionMedium,
+    establishmentNumberEmployeesRange,
+    agencyReferent,
+    establishmentTutor,
+    signatories,
+    ...rest
+  } = conventionDraft;
+  rest satisfies Record<string, never>;
+
+  return {
+    id,
+    agency_id: agencyId,
+    agency_kind: agencyKind,
+    agency_department: agencyDepartment,
+    date_start: dateStart,
+    date_end: dateEnd,
+    siret,
+    business_name: businessName,
+    business_name_customized: businessNameCustomized,
+    schedule: schedule ? sql`${JSON.stringify(schedule)}` : null,
+    individual_protection: individualProtection,
+    individual_protection_description: individualProtectionDescription,
+    sanitary_prevention: sanitaryPrevention,
+    sanitary_prevention_description: sanitaryPreventionDescription,
+    remote_work_mode: remoteWorkMode,
+    immersion_address: immersionAddress,
+    immersion_objective: immersionObjective,
+    immersion_appellation: sql`${immersionAppellation?.appellationCode}`,
+    immersion_activities: immersionActivities,
+    immersion_skills: immersionSkills,
+    work_conditions: workConditions,
+    internship_kind: internshipKind,
+    business_advantages: businessAdvantages,
+    acquisition_campaign: acquisitionCampaign,
+    acquisition_keyword: acquisitionKeyword,
+    acquisition_medium: acquisitionMedium,
+    establishment_number_employees: establishmentNumberEmployeesRange,
+    agency_referent_first_name: agencyReferent?.firstname,
+    agency_referent_last_name: agencyReferent?.lastname,
+    ft_connect_id:
+      signatories?.beneficiary?.federatedIdentity?.provider === "ftConnect"
+        ? signatories?.beneficiary?.federatedIdentity?.token
+        : undefined,
+    establishment_tutor: establishmentTutor
+      ? sql`${JSON.stringify(establishmentTutor)}`
+      : null,
+    signatories: signatories ? sql`${JSON.stringify(signatories)}` : null,
+    updated_at: now,
+  };
+};
