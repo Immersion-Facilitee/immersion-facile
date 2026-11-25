@@ -27,7 +27,7 @@ export const formEstablishmentFieldsLabels = (
   mode: Mode,
 ): FormEstablishmentFieldsLabels => ({
   siret: {
-    label: "SIRET",
+    label: "Indiquez le SIRET de votre établissement",
     id: domElementIds.formEstablishment[mode].siret,
     hintText: "Format attendu : 123 456 789 01234",
     required: true,
@@ -38,9 +38,11 @@ export const formEstablishmentFieldsLabels = (
     required: true,
   },
   businessNameCustomized: {
-    label: "Nom affiché aux candidat, s’il diffère de la raison sociale",
+    label: "Nom affiché aux candidats",
     id: domElementIds.formEstablishment[mode].businessNameCustomized,
     autoComplete: "organization",
+    hintText:
+      "Nom sous lequel vous souhaitez apparaitre dans les résultats de recherche",
     placeholder: "Ex : Nom de mon enseigne (optionnel)",
   },
   businessAddresses: {
@@ -136,7 +138,7 @@ export const formEstablishmentFieldsLabels = (
     label: "À propos de votre entreprise",
     id: domElementIds.formEstablishment[mode].additionalInformation,
     hintText:
-      "En information complémentaire, nous vous conseillons de valoriser votre histoire afin de donner envie à un candidat de découvrir un métier au sein de votre établissement.",
+      "Nous vous conseillons de valoriser votre histoire afin de donner envie à un candidat de découvrir un métier au sein de votre établissement.",
     placeholder:
       "Ex : ma biographie d’entreprise (valeurs, écosystème, projections), mon potentiel d’embauche ou toute autre information essentielle pour l’accueil du bénéficiaire au sein de mon établissement (optionnel)",
   },
@@ -191,6 +193,43 @@ export const establishmentEditTabsLabels: Record<EstablishmentEditTab, string> =
   };
 
 export const establishmentEditSubmitLabel = "Enregistrer les modifications";
+
+export const establishmentCreationConfirmationContent = {
+  title: "Votre entreprise a bien été inscrite",
+  visibility: ({
+    establishmentName,
+    availableFrom,
+  }: {
+    establishmentName: string;
+    availableFrom: string | null;
+  }): string =>
+    `${establishmentName} ${availableFrom ? `apparaîtra à partir du ${availableFrom}` : "apparaît dès maintenant"} dans la recherche d'Immersion Facilitée.`,
+  superEstablishmentTitle:
+    "Vous souhaitez apparaître dans les premiers résultats ?",
+  superEstablishmentDescription:
+    "Obtenez la reconnaissance « Super entreprise » en étant répondant aux demandes, en accueillant des immersions et en maintenant votre profil à jour.",
+  addOtherOfferLabel: "Ajouter une autre offre",
+  seeEstablishmentLabel: "Voir ma fiche entreprise",
+};
+
+export const establishmentOfferPageContent = {
+  title: "Ajouter / modifier une offre",
+  subtitle: (businessName: string): string => `Pour ${businessName}.`,
+};
+
+export const deleteOfferModalContent = {
+  title: "Supprimer ce métier ?",
+  cancelLabel: "Annuler",
+  confirmLabel: "Supprimer",
+  description: (appellationLabel: string | undefined): string =>
+    `Le métier « ${appellationLabel} » sera supprimé de votre fiche entreprise et n'apparaîtra plus dans la recherche.`,
+};
+
+export const firstOfferIntro =
+  "Elle apparaîtra dans la recherche. Vous pourrez ajouter d'autres offres une fois l'inscription terminée.";
+
+export const businessAddressesDescription =
+  "Par défaut, vous apparaîtrez dans les résultats de recherche liés à l’adresse de votre établissement. Vous pouvez ajouter d’autres adresses si vous proposez des immersions ailleurs. Par exemple : votre société est située à Dijon (adresse liée à votre SIRET) mais vous proposez une immersion dans votre antenne de Nantes.";
 
 export const mailtoHref = (siret: SiretDto) => {
   const lineBreak = "%0D%0A";

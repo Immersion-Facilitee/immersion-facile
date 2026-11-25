@@ -128,7 +128,7 @@ export const SummarySection = ({
           </ul>
         </SectionHighlight>
       </HeadingSection>
-      <HeadingSection title="Paramètres de vos offres">
+      <HeadingSection title="Vos préférences d’accueil">
         <SectionHighlight>
           <p className={fr.cx("fr-text--bold", "fr-mb-0")}>Disponibilité :</p>
           <p>

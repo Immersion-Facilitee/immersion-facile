@@ -1,5 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import { Input, type InputProps } from "@codegouvfr/react-dsfr/Input";
+import { Input } from "@codegouvfr/react-dsfr/Input";
 import { pick } from "ramda";
 import { useEffect } from "react";
 import { Loader } from "react-design-system";
@@ -69,34 +69,16 @@ export const CreationSiretRelatedInputs = () => {
         : defaultMaxContactsPerMonth,
     );
   }, [establishmentInfos]);
-
-  const getSiretInputStatus = (): {
-    siretState: InputProps["state"];
-    siretStateRelatedMessage: InputProps["stateRelatedMessage"];
-  } => {
+  const getSiretError = () => {
     if (errors.siret) {
-      return {
-        siretState: "error",
-        siretStateRelatedMessage: errors.siret.message,
-      };
+      return errors.siret.message;
     }
     if (siretErrorToDisplay && touchedFields.siret) {
-      return {
-        siretState: "error",
-        siretStateRelatedMessage: siretErrorToDisplay,
-      };
+      return siretErrorToDisplay;
     }
-    if (establishmentInfos?.businessName) {
-      return {
-        siretState: "success",
-        siretStateRelatedMessage: `Un établissement a bien été trouvé. Raison Sociale : ${establishmentInfos.businessName}.`,
-      };
-    }
-    return { siretState: "default", siretStateRelatedMessage: "" };
+    return "";
   };
-
-  const { siretState, siretStateRelatedMessage } = getSiretInputStatus();
-
+  const siretError = getSiretError();
   return (
     <>
       {isFetchingSiret && <Loader />}
@@ -111,8 +93,8 @@ export const CreationSiretRelatedInputs = () => {
             setValue("siret", event.target.value);
           },
         }}
-        state={siretState}
-        stateRelatedMessage={siretStateRelatedMessage}
+        state={siretError ? "error" : "default"}
+        stateRelatedMessage={siretError}
       />
       <p>
         <a
@@ -125,6 +107,16 @@ export const CreationSiretRelatedInputs = () => {
           Retrouver votre SIRET sur l’Annuaire des Entreprises
         </a>
       </p>
+
+      <Input
+        label={formContents.businessName.label}
+        hintText={formContents.businessName.hintText}
+        disabled
+        nativeInputProps={{
+          ...pick(["id", "name", "required"], formContents.businessName),
+          ...register("businessName"),
+        }}
+      />
       <Input
         label={formContents.businessNameCustomized.label}
         hintText={formContents.businessNameCustomized.hintText}
