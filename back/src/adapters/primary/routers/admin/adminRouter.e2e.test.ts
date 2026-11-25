@@ -132,21 +132,6 @@ describe("Admin router", () => {
       });
     });
 
-    it("200 - Gets the absolute Url of the establishments dashboard", async () => {
-      const response = await sharedRequest.getDashboardUrl({
-        urlParams: { dashboardName: "adminEstablishments" },
-        headers: { authorization: backOfficeAdminToken },
-        queryParams: {},
-      });
-      expectHttpResponseToEqual(response, {
-        status: 200,
-        body: {
-          name: "adminEstablishments",
-          url: `http://stubDashboard/adminEstablishments/${gateways.timeGateway.now()}`,
-        },
-      });
-    });
-
     it("400 - unknown dashboard", async () => {
       const response = await sharedRequest.getDashboardUrl({
         urlParams: { dashboardName: "unknown-dashboard" },

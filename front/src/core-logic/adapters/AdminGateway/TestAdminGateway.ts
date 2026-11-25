@@ -1,5 +1,6 @@
 import { type Observable, Subject } from "rxjs";
 import type {
+  AdminEstablishmentListItemDto,
   AgencyUserForListing,
   ApiConsumer,
   ApiConsumerId,
@@ -7,8 +8,10 @@ import type {
   BanEstablishmentPayload,
   ConnectedUserJwt,
   DashboardUrlAndName,
+  DataWithPagination,
   EstablishmentBatchReport,
   FormEstablishmentBatchDto,
+  GetEstablishmentsForAdminParams,
   GetUsersFilters,
   NotificationsByKind,
   SetFeatureFlagParam,
@@ -43,6 +46,10 @@ export class TestAdminGateway implements AdminGateway {
 
   public banEstablishmentResponse$ = new Subject<void>();
 
+  public getEstablishmentsForAdminResponse$ = new Subject<
+    DataWithPagination<AdminEstablishmentListItemDto>
+  >();
+
   public listUsersResponse$ = new Subject<
     UserWithNumberOfAgenciesAndEstablishments[]
   >();
@@ -56,6 +63,13 @@ export class TestAdminGateway implements AdminGateway {
     this.setFeatureFlagLastCalledWith = params;
     return this.setFeatureFlagResponse$;
   };
+
+  public getEstablishmentsForAdmin$(
+    _params: GetEstablishmentsForAdminParams,
+    _jwt: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminEstablishmentListItemDto>> {
+    return this.getEstablishmentsForAdminResponse$;
+  }
 
   public addEstablishmentBatch$(
     _establishmentBatch: FormEstablishmentBatchDto,

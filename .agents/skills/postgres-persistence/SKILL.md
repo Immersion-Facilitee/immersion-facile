@@ -5,7 +5,7 @@ description: Change PostgreSQL persistence, including generated migrations, Kyse
 
 # PostgreSQL persistence
 
-Keep the domain port, in-memory behavior, PostgreSQL adapter, schema model, and database migration aligned.
+Keep the domain port, PostgreSQL adapter, schema model, and database migration aligned, and keep the in-memory adapter no richer than the use case unit tests require.
 
 Before editing TypeScript, read [the repository TypeScript style](../../references/typescript-code-style.md). Read [architecture](references/architecture.md) for every persistence change. Read [testing](references/testing.md) when repository behavior or the database schema changes.
 

@@ -5,9 +5,12 @@ import {
   type InternalOfferDto,
   type Location,
 } from "shared";
-import { InMemoryEstablishmentAggregateQueries } from "../adapters/InMemoryEstablishmentAggregateQueries";
 import {
-  InMemoryEstablishmentAggregateRepository,
+  createInMemoryOutOfTransactionQueries,
+  createInMemoryUow,
+} from "../../core/unit-of-work/adapters/createInMemoryUow";
+import {
+  type InMemoryEstablishmentAggregateRepository,
   TEST_ROME_LABEL,
 } from "../adapters/InMemoryEstablishmentAggregateRepository";
 import {
@@ -52,14 +55,12 @@ describe("GetSearchResultBySearchQuery", () => {
     .build();
 
   beforeEach(() => {
-    establishmentAggregateRepository =
-      new InMemoryEstablishmentAggregateRepository();
+    const uow = createInMemoryUow();
+    establishmentAggregateRepository = uow.establishmentAggregateRepository;
     getSearchResultBySearchQuery = makeGetSearchResultBySearchQuery({
       deps: {
         establishmentAggregateQueries:
-          new InMemoryEstablishmentAggregateQueries(
-            establishmentAggregateRepository,
-          ),
+          createInMemoryOutOfTransactionQueries(uow).establishmentAggregate,
       },
     });
   });

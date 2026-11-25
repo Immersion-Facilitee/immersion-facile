@@ -6,6 +6,10 @@ import {
   writeApiConsumerSchema,
 } from "../apiConsumer/apiConsumer.schema";
 import { dashboardUrlAndNameSchema } from "../dashboard/dashboard.schema";
+import {
+  getEstablishmentsForAdminParamsSchema,
+  paginatedAdminEstablishmentListSchema,
+} from "../establishment/adminEstablishmentList.schema";
 import { banEstablishmentPayloadSchema } from "../establishment/bannedEstablishmentInformations.schema";
 import { setFeatureFlagSchema } from "../featureFlag/featureFlags.schema";
 import {
@@ -149,6 +153,18 @@ export const adminRoutes = defineRoutes({
       401: httpErrorSchema,
       403: httpErrorSchema,
       404: httpErrorSchema,
+    },
+  }),
+  getEstablishmentsForAdmin: defineRoute({
+    method: "get",
+    url: "/admin/establishments",
+    ...withAuthorizationHeaders,
+    queryParamsSchema: getEstablishmentsForAdminParamsSchema,
+    responses: {
+      200: paginatedAdminEstablishmentListSchema,
+      400: httpErrorSchema,
+      401: httpErrorSchema,
+      403: httpErrorSchema,
     },
   }),
   banEstablishment: defineRoute({

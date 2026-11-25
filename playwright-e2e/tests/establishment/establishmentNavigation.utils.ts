@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import {
+  adminRoutes,
   domElementIds,
   type FormEstablishmentDto,
   frontRoutes,
@@ -40,18 +41,32 @@ export const goToManageEtablishmentBySiretInAdmin = async (
 ) => {
   await page.goto("/");
   await goToAdminTab(page, "adminEstablishments");
-  const siretInputLocator = page.locator(
-    `#${domElementIds.admin.manageEstablishment.siretInput}`,
-  );
-  await siretInputLocator.waitFor();
-  await siretInputLocator.fill(siret);
+  await page
+    .getByRole("search", { name: "Rechercher", exact: true })
+    .fill(siret);
+  const [searchResponse] = await Promise.all([
+    page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname.endsWith(adminRoutes.getEstablishmentsForAdmin.url) &&
+        url.searchParams.get("search") === siret
+      );
+    }),
+    page.getByRole("button", { name: "Rechercher", exact: true }).click(),
+  ]);
+  expect(searchResponse.ok()).toBe(true);
+
   const formEstablishmentApiPath = getFormEstablishmentApiPath(siret);
   const establishmentResponsePromise = page.waitForResponse(
     (response) =>
       response.url().includes(formEstablishmentApiPath) &&
       response.status() === 200,
   );
-  await page.click(`#${domElementIds.admin.manageEstablishment.searchButton}`);
+  await page
+    .locator(
+      `#${domElementIds.adminEstablishments.establishmentListEditEstablishmentButton}--${siret}`,
+    )
+    .click();
   await establishmentResponsePromise;
 
   await waitForVisibleLoaderHidden(page, ".im-loader");

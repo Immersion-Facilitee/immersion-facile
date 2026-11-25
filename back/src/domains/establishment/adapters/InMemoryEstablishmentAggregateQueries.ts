@@ -1,5 +1,15 @@
-import type { AppellationCode, LocationId, SiretDto } from "shared";
-import type { EstablishmentAggregateQueries } from "../ports/EstablishmentAggregateQueries";
+import {
+  type AdminEstablishmentListItemDto,
+  type AppellationCode,
+  calculatePaginationResult,
+  type DataWithPagination,
+  type LocationId,
+  type SiretDto,
+} from "shared";
+import type {
+  EstablishmentAggregateQueries,
+  GetEstablishmentsForAdminQueryParams,
+} from "../ports/EstablishmentAggregateQueries";
 import type { RepositorySearchResultDto } from "../ports/EstablishmentAggregateRepository";
 import {
   buildSearchImmersionResultDtoForSiretRomeAndLocation,
@@ -44,5 +54,23 @@ export class InMemoryEstablishmentAggregateQueries
       });
 
     return searchResult;
+  }
+
+  public establishmentsForAdmin: AdminEstablishmentListItemDto[] = [];
+
+  public getEstablishmentsForAdminCalls: GetEstablishmentsForAdminQueryParams[] =
+    [];
+
+  public async getEstablishmentsForAdmin(
+    params: GetEstablishmentsForAdminQueryParams,
+  ): Promise<DataWithPagination<AdminEstablishmentListItemDto>> {
+    this.getEstablishmentsForAdminCalls.push(params);
+    return {
+      data: this.establishmentsForAdmin,
+      pagination: calculatePaginationResult({
+        ...params.pagination,
+        totalRecords: this.establishmentsForAdmin.length,
+      }),
+    };
   }
 }

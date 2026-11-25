@@ -1,5 +1,16 @@
-import type { AppellationCode, LocationId, SiretDto } from "shared";
+import type {
+  AdminEstablishmentListItemDto,
+  AppellationCode,
+  DataWithPagination,
+  LocationId,
+  SiretDto,
+  WithRequiredPagination,
+} from "shared";
 import type { RepositorySearchResultDto } from "./EstablishmentAggregateRepository";
+
+export type GetEstablishmentsForAdminQueryParams = WithRequiredPagination & {
+  search?: string;
+};
 
 export interface EstablishmentAggregateQueries {
   getSearchResultBySearchQuery(
@@ -7,4 +18,7 @@ export interface EstablishmentAggregateQueries {
     appellationCode: AppellationCode,
     locationId?: LocationId,
   ): Promise<RepositorySearchResultDto | undefined>;
+  getEstablishmentsForAdmin(
+    params: GetEstablishmentsForAdminQueryParams,
+  ): Promise<DataWithPagination<AdminEstablishmentListItemDto>>;
 }

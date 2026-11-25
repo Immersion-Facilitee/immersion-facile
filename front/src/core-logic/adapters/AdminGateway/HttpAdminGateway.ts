@@ -1,5 +1,6 @@
 import { from, type Observable } from "rxjs";
 import {
+  type AdminEstablishmentListItemDto,
   type AdminRoutes,
   type AgencyUserForListing,
   type ApiConsumer,
@@ -9,9 +10,11 @@ import {
   type ConnectedUserJwt,
   createApiConsumerParamsFromApiConsumer,
   type DashboardUrlAndName,
+  type DataWithPagination,
   type EstablishmentBatchReport,
   type FormEstablishmentBatchDto,
   type GetDashboardParams,
+  type GetEstablishmentsForAdminParams,
   type GetUsersFilters,
   type SetFeatureFlagParam,
   type UserWithNumberOfAgenciesAndEstablishments,
@@ -234,6 +237,26 @@ export class HttpAdminGateway implements AdminGateway {
             .with({ status: 200 }, () => undefined)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: P.union(401, 403, 404) }, logBodyAndThrow)
+            .otherwise(otherwiseThrow),
+        ),
+    );
+  }
+
+  public getEstablishmentsForAdmin$(
+    params: GetEstablishmentsForAdminParams,
+    jwt: ConnectedUserJwt,
+  ): Observable<DataWithPagination<AdminEstablishmentListItemDto>> {
+    return from(
+      this.httpClient
+        .getEstablishmentsForAdmin({
+          queryParams: params,
+          headers: { authorization: jwt },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 400 }, throwBadRequestWithExplicitMessage)
+            .with({ status: P.union(401, 403) }, logBodyAndThrow)
             .otherwise(otherwiseThrow),
         ),
     );

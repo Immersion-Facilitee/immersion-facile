@@ -23,6 +23,7 @@ import { editConventionWithFinalStatusSlice } from "src/core-logic/domain/conven
 import { sendSignatureLinkSlice } from "src/core-logic/domain/convention/send-signature-link/sendSignatureLink.slice";
 import { conventionTemplateSlice } from "src/core-logic/domain/convention-template/conventionTemplate.slice";
 import { discussionSlice } from "src/core-logic/domain/discussion/discussion.slice";
+import { adminEstablishmentListSlice } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.slice";
 import { establishmentSlice } from "src/core-logic/domain/establishment/establishment.slice";
 import { establishmentBatchSlice } from "src/core-logic/domain/establishmentBatch/establishmentBatch.slice";
 import { featureFlagsSlice } from "src/core-logic/domain/featureFlags/featureFlags.slice";
@@ -43,6 +44,7 @@ type FeedbackWithActionName = {
 const topics = [
   "admin-agency-list",
   "admin-convention-list",
+  "admin-establishment-list",
   "agency-admin",
   "agency-for-dashboard",
   "agency-user-for-dashboard",
@@ -1140,6 +1142,15 @@ export const feedbacks: Record<
       action: adminAgencyListSlice.actions.fetchAdminAgencyListFailed,
       title: "Problème lors de la récupération des agences",
       message: "Une erreur est survenue lors de la récupération des agences",
+    },
+  },
+  "admin-establishment-list": {
+    "fetch.error": {
+      action:
+        adminEstablishmentListSlice.actions.fetchAdminEstablishmentListFailed,
+      title: "Problème lors de la récupération des établissements",
+      message:
+        "Une erreur est survenue lors de la récupération des établissements",
     },
   },
   "admin-convention-list": {

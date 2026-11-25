@@ -27,11 +27,7 @@ export const agencyDashboardNames = [
   "establishmentManagement",
 ] as const;
 
-export const adminDashboardNames = [
-  "adminConventions",
-  "adminEvents",
-  "adminEstablishments",
-] as const;
+export const adminDashboardNames = ["adminConventions", "adminEvents"] as const;
 
 export type AdminDashboardName = (typeof adminDashboardNames)[number];
 

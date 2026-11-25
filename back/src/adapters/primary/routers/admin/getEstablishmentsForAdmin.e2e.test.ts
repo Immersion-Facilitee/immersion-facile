@@ -1,0 +1,134 @@
+import { addDays } from "date-fns";
+import {
+  type AdminEstablishmentListItemDto,
+  type AdminRoutes,
+  adminRoutes,
+  ConnectedUserBuilder,
+  type ConnectedUserJwt,
+  currentJwtVersions,
+  displayRouteName,
+  errors,
+  expectHttpResponseToEqual,
+} from "shared";
+import type { HttpClient } from "shared-routes";
+import { createSupertestSharedClient } from "shared-routes/supertest";
+import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserAuthMiddleware";
+import type { InMemoryOutOfTransactionQueries } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
+import { buildTestApp } from "../../../../utils/buildTestApp";
+
+describe(`${displayRouteName(adminRoutes.getEstablishmentsForAdmin)} to list establishments for backoffice admin`, () => {
+  const backofficeAdminUser = new ConnectedUserBuilder()
+    .withId("backoffice-admin-user")
+    .withIsAdmin(true)
+    .buildUser();
+
+  const nonAdminUser = new ConnectedUserBuilder()
+    .withId("non-admin-user")
+    .withIsAdmin(false)
+    .buildUser();
+
+  const bakeryListItem: AdminEstablishmentListItemDto = {
+    siret: "11111111111111",
+    name: "BOULANGERIE DU CENTRE",
+    customizedName: "Le Fournil",
+    city: "Lyon",
+    postcode: "69001",
+    otherLocationsCount: 0,
+    createdAt: "2024-01-10T10:00:00.000Z",
+    updatedAt: "2026-10-20T10:00:00.000Z",
+    discussionsCount: 0,
+    validatedConventionsCount: 0,
+  };
+
+  let httpClient: HttpClient<AdminRoutes>;
+  let queries: InMemoryOutOfTransactionQueries;
+  let backofficeAdminToken: ConnectedUserJwt;
+  let nonAdminToken: ConnectedUserJwt;
+
+  beforeEach(async () => {
+    const deps = await buildTestApp();
+    queries = deps.queries;
+    httpClient = createSupertestSharedClient(adminRoutes, deps.request);
+
+    deps.inMemoryUow.userRepository.users = [backofficeAdminUser, nonAdminUser];
+
+    backofficeAdminToken = deps.generateConnectedUserJwt({
+      userId: backofficeAdminUser.id,
+      version: currentJwtVersions.connectedUser,
+      iat: Date.now(),
+      exp: addDays(new Date(), 5).getTime(),
+    });
+    nonAdminToken = deps.generateConnectedUserJwt({
+      userId: nonAdminUser.id,
+      version: currentJwtVersions.connectedUser,
+      iat: Date.now(),
+      exp: addDays(new Date(), 5).getTime(),
+    });
+  });
+
+  it("401 - Unauthorized when not correctly authenticated", async () => {
+    const response = await httpClient.getEstablishmentsForAdmin({
+      headers: { authorization: "invalid-token" },
+      queryParams: {},
+    });
+
+    expectHttpResponseToEqual(response, {
+      status: 401,
+      body: { status: 401, message: invalidTokenMessage },
+    });
+  });
+
+  it("403 - Forbidden when user is not backoffice admin", async () => {
+    const response = await httpClient.getEstablishmentsForAdmin({
+      headers: { authorization: nonAdminToken },
+      queryParams: {},
+    });
+
+    expectHttpResponseToEqual(response, {
+      status: 403,
+      body: {
+        status: 403,
+        message: errors.user.forbidden({ userId: nonAdminUser.id }).message,
+      },
+    });
+  });
+
+  it("400 - Bad request when the search is too short", async () => {
+    const response = await httpClient.getEstablishmentsForAdmin({
+      headers: { authorization: backofficeAdminToken },
+      queryParams: { search: "bo" },
+    });
+
+    expectHttpResponseToEqual(response, {
+      status: 400,
+      body: {
+        issues: ["search : Le minimum est de 3 caractères"],
+        message:
+          "Shared-route schema 'queryParamsSchema' was not respected in adapter 'express'.\nRoute: GET /admin/establishments",
+        status: 400,
+      },
+    });
+  });
+
+  it("200 - returns establishments matching the search", async () => {
+    queries.establishmentAggregate.establishmentsForAdmin = [bakeryListItem];
+
+    const response = await httpClient.getEstablishmentsForAdmin({
+      headers: { authorization: backofficeAdminToken },
+      queryParams: { page: 1, perPage: 10, search: "fournil" },
+    });
+
+    expectHttpResponseToEqual(response, {
+      status: 200,
+      body: {
+        data: [bakeryListItem],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          numberPerPage: 10,
+          totalRecords: 1,
+        },
+      },
+    });
+  });
+});

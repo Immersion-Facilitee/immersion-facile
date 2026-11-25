@@ -56,6 +56,8 @@ import { sendSignatureLinkEpics } from "src/core-logic/domain/convention/send-si
 import { sendSignatureLinkSlice } from "src/core-logic/domain/convention/send-signature-link/sendSignatureLink.slice";
 import { conventionTemplateEpics } from "src/core-logic/domain/convention-template/conventionTemplate.epics";
 import { conventionTemplateSlice } from "src/core-logic/domain/convention-template/conventionTemplate.slice";
+import { adminEstablishmentListEpics } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.epics";
+import { adminEstablishmentListSlice } from "src/core-logic/domain/establishment/admin-establishment-list/adminEstablishmentList.slice";
 import { establishmentEpics } from "src/core-logic/domain/establishment/establishment.epics";
 import { establishmentLeadEpics } from "src/core-logic/domain/establishmentLead/establishmentLead.epics";
 import { establishmentLeadSlice } from "src/core-logic/domain/establishmentLead/establishmentLead.slice";
@@ -100,6 +102,7 @@ const allEpics: AppEpic<any>[] = [
   ...appellationEpics,
   ...assessmentEpics,
   ...adminAgencyListEpics,
+  ...adminEstablishmentListEpics,
   ...authEpics,
   ...archivedConventionRequestEpics,
   ...conventionActionEpics,
@@ -159,6 +162,7 @@ const appReducer = combineReducers({
     [removeUserFromAgencySlice.name]: removeUserFromAgencySlice.reducer,
   }),
   [fetchAgencyOptionsSlice.name]: fetchAgencyOptionsSlice.reducer,
+  [adminEstablishmentListSlice.name]: adminEstablishmentListSlice.reducer,
   [agenciesSlice.name]: agenciesSlice.reducer,
   [appellationSlice.name]: appellationSlice.reducer,
   [assessmentSlice.name]: assessmentSlice.reducer,

@@ -37,24 +37,6 @@ describe("dashboardUrls slice", () => {
       expectDashboardError(null);
     });
 
-    it("should store AbsoluteUrl in establishments when requesting establishments dashboard", () => {
-      expectUrlsToMatch({ adminEstablishments: null });
-
-      store.dispatch(
-        dashboardUrlsSlice.actions.dashboardUrlRequested({
-          name: "adminEstablishments",
-        }),
-      );
-      const valueFromApi: DashboardUrlAndName = {
-        name: "adminEstablishments",
-        url: "https://establishments.url",
-      };
-      dependencies.adminGateway.dashboardUrl$.next(valueFromApi);
-
-      expectUrlsToMatch({ adminEstablishments: valueFromApi.url });
-      expectDashboardError(null);
-    });
-
     it("should store AbsoluteUrl in events when requesting events dashboard", () => {
       expectUrlsToMatch({ adminEvents: null });
 
@@ -88,8 +70,8 @@ describe("dashboardUrls slice", () => {
       expectDashboardError(errorMessage);
     });
 
-    it("should be able to load 2 different dashboards at the same time (conventions and establishments for exemple)", () => {
-      expectUrlsToMatch({ adminConventions: null, adminEstablishments: null });
+    it("should be able to load 2 different dashboards at the same time (conventions and events for exemple)", () => {
+      expectUrlsToMatch({ adminConventions: null, adminEvents: null });
 
       store.dispatch(
         dashboardUrlsSlice.actions.dashboardUrlRequested({
@@ -99,7 +81,7 @@ describe("dashboardUrls slice", () => {
 
       store.dispatch(
         dashboardUrlsSlice.actions.dashboardUrlRequested({
-          name: "adminEstablishments",
+          name: "adminEvents",
         }),
       );
 
@@ -109,15 +91,15 @@ describe("dashboardUrls slice", () => {
       };
       dependencies.adminGateway.dashboardUrl$.next(conventionsValueFromApi);
 
-      const establishmentsValueFromApi: DashboardUrlAndName = {
-        name: "adminEstablishments",
-        url: "https://establishments.url",
+      const eventsValueFromApi: DashboardUrlAndName = {
+        name: "adminEvents",
+        url: "https://events.url",
       };
-      dependencies.adminGateway.dashboardUrl$.next(establishmentsValueFromApi);
+      dependencies.adminGateway.dashboardUrl$.next(eventsValueFromApi);
 
       expectUrlsToMatch({
         adminConventions: conventionsValueFromApi.url,
-        adminEstablishments: establishmentsValueFromApi.url,
+        adminEvents: eventsValueFromApi.url,
       });
     });
   });

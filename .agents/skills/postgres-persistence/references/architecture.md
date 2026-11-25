@@ -8,7 +8,7 @@ For a schema change:
 2. Implement both forward and rollback behavior when the migration supports it.
 3. Update `back/src/config/pg/kysely/model/database.ts` to match the resulting schema.
 4. Update the PostgreSQL adapter and its domain port when behavior changes.
-5. Keep the in-memory adapter and Unit of Work types and construction aligned with the port.
+5. Keep the in-memory adapter and Unit of Work types and construction aligned with the port. For a read query whose filtering, search, sorting, counting, or pagination lives in SQL, make the in-memory method a stub that records the parameters it receives and returns preset data, as in `InMemoryEstablishmentAggregateQueries.getEstablishmentsForAdmin`; do not reimplement those rules in TypeScript. A method no unit test calls may throw `Not implemented`.
 
 Store static datasets used by migrations as CSV, SQL, JSON, or another data file under `back/src/config/pg/static-data/`; let the migration parse and consume that file instead of embedding a large dataset in the migration source.
 

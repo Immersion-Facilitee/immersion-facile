@@ -86,6 +86,8 @@ export * from "./environment";
 export * from "./errors/errors";
 export * from "./errors/ftConnectErrors";
 export * from "./errors/httpErrors";
+export * from "./establishment/adminEstablishmentList.dto";
+export * from "./establishment/adminEstablishmentList.schema";
 export * from "./establishment/bannedEstablishmentInformations.dto";
 export * from "./establishment/bannedEstablishmentInformations.schema";
 export * from "./establishment/establishment.dto";
