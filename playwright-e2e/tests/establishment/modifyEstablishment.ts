@@ -125,7 +125,7 @@ const addOfferThroughOfferPage = async (
     `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.FULL_REMOTE}']`,
   );
   await page.click(
-    `#${domElementIds.establishmentDashboardEstablishmentOffer.submitButton}`,
+    `#${domElementIds.establishmentDashboardEstablishmentOffers.submitButton}`,
   );
   await expect(page.locator(".fr-alert--success")).toBeVisible();
 };
@@ -141,7 +141,7 @@ const editOfferThroughOfferPage = async (
     `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.ON_SITE}']`,
   );
   await page.click(
-    `#${domElementIds.establishmentDashboardEstablishmentOffer.submitButton}`,
+    `#${domElementIds.establishmentDashboardEstablishmentOffers.submitButton}`,
   );
   await expect(page.locator(".fr-alert--success")).toBeVisible();
 };

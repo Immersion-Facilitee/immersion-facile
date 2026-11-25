@@ -379,7 +379,7 @@ export const {
       { siret: param.path.string },
       ({ siret }) => `/${siret}/informations`,
     ),
-  establishmentDashboardEstablishmentOffer:
+  establishmentDashboardEstablishmentOffers:
     establishmentDashboardEstablishments.extend(
       {
         siret: param.path.string,

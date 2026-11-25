@@ -1436,7 +1436,7 @@ export const domElementIds = {
   establishmentDashboardEstablishments: {},
   establishmentDashboardEstablishmentDetails: {},
   establishmentDashboardEstablishmentInformations: {},
-  establishmentDashboardEstablishmentOffer: {
+  establishmentDashboardEstablishmentOffers: {
     submitButton: "im-establishment-dashboard-offer__submit-button",
     backToEstablishmentDetailsButton:
       "im-establishment-dashboard-offer__back-to-establishment-details-button",
