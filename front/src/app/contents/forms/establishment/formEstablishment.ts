@@ -215,6 +215,7 @@ export const establishmentCreationConfirmationContent = {
 export const establishmentOfferPageContent = {
   title: "Ajouter / modifier une offre",
   subtitle: (businessName: string): string => `Pour ${businessName}.`,
+  backToEstablishmentDetailsLabel: "Revenir à la fiche entreprise",
 };
 
 export const deleteOfferModalContent = {
