@@ -7,6 +7,10 @@ import {
   type ConventionJwt,
   type EmailAuthCodeJwt,
   errors,
+  isConnectedUserJwtPayload,
+  isConventionJwtPayload,
+  isEmailAuthCodeJwtPayload,
+  isOtpJwtPayload,
   type OtpJwt,
   type RenewExpiredJwtRequestDto,
 } from "shared";
@@ -317,27 +321,27 @@ const makeExpiredJwtParams = (
     };
 
   const jwtPayload = jwtValidator.decodeJwt(expiredJwt);
-  if ("userId" in jwtPayload)
+  if (isConnectedUserJwtPayload(jwtPayload))
     return {
       kind: "connectedUser",
       expiredJwt: expiredJwt as ConnectedUserJwt,
     };
 
-  if ("applicationId" in jwtPayload && originalUrl)
+  if (isConventionJwtPayload(jwtPayload) && originalUrl)
     return {
       kind: "convention",
       expiredJwt: expiredJwt as ConventionJwt,
       originalUrl: originalUrl,
     };
 
-  if ("emailAuthCode" in jwtPayload && state)
+  if (isEmailAuthCodeJwtPayload(jwtPayload) && state)
     return {
       kind: "emailAuthCode",
       expiredJwt: expiredJwt as EmailAuthCodeJwt,
       state: state,
     };
 
-  if ("purpose" in jwtPayload)
+  if (isOtpJwtPayload(jwtPayload))
     return {
       kind: "otp",
       expiredJwt: expiredJwt as OtpJwt,

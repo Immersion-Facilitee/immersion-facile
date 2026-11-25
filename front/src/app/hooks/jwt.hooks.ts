@@ -5,6 +5,8 @@ import {
   type ConventionSupportedJwt,
   decodeMagicLinkJwtWithoutSignatureCheck,
   type frontRoutes,
+  isConventionJwtPayload,
+  isOtpJwtPayload,
   type OtpJwt,
 } from "shared";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -23,14 +25,14 @@ export const getConventionAccessFromJwt = (
   const payload =
     decodeMagicLinkJwtWithoutSignatureCheck<AppSupportedJwtPayload>(jwt);
 
-  if ("purpose" in payload)
+  if (isOtpJwtPayload(payload))
     return {
       isOtp: true,
       conventionId: payload.subject.conventionId,
       role: payload.subject.role,
     };
 
-  if ("applicationId" in payload)
+  if (isConventionJwtPayload(payload))
     return {
       isOtp: false,
       conventionId: payload.applicationId,
