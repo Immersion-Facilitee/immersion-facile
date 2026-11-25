@@ -108,7 +108,7 @@ export const EstablishmentDetailsPage = ({
         onTabChange={goToEstablishmentEditTab}
         onOfferEditionRequested={(appellationCode) =>
           frontRoutes
-            .establishmentDashboardEstablishmentOffer({
+            .establishmentDashboardEstablishmentOffers({
               siret: formEstablishment.siret,
               appellationCode,
             })

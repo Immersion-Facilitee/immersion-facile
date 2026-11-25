@@ -32,7 +32,7 @@ import type { Route } from "type-route";
 import type { $ZodIssue } from "zod/v4/core";
 
 type EstablishmentOfferPageProps = {
-  route: Route<typeof frontRoutes.establishmentDashboardEstablishmentOffer>;
+  route: Route<typeof frontRoutes.establishmentDashboardEstablishmentOffers>;
 };
 
 export const EstablishmentOfferPage = ({
@@ -89,7 +89,7 @@ export const EstablishmentOfferPage = ({
           type="button"
           priority="secondary"
           id={
-            domElementIds.establishmentDashboardEstablishmentOffer
+            domElementIds.establishmentDashboardEstablishmentOffers
               .backToEstablishmentDetailsButton
           }
           size="small"
@@ -166,7 +166,9 @@ const OfferEditionForm = ({
       <Button
         type="submit"
         iconId="fr-icon-save-line"
-        id={domElementIds.establishmentDashboardEstablishmentOffer.submitButton}
+        id={
+          domElementIds.establishmentDashboardEstablishmentOffers.submitButton
+        }
       >
         {establishmentEditSubmitLabel}
       </Button>

@@ -117,7 +117,7 @@ const getPageSideEffectByRouteName: Partial<Record<keyof Routes, () => void>> =
     establishmentDashboardDiscussions: fetchCurrentUser,
     establishmentDashboardConventions: fetchCurrentUser,
     establishmentDashboardEstablishmentDetails: fetchCurrentUser,
-    establishmentDashboardEstablishmentOffer: fetchCurrentUser,
+    establishmentDashboardEstablishmentOffers: fetchCurrentUser,
   };
 
 const getPageByRouteName: {
@@ -280,7 +280,7 @@ const getPageByRouteName: {
       <EstablishmentDetailsPage route={route} />
     </DashboardPrivateRoutePage>
   ),
-  establishmentDashboardEstablishmentOffer: (route) => (
+  establishmentDashboardEstablishmentOffers: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <EstablishmentOfferPage route={route} />
     </DashboardPrivateRoutePage>

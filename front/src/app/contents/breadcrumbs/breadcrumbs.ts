@@ -123,18 +123,19 @@ const makeBreadcrumbs = (
                     {
                       siret:
                         route.name ===
-                        "establishmentDashboardEstablishmentOffer"
+                        "establishmentDashboardEstablishmentOffers"
                           ? route.params.siret
                           : "",
                     },
                   );
                 },
                 children: {
-                  establishmentDashboardEstablishmentOffer: {
+                  establishmentDashboardEstablishmentOffers: {
                     label: "Ajouter / modifier une offre",
-                    route: frontRoutes.establishmentDashboardEstablishmentOffer(
-                      { siret: "" },
-                    ),
+                    route:
+                      frontRoutes.establishmentDashboardEstablishmentOffers({
+                        siret: "",
+                      }),
                   },
                 },
               },

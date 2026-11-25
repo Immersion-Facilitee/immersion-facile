@@ -58,7 +58,7 @@ export const EstablishmentCreationConfirmation = ({
               children:
                 establishmentCreationConfirmationContent.addOtherOfferLabel,
               id: domElementIds.formEstablishment.create.addOtherOfferButton,
-              linkProps: frontRoutes.establishmentDashboardEstablishmentOffer({
+              linkProps: frontRoutes.establishmentDashboardEstablishmentOffers({
                 siret: formEstablishment.siret,
               }).link,
             },
