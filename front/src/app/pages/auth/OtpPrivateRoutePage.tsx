@@ -6,9 +6,9 @@ import {
   type OtpJwt,
   type OtpJwtPayload,
 } from "shared";
-import { OtpChallenge } from "src/app/components/auth/OtpChallenge";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { OtpChallengePage } from "src/app/pages/auth/OtpChallengePage";
 import { frontErrors } from "src/app/pages/error/front-errors";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
@@ -58,7 +58,7 @@ export const OtpPrivateRoutePage = ({
 
   if (activeSession?.conventionId === conventionId) return <>{children}</>;
 
-  if (isOtpRequired) return <OtpChallenge jwt={jwt} />;
+  if (isOtpRequired) return <OtpChallengePage jwt={jwt} />;
 
   return <Loader />;
 };

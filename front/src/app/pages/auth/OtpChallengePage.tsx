@@ -40,11 +40,13 @@ const otpStepCount = 2;
 const otpChallengeFeedbackTopic: FeedbackTopic = "otp-challenge";
 const renewExpiredJwtFeedbackTopic: FeedbackTopic = "renew-expired-jwt";
 
-type OtpChallengeProps = {
+type OtpChallengePageProps = {
   jwt: OtpJwt;
 };
 
-export const OtpChallenge = ({ jwt }: OtpChallengeProps): JSX.Element => {
+export const OtpChallengePage = ({
+  jwt,
+}: OtpChallengePageProps): JSX.Element => {
   const dispatch = useDispatch();
   const maskedRecipients = useAppSelector(
     otpChallengeSelectors.maskedRecipients,
