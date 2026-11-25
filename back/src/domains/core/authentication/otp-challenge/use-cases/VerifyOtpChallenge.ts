@@ -21,8 +21,8 @@ import type { HashOtpCode } from "../entities/otpChallenge.helper";
 const MAX_OTP_CHALLENGE_ATTEMPTS = 5;
 
 export type VerifyOtpChallengeOutput = {
-  otpSessionId: OtpSessionId;
-  activeOtpSession: ActiveOtpSession;
+  id: OtpSessionId;
+  session: ActiveOtpSession;
 };
 
 export type VerifyOtpChallenge = ReturnType<typeof makeVerifyOtpChallenge>;
@@ -122,8 +122,8 @@ export const makeVerifyOtpChallenge = useCaseBuilder("VerifyOtpChallenge")
           await uow.otpSessionRepository.save(otpSession);
 
           return {
-            otpSessionId: otpSession.id,
-            activeOtpSession: toActiveOtpSession(otpSession),
+            id: otpSession.id,
+            session: toActiveOtpSession(otpSession),
           };
         },
       );

@@ -49,9 +49,10 @@ export const ConventionManagePage = ({ route }: ConventionManagePageProps) => {
         const conventionAccess = getConventionAccessFromJwt(jwt);
         if (!conventionAccess) return undefined;
         return {
-          jwtParams: conventionAccess.isOtp
-            ? { jwt, kind: "otp session" }
-            : { jwt, kind: "convention" },
+          jwtParams:
+            conventionAccess.kind === "otp"
+              ? { jwt, kind: "otp session" }
+              : { jwt, kind: "convention" },
           conventionId: conventionAccess.conventionId,
         };
       },

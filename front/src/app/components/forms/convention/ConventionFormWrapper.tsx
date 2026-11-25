@@ -36,7 +36,10 @@ import { throwIfArchivedConventionError } from "src/app/contents/convention-arch
 import { useConventionTexts } from "src/app/contents/forms/convention/textSetup";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { makeFieldError } from "src/app/hooks/formContents.hooks";
-import { getConventionAccessFromJwt } from "src/app/hooks/jwt.hooks";
+import {
+  type ConventionAccess,
+  getConventionAccessFromJwt,
+} from "src/app/hooks/jwt.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import type { ConventionImmersionPageRoute } from "src/app/pages/convention/ConventionImmersionPage";
 import type { ConventionMiniStagePageRoute } from "src/app/pages/convention/ConventionMiniStagePage";
@@ -96,10 +99,11 @@ export const ConventionFormWrapper = ({
   const routeJwt = "jwt" in route.params ? route.params.jwt : undefined;
   const routeConventionId =
     "conventionId" in route.params ? route.params.conventionId : undefined;
-  const conventionIdFromJwt = routeJwt
-    ? getConventionAccessFromJwt(routeJwt)?.conventionId
+  const conventionAccess = routeJwt
+    ? getConventionAccessFromJwt(routeJwt)
     : undefined;
-  const conventionId = conventionIdFromJwt ?? routeConventionId;
+  const roleFromJwt = conventionAccess?.role;
+  const conventionId = conventionAccess?.conventionId ?? routeConventionId;
   const routeConventionDraftId =
     "conventionDraftId" in route.params
       ? route.params.conventionDraftId
@@ -179,8 +183,6 @@ export const ConventionFormWrapper = ({
 
   useEffect(() => {
     if (routeJwt) {
-      const roleFromJwt = getConventionAccessFromJwt(routeJwt)?.role;
-
       const roles: Role[] = roleFromJwt
         ? [roleFromJwt]
         : userRolesForFetchedConvention;
@@ -191,7 +193,7 @@ export const ConventionFormWrapper = ({
         ),
       );
     }
-  }, [dispatch, routeJwt, userRolesForFetchedConvention]);
+  }, [dispatch, routeJwt, roleFromJwt, userRolesForFetchedConvention]);
 
   useEffect(() => {
     dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
@@ -210,6 +212,7 @@ export const ConventionFormWrapper = ({
     mode,
     userRolesOnConvention,
     route,
+    conventionAccess,
     fetchedConvention,
     isSignatoryAfterUpdate: signatoryData.signatory !== null,
   });
@@ -680,12 +683,14 @@ const getRouteToRedirectAfterSubmit = ({
   mode,
   userRolesOnConvention,
   route,
+  conventionAccess,
   fetchedConvention,
   isSignatoryAfterUpdate,
 }: {
   mode: ConventionFormMode;
   userRolesOnConvention: Role[];
   route: SupportedConventionRoutes;
+  conventionAccess: ConventionAccess | undefined;
   fetchedConvention: { id: string } | null;
   isSignatoryAfterUpdate: boolean;
 }) =>
@@ -726,11 +731,11 @@ const getRouteToRedirectAfterSubmit = ({
         fetchedConvention: { id: P.string },
       },
       ({ route, fetchedConvention }) =>
-        match(getConventionAccessFromJwt(route.params.jwt))
-          .with({ isOtp: true }, () =>
+        match(conventionAccess)
+          .with({ kind: "otp" }, () =>
             frontRoutes.manageConvention({ jwt: route.params.jwt }),
           )
-          .with({ isOtp: false }, () =>
+          .with({ kind: "convention" }, () =>
             frontRoutes.conventionToSign({ jwt: route.params.jwt }),
           )
           .otherwise(() =>
@@ -764,7 +769,7 @@ const getRouteToRedirectAfterSubmit = ({
         fetchedConvention: { id: P.string },
       },
       ({ route, fetchedConvention }) =>
-        getConventionAccessFromJwt(route.params.jwt)
+        conventionAccess
           ? frontRoutes.manageConvention({ jwt: route.params.jwt })
           : frontRoutes.manageConventionConnectedUser({
               conventionId: fetchedConvention.id,

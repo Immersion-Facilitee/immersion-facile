@@ -111,14 +111,14 @@ export const makeNotifyAllActorsOfFinalConventionValidation = useCaseBuilder(
           });
 
     await executeInSequence(
-      recipientsRoleAndEmail.map<TemplatedEmail>((recipient) => ({
+      recipientsRoleAndEmail.map<TemplatedEmail>(({ email, role }) => ({
         kind: "VALIDATED_CONVENTION_FINAL_CONFIRMATION",
-        recipients: [recipient.email],
+        recipients: [email],
         params: {
           convention,
           agencyLogoUrl: agency.logoUrl ?? undefined,
           agencyName: agency.name,
-          manageConventionLink: makeManageConventionLink(recipient),
+          manageConventionLink: makeManageConventionLink({ email, role }),
         },
       })),
       (templatedContent) =>

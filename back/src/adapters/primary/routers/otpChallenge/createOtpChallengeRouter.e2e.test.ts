@@ -240,7 +240,7 @@ describe("otp challenge router", () => {
       uuidGenerator.new = () => uuids.shift() ?? "no-uuid-provided";
     });
 
-    it("204 - creates otp challenge and sends email with otp code", async () => {
+    it("201 - creates otp challenge and sends email with otp code", async () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "email" },
         headers: {
@@ -249,7 +249,7 @@ describe("otp challenge router", () => {
       });
 
       expectHttpResponseToEqual(response, {
-        status: 204,
+        status: 201,
         body: {},
       });
       expect(inMemoryUow.otpChallengeRepository.otpChallenges).toHaveLength(1);
@@ -268,7 +268,7 @@ describe("otp challenge router", () => {
       });
     });
 
-    it("204 - creates otp challenge and sends sms with otp code", async () => {
+    it("201 - creates otp challenge and sends sms with otp code", async () => {
       const response = await httpClient.requestOtpChallenge({
         body: { channel: "sms" },
         headers: {
@@ -277,7 +277,7 @@ describe("otp challenge router", () => {
       });
 
       expectHttpResponseToEqual(response, {
-        status: 204,
+        status: 201,
         body: {},
       });
       expect(inMemoryUow.otpChallengeRepository.otpChallenges).toHaveLength(1);

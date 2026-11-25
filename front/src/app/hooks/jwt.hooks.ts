@@ -13,8 +13,8 @@ import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import type { Route } from "type-route";
 
-type ConventionAccess = {
-  isOtp: boolean;
+export type ConventionAccess = {
+  kind: "otp" | "convention";
   conventionId: ConventionId;
   role: ConventionActorRole;
 };
@@ -27,14 +27,14 @@ export const getConventionAccessFromJwt = (
 
   if (isOtpJwtPayload(payload))
     return {
-      isOtp: true,
+      kind: "otp",
       conventionId: payload.subject.conventionId,
       role: payload.subject.role,
     };
 
   if (isConventionJwtPayload(payload))
     return {
-      isOtp: false,
+      kind: "convention",
       conventionId: payload.applicationId,
       role: payload.role,
     };
@@ -43,7 +43,7 @@ export const getConventionAccessFromJwt = (
 };
 
 export const isOtpJwt = (jwt: ConventionSupportedJwt): jwt is OtpJwt =>
-  getConventionAccessFromJwt(jwt)?.isOtp ?? false;
+  getConventionAccessFromJwt(jwt)?.kind === "otp";
 
 export const useJwt = (
   route: Route<

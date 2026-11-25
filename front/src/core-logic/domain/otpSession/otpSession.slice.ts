@@ -6,44 +6,50 @@ import type {
 } from "src/core-logic/domain/feedback/feedback.slice";
 import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
 
-export type OtpSessionState =
-  | { status: "idle" | "loading" | "otpRequired" }
-  | { status: "active"; activeSession: ActiveOtpSession };
-
-export const otpSessionInitialState: OtpSessionState = {
-  status: "idle",
+export type OtpSessionState = {
+  isLoading: boolean;
+  hasCheckedSession: boolean;
+  activeSession: ActiveOtpSession | null;
 };
 
-const getOtpSessionInitialState = (): OtpSessionState => otpSessionInitialState;
+export const otpSessionInitialState: OtpSessionState = {
+  isLoading: false,
+  hasCheckedSession: false,
+  activeSession: null,
+};
 
 export const otpSessionSlice = createSlice({
   name: "otpSession",
-  initialState: getOtpSessionInitialState,
+  initialState: otpSessionInitialState,
   reducers: {
     otpSessionRequested: (
-      _state,
+      state,
       _action: PayloadActionWithFeedbackTopic<GetOtpSessionQueryParams>,
-    ): OtpSessionState => ({ status: "loading" }),
+    ) => {
+      state.isLoading = true;
+      state.hasCheckedSession = false;
+      state.activeSession = null;
+    },
     otpSessionSucceeded: (
-      _state,
+      state,
       action: PayloadAction<ActiveOtpSession | null>,
-    ): OtpSessionState =>
-      action.payload
-        ? { status: "active", activeSession: action.payload }
-        : { status: "otpRequired" },
-    otpSessionFailed: (
-      _state,
-      _action: PayloadActionWithFeedbackTopicError,
-    ): OtpSessionState => otpSessionInitialState,
-    resetOtpSessionRequested: (): OtpSessionState => otpSessionInitialState,
+    ) => {
+      state.isLoading = false;
+      state.hasCheckedSession = true;
+      state.activeSession = action.payload;
+    },
+    otpSessionFailed: (_state, _action: PayloadActionWithFeedbackTopicError) =>
+      otpSessionInitialState,
+    resetOtpSessionRequested: () => otpSessionInitialState,
   },
   extraReducers: (builder) => {
     builder.addCase(
       otpChallengeSlice.actions.otpChallengeVerificationSucceeded,
-      (_state, action): OtpSessionState => ({
-        status: "active",
-        activeSession: action.payload.activeOtpSession,
-      }),
+      (state, action) => {
+        state.isLoading = false;
+        state.hasCheckedSession = true;
+        state.activeSession = action.payload.activeOtpSession;
+      },
     );
   },
 });

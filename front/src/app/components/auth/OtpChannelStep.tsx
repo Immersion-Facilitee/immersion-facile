@@ -2,7 +2,9 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import MailSend from "@codegouvfr/react-dsfr/picto/MainSend";
 import Smartphone from "@codegouvfr/react-dsfr/picto/Smartphone";
-import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons";
+import RadioButtons, {
+  type RadioButtonsProps,
+} from "@codegouvfr/react-dsfr/RadioButtons";
 import Stepper from "@codegouvfr/react-dsfr/Stepper";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -55,15 +57,30 @@ export const OtpChannelStep = ({
     );
   };
 
-  const emailOption = {
-    label: "Recevoir le code par email",
-    hintText: maskedRecipients.maskedEmail,
-    illustration: <MailSend fontSize="large" />,
-    nativeInputProps: {
-      value: "email",
-      ...register("channel"),
+  const channelOptions: RadioButtonsProps["options"] = [
+    {
+      label: "Recevoir le code par email",
+      hintText: maskedRecipients.maskedEmail,
+      illustration: <MailSend fontSize="large" />,
+      nativeInputProps: {
+        value: "email",
+        ...register("channel"),
+      },
     },
-  };
+    ...(maskedRecipients.maskedPhone === null
+      ? []
+      : [
+          {
+            label: "Recevoir le code par SMS",
+            hintText: maskedRecipients.maskedPhone,
+            illustration: <Smartphone fontSize="large" />,
+            nativeInputProps: {
+              value: "sms",
+              ...register("channel"),
+            },
+          },
+        ]),
+  ];
 
   return (
     <>
@@ -90,22 +107,7 @@ export const OtpChannelStep = ({
         <RadioButtons
           id={domElementIds.otpChallenge.channelRadioButtons}
           legend="Comment voulez-vous recevoir votre code ?"
-          options={
-            maskedRecipients.maskedPhone === null
-              ? [emailOption]
-              : [
-                  emailOption,
-                  {
-                    label: "Recevoir le code par SMS",
-                    hintText: maskedRecipients.maskedPhone,
-                    illustration: <Smartphone fontSize="large" />,
-                    nativeInputProps: {
-                      value: "sms",
-                      ...register("channel"),
-                    },
-                  },
-                ]
-          }
+          options={channelOptions}
           state={errors.channel ? "error" : "default"}
           stateRelatedMessage={errors.channel?.message}
         />

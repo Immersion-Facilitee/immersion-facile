@@ -247,8 +247,8 @@ describe("VerifyOtpChallenge", () => {
       expectToEqual(
         await verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         {
-          otpSessionId,
-          activeOtpSession: {
+          id: otpSessionId,
+          session: {
             purpose: "manageConvention",
             conventionId: otpChallenge.subject.conventionId,
             role: otpChallenge.subject.role,
@@ -312,8 +312,8 @@ describe("VerifyOtpChallenge", () => {
           otpJwtPayload,
         ),
         {
-          otpSessionId,
-          activeOtpSession: {
+          id: otpSessionId,
+          session: {
             purpose: "manageConvention",
             conventionId: otpChallenge.subject.conventionId,
             role: otpChallenge.subject.role,
@@ -350,8 +350,8 @@ describe("VerifyOtpChallenge", () => {
       expectToEqual(
         await verifyOtpChallenge.execute({ otpCode }, otpJwtPayload),
         {
-          otpSessionId,
-          activeOtpSession: {
+          id: otpSessionId,
+          session: {
             purpose: "manageConvention",
             conventionId: otpChallenge.subject.conventionId,
             role: otpChallenge.subject.role,

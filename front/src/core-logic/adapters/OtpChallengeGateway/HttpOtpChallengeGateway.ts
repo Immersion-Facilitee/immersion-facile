@@ -53,7 +53,7 @@ export class HttpOtpChallengeGateway implements OtpChallengeGateway {
         })
         .then((response) =>
           match(response)
-            .with({ status: 204 }, () => undefined)
+            .with({ status: 201 }, () => undefined)
             .with({ status: 400 }, throwBadRequestWithExplicitMessage)
             .with({ status: 429 }, throwTooManyRequestWithExplicitMessage)
             .with({ status: P.union(401, 403, 404) }, throwWithBackMessage)

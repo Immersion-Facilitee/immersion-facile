@@ -3,13 +3,15 @@ import type { RootState } from "src/core-logic/storeConfig/store";
 
 const otpSessionState = (state: RootState) => state.otpSession;
 
-const activeSession = createSelector(otpSessionState, (otpSession) =>
-  otpSession.status === "active" ? otpSession.activeSession : null,
+const activeSession = createSelector(
+  otpSessionState,
+  ({ activeSession }) => activeSession,
 );
 
 const isOtpRequired = createSelector(
   otpSessionState,
-  ({ status }) => status === "otpRequired",
+  ({ hasCheckedSession, isLoading, activeSession }) =>
+    hasCheckedSession && !isLoading && activeSession === null,
 );
 
 export const otpSessionSelectors = {

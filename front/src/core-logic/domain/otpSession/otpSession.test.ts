@@ -34,7 +34,11 @@ describe("otpSession slice", () => {
         feedbackTopic: "otp-session",
       }),
     );
-    expectToEqual(store.getState().otpSession, { status: "loading" });
+    expectToEqual(store.getState().otpSession, {
+      isLoading: true,
+      hasCheckedSession: false,
+      activeSession: null,
+    });
   });
 
   it("stores the active session", () => {
@@ -48,7 +52,8 @@ describe("otpSession slice", () => {
     dependencies.otpChallengeGateway.otpSessionResponse$.next(activeSession);
 
     expectToEqual(store.getState().otpSession, {
-      status: "active",
+      isLoading: false,
+      hasCheckedSession: true,
       activeSession,
     });
   });
@@ -63,7 +68,11 @@ describe("otpSession slice", () => {
     );
     dependencies.otpChallengeGateway.otpSessionResponse$.next(null);
 
-    expectToEqual(store.getState().otpSession, { status: "otpRequired" });
+    expectToEqual(store.getState().otpSession, {
+      isLoading: false,
+      hasCheckedSession: true,
+      activeSession: null,
+    });
   });
 
   it("stores the back message when the request fails", () => {
@@ -96,7 +105,8 @@ describe("otpSession slice", () => {
   it("resets the otp session", () => {
     ({ store } = createTestStore({
       otpSession: {
-        status: "active",
+        isLoading: false,
+        hasCheckedSession: true,
         activeSession,
       },
     }));

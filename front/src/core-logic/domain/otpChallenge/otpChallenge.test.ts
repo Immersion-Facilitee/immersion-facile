@@ -123,7 +123,8 @@ describe("otpChallenge slice", () => {
 
     expectOtpChallengeState(otpChallengeInitialState);
     expectToEqual(store.getState().otpSession, {
-      status: "active",
+      isLoading: false,
+      hasCheckedSession: true,
       activeSession: {
         purpose: "manageConvention",
         conventionId,
