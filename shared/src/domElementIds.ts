@@ -688,6 +688,8 @@ export const domElementIds = {
         "im-form-create-establishment__fit-for-disabled-workers",
       appellations: "im-form-create-establishment__appellations",
       remoteWorkMode: "im-form-create-establishment__remote-work-mode",
+      appellationsListLink:
+        "im-form-create-establishment__appellations-list-link",
       website: "im-form-create-establishment__website",
       additionalInformation:
         "im-form-create-establishment__additional-information",
@@ -756,6 +758,8 @@ export const domElementIds = {
         "im-form-edit-establishment__fit-for-disabled-workers",
       appellations: "im-form-edit-establishment__appellations",
       remoteWorkMode: "im-form-edit-establishment__remote-work-mode",
+      appellationsListLink:
+        "im-form-edit-establishment__appellations-list-link",
       website: "im-form-edit-establishment__website",
       additionalInformation:
         "im-form-edit-establishment__additional-information",
@@ -831,6 +835,8 @@ export const domElementIds = {
         "im-form-manage-establishment-admin__fit-for-disabled-workers",
       appellations: "im-form-manage-establishment-admin__appellations",
       remoteWorkMode: "im-form-manage-establishment-admin__remote-work-mode",
+      appellationsListLink:
+        "im-form-manage-establishment-admin__appellations-list-link",
       website: "im-form-manage-establishment-admin__website",
       additionalInformation:
         "im-form-manage-establishment-admin__additional-information",
@@ -1432,6 +1438,8 @@ export const domElementIds = {
   establishmentDashboardEstablishmentInformations: {},
   establishmentDashboardEstablishmentOffer: {
     submitButton: "im-establishment-dashboard-offer__submit-button",
+    backToEstablishmentDetailsButton:
+      "im-establishment-dashboard-offer__back-to-establishment-details-button",
   },
   openApiDoc: {},
   stats: {},

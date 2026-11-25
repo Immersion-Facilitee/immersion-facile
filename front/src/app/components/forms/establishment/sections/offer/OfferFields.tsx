@@ -124,6 +124,7 @@ export const OfferFields = <T extends CurrentOffer>({
             <>
               Les métiers sont basés sur la&nbsp;
               <a
+                id={domElementIds.formEstablishment[mode].appellationsListLink}
                 href="https://candidat.francetravail.fr/metierscope/metiers"
                 target="_blank"
                 rel="noreferrer"

@@ -88,6 +88,10 @@ export const EstablishmentOfferPage = ({
         <Button
           type="button"
           priority="secondary"
+          id={
+            domElementIds.establishmentDashboardEstablishmentOffer
+              .backToEstablishmentDetailsButton
+          }
           size="small"
           className={fr.cx("fr-mt-2w")}
           onClick={() => {
