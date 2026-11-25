@@ -9,13 +9,13 @@ import { getSearchResultBadges } from "./searchResultBadges";
 type SearchResultAboutProps = {
   searchResult: OfferDto;
   asAccordion: boolean;
-  ids: SearchResultDomIds;
+  searchResultIds: SearchResultDomIds;
 };
 
 export const SearchResultAbout = ({
   searchResult,
   asAccordion,
-  ids,
+  searchResultIds,
 }: SearchResultAboutProps): ReactNode => {
   const badges = getSearchResultBadges(searchResult);
   const { additionalInformation } = searchResult;
@@ -23,7 +23,7 @@ export const SearchResultAbout = ({
   return (
     <ContentCard
       title={searchResultContent.about.title}
-      accordionId={asAccordion ? ids.aboutAccordion : undefined}
+      accordionId={asAccordion ? searchResultIds.aboutAccordion : undefined}
     >
       {additionalInformation && (
         <p className={fr.cx("fr-mb-0")}>{additionalInformation}</p>

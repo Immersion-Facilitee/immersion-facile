@@ -21,12 +21,12 @@ const lbbIconId: FrIconClassName = "fr-icon-draft-line";
 
 type SearchResultHeaderProps = {
   searchResult: OfferDto;
-  ids: SearchResultDomIds;
+  searchResultIds: SearchResultDomIds;
 };
 
 export const SearchResultHeader = ({
   searchResult,
-  ids,
+  searchResultIds,
 }: SearchResultHeaderProps): ReactNode => {
   const { cx } = useStyles();
   const tagClassName = `${componentRootClassName}__tag`;
@@ -96,7 +96,7 @@ export const SearchResultHeader = ({
           {isPhysical && website && " • "}
           {website && (
             <a
-              id={ids.websiteLink}
+              id={searchResultIds.websiteLink}
               className={fr.cx("fr-link")}
               href={website}
               target="_blank"

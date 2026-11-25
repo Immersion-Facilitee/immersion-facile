@@ -13,7 +13,7 @@ import type { SearchResultDomIds } from "./searchResult.helpers";
 type SearchResultJobProps = {
   searchResult: OfferDto;
   asAccordion: boolean;
-  ids: SearchResultDomIds;
+  searchResultIds: SearchResultDomIds;
 };
 
 type JobInformationLink = {
@@ -25,7 +25,7 @@ type JobInformationLink = {
 export const SearchResultJob = ({
   searchResult,
   asAccordion,
-  ids,
+  searchResultIds,
 }: SearchResultJobProps): ReactNode => {
   const { cx } = useStyles();
   const { appellations, romeLabel, rome, naf } = searchResult;
@@ -35,12 +35,12 @@ export const SearchResultJob = ({
       : romeLabel;
   const links: JobInformationLink[] = [
     {
-      id: ids.appellationInformationLink,
+      id: searchResultIds.appellationInformationLink,
       label: searchResultContent.job.appellationInformationLink,
       href: makeAppellationInformationUrl(rome),
     },
     {
-      id: ids.nafInformationLink,
+      id: searchResultIds.nafInformationLink,
       label: searchResultContent.job.nafInformationLink,
       href: makeNafClassInformationUrl(naf),
     },
@@ -63,7 +63,7 @@ export const SearchResultJob = ({
 
   if (asAccordion)
     return (
-      <ContentCard title={title} accordionId={ids.jobAccordion}>
+      <ContentCard title={title} accordionId={searchResultIds.jobAccordion}>
         <ul className={fr.cx("fr-raw-list")}>
           {links.map((link, index) => (
             <li key={link.id} className={fr.cx(index > 0 && "fr-mt-1w")}>
