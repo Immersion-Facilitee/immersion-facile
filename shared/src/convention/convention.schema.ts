@@ -1,7 +1,10 @@
 import { differenceInYears } from "date-fns";
 import { z } from "zod";
 import { withAcquisitionShape } from "../acquisition.dto";
-import { getCountryCodeFromAddress } from "../address/address.dto";
+import {
+  type AddressDto,
+  getCountryCodeFromAddress,
+} from "../address/address.dto";
 import { addressDepartmentCodeSchema } from "../address/address.schema";
 import {
   agencyIdSchema,
@@ -186,6 +189,14 @@ const beneficiarySchema: ZodSchemaWithInputMatchingOutput<
     isRqth: zBoolean.optional(),
   }),
 );
+export const beneficiaryAddressSchema: ZodSchemaWithInputMatchingOutput<AddressDto> =
+  z.object({
+    streetNumberAndAddress: zStringCanBeEmpty,
+    postcode: stringWithMaxLength255,
+    departmentCode: stringWithMaxLength255,
+    city: stringWithMaxLength255,
+  });
+
 const studentBeneficiarySchema: ZodSchemaWithInputMatchingOutput<
   Beneficiary<"mini-stage-cci">
 > = beneficiarySchema.and(
@@ -196,14 +207,7 @@ const studentBeneficiarySchema: ZodSchemaWithInputMatchingOutput<
     ),
     schoolName: stringWithMaxLength255,
     schoolPostcode: stringWithMaxLength255,
-    address: z
-      .object({
-        streetNumberAndAddress: zStringCanBeEmpty,
-        postcode: stringWithMaxLength255,
-        departmentCode: stringWithMaxLength255,
-        city: stringWithMaxLength255,
-      })
-      .optional(),
+    address: beneficiaryAddressSchema.optional(),
   }),
 );
 
