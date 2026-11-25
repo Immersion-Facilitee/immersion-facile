@@ -3,6 +3,7 @@ import {
   addressRoutes,
   domElementIds,
   type FormEstablishmentDto,
+  formCompletionRoutes,
   frontRoutes,
 } from "shared";
 import {
@@ -75,6 +76,8 @@ const editEstablishmentInEstablishmentDashboard = async (
   const userRights = updatedEstablishment.userRights;
   if (!userRights)
     throw new Error("Missing user rights for updatedEstablishmentInfos");
+  await addOfferThroughOfferPage(page, "routage");
+  await goBackToEstablishmentDetails(page);
   await editOfferThroughOfferPage(page, 1);
   await goBackToEstablishmentDetails(page);
   await page.click(
@@ -96,13 +99,36 @@ const editEstablishmentInEstablishmentDashboard = async (
   await step4(page, updatedEstablishment);
 };
 
-const goToEstablishmentFormTab = (page: Page, tab: "offers" | "informations") =>
+export const goToEstablishmentFormTab = (
+  page: Page,
+  tab: "offers" | "informations",
+) =>
   page.click(
     `#tabpanel-${domElementIds.formEstablishment.edit.tabs}-${tab === "offers" ? 0 : 1}`,
   );
 
 const goBackToEstablishmentDetails = (page: Page): Promise<void> =>
   page.getByRole("button", { name: "Revenir à la fiche entreprise" }).click();
+
+const addOfferThroughOfferPage = async (
+  page: Page,
+  appellationValue: string,
+): Promise<void> => {
+  await page.click(`#${domElementIds.formEstablishment.edit.addOfferButton}`);
+  await fillAutocomplete({
+    page,
+    locator: `#${domElementIds.formEstablishment.edit.appellations}`,
+    value: appellationValue,
+    endpoint: formCompletionRoutes.appellation.url,
+  });
+  await page.click(
+    `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.FULL_REMOTE}']`,
+  );
+  await page.click(
+    `#${domElementIds.establishmentDashboardEstablishmentOffer.submitButton}`,
+  );
+  await expect(page.locator(".fr-alert--success")).toBeVisible();
+};
 
 const editOfferThroughOfferPage = async (
   page: Page,

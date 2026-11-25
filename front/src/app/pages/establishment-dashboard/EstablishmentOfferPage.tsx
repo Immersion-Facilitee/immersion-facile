@@ -27,6 +27,7 @@ import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { establishmentSelectors } from "src/core-logic/domain/establishment/establishment.selectors";
 import { establishmentSlice } from "src/core-logic/domain/establishment/establishment.slice";
+import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import type { Route } from "type-route";
 import type { $ZodIssue } from "zod/v4/core";
 
@@ -61,11 +62,6 @@ export const EstablishmentOfferPage = ({
     };
   }, [dispatch, connectedUserJwt, siret]);
 
-  useEffect(() => {
-    if (isOfferSaved)
-      frontRoutes.establishmentDashboardEstablishmentDetails({ siret }).push();
-  }, [isOfferSaved, siret]);
-
   if (formEstablishment.siret !== siret)
     return isLoading ? (
       <Loader />
@@ -88,31 +84,48 @@ export const EstablishmentOfferPage = ({
         )}
       </p>
       <Feedback topics={["form-establishment"]} />
-      <OfferEditionForm
-        initialOffer={formEstablishment.offers[offerIndex] ?? emptyOffer}
-        onOfferSubmitted={(offer) => {
-          if (!connectedUserJwt) return;
-          dispatch(
-            establishmentSlice.actions.updateEstablishmentRequested({
-              establishmentUpdate: {
-                formEstablishment: {
-                  ...formEstablishment,
-                  offers:
-                    offerIndex === -1
-                      ? [...formEstablishment.offers, offer]
-                      : replaceAtIndex(
-                          formEstablishment.offers,
-                          offerIndex,
-                          offer,
-                        ),
+      {isOfferSaved ? (
+        <Button
+          type="button"
+          priority="secondary"
+          size="small"
+          className={fr.cx("fr-mt-2w")}
+          onClick={() => {
+            dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
+            frontRoutes
+              .establishmentDashboardEstablishmentDetails({ siret })
+              .push();
+          }}
+        >
+          {establishmentOfferPageContent.backToEstablishmentDetailsLabel}
+        </Button>
+      ) : (
+        <OfferEditionForm
+          initialOffer={formEstablishment.offers[offerIndex] ?? emptyOffer}
+          onOfferSubmitted={(offer) => {
+            if (!connectedUserJwt) return;
+            dispatch(
+              establishmentSlice.actions.updateEstablishmentRequested({
+                establishmentUpdate: {
+                  formEstablishment: {
+                    ...formEstablishment,
+                    offers:
+                      offerIndex === -1
+                        ? [...formEstablishment.offers, offer]
+                        : replaceAtIndex(
+                            formEstablishment.offers,
+                            offerIndex,
+                            offer,
+                          ),
+                  },
+                  jwt: connectedUserJwt,
                 },
-                jwt: connectedUserJwt,
-              },
-              feedbackTopic: "form-establishment",
-            }),
-          );
-        }}
-      />
+                feedbackTopic: "form-establishment",
+              }),
+            );
+          }}
+        />
+      )}
       {isLoading && <Loader />}
     </>
   );

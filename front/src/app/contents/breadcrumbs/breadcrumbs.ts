@@ -1,5 +1,5 @@
 import type { BreadcrumbProps } from "@codegouvfr/react-dsfr/Breadcrumb";
-import { type FrontRouteKeys, frontRoutes } from "shared";
+import { type FrontRouteKeys, frontRoutes, useRoute } from "shared";
 import {
   type Breadcrumbs,
   makeBreadcrumbsSegments,
