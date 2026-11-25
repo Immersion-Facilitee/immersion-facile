@@ -16,13 +16,13 @@ export const SearchResultContactSection = ({
   onFormSubmitSuccess,
   currentSearchResult,
   onButtonClick,
-  ids,
+  searchResultIds,
 }: {
   onFormSubmitSuccess: () => void;
   formContactRef: React.RefObject<HTMLDivElement>;
   currentSearchResult: OfferDto;
   onButtonClick: () => void;
-  ids: SearchResultDomIds;
+  searchResultIds: SearchResultDomIds;
 }): ReactNode => {
   const isNotAvailable =
     isInternalOfferDto(currentSearchResult) && !currentSearchResult.isAvailable;
@@ -57,7 +57,7 @@ export const SearchResultContactSection = ({
                 {contactUnavailableContent.retryDescription}
               </Highlight>
               <Button
-                id={ids.searchAnotherEstablishmentButton}
+                id={searchResultIds.searchAnotherEstablishmentButton}
                 iconId="fr-icon-search-line"
                 onClick={onButtonClick}
               >

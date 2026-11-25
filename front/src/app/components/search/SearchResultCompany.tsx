@@ -13,12 +13,12 @@ const content = searchResultContent.company;
 
 type SearchResultCompanyProps = {
   searchResult: OfferDto;
-  ids: SearchResultDomIds;
+  searchResultIds: SearchResultDomIds;
 };
 
 export const SearchResultCompany = ({
   searchResult,
-  ids,
+  searchResultIds,
 }: SearchResultCompanyProps): ReactNode => {
   const { nafLabel, numberOfEmployeeRange, siret } = searchResult;
   const items: { label: string; value: ReactNode }[] = [
@@ -37,7 +37,7 @@ export const SearchResultCompany = ({
       label: content.siretLabel,
       value: (
         <a
-          id={ids.siretLink}
+          id={searchResultIds.siretLink}
           className={fr.cx("fr-link", "fr-link--sm")}
           href={makeSiretDescriptionLink(siret)}
           target="_blank"

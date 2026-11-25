@@ -215,7 +215,7 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
           {currentSearchResult && showConfirmationMessage === null && (
             <SearchResultHeader
               searchResult={currentSearchResult}
-              ids={searchResultIds}
+              searchResultIds={searchResultIds}
             />
           )}
           {currentSearchResult?.contactMode && showConfirmationMessage && (
@@ -250,12 +250,12 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                     <SearchResultAbout
                       searchResult={currentSearchResult}
                       asAccordion={!isLayoutDesktop}
-                      ids={searchResultIds}
+                      searchResultIds={searchResultIds}
                     />
                     <SearchResultJob
                       searchResult={currentSearchResult}
                       asAccordion={!isLayoutDesktop}
-                      ids={searchResultIds}
+                      searchResultIds={searchResultIds}
                     />
                   </div>
                   {!currentSearchResult.voluntaryToImmersion && (
@@ -291,7 +291,7 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                     formContactRef={formContactRef}
                     currentSearchResult={currentSearchResult}
                     onButtonClick={onGoBackClick}
-                    ids={searchResultIds}
+                    searchResultIds={searchResultIds}
                   />
                 </div>
                 <div className={fr.cx("fr-col-12", "fr-col-lg-4")}>
@@ -299,12 +299,12 @@ export const SearchResultPage = ({ isExternal }: { isExternal: boolean }) => {
                     <SearchResultLocation
                       searchResult={currentSearchResult}
                       isExternal={isExternal}
-                      ids={searchResultIds}
+                      searchResultIds={searchResultIds}
                     />
                   )}
                   <SearchResultCompany
                     searchResult={currentSearchResult}
-                    ids={searchResultIds}
+                    searchResultIds={searchResultIds}
                   />
                 </div>
               </div>

@@ -15,13 +15,13 @@ const content = searchResultContent.location;
 type SearchResultLocationProps = {
   searchResult: OfferDto;
   isExternal: boolean;
-  ids: SearchResultDomIds;
+  searchResultIds: SearchResultDomIds;
 };
 
 export const SearchResultLocation = ({
   searchResult,
   isExternal,
-  ids,
+  searchResultIds,
 }: SearchResultLocationProps): ReactNode => {
   const { address, position } = searchResult;
   return (
@@ -49,7 +49,7 @@ export const SearchResultLocation = ({
           {
             priority: "tertiary",
             linkProps: {
-              id: ids.googleMapsLink,
+              id: searchResultIds.googleMapsLink,
               href: getMapsLink(searchResult) ?? "",
               target: "_blank",
               rel: "noreferrer",
