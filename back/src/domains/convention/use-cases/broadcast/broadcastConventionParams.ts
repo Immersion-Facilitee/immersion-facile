@@ -18,15 +18,8 @@ export const withConventionIdAndPreviousAgencySchema = z.object({
   previousAgencyId: agencyIdSchema.optional(),
 });
 
-export type BroadcastConventionParams =
-  | {
-      eventType: "CONVENTION_UPDATED";
-      convention: ConventionReadDto;
-      previousAgencyId?: AgencyId;
-      assessment?: AssessmentDto;
-    }
-  | {
-      eventType: "ASSESSMENT_CREATED";
-      convention: ConventionReadDto;
-      assessment: AssessmentDto;
-    };
+export type BroadcastConventionParams = {
+  convention: ConventionReadDto;
+  previousAgencyId?: AgencyId;
+  assessment?: AssessmentDto;
+};

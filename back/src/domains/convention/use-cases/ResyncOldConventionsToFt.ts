@@ -143,14 +143,8 @@ const resync = async ({
     uow,
   );
 
-  return assessment
-    ? standardBroadcastToFTUsecase.execute({
-        eventType: "ASSESSMENT_CREATED",
-        convention,
-        assessment,
-      })
-    : standardBroadcastToFTUsecase.execute({
-        eventType: "CONVENTION_UPDATED",
-        convention,
-      });
+  return standardBroadcastToFTUsecase.execute({
+    convention,
+    ...(assessment ? { assessment } : {}),
+  });
 };

@@ -66,6 +66,11 @@ export type OmitFromExistingKeys<
   K extends keyof T,
 > = Omit<T, K>;
 
+export type PickFromExistingKeys<
+  T extends Record<string, unknown>,
+  K extends keyof T,
+> = Pick<T, K>;
+
 // https://stackoverflow.com/questions/49401866/all-possible-keys-of-an-union-type
 export type KeysOfUnion<T> = T extends T ? keyof T : never;
 
