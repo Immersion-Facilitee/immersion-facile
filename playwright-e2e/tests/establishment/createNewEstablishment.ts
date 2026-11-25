@@ -94,20 +94,6 @@ const step1 = async (
 const step2 = async (page: Page) => {
   await expectNoErrorVisible(page);
 
-  await addOffer(page, "boulang", "FULL_REMOTE");
-
-  await editOffer(page, 0, "HYBRID");
-
-  await addOffer(page, "routage", "FULL_REMOTE");
-
-  await addLocation(page);
-
-  await goToNextStep(page, 2, "create");
-};
-
-const step3 = async (page: Page) => {
-  await expectNoErrorVisible(page);
-
   const availableRadioLocator = page.locator(
     `[for='${domElementIds.formEstablishment.create.availabilityButton}-1']`,
   );
@@ -128,6 +114,16 @@ const step3 = async (page: Page) => {
       `[for='${domElementIds.formEstablishment.create.businessContact.isMainContactByPhone}-0']`,
     )
     .click();
+
+  await goToNextStep(page, 2, "create");
+};
+
+const step3 = async (page: Page) => {
+  await expectNoErrorVisible(page);
+
+  await fillFirstOffer(page, "boulang", "HYBRID");
+
+  await addLocation(page);
 
   await goToNextStep(page, 3, "create");
 };
@@ -151,7 +147,7 @@ const step4 = async (page: Page, establishment: FormEstablishmentDto) => {
   const summaryAppellations = await page.locator(
     `#${domElementIds.formEstablishment.create.summaryAppellations} li`,
   );
-  await expect(summaryAppellations).toHaveCount(2);
+  await expect(summaryAppellations).toHaveCount(1);
 
   await page.click(
     `#${domElementIds.formEstablishment.create.submitFormButton}`,
@@ -161,13 +157,11 @@ const step4 = async (page: Page, establishment: FormEstablishmentDto) => {
   });
 };
 
-const addOffer = async (
+const fillFirstOffer = async (
   page: Page,
   appelationValue: string,
   remoteMode: RemoteWorkMode,
-) => {
-  await page.click(`#${domElementIds.formEstablishment.create.addOfferButton}`);
-
+): Promise<void> => {
   await fillAutocomplete({
     page,
     locator: `#${domElementIds.formEstablishment.create.appellations}`,
@@ -177,27 +171,6 @@ const addOffer = async (
 
   await page.click(
     `[for='${domElementIds.formEstablishment.create.remoteWorkMode}-${remoteModeIndexMap[remoteMode]}']`,
-  );
-
-  await page.click(
-    `#${domElementIds.formEstablishment.offerModalSubmitButton}`,
-  );
-};
-
-const editOffer = async (
-  page: Page,
-  offerIndex: number,
-  remoteMode: RemoteWorkMode,
-) => {
-  await page.click(
-    `#${domElementIds.formEstablishment.create.editOfferButton}-${offerIndex}`,
-  );
-  await page.click(
-    `[for='${domElementIds.formEstablishment.create.remoteWorkMode}-${remoteModeIndexMap[remoteMode]}']`,
-  );
-
-  await page.click(
-    `#${domElementIds.formEstablishment.offerModalSubmitButton}`,
   );
 };
 
