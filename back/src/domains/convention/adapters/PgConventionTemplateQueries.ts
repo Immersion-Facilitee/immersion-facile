@@ -8,6 +8,7 @@ import {
   type ImmersionObjective,
   isRemoteWorkMode,
   type NumberEmployeesRange,
+  type OmitFromExistingKeys,
   pipeWithValue,
   type ScheduleDto,
   type Signatories,
@@ -151,46 +152,103 @@ export class PgConventionTemplateQueries implements ConventionTemplateQueries {
   }
 }
 
+type ConventionTemplateKeysNotPersisted =
+  | "updatedAt"
+  | "acquisitionCampaign"
+  | "acquisitionKeyword"
+  | "acquisitionMedium"
+  | "fromFtConnectedUser"
+  | "agencyContactEmail"
+  | "agencyRefersTo"
+  | "assessment"
+  | "dateApproval"
+  | "dateSubmission"
+  | "dateValidation"
+  | "fromConventionDraftId"
+  | "isEstablishmentBanned"
+  | "lastReminders"
+  | "renewed"
+  | "sourceConventionDraftId"
+  | "status"
+  | "statusJustification"
+  | "validators";
+
+type ConventionTemplateEntity = OmitFromExistingKeys<
+  ConventionTemplate,
+  ConventionTemplateKeysNotPersisted
+>;
+
 const mapConventionTemplateToEntity = (
-  template: ConventionTemplate,
+  conventionTemplate: ConventionTemplateEntity,
   now: DateTimeIsoString,
-): InsertExpression<Database, "convention_templates"> => ({
-  id: template.id,
-  user_id: template.userId,
-  name: template.name,
-  updated_at: now,
-  agency_id: template.agencyId,
-  agency_kind: template.agencyKind,
-  agency_department: template.agencyDepartment,
-  date_start: template.dateStart,
-  date_end: template.dateEnd,
-  siret: template.siret,
-  business_name: template.businessName,
-  business_name_customized: template.businessNameCustomized,
-  schedule: template.schedule
-    ? sql`${JSON.stringify(template.schedule)}`
-    : null,
-  individual_protection: template.individualProtection,
-  individual_protection_description: template.individualProtectionDescription,
-  sanitary_prevention: template.sanitaryPrevention,
-  sanitary_prevention_description: template.sanitaryPreventionDescription,
-  remote_work_mode: template.remoteWorkMode,
-  immersion_address: template.immersionAddress,
-  immersion_objective: template.immersionObjective,
-  immersion_appellation: sql`${template.immersionAppellation?.appellationCode}`,
-  immersion_activities: template.immersionActivities,
-  immersion_skills: template.immersionSkills,
-  work_conditions: template.workConditions ?? null,
-  internship_kind: template.internshipKind,
-  business_advantages: template.businessAdvantages ?? null,
-  establishment_number_employees:
-    template.establishmentNumberEmployeesRange ?? null,
-  agency_referent_first_name: template.agencyReferent?.firstname ?? null,
-  agency_referent_last_name: template.agencyReferent?.lastname ?? null,
-  establishment_tutor: template.establishmentTutor
-    ? sql`${JSON.stringify(template.establishmentTutor)}`
-    : null,
-  signatories: template.signatories
-    ? sql`${JSON.stringify(template.signatories)}`
-    : null,
-});
+): InsertExpression<Database, "convention_templates"> => {
+  const {
+    id,
+    userId,
+    name,
+    agencyId,
+    agencyKind,
+    agencyDepartment,
+    dateStart,
+    dateEnd,
+    siret,
+    businessName,
+    businessNameCustomized,
+    schedule,
+    individualProtection,
+    individualProtectionDescription,
+    sanitaryPrevention,
+    sanitaryPreventionDescription,
+    remoteWorkMode,
+    immersionAddress,
+    immersionObjective,
+    immersionAppellation,
+    immersionActivities,
+    immersionSkills,
+    workConditions,
+    internshipKind,
+    businessAdvantages,
+    establishmentNumberEmployeesRange,
+    agencyReferent,
+    establishmentTutor,
+    signatories,
+    ...rest
+  } = conventionTemplate;
+  rest satisfies Record<string, never>;
+
+  return {
+    id,
+    user_id: userId,
+    name,
+    updated_at: now,
+    agency_id: agencyId,
+    agency_kind: agencyKind,
+    agency_department: agencyDepartment,
+    date_start: dateStart,
+    date_end: dateEnd,
+    siret,
+    business_name: businessName,
+    business_name_customized: businessNameCustomized,
+    schedule: schedule ? sql`${JSON.stringify(schedule)}` : null,
+    individual_protection: individualProtection,
+    individual_protection_description: individualProtectionDescription,
+    sanitary_prevention: sanitaryPrevention,
+    sanitary_prevention_description: sanitaryPreventionDescription,
+    remote_work_mode: remoteWorkMode,
+    immersion_address: immersionAddress,
+    immersion_objective: immersionObjective,
+    immersion_appellation: sql`${immersionAppellation?.appellationCode}`,
+    immersion_activities: immersionActivities,
+    immersion_skills: immersionSkills,
+    work_conditions: workConditions ?? null,
+    internship_kind: internshipKind,
+    business_advantages: businessAdvantages ?? null,
+    establishment_number_employees: establishmentNumberEmployeesRange ?? null,
+    agency_referent_first_name: agencyReferent?.firstname ?? null,
+    agency_referent_last_name: agencyReferent?.lastname ?? null,
+    establishment_tutor: establishmentTutor
+      ? sql`${JSON.stringify(establishmentTutor)}`
+      : null,
+    signatories: signatories ? sql`${JSON.stringify(signatories)}` : null,
+  };
+};
