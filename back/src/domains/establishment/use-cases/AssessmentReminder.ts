@@ -1,23 +1,18 @@
 import subDays from "date-fns/subDays";
-import { difference, uniq } from "ramda";
+import { difference } from "ramda";
 import {
   type AbsoluteUrl,
   type ConventionDto,
   type ConventionId,
-  type Email,
   errors,
   executeInSequence,
-  frontRoutes,
-  getDisplayedBusinessName,
   getFormattedFirstnameAndLastname,
   immersionFacileNoReplyEmailSender,
   localization,
-  makeRouteAbsoluteUrl,
 } from "shared";
 import { z } from "zod";
 import type { AppConfig } from "../../../config/bootstrap/appConfig";
 import type { GenerateConventionMagicLinkUrl } from "../../../config/bootstrap/magicLinkUrl";
-import { agencyWithRightToAgencyDto } from "../../../utils/agency";
 import type { AssessmentRepository } from "../../convention/ports/AssessmentRepository";
 import type {
   NotificationContentAndFollowedIds,
@@ -121,7 +116,7 @@ const sendAssessmentReminderIfNeeded = async ({
 
   if (convention.status === "CANCELLED") return false;
 
-  await sendAssessmentReminders({
+  await sendTutorAssessmentReminder({
     uow,
     convention,
     now,
@@ -218,35 +213,6 @@ const createTutorNotification = ({
   },
 });
 
-const sendAssessmentReminders = async ({
-  uow,
-  saveNotificationAndRelatedEvent,
-  convention,
-  now,
-  generateConventionMagicLinkUrl,
-  shortLinkIdGeneratorGateway,
-  config,
-}: SendAssessmentReminderParams) => {
-  await sendTutorAssessmentReminder({
-    uow,
-    saveNotificationAndRelatedEvent,
-    generateConventionMagicLinkUrl,
-    convention,
-    now,
-    shortLinkIdGeneratorGateway,
-    config,
-  });
-  await sendAgencyAssessmentReminder({
-    uow,
-    saveNotificationAndRelatedEvent,
-    generateConventionMagicLinkUrl,
-    convention,
-    now,
-    shortLinkIdGeneratorGateway,
-    config,
-  });
-};
-
 const sendTutorAssessmentReminder = async ({
   uow,
   saveNotificationAndRelatedEvent,
@@ -280,70 +246,4 @@ const sendTutorAssessmentReminder = async ({
     assessmentCreationLink,
   });
   await saveNotificationAndRelatedEvent(uow, notification);
-};
-
-const sendAgencyAssessmentReminder = async ({
-  uow,
-  saveNotificationAndRelatedEvent,
-  convention,
-  config,
-}: SendAssessmentReminderParams) => {
-  if (convention.internshipKind !== "immersion") return;
-
-  const agencyWithUserRights = await uow.agencyRepository.getById(
-    convention.agencyId,
-  );
-  if (!agencyWithUserRights)
-    throw errors.agency.notFound({ agencyId: convention.agencyId });
-
-  const advisorEmail =
-    convention?.signatories.beneficiary.federatedIdentity?.payload?.advisor
-      ?.email;
-  const agency = await agencyWithRightToAgencyDto(uow, agencyWithUserRights);
-
-  const recipientsEmails: Email[] = advisorEmail
-    ? [advisorEmail]
-    : uniq([...agency.validatorEmails, ...agency.counsellorEmails]);
-
-  await Promise.all(
-    recipientsEmails.map(async (email) => {
-      const notification: NotificationContentAndFollowedIds = {
-        kind: "email",
-        templatedContent: {
-          kind: "ASSESSMENT_AGENCY_NOTIFICATION",
-          recipients: [email],
-          sender: immersionFacileNoReplyEmailSender,
-          params: {
-            agencyReferentName: getFormattedFirstnameAndLastname(
-              convention.agencyReferent ?? {},
-            ),
-            beneficiaryFirstName: getFormattedFirstnameAndLastname({
-              firstname: convention.signatories.beneficiary.firstName,
-            }),
-            beneficiaryLastName: getFormattedFirstnameAndLastname({
-              lastname: convention.signatories.beneficiary.lastName,
-            }),
-            conventionId: convention.id,
-            internshipKind: convention.internshipKind,
-            businessName: getDisplayedBusinessName(convention),
-            agencyLogoUrl: agency.logoUrl ?? undefined,
-            manageConventionLink: makeRouteAbsoluteUrl({
-              route: frontRoutes.manageConventionConnectedUser({
-                conventionId: convention.id,
-                email,
-              }),
-              baseUrl: config.immersionFacileBaseUrl,
-            }),
-            tutorEmail: convention.establishmentTutor.email,
-          },
-        },
-        followedIds: {
-          agencyId: convention.agencyId,
-          conventionId: convention.id,
-          establishmentSiret: convention.siret,
-        },
-      };
-      return saveNotificationAndRelatedEvent(uow, notification);
-    }),
-  );
 };

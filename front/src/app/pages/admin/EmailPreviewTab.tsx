@@ -341,17 +341,6 @@ export const defaultEmailValueByEmailKind: {
     internshipKind: "immersion",
     establishmentTutorEmail: "ESTABLISHMENT_TUTOR_EMAIL",
   },
-  ASSESSMENT_AGENCY_NOTIFICATION: {
-    agencyLogoUrl: defaultEmailPreviewUrl,
-    agencyReferentName: "AGENCY_REFERENT_NAME",
-    manageConventionLink: "MANAGE_CONVENTION_LINK",
-    beneficiaryFirstName: "BENEFICIARY_FIRST_NAME",
-    beneficiaryLastName: "BENEFICIARY_LAST_NAME",
-    businessName: "BUSINESS_NAME",
-    tutorEmail: "TUTOR_EMAIL",
-    conventionId: "CONVENTION_ID",
-    internshipKind: "immersion",
-  },
   ASSESSMENT_ESTABLISHMENT_NOTIFICATION: {
     agencyLogoUrl: defaultEmailPreviewUrl,
     beneficiaryFirstName: "BENEFICIARY_FIRST_NAME",
