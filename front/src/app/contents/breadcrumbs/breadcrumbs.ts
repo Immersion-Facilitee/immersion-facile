@@ -121,6 +121,13 @@ const makeBreadcrumbs = (
                   siret: "",
                 }),
               },
+              establishmentDashboardEstablishmentInformations: {
+                label: "Détail de l'entreprise",
+                route:
+                  frontRoutes.establishmentDashboardEstablishmentInformations({
+                    siret: "",
+                  }),
+              },
             },
           },
         },

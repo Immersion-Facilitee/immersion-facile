@@ -14,7 +14,7 @@ export const EstablishmentCreationFormPage = ({
   <ConnectedPrivateRoutePage
     route={route}
     oAuthConnectionPageHeader={<PageHeader title="Inscrire une entreprise" />}
-    mainWrapperProps={{vSpacing: 5}}
+    mainWrapperProps={{ vSpacing: 5 }}
   >
     <EstablishmentForm mode="create" />
   </ConnectedPrivateRoutePage>

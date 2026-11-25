@@ -75,18 +75,27 @@ export const CreationSiretRelatedInputs = () => {
     siretStateRelatedMessage: InputProps["stateRelatedMessage"];
   } => {
     if (errors.siret) {
-      return { siretState: "error" , siretStateRelatedMessage: errors.siret.message} ;
+      return {
+        siretState: "error",
+        siretStateRelatedMessage: errors.siret.message,
+      };
     }
     if (siretErrorToDisplay && touchedFields.siret) {
-      return { siretState: "error" , siretStateRelatedMessage: siretErrorToDisplay} ;
+      return {
+        siretState: "error",
+        siretStateRelatedMessage: siretErrorToDisplay,
+      };
     }
     if (establishmentInfos?.businessName) {
-      return { siretState: "success" , siretStateRelatedMessage: `Un établissement a bien été trouvé. Raison Sociale : ${establishmentInfos.businessName}.`} ;
+      return {
+        siretState: "success",
+        siretStateRelatedMessage: `Un établissement a bien été trouvé. Raison Sociale : ${establishmentInfos.businessName}.`,
+      };
     }
-    return { siretState: "default" , siretStateRelatedMessage: ""};
+    return { siretState: "default", siretStateRelatedMessage: "" };
   };
 
-  const { siretState, siretStateRelatedMessage  } = getSiretInputStatus();
+  const { siretState, siretStateRelatedMessage } = getSiretInputStatus();
 
   return (
     <>

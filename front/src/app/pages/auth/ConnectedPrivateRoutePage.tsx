@@ -102,6 +102,7 @@ export type FrontEstablishmentDashboardRoute =
   | Route<typeof frontRoutes.establishmentDashboardConventions>
   | Route<typeof frontRoutes.establishmentDashboardEstablishments>
   | Route<typeof frontRoutes.establishmentDashboardEstablishmentDetails>
+  | Route<typeof frontRoutes.establishmentDashboardEstablishmentInformations>
   | Route<typeof frontRoutes.establishmentDashboardDiscussions>;
 
 export const establishmentDashboardRoutes = [
@@ -109,6 +110,7 @@ export const establishmentDashboardRoutes = [
   "establishmentDashboardConventions",
   "establishmentDashboardEstablishments",
   "establishmentDashboardEstablishmentDetails",
+  "establishmentDashboardEstablishmentInformations",
   "establishmentDashboardDiscussions",
 ] satisfies EstablishmentDashboardRouteName[];
 

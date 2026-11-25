@@ -92,7 +92,7 @@ export const BusinessAndAdminSection = ({
           ))
           .exhaustive()}
       </HeadingSection>
-      
+
       <HeadingSection title="Présentation" className={fr.cx("fr-mt-0")}>
         <Input
           label={formContents.website.label}
@@ -116,7 +116,6 @@ export const BusinessAndAdminSection = ({
           }}
           {...getFieldError("additionalInformation")}
         />
-
       </HeadingSection>
 
       {match(mode)

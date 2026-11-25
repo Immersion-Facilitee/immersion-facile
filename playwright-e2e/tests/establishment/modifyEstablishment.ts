@@ -75,6 +75,7 @@ const editEstablishmentInEstablishmentDashboard = async (
   const userRights = updatedEstablishment.userRights;
   if (!userRights)
     throw new Error("Missing user rights for updatedEstablishmentInfos");
+  await goToEstablishmentFormTab(page, "informations");
   const adminEmail = await page
     .locator("#establishment-users-table tr:first-of-type td:first-of-type")
     .textContent();
@@ -84,6 +85,11 @@ const editEstablishmentInEstablishmentDashboard = async (
   await step3(page, updatedEstablishment);
   await step4(page, updatedEstablishment);
 };
+
+const goToEstablishmentFormTab = (page: Page, tab: "offers" | "informations") =>
+  page.click(
+    `#tabpanel-${domElementIds.formEstablishment.edit.tabs}-${tab === "offers" ? 0 : 1}`,
+  );
 
 const step1 = async (
   page: Page,
@@ -136,12 +142,7 @@ const step2 = async (
       "Missing first business address for updatedEstablishmentInfos",
     );
 
-  await page.click(
-    `#${domElementIds.formEstablishment.edit.businessAddresses}-delete-option-button-0`,
-  );
-  await page.click(
-    `#${domElementIds.formEstablishment.edit.businessAddresses}-delete-option-button-0`,
-  ); // twice, to remove the second address
+  await goToEstablishmentFormTab(page, "offers");
 
   await page.click(
     `#${domElementIds.formEstablishment.edit.deleteOfferButton}-0`,
@@ -158,6 +159,15 @@ const step2 = async (
   await page.click(
     `#${domElementIds.formEstablishment.offerModalSubmitButton}`,
   );
+
+  await goToEstablishmentFormTab(page, "informations");
+
+  await page.click(
+    `#${domElementIds.formEstablishment.edit.businessAddresses}-delete-option-button-0`,
+  );
+  await page.click(
+    `#${domElementIds.formEstablishment.edit.businessAddresses}-delete-option-button-0`,
+  ); // twice, to remove the second address
 
   await fillAutocomplete({
     page,

@@ -374,6 +374,11 @@ export const {
       { siret: param.path.optional.string },
       ({ siret }) => `/${siret}`,
     ),
+  establishmentDashboardEstablishmentInformations:
+    establishmentDashboardEstablishments.extend(
+      { siret: param.path.string },
+      ({ siret }) => `/${siret}/informations`,
+    ),
   establishmentDashboardDiscussions: establishmentDashboard.extend(
     {
       discussionId: param.path.optional.string,

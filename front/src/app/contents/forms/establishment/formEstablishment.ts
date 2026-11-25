@@ -38,8 +38,7 @@ export const formEstablishmentFieldsLabels = (
     required: true,
   },
   businessNameCustomized: {
-    label:
-      "Nom affiché aux candidat, s’il diffère de la raison sociale",
+    label: "Nom affiché aux candidat, s’il diffère de la raison sociale",
     id: domElementIds.formEstablishment[mode].businessNameCustomized,
     autoComplete: "organization",
     placeholder: "Ex : Nom de mon enseigne (optionnel)",
@@ -182,6 +181,16 @@ export const formEstablishmentFieldsLabels = (
   },
   isEstablishmentBanned: { label: "", id: "" },
 });
+
+export type EstablishmentEditTab = "offers" | "informations";
+
+export const establishmentEditTabsLabels: Record<EstablishmentEditTab, string> =
+  {
+    offers: "Offres",
+    informations: "Informations de l'entreprise",
+  };
+
+export const establishmentEditSubmitLabel = "Enregistrer les modifications";
 
 export const mailtoHref = (siret: SiretDto) => {
   const lineBreak = "%0D%0A";
