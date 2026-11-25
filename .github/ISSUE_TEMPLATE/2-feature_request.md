@@ -1,26 +1,104 @@
 ---
-name: Fonctionnalité
-about: Un nouveau use case ou fonctionnalité.
+name: Grosse feature
+about: Un nouveau use case ou une fonctionnalité qui nécessite cadrage, maquettes et analyse dev / bizdev.
 title: ETQ 'qui?', un titre court svp
 type: feature
 ---
 
-### :thinking: Contexte et problématique
+## 🤔 Contexte et besoin
 
-<!-- Décrire la problématique observée, le contexte et en quoi une solution serait utile. -->
 
-### :tada: Proposition de solution
+<!-- Décrire la situation actuelle, le problème, ses conséquences. Ajouter les données, retours utilisateurs ou sources utiles lorsqu’ils existent -->
 
-<!-- Quelle est la solution envisagée pour répondre à cette problématique -->
+---
 
-### :camera: Maquettes
+## 🎯 Objectif et impact attendu
 
-<!-- Si possible, un lien vers les maquettes -->
+- Impact utilisateur :
+- Impact métier :
+- Indicateur ou élément à surveiller après la livraison :
 
-### ☑️ Checklist
+---
 
-<!-- Questions à se poser systématiquer lors de la session de grooming -->
-- [ ] Effet de bord potentiel côté dev ou/et métier ?
-- [ ] Impact potentiel au support
-- [ ] Communication bizdev à prévoir (si oui : label déploiement)
-- [ ] Quelles fonctionnalités d'Immersion Facilitée sont à créer/modifier/supprimer pour résoudre le problème
+## 📦 Périmètre
+
+### Inclus
+
+-
+-
+
+### Hors périmètre
+
+-
+-
+
+---
+
+## 🎉 Solution fonctionnelle retenue
+
+<!-- Décrire :
+- le parcours attendu ;
+- les règles métier ;
+- les actions possibles ;
+- les changements par rapport à l’existant -->
+
+
+---
+
+## 👥 Rôles et cas concernés
+
+| Rôle ou situation | Comportement attendu |
+|---|---|
+| | |
+
+<!-- Supprimer cette section si tous les utilisateurs ont le même comportement -->
+
+---
+
+## 📷 Maquettes
+
+
+<!-- États à prévoir selon le besoin :
+- parcours nominal ;
+- chargement ;
+- état vide ;
+- erreur ;
+- accès non autorisé ;
+- cas mobile ou responsive -->
+
+---
+
+## ✅ Critères d’acceptation
+
+### Scénario
+
+<!-- Étant donné … Quand … Alors … -->
+
+---
+
+## ⚠️ Points d’attention
+
+<!-- - effets de bord ;
+- composants ou fonctionnalités réutilisés ailleurs ;
+- cas particuliers ;
+- erreurs possibles ;
+- permissions ;
+- données existantes ;
+- sécurité, accessibilité ou performance si nécessaire -->
+
+
+
+---
+
+## 🔗 Dépendances
+
+<!-- - Services externes :
+- Conditions nécessaires au déploiement
+- Feature flag ou migration éventuelle -->
+
+
+---
+
+## ❓ Questions ouvertes
+
+- [ ]
