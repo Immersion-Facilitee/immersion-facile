@@ -152,7 +152,11 @@ const step4 = async (page: Page, establishment: FormEstablishmentDto) => {
   await page.click(
     `#${domElementIds.formEstablishment.create.submitFormButton}`,
   );
-  await expect(page.locator(".fr-alert--success")).toBeVisible({
+  await expect(
+    page.locator(
+      `#${domElementIds.formEstablishment.create.navigateToEstablishmentDashboard}`,
+    ),
+  ).toBeVisible({
     timeout: 20_000,
   });
 };

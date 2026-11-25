@@ -7,7 +7,10 @@ import {
   removeAtIndex,
 } from "shared";
 import { MultipleAddressInput } from "src/app/components/forms/establishment/MultipleAddressInput";
-import { formEstablishmentFieldsLabels } from "src/app/contents/forms/establishment/formEstablishment";
+import {
+  businessAddressesDescription,
+  formEstablishmentFieldsLabels,
+} from "src/app/contents/forms/establishment/formEstablishment";
 import { getFormContents } from "src/app/hooks/formContents.hooks";
 import type { Mode } from "src/app/routes/routes.hooks";
 import { v4 as uuidV4 } from "uuid";
@@ -28,7 +31,7 @@ export const BusinessAddressesSection = ({ mode }: { mode: Mode }) => {
   return (
     <HeadingSection
       title={formContents.businessAddresses.label}
-      description="Par défaut, vous apparaîtrez dans les résultats de recherche liés à l’adresse de votre établissement. Vous pouvez ajouter d’autres adresses si vous proposez des immersions ailleurs. Par exemple : votre société est située à Dijon (adresse liée à votre SIRET) mais vous proposez une immersion dans votre antenne de Nantes."
+      description={businessAddressesDescription}
     >
       <MultipleAddressInput
         name="businessAddress"

@@ -71,10 +71,10 @@ const steps: Record<FormStep, Pick<StepperProps, "title" | "nextTitle">> = {
   },
   3: {
     title: "Votre première offre",
-    nextTitle: "Récapitulatif de votre établissement",
+    nextTitle: "Récapitulatif de votre entreprise",
   },
   4: {
-    title: "Récapitulatif de votre établissement",
+    title: "Récapitulatif de votre entreprise",
   },
 };
 
@@ -545,7 +545,6 @@ export const EstablishmentForm = (props: EstablishmentFormProps) => {
                   nextTitle={steps[currentStep].nextTitle}
                 />
                 {match(currentStep)
-                  // TODO : remettre ordre
                   .with(1, () => (
                     <BusinessAndAdminSection
                       mode={mode}

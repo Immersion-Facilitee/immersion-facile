@@ -55,15 +55,7 @@ export const BusinessAndAdminSection = ({
 
   return (
     <>
-      <p className={fr.cx("fr-mb-4w")}>
-        Inscrivez votre entreprise pour apparaître dans la recherche des
-        candidats. Cela prend environ 5 minutes. Les champs marqués d'un
-        astérisque (*) sont obligatoires.
-      </p>
-      <HeadingSection
-        title="Identité de l'entreprise"
-        className={fr.cx("fr-mt-0", "fr-mb-4w")}
-      >
+      <HeadingSection title="Votre entreprise" className={fr.cx("fr-mt-0")}>
         {formEstablishment.userRights.some(
           (userRight) => userRight.status === "PENDING",
         ) && (
@@ -91,9 +83,6 @@ export const BusinessAndAdminSection = ({
             <EditionSiretRelatedInputs mode={mode} />
           ))
           .exhaustive()}
-      </HeadingSection>
-
-      <HeadingSection title="Présentation" className={fr.cx("fr-mt-0")}>
         <Input
           label={formContents.website.label}
           hintText={formContents.website.hintText}

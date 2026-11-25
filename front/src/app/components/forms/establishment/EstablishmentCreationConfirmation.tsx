@@ -7,6 +7,7 @@ import {
   frontRoutes,
   toDisplayedDate,
 } from "shared";
+import { establishmentCreationConfirmationContent } from "src/app/contents/forms/establishment/formEstablishment";
 import { commonIllustrations } from "src/assets/img/illustrations";
 
 type EstablishmentCreationConfirmationProps = {
@@ -21,10 +22,10 @@ export const EstablishmentCreationConfirmation = ({
   const nextAvailabilityDate = formEstablishment.nextAvailabilityDate
     ? new Date(formEstablishment.nextAvailabilityDate)
     : null;
-  const visibility =
+  const availableFrom =
     nextAvailabilityDate && nextAvailabilityDate > new Date()
-      ? `apparaîtra à partir du ${toDisplayedDate({ date: nextAvailabilityDate })}`
-      : "apparaît dès maintenant";
+      ? toDisplayedDate({ date: nextAvailabilityDate })
+      : null;
   const establishmentDetailsLinkProps =
     frontRoutes.establishmentDashboardEstablishmentDetails({
       siret: formEstablishment.siret,
@@ -33,31 +34,37 @@ export const EstablishmentCreationConfirmation = ({
   return (
     <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
       <div className={fr.cx("fr-col-12", "fr-col-md-8")}>
-        <h1 className={fr.cx("fr-h3")}>Votre entreprise a bien été inscrite</h1>
+        <h1 className={fr.cx("fr-h3")}>
+          {establishmentCreationConfirmationContent.title}
+        </h1>
         <p className={fr.cx("fr-text--lg", "fr-mb-4w")}>
-          {establishmentName} {visibility} dans la recherche d'Immersion
-          Facilitée.
+          {establishmentCreationConfirmationContent.visibility({
+            establishmentName,
+            availableFrom,
+          })}
         </p>
         <Highlight className={fr.cx("fr-ml-0", "fr-mb-5w")}>
           <strong>
-            Vous souhaitez apparaître dans les premiers résultats ?
+            {establishmentCreationConfirmationContent.superEstablishmentTitle}
           </strong>{" "}
-          Obtenez la reconnaissance « Super entreprise » en étant répondant aux
-          demandes, en accueillant des immersions et en maintenant votre profil
-          à jour.
+          {
+            establishmentCreationConfirmationContent.superEstablishmentDescription
+          }
         </Highlight>
         <ButtonsGroup
           inlineLayoutWhen="sm and up"
           buttons={[
             {
-              children: "Ajouter une autre offre",
+              children:
+                establishmentCreationConfirmationContent.addOtherOfferLabel,
               id: domElementIds.formEstablishment.create.addOtherOfferButton,
               linkProps: frontRoutes.establishmentDashboardEstablishmentOffer({
                 siret: formEstablishment.siret,
               }).link,
             },
             {
-              children: "Voir ma fiche entreprise",
+              children:
+                establishmentCreationConfirmationContent.seeEstablishmentLabel,
               priority: "secondary",
               id: domElementIds.formEstablishment.create
                 .navigateToEstablishmentDashboard,

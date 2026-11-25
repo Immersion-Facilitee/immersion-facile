@@ -28,7 +28,11 @@ import {
   OfferModal,
   offerModal,
 } from "src/app/components/forms/establishment/sections/offer/OfferModal";
-import { formEstablishmentFieldsLabels } from "src/app/contents/forms/establishment/formEstablishment";
+import {
+  deleteOfferModalContent,
+  firstOfferIntro,
+  formEstablishmentFieldsLabels,
+} from "src/app/contents/forms/establishment/formEstablishment";
 import {
   displayReadableError,
   getFormContents,
@@ -191,12 +195,17 @@ export const OffersSection = ({
       {onOfferDeletionRequested &&
         createPortal(
           <deleteOfferModal.Component
-            title="Supprimer ce métier ?"
+            title={deleteOfferModalContent.title}
             buttons={[
-              { doClosesModal: true, children: "Annuler" },
               {
                 doClosesModal: true,
-                children: "Supprimer",
+                children: deleteOfferModalContent.cancelLabel,
+                id: domElementIds.formEstablishment.edit
+                  .deleteOfferCancelButton,
+              },
+              {
+                doClosesModal: true,
+                children: deleteOfferModalContent.confirmLabel,
                 id: domElementIds.formEstablishment.edit
                   .deleteOfferConfirmButton,
                 onClick: () => {
@@ -206,8 +215,9 @@ export const OffersSection = ({
               },
             ]}
           >
-            Le métier « {offerToDelete?.appellationLabel} » sera supprimé de
-            votre fiche entreprise et n'apparaîtra plus dans la recherche.
+            {deleteOfferModalContent.description(
+              offerToDelete?.appellationLabel,
+            )}
           </deleteOfferModal.Component>,
           document.body,
         )}
@@ -237,10 +247,7 @@ const FirstOfferSection = ({ mode }: { mode: Mode }): ReactNode => {
 
   return (
     <>
-      <p>
-        Elle apparaîtra dans la recherche. Vous pourrez ajouter d'autres offres
-        une fois l'inscription terminée.
-      </p>
+      <p>{firstOfferIntro}</p>
       <OfferFields
         mode={mode}
         offer={firstOffer}

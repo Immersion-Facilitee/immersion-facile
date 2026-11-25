@@ -18,7 +18,10 @@ import {
   OfferFields,
   offerFieldsErrorsFromIssues,
 } from "src/app/components/forms/establishment/sections/offer/OfferFields";
-import { establishmentEditSubmitLabel } from "src/app/contents/forms/establishment/formEstablishment";
+import {
+  establishmentEditSubmitLabel,
+  establishmentOfferPageContent,
+} from "src/app/contents/forms/establishment/formEstablishment";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
@@ -76,9 +79,13 @@ export const EstablishmentOfferPage = ({
 
   return (
     <>
-      <h1 className={fr.cx("fr-mb-1v")}>Ajouter / modifier une offre</h1>
+      <h1 className={fr.cx("fr-mb-1v")}>
+        {establishmentOfferPageContent.title}
+      </h1>
       <p className={fr.cx("fr-mb-4w")}>
-        Pour {getDisplayedBusinessName(formEstablishment)}.
+        {establishmentOfferPageContent.subtitle(
+          getDisplayedBusinessName(formEstablishment),
+        )}
       </p>
       <Feedback topics={["form-establishment"]} />
       <OfferEditionForm

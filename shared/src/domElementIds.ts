@@ -724,6 +724,8 @@ export const domElementIds = {
       editOfferButton: "im-form-edit-establishment__edit-offer-button",
       deleteOfferButton: "im-form-edit-establishment__delete-offer-button",
       deleteOfferModal: "im-form-edit-establishment__delete-offer-modal",
+      deleteOfferCancelButton:
+        "im-form-edit-establishment__delete-offer-cancel-button",
       deleteOfferConfirmButton:
         "im-form-edit-establishment__delete-offer-confirm-button",
       addressAutocomplete:
