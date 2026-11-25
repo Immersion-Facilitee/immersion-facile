@@ -10,6 +10,7 @@ import { Loader, useScrollTo } from "react-design-system";
 import { FormProvider, type SubmitHandler, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
+  type AppellationCode,
   type DotNestedKeys,
   defaultCountryCode,
   domElementIds,
@@ -29,7 +30,6 @@ import { OffersSettingsSection } from "src/app/components/forms/establishment/se
 import { SummarySection } from "src/app/components/forms/establishment/sections/SummarySection";
 import {
   type EstablishmentEditTab,
-  establishmentEditSubmitLabel,
   establishmentEditTabsLabels,
 } from "src/app/contents/forms/establishment/formEstablishment";
 import { useGetAcquisitionParams } from "src/app/hooks/acquisition.hooks";
@@ -54,6 +54,8 @@ type EstablishmentFormProps =
       mode: "edit";
       selectedTab: EstablishmentEditTab;
       onTabChange: (tab: EstablishmentEditTab) => void;
+      onOfferEditionRequested: (appellationCode?: AppellationCode) => void;
+      onOfferDeletionRequested: (appellationCode: AppellationCode) => void;
     };
 
 type FormStep = RangeOfPosition<4>;
@@ -499,23 +501,15 @@ export const EstablishmentForm = (props: EstablishmentFormProps) => {
                         />
                       </>
                     ) : (
-                      <>
-                        <OffersSection
-                          mode={mode}
-                          onStepChange={onStepChange}
-                          currentStep={currentStep}
-                        />
-                        <Button
-                          type="submit"
-                          iconId="fr-icon-save-line"
-                          id={
-                            domElementIds.formEstablishment.edit
-                              .submitOffersButton
-                          }
-                        >
-                          {establishmentEditSubmitLabel}
-                        </Button>
-                      </>
+                      <OffersSection
+                        mode={mode}
+                        onStepChange={onStepChange}
+                        currentStep={currentStep}
+                        onOfferEditionRequested={props.onOfferEditionRequested}
+                        onOfferDeletionRequested={
+                          props.onOfferDeletionRequested
+                        }
+                      />
                     )}
                   </Tabs>
                 ) : (

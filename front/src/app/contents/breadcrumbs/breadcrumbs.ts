@@ -117,9 +117,26 @@ const makeBreadcrumbs = (
             children: {
               establishmentDashboardEstablishmentDetails: {
                 label: "Détail de l'entreprise",
-                route: frontRoutes.establishmentDashboardEstablishmentDetails({
-                  siret: "",
-                }),
+                route: () => {
+                  const route = useRoute();
+                  return frontRoutes.establishmentDashboardEstablishmentDetails(
+                    {
+                      siret:
+                        route.name ===
+                        "establishmentDashboardEstablishmentOffer"
+                          ? route.params.siret
+                          : "",
+                    },
+                  );
+                },
+                children: {
+                  establishmentDashboardEstablishmentOffer: {
+                    label: "Ajouter / modifier une offre",
+                    route: frontRoutes.establishmentDashboardEstablishmentOffer(
+                      { siret: "" },
+                    ),
+                  },
+                },
               },
               establishmentDashboardEstablishmentInformations: {
                 label: "Détail de l'entreprise",

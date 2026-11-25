@@ -41,6 +41,7 @@ import { EstablishmentLeadRegistrationRejectedPage } from "src/app/pages/establi
 import { EstablishmentUserRegistrationPage } from "src/app/pages/establishment/EstablishmentUserRegistrationPage";
 import { EstablishmentDashboardMainTab } from "src/app/pages/establishment-dashboard/EstablishmentDashboardMainTab";
 import { EstablishmentDetailsPage } from "src/app/pages/establishment-dashboard/EstablishmentDetailsPage";
+import { EstablishmentOfferPage } from "src/app/pages/establishment-dashboard/EstablishmentOfferPage";
 import { StatsPage } from "src/app/pages/StatsPage";
 import { SearchPage } from "src/app/pages/search/SearchPage";
 import { MyAccountPage } from "src/app/pages/user/MyAccountPage";
@@ -116,6 +117,7 @@ const getPageSideEffectByRouteName: Partial<Record<keyof Routes, () => void>> =
     establishmentDashboardDiscussions: fetchCurrentUser,
     establishmentDashboardConventions: fetchCurrentUser,
     establishmentDashboardEstablishmentDetails: fetchCurrentUser,
+    establishmentDashboardEstablishmentOffer: fetchCurrentUser,
   };
 
 const getPageByRouteName: {
@@ -276,6 +278,11 @@ const getPageByRouteName: {
   establishmentDashboardEstablishmentInformations: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <EstablishmentDetailsPage route={route} />
+    </DashboardPrivateRoutePage>
+  ),
+  establishmentDashboardEstablishmentOffer: (route) => (
+    <DashboardPrivateRoutePage route={route}>
+      <EstablishmentOfferPage route={route} />
     </DashboardPrivateRoutePage>
   ),
   establishmentDashboardDiscussions: (route) => (

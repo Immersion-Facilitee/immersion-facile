@@ -75,6 +75,16 @@ const editEstablishmentInEstablishmentDashboard = async (
   const userRights = updatedEstablishment.userRights;
   if (!userRights)
     throw new Error("Missing user rights for updatedEstablishmentInfos");
+  await editOfferThroughOfferPage(page, 1);
+  await goBackToEstablishmentDetails(page);
+  await page.click(
+    `#${domElementIds.formEstablishment.edit.deleteOfferButton}-0`,
+  );
+  await page.click(
+    `#${domElementIds.formEstablishment.edit.deleteOfferConfirmButton}`,
+  );
+  await expect(page.locator(".fr-alert--success")).toBeVisible();
+  await goBackToEstablishmentDetails(page);
   await goToEstablishmentFormTab(page, "informations");
   const adminEmail = await page
     .locator("#establishment-users-table tr:first-of-type td:first-of-type")
@@ -90,6 +100,25 @@ const goToEstablishmentFormTab = (page: Page, tab: "offers" | "informations") =>
   page.click(
     `#tabpanel-${domElementIds.formEstablishment.edit.tabs}-${tab === "offers" ? 0 : 1}`,
   );
+
+const goBackToEstablishmentDetails = (page: Page): Promise<void> =>
+  page.getByRole("button", { name: "Revenir à la fiche entreprise" }).click();
+
+const editOfferThroughOfferPage = async (
+  page: Page,
+  offerIndex: number,
+): Promise<void> => {
+  await page.click(
+    `#${domElementIds.formEstablishment.edit.editOfferButton}-${offerIndex}`,
+  );
+  await page.click(
+    `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.ON_SITE}']`,
+  );
+  await page.click(
+    `#${domElementIds.establishmentDashboardEstablishmentOffer.submitButton}`,
+  );
+  await expect(page.locator(".fr-alert--success")).toBeVisible();
+};
 
 const step1 = async (
   page: Page,
@@ -141,26 +170,6 @@ const step2 = async (
     throw new Error(
       "Missing first business address for updatedEstablishmentInfos",
     );
-
-  await goToEstablishmentFormTab(page, "offers");
-
-  await page.click(
-    `#${domElementIds.formEstablishment.edit.deleteOfferButton}-0`,
-  );
-
-  await page.click(
-    `#${domElementIds.formEstablishment.edit.editOfferButton}-0`,
-  );
-
-  await page.click(
-    `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.ON_SITE}']`,
-  );
-
-  await page.click(
-    `#${domElementIds.formEstablishment.offerModalSubmitButton}`,
-  );
-
-  await goToEstablishmentFormTab(page, "informations");
 
   await page.click(
     `#${domElementIds.formEstablishment.edit.businessAddresses}-delete-option-button-0`,

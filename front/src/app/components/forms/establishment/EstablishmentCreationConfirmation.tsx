@@ -52,7 +52,9 @@ export const EstablishmentCreationConfirmation = ({
             {
               children: "Ajouter une autre offre",
               id: domElementIds.formEstablishment.create.addOtherOfferButton,
-              linkProps: establishmentDetailsLinkProps,
+              linkProps: frontRoutes.establishmentDashboardEstablishmentOffer({
+                siret: formEstablishment.siret,
+              }).link,
             },
             {
               children: "Voir ma fiche entreprise",

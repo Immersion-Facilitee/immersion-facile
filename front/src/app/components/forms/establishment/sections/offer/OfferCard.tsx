@@ -14,10 +14,12 @@ export const OfferCard = ({
   index,
   mode,
   onEditOfferClick,
+  onDeleteOfferClick,
 }: {
   index: number;
   mode: Mode;
   onEditOfferClick: () => void;
+  onDeleteOfferClick?: () => void;
 }) => {
   const { setValue, watch } = useFormContext<FormEstablishmentDto>();
   const formValues = watch();
@@ -59,11 +61,10 @@ export const OfferCard = ({
               type: "button",
               className: fr.cx("fr-mb-0"),
               id: `${domElementIds.formEstablishment[mode].deleteOfferButton}-${index}`,
-              onClick: () => {
-                const offers = formValues.offers;
-                const newOffers = removeAtIndex(offers, index);
-                setValue("offers", newOffers);
-              },
+              onClick:
+                onDeleteOfferClick ??
+                (() =>
+                  setValue("offers", removeAtIndex(formValues.offers, index))),
             },
           ]}
           className={fr.cx("fr-mt-auto")}

@@ -11,6 +11,7 @@ import {
 import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
 import type { EstablishmentEditTab } from "src/app/contents/forms/establishment/formEstablishment";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { establishmentSelectors } from "src/core-logic/domain/establishment/establishment.selectors";
 import { establishmentSlice } from "src/core-logic/domain/establishment/establishment.slice";
@@ -31,6 +32,7 @@ export const EstablishmentDetailsPage = ({
   const dispatch = useDispatch();
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isLoadingUser = useAppSelector(connectedUserSelectors.isLoading);
+  const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const formEstablishment = useAppSelector(
     establishmentSelectors.formEstablishment,
   );
@@ -104,6 +106,31 @@ export const EstablishmentDetailsPage = ({
             : "offers"
         }
         onTabChange={goToEstablishmentEditTab}
+        onOfferEditionRequested={(appellationCode) =>
+          frontRoutes
+            .establishmentDashboardEstablishmentOffer({
+              siret: formEstablishment.siret,
+              appellationCode,
+            })
+            .push()
+        }
+        onOfferDeletionRequested={(appellationCode) => {
+          if (!connectedUserJwt) return;
+          dispatch(
+            establishmentSlice.actions.updateEstablishmentRequested({
+              establishmentUpdate: {
+                formEstablishment: {
+                  ...formEstablishment,
+                  offers: formEstablishment.offers.filter(
+                    (offer) => offer.appellationCode !== appellationCode,
+                  ),
+                },
+                jwt: connectedUserJwt,
+              },
+              feedbackTopic: "form-establishment",
+            }),
+          );
+        }}
       />
     </>
   );

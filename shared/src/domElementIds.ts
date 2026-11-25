@@ -723,6 +723,9 @@ export const domElementIds = {
       addOfferButton: "im-form-edit-establishment__add-offer-button",
       editOfferButton: "im-form-edit-establishment__edit-offer-button",
       deleteOfferButton: "im-form-edit-establishment__delete-offer-button",
+      deleteOfferModal: "im-form-edit-establishment__delete-offer-modal",
+      deleteOfferConfirmButton:
+        "im-form-edit-establishment__delete-offer-confirm-button",
       addressAutocomplete:
         "im-form-edit-establishment__autocomplete-address-creation-establishment-form",
       siret: "im-form-edit-establishment__siret",
@@ -764,7 +767,6 @@ export const domElementIds = {
         "im-form-edit-establishment__edit-establishment-button",
       startFormButton: "im-form-edit-establishment__start-button",
       submitFormButton: "im-form-edit-establishment__submit-button",
-      submitOffersButton: "im-form-edit-establishment__submit-offers-button",
       tabs: "im-form-edit-establishment__tabs",
       availabilityButton: "im-form-edit-establishment__availability-button",
       nextAvailabilityDateInput:
@@ -1426,6 +1428,9 @@ export const domElementIds = {
   establishmentDashboardEstablishments: {},
   establishmentDashboardEstablishmentDetails: {},
   establishmentDashboardEstablishmentInformations: {},
+  establishmentDashboardEstablishmentOffer: {
+    submitButton: "im-establishment-dashboard-offer__submit-button",
+  },
   openApiDoc: {},
   stats: {},
   temporaryError: {
