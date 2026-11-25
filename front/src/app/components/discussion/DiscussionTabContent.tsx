@@ -18,6 +18,7 @@ export const DiscussionTabContent = ({ viewer }: { viewer: ExchangeRole }) => {
     "establishmentDashboardConventions",
     "establishmentDashboardEstablishments",
     "establishmentDashboardEstablishmentDetails",
+    "establishmentDashboardEstablishmentInformations",
     "beneficiaryDashboard",
     "beneficiaryDashboardDiscussions",
     "beneficiaryDashboardConventions",

@@ -764,6 +764,8 @@ export const domElementIds = {
         "im-form-edit-establishment__edit-establishment-button",
       startFormButton: "im-form-edit-establishment__start-button",
       submitFormButton: "im-form-edit-establishment__submit-button",
+      submitOffersButton: "im-form-edit-establishment__submit-offers-button",
+      tabs: "im-form-edit-establishment__tabs",
       availabilityButton: "im-form-edit-establishment__availability-button",
       nextAvailabilityDateInput:
         "im-form-edit-establishment__next-availability-date",
@@ -1423,6 +1425,7 @@ export const domElementIds = {
   },
   establishmentDashboardEstablishments: {},
   establishmentDashboardEstablishmentDetails: {},
+  establishmentDashboardEstablishmentInformations: {},
   openApiDoc: {},
   stats: {},
   temporaryError: {

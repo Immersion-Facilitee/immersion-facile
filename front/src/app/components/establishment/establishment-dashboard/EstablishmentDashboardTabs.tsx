@@ -198,12 +198,16 @@ const establishmentDashboardTabFromRouteName: Record<
   establishmentDashboardConventions: "conventions",
   establishmentDashboardEstablishments: "fiche-entreprise",
   establishmentDashboardEstablishmentDetails: "fiche-entreprise",
+  establishmentDashboardEstablishmentInformations: "fiche-entreprise",
   establishmentDashboardDiscussions: "discussions",
 };
 
 const establishmentDashboardRouteNameFromTabId: Record<
   EstablishmentDashboardTab,
-  EstablishmentDashboardRouteName
+  Exclude<
+    EstablishmentDashboardRouteName,
+    "establishmentDashboardEstablishmentInformations"
+  >
 > = {
   conventions: "establishmentDashboard",
   discussions: "establishmentDashboardDiscussions",

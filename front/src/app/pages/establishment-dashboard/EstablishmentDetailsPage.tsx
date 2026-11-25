@@ -1,6 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useCallback, useEffect } from "react";
 import { Loader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
@@ -9,6 +9,7 @@ import {
   onlyAdminUserRightsWithStatusAccepted,
 } from "shared";
 import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
+import type { EstablishmentEditTab } from "src/app/contents/forms/establishment/formEstablishment";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { establishmentSelectors } from "src/core-logic/domain/establishment/establishment.selectors";
@@ -18,7 +19,10 @@ import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import type { Route } from "type-route";
 
 type EstablishmentDetailsPageProps = {
-  route: Route<typeof frontRoutes.establishmentDashboardEstablishmentDetails>;
+  route: Route<
+    | typeof frontRoutes.establishmentDashboardEstablishmentDetails
+    | typeof frontRoutes.establishmentDashboardEstablishmentInformations
+  >;
 };
 
 export const EstablishmentDetailsPage = ({
@@ -58,6 +62,20 @@ export const EstablishmentDetailsPage = ({
     [dispatch],
   );
 
+  const goToEstablishmentEditTab = useCallback(
+    (tab: EstablishmentEditTab): void => {
+      const params = { siret: formEstablishment.siret };
+      if (tab === "informations") {
+        frontRoutes
+          .establishmentDashboardEstablishmentInformations(params)
+          .push();
+        return;
+      }
+      frontRoutes.establishmentDashboardEstablishmentDetails(params).push();
+    },
+    [formEstablishment.siret],
+  );
+
   if (!currentUser)
     return isLoadingUser ? (
       <Loader />
@@ -77,7 +95,16 @@ export const EstablishmentDetailsPage = ({
           {getDisplayedBusinessName(formEstablishment)}
         </h1>
       )}
-      <EstablishmentForm mode="edit" key={siret} />
+      <EstablishmentForm
+        mode="edit"
+        key={siret}
+        selectedTab={
+          route.name === "establishmentDashboardEstablishmentInformations"
+            ? "informations"
+            : "offers"
+        }
+        onTabChange={goToEstablishmentEditTab}
+      />
     </>
   );
 };

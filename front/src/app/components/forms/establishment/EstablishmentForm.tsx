@@ -2,6 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Stepper, { type StepperProps } from "@codegouvfr/react-dsfr/Stepper";
+import Tabs from "@codegouvfr/react-dsfr/Tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { keys } from "ramda";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -21,10 +22,16 @@ import {
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { WithFeedbackReplacer } from "src/app/components/feedback/WithFeedbackReplacer";
 import { EstablishmentCreationConfirmation } from "src/app/components/forms/establishment/EstablishmentCreationConfirmation";
+import { BusinessAddressesSection } from "src/app/components/forms/establishment/sections/BusinessAddressesSection";
 import { BusinessAndAdminSection } from "src/app/components/forms/establishment/sections/BusinessAndAdminSection";
 import { OffersSection } from "src/app/components/forms/establishment/sections/OffersSection";
 import { OffersSettingsSection } from "src/app/components/forms/establishment/sections/OffersSettingsSection";
 import { SummarySection } from "src/app/components/forms/establishment/sections/SummarySection";
+import {
+  type EstablishmentEditTab,
+  establishmentEditSubmitLabel,
+  establishmentEditTabsLabels,
+} from "src/app/contents/forms/establishment/formEstablishment";
 import { useGetAcquisitionParams } from "src/app/hooks/acquisition.hooks";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -41,9 +48,13 @@ import { siretSelectors } from "src/core-logic/domain/siret/siret.selectors";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import { match, P } from "ts-pattern";
 
-type EstablishmentFormProps = {
-  mode: Mode;
-};
+type EstablishmentFormProps =
+  | { mode: Exclude<Mode, "edit"> }
+  | {
+      mode: "edit";
+      selectedTab: EstablishmentEditTab;
+      onTabChange: (tab: EstablishmentEditTab) => void;
+    };
 
 type FormStep = RangeOfPosition<4>;
 
@@ -76,14 +87,16 @@ export type OnStepChange = (
   fieldsToValidate: FieldsToValidate,
 ) => void;
 
-export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
+export const EstablishmentForm = (props: EstablishmentFormProps) => {
+  const { mode } = props;
   const dispatch = useDispatch();
   const route = useEstablishmentRoute();
 
   const isEstablishmentCreation = route.name === "formEstablishment";
   const isEstablishmentAdmin = route.name === "adminEstablishments";
   const isEstablishmentDashboard =
-    route.name === "establishmentDashboardEstablishmentDetails";
+    route.name === "establishmentDashboardEstablishmentDetails" ||
+    route.name === "establishmentDashboardEstablishmentInformations";
 
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const federatedIdentity = useAppSelector(authSelectors.federatedIdentity);
@@ -149,8 +162,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
     ],
   );
 
-  const initialCurrentRoute = useRef(route).current;
-  const currentRoute = isEstablishmentDashboard ? route : initialCurrentRoute;
+  const currentRoute = useRef(route).current;
 
   const methods = useForm<FormEstablishmentDto>({
     defaultValues: defaultFormValues,
@@ -242,7 +254,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       .with(
         {
           route: {
-            name: "establishmentDashboardEstablishmentDetails",
+            name: establishmentDashboardRouteNames,
             params: { siret: P.string },
           },
           connectedUserJwt: P.not(P.nullish),
@@ -261,7 +273,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       .with(
         {
           route: {
-            name: "establishmentDashboardEstablishmentDetails",
+            name: establishmentDashboardRouteNames,
             params: { siret: P.nullish },
           },
           connectedUserJwt: P.not(P.nullish),
@@ -270,7 +282,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       )
       .with(
         {
-          route: { name: "establishmentDashboardEstablishmentDetails" },
+          route: { name: establishmentDashboardRouteNames },
           connectedUserJwt: P.nullish,
         },
         () => {
@@ -357,7 +369,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
       )
       .with(
         {
-          route: { name: "establishmentDashboardEstablishmentDetails" },
+          route: { name: establishmentDashboardRouteNames },
           connectedUserJwt: P.not(P.nullish),
         },
         ({ connectedUserJwt }) =>
@@ -385,7 +397,7 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
 
       .with(
         {
-          route: { name: "establishmentDashboardEstablishmentDetails" },
+          route: { name: establishmentDashboardRouteNames },
           connectedUserJwt: P.nullish,
         },
         () => {
@@ -455,23 +467,79 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
                       ENTREPRISE BANNIE
                     </Badge>
                   )}
-                <BusinessAndAdminSection
-                  mode={mode}
-                  onStepChange={onStepChange}
-                  currentStep={currentStep}
-                />
-                <OffersSection
-                  mode={mode}
-                  onStepChange={onStepChange}
-                  currentStep={currentStep}
-                />
-                <OffersSettingsSection
-                  mode={mode}
-                  onStepChange={onStepChange}
-                  currentStep={currentStep}
-                  availableForImmersion={availableForImmersion}
-                  setAvailableForImmersion={setAvailableForImmersion}
-                />
+                {props.mode === "edit" ? (
+                  <Tabs
+                    id={domElementIds.formEstablishment.edit.tabs}
+                    selectedTabId={props.selectedTab}
+                    tabs={keys(establishmentEditTabsLabels).map((tab) => ({
+                      tabId: tab,
+                      label: establishmentEditTabsLabels[tab],
+                    }))}
+                    onTabChange={(tabId) => {
+                      const tab = keys(establishmentEditTabsLabels).find(
+                        (tab) => tab === tabId,
+                      );
+                      if (tab) props.onTabChange(tab);
+                    }}
+                  >
+                    {props.selectedTab === "informations" ? (
+                      <>
+                        <BusinessAndAdminSection
+                          mode={mode}
+                          onStepChange={onStepChange}
+                          currentStep={currentStep}
+                        />
+                        <BusinessAddressesSection mode={mode} />
+                        <OffersSettingsSection
+                          mode={mode}
+                          onStepChange={onStepChange}
+                          currentStep={currentStep}
+                          availableForImmersion={availableForImmersion}
+                          setAvailableForImmersion={setAvailableForImmersion}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <OffersSection
+                          mode={mode}
+                          onStepChange={onStepChange}
+                          currentStep={currentStep}
+                        />
+                        <Button
+                          type="submit"
+                          iconId="fr-icon-save-line"
+                          id={
+                            domElementIds.formEstablishment.edit
+                              .submitOffersButton
+                          }
+                        >
+                          {establishmentEditSubmitLabel}
+                        </Button>
+                      </>
+                    )}
+                  </Tabs>
+                ) : (
+                  <>
+                    <BusinessAndAdminSection
+                      mode={mode}
+                      onStepChange={onStepChange}
+                      currentStep={currentStep}
+                    />
+                    <OffersSection
+                      mode={mode}
+                      onStepChange={onStepChange}
+                      currentStep={currentStep}
+                    />
+                    <BusinessAddressesSection mode={mode} />
+                    <OffersSettingsSection
+                      mode={mode}
+                      onStepChange={onStepChange}
+                      currentStep={currentStep}
+                      availableForImmersion={availableForImmersion}
+                      setAvailableForImmersion={setAvailableForImmersion}
+                    />
+                  </>
+                )}
               </>
             ))
             .otherwise((currentStep) => (
@@ -523,6 +591,11 @@ export const EstablishmentForm = ({ mode }: EstablishmentFormProps) => {
     </WithFeedbackReplacer>
   );
 };
+
+const establishmentDashboardRouteNames = P.union(
+  "establishmentDashboardEstablishmentDetails",
+  "establishmentDashboardEstablishmentInformations",
+);
 
 export const validateEstablishmentFormFields = async ({
   fieldsToValidate,

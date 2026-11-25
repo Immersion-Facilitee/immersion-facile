@@ -7,17 +7,12 @@ import { ErrorNotifications, HeadingSection } from "react-design-system";
 import { createPortal } from "react-dom";
 import { useFormContext } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import {
-  addressDtoToString,
-  domElementIds,
-  type FormEstablishmentDto,
-  removeAtIndex,
-} from "shared";
+import { domElementIds, type FormEstablishmentDto } from "shared";
 import type {
   OnStepChange,
   Step,
 } from "src/app/components/forms/establishment/EstablishmentForm";
-import { MultipleAddressInput } from "src/app/components/forms/establishment/MultipleAddressInput";
+import { BusinessAddressesSection } from "src/app/components/forms/establishment/sections/BusinessAddressesSection";
 import { OfferCard } from "src/app/components/forms/establishment/sections/offer/OfferCard";
 import {
   OfferModal,
@@ -31,7 +26,6 @@ import {
 } from "src/app/hooks/formContents.hooks";
 import type { Mode } from "src/app/routes/routes.hooks";
 import { appellationSlice } from "src/core-logic/domain/appellation/appellation.slice";
-import { v4 as uuidV4 } from "uuid";
 
 export const OffersSection = ({
   mode,
@@ -45,7 +39,6 @@ export const OffersSection = ({
   const isStepMode = currentStep !== null;
   const methods = useFormContext<FormEstablishmentDto>();
   const {
-    setValue,
     watch,
     formState: { errors },
   } = methods;
@@ -66,6 +59,7 @@ export const OffersSection = ({
         title={formContents.offers.label}
         description=" Chaque métier correspond à une offre qui apparaitra dans la recherche.
           Votre entreprise peut donc apparaître dans différentes recherches."
+        className={fr.cx("fr-mt-0", "fr-mb-4w")}
       >
         <Button
           className={fr.cx("fr-my-4v")}
@@ -111,41 +105,7 @@ export const OffersSection = ({
           </div>
         )}
       </HeadingSection>
-      {formValues.offers.filter(
-        (offer) => offer.remoteWorkMode !== "FULL_REMOTE",
-      ).length > 0 && (
-        <HeadingSection
-          title={formContents.businessAddresses.label}
-          description="Par défaut, vous apparaîtrez dans les résultats de recherche liés à l’adresse de votre établissement. Vous pouvez ajouter d’autres adresses si vous proposez des immersions ailleurs. Par exemple : votre société est située à Dijon (adresse liée à votre SIRET) mais vous proposez une immersion dans votre antenne de Nantes."
-        >
-          <MultipleAddressInput
-            name="businessAddress"
-            currentAddresses={formValues.businessAddresses}
-            onAddressAdded={(address, index) => {
-              const currentAddresses = formValues.businessAddresses;
-              currentAddresses[index] = {
-                id: uuidV4(),
-                rawAddress: addressDtoToString(address),
-              };
-              setValue("businessAddresses", currentAddresses);
-            }}
-            onAddressDeleted={(index) => {
-              const addresses = formValues.businessAddresses;
-              const newAddresses =
-                index === 0 && addresses.length === 1
-                  ? [
-                      {
-                        id: "",
-                        rawAddress: "",
-                      },
-                    ]
-                  : removeAtIndex(addresses, index);
-              setValue("businessAddresses", newAddresses);
-            }}
-            id={domElementIds.formEstablishment[mode].businessAddresses}
-          />
-        </HeadingSection>
-      )}
+      {isStepMode && <BusinessAddressesSection mode={mode} />}
       {isStepMode && (
         <>
           <ErrorNotifications

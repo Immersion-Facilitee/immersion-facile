@@ -273,6 +273,11 @@ const getPageByRouteName: {
       <EstablishmentDetailsPage route={route} />
     </DashboardPrivateRoutePage>
   ),
+  establishmentDashboardEstablishmentInformations: (route) => (
+    <DashboardPrivateRoutePage route={route}>
+      <EstablishmentDetailsPage route={route} />
+    </DashboardPrivateRoutePage>
+  ),
   establishmentDashboardDiscussions: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <EstablishmentDashboardMainTab route={route} />
@@ -371,17 +376,21 @@ export const Router = (): ReactNode => {
 
   const route = useRoute();
   const routeName = route.name;
+  const sideEffectRouteName =
+    routeName === "establishmentDashboardEstablishmentInformations"
+      ? "establishmentDashboardEstablishmentDetails"
+      : routeName;
   const previousRouteName = useRef<keyof Routes | undefined>(undefined);
   useEffect(() => {
     if (
-      routeName &&
-      previousRouteName.current !== routeName &&
-      getPageSideEffectByRouteName[routeName]
+      sideEffectRouteName &&
+      previousRouteName.current !== sideEffectRouteName &&
+      getPageSideEffectByRouteName[sideEffectRouteName]
     ) {
-      previousRouteName.current = routeName;
-      getPageSideEffectByRouteName[routeName]();
+      previousRouteName.current = sideEffectRouteName;
+      getPageSideEffectByRouteName[sideEffectRouteName]();
     }
-  }, [routeName]);
+  }, [sideEffectRouteName]);
   return routeName === false ? (
     <ErrorPage error={frontErrors.generic.pageNotFound()} />
   ) : (
