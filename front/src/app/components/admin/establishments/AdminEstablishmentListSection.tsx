@@ -138,15 +138,17 @@ export const AdminEstablishmentListSection = (): React.ReactNode => {
   );
 };
 
+const toDisplayedEstablishmentName = (
+  establishment: AdminEstablishmentListItemDto,
+): string => establishment.customizedName || establishment.name;
+
 const makeAdminEstablishmentListLine = (
   establishment: AdminEstablishmentListItemDto,
 ): React.ReactNode[] => [
   <span key={`${establishment.siret}-name`}>
-    <strong>{establishment.name}</strong>
+    <strong>{toDisplayedEstablishmentName(establishment)}</strong>
     {establishment.customizedName && (
-      <span className={fr.cx("fr-hint-text")}>
-        {establishment.customizedName}
-      </span>
+      <span className={fr.cx("fr-hint-text")}>{establishment.name}</span>
     )}
   </span>,
   establishment.siret,
@@ -167,7 +169,7 @@ const makeAdminEstablishmentListLine = (
     priority="secondary"
     linkProps={{
       ...frontRoutes.adminEstablishments({ siret: establishment.siret }).link,
-      title: `Piloter l'établissement ${establishment.name}`,
+      title: `Piloter l'établissement ${toDisplayedEstablishmentName(establishment)}`,
     }}
   >
     Piloter
