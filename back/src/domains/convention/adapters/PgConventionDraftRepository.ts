@@ -11,6 +11,7 @@ import {
   pipeWithValue,
   type ScheduleDto,
   type Signatories,
+  type WithEveryKey,
 } from "shared";
 import type { KyselyDb } from "../../../config/pg/kysely/kyselyUtils";
 import type { Database } from "../../../config/pg/kysely/model/database";
@@ -104,7 +105,14 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
       establishmentTutor:
         (row.establishment_tutor as EstablishmentTutor) ?? undefined,
       signatories: (row.signatories as Signatories) ?? undefined,
-    };
+    } satisfies WithEveryKey<
+      Pick<
+        ConventionDraftDto,
+        | keyof ConventionDraftFieldsToPersist
+        | "updatedAt"
+        | "fromFtConnectedUser"
+      >
+    >;
   }
 
   public async getConventionDraftIdsByFilters(
