@@ -1,5 +1,4 @@
-import { sql } from "kysely";
-import type { InsertExpression } from "kysely/dist/cjs/parser/insert-values-parser";
+import { type InsertObject, sql } from "kysely";
 import {
   type AgencyKind,
   type ConventionDraftDto,
@@ -133,50 +132,19 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
     conventionDraft: ConventionDraftDto,
     now: DateString,
   ): Promise<void> {
+    const values = mapConventionDraftToEntity(conventionDraft, now);
+    const {
+      id: _id,
+      acquisition_campaign: _acquisitionCampaign,
+      acquisition_keyword: _acquisitionKeyword,
+      acquisition_medium: _acquisitionMedium,
+      ...valuesForUpdate
+    } = values;
+
     await this.transaction
       .insertInto("convention_drafts")
-      .values(mapConventionDraftToEntity(conventionDraft, now))
-      .onConflict((oc) =>
-        oc.column("id").doUpdateSet(({ ref }) => ({
-          agency_id: ref("excluded.agency_id"),
-          agency_kind: ref("excluded.agency_kind"),
-          agency_department: ref("excluded.agency_department"),
-          date_start: ref("excluded.date_start"),
-          date_end: ref("excluded.date_end"),
-          siret: ref("excluded.siret"),
-          business_name: ref("excluded.business_name"),
-          business_name_customized: ref("excluded.business_name_customized"),
-          schedule: ref("excluded.schedule"),
-          individual_protection: ref("excluded.individual_protection"),
-          individual_protection_description: ref(
-            "excluded.individual_protection_description",
-          ),
-          sanitary_prevention: ref("excluded.sanitary_prevention"),
-          sanitary_prevention_description: ref(
-            "excluded.sanitary_prevention_description",
-          ),
-          remote_work_mode: ref("excluded.remote_work_mode"),
-          immersion_address: ref("excluded.immersion_address"),
-          immersion_objective: ref("excluded.immersion_objective"),
-          immersion_appellation: ref("excluded.immersion_appellation"),
-          immersion_activities: ref("excluded.immersion_activities"),
-          immersion_skills: ref("excluded.immersion_skills"),
-          work_conditions: ref("excluded.work_conditions"),
-          internship_kind: ref("excluded.internship_kind"),
-          business_advantages: ref("excluded.business_advantages"),
-          establishment_number_employees: ref(
-            "excluded.establishment_number_employees",
-          ),
-          agency_referent_first_name: ref(
-            "excluded.agency_referent_first_name",
-          ),
-          agency_referent_last_name: ref("excluded.agency_referent_last_name"),
-          ft_connect_id: ref("excluded.ft_connect_id"),
-          establishment_tutor: ref("excluded.establishment_tutor"),
-          signatories: ref("excluded.signatories"),
-          updated_at: ref("excluded.updated_at"),
-        })),
-      )
+      .values(values)
+      .onConflict((oc) => oc.column("id").doUpdateSet(valuesForUpdate))
       .execute();
   }
 
@@ -215,7 +183,7 @@ type ConventionDraftEntity = OmitFromExistingKeys<
 const mapConventionDraftToEntity = (
   conventionDraft: ConventionDraftEntity,
   now: DateString,
-): InsertExpression<Database, "convention_drafts"> => {
+) => {
   const {
     id,
     agencyId,
@@ -290,5 +258,5 @@ const mapConventionDraftToEntity = (
       : null,
     signatories: signatories ? sql`${JSON.stringify(signatories)}` : null,
     updated_at: now,
-  };
+  } satisfies InsertObject<Database, "convention_drafts">;
 };
