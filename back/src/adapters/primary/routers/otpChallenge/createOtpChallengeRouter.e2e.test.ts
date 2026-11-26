@@ -250,7 +250,7 @@ describe("otp challenge router", () => {
 
       expectHttpResponseToEqual(response, {
         status: 201,
-        body: {},
+        body: "",
       });
       expect(inMemoryUow.otpChallengeRepository.otpChallenges).toHaveLength(1);
 
@@ -278,7 +278,7 @@ describe("otp challenge router", () => {
 
       expectHttpResponseToEqual(response, {
         status: 201,
-        body: {},
+        body: "",
       });
       expect(inMemoryUow.otpChallengeRepository.otpChallenges).toHaveLength(1);
       expectSavedNotificationsAndEvents({
