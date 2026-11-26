@@ -637,7 +637,7 @@ describe("otp challenge router", () => {
         ({ subject }) => subject.conventionId === otherConvention.id,
       );
       if (!secondSession) throw new Error("Missing second otp session");
-      expect(secondResponse.headers["set-cookie"]).toEqual([
+      expect(secondResponse.get("Set-Cookie")).toEqual([
         `if_otp_session=${secondSession.id}; Path=/; Expires=${new Date(secondSession.expiresAt).toUTCString()}; HttpOnly; SameSite=Lax`,
       ]);
       expect(firstResponse.headers["set-cookie"]).toEqual([
