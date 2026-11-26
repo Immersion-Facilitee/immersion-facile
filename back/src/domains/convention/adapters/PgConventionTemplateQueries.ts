@@ -12,6 +12,7 @@ import {
   pipeWithValue,
   type ScheduleDto,
   type Signatories,
+  type WithEveryKey,
 } from "shared";
 import type { KyselyDb } from "../../../config/pg/kysely/kyselyUtils";
 import type { Database } from "../../../config/pg/kysely/model/database";
@@ -63,62 +64,70 @@ export class PgConventionTemplateQueries implements ConventionTemplateQueries {
     );
 
     return query.execute().then((rows) =>
-      rows.map((row) => ({
-        id: row.id,
-        userId: row.user_id,
-        name: row.name,
-        updatedAt: (row.updated_at as Date).toISOString(),
-        agencyId: row.agency_id ?? undefined,
-        agencyKind: row.agency_kind ?? undefined,
-        agencyDepartment: row.agency_department ?? undefined,
-        dateStart: row.date_start?.toISOString() ?? undefined,
-        dateEnd: row.date_end?.toISOString() ?? undefined,
-        siret: row.siret ?? undefined,
-        businessName: row.business_name ?? undefined,
-        businessNameCustomized: row.business_name_customized ?? undefined,
-        schedule: (row.schedule as ScheduleDto) ?? undefined,
-        individualProtection: row.individual_protection ?? undefined,
-        individualProtectionDescription:
-          row.individual_protection_description ?? undefined,
-        sanitaryPrevention: row.sanitary_prevention ?? undefined,
-        sanitaryPreventionDescription:
-          row.sanitary_prevention_description ?? undefined,
-        remoteWorkMode:
-          row.remote_work_mode && isRemoteWorkMode(row.remote_work_mode)
-            ? row.remote_work_mode
-            : undefined,
-        immersionAddress: row.immersion_address ?? undefined,
-        immersionObjective: (row.immersion_objective ?? undefined) as
-          | ImmersionObjective
-          | undefined,
-        immersionAppellation: row.ogr_appellation
-          ? {
-              appellationCode: row.ogr_appellation.toString(),
-              appellationLabel: row.libelle_appellation_long ?? "",
-              romeCode: row.code_rome ?? "",
-              romeLabel: row.libelle_rome ?? "",
-            }
-          : undefined,
-        immersionActivities: row.immersion_activities ?? undefined,
-        immersionSkills: row.immersion_skills ?? undefined,
-        workConditions: row.work_conditions ?? undefined,
-        internshipKind: row.internship_kind,
-        businessAdvantages: row.business_advantages ?? undefined,
-        establishmentNumberEmployeesRange:
-          (row.establishment_number_employees ?? undefined) as
-            | NumberEmployeesRange
-            | undefined,
-        agencyReferent:
-          row.agency_referent_first_name || row.agency_referent_last_name
-            ? {
-                firstname: row.agency_referent_first_name ?? undefined,
-                lastname: row.agency_referent_last_name ?? undefined,
-              }
-            : undefined,
-        establishmentTutor:
-          (row.establishment_tutor as EstablishmentTutor) ?? undefined,
-        signatories: (row.signatories as Signatories) ?? undefined,
-      })),
+      rows.map(
+        (row) =>
+          ({
+            id: row.id,
+            userId: row.user_id,
+            name: row.name,
+            updatedAt: (row.updated_at as Date).toISOString(),
+            agencyId: row.agency_id ?? undefined,
+            agencyKind: row.agency_kind ?? undefined,
+            agencyDepartment: row.agency_department ?? undefined,
+            dateStart: row.date_start?.toISOString() ?? undefined,
+            dateEnd: row.date_end?.toISOString() ?? undefined,
+            siret: row.siret ?? undefined,
+            businessName: row.business_name ?? undefined,
+            businessNameCustomized: row.business_name_customized ?? undefined,
+            schedule: (row.schedule as ScheduleDto) ?? undefined,
+            individualProtection: row.individual_protection ?? undefined,
+            individualProtectionDescription:
+              row.individual_protection_description ?? undefined,
+            sanitaryPrevention: row.sanitary_prevention ?? undefined,
+            sanitaryPreventionDescription:
+              row.sanitary_prevention_description ?? undefined,
+            remoteWorkMode:
+              row.remote_work_mode && isRemoteWorkMode(row.remote_work_mode)
+                ? row.remote_work_mode
+                : undefined,
+            immersionAddress: row.immersion_address ?? undefined,
+            immersionObjective: (row.immersion_objective ?? undefined) as
+              | ImmersionObjective
+              | undefined,
+            immersionAppellation: row.ogr_appellation
+              ? {
+                  appellationCode: row.ogr_appellation.toString(),
+                  appellationLabel: row.libelle_appellation_long ?? "",
+                  romeCode: row.code_rome ?? "",
+                  romeLabel: row.libelle_rome ?? "",
+                }
+              : undefined,
+            immersionActivities: row.immersion_activities ?? undefined,
+            immersionSkills: row.immersion_skills ?? undefined,
+            workConditions: row.work_conditions ?? undefined,
+            internshipKind: row.internship_kind,
+            businessAdvantages: row.business_advantages ?? undefined,
+            establishmentNumberEmployeesRange:
+              (row.establishment_number_employees ?? undefined) as
+                | NumberEmployeesRange
+                | undefined,
+            agencyReferent:
+              row.agency_referent_first_name || row.agency_referent_last_name
+                ? {
+                    firstname: row.agency_referent_first_name ?? undefined,
+                    lastname: row.agency_referent_last_name ?? undefined,
+                  }
+                : undefined,
+            establishmentTutor:
+              (row.establishment_tutor as EstablishmentTutor) ?? undefined,
+            signatories: (row.signatories as Signatories) ?? undefined,
+          }) satisfies WithEveryKey<
+            Pick<
+              ConventionTemplate,
+              keyof ConventionTemplateFieldsToPersist | "updatedAt"
+            >
+          >,
+      ),
     );
   }
 
