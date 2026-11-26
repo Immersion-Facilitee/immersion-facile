@@ -149,6 +149,26 @@ export const frontErrors = {
       });
     },
   },
+  search: {
+    groupNotFound: (): FrontSpecificError =>
+      new FrontSpecificError({
+        title: "Groupe introuvable",
+        description:
+          "Le groupe que vous cherchez n'existe pas ou n'est plus disponible. Vous pouvez effectuer une recherche parmi toutes les entreprises accueillantes.",
+        buttons: [
+          <Button
+            key={domElementIds.search.groupNotFoundSearchButton}
+            priority="primary"
+            linkProps={{
+              ...frontRoutes.search().link,
+              id: domElementIds.search.groupNotFoundSearchButton,
+            }}
+          >
+            Rechercher une entreprise
+          </Button>,
+        ],
+      }),
+  },
   convention: {
     cancelled: ({
       conventionId,

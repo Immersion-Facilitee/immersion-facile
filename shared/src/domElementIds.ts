@@ -192,6 +192,7 @@ export const domElementIds = {
     sortRadioButtons: "im-search-page__sort-radio-buttons",
     resetFiltersButton: "im-search-page__reset-filters-button",
     groupPush: "im-search-page__group-push",
+    groupNotFoundSearchButton: "im-search-page__group-not-found-search-button",
   },
   externalSearch: {
     // TODO: add external search specific ids

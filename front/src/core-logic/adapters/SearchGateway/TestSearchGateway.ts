@@ -5,8 +5,8 @@ import type {
   ExternalOfferDto,
   GetExternalOffersFlatQueryParams,
   GetOffersFlatQueryParams,
+  GroupInfo,
   GroupSlug,
-  GroupWithResults,
   InternalOfferDto,
   SiretAndAppellationDto,
 } from "shared";
@@ -21,14 +21,16 @@ export class TestSearchGateway implements SearchGateway {
 
   public externalOffers$ = new Subject<DataWithPagination<ExternalOfferDto>>();
 
+  public currentGroupInfo$ = new Subject<GroupInfo>();
+
   public contactEstablishment(
     _params: CreateDiscussionDto,
   ): Promise<void | "alreadyContactedRecently"> {
     throw new Error("Method not implemented.");
   }
 
-  public getGroupBySlug(_groupSlug: GroupSlug): Promise<GroupWithResults> {
-    throw new Error("Method not implemented.");
+  public getGroupInfoBySlug$(_groupSlug: GroupSlug): Observable<GroupInfo> {
+    return this.currentGroupInfo$;
   }
 
   public getOffer$(

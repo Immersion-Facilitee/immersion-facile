@@ -30,9 +30,9 @@ export const createSearchRouter = (deps: AppDependencies) => {
     ),
   );
 
-  expressSharedRouter.getGroupBySlug(async (req, res) =>
+  expressSharedRouter.getGroupInfoBySlug(async (req, res) =>
     sendHttpResponse(req, res, () =>
-      deps.useCases.getOffersByGroupSlug.execute(req.params),
+      deps.useCases.getGroupInfoBySlug.execute(req.params),
     ),
   );
 

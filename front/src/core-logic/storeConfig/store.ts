@@ -64,6 +64,7 @@ import { establishmentLeadSlice } from "src/core-logic/domain/establishmentLead/
 import { featureFlagEpics } from "src/core-logic/domain/featureFlags/featureFlags.epics";
 import { featureFlagsSlice } from "src/core-logic/domain/featureFlags/featureFlags.slice";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
+import { groupEpics } from "src/core-logic/domain/group/group.epics";
 import { nafEpics } from "src/core-logic/domain/naf/naf.epics";
 import { nafSlice } from "src/core-logic/domain/naf/naf.slice";
 import { rootAppEpics } from "src/core-logic/domain/rootApp/rootApp.epics";
@@ -90,6 +91,7 @@ import { geocodingEpics } from "../domain/geocoding/geocoding.epics";
 import { geocodingSlice } from "../domain/geocoding/geocoding.slice";
 import { geosearchEpics } from "../domain/geosearch/geosearch.epics";
 import { geosearchSlice } from "../domain/geosearch/geosearch.slice";
+import { groupSlice } from "../domain/group/group.slice";
 import { partnersErroredConventionEpics } from "../domain/partnersErroredConvention/partnersErroredConvention.epics";
 import { partnersErroredConventionSlice } from "../domain/partnersErroredConvention/partnersErroredConvention.slice";
 import type { AppEpic } from "./redux.helpers";
@@ -139,6 +141,7 @@ const allEpics: AppEpic<any>[] = [
   ...updateAgencyEpics,
   ...updateUserOnAgencyEpics,
   ...usersInReviewEpics,
+  ...groupEpics,
 ];
 
 const appReducer = combineReducers({
@@ -195,6 +198,7 @@ const appReducer = combineReducers({
   [nafSlice.name]: nafSlice.reducer,
   [conventionActionSlice.name]: conventionActionSlice.reducer,
   [usersToReviewSlice.name]: usersToReviewSlice.reducer,
+  [groupSlice.name]: groupSlice.reducer,
 });
 
 const rootReducer: typeof appReducer = (state, action) =>

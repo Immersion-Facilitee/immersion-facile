@@ -1,6 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
-import { domElementIds, type Group } from "shared";
+import { domElementIds, type GroupInfo } from "shared";
 import { makeStyles } from "tss-react/dsfr";
 
 const useStyles = makeStyles({ name: "GroupHeroHeader" });
@@ -9,7 +9,7 @@ export const GroupHeroHeader = ({
   groupData,
   onCtaClick,
 }: {
-  groupData: Group;
+  groupData: GroupInfo;
   onCtaClick: () => void;
 }) => {
   const { classes, cx } = useStyles(() => ({

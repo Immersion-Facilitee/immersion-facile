@@ -1,16 +1,17 @@
 import { from, type Observable } from "rxjs";
-import type {
-  CreateDiscussionDto,
-  DataWithPagination,
-  ExternalOfferDto,
-  GetExternalOffersFlatQueryParams,
-  GetOffersFlatQueryParams,
-  GroupSlug,
-  GroupWithResults,
-  InternalOfferDto,
-  SearchResultQuery,
-  SearchRoutes,
-  SiretAndAppellationDto,
+import {
+  type CreateDiscussionDto,
+  type DataWithPagination,
+  type ExternalOfferDto,
+  errors,
+  type GetExternalOffersFlatQueryParams,
+  type GetOffersFlatQueryParams,
+  type GroupInfo,
+  type GroupSlug,
+  type InternalOfferDto,
+  type SearchResultQuery,
+  type SearchRoutes,
+  type SiretAndAppellationDto,
 } from "shared";
 import type { HttpClient } from "shared-routes";
 import {
@@ -22,7 +23,7 @@ import type {
   ContactErrorKind,
   SearchGateway,
 } from "src/core-logic/ports/SearchGateway";
-import { match, P } from "ts-pattern";
+import { match } from "ts-pattern";
 
 export class HttpSearchGateway implements SearchGateway {
   constructor(private readonly httpClient: HttpClient<SearchRoutes>) {}
@@ -47,21 +48,21 @@ export class HttpSearchGateway implements SearchGateway {
       );
   }
 
-  public async getGroupBySlug(groupSlug: GroupSlug): Promise<GroupWithResults> {
-    return this.httpClient
-      .getGroupBySlug({
-        urlParams: { groupSlug },
-      })
-      .then((response) =>
-        match(response)
-          .with({ status: 200 }, ({ body }) => body)
-          .with({ status: P.union(404) }, () => {
-            throw new Error(
-              `Nous n'avons pas trouvé le groupe: '${groupSlug}'`,
-            );
-          })
-          .otherwise(otherwiseThrow),
-      );
+  public getGroupInfoBySlug$(groupSlug: GroupSlug): Observable<GroupInfo> {
+    return from(
+      this.httpClient
+        .getGroupInfoBySlug({
+          urlParams: { groupSlug },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 404 }, () => {
+              throw errors.establishmentGroup.missingBySlug({ groupSlug });
+            })
+            .otherwise(otherwiseThrow),
+        ),
+    );
   }
 
   public getOffer$(params: SearchResultQuery): Observable<InternalOfferDto> {
