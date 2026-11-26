@@ -2,12 +2,13 @@ import {
   type ApiConsumer,
   type ConnectedUser,
   type ConnectedUserJwtPayload,
-  type ConventionJwtPayload,
+  type ConventionDomainJwtPayload,
   conventionStatusesDemonstratingUserActivity,
   type Email,
   errors,
   executeInSequence,
   isTruthy,
+  type OtpJwtPayload,
   type UserId,
 } from "shared";
 import type { TimeGateway } from "../../../time-gateway/ports/TimeGateway";
@@ -57,8 +58,9 @@ export const getGenericAuthOrThrow = <
   T extends
     | ConnectedUser
     | ConnectedUserJwtPayload
-    | ConventionJwtPayload
-    | ApiConsumer,
+    | ConventionDomainJwtPayload
+    | ApiConsumer
+    | OtpJwtPayload,
 >(
   genericAuth: T | undefined,
 ): T => {

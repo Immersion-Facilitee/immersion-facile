@@ -5,6 +5,7 @@ import {
   type GenerateConnectedUserJwt,
   type GenerateConventionJwt,
   type GenerateEmailAuthCodeJwt,
+  type GenerateOtpJwt,
   makeGenerateJwtES256,
   makeVerifyJwtES256,
   type VerifyJwtFn,
@@ -16,11 +17,14 @@ import type { AppConfig } from "./appConfig";
 import {
   makeConsumerMiddleware,
   makeMagicLinkAuthMiddleware,
+  makeOtpAuthMiddleware,
 } from "./authMiddleware";
 import { makeConnectedUserAuthMiddleware } from "./connectedUserAuthMiddleware";
+import { makeConventionMagicLinkOrOtpSessionAuthMiddleware } from "./conventionMagicLinkOrOtpSessionAuthMiddleware";
 import { createEventCrawler } from "./createEventCrawler";
 import { createGateways } from "./createGateways";
 import { createUseCases } from "./createUseCases";
+import { makeOtpSessionAuthMiddleware } from "./otpSessionAuthMiddleware";
 
 export type AppDependencies =
   ReturnType<typeof createAppDependencies> extends Promise<infer T> ? T : never;
@@ -56,6 +60,10 @@ export const createAppDependencies = async (config: AppConfig) => {
       config.jwtPrivateKey,
       config.conventionJwt1MonthDurationInDays * oneDayInSecond,
     );
+  const generateOtpJwt: GenerateOtpJwt = makeGenerateJwtES256<"otp">(
+    config.jwtPrivateKey,
+    undefined,
+  );
 
   const generateEmailAuthCodeJwt: GenerateEmailAuthCodeJwt =
     makeGenerateJwtES256<"emailAuthCode">(
@@ -66,6 +74,15 @@ export const createAppDependencies = async (config: AppConfig) => {
   const verifyEmailAuthCodeJwt: VerifyJwtFn<"emailAuthCode"> =
     makeVerifyJwtES256<"emailAuthCode">(config.jwtPrivateKey);
 
+  const conventionMagicLinkAuthMiddleware = makeMagicLinkAuthMiddleware(
+    config,
+    "convention",
+  );
+  const otpSessionAuthMiddleware = makeOtpSessionAuthMiddleware({
+    uowPerformer,
+    timeGateway: gateways.timeGateway,
+  });
+
   const useCases = createUseCases({
     config,
     gateways,
@@ -75,6 +92,7 @@ export const createAppDependencies = async (config: AppConfig) => {
       generateConnectedUserJwt,
       generateApiConsumerJwt,
       generateEmailAuthCodeJwt,
+      generateOtpJwt,
       verifyEmailAuthCodeJwt,
     },
   });
@@ -83,10 +101,14 @@ export const createAppDependencies = async (config: AppConfig) => {
     config,
     useCases,
     gateways,
-    conventionMagicLinkAuthMiddleware: makeMagicLinkAuthMiddleware(
-      config,
-      "convention",
-    ),
+    conventionMagicLinkAuthMiddleware,
+    conventionMagicLinkOrOtpSessionAuthMiddleware:
+      makeConventionMagicLinkOrOtpSessionAuthMiddleware({
+        magicLinkAuthMiddleware: conventionMagicLinkAuthMiddleware,
+        otpSessionAuthMiddleware,
+      }),
+    otpAuthMiddleware: makeOtpAuthMiddleware(config, "otp"),
+    otpSessionAuthMiddleware,
     apiConsumerMiddleware: makeConsumerMiddleware(
       useCases.getApiConsumerById.execute,
       gateways.timeGateway,
@@ -99,6 +121,7 @@ export const createAppDependencies = async (config: AppConfig) => {
       gateways.timeGateway,
     ),
     generateConventionJwt,
+    generateOtpJwt,
     generateApiConsumerJwt,
     generateConnectedUserJwt,
     eventBus,

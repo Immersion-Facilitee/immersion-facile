@@ -9,6 +9,7 @@ import type {
   AssessmentDtoCompleted,
   AssessmentDtoPartiallyCompleted,
 } from "../assessment/assessment.dto";
+import type { OtpCode } from "../auth/otpChallenge/otpChallenge.dto";
 import type {
   ConventionDto,
   ConventionId,
@@ -47,10 +48,10 @@ export type UserParamsForMail = {
   email: Email;
 };
 
-export type MagicLinkRenewalParams = {
+export type LinkRenewalParams = {
   conventionId?: ConventionId;
   internshipKind?: InternshipKind;
-  magicLink: string;
+  link: string;
 };
 
 export type EmailParamsByEmailType = {
@@ -446,7 +447,7 @@ export type EmailParamsByEmailType = {
     fullname?: string;
     loginLink: AbsoluteUrl;
   };
-  MAGIC_LINK_RENEWAL: MagicLinkRenewalParams;
+  LINK_RENEWAL: LinkRenewalParams;
   NEW_CONVENTION_CONFIRMATION_REQUEST_SIGNATURE: {
     agencyLogoUrl: AbsoluteUrl | undefined;
     beneficiaryName: string;
@@ -499,6 +500,9 @@ export type EmailParamsByEmailType = {
     internshipKind: InternshipKind;
     rejectionReason: string;
     signature: string;
+  };
+  REQUEST_OTP_CODE: {
+    otpCode: OtpCode;
   };
   SHARE_CONVENTION_DRAFT_RECIPIENT: {
     internshipKind: InternshipKind;

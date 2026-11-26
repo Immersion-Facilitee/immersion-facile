@@ -1,4 +1,4 @@
-import { type ConventionJwtPayload, errors } from "shared";
+import { type ConventionDomainJwtPayload, errors } from "shared";
 import type { TimeGateway } from "../../core/time-gateway/ports/TimeGateway";
 import { useCaseBuilder } from "../../core/useCaseBuilder";
 import type { EstablishmentLead } from "../entities/EstablishmentLeadEntity";
@@ -10,7 +10,7 @@ export type MarkEstablishmentLeadAsRegistrationRejected = ReturnType<
 export const makeMarkEstablishmentLeadAsRegistrationRejected = useCaseBuilder(
   "MarkEstablishmentLeadAsRegistrationRejected",
 )
-  .withCurrentUser<ConventionJwtPayload>()
+  .withCurrentUser<ConventionDomainJwtPayload>()
   .withDeps<{ timeGateway: TimeGateway }>()
   .build(async ({ uow, currentUser, deps: { timeGateway } }) => {
     const convention = await uow.conventionRepository.getById(

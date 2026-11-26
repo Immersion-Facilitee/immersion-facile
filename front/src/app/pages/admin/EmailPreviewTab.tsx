@@ -569,10 +569,10 @@ export const defaultEmailValueByEmailKind: {
     firstName: "USER_FIRST_NAME",
     lastName: "USER_LAST_NAME",
   },
-  MAGIC_LINK_RENEWAL: {
+  LINK_RENEWAL: {
     conventionId: "CONVENTION_ID",
     internshipKind: "immersion",
-    magicLink: "MAGIC_LINK",
+    link: "LINK",
   },
   ASSESSMENT_CREATED_WITH_STATUS_COMPLETED_AGENCY_NOTIFICATION: {
     agencyReferentName: "AGENCY_REFERENT_NAME",
@@ -690,6 +690,9 @@ export const defaultEmailValueByEmailKind: {
     internshipKind: "immersion",
     rejectionReason: "REJECTION_REASON",
     signature: "SIGNATURE",
+  },
+  REQUEST_OTP_CODE: {
+    otpCode: "1234",
   },
   SHARE_CONVENTION_DRAFT_RECIPIENT: {
     internshipKind: "immersion",

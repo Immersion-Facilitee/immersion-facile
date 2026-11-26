@@ -110,6 +110,11 @@ import { makeInitiateLoginByEmail } from "../../domains/core/authentication/conn
 import { makeInitiateLoginByOAuth } from "../../domains/core/authentication/connected-user/use-cases/InitiateLoginByOAuth";
 import { makeRenewExpiredJwt } from "../../domains/core/authentication/connected-user/use-cases/RenewExpiredJwt";
 import { makeNotifyFranceTravailUserAdvisorOnConventionFullySigned } from "../../domains/core/authentication/ft-connect/use-cases/NotifyFranceTravailUserAdvisorOnConventionFullySigned";
+import { makeHashOtpCode } from "../../domains/core/authentication/otp-challenge/entities/otpChallenge.helper";
+import { makeGetMaskedOtpRecipients } from "../../domains/core/authentication/otp-challenge/use-cases/GetMaskedOtpRecipients";
+import { makeRequestOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/RequestOtpChallenge";
+import { makeVerifyOtpChallenge } from "../../domains/core/authentication/otp-challenge/use-cases/VerifyOtpChallenge";
+import { makeGetOtpSession } from "../../domains/core/authentication/otp-session/use-cases/GetOtpSession";
 import type { DashboardGateway } from "../../domains/core/dashboard/port/DashboardGateway";
 import { makeGetDashboardUrl } from "../../domains/core/dashboard/useCases/GetDashboardUrl";
 import { makeValidateEmail } from "../../domains/core/email-validation/use-cases/ValidateEmail";
@@ -122,6 +127,7 @@ import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
   GenerateEmailAuthCodeJwt,
+  GenerateOtpJwt,
   VerifyJwtFn,
 } from "../../domains/core/jwt";
 import { makeGetAllNafSections } from "../../domains/core/naf/use-cases/GetAllNafSections";
@@ -191,6 +197,7 @@ import {
   makeGenerateConnectedUserLoginUrl,
   makeGenerateConventionMagicLinkUrl,
   makeGenerateEmailAuthCodeUrl,
+  makeGenerateOtpLinkUrl,
 } from "./magicLinkUrl";
 
 type CreateUsecasesParams = {
@@ -206,6 +213,7 @@ type CreateUsecasesParams = {
     generateConnectedUserJwt: GenerateConnectedUserJwt;
     generateApiConsumerJwt: GenerateApiConsumerJwt;
     generateEmailAuthCodeJwt: GenerateEmailAuthCodeJwt;
+    generateOtpJwt: GenerateOtpJwt;
     verifyEmailAuthCodeJwt: VerifyJwtFn<"emailAuthCode">;
   };
 };
@@ -219,6 +227,7 @@ export const createUseCases = ({
     generateConnectedUserJwt,
     generateConventionJwt,
     generateEmailAuthCodeJwt,
+    generateOtpJwt,
     verifyEmailAuthCodeJwt,
   },
 }: CreateUsecasesParams) => {
@@ -266,6 +275,7 @@ export const createUseCases = ({
     config,
     generateEmailAuthCodeJwt,
   );
+  const generateOtpLinkUrl = makeGenerateOtpLinkUrl(config, generateOtpJwt);
 
   const addConvention = makeAddConvention({
     deps: { createNewEvent, siretGateway: gateways.siret },
@@ -881,6 +891,7 @@ export const createUseCases = ({
         generateConnectedUserLoginUrl,
         generateConventionMagicLinkUrl,
         generateEmailAuthCodeUrl,
+        generateOtpLinkUrl,
         saveNotificationAndRelatedEvent,
         createNewEvent,
       },
@@ -1360,6 +1371,34 @@ export const createUseCases = ({
       deps: {
         createNewEvent,
         generateApiConsumerJwt,
+        timeGateway,
+      },
+    }),
+
+    getMaskedOtpRecipients: makeGetMaskedOtpRecipients({
+      uowPerformer,
+    }),
+    requestOtpChallenge: makeRequestOtpChallenge({
+      uowPerformer,
+      deps: {
+        hashOtpCode: makeHashOtpCode(config.otpCodeHmacSecret),
+        otpCodeGeneratorGateway: gateways.otpCodeGeneratorGateway,
+        saveNotificationAndRelatedEvent,
+        timeGateway,
+        uuidGenerator,
+      },
+    }),
+    verifyOtpChallenge: makeVerifyOtpChallenge({
+      deps: {
+        hashOtpCode: makeHashOtpCode(config.otpCodeHmacSecret),
+        timeGateway,
+        uuidGenerator,
+        uowPerformer,
+      },
+    }),
+    getOtpSession: makeGetOtpSession({
+      uowPerformer,
+      deps: {
         timeGateway,
       },
     }),

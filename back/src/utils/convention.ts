@@ -16,6 +16,7 @@ import {
   executeInSequence,
   type FtConnectIdentity,
   type FtConnectIdentityWithoutToken,
+  type GenericActor,
   isConventionActorRole,
   isTruthy,
   makeEmptyLastReminders,
@@ -35,35 +36,41 @@ export const throwIfRoleHasNoMagicLink = (role: Role): ConventionActorRole => {
   return role;
 };
 
+export const conventionActorByRole =
+  (convention: ConventionDto) =>
+  (role: ConventionActorRole): GenericActor<ConventionActorRole> => {
+    const actorByRole: Record<
+      ConventionActorRole,
+      GenericActor<ConventionActorRole> | Error
+    > = {
+      beneficiary: convention.signatories.beneficiary,
+      "establishment-representative":
+        convention.signatories.establishmentRepresentative,
+      "establishment-tutor": convention.establishmentTutor,
+      "beneficiary-representative":
+        convention.signatories.beneficiaryRepresentative ??
+        errors.convention.missingActor({
+          conventionId: convention.id,
+          role: "beneficiary-representative",
+        }),
+      "beneficiary-current-employer":
+        convention.signatories.beneficiaryCurrentEmployer ??
+        errors.convention.missingActor({
+          conventionId: convention.id,
+          role: "beneficiary-current-employer",
+        }),
+    };
+
+    const actor = actorByRole[role];
+    if (actor instanceof Error) throw actor;
+    return actor;
+  };
+
 export const conventionEmailsByRole =
   (convention: ConventionDto) =>
-  (role: ConventionActorRole): Email[] => {
-    const emailsByRole: Record<ConventionActorRole, Email[] | Error> = {
-      beneficiary: [convention.signatories.beneficiary.email],
-      "beneficiary-current-employer": convention.signatories
-        .beneficiaryCurrentEmployer
-        ? [convention.signatories.beneficiaryCurrentEmployer.email]
-        : errors.convention.missingActor({
-            conventionId: convention.id,
-            role: "beneficiary-current-employer",
-          }),
-      "beneficiary-representative": convention.signatories
-        .beneficiaryRepresentative
-        ? [convention.signatories.beneficiaryRepresentative.email]
-        : errors.convention.missingActor({
-            conventionId: convention.id,
-            role: "beneficiary-representative",
-          }),
-      "establishment-representative": [
-        convention.signatories.establishmentRepresentative.email,
-      ],
-      "establishment-tutor": [convention.establishmentTutor.email],
-    };
-    const emails = emailsByRole[role];
-
-    if (emails instanceof Error) throw emails;
-    return emails;
-  };
+  (role: ConventionActorRole): Email[] => [
+    conventionActorByRole(convention)(role).email,
+  ];
 
 export const conventionDtosToConventionReadDtos = async (
   conventions: ConventionDto[],

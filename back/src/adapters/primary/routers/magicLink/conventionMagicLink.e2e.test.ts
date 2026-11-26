@@ -15,6 +15,8 @@ import {
   expectArraysToMatch,
   expectHttpResponseToEqual,
   expectToEqual,
+  OtpSessionDtoBuilder,
+  otpSessionCookieName,
   type User,
 } from "shared";
 import type { HttpClient } from "shared-routes";
@@ -24,6 +26,7 @@ import { invalidTokenMessage } from "../../../../config/bootstrap/connectedUserA
 import type {
   GenerateConnectedUserJwt,
   GenerateConventionJwt,
+  GenerateOtpJwt,
 } from "../../../../domains/core/jwt";
 import type { InMemoryUnitOfWork } from "../../../../domains/core/unit-of-work/adapters/createInMemoryUow";
 import { toAgencyWithRights } from "../../../../utils/agency";
@@ -32,7 +35,11 @@ import {
   type InMemoryGateways,
 } from "../../../../utils/buildTestApp";
 import { makeHashByRolesForTest } from "../../../../utils/emailHash";
-import { createConventionMagicLinkPayload } from "../../../../utils/jwt";
+import {
+  createConventionMagicLinkPayload,
+  createOtpJwtPayload,
+  makeEmailHash,
+} from "../../../../utils/jwt";
 
 describe("Magic link router", () => {
   const payloadMeta = {
@@ -61,6 +68,7 @@ describe("Magic link router", () => {
   let request: SuperTest<Test>;
   let generateConventionJwt: GenerateConventionJwt;
   let generateConnectedUserJwt: GenerateConnectedUserJwt;
+  let generateOtpJwt: GenerateOtpJwt;
   let inMemoryUow: InMemoryUnitOfWork;
   let httpClient: HttpClient<ConventionMagicLinkRoutes>;
   let gateways: InMemoryGateways;
@@ -70,6 +78,7 @@ describe("Magic link router", () => {
       request,
       generateConventionJwt,
       generateConnectedUserJwt,
+      generateOtpJwt,
       inMemoryUow,
       gateways,
     } = await buildTestApp());
@@ -357,6 +366,93 @@ describe("Magic link router", () => {
       });
     });
 
+    describe("otp session cookie", () => {
+      const now = new Date("2026-11-05T10:00:00.000Z");
+      const otpSession = new OtpSessionDtoBuilder()
+        .withSubject({
+          conventionId: convention.id,
+          role: "beneficiary",
+          emailHash: makeEmailHash(convention.signatories.beneficiary.email),
+        })
+        .withExpiresAt(addDays(now, 1).toISOString())
+        .withCreatedAt(now.toISOString())
+        .build();
+
+      beforeEach(() => {
+        gateways.timeGateway.defaultDate = now;
+        inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
+      });
+
+      it("200 - succeeds with otp session cookie", async () => {
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.signConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: { id: convention.id },
+          },
+        );
+      });
+
+      it("200 - ignores otp JWT and signs with otp session cookie", async () => {
+        const { status, body } = await request
+          .post(
+            conventionMagicLinkRoutes.signConvention.url.replace(
+              ":conventionId",
+              convention.id,
+            ),
+          )
+          .set(
+            "Authorization",
+            generateOtpJwt(
+              createOtpJwtPayload({
+                purpose: "manageConvention",
+                subject: {
+                  conventionId: convention.id,
+                  role: "beneficiary",
+                  emailHash: makeEmailHash(
+                    convention.signatories.beneficiary.email,
+                  ),
+                },
+                now,
+              }),
+            ),
+          )
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: { id: convention.id },
+          },
+        );
+      });
+
+      it("400 - without authorization nor otp session cookie", async () => {
+        const response = await httpClient.signConvention({
+          urlParams: { conventionId: convention.id },
+          headers: {},
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 400,
+          body: {
+            status: 400,
+            message: errors.auth.missingAuthentication().message,
+          },
+        });
+      });
+    });
+
     it("401 - invalid JWT", async () => {
       const response = await httpClient.signConvention({
         urlParams: { conventionId: convention.id },
@@ -367,6 +463,36 @@ describe("Magic link router", () => {
         status: 401,
         body: { status: 401, message: invalidTokenMessage },
       });
+    });
+
+    it("401 - otp JWT without otp session cookie cannot sign convention", async () => {
+      const response = await httpClient.signConvention({
+        urlParams: { conventionId: convention.id },
+        headers: {
+          authorization: generateOtpJwt(
+            createOtpJwtPayload({
+              purpose: "manageConvention",
+              subject: {
+                conventionId: convention.id,
+                role: "beneficiary",
+                emailHash: makeEmailHash(
+                  convention.signatories.beneficiary.email,
+                ),
+              },
+              now: new Date(),
+            }),
+          ),
+        },
+      });
+
+      expectHttpResponseToEqual(response, {
+        status: 401,
+        body: {
+          status: 401,
+          message: errors.otpSession.unauthorized().message,
+        },
+      });
+      expectToEqual(inMemoryUow.conventionRepository.conventions, [convention]);
     });
 
     it("404 - convention not found", async () => {

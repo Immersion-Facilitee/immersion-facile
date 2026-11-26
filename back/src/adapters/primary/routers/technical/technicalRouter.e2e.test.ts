@@ -1,7 +1,9 @@
 import { createHmac } from "node:crypto";
+import { addMinutes } from "date-fns";
 import {
   type AbsoluteUrl,
   type BrevoInboundBody,
+  type ConventionId,
   DiscussionBuilder,
   type DiscussionId,
   displayRouteName,
@@ -14,6 +16,8 @@ import {
   makeHighlightFeatureFlag,
   makeTextImageAndRedirectFeatureFlag,
   makeTextWithSeverityFeatureFlag,
+  OtpSessionDtoBuilder,
+  otpSessionCookieName,
   type ShortLinkId,
   type TechnicalRoutes,
   technicalRoutes,
@@ -156,6 +160,63 @@ describe("technical router", () => {
       );
 
       expectToEqual(response.status, 200);
+    });
+
+    describe("with otp session cookie", () => {
+      const now = new Date("2026-11-05T10:00:00.000Z");
+      const conventionId: ConventionId = "convention-id";
+      const htmlToPdfBody = {
+        htmlContent: "<p>some html content</p>",
+        conventionId,
+      };
+      const otpSession = new OtpSessionDtoBuilder()
+        .withSubject({
+          conventionId,
+          role: "beneficiary",
+          emailHash: "beneficiary-email-hash",
+        })
+        .withExpiresAt(addMinutes(now, 60).toISOString())
+        .withCreatedAt(now.toISOString())
+        .build();
+
+      beforeEach(() => {
+        gateways.timeGateway.defaultDate = now;
+        inMemoryUow.otpSessionRepository.otpSessions = [otpSession];
+      });
+
+      it(`${displayRouteName(
+        technicalRoutes.htmlToPdf,
+      )} 200 - with otp session cookie only`, async () => {
+        const { status, body } = await request
+          .post(technicalRoutes.htmlToPdf.url)
+          .send(htmlToPdfBody)
+          .set("Cookie", `${otpSessionCookieName}=${otpSession.id}`);
+
+        expectHttpResponseToEqual(
+          { status, body, headers: {} },
+          {
+            status: 200,
+            body: `PDF_OF convention ${conventionId} >> "<p>some html content</p>"`,
+          },
+        );
+      });
+
+      it(`${displayRouteName(
+        technicalRoutes.htmlToPdf,
+      )} 400 - without authorization nor otp session cookie`, async () => {
+        const response = await httpClient.htmlToPdf({
+          body: htmlToPdfBody,
+          headers: {},
+        });
+
+        expectHttpResponseToEqual(response, {
+          status: 400,
+          body: {
+            status: 400,
+            message: errors.auth.missingAuthentication().message,
+          },
+        });
+      });
     });
   });
 

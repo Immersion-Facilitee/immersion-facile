@@ -1,32 +1,40 @@
-import { decode, TokenExpiredError } from "jsonwebtoken";
 import { keys, values } from "ramda";
 import {
-  type AppSupportedDomainJwtPayload,
-  type AppSupportedJwt,
   type ConnectedUserDomainJwtPayload,
+  type ConnectedUserJwt,
   type ConventionDomainJwtPayload,
+  type ConventionJwt,
+  type EmailAuthCodeJwt,
   errors,
-  ForbiddenError,
+  type FollowedIds,
   frontRoutes,
-  type MagicLinkRenewalParams,
+  type LinkRenewalParams,
   type OAuthState,
+  type OtpDomainJwtPayload,
+  type OtpJwt,
+  otpDomainJwtPayloadSchema,
   removeAllParamsFromUrl,
   renewExpiredJwtRequestSchema,
   type ShortLinkId,
 } from "shared";
+import { match } from "ts-pattern";
 import type { AppConfig } from "../../../../../config/bootstrap/appConfig";
-import { verifyJwtConfig } from "../../../../../config/bootstrap/authMiddleware";
 import type {
   GenerateConnectedUserLoginUrl,
   GenerateConventionMagicLinkRouteName,
   GenerateConventionMagicLinkUrl,
   GenerateEmailAuthCodeUrl,
+  GenerateOtpLinkUrl,
 } from "../../../../../config/bootstrap/magicLinkUrl";
 import {
   conventionEmailsByRole,
   throwIfRoleHasNoMagicLink,
 } from "../../../../../utils/convention";
-import { makeEmailHash } from "../../../../../utils/jwt";
+import { getConventionActorMatchingEmailHashOrThrow } from "../../../../../utils/emailHash";
+import {
+  extractJwtPayloadFromExpiredJwt,
+  makeEmailHash,
+} from "../../../../../utils/jwt";
 import type { CreateNewEvent } from "../../../events/ports/EventBus";
 import type { SaveNotificationAndRelatedEvent } from "../../../notifications/helpers/Notification";
 import type { ShortLinkIdGeneratorGateway } from "../../../short-link/ports/ShortLinkIdGeneratorGateway";
@@ -45,6 +53,7 @@ type Deps = {
   generateConventionMagicLinkUrl: GenerateConventionMagicLinkUrl;
   generateConnectedUserLoginUrl: GenerateConnectedUserLoginUrl;
   generateEmailAuthCodeUrl: GenerateEmailAuthCodeUrl;
+  generateOtpLinkUrl: GenerateOtpLinkUrl;
   config: AppConfig;
   timeGateway: TimeGateway;
   shortLinkIdGeneratorGateway: ShortLinkIdGeneratorGateway;
@@ -55,67 +64,99 @@ type Deps = {
 export const makeRenewExpiredJwt = useCaseBuilder("RenewExpiredJwt")
   .withInput(renewExpiredJwtRequestSchema)
   .withDeps<Deps>()
-  .build(async ({ inputParams, uow, deps }) => {
-    if (inputParams.kind === "conventionFromShortLink")
-      return onConventionFromShortLink(
-        uow,
-        inputParams.shortLinkId,
-        inputParams.expiredJwt,
-        deps,
-      );
+  .build(async ({ inputParams, uow, deps }) =>
+    match(inputParams)
+      .with({ kind: "convention" }, ({ expiredJwt, originalUrl }) =>
+        onConventionDomainJwtPayload(
+          uow,
+          extractConventionDomainJwtPayloadOrThrow(deps.config, expiredJwt),
+          originalUrl,
+          deps,
+        ),
+      )
+      .with(
+        { kind: "conventionFromShortLink" },
+        ({ shortLinkId, expiredJwt }) =>
+          onConventionFromShortLink(uow, shortLinkId, expiredJwt, deps),
+      )
+      .with({ kind: "connectedUser" }, ({ expiredJwt }) =>
+        onConnectedUserDomainJwtPayload({
+          uow,
+          jwtPayload: extractConnectedUserDomainJwtPayloadOrThrow(
+            deps.config,
+            expiredJwt,
+          ),
+          deps,
+        }),
+      )
+      .with({ kind: "emailAuthCode" }, ({ expiredJwt, state }) => {
+        throwIfNotEmailAuthCodeDomainJwtPayload(deps.config, expiredJwt);
+        // à partir d'un jwt emailAuthCode, un utilisateur peut piffer des states ids : faille de sécu ?
+        return onEmailAuthCodeDomainJwtPayload({ state, uow, deps });
+      })
+      .with({ kind: "otp" }, ({ expiredJwt }) =>
+        onOtpDomainJwtPayload({
+          uow,
+          jwtPayload: extractOtpDomainJwtPayloadOrThrow(
+            deps.config,
+            expiredJwt,
+          ),
+          deps,
+        }),
+      )
+      .exhaustive(),
+  );
 
-    const appSupportedJwtPayload = extractJwtPayloadFromExpiredJwt(
-      deps.config,
-      inputParams.expiredJwt,
-    );
-
-    if (
-      "applicationId" in appSupportedJwtPayload &&
-      "originalUrl" in inputParams
-    )
-      return onConventionDomainJwtPayload(
-        uow,
-        appSupportedJwtPayload,
-        inputParams.originalUrl,
-        deps,
-      );
-
-    if ("emailAuthCode" in appSupportedJwtPayload && "state" in inputParams) {
-      // à partir d'un jwt emailAuthCode, un utilisateur peut piffer des states ids : faille de sécu ?
-      return onEmailAuthCodeDomainJwtPayload({
-        state: inputParams.state,
-        uow,
-        deps,
-      });
-    }
-
-    if ("userId" in appSupportedJwtPayload)
-      return onConnectedUserDomainJwtPayload({
-        uow,
-        jwtPayload: appSupportedJwtPayload,
-        deps,
-      });
-
+const extractConventionDomainJwtPayloadOrThrow = (
+  config: AppConfig,
+  expiredJwt: ConventionJwt,
+): ConventionDomainJwtPayload => {
+  const jwtPayload = extractJwtPayloadFromExpiredJwt(config, expiredJwt);
+  if (!("applicationId" in jwtPayload))
     throw errors.user.unsupportedJwtPayload();
-  });
+  return jwtPayload;
+};
+
+const extractConnectedUserDomainJwtPayloadOrThrow = (
+  config: AppConfig,
+  expiredJwt: ConnectedUserJwt,
+): ConnectedUserDomainJwtPayload => {
+  const jwtPayload = extractJwtPayloadFromExpiredJwt(config, expiredJwt);
+  if (!("userId" in jwtPayload)) throw errors.user.unsupportedJwtPayload();
+  return jwtPayload;
+};
+
+const throwIfNotEmailAuthCodeDomainJwtPayload = (
+  config: AppConfig,
+  expiredJwt: EmailAuthCodeJwt,
+): void => {
+  const jwtPayload = extractJwtPayloadFromExpiredJwt(config, expiredJwt);
+  if (!("emailAuthCode" in jwtPayload))
+    throw errors.user.unsupportedJwtPayload();
+};
+
+const extractOtpDomainJwtPayloadOrThrow = (
+  config: AppConfig,
+  expiredJwt: OtpJwt,
+): OtpDomainJwtPayload => {
+  const result = otpDomainJwtPayloadSchema.safeParse(
+    extractJwtPayloadFromExpiredJwt(config, expiredJwt),
+  );
+  if (!result.success) throw errors.user.unsupportedJwtPayload();
+  return result.data;
+};
 
 const onConventionFromShortLink = async (
   uow: UnitOfWork,
   shortLinkId: ShortLinkId,
-  expiredJwt: string,
+  expiredJwt: ConventionJwt,
   deps: Deps,
 ): Promise<void> => {
   const shortLink = await uow.shortLinkQuery.getById(shortLinkId);
   if (!shortLink) throw errors.shortLink.notFound({ shortLinkId });
-  const appSupportedJwtPayload = extractJwtPayloadFromExpiredJwt(
-    deps.config,
-    expiredJwt,
-  );
-  if (!("applicationId" in appSupportedJwtPayload))
-    throw errors.user.unsupportedJwtPayload();
   return onConventionDomainJwtPayload(
     uow,
-    appSupportedJwtPayload,
+    extractConventionDomainJwtPayloadOrThrow(deps.config, expiredJwt),
     shortLink.url,
     deps,
   );
@@ -149,8 +190,9 @@ const onEmailAuthCodeDomainJwtPayload = async ({
     : sendTokenRenewal({
         uow,
         email: ongoingOAuth.email,
+        followedIds: {},
         params: {
-          magicLink: await prepareEmailAuthCodeShortLinkMaker({
+          link: await prepareEmailAuthCodeShortLinkMaker({
             uow,
             config: deps.config,
             generateEmailAuthCodeLoginUrl: deps.generateEmailAuthCodeUrl,
@@ -190,8 +232,9 @@ const onConnectedUserDomainJwtPayload = async ({
     deps,
     uow,
     email: user.email,
+    followedIds: { userId: user.id },
     params: {
-      magicLink: await prepareConnectedUserMagicShortLinkMaker({
+      link: await prepareConnectedUserMagicShortLinkMaker({
         uow,
         config: deps.config,
         shortLinkIdGeneratorGateway: deps.shortLinkIdGeneratorGateway,
@@ -249,9 +292,14 @@ const onConventionDomainJwtPayload = async (
   await sendTokenRenewal({
     uow,
     email: emailMatchingEmailHash,
+    followedIds: {
+      conventionId: convention.id,
+      agencyId: convention.agencyId,
+      establishmentSiret: convention.siret,
+    },
     params: {
       internshipKind: convention.internshipKind,
-      magicLink: await makeConventionMagicShortLink({
+      link: await makeConventionMagicShortLink({
         targetRoute: routeToRenew,
         lifetime: "1Month",
       }),
@@ -261,15 +309,65 @@ const onConventionDomainJwtPayload = async (
   });
 };
 
+const onOtpDomainJwtPayload = async ({
+  uow,
+  jwtPayload: { purpose, subject },
+  deps,
+}: {
+  uow: UnitOfWork;
+  jwtPayload: OtpDomainJwtPayload;
+  deps: Deps;
+}): Promise<void> =>
+  match(purpose)
+    .with("manageConvention", async (): Promise<void> => {
+      const convention = await uow.conventionRepository.getById(
+        subject.conventionId,
+      );
+
+      if (!convention)
+        throw errors.convention.notFound({
+          conventionId: subject.conventionId,
+        });
+
+      const actor = getConventionActorMatchingEmailHashOrThrow({
+        convention,
+        emailHash: subject.emailHash,
+        role: subject.role,
+      });
+
+      await sendTokenRenewal({
+        uow,
+        email: actor.email,
+        followedIds: {
+          conventionId: convention.id,
+          agencyId: convention.agencyId,
+          establishmentSiret: convention.siret,
+        },
+        params: {
+          conventionId: convention.id,
+          internshipKind: convention.internshipKind,
+          link: deps.generateOtpLinkUrl({
+            purpose,
+            subject,
+            now: deps.timeGateway.now(),
+          }),
+        },
+        deps,
+      });
+    })
+    .exhaustive();
+
 const sendTokenRenewal = async ({
   uow,
   email,
+  followedIds,
   params,
   deps,
 }: {
   uow: UnitOfWork;
   email: string;
-  params: MagicLinkRenewalParams;
+  followedIds: FollowedIds;
+  params: LinkRenewalParams;
   deps: Deps;
 }): Promise<void> => {
   await deps.saveNotificationAndRelatedEvent(
@@ -277,13 +375,11 @@ const sendTokenRenewal = async ({
     {
       kind: "email",
       templatedContent: {
-        kind: "MAGIC_LINK_RENEWAL",
+        kind: "LINK_RENEWAL",
         recipients: [email],
         params,
       },
-      followedIds: {
-        conventionId: params.conventionId,
-      },
+      followedIds,
     },
     { priority: 2 },
   );
@@ -320,39 +416,4 @@ const findRouteToRenew = (
       originalUrl,
     });
   return supportedRouteToRenew;
-};
-
-const extractJwtPayloadFromExpiredJwt = (
-  config: AppConfig,
-  expiredJwt: AppSupportedJwt,
-): AppSupportedDomainJwtPayload => {
-  const { verifyJwt, verifyDeprecatedJwt } = verifyJwtConfig(config);
-  let payloadToExtract: AppSupportedDomainJwtPayload | undefined;
-  try {
-    // If the following doesn't throw, we're dealing with a JWT that we signed, so it's
-    // probably expired or an old version.
-    payloadToExtract = verifyJwt(expiredJwt) as AppSupportedDomainJwtPayload;
-  } catch (err) {
-    // If this JWT is signed by us but expired, deal with it.
-    if (err instanceof TokenExpiredError) {
-      payloadToExtract = decode(expiredJwt) as AppSupportedDomainJwtPayload;
-    } else {
-      // Perhaps this is a JWT that is signed by a compromised key.
-      try {
-        verifyDeprecatedJwt(expiredJwt);
-        // If the above didn't throw, this is a JWT that we issued. Renew it.
-        // However, we cannot trust the contents of it, as the private key was potentially
-        // compromised. Therefore, only use the convention ID and the role from it, and fill
-        // the remaining data from the database to prevent a hacker from getting magic links
-        // for any convention form.
-        payloadToExtract = decode(expiredJwt) as AppSupportedDomainJwtPayload;
-      } catch (_) {
-        // We don't want to renew this JWT.
-        throw new ForbiddenError();
-      }
-    }
-  }
-  // Convention JWT payload is not validated
-  if (payloadToExtract) return payloadToExtract;
-  throw errors.convention.malformedExpiredJwt();
 };

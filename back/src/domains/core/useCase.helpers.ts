@@ -7,6 +7,8 @@ import {
   calculateDurationInSecondsFrom,
   castError,
   type LegacySearchQueryParamsDto,
+  type OtpJwtPayload,
+  type OtpSessionPayload,
   type UserId,
   type ZodSchemaWithInputMatchingOutput,
 } from "shared";
@@ -45,6 +47,8 @@ export type UseCaseIdentityPayload =
   | ConnectedUserDomainJwtPayload
   | ConnectedUser
   | ApiConsumer
+  | OtpJwtPayload
+  | OtpSessionPayload
   | void;
 
 export const useCaseLoggerWrapper = <

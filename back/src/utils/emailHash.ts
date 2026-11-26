@@ -6,12 +6,13 @@ import {
   type Email,
   type EmailHash,
   errors,
+  type GenericActor,
   type Role,
   type UserWithAdminRights,
 } from "shared";
 import type { UnitOfWork } from "../domains/core/unit-of-work/ports/UnitOfWork";
 import { agencyWithRightToAgencyDto } from "./agency";
-import { conventionEmailsByRole } from "./convention";
+import { conventionActorByRole, conventionEmailsByRole } from "./convention";
 import { makeEmailHash } from "./jwt";
 
 export const isSomeEmailMatchingEmailHash = (
@@ -50,6 +51,27 @@ export const isHashMatchConventionEmails = ({
 }): boolean => {
   const emailsByRole = conventionEmailsByRole(convention)(role);
   return isSomeEmailMatchingEmailHash(emailsByRole, emailHash);
+};
+
+export const getConventionActorMatchingEmailHashOrThrow = ({
+  convention,
+  emailHash,
+  role,
+}: {
+  convention: ConventionDto;
+  emailHash: EmailHash;
+  role: ConventionActorRole;
+}): GenericActor<ConventionActorRole> => {
+  const actor = conventionActorByRole(convention)(role);
+
+  if (!isSomeEmailMatchingEmailHash([actor.email], emailHash))
+    throw errors.convention.forbiddenMissingRightsEmailHash({
+      conventionId: convention.id,
+      role,
+      emailHash,
+    });
+
+  return actor;
 };
 
 export const isHashMatchPeAdvisorEmail = ({

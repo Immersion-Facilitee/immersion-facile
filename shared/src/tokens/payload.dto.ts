@@ -1,4 +1,5 @@
 import type { ApiConsumerId } from "../apiConsumer/ApiConsumer";
+import type { OtpChallenge } from "../auth/otpChallenge/otpChallenge.dto";
 import type { ConventionId } from "../convention/convention.dto";
 import type { ConventionActorRole } from "../role/role.dto";
 import type { Flavor } from "../typeFlavors";
@@ -14,10 +15,12 @@ export type PayloadKind =
   | "convention"
   | "connectedUser"
   | "currentUser"
-  | "emailAuthCode";
+  | "emailAuthCode"
+  | "otp";
 
 export type JwtPayloads = {
-  convention?: ConventionJwtPayload;
+  convention?: ConventionDomainJwtPayload;
+  otp?: OtpJwtPayload;
   connectedUser?: ConnectedUserJwtPayload;
   emailAuthCode?: EmailAuthCodeJwtPayload;
   currentUser?: ConnectedUser;
@@ -27,13 +30,15 @@ export type AppSupportedJwtPayload =
   | ConventionJwtPayload
   | ConnectedUserJwtPayload
   | EmailAuthCodeJwtPayload
-  | ConnectedUser;
+  | ConnectedUser
+  | OtpJwtPayload;
 
 export type AppSupportedDomainJwtPayload =
   | ApiConsumerDomainJwtPayload
   | ConventionDomainJwtPayload
   | ConnectedUserDomainJwtPayload
-  | EmailAuthCodeDomainJwtPayload;
+  | EmailAuthCodeDomainJwtPayload
+  | OtpDomainJwtPayload;
 
 export type ConnectedUserDomainJwtPayload = { userId: UserId };
 export type ConnectedUserJwtPayload = CommonJwtPayload &
@@ -46,6 +51,11 @@ export type ConventionDomainJwtPayload = {
   role: ConventionActorRole;
   emailHash: EmailHash; //< md5 of email
   sub?: string;
+};
+
+export type OtpDomainJwtPayload = {
+  subject: OtpChallenge["subject"];
+  purpose: OtpChallenge["purpose"];
 };
 
 export type ApiConsumerDomainJwtPayload = {
@@ -62,6 +72,8 @@ export type ApiConsumerJwtPayload = CommonJwtPayload &
 
 export type ConventionJwtPayload = CommonJwtPayload &
   ConventionDomainJwtPayload;
+
+export type OtpJwtPayload = CommonJwtPayload & OtpDomainJwtPayload;
 
 export type ConventionRelatedJwtPayload =
   | ConventionDomainJwtPayload
