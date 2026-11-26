@@ -1,6 +1,6 @@
 ---
 name: Grosse feature
-about: Un nouveau use case ou une fonctionnalité qui nécessite cadrage, maquettes et analyse dev / bizdev.
+about: Une nouvelle fonctionnalité qui implique un changement significatif dans le code ou les parcours, un cadrage, une analyse croisée et maquettes complexes.
 title: ETQ 'qui?', un titre court svp
 type: feature
 ---
