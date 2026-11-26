@@ -38,9 +38,3 @@ export const groupInfoSchema: ZodSchemaWithInputMatchingOutput<GroupInfo> =
     name: zStringMinLength1Max1024,
     options: groupOptionsSchema,
   });
-//
-// export const groupInfoSchema: ZodSchemaWithInputMatchingOutput<GroupInfo> =
-//   z.object({
-//     group: groupSchema,
-//     // results: z.array(internalOfferSchema),
-//   });

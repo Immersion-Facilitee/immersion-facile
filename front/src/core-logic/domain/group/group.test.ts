@@ -82,7 +82,7 @@ describe("group epic", () => {
           on: "fetch",
           level: "error",
           message: "Bad request",
-          title: "et le titre",
+          title: "Une erreur s'est produite",
         },
       );
       expectIsLoading(false);
