@@ -1,5 +1,4 @@
-import { sql } from "kysely";
-import type { InsertExpression } from "kysely/dist/cjs/parser/insert-values-parser";
+import { type InsertObject, sql } from "kysely";
 import {
   type AgencyKind,
   type ConventionDraftDto,
@@ -8,9 +7,11 @@ import {
   type DepartmentCode,
   type EstablishmentTutor,
   isRemoteWorkMode,
+  type OmitFromExistingKeys,
   pipeWithValue,
   type ScheduleDto,
   type Signatories,
+  type WithEveryKey,
 } from "shared";
 import type { KyselyDb } from "../../../config/pg/kysely/kyselyUtils";
 import type { Database } from "../../../config/pg/kysely/model/database";
@@ -104,7 +105,14 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
       establishmentTutor:
         (row.establishment_tutor as EstablishmentTutor) ?? undefined,
       signatories: (row.signatories as Signatories) ?? undefined,
-    };
+    } satisfies WithEveryKey<
+      Pick<
+        ConventionDraftDto,
+        | keyof ConventionDraftFieldsToPersist
+        | "updatedAt"
+        | "fromFtConnectedUser"
+      >
+    >;
   }
 
   public async getConventionDraftIdsByFilters(
@@ -132,50 +140,19 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
     conventionDraft: ConventionDraftDto,
     now: DateString,
   ): Promise<void> {
+    const values = mapConventionDraftToEntity(conventionDraft, now);
+    const {
+      id: _id,
+      acquisition_campaign: _acquisitionCampaign,
+      acquisition_keyword: _acquisitionKeyword,
+      acquisition_medium: _acquisitionMedium,
+      ...valuesForUpdate
+    } = values;
+
     await this.transaction
       .insertInto("convention_drafts")
-      .values(mapToEntity(conventionDraft, now))
-      .onConflict((oc) =>
-        oc.column("id").doUpdateSet(({ ref }) => ({
-          agency_id: ref("excluded.agency_id"),
-          agency_kind: ref("excluded.agency_kind"),
-          agency_department: ref("excluded.agency_department"),
-          date_start: ref("excluded.date_start"),
-          date_end: ref("excluded.date_end"),
-          siret: ref("excluded.siret"),
-          business_name: ref("excluded.business_name"),
-          business_name_customized: ref("excluded.business_name_customized"),
-          schedule: ref("excluded.schedule"),
-          individual_protection: ref("excluded.individual_protection"),
-          individual_protection_description: ref(
-            "excluded.individual_protection_description",
-          ),
-          sanitary_prevention: ref("excluded.sanitary_prevention"),
-          sanitary_prevention_description: ref(
-            "excluded.sanitary_prevention_description",
-          ),
-          remote_work_mode: ref("excluded.remote_work_mode"),
-          immersion_address: ref("excluded.immersion_address"),
-          immersion_objective: ref("excluded.immersion_objective"),
-          immersion_appellation: ref("excluded.immersion_appellation"),
-          immersion_activities: ref("excluded.immersion_activities"),
-          immersion_skills: ref("excluded.immersion_skills"),
-          work_conditions: ref("excluded.work_conditions"),
-          internship_kind: ref("excluded.internship_kind"),
-          business_advantages: ref("excluded.business_advantages"),
-          establishment_number_employees: ref(
-            "excluded.establishment_number_employees",
-          ),
-          agency_referent_first_name: ref(
-            "excluded.agency_referent_first_name",
-          ),
-          agency_referent_last_name: ref("excluded.agency_referent_last_name"),
-          ft_connect_id: ref("excluded.ft_connect_id"),
-          establishment_tutor: ref("excluded.establishment_tutor"),
-          signatories: ref("excluded.signatories"),
-          updated_at: ref("excluded.updated_at"),
-        })),
-      )
+      .values(values)
+      .onConflict((oc) => oc.column("id").doUpdateSet(valuesForUpdate))
       .execute();
   }
 
@@ -188,54 +165,106 @@ export class PgConventionDraftRepository implements ConventionDraftRepository {
   }
 }
 
-const mapToEntity = (
-  conventionDraft: ConventionDraftDto,
+type ConventionDraftKeysNotPersisted =
+  | "updatedAt"
+  | "fromFtConnectedUser"
+  | "agencyContactEmail"
+  | "agencyRefersTo"
+  | "assessment"
+  | "dateApproval"
+  | "dateSubmission"
+  | "dateValidation"
+  | "fromConventionDraftId"
+  | "isEstablishmentBanned"
+  | "lastReminders"
+  | "renewed"
+  | "sourceConventionDraftId"
+  | "status"
+  | "statusJustification"
+  | "validators";
+
+type ConventionDraftFieldsToPersist = OmitFromExistingKeys<
+  ConventionDraftDto,
+  ConventionDraftKeysNotPersisted
+>;
+
+const mapConventionDraftToEntity = (
+  conventionDraft: ConventionDraftFieldsToPersist,
   now: DateString,
-): InsertExpression<Database, "convention_drafts"> => ({
-  id: conventionDraft.id,
-  agency_id: conventionDraft.agencyId,
-  agency_kind: conventionDraft.agencyKind,
-  agency_department: conventionDraft.agencyDepartment,
-  date_start: conventionDraft.dateStart,
-  date_end: conventionDraft.dateEnd,
-  siret: conventionDraft.siret,
-  business_name: conventionDraft.businessName,
-  business_name_customized: conventionDraft.businessNameCustomized,
-  schedule: conventionDraft.schedule
-    ? sql`${JSON.stringify(conventionDraft.schedule)}`
-    : null,
-  individual_protection: conventionDraft.individualProtection,
-  individual_protection_description:
-    conventionDraft.individualProtectionDescription,
-  sanitary_prevention: conventionDraft.sanitaryPrevention,
-  sanitary_prevention_description:
-    conventionDraft.sanitaryPreventionDescription,
-  remote_work_mode: conventionDraft.remoteWorkMode,
-  immersion_address: conventionDraft.immersionAddress,
-  immersion_objective: conventionDraft.immersionObjective,
-  immersion_appellation: sql`${conventionDraft.immersionAppellation?.appellationCode}`,
-  immersion_activities: conventionDraft.immersionActivities,
-  immersion_skills: conventionDraft.immersionSkills,
-  work_conditions: conventionDraft.workConditions,
-  internship_kind: conventionDraft.internshipKind,
-  business_advantages: conventionDraft.businessAdvantages,
-  acquisition_campaign: conventionDraft.acquisitionCampaign,
-  acquisition_keyword: conventionDraft.acquisitionKeyword,
-  acquisition_medium: conventionDraft.acquisitionMedium,
-  establishment_number_employees:
-    conventionDraft.establishmentNumberEmployeesRange,
-  agency_referent_first_name: conventionDraft.agencyReferent?.firstname,
-  agency_referent_last_name: conventionDraft.agencyReferent?.lastname,
-  ft_connect_id:
-    conventionDraft.signatories?.beneficiary?.federatedIdentity?.provider ===
-    "ftConnect"
-      ? conventionDraft.signatories?.beneficiary?.federatedIdentity?.token
-      : undefined,
-  establishment_tutor: conventionDraft.establishmentTutor
-    ? sql`${JSON.stringify(conventionDraft.establishmentTutor)}`
-    : null,
-  signatories: conventionDraft.signatories
-    ? sql`${JSON.stringify(conventionDraft.signatories)}`
-    : null,
-  updated_at: now,
-});
+) => {
+  const {
+    id,
+    agencyId,
+    agencyKind,
+    agencyDepartment,
+    dateStart,
+    dateEnd,
+    siret,
+    businessName,
+    businessNameCustomized,
+    schedule,
+    individualProtection,
+    individualProtectionDescription,
+    sanitaryPrevention,
+    sanitaryPreventionDescription,
+    remoteWorkMode,
+    immersionAddress,
+    immersionObjective,
+    immersionAppellation,
+    immersionActivities,
+    immersionSkills,
+    workConditions,
+    internshipKind,
+    businessAdvantages,
+    acquisitionCampaign,
+    acquisitionKeyword,
+    acquisitionMedium,
+    establishmentNumberEmployeesRange,
+    agencyReferent,
+    establishmentTutor,
+    signatories,
+    ...rest
+  } = conventionDraft;
+  rest satisfies Record<string, never>;
+
+  return {
+    id,
+    agency_id: agencyId,
+    agency_kind: agencyKind,
+    agency_department: agencyDepartment,
+    date_start: dateStart,
+    date_end: dateEnd,
+    siret,
+    business_name: businessName,
+    business_name_customized: businessNameCustomized,
+    schedule: schedule ? sql`${JSON.stringify(schedule)}` : null,
+    individual_protection: individualProtection,
+    individual_protection_description: individualProtectionDescription,
+    sanitary_prevention: sanitaryPrevention,
+    sanitary_prevention_description: sanitaryPreventionDescription,
+    remote_work_mode: remoteWorkMode,
+    immersion_address: immersionAddress,
+    immersion_objective: immersionObjective,
+    immersion_appellation: sql`${immersionAppellation?.appellationCode}`,
+    immersion_activities: immersionActivities,
+    immersion_skills: immersionSkills,
+    work_conditions: workConditions,
+    internship_kind: internshipKind,
+    business_advantages: businessAdvantages,
+    acquisition_campaign: acquisitionCampaign,
+    acquisition_keyword: acquisitionKeyword,
+    acquisition_medium: acquisitionMedium,
+    establishment_number_employees: establishmentNumberEmployeesRange,
+    agency_referent_first_name: agencyReferent?.firstname,
+    agency_referent_last_name: agencyReferent?.lastname,
+    ft_connect_id:
+      signatories?.beneficiary?.federatedIdentity?.provider === "ftConnect"
+        ? signatories?.beneficiary?.federatedIdentity?.token
+        : undefined,
+    establishment_tutor: establishmentTutor
+      ? sql`${JSON.stringify(establishmentTutor)}`
+      : null,
+    signatories: signatories ? sql`${JSON.stringify(signatories)}` : null,
+    updated_at: now,
+  } satisfies InsertObject<Database, "convention_drafts">;
+};

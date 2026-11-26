@@ -66,6 +66,8 @@ export type OmitFromExistingKeys<
   K extends keyof T,
 > = Omit<T, K>;
 
+export type WithEveryKey<T> = { [K in keyof Required<T>]: T[K] };
+
 // https://stackoverflow.com/questions/49401866/all-possible-keys-of-an-union-type
 export type KeysOfUnion<T> = T extends T ? keyof T : never;
 
