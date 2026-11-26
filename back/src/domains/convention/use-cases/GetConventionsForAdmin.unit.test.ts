@@ -73,6 +73,7 @@ describe("GetConventionsForAdmin", () => {
     .withBeneficiaryFirstName("John")
     .withBeneficiaryLastName("Doe")
     .withBusinessName("Boulangerie")
+    .withBusinessNameCustomized("Le Fournil")
     .withDateSubmission(subDays(now, 5).toISOString())
     .withAgencyReferent({ firstname: "Martine", lastname: "Référente" })
     .withFederatedIdentity({
@@ -130,6 +131,7 @@ describe("GetConventionsForAdmin", () => {
           dateStart: recentConvention.dateStart,
           dateEnd: recentConvention.dateEnd,
           businessName: recentConvention.businessName,
+          businessNameCustomized: "Le Fournil",
           agencyName: agency.name,
           agencyKind: "mission-locale",
           agencyDepartmentName: "Paris",
@@ -158,6 +160,7 @@ describe("GetConventionsForAdmin", () => {
           dateStart: oldConvention.dateStart,
           dateEnd: oldConvention.dateEnd,
           businessName: oldConvention.businessName,
+          businessNameCustomized: null,
           agencyName: otherAgency.name,
           agencyKind: "autre",
           agencyDepartmentName: "Rhône",

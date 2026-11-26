@@ -91,9 +91,10 @@ const toDepartmentName = (departmentCode: DepartmentCode): string | null =>
 const toAdminConventionListDto = (
   conventionWithAgencyAndAssessment: ConventionWithAgencyAndAssessment,
 ): AdminConventionListDto => {
-  const { agency } = conventionWithAgencyAndAssessment;
+  const { agency, convention } = conventionWithAgencyAndAssessment;
   return {
     ...toAgencyUserConventionListDto(conventionWithAgencyAndAssessment),
+    businessNameCustomized: convention.businessNameCustomized || null,
     agencyKind: agency.kind,
     agencyDepartmentName: toDepartmentName(agency.address.departmentCode),
     agencyRefersToAgencyName: agency.refersToAgencyName,

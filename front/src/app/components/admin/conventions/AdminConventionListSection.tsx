@@ -384,6 +384,21 @@ const ConventionStructureCell = ({
   </>
 );
 
+const ConventionEstablishmentCell = ({
+  convention,
+}: {
+  convention: AdminConventionListDto;
+}): React.ReactNode => (
+  <>
+    <strong>
+      {convention.businessNameCustomized ?? convention.businessName}
+    </strong>
+    {convention.businessNameCustomized && (
+      <span className={fr.cx("fr-hint-text")}>{convention.businessName}</span>
+    )}
+  </>
+);
+
 const makeAdminConventionListLine = ({
   convention,
   isAgencyScoped,
@@ -420,9 +435,10 @@ const makeAdminConventionListLine = ({
     key={`${convention.id}-beneficiary`}
     beneficiary={convention.beneficiary}
   />,
-  <strong key={`${convention.id}-establishment`}>
-    {convention.businessName}
-  </strong>,
+  <ConventionEstablishmentCell
+    key={`${convention.id}-establishment`}
+    convention={convention}
+  />,
   <ConventionDatesDisplay
     key={`${convention.id}-dates`}
     dateStart={convention.dateStart}

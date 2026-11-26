@@ -706,6 +706,7 @@ describe("ConnectedUserConventionList", () => {
       dateStart: "2024-01-15",
       dateEnd: "2024-01-20",
       businessName: "Boulangerie",
+      businessNameCustomized: "Le Fournil",
       agencyName: "Mission locale de Paris",
       agencyKind: "mission-locale",
       agencyDepartmentName: "Paris",

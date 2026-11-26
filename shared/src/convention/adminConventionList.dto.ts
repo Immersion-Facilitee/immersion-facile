@@ -1,4 +1,5 @@
 import type { AgencyId, AgencyKind } from "../agency/agency.dto";
+import type { BusinessNameCustomized } from "../establishment/establishment.dto";
 import type { PaginationQueryParams } from "../pagination/pagination.dto";
 import type { NotEmptyArray } from "../utils";
 import type { DateString } from "../utils/date";
@@ -34,6 +35,7 @@ export type FlatGetConventionsForAdminParams = PaginationQueryParams & {
 };
 
 export type AdminConventionListDto = AgencyUserConventionListDto & {
+  businessNameCustomized: BusinessNameCustomized | null;
   agencyKind: AgencyKind;
   agencyDepartmentName: string | null;
   agencyRefersToAgencyName: string | null;

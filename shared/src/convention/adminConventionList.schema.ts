@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { agencyIdSchema, agencyKindSchema } from "../agency/agency.schema";
+import { businessCustomizedNameSchema } from "../establishment/businessComponents.schema";
 import type { DataWithPagination } from "../pagination/pagination.dto";
 import {
   createPaginatedSchema,
@@ -24,6 +25,7 @@ import {
 const adminConventionListDtoSchema: ZodSchemaWithInputMatchingOutput<AdminConventionListDto> =
   agencyUserConventionListDtoSchema.and(
     z.object({
+      businessNameCustomized: businessCustomizedNameSchema.nullable(),
       agencyKind: agencyKindSchema,
       agencyDepartmentName: z.string().nullable(),
       agencyRefersToAgencyName: z.string().nullable(),
