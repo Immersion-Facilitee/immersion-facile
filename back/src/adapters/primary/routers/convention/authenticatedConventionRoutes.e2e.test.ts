@@ -690,6 +690,7 @@ describe("authenticatedConventionRoutes", () => {
               dateStart: dupontConvention.dateStart,
               dateEnd: dupontConvention.dateEnd,
               businessName: dupontConvention.businessName,
+              businessNameCustomized: null,
               agencyName: agency.name,
               agencyKind: agency.kind,
               agencyDepartmentName: "Vienne",
