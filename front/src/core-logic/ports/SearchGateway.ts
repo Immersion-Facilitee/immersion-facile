@@ -5,8 +5,8 @@ import type {
   ExternalOfferDto,
   GetExternalOffersFlatQueryParams,
   GetOffersFlatQueryParams,
+  GroupInfo,
   GroupSlug,
-  GroupWithResults,
   InternalOfferDto,
   SiretAndAppellationDto,
 } from "shared";
@@ -21,7 +21,7 @@ export interface SearchGateway {
   contactEstablishment: (
     params: CreateDiscussionDto,
   ) => Promise<void | ContactErrorKind>;
-  getGroupBySlug(groupSlug: GroupSlug): Promise<GroupWithResults>;
+  getGroupInfoBySlug$(groupSlug: GroupSlug): Observable<GroupInfo>;
   getExternalOffer$(
     params: SiretAndAppellationDto,
   ): Observable<ExternalOfferDto>;

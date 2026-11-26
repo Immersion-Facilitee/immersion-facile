@@ -5,17 +5,14 @@ import {
   type ExternalOfferDto,
   type GetExternalOffersFlatQueryParams,
   type GetOffersFlatQueryParams,
+  type GroupInfo,
   type GroupSlug,
-  type GroupWithResults,
   type InternalOfferDto,
   type SiretAndAppellationDto,
   sleep,
 } from "shared";
 import type { SearchGateway } from "src/core-logic/ports/SearchGateway";
-import {
-  groupWithResultsStub,
-  seedInternalResults,
-} from "./simulatedSearchData";
+import { groupInfoStub, seedInternalResults } from "./simulatedSearchData";
 
 export class SimulatedSearchGateway implements SearchGateway {
   #error: Error | null = null;
@@ -91,11 +88,8 @@ export class SimulatedSearchGateway implements SearchGateway {
     return;
   }
 
-  public async getGroupBySlug(
-    _groupName: GroupSlug,
-  ): Promise<GroupWithResults> {
-    this.#simulatedLatency && (await sleep(this.#simulatedLatency));
-    return groupWithResultsStub;
+  public getGroupInfoBySlug$(_groupName: GroupSlug): Observable<GroupInfo> {
+    return of(groupInfoStub).pipe(delay(this.#simulatedLatency));
   }
 
   public getOffer$(

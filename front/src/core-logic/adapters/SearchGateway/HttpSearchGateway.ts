@@ -6,8 +6,8 @@ import {
   errors,
   type GetExternalOffersFlatQueryParams,
   type GetOffersFlatQueryParams,
+  type GroupInfo,
   type GroupSlug,
-  type GroupWithResults,
   type InternalOfferDto,
   type SearchResultQuery,
   type SearchRoutes,
@@ -48,19 +48,21 @@ export class HttpSearchGateway implements SearchGateway {
       );
   }
 
-  public async getGroupBySlug(groupSlug: GroupSlug): Promise<GroupWithResults> {
-    return this.httpClient
-      .getGroupBySlug({
-        urlParams: { groupSlug },
-      })
-      .then((response) =>
-        match(response)
-          .with({ status: 200 }, ({ body }) => body)
-          .with({ status: 404 }, () => {
-            throw errors.establishmentGroup.missingBySlug({ groupSlug });
-          })
-          .otherwise(otherwiseThrow),
-      );
+  public getGroupInfoBySlug$(groupSlug: GroupSlug): Observable<GroupInfo> {
+    return from(
+      this.httpClient
+        .getGroupInfoBySlug({
+          urlParams: { groupSlug },
+        })
+        .then((response) =>
+          match(response)
+            .with({ status: 200 }, ({ body }) => body)
+            .with({ status: 404 }, () => {
+              throw errors.establishmentGroup.missingBySlug({ groupSlug });
+            })
+            .otherwise(otherwiseThrow),
+        ),
+    );
   }
 
   public getOffer$(params: SearchResultQuery): Observable<InternalOfferDto> {

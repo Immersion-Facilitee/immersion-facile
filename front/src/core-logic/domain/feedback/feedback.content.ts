@@ -31,6 +31,7 @@ import type {
   ActionKindAndLevel,
   Feedback,
 } from "src/core-logic/domain/feedback/feedback.slice";
+import { groupSlice } from "src/core-logic/domain/group/group.slice";
 import { partnersErroredConventionSlice } from "src/core-logic/domain/partnersErroredConvention/partnersErroredConvention.slice";
 import { searchSlice } from "src/core-logic/domain/search/search.slice";
 import { authSlice } from "../auth/auth.slice";
@@ -113,6 +114,7 @@ const topics = [
   "transfer-convention-to-agency",
   "unused",
   "user",
+  "group-page",
 ] as const;
 
 export const conventionManageFeedbackTopicsToClearOnUnmount: FeedbackTopic[] = [
@@ -1202,6 +1204,13 @@ export const feedbacks: Record<
     },
     "create.error": {
       action: authSlice.actions.renewExpiredJwtFailed,
+      message: "",
+      title: "Une erreur s'est produite",
+    },
+  },
+  "group-page": {
+    "fetch.error": {
+      action: groupSlice.actions.getGroupFailed,
       message: "",
       title: "Une erreur s'est produite",
     },

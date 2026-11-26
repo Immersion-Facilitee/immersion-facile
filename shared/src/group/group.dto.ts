@@ -1,5 +1,4 @@
 import type { AbsoluteUrl } from "../AbsoluteUrl";
-import type { InternalOfferDto } from "../search/Offer.dto";
 import type { Flavor } from "../typeFlavors";
 
 export type GroupName = Flavor<string, "GroupName">;
@@ -19,13 +18,8 @@ export type GroupOptions = {
   heroHeader: GroupHeroHeader;
 };
 
-export type Group = {
+export type GroupInfo = {
   slug: string;
   name: string;
   options: GroupOptions;
-};
-
-export type GroupWithResults = {
-  group: Group;
-  results: InternalOfferDto[];
 };

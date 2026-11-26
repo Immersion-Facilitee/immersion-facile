@@ -167,7 +167,7 @@ import { makeGetEstablishmentNameAndAdmins } from "../../domains/establishment/u
 import { makeGetEstablishmentPublicOptionsByFilters } from "../../domains/establishment/use-cases/GetEstablishmentPublicOptionsByFilters";
 import { makeGetExternalOffers } from "../../domains/establishment/use-cases/GetExternalOffers";
 import { makeGetExternalSearchResult } from "../../domains/establishment/use-cases/GetExternalSearchResult";
-import { makeGetOffersByGroupSlug } from "../../domains/establishment/use-cases/GetGroupBySlug";
+import { makeGetGroupInfoBySlug } from "../../domains/establishment/use-cases/GetGroupInfoBySlug";
 import { makeGetOffers } from "../../domains/establishment/use-cases/GetOffers";
 import { makeGetSearchResultBySearchQuery } from "../../domains/establishment/use-cases/GetSearchResultBySearchQuery";
 import { makeInsertEstablishmentAggregateFromForm } from "../../domains/establishment/use-cases/InsertEstablishmentAggregateFromFormEstablishement";
@@ -405,7 +405,7 @@ export const createUseCases = ({
       deps: { siretGateway: gateways.siret },
       uowPerformer,
     }),
-    getOffersByGroupSlug: makeGetOffersByGroupSlug({ uowPerformer }),
+    getGroupInfoBySlug: makeGetGroupInfoBySlug({ uowPerformer }),
     romeSearch: makeRomeSearch({ uowPerformer }),
 
     // Address

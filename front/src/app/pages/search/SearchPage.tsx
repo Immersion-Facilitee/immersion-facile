@@ -22,13 +22,7 @@ import {
 import { Helmet } from "react-helmet-async";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import {
-  domElementIds,
-  type Group,
-  type GroupSlug,
-  NotFoundError,
-  type ValueOf,
-} from "shared";
+import { domElementIds, type GroupInfo, type ValueOf } from "shared";
 import { AppellationAutocomplete } from "src/app/components/forms/autocomplete/AppellationAutocomplete";
 import { PlaceAutocomplete } from "src/app/components/forms/autocomplete/PlaceAutocomplete";
 import { HeaderFooterLayout } from "src/app/components/layout/HeaderFooterLayout";
@@ -41,11 +35,6 @@ import {
   searchPageParamsFromRoute,
   useSearch,
 } from "src/app/hooks/search.hooks";
-import { ErrorPage } from "src/app/pages/error/ErrorPage";
-import {
-  type FrontSpecificError,
-  frontErrors,
-} from "src/app/pages/error/front-errors";
 import { canSubmitSearch } from "src/app/pages/search/SearchPage.utils";
 import { useSearchRoute } from "src/app/routes/routes.hooks";
 import {
@@ -54,7 +43,6 @@ import {
 } from "src/app/utils/url.utils";
 import { commonIllustrations } from "src/assets/img/illustrations";
 import labonneboiteLogoUrl from "src/assets/img/logo-lbb-centered.png";
-import { outOfReduxDependencies } from "src/config/dependencies";
 import { appellationSlice } from "src/core-logic/domain/appellation/appellation.slice";
 import { featureFlagSelectors } from "src/core-logic/domain/featureFlags/featureFlags.selector";
 import { geosearchSlice } from "src/core-logic/domain/geosearch/geosearch.slice";
@@ -67,6 +55,11 @@ import {
 import { useStyles } from "tss-react/dsfr";
 import "./SearchPage.scss";
 import { groupMetaContent } from "src/app/contents/meta/metaContents";
+import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
+import { frontErrors } from "src/app/pages/error/front-errors";
+import { groupSelectors } from "src/core-logic/domain/group/group.selectors";
+import { groupSlice } from "src/core-logic/domain/group/group.slice";
+import { match, P } from "ts-pattern";
 import { GroupHeroHeader } from "./GroupHeroHeader";
 import Styles from "./SearchPage.styles";
 
@@ -162,21 +155,20 @@ export const SearchPage = () => {
     searchSelectors.searchResultsWithPagination,
   );
   const isLoading = useAppSelector(searchSelectors.isLoading);
-  const [isLoadingGroupData, setIsLoadingGroupData] = useState<boolean>(
-    !!groupSlug,
-  );
+  const isLoadingGroup = useAppSelector(groupSelectors.isLoading);
+  const currentGroup = useAppSelector(groupSelectors.currentGroup);
+  const groupFeedback = useFeedbackTopic("group-page");
   const { cx } = useStyles();
   const { navigateToSearch } = useSearch(route);
   const [searchMade, setSearchMade] = useState<SearchPageParams | null>(null);
-  const [groupData, setGroupData] = useState<Group | null>(null);
-  const [groupPageError, setGroupPageError] =
-    useState<FrontSpecificError | null>(null);
   const searchResultsWrapper = useRef<ElementRef<"div">>(null);
   const innerSearchResultWrapper = useRef<ElementRef<"div">>(null);
   const acquisitionParams = useGetAcquisitionParams();
   const { enableSearchByScore } = useAppSelector(
     featureFlagSelectors.featureFlagState,
   );
+
+  const shouldShowLoading = isLoading || isLoadingGroup;
   const initialValues: SearchPageParams = useMemo(
     () => ({
       sortBy: enableSearchByScore ? "score" : "date",
@@ -262,26 +254,6 @@ export const SearchPage = () => {
     [navigateToSearch, filterFormValues],
   );
 
-  const getInitialGroupData = useCallback(async (groupSlug: GroupSlug) => {
-    try {
-      const { group } =
-        await outOfReduxDependencies.searchGateway.getGroupBySlug(groupSlug);
-      setGroupData(group);
-    } catch (error) {
-      setGroupPageError(
-        error instanceof NotFoundError
-          ? frontErrors.search.groupNotFound()
-          : frontErrors.generic.temporaryError(),
-      );
-    } finally {
-      setIsLoadingGroupData(false);
-    }
-  }, []);
-
-  if (groupSlug && groupData === null && groupPageError === null) {
-    getInitialGroupData(groupSlug);
-  }
-
   useScrollTo(pagination?.currentPage ?? 1);
 
   useEffect(() => {
@@ -324,6 +296,21 @@ export const SearchPage = () => {
     dispatch(nafSlice.actions.getAllSectionsRequested());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (groupSlug) {
+      dispatch(
+        groupSlice.actions.getGroupRequested({
+          slug: groupSlug,
+          feedbackTopic: "group-page",
+        }),
+      );
+    }
+
+    return () => {
+      dispatch(groupSlice.actions.clearGroupRequested());
+    };
+  }, [dispatch, groupSlug]);
+
   useEffect(
     () => () => {
       setSearchMade(null);
@@ -336,255 +323,264 @@ export const SearchPage = () => {
     [dispatch],
   );
 
-  if (groupPageError) return <ErrorPage error={groupPageError} />;
+  if (groupFeedback?.level === "error") {
+    throw frontErrors.search.groupNotFound();
+  }
 
   return (
-    <HeaderFooterLayout isBreadcrumbsDisplayed={!groupData}>
+    <HeaderFooterLayout isBreadcrumbsDisplayed={!currentGroup}>
       <MainWrapper vSpacing={0} layout="fullscreen">
-        {!searchHasBeenMade ? (
-          <>
-            <PageHeader
-              title={
-                route.name === "search"
-                  ? "Trouver une immersion"
-                  : "Trouver un stage"
-              }
-            >
-              <p>Dans une entreprise ou une administration publique</p>
-              <form
-                onSubmit={handleSubmit((value) =>
-                  onSearchFormSubmit(filterFormValues(value)),
-                )}
-                className={cx(
-                  fr.cx(
-                    "fr-grid-row",
-                    "fr-grid-row--gutters",
-                    "fr-grid-row--bottom",
-                  ),
-                  Styles.form,
-                  Styles.formV2,
-                )}
-                id={domElementIds[route.name].searchForm}
+        {match({
+          searchHasBeenMade,
+          groupSlug,
+        })
+          .with({ searchHasBeenMade: false, groupSlug: P.nullish }, () => (
+            <>
+              <PageHeader
+                title={
+                  route.name === "search"
+                    ? "Trouver une immersion"
+                    : "Trouver un stage"
+                }
               >
-                <div className={cx(fr.cx("fr-col-12", "fr-col-lg-4"))}>
-                  <AppellationAutocomplete
-                    locator="search-form-appellation"
-                    label={appellationInputLabel(
-                      useNaturalLanguageForAppellations,
-                    )}
-                    hintText={appellationHintText(
-                      useNaturalLanguageForAppellations,
-                    )}
-                    onAppellationSelected={(appellation) => {
-                      setValue("appellations", [appellation]);
-                      setValue("appellationCodes", [
-                        appellation.appellationCode,
-                      ]);
-                    }}
-                    onAppellationClear={() => {
-                      setValue("appellations", undefined);
-                      setValue("appellationCodes", undefined);
-                    }}
-                    selectProps={{
-                      inputId:
-                        domElementIds[route.name].appellationAutocomplete,
-                      placeholder: appellationPlaceholder(
+                <p>Dans une entreprise ou une administration publique</p>
+                <form
+                  onSubmit={handleSubmit((value) =>
+                    onSearchFormSubmit(filterFormValues(value)),
+                  )}
+                  className={cx(
+                    fr.cx(
+                      "fr-grid-row",
+                      "fr-grid-row--gutters",
+                      "fr-grid-row--bottom",
+                    ),
+                    Styles.form,
+                    Styles.formV2,
+                  )}
+                  id={domElementIds[route.name].searchForm}
+                >
+                  <div className={cx(fr.cx("fr-col-12", "fr-col-lg-4"))}>
+                    <AppellationAutocomplete
+                      locator="search-form-appellation"
+                      label={appellationInputLabel(
                         useNaturalLanguageForAppellations,
-                      ),
-                    }}
-                  />
-                </div>
-                <div className={cx(fr.cx("fr-col-12", "fr-col-lg-4"))}>
-                  <PlaceAutocomplete
-                    locator="search-form-place"
-                    label={placeInputLabel}
-                    initialInputValue={place}
-                    hintText="Une ville, un département, une région, etc."
-                    onPlaceSelected={(lookupSearchResult) => {
-                      if (!lookupSearchResult) return;
-                      setValue("latitude", lookupSearchResult.position.lat);
-                      setValue("longitude", lookupSearchResult.position.lon);
-                      setValue("place", lookupSearchResult.label);
-                      if (!formValues.distanceKm) {
-                        setValue("distanceKm", DEFAULT_DISTANCE_KM);
-                      }
-                    }}
-                    selectProps={{
-                      inputId: domElementIds[route.name].placeAutocompleteInput,
-                    }}
-                    onPlaceClear={() => {
-                      setValue("latitude", initialValues.latitude);
-                      setValue("longitude", initialValues.latitude);
-                      setValue("place", initialValues.place);
-                      if (formValues.sortBy === "distance") {
-                        setValue("sortBy", "date");
-                      }
-                      setValue("distanceKm", initialValues.distanceKm);
-                    }}
-                  />
-                </div>
-                <div className={cx(fr.cx("fr-col-12", "fr-col-lg-2"))}>
-                  <Select
-                    label="Dans un rayon de :"
-                    hint={radiusHintText}
-                    options={radiusOptions}
-                    disabled={!lat || !lon}
-                    nativeSelectProps={{
-                      title:
-                        !lat || !lon
-                          ? "Pour sélectionner une distance, vous devez d'abord définir une ville."
-                          : undefined,
-                      id: domElementIds[route.name].distanceSelect,
-                      value: `${distanceKm === undefined ? DEFAULT_DISTANCE_KM : distanceKm}`,
-                      onChange: (event) => {
-                        const value = Number.parseInt(
-                          event.currentTarget.value,
-                          10,
-                        );
-                        setValue("distanceKm", value);
-                        if (!value) {
+                      )}
+                      hintText={appellationHintText(
+                        useNaturalLanguageForAppellations,
+                      )}
+                      onAppellationSelected={(appellation) => {
+                        setValue("appellations", [appellation]);
+                        setValue("appellationCodes", [
+                          appellation.appellationCode,
+                        ]);
+                      }}
+                      onAppellationClear={() => {
+                        setValue("appellations", undefined);
+                        setValue("appellationCodes", undefined);
+                      }}
+                      selectProps={{
+                        inputId:
+                          domElementIds[route.name].appellationAutocomplete,
+                        placeholder: appellationPlaceholder(
+                          useNaturalLanguageForAppellations,
+                        ),
+                      }}
+                    />
+                  </div>
+                  <div className={cx(fr.cx("fr-col-12", "fr-col-lg-4"))}>
+                    <PlaceAutocomplete
+                      locator="search-form-place"
+                      label={placeInputLabel}
+                      initialInputValue={place}
+                      hintText="Une ville, un département, une région, etc."
+                      onPlaceSelected={(lookupSearchResult) => {
+                        if (!lookupSearchResult) return;
+                        setValue("latitude", lookupSearchResult.position.lat);
+                        setValue("longitude", lookupSearchResult.position.lon);
+                        setValue("place", lookupSearchResult.label);
+                        if (!formValues.distanceKm) {
+                          setValue("distanceKm", DEFAULT_DISTANCE_KM);
+                        }
+                      }}
+                      selectProps={{
+                        inputId:
+                          domElementIds[route.name].placeAutocompleteInput,
+                      }}
+                      onPlaceClear={() => {
+                        setValue("latitude", initialValues.latitude);
+                        setValue("longitude", initialValues.latitude);
+                        setValue("place", initialValues.place);
+                        if (formValues.sortBy === "distance") {
                           setValue("sortBy", "date");
                         }
-                      },
+                        setValue("distanceKm", initialValues.distanceKm);
+                      }}
+                    />
+                  </div>
+                  <div className={cx(fr.cx("fr-col-12", "fr-col-lg-2"))}>
+                    <Select
+                      label="Dans un rayon de :"
+                      hint={radiusHintText}
+                      options={radiusOptions}
+                      disabled={!lat || !lon}
+                      nativeSelectProps={{
+                        title:
+                          !lat || !lon
+                            ? "Pour sélectionner une distance, vous devez d'abord définir une ville."
+                            : undefined,
+                        id: domElementIds[route.name].distanceSelect,
+                        value: `${distanceKm === undefined ? DEFAULT_DISTANCE_KM : distanceKm}`,
+                        onChange: (event) => {
+                          const value = Number.parseInt(
+                            event.currentTarget.value,
+                            10,
+                          );
+                          setValue("distanceKm", value);
+                          if (!value) {
+                            setValue("sortBy", "date");
+                          }
+                        },
+                      }}
+                    />
+                  </div>
+
+                  <div className={cx(fr.cx("fr-col-12", "fr-col-lg-2"))}>
+                    <Button
+                      type="submit"
+                      nativeButtonProps={{
+                        id: domElementIds[route.name].searchSubmitButton,
+                      }}
+                      disabled={!canSubmitSearch(formValues)}
+                    >
+                      Rechercher
+                    </Button>
+                  </div>
+                </form>
+              </PageHeader>
+
+              <div className={fr.cx("fr-pt-6w", "fr-mt-6w", "fr-hr")}>
+                <div className={fr.cx("fr-container", "fr-mb-10w")}>
+                  <Tile
+                    imageUrl={commonIllustrations.job}
+                    imageAlt=""
+                    title="Vous cherchez une entreprise ?"
+                    titleAs="h2"
+                    desc="Découvrez les grands groupes inscrits sur Immersion Facilitée qui proposent des immersions partout en France."
+                    detail="Aldi, Boulanger, Decatlon, EDF, Enedis ou encore le Club Med."
+                    orientation="horizontal"
+                    linkProps={{
+                      href: "https://pages.immersion-facile.beta.gouv.fr/ressources-entreprises/groupes/",
+                      rel: "noreferrer",
+                      id: domElementIds.search.groupPush,
                     }}
                   />
                 </div>
-
-                <div className={cx(fr.cx("fr-col-12", "fr-col-lg-2"))}>
-                  <Button
-                    type="submit"
-                    nativeButtonProps={{
-                      id: domElementIds[route.name].searchSubmitButton,
+                <SearchInfoSection />
+                <SectionTextEmbed
+                  videoUrl="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise.mp4"
+                  videoPosterUrl="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise_poster.webp"
+                  videoDescription="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise_transcript.vtt"
+                  videoTranscription="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise_transcript.txt"
+                />
+              </div>
+            </>
+          ))
+          .with({ searchHasBeenMade: true }, () => (
+            <>
+              {shouldShowLoading && <Loader />}
+              {currentGroup && (
+                <>
+                  <GroupMetaContent groupData={currentGroup} />
+                  <GroupHeroHeader
+                    groupData={currentGroup}
+                    onCtaClick={() => {
+                      searchResultsWrapper.current?.scrollIntoView({
+                        behavior: "smooth",
+                      });
                     }}
-                    disabled={!canSubmitSearch(formValues)}
+                  />
+                </>
+              )}
+              {isExternal && (
+                <div className={fr.cx("fr-container", "fr-mb-4w")}>
+                  <SectionHighlight
+                    className={fr.cx(
+                      "fr-grid-row",
+                      "fr-grid-row--gutters",
+                      "fr-grid-row--middle",
+                    )}
                   >
-                    Rechercher
-                  </Button>
-                </div>
-              </form>
-            </PageHeader>
-
-            <div className={fr.cx("fr-pt-6w", "fr-mt-6w", "fr-hr")}>
-              <div className={fr.cx("fr-container", "fr-mb-10w")}>
-                <Tile
-                  imageUrl={commonIllustrations.job}
-                  imageAlt=""
-                  title="Vous cherchez une entreprise ?"
-                  titleAs="h2"
-                  desc="Découvrez les grands groupes inscrits sur Immersion Facilitée qui proposent des immersions partout en France."
-                  detail="Aldi, Boulanger, Decatlon, EDF, Enedis ou encore le Club Med."
-                  orientation="horizontal"
-                  linkProps={{
-                    href: "https://pages.immersion-facile.beta.gouv.fr/ressources-entreprises/groupes/",
-                    rel: "noreferrer",
-                    id: domElementIds.search.groupPush,
-                  }}
-                />
-              </div>
-              <SearchInfoSection />
-              <SectionTextEmbed
-                videoUrl="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise.mp4"
-                videoPosterUrl="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise_poster.webp"
-                videoDescription="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise_transcript.vtt"
-                videoTranscription="https://immersion.cellar-c2.services.clever-cloud.com/video_immersion_en_entreprise_transcript.txt"
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            {(isLoading || isLoadingGroupData) && <Loader />}
-            {groupData && (
-              <>
-                <GroupMetaContent groupData={groupData} />
-                <GroupHeroHeader
-                  groupData={groupData}
-                  onCtaClick={() => {
-                    searchResultsWrapper.current?.scrollIntoView({
-                      behavior: "smooth",
-                    });
-                  }}
-                />
-              </>
-            )}
-            {isExternal && (
-              <div className={fr.cx("fr-container", "fr-mb-4w")}>
-                <SectionHighlight
-                  className={fr.cx(
-                    "fr-grid-row",
-                    "fr-grid-row--gutters",
-                    "fr-grid-row--middle",
-                  )}
-                >
-                  <div className={fr.cx("fr-col-12", "fr-col-lg-2")}>
-                    <img src={labonneboiteLogoUrl} alt="La Bonne Boite" />
-                  </div>
-                  <div className={fr.cx("fr-col-12", "fr-col-lg-10")}>
-                    <h1 className={fr.cx("fr-h3", "fr-mb-1w")}>
-                      Vos résultats La Bonne Boite
-                    </h1>
-                    <p className={fr.cx("fr-text--md", "fr-mb-0")}>
-                      Voici{" "}
-                      <strong>
-                        {pagination.totalRecords} entreprises à fort potentiel
-                        d’embauche
-                      </strong>{" "}
-                      provenant de{" "}
-                      <a
-                        href="https://labonneboite.francetravail.fr/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        La Bonne Boite
-                      </a>
-                      .
-                    </p>
-                  </div>
-                </SectionHighlight>
-              </div>
-            )}
-            <FormProvider {...methods}>
-              <form
-                onSubmit={handleSubmit((value) => {
-                  if (tempValue !== null) {
-                    const updatedValues: SearchPageParams = {
-                      ...value,
-                      ...tempValue,
-                    };
-                    onSearchFormSubmit(updatedValues);
-                  }
-                })}
-                className={cx(Styles.searchFilters)}
-                id={domElementIds[route.name].searchForm}
-              >
-                <div ref={searchResultsWrapper}>
-                  {searchMade !== null && (
-                    <div
-                      ref={innerSearchResultWrapper}
-                      className={fr.cx("fr-pb-1w")}
-                    >
-                      <SearchListResults
-                        route={route}
-                        isExternal={route.name === "externalSearch"}
-                        onSearchFormSubmit={onSearchFormSubmit}
-                        useNaturalLanguageForAppellations={
-                          useNaturalLanguageForAppellations
-                        }
-                        tempValue={tempValue}
-                        setTempValue={setTempValue}
-                      />
+                    <div className={fr.cx("fr-col-12", "fr-col-lg-2")}>
+                      <img src={labonneboiteLogoUrl} alt="La Bonne Boite" />
                     </div>
-                  )}
+                    <div className={fr.cx("fr-col-12", "fr-col-lg-10")}>
+                      <h1 className={fr.cx("fr-h3", "fr-mb-1w")}>
+                        Vos résultats La Bonne Boite
+                      </h1>
+                      <p className={fr.cx("fr-text--md", "fr-mb-0")}>
+                        Voici{" "}
+                        <strong>
+                          {pagination.totalRecords} entreprises à fort potentiel
+                          d’embauche
+                        </strong>{" "}
+                        provenant de{" "}
+                        <a
+                          href="https://labonneboite.francetravail.fr/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          La Bonne Boite
+                        </a>
+                        .
+                      </p>
+                    </div>
+                  </SectionHighlight>
                 </div>
-              </form>
-            </FormProvider>
-          </>
-        )}
+              )}
+              <FormProvider {...methods}>
+                <form
+                  onSubmit={handleSubmit((value) => {
+                    if (tempValue !== null) {
+                      const updatedValues: SearchPageParams = {
+                        ...value,
+                        ...tempValue,
+                      };
+                      onSearchFormSubmit(updatedValues);
+                    }
+                  })}
+                  className={cx(Styles.searchFilters)}
+                  id={domElementIds[route.name].searchForm}
+                >
+                  <div ref={searchResultsWrapper}>
+                    {searchMade !== null && (
+                      <div
+                        ref={innerSearchResultWrapper}
+                        className={fr.cx("fr-pb-1w")}
+                      >
+                        <SearchListResults
+                          route={route}
+                          isExternal={route.name === "externalSearch"}
+                          onSearchFormSubmit={onSearchFormSubmit}
+                          useNaturalLanguageForAppellations={
+                            useNaturalLanguageForAppellations
+                          }
+                          tempValue={tempValue}
+                          setTempValue={setTempValue}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </form>
+              </FormProvider>
+            </>
+          ))
+          .otherwise(() => null)}
       </MainWrapper>
     </HeaderFooterLayout>
   );
 };
 
-const GroupMetaContent = ({ groupData }: { groupData: Group }) => {
+const GroupMetaContent = ({ groupData }: { groupData: GroupInfo }) => {
   const { title, description } = groupMetaContent(groupData.name);
   return (
     <Helmet>

@@ -1,10 +1,7 @@
-import { sql } from "kysely";
 import {
-  type DateTimeIsoString,
-  type Group,
+  type GroupInfo,
   type GroupSlug,
-  type GroupWithResults,
-  groupWithResultsSchema,
+  groupInfoSchema,
   type SiretDto,
 } from "shared";
 import {
@@ -18,9 +15,9 @@ import type { GroupRepository } from "../ports/GroupRepository";
 export class PgGroupRepository implements GroupRepository {
   constructor(private transaction: KyselyDb) {}
 
-  public async getGroupWithSearchResultsBySlug(
+  public async getGroupInfoBySlug(
     slug: GroupSlug,
-  ): Promise<GroupWithResults | undefined> {
+  ): Promise<GroupInfo | undefined> {
     const rawGroup = await this.transaction
       .selectFrom("groups")
       .where("slug", "=", slug)
@@ -29,7 +26,7 @@ export class PgGroupRepository implements GroupRepository {
 
     if (!rawGroup) return;
 
-    const group: Group = {
+    return groupInfoSchema.parse({
       name: rawGroup.name,
       slug: rawGroup.slug,
       options: {
@@ -40,85 +37,6 @@ export class PgGroupRepository implements GroupRepository {
           backgroundColor: rawGroup.hero_header_background_color ?? undefined,
         },
       },
-    };
-
-    const results = await this.transaction
-      .selectFrom("groups__sirets as gs")
-      .leftJoin("groups as g", "g.slug", "gs.group_slug")
-      .leftJoin("establishments as e", "e.siret", "gs.siret")
-      .leftJoin("immersion_offers as io", "io.siret", "e.siret")
-      .leftJoin(
-        "public_appellations_data as ap",
-        "ap.ogr_appellation",
-        "io.appellation_code",
-      )
-      .leftJoin("public_romes_data as r", "r.code_rome", "ap.code_rome")
-      .leftJoin(
-        "public_naf_rev2_sous_classes as naf",
-        "naf.naf_code",
-        "e.naf_code",
-      )
-      .leftJoin(
-        "establishments_location_infos as loc",
-        "e.siret",
-        "loc.establishment_siret",
-      )
-      .where("gs.group_slug", "=", slug)
-      .where("e.is_open", "=", true)
-      .where("e.is_max_discussions_for_period_reached", "=", false)
-      .groupBy([
-        "e.siret",
-        "r.code_rome",
-        "r.libelle_rome",
-        "naf.libelle",
-        "e.contact_mode",
-        "loc.id",
-      ])
-      .select(({ ref }) =>
-        jsonStripNulls(
-          jsonBuildObject({
-            rome: ref("r.code_rome"),
-            siret: ref("e.siret"),
-            establishmentScore: ref("e.score"),
-            distance_m: sql`0`,
-            name: ref("e.name"),
-            website: ref("e.website"),
-            additionalInformation: ref("e.additional_information"),
-            customizedName: ref("e.customized_name"),
-            voluntaryToImmersion: sql`TRUE`,
-            fitForDisabledWorkers: ref("e.fit_for_disabled_workers"),
-            position: jsonBuildObject({
-              lon: ref("loc.lon"),
-              lat: ref("loc.lat"),
-            }),
-            romeLabel: ref("r.libelle_rome"),
-            appellations: sql`JSON_AGG(JSON_BUILD_OBJECT(
-              'appellationCode', ap.ogr_appellation::text,
-              'appellationLabel', ap.libelle_appellation_long
-            ) ORDER BY ap.ogr_appellation)`,
-            naf: ref("e.naf_code"),
-            nafLabel: ref("naf.libelle"),
-            address: jsonBuildObject({
-              streetNumberAndAddress: ref("loc.street_number_and_address"),
-              postcode: ref("loc.post_code"),
-              city: ref("loc.city"),
-              departmentCode: ref("loc.department_code"),
-            }),
-            contactMode: ref("e.contact_mode"),
-            numberOfEmployeeRange: ref("e.number_employees"),
-            locationId: ref("loc.id"),
-            createdAt: sql<DateTimeIsoString>`date_to_iso(e.created_at)`,
-            updatedAt: sql<DateTimeIsoString>`date_to_iso(e.update_date)`,
-            remoteWorkMode: sql`MIN(io.remote_work_mode)`,
-            isAvailable: sql`NOT(e.is_max_discussions_for_period_reached)`,
-          }),
-        ).as("search_result_dto"),
-      )
-      .execute();
-
-    return groupWithResultsSchema.parse({
-      group,
-      results: results.map(({ search_result_dto }) => search_result_dto),
     });
   }
 

@@ -4,7 +4,7 @@ import {
   errors,
   expectHttpResponseToEqual,
   type GetOffersFlatQueryParams,
-  type Group,
+  type GroupInfo,
   type InternalOfferDto,
   type Pagination,
   type SearchRoutes,
@@ -976,7 +976,7 @@ describe("/offers route", () => {
 
   describe("GET getGroupBySlug", () => {
     it("should get the stubbed data", async () => {
-      const group: Group = {
+      const group: GroupInfo = {
         name: "Décathlon",
         slug: "decathlon",
         options: {
@@ -993,17 +993,14 @@ describe("/offers route", () => {
       };
 
       inMemoryUow.groupRepository.groupEntities = [groupEntity];
-      const result = await httpClient.getGroupBySlug({
+      const result = await httpClient.getGroupInfoBySlug({
         urlParams: {
           groupSlug: groupEntity.slug,
         },
       });
       expectHttpResponseToEqual(result, {
         status: 200,
-        body: {
-          group,
-          results: [stubSearchResult],
-        },
+        body: group,
       });
     });
   });

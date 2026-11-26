@@ -1,16 +1,14 @@
 import { z } from "zod";
 import { absoluteUrlSchema } from "../AbsoluteUrl";
-import { internalOfferSchema } from "../search/Offer.schema";
 import {
   zStringCanBeEmpty,
   zStringMinLength1Max1024,
 } from "../utils/string.schema";
 import type { ZodSchemaWithInputMatchingOutput } from "../zodUtils";
 import type {
-  Group,
+  GroupInfo,
   GroupOptions,
   GroupSlug,
-  GroupWithResults,
   WithGroupSlug,
 } from "./group.dto";
 
@@ -34,14 +32,15 @@ const groupOptionsSchema: ZodSchemaWithInputMatchingOutput<GroupOptions> =
     }),
   });
 
-export const groupSchema: ZodSchemaWithInputMatchingOutput<Group> = z.object({
-  slug: groupSlugSchema,
-  name: zStringMinLength1Max1024,
-  options: groupOptionsSchema,
-});
-
-export const groupWithResultsSchema: ZodSchemaWithInputMatchingOutput<GroupWithResults> =
+export const groupInfoSchema: ZodSchemaWithInputMatchingOutput<GroupInfo> =
   z.object({
-    group: groupSchema,
-    results: z.array(internalOfferSchema),
+    slug: groupSlugSchema,
+    name: zStringMinLength1Max1024,
+    options: groupOptionsSchema,
   });
+//
+// export const groupInfoSchema: ZodSchemaWithInputMatchingOutput<GroupInfo> =
+//   z.object({
+//     group: groupSchema,
+//     // results: z.array(internalOfferSchema),
+//   });
