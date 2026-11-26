@@ -175,13 +175,13 @@ type ConventionDraftKeysNotPersisted =
   | "statusJustification"
   | "validators";
 
-type ConventionDraftEntity = OmitFromExistingKeys<
+type ConventionDraftFieldsToPersist = OmitFromExistingKeys<
   ConventionDraftDto,
   ConventionDraftKeysNotPersisted
 >;
 
 const mapConventionDraftToEntity = (
-  conventionDraft: ConventionDraftEntity,
+  conventionDraft: ConventionDraftFieldsToPersist,
   now: DateString,
 ) => {
   const {

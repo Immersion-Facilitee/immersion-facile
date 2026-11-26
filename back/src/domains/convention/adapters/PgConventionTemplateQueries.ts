@@ -173,13 +173,13 @@ type ConventionTemplateKeysNotPersisted =
   | "statusJustification"
   | "validators";
 
-type ConventionTemplateEntity = OmitFromExistingKeys<
+type ConventionTemplateFieldsToPersist = OmitFromExistingKeys<
   ConventionTemplate,
   ConventionTemplateKeysNotPersisted
 >;
 
 const mapConventionTemplateToEntity = (
-  conventionTemplate: ConventionTemplateEntity,
+  conventionTemplate: ConventionTemplateFieldsToPersist,
   now: DateTimeIsoString,
 ): InsertExpression<Database, "convention_templates"> => {
   const {
