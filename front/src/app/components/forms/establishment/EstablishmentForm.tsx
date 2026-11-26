@@ -418,7 +418,7 @@ export const EstablishmentForm = (props: EstablishmentFormProps) => {
       trigger,
       onSuccess: () => {
         if (
-          currentStep === 3 &&
+          currentStep === 2 &&
           availableForImmersion === undefined &&
           mode === "create"
         )
