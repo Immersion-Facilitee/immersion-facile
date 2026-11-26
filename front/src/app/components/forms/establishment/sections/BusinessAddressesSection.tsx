@@ -24,6 +24,7 @@ export const BusinessAddressesSection = ({ mode }: { mode: Mode }) => {
   const formContents = getFormFields();
 
   if (
+    formValues.offers.length > 0 &&
     formValues.offers.every((offer) => offer.remoteWorkMode === "FULL_REMOTE")
   )
     return null;

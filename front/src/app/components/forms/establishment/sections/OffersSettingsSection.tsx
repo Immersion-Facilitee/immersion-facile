@@ -28,6 +28,7 @@ import {
   toDisplayedPhoneNumber,
 } from "shared";
 import { AddressAutocomplete } from "src/app/components/forms/autocomplete/AddressAutocomplete";
+import { BusinessAddressesSection } from "src/app/components/forms/establishment/sections/BusinessAddressesSection";
 import {
   booleanSelectOptions,
   richBooleanSelectOptions,
@@ -344,6 +345,7 @@ export const OffersSettingsSection = ({
             },
           }))}
         />
+        {isStepMode && <BusinessAddressesSection mode={mode} />}
         <HeadingSection title="Moyen de contact">
           <ContactModeSection mode={mode} />
         </HeadingSection>
@@ -374,6 +376,7 @@ export const OffersSettingsSection = ({
                     "maxContactsPerMonth",
                     "nextAvailabilityDate",
                     "fitForDisabledWorkers",
+                    "businessAddresses",
                     "contactMode",
                     ...getConditionalFieldsToValidate(getValues("contactMode")),
                   ]);

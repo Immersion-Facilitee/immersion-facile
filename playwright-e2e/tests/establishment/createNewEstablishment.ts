@@ -105,6 +105,8 @@ const step2 = async (page: Page) => {
 
   await availableRadioLocator.click();
 
+  await addLocation(page);
+
   await page
     .locator(`[for='${domElementIds.formEstablishment.create.contactMode}-0']`)
     .click();
@@ -122,8 +124,6 @@ const step3 = async (page: Page) => {
   await expectNoErrorVisible(page);
 
   await fillFirstOffer(page, "boulang", "HYBRID");
-
-  await addLocation(page);
 
   await goToNextStep(page, 3, "create");
 };

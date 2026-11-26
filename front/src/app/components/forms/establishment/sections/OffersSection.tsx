@@ -18,7 +18,6 @@ import type {
   OnStepChange,
   Step,
 } from "src/app/components/forms/establishment/EstablishmentForm";
-import { BusinessAddressesSection } from "src/app/components/forms/establishment/sections/BusinessAddressesSection";
 import { OfferCard } from "src/app/components/forms/establishment/sections/offer/OfferCard";
 import {
   emptyOffer,
@@ -141,7 +140,6 @@ export const OffersSection = ({
           )}
         </HeadingSection>
       )}
-      {isStepMode && <BusinessAddressesSection mode={mode} />}
       {isStepMode && (
         <>
           <ErrorNotifications
@@ -176,7 +174,7 @@ export const OffersSection = ({
               {
                 children: "Étape suivante",
                 onClick: () => {
-                  onStepChange(4, ["offers", "businessAddresses"]);
+                  onStepChange(4, ["offers"]);
                 },
                 type: "button",
                 iconId: "fr-icon-arrow-right-line",
