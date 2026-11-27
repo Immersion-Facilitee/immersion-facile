@@ -785,6 +785,8 @@ export const domElementIds = {
       refreshEditLink: "im-form-edit-establishment__refresh-link",
       offerCard: "im-form-edit-establishment__offer-card",
       userRightsList: "im-form-edit-establishment__users-list",
+      backToEstablishmentButton:
+        "im-form-edit-establishment__back-to-establishment-button",
     },
     admin: {
       form: "im-form-manage-establishment-admin",
@@ -857,6 +859,8 @@ export const domElementIds = {
       nextAvailabilityDateValue:
         "im-form-manage-establishment-admin__current-next-availablity-date-value",
       offerCard: "im-form-manage-establishment-admin__offer-card",
+      backToEstablishmentButton:
+        "im-form-manage-establishment-admin__back-to-establishment-button",
     },
   },
   assessment: {

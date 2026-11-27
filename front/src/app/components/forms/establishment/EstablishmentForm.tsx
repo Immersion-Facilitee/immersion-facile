@@ -54,8 +54,8 @@ type EstablishmentFormProps =
       mode: "edit";
       selectedTab: EstablishmentEditTab;
       onTabChange: (tab: EstablishmentEditTab) => void;
-      onOfferEditionRequested: (appellationCode?: AppellationCode) => void;
-      onOfferDeletionRequested: (appellationCode: AppellationCode) => void;
+      onEditOffer: (appellationCode?: AppellationCode) => void;
+      onDeleteOffer: (appellationCode: AppellationCode) => void;
     };
 
 type FormStep = RangeOfPosition<4>;
@@ -439,6 +439,10 @@ export const EstablishmentForm = (props: EstablishmentFormProps) => {
             <Feedback topics={["form-establishment"]} />
             {mode !== "create" && (
               <Button
+                id={
+                  domElementIds.formEstablishment[mode]
+                    .backToEstablishmentButton
+                }
                 onClick={() => {
                   dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
                 }}
@@ -505,10 +509,8 @@ export const EstablishmentForm = (props: EstablishmentFormProps) => {
                         mode={mode}
                         onStepChange={onStepChange}
                         currentStep={currentStep}
-                        onOfferEditionRequested={props.onOfferEditionRequested}
-                        onOfferDeletionRequested={
-                          props.onOfferDeletionRequested
-                        }
+                        onEditOffer={props.onEditOffer}
+                        onDeleteOffer={props.onDeleteOffer}
                       />
                     )}
                   </Tabs>

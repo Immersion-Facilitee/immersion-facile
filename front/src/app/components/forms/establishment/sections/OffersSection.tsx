@@ -50,14 +50,14 @@ export const OffersSection = ({
   mode,
   onStepChange,
   currentStep,
-  onOfferEditionRequested,
-  onOfferDeletionRequested,
+  onEditOffer,
+  onDeleteOffer,
 }: {
   mode: Mode;
   onStepChange: OnStepChange;
   currentStep: Step;
-  onOfferEditionRequested?: (appellationCode?: AppellationCode) => void;
-  onOfferDeletionRequested?: (appellationCode: AppellationCode) => void;
+  onEditOffer?: (appellationCode?: AppellationCode) => void;
+  onDeleteOffer?: (appellationCode: AppellationCode) => void;
 }): ReactNode => {
   const isStepMode = currentStep !== null;
   const methods = useFormContext<FormEstablishmentDto>();
@@ -97,7 +97,7 @@ export const OffersSection = ({
             id={domElementIds.formEstablishment[mode].addOfferButton}
             priority="secondary"
             onClick={() => {
-              if (onOfferEditionRequested) return onOfferEditionRequested();
+              if (onEditOffer) return onEditOffer();
               setSelectedOfferIndex(null);
               offerModal.open();
             }}
@@ -112,8 +112,7 @@ export const OffersSection = ({
                   index={index}
                   mode={mode}
                   onEditOfferClick={() => {
-                    if (onOfferEditionRequested)
-                      return onOfferEditionRequested(offer.appellationCode);
+                    if (onEditOffer) return onEditOffer(offer.appellationCode);
                     setSelectedOfferIndex(index);
                     dispatch(
                       appellationSlice.actions.selectSuggestionRequested({
@@ -129,7 +128,7 @@ export const OffersSection = ({
                     offerModal.open();
                   }}
                   onDeleteOfferClick={
-                    onOfferDeletionRequested &&
+                    onDeleteOffer &&
                     (() => {
                       setOfferToDelete(offer);
                       deleteOfferModal.open();
@@ -192,7 +191,7 @@ export const OffersSection = ({
           />
         </>
       )}
-      {onOfferDeletionRequested &&
+      {onDeleteOffer &&
         createPortal(
           <deleteOfferModal.Component
             title={deleteOfferModalContent.title}
@@ -210,7 +209,7 @@ export const OffersSection = ({
                   .deleteOfferConfirmButton,
                 onClick: () => {
                   if (offerToDelete)
-                    onOfferDeletionRequested(offerToDelete.appellationCode);
+                    onDeleteOffer(offerToDelete.appellationCode);
                 },
               },
             ]}
@@ -222,7 +221,7 @@ export const OffersSection = ({
           document.body,
         )}
       {!isStepMode &&
-        !onOfferEditionRequested &&
+        !onEditOffer &&
         createPortal(
           <OfferModal selectedOfferIndex={selectedOfferIndex} mode={mode} />,
           document.body,

@@ -106,7 +106,7 @@ export const EstablishmentDetailsPage = ({
             : "offers"
         }
         onTabChange={goToEstablishmentEditTab}
-        onOfferEditionRequested={(appellationCode) =>
+        onEditOffer={(appellationCode) =>
           frontRoutes
             .establishmentDashboardEstablishmentOffers({
               siret: formEstablishment.siret,
@@ -114,7 +114,7 @@ export const EstablishmentDetailsPage = ({
             })
             .push()
         }
-        onOfferDeletionRequested={(appellationCode) => {
+        onDeleteOffer={(appellationCode) => {
           if (!connectedUserJwt) return;
           dispatch(
             establishmentSlice.actions.updateEstablishmentRequested({
