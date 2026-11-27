@@ -61,6 +61,7 @@ export const OfferCard = ({
               type: "button",
               className: fr.cx("fr-mb-0"),
               id: `${domElementIds.formEstablishment[mode].deleteOfferButton}-${index}`,
+              disabled: formValues.offers.length === 1,
               onClick:
                 onDeleteOfferClick ??
                 (() =>
