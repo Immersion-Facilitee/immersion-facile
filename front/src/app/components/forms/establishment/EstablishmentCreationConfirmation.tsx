@@ -27,7 +27,7 @@ export const EstablishmentCreationConfirmation = ({
       ? toDisplayedDate({ date: nextAvailabilityDate })
       : null;
   const establishmentDetailsLinkProps =
-    frontRoutes.establishmentDashboardEstablishmentDetails({
+    frontRoutes.establishmentDashboardEstablishmentOffers({
       siret: formEstablishment.siret,
     }).link;
 
@@ -59,7 +59,7 @@ export const EstablishmentCreationConfirmation = ({
         {
           children: establishmentCreationConfirmationContent.addOtherOfferLabel,
           id: domElementIds.formEstablishment.create.addOtherOfferButton,
-          linkProps: frontRoutes.establishmentDashboardEstablishmentOffers({
+          linkProps: frontRoutes.establishmentDashboardEstablishmentOffer({
             siret: formEstablishment.siret,
           }).link,
         },

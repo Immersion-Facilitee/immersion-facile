@@ -44,7 +44,7 @@ type EstablishmentUserFormEmptyValues = OmitFromExistingKeys<
 const useEstablishmentUserFormRoute =
   makeUseTypedRoute<
     (
-      | typeof frontRoutes.establishmentDashboardEstablishmentDetails
+      | typeof frontRoutes.establishmentDashboardEstablishmentOffers
       | typeof frontRoutes.establishmentDashboardEstablishmentInformations
       | typeof frontRoutes.adminEstablishments
       | typeof frontRoutes.establishmentUserRegistration
@@ -61,13 +61,13 @@ export const EstablishmentUserForm = ({
   );
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const route = useEstablishmentUserFormRoute([
-    "establishmentDashboardEstablishmentDetails",
+    "establishmentDashboardEstablishmentOffers",
     "establishmentDashboardEstablishmentInformations",
     "adminEstablishments",
     "establishmentUserRegistration",
   ]);
   const isEstablishmentDetails =
-    route.name === "establishmentDashboardEstablishmentDetails" ||
+    route.name === "establishmentDashboardEstablishmentOffers" ||
     route.name === "establishmentDashboardEstablishmentInformations";
   const isEstablishmentUserRegistration =
     route.name === "establishmentUserRegistration";

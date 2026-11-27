@@ -381,6 +381,11 @@ export const {
     ),
   establishmentDashboardEstablishmentOffers:
     establishmentDashboardEstablishments.extend(
+      { siret: param.path.string },
+      ({ siret }) => `/${siret}/offres`,
+    ),
+  establishmentDashboardEstablishmentOffer:
+    establishmentDashboardEstablishments.extend(
       {
         siret: param.path.string,
         appellationCode: param.query.optional.string,

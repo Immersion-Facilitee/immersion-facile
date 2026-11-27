@@ -96,7 +96,7 @@ export const EstablishmentForm = (props: EstablishmentFormProps) => {
   const isEstablishmentCreation = route.name === "formEstablishment";
   const isEstablishmentAdmin = route.name === "adminEstablishments";
   const isEstablishmentDashboard =
-    route.name === "establishmentDashboardEstablishmentDetails" ||
+    route.name === "establishmentDashboardEstablishmentOffers" ||
     route.name === "establishmentDashboardEstablishmentInformations";
 
   const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
@@ -587,7 +587,7 @@ export const EstablishmentForm = (props: EstablishmentFormProps) => {
 };
 
 const establishmentDashboardRouteNames = P.union(
-  "establishmentDashboardEstablishmentDetails",
+  "establishmentDashboardEstablishmentOffers",
   "establishmentDashboardEstablishmentInformations",
 );
 

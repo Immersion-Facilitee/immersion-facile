@@ -116,8 +116,8 @@ const getPageSideEffectByRouteName: Partial<Record<keyof Routes, () => void>> =
     establishmentDashboardEstablishments: fetchCurrentUser,
     establishmentDashboardDiscussions: fetchCurrentUser,
     establishmentDashboardConventions: fetchCurrentUser,
-    establishmentDashboardEstablishmentDetails: fetchCurrentUser,
     establishmentDashboardEstablishmentOffers: fetchCurrentUser,
+    establishmentDashboardEstablishmentOffer: fetchCurrentUser,
   };
 
 const getPageByRouteName: {
@@ -271,6 +271,17 @@ const getPageByRouteName: {
     </DashboardPrivateRoutePage>
   ),
   establishmentDashboardEstablishmentDetails: (route) => (
+    <RedirectTo
+      route={
+        route.params.siret
+          ? frontRoutes.establishmentDashboardEstablishmentOffers({
+              siret: route.params.siret,
+            })
+          : frontRoutes.establishmentDashboardEstablishments()
+      }
+    />
+  ),
+  establishmentDashboardEstablishmentOffers: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <EstablishmentDetailsPage route={route} />
     </DashboardPrivateRoutePage>
@@ -280,7 +291,7 @@ const getPageByRouteName: {
       <EstablishmentDetailsPage route={route} />
     </DashboardPrivateRoutePage>
   ),
-  establishmentDashboardEstablishmentOffers: (route) => (
+  establishmentDashboardEstablishmentOffer: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <EstablishmentOfferPage route={route} />
     </DashboardPrivateRoutePage>
@@ -385,7 +396,7 @@ export const Router = (): ReactNode => {
   const routeName = route.name;
   const sideEffectRouteName =
     routeName === "establishmentDashboardEstablishmentInformations"
-      ? "establishmentDashboardEstablishmentDetails"
+      ? "establishmentDashboardEstablishmentOffers"
       : routeName;
   const previousRouteName = useRef<keyof Routes | undefined>(undefined);
   useEffect(() => {

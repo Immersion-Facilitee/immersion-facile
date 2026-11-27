@@ -115,27 +115,25 @@ const makeBreadcrumbs = (
             label: "Mes entreprises",
             route: frontRoutes.establishmentDashboardEstablishments(),
             children: {
-              establishmentDashboardEstablishmentDetails: {
+              establishmentDashboardEstablishmentOffers: {
                 label: "Détail de l'entreprise",
                 route: () => {
                   const route = useRoute();
-                  return frontRoutes.establishmentDashboardEstablishmentDetails(
-                    {
-                      siret:
-                        route.name ===
-                        "establishmentDashboardEstablishmentOffers"
-                          ? route.params.siret
-                          : "",
-                    },
-                  );
+                  return frontRoutes.establishmentDashboardEstablishmentOffers({
+                    siret:
+                      route.name === "establishmentDashboardEstablishmentOffer"
+                        ? route.params.siret
+                        : "",
+                  });
                 },
                 children: {
-                  establishmentDashboardEstablishmentOffers: {
+                  establishmentDashboardEstablishmentOffer: {
                     label: "Ajouter / modifier une offre",
-                    route:
-                      frontRoutes.establishmentDashboardEstablishmentOffers({
+                    route: frontRoutes.establishmentDashboardEstablishmentOffer(
+                      {
                         siret: "",
-                      }),
+                      },
+                    ),
                   },
                 },
               },

@@ -200,6 +200,7 @@ const establishmentDashboardTabFromRouteName: Record<
   establishmentDashboardEstablishmentDetails: "fiche-entreprise",
   establishmentDashboardEstablishmentInformations: "fiche-entreprise",
   establishmentDashboardEstablishmentOffers: "fiche-entreprise",
+  establishmentDashboardEstablishmentOffer: "fiche-entreprise",
   establishmentDashboardDiscussions: "discussions",
 };
 
@@ -207,8 +208,10 @@ const establishmentDashboardRouteNameFromTabId: Record<
   EstablishmentDashboardTab,
   Exclude<
     EstablishmentDashboardRouteName,
+    | "establishmentDashboardEstablishmentDetails"
     | "establishmentDashboardEstablishmentInformations"
     | "establishmentDashboardEstablishmentOffers"
+    | "establishmentDashboardEstablishmentOffer"
   >
 > = {
   conventions: "establishmentDashboard",

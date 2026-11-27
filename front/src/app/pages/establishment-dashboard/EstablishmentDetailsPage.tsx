@@ -23,7 +23,7 @@ import type { Route } from "type-route";
 
 type EstablishmentDetailsPageProps = {
   route: Route<
-    | typeof frontRoutes.establishmentDashboardEstablishmentDetails
+    | typeof frontRoutes.establishmentDashboardEstablishmentOffers
     | typeof frontRoutes.establishmentDashboardEstablishmentInformations
   >;
 };
@@ -75,7 +75,7 @@ export const EstablishmentDetailsPage = ({
           .push();
         return;
       }
-      frontRoutes.establishmentDashboardEstablishmentDetails(params).push();
+      frontRoutes.establishmentDashboardEstablishmentOffers(params).push();
     },
     [formEstablishment.siret],
   );
@@ -110,7 +110,7 @@ export const EstablishmentDetailsPage = ({
         onTabChange={goToEstablishmentEditTab}
         onEditOffer={(appellationCode) =>
           frontRoutes
-            .establishmentDashboardEstablishmentOffers({
+            .establishmentDashboardEstablishmentOffer({
               siret: formEstablishment.siret,
               appellationCode,
             })

@@ -31,7 +31,7 @@ export const updateEstablishmentThroughEstablishmentDashboard =
     await goToEstablishmentDashboardTab(page, "fiche-entreprise");
 
     const establishmentDashboardUrl =
-      frontRoutes.establishmentDashboardEstablishmentDetails({
+      frontRoutes.establishmentDashboardEstablishmentOffers({
         siret: updatedFormEstablishment.siret,
       }).href;
     await page
@@ -125,7 +125,7 @@ const addOfferThroughOfferPage = async (
     `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.FULL_REMOTE}']`,
   );
   await page.click(
-    `#${domElementIds.establishmentDashboardEstablishmentOffers.submitButton}`,
+    `#${domElementIds.establishmentDashboardEstablishmentOffer.submitButton}`,
   );
   await expect(page.locator(".fr-alert--success")).toBeVisible();
 };
@@ -141,7 +141,7 @@ const editOfferThroughOfferPage = async (
     `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.ON_SITE}']`,
   );
   await page.click(
-    `#${domElementIds.establishmentDashboardEstablishmentOffers.submitButton}`,
+    `#${domElementIds.establishmentDashboardEstablishmentOffer.submitButton}`,
   );
   await expect(page.locator(".fr-alert--success")).toBeVisible();
 };
