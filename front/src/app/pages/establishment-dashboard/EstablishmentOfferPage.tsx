@@ -59,6 +59,9 @@ export const EstablishmentOfferPage = ({
     );
     return () => {
       dispatch(establishmentSlice.actions.clearEstablishmentRequested());
+      dispatch(
+        feedbackSlice.actions.clearFeedbackTopics(["form-establishment"]),
+      );
     };
   }, [dispatch, connectedUserJwt, siret]);
 
