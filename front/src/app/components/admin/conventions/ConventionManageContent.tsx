@@ -4,8 +4,6 @@ import { useDispatch } from "react-redux";
 import {
   allAgencyRoles,
   badSchemaErrorMessagePrefix,
-  type ConventionJwtPayload,
-  decodeMagicLinkJwtWithoutSignatureCheck,
   expiredJwtErrorMessage,
   type Role,
   useRoute,
@@ -16,6 +14,7 @@ import { Feedback } from "src/app/components/feedback/Feedback";
 import { throwIfArchivedConventionError } from "src/app/contents/convention-archive/conventionArchive.helpers";
 import { useConvention } from "src/app/hooks/convention.hooks";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
+import { getConventionAccessFromJwt } from "src/app/hooks/jwt.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { frontErrors } from "src/app/pages/error/front-errors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
@@ -55,11 +54,10 @@ export const ConventionManageContent = ({
     name: route.name,
     userRolesForFetchedConvention,
   })
-    .with({ name: "manageConvention" }, (): Role[] => [
-      decodeMagicLinkJwtWithoutSignatureCheck<ConventionJwtPayload>(
-        jwtParams.jwt,
-      ).role,
-    ])
+    .with({ name: "manageConvention" }, (): Role[] => {
+      const conventionAccess = getConventionAccessFromJwt(jwtParams.jwt);
+      return conventionAccess ? [conventionAccess.role] : [];
+    })
     .with(
       { name: "adminConventionDetail" },
       ({ userRolesForFetchedConvention }): Role[] => [
@@ -143,7 +141,7 @@ export const ConventionManageContent = ({
     });
 
     throw frontErrors.convention.noRightsOnConvention({
-      userEmail: currentUser?.email ?? "INCONNU",
+      userEmail: currentUser?.email,
       conventionId,
     });
   }

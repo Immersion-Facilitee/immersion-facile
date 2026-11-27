@@ -31,6 +31,8 @@ import type {
   ActionKindAndLevel,
   Feedback,
 } from "src/core-logic/domain/feedback/feedback.slice";
+import { otpChallengeSlice } from "src/core-logic/domain/otpChallenge/otpChallenge.slice";
+import { otpSessionSlice } from "src/core-logic/domain/otpSession/otpSession.slice";
 import { partnersErroredConventionSlice } from "src/core-logic/domain/partnersErroredConvention/partnersErroredConvention.slice";
 import { searchSlice } from "src/core-logic/domain/search/search.slice";
 import { authSlice } from "../auth/auth.slice";
@@ -99,6 +101,7 @@ const topics = [
   "establishment-user-registration",
   "login-by-email",
   "magic-link-interstitial",
+  "otp-challenge",
   "renew-expired-jwt",
   "partner-conventions",
   "search-result",
@@ -113,6 +116,7 @@ const topics = [
   "transfer-convention-to-agency",
   "unused",
   "user",
+  "otp-session",
 ] as const;
 
 export const conventionManageFeedbackTopicsToClearOnUnmount: FeedbackTopic[] = [
@@ -1192,6 +1196,37 @@ export const feedbacks: Record<
       title: "Erreur de connexion",
       message:
         "Une erreur est survenue lors de la connexion via le lien magique",
+    },
+  },
+  "otp-challenge": {
+    "fetch.error": {
+      action: otpChallengeSlice.actions.maskedOtpRecipientsFailed,
+      title: "Problème lors de la récupération de vos coordonnées",
+      message:
+        "Une erreur est survenue lors de la récupération de vos coordonnées.",
+    },
+    "create.success": {
+      action: otpChallengeSlice.actions.otpChallengeSucceeded,
+      title: "Le code a bien été envoyé",
+      message: "Vous devriez le recevoir dans les prochaines minutes.",
+    },
+    "create.error": {
+      action: otpChallengeSlice.actions.otpChallengeFailed,
+      title: "Problème lors de l'envoi du code",
+      message: "Une erreur est survenue lors de l'envoi du code.",
+    },
+    "update.error": {
+      action: otpChallengeSlice.actions.otpChallengeVerificationFailed,
+      title: "Problème lors de la vérification du code",
+      message: "Une erreur est survenue lors de la vérification du code.",
+    },
+  },
+  "otp-session": {
+    "fetch.error": {
+      action: otpSessionSlice.actions.otpSessionFailed,
+      title: "Problème lors de la récupération de votre session",
+      message:
+        "Une erreur est survenue lors de la récupération de votre session.",
     },
   },
   "renew-expired-jwt": {

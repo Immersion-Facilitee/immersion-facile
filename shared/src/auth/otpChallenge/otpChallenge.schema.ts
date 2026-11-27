@@ -14,6 +14,7 @@ import type { ZodSchemaWithInputMatchingOutput } from "../../zodUtils";
 import {
   type ManageConventionSubject,
   type MaskedOtpRecipients,
+  OTP_CODE_LENGTH,
   type OtpChallenge,
   type OtpChallengeId,
   type OtpChallengePurpose,
@@ -68,11 +69,11 @@ export const requestOtpChallengeSchema: ZodSchemaWithInputMatchingOutput<Request
 
 export const otpCodeSchema: ZodSchemaWithInputMatchingOutput<OtpCode> =
   makeHardenedStringSchema({
-    min: 4,
-    max: 4,
+    min: OTP_CODE_LENGTH,
+    max: OTP_CODE_LENGTH,
     withRegExp: {
-      regex: /^\d{4}$/,
-      message: "Le code doit contenir 4 chiffres",
+      regex: new RegExp(`^\\d{${OTP_CODE_LENGTH}}$`),
+      message: `Le code doit contenir ${OTP_CODE_LENGTH} chiffres`,
     },
   });
 

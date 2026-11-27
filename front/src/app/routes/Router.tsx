@@ -25,6 +25,7 @@ import { AdminPrivateRoutePage } from "src/app/pages/auth/AdminPrivateRoutePage"
 import { ConnectedPrivateRoutePage } from "src/app/pages/auth/ConnectedPrivateRoutePage";
 import { DashboardPrivateRoutePage } from "src/app/pages/auth/DashboardPrivateRoutePage";
 import { MagicLinkInterstitialPage } from "src/app/pages/auth/MagicLinkInterstitialPage";
+import { OtpPrivateRoute } from "src/app/pages/auth/OtpPrivateRoute";
 import { BeneficiaryDashboardPage } from "src/app/pages/beneficiary-dashboard/BeneficiaryDashboardPage";
 import { ArchivedConventionRequestPage } from "src/app/pages/convention/ArchivedConventionRequestPage";
 import { AssessmentDocumentPage } from "src/app/pages/convention/AssessmentDocumentPage";
@@ -199,7 +200,9 @@ const getPageByRouteName: {
   ),
   assessmentDocument: (route) =>
     route.params.jwt ? (
-      <AssessmentDocumentPage route={route} />
+      <OtpPrivateRoute route={route}>
+        <AssessmentDocumentPage route={route} />
+      </OtpPrivateRoute>
     ) : (
       <ConnectedPrivateRoutePage
         route={route}
@@ -239,15 +242,27 @@ const getPageByRouteName: {
     </ConnectedPrivateRoutePage>
   ),
   initiateConvention: () => <InitiateConventionPage />,
-  conventionImmersion: (route) => <ConventionImmersionPage route={route} />,
-  conventionMiniStage: (route) => <ConventionMiniStagePage route={route} />,
+  conventionImmersion: (route) => (
+    <OtpPrivateRoute route={route}>
+      <ConventionImmersionPage route={route} />
+    </OtpPrivateRoute>
+  ),
+  conventionMiniStage: (route) => (
+    <OtpPrivateRoute route={route}>
+      <ConventionMiniStagePage route={route} />
+    </OtpPrivateRoute>
+  ),
   conventionConfirmation: (route) => (
     <ConventionConfirmationPage route={route} />
   ),
   conventionImmersionForExternals: (route) => (
     <ConventionPageForExternals route={route} />
   ),
-  conventionDocument: (route) => <ConventionDocumentPage route={route} />,
+  conventionDocument: (route) => (
+    <OtpPrivateRoute route={route}>
+      <ConventionDocumentPage route={route} />
+    </OtpPrivateRoute>
+  ),
   conventionStatusDashboard: (route) => (
     <ConventionStatusDashboardPage route={route} />
   ),
@@ -284,11 +299,19 @@ const getPageByRouteName: {
   homeAgencies: () => <HomePage type="agency" />,
   homeCandidates: () => <HomePage type="candidate" />,
   homeEstablishments: () => <HomePage type="establishment" />,
-  assessment: (route) => <AssessmentPage route={route} />,
+  assessment: (route) => (
+    <OtpPrivateRoute route={route}>
+      <AssessmentPage route={route} />
+    </OtpPrivateRoute>
+  ),
   searchResult: () => <SearchResultPage isExternal={false} />,
   searchResultForStudent: () => <SearchResultPage isExternal={false} />,
   searchResultExternal: () => <SearchResultPage isExternal={true} />,
-  manageConvention: (route) => <ConventionManagePage route={route} />,
+  manageConvention: (route) => (
+    <OtpPrivateRoute route={route}>
+      <ConventionManagePage route={route} />
+    </OtpPrivateRoute>
+  ),
   manageConventionConnectedUser: (route) => (
     <ConnectedPrivateRoutePage
       route={route}

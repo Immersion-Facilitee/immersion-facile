@@ -5,7 +5,8 @@ type FrontRoutesKeys =
   | "home"
   | "header"
   | "footer"
-  | "login";
+  | "login"
+  | "otpChallenge";
 
 type FrontRouteParametrizedKeys =
   | "mode"
@@ -511,7 +512,6 @@ export const domElementIds = {
     deleteAssessmentButton: "im-manage-convention__delete-assessment-button",
     assessmentFullFillButton:
       "im-manage-convention__assessment-full-fill-button",
-
     conventionValidationRejectButton: "im-convention-validation__reject-button",
     conventionValidationValidateButton:
       "im-convention-validation__validate-button",
@@ -1144,6 +1144,13 @@ export const domElementIds = {
   magicLinkInterstitial: {
     confirmLoginButton: "im-magic-link-interstitial__confirm-login-button",
     renewalButton: "im-magic-link-interstitial__renewal-button",
+  },
+  otpChallenge: {
+    channelRadioButtons: "im-otp-challenge__channel-radio-buttons",
+    sendCodeButton: "im-otp-challenge__send-code-button",
+    otpCodeInput: "im-otp-challenge__otp-code-input",
+    resendCodeButton: "im-otp-challenge__resend-code-button",
+    changeChannelButton: "im-otp-challenge__change-channel-button",
   },
   adminEstablishments: {},
   establishmentDashboard: {

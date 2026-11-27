@@ -32,7 +32,7 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
   sharedOtpChallengeRouter.requestOtpChallenge(
     deps.otpAuthMiddleware,
     (req, res) =>
-      sendHttpResponse(req, res.status(204), () =>
+      sendHttpResponse(req, res.status(201), () =>
         deps.useCases.requestOtpChallenge.execute(
           req.body,
           getGenericAuthOrThrow(req.payloads?.otp),
@@ -43,13 +43,12 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
   sharedOtpChallengeRouter.verifyOtpChallenge(
     deps.otpAuthMiddleware,
     (req, res) =>
-      sendHttpResponse(req, res.status(204), async () => {
+      sendHttpResponse(req, res, async () => {
         const otpJwtPayload = getGenericAuthOrThrow(req.payloads?.otp);
-        const { id, expiresAt } =
-          await deps.useCases.verifyOtpChallenge.execute(
-            req.body,
-            otpJwtPayload,
-          );
+        const { id, session } = await deps.useCases.verifyOtpChallenge.execute(
+          req.body,
+          otpJwtPayload,
+        );
         res.cookie(otpSessionCookieName, id, {
           httpOnly: true,
           secure:
@@ -57,8 +56,9 @@ export const createOtpChallengeRouter = (deps: AppDependencies): Router => {
             deps.config.envType === "staging",
           sameSite: "lax",
           path: "/",
-          expires: new Date(expiresAt),
+          expires: new Date(session.expiresAt),
         });
+        return session;
       }),
   );
 

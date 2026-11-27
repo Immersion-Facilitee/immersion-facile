@@ -8,6 +8,7 @@ import type {
   EmailAuthCodeJwt,
   FederatedIdentity,
   OAuthState,
+  OtpJwt,
   ShortLinkId,
   WithRedirectUri,
 } from "shared";
@@ -21,7 +22,7 @@ type WithUrl = {
 };
 
 export type RenewJwtPayload = {
-  expiredJwt: ConventionJwt | ConnectedUserJwt | EmailAuthCodeJwt;
+  expiredJwt: ConventionJwt | ConnectedUserJwt | EmailAuthCodeJwt | OtpJwt;
   originalUrl?: string;
   shortLinkId?: ShortLinkId;
   state?: OAuthState;

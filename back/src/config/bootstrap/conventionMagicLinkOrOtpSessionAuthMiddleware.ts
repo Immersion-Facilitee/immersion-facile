@@ -1,6 +1,6 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
-import { errors, otpSessionCookieName } from "shared";
+import { errors, isOtpJwtPayload, otpSessionCookieName } from "shared";
 import { handleHttpJsonResponseError } from "../helpers/handleHttpJsonResponseError";
 
 const isOtpJwt = (authorization: string): boolean => {
@@ -8,7 +8,7 @@ const isOtpJwt = (authorization: string): boolean => {
   return (
     unsafePayload !== null &&
     typeof unsafePayload === "object" &&
-    "purpose" in unsafePayload
+    isOtpJwtPayload(unsafePayload)
   );
 };
 

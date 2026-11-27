@@ -15,6 +15,7 @@ import { TestAuthGateway } from "../adapters/AuthGateway/TestAuthGateway";
 import { TestEstablishmentGateway } from "../adapters/EstablishmentGateway/TestEstablishmentGateway";
 import { TestFormCompletionGateway } from "../adapters/FormCompletionGateway/TestFormCompletionGateway";
 import { TestJwtValidator } from "../adapters/JwtValidator/TestJwtValidator";
+import { TestOtpChallengeGateway } from "../adapters/OtpChallengeGateway/TestOtpChallengeGateway";
 import { TestSearchGateway } from "../adapters/SearchGateway/TestSearchGateway";
 
 export type TestDependencies = ReturnType<typeof createTestDependencies>;
@@ -38,6 +39,7 @@ const createTestDependencies = () =>
     searchGateway: new TestSearchGateway(),
     technicalGateway: new TestTechnicalGateway(),
     nafGateway: new TestNafGateway(),
+    otpChallengeGateway: new TestOtpChallengeGateway(),
     jwtValidator: new TestJwtValidator(),
   }) satisfies Dependencies;
 

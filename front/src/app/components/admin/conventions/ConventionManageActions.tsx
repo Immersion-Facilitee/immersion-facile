@@ -17,6 +17,7 @@ import {
   type EditConventionWithFinalStatusRequestDto,
   type ExcludeFromExisting,
   type MarkPartnersErroredConventionAsHandledRequest,
+  type OtpJwt,
   type RenewConventionParams,
   type Role,
   type TransferConventionToAgencyRequestDto,
@@ -70,6 +71,10 @@ export type JwtKindProps =
   | {
       jwt: ConnectedUserJwt;
       kind: "connected user";
+    }
+  | {
+      jwt: OtpJwt;
+      kind: "otp session";
     };
 
 type ConventionManageActionsProps = {
@@ -186,7 +191,11 @@ export const ConventionManageActions = ({
     dispatch(feedbackSlice.actions.clearFeedbacksTriggered());
 
     if (verificationAction === "EDIT_CONVENTION_WITH_FINAL_STATUS") {
-      if ("beneficiary" in params && jwtParams.kind === "convention") return;
+      if (
+        "beneficiary" in params &&
+        (jwtParams.kind === "convention" || jwtParams.kind === "otp session")
+      )
+        return;
       dispatch(
         editConventionWithFinalStatusSlice.actions.editConventionWithFinalStatusRequested(
           {

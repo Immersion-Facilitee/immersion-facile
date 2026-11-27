@@ -1,6 +1,12 @@
 import { decode } from "js-base64";
 import { safeParseJson } from "../utils/json";
-import type { AppSupportedJwtPayload } from "./payload.dto";
+import type {
+  AppSupportedJwtPayload,
+  ConnectedUserJwtPayload,
+  ConventionJwtPayload,
+  EmailAuthCodeJwtPayload,
+  OtpJwtPayload,
+} from "./payload.dto";
 
 // handle unicode parsing issues between atob and JWT base64 format
 const toBase64 = (input: string): string =>
@@ -21,6 +27,21 @@ export const decodeMagicLinkJwtWithoutSignatureCheck = <
 >(
   jwtToken: string,
 ): T => decodeJwtWithoutSignatureCheck<T>(jwtToken);
+
+export const isOtpJwtPayload = (payload: object): payload is OtpJwtPayload =>
+  "purpose" in payload;
+
+export const isConventionJwtPayload = (
+  payload: object,
+): payload is ConventionJwtPayload => "applicationId" in payload;
+
+export const isConnectedUserJwtPayload = (
+  payload: object,
+): payload is ConnectedUserJwtPayload => "userId" in payload;
+
+export const isEmailAuthCodeJwtPayload = (
+  payload: object,
+): payload is EmailAuthCodeJwtPayload => "emailAuthCode" in payload;
 
 export const getJwtExpiredSinceInSeconds = (jwt: string, now: Date) => {
   const decoded = decodeJwtWithoutSignatureCheck<{ exp: number }>(jwt);

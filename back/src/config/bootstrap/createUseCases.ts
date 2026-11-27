@@ -1112,7 +1112,7 @@ export const createUseCases = ({
         timeGateway,
         config,
         saveNotificationAndRelatedEvent,
-        generateConventionMagicLinkUrl,
+        generateOtpLinkUrl,
         shortLinkIdGeneratorGateway: gateways.shortLinkGenerator,
         createNewEvent,
       },
@@ -1267,6 +1267,8 @@ export const createUseCases = ({
         deps: {
           saveNotificationAndRelatedEvent,
           config,
+          generateOtpLinkUrl,
+          timeGateway,
         },
       }),
 
@@ -1318,8 +1320,9 @@ export const createUseCases = ({
       makeNotifySignatoriesThatConventionSubmittedNeedsSignature({
         uowPerformer,
         deps: {
-          config,
           saveNotificationAndRelatedEvent,
+          generateOtpLinkUrl,
+          timeGateway,
         },
       }),
     notifySignatoriesThatConventionSubmittedNeedsSignatureAfterNotification:
@@ -1327,8 +1330,9 @@ export const createUseCases = ({
         {
           uowPerformer,
           deps: {
-            config,
             saveNotificationAndRelatedEvent,
+            generateOtpLinkUrl,
+            timeGateway,
           },
         },
       ),
@@ -1381,6 +1385,7 @@ export const createUseCases = ({
     requestOtpChallenge: makeRequestOtpChallenge({
       uowPerformer,
       deps: {
+        appConfig: config,
         hashOtpCode: makeHashOtpCode(config.otpCodeHmacSecret),
         otpCodeGeneratorGateway: gateways.otpCodeGeneratorGateway,
         saveNotificationAndRelatedEvent,

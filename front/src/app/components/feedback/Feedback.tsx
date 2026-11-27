@@ -1,9 +1,14 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import type { ReactNode } from "react";
+import { useDispatch } from "react-redux";
 import { errors, safeParseJson } from "shared";
-import { useFeedbackTopics } from "src/app/hooks/feedback.hooks";
+import { useAppSelector } from "src/app/hooks/reduxHooks";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
-import type { FeedbackLevel } from "src/core-logic/domain/feedback/feedback.slice";
+import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
+import {
+  type FeedbackLevel,
+  feedbackSlice,
+} from "src/core-logic/domain/feedback/feedback.slice";
 
 type FeedbackProps = {
   topics: FeedbackTopic[];
@@ -39,8 +44,13 @@ export const Feedback = ({
   render,
   closable,
   className,
-}: FeedbackProps) => {
-  const relevantFeedbacks = useFeedbackTopics(topics);
+}: FeedbackProps): JSX.Element | null => {
+  const dispatch = useDispatch();
+  const feedbacks = useAppSelector(feedbacksSelectors.feedbacks);
+  const relevantFeedbacks = topics.flatMap((topic) => {
+    const feedback = feedbacks[topic];
+    return feedback ? [{ ...feedback, topic }] : [];
+  });
 
   if (relevantFeedbacks.length === 0) return null;
 
@@ -48,7 +58,7 @@ export const Feedback = ({
     return (
       <>
         {relevantFeedbacks.map((feedback) => (
-          <div key={feedback.message}>
+          <div key={feedback.topic}>
             {render({
               level: feedback.level,
               title: feedback.title,
@@ -62,28 +72,26 @@ export const Feedback = ({
 
   return (
     <>
-      {relevantFeedbacks.map((feedback) =>
-        closable === true ? (
-          <Alert
-            key={feedback.message}
-            severity={feedback.level}
-            title={feedback.title}
-            description={formatFeedbackMessage(feedback.message)}
-            small
-            closable={closable}
-            className={className}
-          />
-        ) : (
-          <Alert
-            key={feedback.message}
-            severity={feedback.level}
-            title={feedback.title}
-            description={formatFeedbackMessage(feedback.message)}
-            small
-            className={className}
-          />
-        ),
-      )}
+      {relevantFeedbacks.map((feedback) => (
+        <Alert
+          key={feedback.topic}
+          severity={feedback.level}
+          title={feedback.title}
+          description={formatFeedbackMessage(feedback.message)}
+          small
+          closable={closable}
+          className={className}
+          onClose={
+            closable === true
+              ? () => {
+                  dispatch(
+                    feedbackSlice.actions.clearFeedbackTopics([feedback.topic]),
+                  );
+                }
+              : undefined
+          }
+        />
+      ))}
     </>
   );
 };

@@ -8,6 +8,8 @@ import type { DateTimeIsoString } from "../../utils/date";
 
 export type OtpChallengeId = Flavor<string, "OtpChallengeId">;
 
+export const OTP_CODE_LENGTH = 4;
+
 export type OtpCode = Flavor<string, "OtpCode">;
 
 export const otpChallengePurposes = ["manageConvention"] as const;
