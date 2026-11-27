@@ -41,6 +41,7 @@ import { EstablishmentLeadRegistrationRejectedPage } from "src/app/pages/establi
 import { EstablishmentUserRegistrationPage } from "src/app/pages/establishment/EstablishmentUserRegistrationPage";
 import { EstablishmentDashboardMainTab } from "src/app/pages/establishment-dashboard/EstablishmentDashboardMainTab";
 import { EstablishmentDetailsPage } from "src/app/pages/establishment-dashboard/EstablishmentDetailsPage";
+import { EstablishmentOfferPage } from "src/app/pages/establishment-dashboard/EstablishmentOfferPage";
 import { StatsPage } from "src/app/pages/StatsPage";
 import { SearchPage } from "src/app/pages/search/SearchPage";
 import { MyAccountPage } from "src/app/pages/user/MyAccountPage";
@@ -115,7 +116,8 @@ const getPageSideEffectByRouteName: Partial<Record<keyof Routes, () => void>> =
     establishmentDashboardEstablishments: fetchCurrentUser,
     establishmentDashboardDiscussions: fetchCurrentUser,
     establishmentDashboardConventions: fetchCurrentUser,
-    establishmentDashboardEstablishmentDetails: fetchCurrentUser,
+    establishmentDashboardEstablishmentOffers: fetchCurrentUser,
+    establishmentDashboardEstablishmentOffer: fetchCurrentUser,
   };
 
 const getPageByRouteName: {
@@ -269,8 +271,29 @@ const getPageByRouteName: {
     </DashboardPrivateRoutePage>
   ),
   establishmentDashboardEstablishmentDetails: (route) => (
+    <RedirectTo
+      route={
+        route.params.siret
+          ? frontRoutes.establishmentDashboardEstablishmentOffers({
+              siret: route.params.siret,
+            })
+          : frontRoutes.establishmentDashboardEstablishments()
+      }
+    />
+  ),
+  establishmentDashboardEstablishmentOffers: (route) => (
     <DashboardPrivateRoutePage route={route}>
       <EstablishmentDetailsPage route={route} />
+    </DashboardPrivateRoutePage>
+  ),
+  establishmentDashboardEstablishmentInformations: (route) => (
+    <DashboardPrivateRoutePage route={route}>
+      <EstablishmentDetailsPage route={route} />
+    </DashboardPrivateRoutePage>
+  ),
+  establishmentDashboardEstablishmentOffer: (route) => (
+    <DashboardPrivateRoutePage route={route}>
+      <EstablishmentOfferPage route={route} />
     </DashboardPrivateRoutePage>
   ),
   establishmentDashboardDiscussions: (route) => (
@@ -371,17 +394,21 @@ export const Router = (): ReactNode => {
 
   const route = useRoute();
   const routeName = route.name;
+  const sideEffectRouteName =
+    routeName === "establishmentDashboardEstablishmentInformations"
+      ? "establishmentDashboardEstablishmentOffers"
+      : routeName;
   const previousRouteName = useRef<keyof Routes | undefined>(undefined);
   useEffect(() => {
     if (
-      routeName &&
-      previousRouteName.current !== routeName &&
-      getPageSideEffectByRouteName[routeName]
+      sideEffectRouteName &&
+      previousRouteName.current !== sideEffectRouteName &&
+      getPageSideEffectByRouteName[sideEffectRouteName]
     ) {
-      previousRouteName.current = routeName;
-      getPageSideEffectByRouteName[routeName]();
+      previousRouteName.current = sideEffectRouteName;
+      getPageSideEffectByRouteName[sideEffectRouteName]();
     }
-  }, [routeName]);
+  }, [sideEffectRouteName]);
   return routeName === false ? (
     <ErrorPage error={frontErrors.generic.pageNotFound()} />
   ) : (

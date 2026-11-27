@@ -3,6 +3,7 @@ import {
   addressRoutes,
   domElementIds,
   type FormEstablishmentDto,
+  formCompletionRoutes,
   frontRoutes,
 } from "shared";
 import {
@@ -30,7 +31,7 @@ export const updateEstablishmentThroughEstablishmentDashboard =
     await goToEstablishmentDashboardTab(page, "fiche-entreprise");
 
     const establishmentDashboardUrl =
-      frontRoutes.establishmentDashboardEstablishmentDetails({
+      frontRoutes.establishmentDashboardEstablishmentOffers({
         siret: updatedFormEstablishment.siret,
       }).href;
     await page
@@ -75,6 +76,19 @@ const editEstablishmentInEstablishmentDashboard = async (
   const userRights = updatedEstablishment.userRights;
   if (!userRights)
     throw new Error("Missing user rights for updatedEstablishmentInfos");
+  await addOfferThroughOfferPage(page, "routage");
+  await goBackToEstablishmentDetails(page);
+  await editOfferThroughOfferPage(page, 1);
+  await goBackToEstablishmentDetails(page);
+  await page.click(
+    `#${domElementIds.formEstablishment.edit.deleteOfferButton}-0`,
+  );
+  await page.click(
+    `#${domElementIds.formEstablishment.edit.deleteOfferConfirmButton}`,
+  );
+  await expect(page.locator(".fr-alert--success")).toBeVisible();
+  await goBackToEstablishmentDetails(page);
+  await goToEstablishmentFormTab(page, "informations");
   const adminEmail = await page
     .locator("#establishment-users-table tr:first-of-type td:first-of-type")
     .textContent();
@@ -83,6 +97,53 @@ const editEstablishmentInEstablishmentDashboard = async (
   await step2(page, updatedEstablishment);
   await step3(page, updatedEstablishment);
   await step4(page, updatedEstablishment);
+};
+
+export const goToEstablishmentFormTab = (
+  page: Page,
+  tab: "offers" | "informations",
+) =>
+  page.click(
+    `#tabpanel-${domElementIds.formEstablishment.edit.tabs}-${tab === "offers" ? 0 : 1}`,
+  );
+
+const goBackToEstablishmentDetails = (page: Page): Promise<void> =>
+  page.getByRole("button", { name: "Revenir à la fiche entreprise" }).click();
+
+const addOfferThroughOfferPage = async (
+  page: Page,
+  appellationValue: string,
+): Promise<void> => {
+  await page.click(`#${domElementIds.formEstablishment.edit.addOfferButton}`);
+  await fillAutocomplete({
+    page,
+    locator: `#${domElementIds.formEstablishment.edit.appellations}`,
+    value: appellationValue,
+    endpoint: formCompletionRoutes.appellation.url,
+  });
+  await page.click(
+    `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.FULL_REMOTE}']`,
+  );
+  await page.click(
+    `#${domElementIds.establishmentDashboardEstablishmentOffer.submitButton}`,
+  );
+  await expect(page.locator(".fr-alert--success")).toBeVisible();
+};
+
+const editOfferThroughOfferPage = async (
+  page: Page,
+  offerIndex: number,
+): Promise<void> => {
+  await page.click(
+    `#${domElementIds.formEstablishment.edit.editOfferButton}-${offerIndex}`,
+  );
+  await page.click(
+    `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.ON_SITE}']`,
+  );
+  await page.click(
+    `#${domElementIds.establishmentDashboardEstablishmentOffer.submitButton}`,
+  );
+  await expect(page.locator(".fr-alert--success")).toBeVisible();
 };
 
 const step1 = async (
@@ -142,22 +203,6 @@ const step2 = async (
   await page.click(
     `#${domElementIds.formEstablishment.edit.businessAddresses}-delete-option-button-0`,
   ); // twice, to remove the second address
-
-  await page.click(
-    `#${domElementIds.formEstablishment.edit.deleteOfferButton}-0`,
-  );
-
-  await page.click(
-    `#${domElementIds.formEstablishment.edit.editOfferButton}-0`,
-  );
-
-  await page.click(
-    `[for='${domElementIds.formEstablishment.edit.remoteWorkMode}-${remoteModeIndexMap.ON_SITE}']`,
-  );
-
-  await page.click(
-    `#${domElementIds.formEstablishment.offerModalSubmitButton}`,
-  );
 
   await fillAutocomplete({
     page,

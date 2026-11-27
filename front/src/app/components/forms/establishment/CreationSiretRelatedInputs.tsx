@@ -6,6 +6,7 @@ import { Loader } from "react-design-system";
 import { useFormContext } from "react-hook-form";
 import {
   defaultMaxContactsPerMonth,
+  domElementIds,
   type FormEstablishmentDto,
   type NumberEmployeesRange,
 } from "shared";
@@ -97,6 +98,7 @@ export const CreationSiretRelatedInputs = () => {
       />
       <p>
         <a
+          id={domElementIds.formEstablishment.create.annuaireEntreprisesLink}
           className={fr.cx("fr-link")}
           href={"https://annuaire-entreprises.data.gouv.fr"}
           target="_blank"

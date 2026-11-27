@@ -660,6 +660,8 @@ export const domElementIds = {
       addressAutocomplete:
         "im-form-create-establishment__autocomplete-address-creation-establishment-form",
       siret: "im-form-create-establishment__siret",
+      annuaireEntreprisesLink:
+        "im-form-create-establishment__annuaire-entreprises-link",
       businessName: "im-form-create-establishment__business-name",
       businessNameCustomized:
         "im-form-create-establishment__business-name-customized",
@@ -686,6 +688,8 @@ export const domElementIds = {
         "im-form-create-establishment__fit-for-disabled-workers",
       appellations: "im-form-create-establishment__appellations",
       remoteWorkMode: "im-form-create-establishment__remote-work-mode",
+      appellationsListLink:
+        "im-form-create-establishment__appellations-list-link",
       website: "im-form-create-establishment__website",
       additionalInformation:
         "im-form-create-establishment__additional-information",
@@ -702,6 +706,8 @@ export const domElementIds = {
         "im-form-create-establishment__next-availability-date",
       navigateToEstablishmentDashboard:
         "im-form-create-establishment__navigate-establishment-dahsboard-button",
+      addOtherOfferButton:
+        "im-form-create-establishment__add-other-offer-button",
       previousButtonFromStepAndMode: ({ currentStep }) =>
         `im-form-create-establishment__previous-button--step-${currentStep}`,
       nextButtonFromStepAndMode: ({ currentStep }) =>
@@ -719,6 +725,11 @@ export const domElementIds = {
       addOfferButton: "im-form-edit-establishment__add-offer-button",
       editOfferButton: "im-form-edit-establishment__edit-offer-button",
       deleteOfferButton: "im-form-edit-establishment__delete-offer-button",
+      deleteOfferModal: "im-form-edit-establishment__delete-offer-modal",
+      deleteOfferCancelButton:
+        "im-form-edit-establishment__delete-offer-cancel-button",
+      deleteOfferConfirmButton:
+        "im-form-edit-establishment__delete-offer-confirm-button",
       addressAutocomplete:
         "im-form-edit-establishment__autocomplete-address-creation-establishment-form",
       siret: "im-form-edit-establishment__siret",
@@ -747,6 +758,8 @@ export const domElementIds = {
         "im-form-edit-establishment__fit-for-disabled-workers",
       appellations: "im-form-edit-establishment__appellations",
       remoteWorkMode: "im-form-edit-establishment__remote-work-mode",
+      appellationsListLink:
+        "im-form-edit-establishment__appellations-list-link",
       website: "im-form-edit-establishment__website",
       additionalInformation:
         "im-form-edit-establishment__additional-information",
@@ -760,6 +773,7 @@ export const domElementIds = {
         "im-form-edit-establishment__edit-establishment-button",
       startFormButton: "im-form-edit-establishment__start-button",
       submitFormButton: "im-form-edit-establishment__submit-button",
+      tabs: "im-form-edit-establishment__tabs",
       availabilityButton: "im-form-edit-establishment__availability-button",
       nextAvailabilityDateInput:
         "im-form-edit-establishment__next-availability-date",
@@ -771,6 +785,8 @@ export const domElementIds = {
       refreshEditLink: "im-form-edit-establishment__refresh-link",
       offerCard: "im-form-edit-establishment__offer-card",
       userRightsList: "im-form-edit-establishment__users-list",
+      backToEstablishmentButton:
+        "im-form-edit-establishment__back-to-establishment-button",
     },
     admin: {
       form: "im-form-manage-establishment-admin",
@@ -821,6 +837,8 @@ export const domElementIds = {
         "im-form-manage-establishment-admin__fit-for-disabled-workers",
       appellations: "im-form-manage-establishment-admin__appellations",
       remoteWorkMode: "im-form-manage-establishment-admin__remote-work-mode",
+      appellationsListLink:
+        "im-form-manage-establishment-admin__appellations-list-link",
       website: "im-form-manage-establishment-admin__website",
       additionalInformation:
         "im-form-manage-establishment-admin__additional-information",
@@ -841,6 +859,8 @@ export const domElementIds = {
       nextAvailabilityDateValue:
         "im-form-manage-establishment-admin__current-next-availablity-date-value",
       offerCard: "im-form-manage-establishment-admin__offer-card",
+      backToEstablishmentButton:
+        "im-form-manage-establishment-admin__back-to-establishment-button",
     },
   },
   assessment: {
@@ -1419,6 +1439,13 @@ export const domElementIds = {
   },
   establishmentDashboardEstablishments: {},
   establishmentDashboardEstablishmentDetails: {},
+  establishmentDashboardEstablishmentInformations: {},
+  establishmentDashboardEstablishmentOffers: {},
+  establishmentDashboardEstablishmentOffer: {
+    submitButton: "im-establishment-dashboard-offer__submit-button",
+    backToEstablishmentDetailsButton:
+      "im-establishment-dashboard-offer__back-to-establishment-details-button",
+  },
   openApiDoc: {},
   stats: {},
   temporaryError: {

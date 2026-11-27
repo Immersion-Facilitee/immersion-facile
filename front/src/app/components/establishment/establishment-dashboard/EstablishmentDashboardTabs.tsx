@@ -198,12 +198,21 @@ const establishmentDashboardTabFromRouteName: Record<
   establishmentDashboardConventions: "conventions",
   establishmentDashboardEstablishments: "fiche-entreprise",
   establishmentDashboardEstablishmentDetails: "fiche-entreprise",
+  establishmentDashboardEstablishmentInformations: "fiche-entreprise",
+  establishmentDashboardEstablishmentOffers: "fiche-entreprise",
+  establishmentDashboardEstablishmentOffer: "fiche-entreprise",
   establishmentDashboardDiscussions: "discussions",
 };
 
 const establishmentDashboardRouteNameFromTabId: Record<
   EstablishmentDashboardTab,
-  EstablishmentDashboardRouteName
+  Exclude<
+    EstablishmentDashboardRouteName,
+    | "establishmentDashboardEstablishmentDetails"
+    | "establishmentDashboardEstablishmentInformations"
+    | "establishmentDashboardEstablishmentOffers"
+    | "establishmentDashboardEstablishmentOffer"
+  >
 > = {
   conventions: "establishmentDashboard",
   discussions: "establishmentDashboardDiscussions",

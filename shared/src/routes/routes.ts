@@ -374,6 +374,24 @@ export const {
       { siret: param.path.optional.string },
       ({ siret }) => `/${siret}`,
     ),
+  establishmentDashboardEstablishmentInformations:
+    establishmentDashboardEstablishments.extend(
+      { siret: param.path.string },
+      ({ siret }) => `/${siret}/informations`,
+    ),
+  establishmentDashboardEstablishmentOffers:
+    establishmentDashboardEstablishments.extend(
+      { siret: param.path.string },
+      ({ siret }) => `/${siret}/offres`,
+    ),
+  establishmentDashboardEstablishmentOffer:
+    establishmentDashboardEstablishments.extend(
+      {
+        siret: param.path.string,
+        appellationCode: param.query.optional.string,
+      },
+      ({ siret }) => `/${siret}/offre`,
+    ),
   establishmentDashboardDiscussions: establishmentDashboard.extend(
     {
       discussionId: param.path.optional.string,

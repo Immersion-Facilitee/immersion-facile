@@ -55,10 +55,7 @@ export const BusinessAndAdminSection = ({
 
   return (
     <>
-      <HeadingSection
-        title="Informations de votre établissement"
-        className={fr.cx("fr-mt-0")}
-      >
+      <HeadingSection title="Votre entreprise" className={fr.cx("fr-mt-0")}>
         {formEstablishment.userRights.some(
           (userRight) => userRight.status === "PENDING",
         ) && (

@@ -17,6 +17,7 @@ import {
   goToManageEstablishmentThroughEstablishmentDashboard,
   goToManageEtablishmentBySiretInAdmin,
 } from "./establishmentNavigation.utils";
+import { goToEstablishmentFormTab } from "./modifyEstablishment";
 
 export const checkEstablishmentUpdatedThroughBackOfficeAdmin =
   (
@@ -54,6 +55,7 @@ export const checkAvailabilityThoughEstablishmentDashboard =
       page,
       updatedEstablishment,
     );
+    await goToEstablishmentFormTab(page, "informations");
     await checkAvailabilityButtons(page, "edit", "Non");
   };
 

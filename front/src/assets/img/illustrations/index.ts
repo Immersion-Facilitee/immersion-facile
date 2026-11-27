@@ -5,6 +5,7 @@ import discussions from "./discussions.webp";
 import documentsAdministratifs from "./documents-administratifs.webp";
 import error from "./error-illustration.webp";
 import errorMissing from "./error-missing-illustration.webp";
+import establishmentCreated from "./establishment-created.webp";
 import fillForm from "./fill-form.webp";
 import infosImportantes from "./infos-importantes.webp";
 import inscription from "./inscription.webp";
@@ -35,6 +36,7 @@ export const commonIllustrations = {
   documentsAdministratifs,
   contact,
   errorMissing,
+  establishmentCreated,
   fillForm,
   structureAccueil,
   discussions,

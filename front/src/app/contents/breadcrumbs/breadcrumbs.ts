@@ -1,5 +1,5 @@
 import type { BreadcrumbProps } from "@codegouvfr/react-dsfr/Breadcrumb";
-import { type FrontRouteKeys, frontRoutes } from "shared";
+import { type FrontRouteKeys, frontRoutes, useRoute } from "shared";
 import {
   type Breadcrumbs,
   makeBreadcrumbsSegments,
@@ -24,6 +24,16 @@ const makeBreadcrumbs = (
       addAgency: {
         label: "Inscrire mon organisme",
         route: frontRoutes.addAgency(),
+      },
+    },
+  },
+  homeEstablishments: {
+    label: "Entreprises",
+    route: frontRoutes.homeEstablishments(),
+    children: {
+      formEstablishment: {
+        label: "Inscrire une entreprise",
+        route: frontRoutes.formEstablishment(),
       },
     },
   },
@@ -105,11 +115,34 @@ const makeBreadcrumbs = (
             label: "Mes entreprises",
             route: frontRoutes.establishmentDashboardEstablishments(),
             children: {
-              establishmentDashboardEstablishmentDetails: {
+              establishmentDashboardEstablishmentOffers: {
                 label: "Détail de l'entreprise",
-                route: frontRoutes.establishmentDashboardEstablishmentDetails({
-                  siret: "",
-                }),
+                route: () => {
+                  const route = useRoute();
+                  return frontRoutes.establishmentDashboardEstablishmentOffers({
+                    siret:
+                      route.name === "establishmentDashboardEstablishmentOffer"
+                        ? route.params.siret
+                        : "",
+                  });
+                },
+                children: {
+                  establishmentDashboardEstablishmentOffer: {
+                    label: "Ajouter / modifier une offre",
+                    route: frontRoutes.establishmentDashboardEstablishmentOffer(
+                      {
+                        siret: "",
+                      },
+                    ),
+                  },
+                },
+              },
+              establishmentDashboardEstablishmentInformations: {
+                label: "Détail de l'entreprise",
+                route:
+                  frontRoutes.establishmentDashboardEstablishmentInformations({
+                    siret: "",
+                  }),
               },
             },
           },

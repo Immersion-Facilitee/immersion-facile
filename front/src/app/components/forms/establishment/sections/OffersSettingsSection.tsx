@@ -355,7 +355,7 @@ export const OffersSettingsSection = ({
             buttons={[
               {
                 children: "Étape précédente",
-                onClick: () => onStepChange(2, []),
+                onClick: () => onStepChange(1, []),
                 iconId: "fr-icon-arrow-left-line",
                 priority: "secondary",
                 id: domElementIds.formEstablishment[
@@ -369,7 +369,7 @@ export const OffersSettingsSection = ({
                 children: "Étape suivante",
                 onClick: () => {
                   setCurrentStepSubmitted(true);
-                  return onStepChange(4, [
+                  return onStepChange(3, [
                     "searchableBy",
                     "maxContactsPerMonth",
                     "nextAvailabilityDate",

@@ -1,6 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useCallback, useEffect } from "react";
 import { Loader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
@@ -8,8 +8,12 @@ import {
   getDisplayedBusinessName,
   onlyAdminUserRightsWithStatusAccepted,
 } from "shared";
-import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
+import {
+  type EstablishmentEditTab,
+  EstablishmentForm,
+} from "src/app/components/forms/establishment/EstablishmentForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
+import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";
 import { establishmentSelectors } from "src/core-logic/domain/establishment/establishment.selectors";
 import { establishmentSlice } from "src/core-logic/domain/establishment/establishment.slice";
@@ -18,7 +22,10 @@ import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import type { Route } from "type-route";
 
 type EstablishmentDetailsPageProps = {
-  route: Route<typeof frontRoutes.establishmentDashboardEstablishmentDetails>;
+  route: Route<
+    | typeof frontRoutes.establishmentDashboardEstablishmentOffers
+    | typeof frontRoutes.establishmentDashboardEstablishmentInformations
+  >;
 };
 
 export const EstablishmentDetailsPage = ({
@@ -27,6 +34,7 @@ export const EstablishmentDetailsPage = ({
   const dispatch = useDispatch();
   const currentUser = useAppSelector(connectedUserSelectors.currentUser);
   const isLoadingUser = useAppSelector(connectedUserSelectors.isLoading);
+  const connectedUserJwt = useAppSelector(authSelectors.connectedUserJwt);
   const formEstablishment = useAppSelector(
     establishmentSelectors.formEstablishment,
   );
@@ -58,6 +66,20 @@ export const EstablishmentDetailsPage = ({
     [dispatch],
   );
 
+  const goToEstablishmentEditTab = useCallback(
+    (tab: EstablishmentEditTab): void => {
+      const params = { siret: formEstablishment.siret };
+      if (tab === "informations") {
+        frontRoutes
+          .establishmentDashboardEstablishmentInformations(params)
+          .push();
+        return;
+      }
+      frontRoutes.establishmentDashboardEstablishmentOffers(params).push();
+    },
+    [formEstablishment.siret],
+  );
+
   if (!currentUser)
     return isLoadingUser ? (
       <Loader />
@@ -77,7 +99,41 @@ export const EstablishmentDetailsPage = ({
           {getDisplayedBusinessName(formEstablishment)}
         </h1>
       )}
-      <EstablishmentForm mode="edit" key={siret} />
+      <EstablishmentForm
+        mode="edit"
+        key={siret}
+        selectedTab={
+          route.name === "establishmentDashboardEstablishmentInformations"
+            ? "informations"
+            : "offers"
+        }
+        onTabChange={goToEstablishmentEditTab}
+        onEditOffer={(appellationCode) =>
+          frontRoutes
+            .establishmentDashboardEstablishmentOffer({
+              siret: formEstablishment.siret,
+              appellationCode,
+            })
+            .push()
+        }
+        onDeleteOffer={(appellationCode) => {
+          if (!connectedUserJwt) return;
+          dispatch(
+            establishmentSlice.actions.updateEstablishmentRequested({
+              establishmentUpdate: {
+                formEstablishment: {
+                  ...formEstablishment,
+                  offers: formEstablishment.offers.filter(
+                    (offer) => offer.appellationCode !== appellationCode,
+                  ),
+                },
+                jwt: connectedUserJwt,
+              },
+              feedbackTopic: "form-establishment",
+            }),
+          );
+        }}
+      />
     </>
   );
 };
