@@ -2,7 +2,6 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import Stepper from "@codegouvfr/react-dsfr/Stepper";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import {
@@ -15,9 +14,9 @@ import {
   type VerifyOtpChallengeDto,
   verifyOtpChallengeSchema,
 } from "shared";
+import { useWebOtpCode } from "src/app/components/auth/webOtp.hooks";
 import { Feedback } from "src/app/components/feedback/Feedback";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
-import { useWebOtpCode } from "src/app/hooks/webOtp.hooks";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
 import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
 import { otpChallengeSelectors } from "src/core-logic/domain/otpChallenge/otpChallenge.selectors";
@@ -39,7 +38,6 @@ export const OtpCodeStep = ({
   const dispatch = useDispatch();
   const channel = useAppSelector(otpChallengeSelectors.channel);
   const isLoading = useAppSelector(otpChallengeSelectors.isLoading);
-  const [codeInputKey, setCodeInputKey] = useState(0);
 
   const { title, recipientIntroduction, maskedRecipient } = match(channel)
     .with("email", () => ({
@@ -67,7 +65,7 @@ export const OtpCodeStep = ({
         className={fr.cx("fr-mb-3w")}
         closable
       />
-      <OtpCodeForm key={codeInputKey} jwt={jwt} channel={channel} />
+      <OtpCodeForm jwt={jwt} channel={channel} />
       <p className={fr.cx("fr-mt-3w")}>
         Vous n’avez rien reçu ?{" "}
         <button
@@ -76,7 +74,6 @@ export const OtpCodeStep = ({
           className={fr.cx("fr-link")}
           disabled={isLoading}
           onClick={() => {
-            setCodeInputKey((key) => key + 1);
             dispatch(
               otpChallengeSlice.actions.otpChallengeRequested({
                 channel,

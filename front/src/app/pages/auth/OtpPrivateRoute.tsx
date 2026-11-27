@@ -2,8 +2,11 @@ import { type ReactNode, useEffect } from "react";
 import { Loader } from "react-design-system";
 import { useDispatch } from "react-redux";
 import {
+  type ActiveOtpSession,
   decodeMagicLinkJwtWithoutSignatureCheck,
   type frontRoutes,
+  type GetOtpSessionQueryParams,
+  type OtpDomainJwtPayload,
   type OtpJwt,
   type OtpJwtPayload,
 } from "shared";
@@ -13,9 +16,13 @@ import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { OtpChallengePage } from "src/app/pages/auth/OtpChallengePage";
 import { frontErrors } from "src/app/pages/error/front-errors";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
-import { feedbackSlice } from "src/core-logic/domain/feedback/feedback.slice";
+import {
+  type Feedback,
+  feedbackSlice,
+} from "src/core-logic/domain/feedback/feedback.slice";
 import { otpSessionSelectors } from "src/core-logic/domain/otpSession/otpSession.selectors";
 import { otpSessionSlice } from "src/core-logic/domain/otpSession/otpSession.slice";
+import { match } from "ts-pattern";
 import type { Route } from "type-route";
 
 const otpSessionFeedbackTopic: FeedbackTopic = "otp-session";
@@ -54,18 +61,30 @@ const OtpSessionGuard = ({
   children,
 }: OtpSessionGuardProps): JSX.Element => {
   const dispatch = useDispatch();
-  const { purpose, subject } =
-    decodeMagicLinkJwtWithoutSignatureCheck<OtpJwtPayload>(jwt);
-  const { conventionId } = subject;
+
   const activeSession = useAppSelector(otpSessionSelectors.activeSession);
-  const isOtpRequired = useAppSelector(otpSessionSelectors.isOtpRequired);
+  const isLoading = useAppSelector(otpSessionSelectors.isLoading);
   const otpSessionFeedback = useFeedbackTopic(otpSessionFeedbackTopic);
 
+  const otpJwtPayload =
+    decodeMagicLinkJwtWithoutSignatureCheck<OtpJwtPayload>(jwt);
+
   useEffect(() => {
+    const otpSessionQueryParams: GetOtpSessionQueryParams = match(
+      decodeMagicLinkJwtWithoutSignatureCheck<OtpJwtPayload>(jwt),
+    )
+      .with(
+        { purpose: "manageConvention" },
+        ({ subject }): GetOtpSessionQueryParams => ({
+          purpose: "manageConvention",
+          conventionId: subject.conventionId,
+        }),
+      )
+      .exhaustive();
+
     dispatch(
       otpSessionSlice.actions.otpSessionRequested({
-        purpose,
-        conventionId,
+        ...otpSessionQueryParams,
         feedbackTopic: otpSessionFeedbackTopic,
       }),
     );
@@ -75,17 +94,53 @@ const OtpSessionGuard = ({
         feedbackSlice.actions.clearFeedbackTopics([otpSessionFeedbackTopic]),
       );
     };
-  }, [dispatch, purpose, conventionId]);
+  }, [dispatch, jwt]);
 
-  if (otpSessionFeedback?.level === "error")
-    throw frontErrors.convention.otpSessionRefused({
-      conventionId,
-      errorMessage: otpSessionFeedback.message,
-    });
+  throwIfOtpSessionRefused({ otpJwtPayload, otpSessionFeedback });
 
-  if (activeSession?.conventionId === conventionId) return <>{children}</>;
+  if (isLoading) return <Loader />;
 
-  if (isOtpRequired) return <OtpChallengePage jwt={jwt} />;
+  if (
+    activeSession &&
+    isActiveSessionMatchingOtpJwtPayload({ activeSession, otpJwtPayload })
+  )
+    return <>{children}</>;
 
-  return <Loader />;
+  return <OtpChallengePage jwt={jwt} />;
+};
+
+const isActiveSessionMatchingOtpJwtPayload = ({
+  activeSession,
+  otpJwtPayload,
+}: {
+  activeSession: ActiveOtpSession;
+  otpJwtPayload: OtpDomainJwtPayload;
+}): boolean =>
+  match(otpJwtPayload)
+    .with(
+      { purpose: "manageConvention" },
+      ({ subject }) =>
+        activeSession.purpose === "manageConvention" &&
+        activeSession.conventionId === subject.conventionId &&
+        activeSession.role === subject.role,
+    )
+    .exhaustive();
+
+const throwIfOtpSessionRefused = ({
+  otpJwtPayload,
+  otpSessionFeedback,
+}: {
+  otpJwtPayload: OtpDomainJwtPayload;
+  otpSessionFeedback: Feedback | undefined;
+}): void => {
+  if (otpSessionFeedback?.level !== "error") return;
+
+  throw match(otpJwtPayload)
+    .with({ purpose: "manageConvention" }, ({ subject }) =>
+      frontErrors.convention.otpSessionRefused({
+        conventionId: subject.conventionId,
+        errorMessage: otpSessionFeedback.message,
+      }),
+    )
+    .exhaustive();
 };

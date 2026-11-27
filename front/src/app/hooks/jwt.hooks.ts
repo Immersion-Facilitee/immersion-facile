@@ -52,6 +52,7 @@ export const useJwt = (
   >,
 ): {
   jwt: ConventionSupportedJwt | undefined;
+  isJwtFromUrl: boolean;
   conventionAccess: ConventionAccess | undefined;
 } => {
   const jwtQueryParam: ConventionSupportedJwt | undefined = route.params?.jwt;
@@ -61,6 +62,7 @@ export const useJwt = (
 
   return {
     jwt,
+    isJwtFromUrl: jwtQueryParam !== undefined,
     conventionAccess: jwt ? getConventionAccessFromJwt(jwt) : undefined,
   };
 };

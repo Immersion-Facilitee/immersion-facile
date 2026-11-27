@@ -8,13 +8,12 @@ const activeSession = createSelector(
   ({ activeSession }) => activeSession,
 );
 
-const isOtpRequired = createSelector(
+const isLoading = createSelector(
   otpSessionState,
-  ({ hasCheckedSession, isLoading, activeSession }) =>
-    hasCheckedSession && !isLoading && activeSession === null,
+  ({ isLoading, hasCheckedSession }) => isLoading || !hasCheckedSession,
 );
 
 export const otpSessionSelectors = {
   activeSession,
-  isOtpRequired,
+  isLoading,
 };

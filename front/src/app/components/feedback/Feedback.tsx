@@ -2,8 +2,9 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import type { ReactNode } from "react";
 import { useDispatch } from "react-redux";
 import { errors, safeParseJson } from "shared";
-import { useFeedbackTopics } from "src/app/hooks/feedback.hooks";
+import { useAppSelector } from "src/app/hooks/reduxHooks";
 import type { FeedbackTopic } from "src/core-logic/domain/feedback/feedback.content";
+import { feedbacksSelectors } from "src/core-logic/domain/feedback/feedback.selectors";
 import {
   type FeedbackLevel,
   feedbackSlice,
@@ -45,7 +46,11 @@ export const Feedback = ({
   className,
 }: FeedbackProps): JSX.Element | null => {
   const dispatch = useDispatch();
-  const relevantFeedbacks = useFeedbackTopics(topics);
+  const feedbacks = useAppSelector(feedbacksSelectors.feedbacks);
+  const relevantFeedbacks = topics.flatMap((topic) => {
+    const feedback = feedbacks[topic];
+    return feedback ? [{ ...feedback, topic }] : [];
+  });
 
   if (relevantFeedbacks.length === 0) return null;
 
