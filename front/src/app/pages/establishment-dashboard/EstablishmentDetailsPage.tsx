@@ -8,8 +8,10 @@ import {
   getDisplayedBusinessName,
   onlyAdminUserRightsWithStatusAccepted,
 } from "shared";
-import { EstablishmentForm } from "src/app/components/forms/establishment/EstablishmentForm";
-import type { EstablishmentEditTab } from "src/app/contents/forms/establishment/formEstablishment";
+import {
+  type EstablishmentEditTab,
+  EstablishmentForm,
+} from "src/app/components/forms/establishment/EstablishmentForm";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
 import { authSelectors } from "src/core-logic/domain/auth/auth.selectors";
 import { connectedUserSelectors } from "src/core-logic/domain/connected-user/connectedUser.selectors";

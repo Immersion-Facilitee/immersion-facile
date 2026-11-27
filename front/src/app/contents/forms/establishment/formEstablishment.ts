@@ -5,6 +5,7 @@ import {
   immersionFacileContactEmail,
   type SiretDto,
 } from "shared";
+import type { EstablishmentEditTab } from "src/app/components/forms/establishment/EstablishmentForm";
 import type { FormFieldsObjectForContent } from "src/app/hooks/formContents.hooks";
 import type { Mode } from "src/app/routes/routes.hooks";
 import type { FormFieldAttributesForContent } from "../types";
@@ -183,8 +184,6 @@ export const formEstablishmentFieldsLabels = (
   },
   isEstablishmentBanned: { label: "", id: "" },
 });
-
-export type EstablishmentEditTab = "offers" | "informations";
 
 export const establishmentEditTabsLabels: Record<EstablishmentEditTab, string> =
   {

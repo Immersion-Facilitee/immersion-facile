@@ -28,10 +28,7 @@ import { BusinessAndAdminSection } from "src/app/components/forms/establishment/
 import { OffersSection } from "src/app/components/forms/establishment/sections/OffersSection";
 import { OffersSettingsSection } from "src/app/components/forms/establishment/sections/OffersSettingsSection";
 import { SummarySection } from "src/app/components/forms/establishment/sections/SummarySection";
-import {
-  type EstablishmentEditTab,
-  establishmentEditTabsLabels,
-} from "src/app/contents/forms/establishment/formEstablishment";
+import { establishmentEditTabsLabels } from "src/app/contents/forms/establishment/formEstablishment";
 import { useGetAcquisitionParams } from "src/app/hooks/acquisition.hooks";
 import { useFeedbackTopic } from "src/app/hooks/feedback.hooks";
 import { useAppSelector } from "src/app/hooks/reduxHooks";
@@ -47,6 +44,8 @@ import { geocodingSlice } from "src/core-logic/domain/geocoding/geocoding.slice"
 import { siretSelectors } from "src/core-logic/domain/siret/siret.selectors";
 import { siretSlice } from "src/core-logic/domain/siret/siret.slice";
 import { match, P } from "ts-pattern";
+
+export type EstablishmentEditTab = "offers" | "informations";
 
 type EstablishmentFormProps =
   | { mode: Exclude<Mode, "edit"> }
